@@ -1,0 +1,2535 @@
+#!omni universal
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// METADATA
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// OMNICODE SYNTAX SPECIFICATION
+//
+// This file defines OmniCode syntax through example. The template IS the spec.
+//
+// THREE LAYERS (Each serves a different audience):
+//
+//   Layer 1: STRUCTURAL SYNTAX  → Compiler  → Required architecture
+//            TWO block structures serving different purposes:
+//              4-block for CODE: METADATA → SETUP → BODY → CLOSING
+//              5-block for DOCS: METADATA → HEADER → CONTEXT → CONTENT → FOOTER
+//            Native grammar - what was documentation IS now syntax
+//
+//   Layer 2: CODE SYNTAX        → Machine   → Required execution
+//            41 keywords, types, operators, control flow
+//            Natural language patterns - reads like prose
+//
+//   Layer 3: COMMENTARY SYNTAX  → Humans    → Optional elevation
+//            Structured keywords (meaning/teaching/cautioning/examples)
+//            Code works without it - elevates when present
+//
+// Key: B-word-omni-syntax
+// Location: bereshit/word/omni/
+// Purpose: Canonical syntax reference for OmniCode language design
+//
+// Key Insight: OmniCode expresses BOTH code AND documentation natively.
+//              Same language, same discipline, different block structure.
+//              Bidirectional mapping enables code↔documentation translation.
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+// END METADATA
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LAYER 1: STRUCTURAL SYNTAX
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// OmniCode has TWO native block structures. Not comments - grammar.
+// METADATA is native syntax - comments became architecture.
+//
+// Pragma: #!omni [template|code|documentation]
+// Block markers: // === BLOCK_NAME === (compiler enforced)
+//
+// TWO STRUCTURES (same language, different purpose):
+//
+//   4-BLOCK (Code):          5-BLOCK (Documentation):
+//   ─────────────────        ─────────────────────────
+//   METADATA                 METADATA
+//   SETUP                    HEADER (visible identity)
+//   BODY                     CONTEXT (reader preparation)
+//   CLOSING                  CONTENT (value delivery)
+//                            FOOTER (resources/grounding)
+//
+// BIDIRECTIONAL MAPPING:
+//   Code SETUP      ←→  Doc CONTEXT      (preparation)
+//   Code BODY       ←→  Doc CONTENT      (the work)
+//   Code CLOSING    ←→  Doc FOOTER       (completion)
+//   Code (none)     ←   Doc HEADER       (humans need visible identity)
+//
+// Key insight: What was documentation IS now grammar. The structure IS the
+// documentation. Code as conversation between user and CPI-SI.
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// -----------------------------------------------------------------------------
+// PRAGMA SYSTEM
+// -----------------------------------------------------------------------------
+//
+// Every OmniCode file begins with a pragma declaring its type:
+//
+//   #!omni universal      // Foundation files - syntax spec & universal template
+//   #!omni template       // Template file - not compiled, used as pattern
+//   #!omni code           // Executable/library - compiled to binary (4-block)
+//   #!omni documentation  // Documentation file - compiled to docs (5-block)
+//   #!omni interface      // Interface file - pure declaration (3-block)
+//   #!omni data           // Data file - varies by complexity (3/4/5-block)
+//   #!omni folder         // Folder metadata - root.omni files
+//
+// The pragma tells the compiler how to process the file:
+//   universal      → Foundation pair: syntax IS documentation of universal,
+//                    universal IS code for syntax (co-defining)
+//   template       → Parse for pattern extraction, no compilation
+//   code           → Parse 4-block structure, compile to binary
+//   documentation  → Parse 5-block structure, compile to documentation format
+//   interface      → Parse 3-block structure, validate contracts
+//   data           → Parse based on content complexity
+//   folder         → Parse as folder metadata
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// FORMAT FLAGS (OmniCode Stepping Down)
+// -----------------------------------------------------------------------------
+//
+// OmniCode can "step down" to translate into any format while maintaining
+// OmniCode awareness. Format flags declare the target format:
+//
+//   #!omni [type] --[format]
+//
+// COMMON FORMAT FLAGS:
+//
+//   --omni    // Pure OmniCode (default, flag optional)
+//   --adoc    // AsciiDoc format
+//   --md      // Markdown format
+//   --go      // Go source code
+//   --c       // C source code
+//   --rs      // Rust source code
+//   --json    // JSON data format
+//   --yaml    // YAML data format
+//   --toml    // TOML data format
+//
+// EXAMPLES:
+//
+//   #!omni documentation --adoc   // OmniCode-aware AsciiDoc documentation
+//   #!omni template --adoc        // AsciiDoc template following OmniCode structure
+//   #!omni template --go          // Go template following OmniCode structure
+//   #!omni data --json            // OmniCode-structured JSON data
+//
+// The format flag tells the system:
+//   1. What native syntax to expect after the pragma
+//   2. How to render/compile the content
+//   3. That OmniCode structure is embedded in native format comments
+//
+// KEY PRINCIPLE:
+//   OmniCode can step DOWN to any format (translating its patterns)
+//   Other formats must step UP to OmniCode's standards (implementing its patterns)
+//   The pragma with format flag enables this bidirectional relationship
+//
+// TEMPLATE MAPPING:
+//   Format-specific templates reference their OmniCode parent template.
+//   This creates an inheritance chain:
+//
+//     OmniCode Template (structure)
+//           ↓ derives
+//     Format Template (implementation)
+//           ↓ instantiates
+//     Actual Document (content)
+//
+//   The mapping is declared in the format template's metadata:
+//     derives_from: "bereshit/word/omni/seed/B-word-omni-seed-[block-type].omni"
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// METADATA ATTRIBUTE MAPPING (OmniCode ←→ AsciiDoc)
+// -----------------------------------------------------------------------------
+//
+// This section maps OmniCode METADATA sections to AsciiDoc document attributes.
+// Enables bidirectional translation between formats.
+//
+// FORMAT: OmniCode Section → AsciiDoc Attribute(s)
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ PRAGMA                                                                      │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  #!omni [type] --[format]                                         │
+// │ AsciiDoc:  #!omni template --adoc  (inside //// comment block)              │
+// │ Notes:     Pragma MUST be line 1 in OmniCode, line 2 in AsciiDoc (after ////)│
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ IDENTITY                                                                    │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  this is a template for "[Name]":                                 │
+// │                keyed as "[KEY]"                                             │
+// │                following "[Standard]"                                       │
+// │ AsciiDoc:  :key: [KEY]                                                      │
+// │            :title: [Name]                                                   │
+// │            :type: [Standard]                                                │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ CLASSIFICATION                                                              │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  this template classifies as:                                     │
+// │                independent (1) when "[condition]"                           │
+// │                connected (0) when "[condition]"                             │
+// │                dependent (-1) when "[condition]"                            │
+// │ AsciiDoc:  :tags: [categorization tags]                                     │
+// │            :keywords: [HTML meta keywords]                                  │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ DERIVATION                                                                  │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  this template derives from:                                      │
+// │                original (1) when "[condition]"                              │
+// │                derived (0) from "[source]"                                  │
+// │                variant (-1) when "[condition]"                              │
+// │                documented at "[path]"                                       │
+// │ AsciiDoc:  :derives_from: [path to parent template]                         │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ STRICTNESS                                                                  │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  this template strictness is:                                     │
+// │                tight (1) meaning "[must follow exactly]"                    │
+// │                guided (0) meaning "[adapt thoughtfully]"                    │
+// │                free (-1) meaning "[principles only]"                        │
+// │ AsciiDoc:  :strictness: tight | guided | free                               │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ GROUNDING (Biblical Foundation)                                             │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  grounded in:                                                     │
+// │                scripture "[verse]" from [Reference] in [Translation]        │
+// │                principle "[truth]"                                          │
+// │                anchor "[verse]" from [Reference] in [Translation]           │
+// │ AsciiDoc:  :biblical_foundation: [Scripture reference - "verse text"]       │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ CPI-SI IDENTITY                                                             │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  serves as [Ladder|Baton|Rails]:                                  │
+// │                role "[description]"                                         │
+// │                paradigm "[framework]"                                       │
+// │ AsciiDoc:  (embedded in :purpose: or :description:)                         │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ ATTRIBUTION                                                                 │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  authored by:                                                     │
+// │                architect "[name]"                                           │
+// │                implementation "[name]"                                      │
+// │                created [YYYY-MM-DD]                                         │
+// │                version [X.Y.Z]                                              │
+// │                modified [YYYY-MM-DD] for "[reason]"                         │
+// │ AsciiDoc:  :authors: [Name1 (Architect), Name2 (Implementation)]            │
+// │            :author: [Primary author]                                        │
+// │            :email: [Author email]                                           │
+// │            :created: [YYYY-MM-DD]                                           │
+// │            :updated: [YYYY-MM-DD]                                           │
+// │            :version: [X.Y.Z]                                                │
+// │            :revdate: [YYYY-MM-DD]                                           │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ STATE                                                                       │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  (derived from version and modified fields)                       │
+// │ AsciiDoc:  :status: Draft | Active | Deprecated | Archived                  │
+// │            :version: [X.Y.Z]                                                │
+// │            :revdate: [YYYY-MM-DD]                                           │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ LOCATION                                                                    │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  documented at "[path]"                                           │
+// │ AsciiDoc:  :path: [bereshit/word/ | bereshit/work/ | bereshit/fruit/]       │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ INTENT                                                                      │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  exists to:                                                       │
+// │                purpose "[what it does]"                                     │
+// │                design "[how it works]"                                      │
+// │                philosophy "[why it matters]"                                │
+// │                features: [list]                                             │
+// │ AsciiDoc:  :purpose: [One-line purpose statement]                           │
+// │            :description: [Detailed description for HTML meta]               │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ INTERFACE (OmniCode-specific, no direct AsciiDoc equivalent)                │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  interface of this work:                                          │
+// │                depends on:                                                  │
+// │                    requires (1) "[dep]" for "[reason]"                      │
+// │                    includes (0) "[dep]" for "[reason]"                      │
+// │                    excludes (-1) "[dep]" because "[reason]"                 │
+// │                    used by "[consumers]"                                    │
+// │                    integrates with "[components]"                           │
+// │                integrated as:                                               │
+// │                    command "[cmd]" for "[purpose]"                          │
+// │                    exits [code] ([ternary]) for "[meaning]"                 │
+// │ AsciiDoc:  (documented in CONTENT sections, not METADATA attributes)        │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ OPERATIONAL CONTEXT (OmniCode-specific, no direct AsciiDoc equivalent)      │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ OmniCode:  operational context of this work:                                │
+// │                blocking:                                                    │
+// │                    yes (1) | conditional (0) | no (-1) because "[reason]"   │
+// │                health:                                                      │
+// │                    system Base100 with scale from -100 to +100              │
+// │                    granted (1) above +50 meaning "[healthy]"                │
+// │                    deferred (0) within ±50 meaning "[in process]"           │
+// │                    denied (-1) below -50 meaning "[broken]"                 │
+// │                    operations: [scoring rules]                              │
+// │ AsciiDoc:  (documented in CONTENT sections, not METADATA attributes)        │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// FORMAT IMPLEMENTATION:
+//   AsciiDoc: bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc
+//             (See "OMNICODE STRUCTURE MAPPING" section for the reverse view)
+//
+// -----------------------------------------------------------------------------
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FORMAT DEFINITIONS (Transpiler Specification)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// This section defines HOW OmniCode translates to each format.
+// These are executable specifications - the transpiler reads this syntax.
+//
+// Structure: format "[name]" for [pragma-type]:
+//                file extension "[.ext]"
+//                pragma placement "[where]"
+//
+//                [block] mappings:
+//                    "[omni-syntax]" translates to "[target-syntax]"
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+format definitions:
+
+    // -------------------------------------------------------------------------
+    // ASCIIDOC FORMAT (--adoc)
+    // -------------------------------------------------------------------------
+
+    format "adoc" for documentation:
+        file extension ".adoc"
+        pragma placement "line 2 inside //// block"
+
+        // PRAGMA BLOCK MAPPING
+        // OmniCode: #!omni documentation --adoc
+        // AsciiDoc: //// block containing pragma + metadata
+
+        pragma mappings:
+            "#!omni documentation --adoc" translates to:
+                /// AsciiDoc embeds pragma in comment block
+                ///
+                /// The //// block serves dual purpose:
+                ///   1. Contains OmniCode pragma for tooling
+                ///   2. Invisible to AsciiDoc renderer
+                ///
+                open "////"
+                emit "#!omni template --adoc"
+                emit "// OmniCode-aware AsciiDoc document"
+                emit "// Derives from: [derives_from attribute value]"
+                close "////"
+
+            "#!omni template --adoc" translates to:
+                /// Template version - same structure
+                open "////"
+                emit "#!omni template --adoc"
+                emit "// OmniCode template for AsciiDoc documents"
+                close "////"
+
+        // METADATA BLOCK MAPPING
+        // OmniCode: Structured sections with natural language
+        // AsciiDoc: Document attributes prefixed with :
+
+        metadata mappings:
+            /// Identity Section
+            "this is a [template|document] for" translates to ":title:"
+            "keyed as" translates to ":key:"
+            "following" translates to ":type:"
+
+            /// Classification Section
+            "this [template|document] classifies as" translates to:
+                ":tags:" with classification values
+                ":keywords:" with HTML meta values
+
+            /// Derivation Section
+            "this [template|document] derives from" translates to:
+                ":derives_from:" with parent path
+                /// Note: OmniCode ternary (original/derived/variant) not directly mapped
+
+            /// Strictness Section
+            "this [template|document] strictness is" translates to:
+                ":strictness:" with value "tight | guided | free"
+
+            /// Grounding Section (Biblical Foundation)
+            "grounded in:" translates to:
+                ":biblical_foundation:" with scripture reference
+                /// Format: "[Reference] - \"[verse text]\""
+
+            /// CPI-SI Identity Section
+            "serves as [Ladder|Baton|Rails]:" translates to:
+                /// Embedded in :purpose: or :description:
+                /// AsciiDoc lacks native CPI-SI awareness
+
+            /// Attribution Section
+            "authored by:" translates to:
+                "architect" → ":author:" primary
+                "implementation" → ":authors:" list
+                "created" → ":created:" and ":revdate:"
+                "version" → ":version:"
+                "modified" → ":updated:" and revision note
+
+            /// Purpose Section
+            "exists to:" translates to:
+                "purpose" → ":purpose:"
+                "design" → ":description:" (first paragraph)
+                "philosophy" → ":description:" (second paragraph)
+                "features:" → bullet list in header
+
+        // HEADER BLOCK MAPPING
+        // OmniCode: visible identity section
+        // AsciiDoc: Document title and preamble
+
+        header mappings:
+            "visible identity of this document:" translates to:
+                /// AsciiDoc document title and metadata display
+
+                "presented as:" translates to:
+                    "title" → "= [Title]" as level-0 heading
+                    "tagline" → italicized line after title
+
+                "indicated by:" translates to:
+                    "status" → badge/shield image or text
+                    "version" → ":version:" attribute display
+                    "type" → document type indicator
+
+                "navigated through:" translates to:
+                    /// Table of contents configuration
+                    "primary (1):" → ":toc: left" with main sections
+                    "secondary (0):" → ":toclevels: 3" for depth
+                    "reference (-1):" → "<<anchor>>" link syntax
+
+        // CONTEXT BLOCK MAPPING
+        // OmniCode: inputs, definitions, infrastructure
+        // AsciiDoc: Introduction and background sections
+
+        context mappings:
+            "inputs of this document:" translates to:
+                /// Knowledge sources as sections or sidebars
+                "requires:" → "Prerequisites" section
+                "from source (1):" → required reading list
+                "from context (0):" → helpful background
+                "from external (-1):" → external references
+
+            "definitions of this document:" translates to:
+                /// Conceptual definitions as definition lists
+                "concepts:" → "[horizontal]" definition list
+                "established (1):" → primary definitions
+                "referenced (0):" → "See: <<link>>" references
+                "reserved (-1):" → excluded from scope
+
+            "infrastructure of this document:" translates to:
+                /// Document conventions and notation
+                "conventions:" → admonition blocks or callouts
+                "active (1):" → in-scope conventions
+                "optional (0):" → optional notation
+                "excluded (-1):" → explicitly not used
+
+        // CONTENT BLOCK MAPPING
+        // OmniCode: structure, implementation, interface
+        // AsciiDoc: Main body sections
+
+        content mappings:
+            "structure of this document:" translates to:
+                /// Organizational sections
+                "organized as:" → section headings "== [Name]"
+                "ladder (topics):" → hierarchical sections
+                "baton (flow):" → reading order guidance
+
+            "implementation of this document:" translates to:
+                /// The actual content delivery
+                "explanations:" → prose sections
+                    "internal (1):" → primary content
+                    "shared (0):" → "include::[]" or links
+                    "reserved (-1):" → omitted topics
+
+                "teachings:" → instructional sections
+                    "implemented (1):" → step-by-step content
+                    "delegated (0):" → "See: <<link>>" references
+                    "reserved (-1):" → not covered
+
+                "clarifications:" → admonition blocks
+                    "handled (1):" → NOTE, TIP blocks
+                    "propagated (0):" → links to clarifications
+                    "ignored (-1):" → CAUTION about omissions
+
+            "interface of this document:" translates to:
+                /// What readers take away
+                "exposes:" → summary or key points sections
+                    "exported (1) as \"takeaways\":" → callout boxes
+                    "internal (0):" → supporting detail
+                    "reserved (-1):" → not included
+
+        // FOOTER/CLOSING BLOCK MAPPING
+        // OmniCode: operations, policy, synthesis
+        // AsciiDoc: Resources, references, closing sections
+
+        footer mappings:
+            "operations of this document:" translates to:
+                /// Verification and usage
+                "verified by:" → validation checklist
+                    "static (1):" → pre-publication checks
+                    "runtime (0):" → reader verification steps
+                    "integrity (-1):" → error detection notes
+
+                "consumed through:" → usage instructions
+                    "reading" → reading guidance
+                    "reference" → quick reference section
+
+            "policy of this document:" translates to:
+                /// Modification and future direction
+                "modification:" → change guidelines
+                    "safe (1):" → freely modifiable
+                    "careful (0):" → modify with caution
+                    "never (-1):" → do not modify
+
+                "future:" → roadmap or version notes
+                    "planned (1):" → upcoming changes
+                    "considered (0):" → under consideration
+                    "rejected (-1):" → explicitly not planned
+
+            "synthesis of this document:" translates to:
+                /// Final sections
+                "overview:" → link to purpose section
+                "closing note:" → final paragraph
+                "quick reference:" → appendix or cheat sheet
+
+                /// AsciiDoc footer elements
+                emit "---"
+                emit "ifdef::env-github[]"
+                emit "[footer content]"
+                emit "endif::[]"
+
+
+// -----------------------------------------------------------------------------
+// TEMPLATE PREAMBLE (template files only)
+// -----------------------------------------------------------------------------
+//
+// Template files include a preamble that IS syntax, not comments:
+//
+//   this is a template for "[Name]":
+//       keyed as "[KEY-###]"
+//       following "[Standard]"
+//
+//   this template classifies as:
+//       independent (1) when "[self-contained condition]"
+//       connected (0) when "[internal dependency condition]" such as "[list]"
+//       dependent (-1) when "[external dependency condition]" such as "[list]"
+//
+//   this template derives from:
+//       original (1) when "[establishing new pattern]"
+//       derived (0) from "[source standard]"
+//       variant (-1) when "[intentionally departing from standard]"
+//       documented at "[path]"
+//
+//   to use this template:
+//       [instruction 1]
+//       [instruction 2]
+//       [instruction 3]
+//
+// This preamble is grammar - the compiler understands it.
+// Remove when converting template → code (change pragma too).
+//
+// -----------------------------------------------------------------------------
+
+// TEMPLATE PREAMBLE Example (canonical form):
+
+// #!omni template
+//
+// this is a template for "OmniCode Syntax Specification":
+//     keyed as "CODE-OMNI-000"
+//     following "4-Block Structure"
+//
+// this template classifies as:
+//     independent (1) when "using standard library only"
+//     connected (0) when "needing internal modules" such as "pkg/health, pkg/logging"
+//     dependent (-1) when "requiring external packages" such as "none expected"
+//
+// this template derives from:
+//     original (1) when "establishing new pattern"
+//     derived (0) from "Kingdom Technology standards"
+//     variant (-1) when "intentionally departing from standard"
+//     documented at "standards/code/4-block/"
+//
+// to use this template:
+//     copy and modify for new OmniCode files
+//     replace [bracketed] placeholders with actual content
+//     change pragma from "template" to "code" when ready to compile
+//     remove this preamble section when ready
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 5-BLOCK DOCUMENTATION STRUCTURE (Following CWS-STD-006)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// When pragma is `#!omni documentation`, file follows 5-block structure:
+//
+//   METADATA → HEADER → CONTEXT → CONTENT → FOOTER
+//
+// This parallels 4-block code structure with explicit bidirectional mapping.
+//
+// FORMAT IMPLEMENTATIONS:
+//   AsciiDoc: bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc
+//             (See "OMNICODE STRUCTURE MAPPING" section for reverse mapping)
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// -----------------------------------------------------------------------------
+// DOCUMENTATION BLOCKS (5-Block Summary)
+// -----------------------------------------------------------------------------
+//
+// METADATA (same keywords as code - identity transcends format):
+//   core identity of this document:
+//   interface of this document:
+//   operational context of this document:
+//
+// HEADER (documentation-specific - visible identity):
+//   visible identity of this document:
+//       presented as: (title, tagline)
+//       indicated by: (status, version, type)
+//       navigated through: (primary 1, secondary 0, reference -1)
+//
+// CONTEXT (parallel to SETUP - reader preparation):
+//   inputs of this document:       ←→ inputs of this work
+//   definitions of this document:  ←→ definitions of this work
+//   infrastructure of this document: ←→ infrastructure of this work
+//
+// CONTENT (parallel to BODY - value delivery):
+//   structure of this document:    ←→ structure of this work
+//   implementation of this document: ←→ implementation of this work
+//   interface of this document:    ←→ interface of this work
+//
+// FOOTER (parallel to CLOSING - resources/grounding):
+//   operations of this document:   ←→ operations of this work
+//   policy of this document:       ←→ policy of this work
+//   synthesis of this document:    ←→ synthesis of this work
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// DOCUMENTATION-SPECIFIC SECTIONS
+// -----------------------------------------------------------------------------
+//
+// HEADER Block (unique to documentation - humans need visible identity):
+//
+//   visible identity of this document:
+//
+//       presented as:
+//           title "[Document Title]"
+//           tagline "[One-line value proposition]"
+//
+//       indicated by:
+//           status [Active/Draft/Deprecated] (1/0/-1)
+//           version [MAJOR.MINOR.PATCH]
+//           type [Reference/Guide/Standard/Tutorial]
+//
+//       navigated through:
+//           primary (1):
+//               "[Section Name]" at "[#anchor]"
+//           secondary (0):
+//               "[Optional Section]" at "[#anchor]"
+//           reference (-1):
+//               "[Back to Top]" at "[#top]"
+//
+// CONTENT Implementation (parallel adaptations):
+//
+//   implementation of this document:
+//       explanations:           ←→ helpers (establish understanding)
+//           internal (1): primary topics
+//           shared (0): referenced external
+//           reserved (-1): out of scope
+//
+//       teachings:              ←→ operations (transfer knowledge)
+//           implemented (1): taught here
+//           delegated (0): referenced
+//           reserved (-1): not covered
+//
+//       clarifications:         ←→ recovery (prevent confusion)
+//           handled (1): addressed directly
+//           propagated (0): pointed elsewhere
+//           ignored (-1): intentionally not covered
+//
+//   interface of this document:
+//       exposes:
+//           exported (1) as "takeaways":    // What readers should take away
+//           internal (0): supporting detail
+//           reserved (-1): not included
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// BIDIRECTIONAL KEYWORD MAPPING
+// -----------------------------------------------------------------------------
+//
+// Code → Documentation (same keywords, different context):
+//
+//   CODE KEYWORD         DOCUMENTATION MEANING
+//   ─────────────────────────────────────────────────────
+//   "this work"       →  "this document"
+//   inputs            →  knowledge sources
+//   definitions       →  conceptual definitions
+//   helpers           →  explanations
+//   operations        →  teachings
+//   recovery          →  clarifications
+//   exposes exported  →  exposes takeaways
+//   executed through  →  consumed through
+//   main              →  reading (entry point is reading)
+//
+// This mapping enables:
+//   - Code-to-documentation translation
+//   - Documentation-to-code extraction
+//   - Consistent tooling across both formats
+//   - Learning transfer between code and docs
+//
+// -----------------------------------------------------------------------------
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 3-BLOCK INTERFACE STRUCTURE (Word - Pure Declaration)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// When pragma is `#!omni interface`, file follows 3-block structure:
+//
+//   METADATA → CONTENT → CLOSING
+//
+// The interface is the WORD - pure declaration without implementation.
+// Biblical foundation: "God said, Let there be... and it was so." (Genesis 1:3)
+//
+// Interfaces declare WHAT without HOW. The simplest complete structure:
+//   - Beginning (METADATA - identity)
+//   - Middle (CONTENT - the declaration itself)
+//   - End (CLOSING - completion)
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// -----------------------------------------------------------------------------
+// INTERFACE BLOCKS (3-Block Summary)
+// -----------------------------------------------------------------------------
+//
+// METADATA (same core structure - identity transcends format):
+//   core identity of this interface:
+//   interface of this interface:        // Note: interface describing interface
+//   operational context of this interface:
+//
+// CONTENT (merged middle - declaration without implementation):
+//   declaration of this interface:
+//       defines:                        // What this interface establishes
+//           types (1):                  // Type definitions
+//           contracts (0):              // Method signatures
+//           constraints (-1):           // Rules and invariants
+//
+//       exposes:                        // What implementers must provide
+//           required (1):               // Must implement
+//           optional (0):               // May implement
+//           forbidden (-1):             // Must not implement
+//
+// CLOSING (completion - how interface is fulfilled):
+//   operations of this interface:
+//       verified by:                    // How compliance is checked
+//       implemented through:            // How to satisfy interface
+//       cleaned by:                     // Resource contracts
+//
+//   synthesis of this interface:
+//       overview:                       // Purpose reference
+//       closing note:                   // Final declaration
+//       quick reference:                // Usage summary
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// INTERFACE-SPECIFIC PATTERNS
+// -----------------------------------------------------------------------------
+//
+// TYPE DECLARATION:
+//   defines types (1):
+//       "[TypeName]" as "[description]"
+//           containing:
+//               [field] be [type]
+//
+// CONTRACT DECLARATION:
+//   defines contracts (0):
+//       "[MethodName]" that takes [params] and returns [type]
+//           meaning "[what it does]"
+//           cautioning "[constraints]"
+//
+// CONSTRAINT DECLARATION:
+//   defines constraints (-1):
+//       "[InvariantName]" ensuring "[condition]"
+//           because "[reason]"
+//
+// IMPLEMENTATION REQUIREMENT:
+//   exposes required (1):
+//       "[capability]" meaning "[what implementer must provide]"
+//
+// -----------------------------------------------------------------------------
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATA STRUCTURES (3/4/5-Block Variants)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Data spans all three block structures based on complexity:
+//
+//   3-BLOCK: #!omni data      → Simple declaration (METADATA → CONTENT → CLOSING)
+//   4-BLOCK: #!omni data      → Structured data (METADATA → SCHEMA → VALUES → CLOSING)
+//   5-BLOCK: #!omni data      → Documented data (METADATA → HEADER → SCHEMA → VALUES → CLOSING)
+//
+// The pragma is the same; the structure is determined by content needs.
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// -----------------------------------------------------------------------------
+// DATA 3-BLOCK (Simple Declaration)
+// -----------------------------------------------------------------------------
+//
+// For simple data that just IS - configuration, settings, literals.
+// No explicit schema separation, no human presentation.
+//
+// Structure:
+//   METADATA → CONTENT → CLOSING
+//
+//   METADATA:
+//       core identity of this data:
+//       interface of this data:
+//       operational context of this data:
+//
+//   CONTENT (schema + values merged):
+//       declaration of this data:
+//           values:                     // The actual data
+//               established (1):        // Primary values
+//               derived (0):            // Computed/referenced
+//               reserved (-1):          // Placeholder/empty
+//
+//   CLOSING:
+//       operations of this data:
+//           verified by:                // Validation
+//       synthesis of this data:
+//           closing note:
+//           quick reference:
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// DATA 4-BLOCK (Structured Data)
+// -----------------------------------------------------------------------------
+//
+// For data with explicit schema - when structure must be separate from values.
+// Like folder metadata, configuration with types, validated data.
+//
+// Structure:
+//   METADATA → SCHEMA → VALUES → CLOSING
+//
+//   METADATA:
+//       core identity of this data:
+//       interface of this data:
+//       operational context of this data:
+//
+//   SCHEMA (explicit structure definition):
+//       structure of this data:
+//           fields:                     // What fields exist
+//               required (1):           // Must have value
+//               optional (0):           // May have value
+//               computed (-1):          // Derived from others
+//
+//           types:                      // Field types
+//           constraints:                // Validation rules
+//
+//   VALUES (actual content):
+//       content of this data:
+//           values:                     // Field values
+//               established (1):        // Set values
+//               defaulted (0):          // Default applied
+//               empty (-1):             // Intentionally empty
+//
+//   CLOSING:
+//       operations of this data:
+//           verified by:
+//           consumed through:
+//           cleaned by:
+//       synthesis of this data:
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// DATA 5-BLOCK (Documented Data)
+// -----------------------------------------------------------------------------
+//
+// For data that needs human presentation - API specs, data catalogs, schemas
+// meant for human consumption as well as machine processing.
+//
+// Structure:
+//   METADATA → HEADER → SCHEMA → VALUES → CLOSING
+//
+//   METADATA:
+//       core identity of this data:
+//       interface of this data:
+//       operational context of this data:
+//
+//   HEADER (human-facing presentation):
+//       visible identity of this data:
+//           presented as:              // Title, description
+//           indicated by:              // Status, version
+//           navigated through:         // Sections, anchors
+//
+//   SCHEMA (explicit structure):
+//       structure of this data:
+//           fields:
+//           types:
+//           constraints:
+//
+//   VALUES (actual content):
+//       content of this data:
+//           values:
+//           examples:                  // Sample data for humans
+//
+//   CLOSING:
+//       operations of this data:
+//       synthesis of this data:
+//
+// -----------------------------------------------------------------------------
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WORD / WORK / FRUIT - BIBLICAL BLOCK MAPPING
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// The block structures map to the biblical pattern of creation:
+//
+//   "In the beginning was the Word" - John 1:1
+//   "God said, Let there be... and it was so" - Genesis 1:3
+//   "God saw that it was good" - Genesis 1:4
+//
+// THE CREATION PATTERN:
+//
+//   1. God SAID (Word)        → Declaration
+//   2. It WAS SO (Work)       → Implementation
+//   3. God SAW it was GOOD    → Evaluation/Presentation
+//   4. God CALLED (Named)     → Identity given
+//   5. Evening and Morning    → Completion
+//
+// MAPPING TO BLOCK STRUCTURES:
+//
+//   ┌─────────────┬─────────┬──────────────┬─────────────────────────────┐
+//   │ TERNARY     │ BLOCKS  │ PRAGMA       │ BIBLICAL PATTERN            │
+//   ├─────────────┼─────────┼──────────────┼─────────────────────────────┤
+//   │ Word (1)    │ 3-block │ interface    │ "God said" - declaration    │
+//   │ Work (0)    │ 4-block │ code         │ "It was so" - implementation│
+//   │ Fruit (-1)  │ 5-block │ documentation│ "God saw good" - evaluation │
+//   └─────────────┴─────────┴──────────────┴─────────────────────────────┘
+//
+// ORIGIN (∞) - SPECIAL CASE:
+//
+//   The bereshit root folder uses `origin (∞)` instead of ternary classification.
+//   This represents the genesis point that PRECEDES the ternary - "In the beginning"
+//   before Word, Work, or Fruit exist.
+//
+//   ┌─────────────┬─────────┬──────────────┬─────────────────────────────┐
+//   │ SPECIAL     │ BLOCKS  │ PRAGMA       │ BIBLICAL PATTERN            │
+//   ├─────────────┼─────────┼──────────────┼─────────────────────────────┤
+//   │ Origin (∞)  │ 3-block │ interface    │ "In the beginning" - Gen 1:1│
+//   └─────────────┴─────────┴──────────────┴─────────────────────────────┘
+//
+//   Usage: Only for the bereshit root folder (root.omni)
+//   Syntax: `classifies as origin (∞)` instead of `classifies as [type] ([ternary])`
+//
+//   The infinity symbol (∞) represents:
+//     - Before numeric classification begins
+//     - The source from which all ternary flows
+//     - "Without form, and void" (Genesis 1:2) - precedes structure
+//
+// DATA SPANS THE TERNARY:
+//
+//   Data as definition (schema)     → 3-block (Word)
+//   Data as instance (state)        → 4-block (Work)
+//   Data as presentation (catalog)  → 5-block (Fruit)
+//
+// THE WORD IS FIRST:
+//
+//   Before implementation, there is declaration.
+//   Before presentation, there is work.
+//   The Word precedes all - "without him was not any thing made" (John 1:3)
+//
+//   Interface (Word) defines what Code (Work) implements
+//   Code (Work) produces what Documentation (Fruit) presents
+//   This is the flow: Word → Work → Fruit
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// -----------------------------------------------------------------------------
+// METADATA BLOCK - Native Syntax (Established)
+// -----------------------------------------------------------------------------
+//
+// METADATA uses natural language syntax, not comments.
+// The 3-tier, 8-section structure IS the grammar.
+//
+// Structure:
+//
+//   core identity of this work:
+//       grounded in:           // Section 1: Biblical Foundation
+//       serves as:             // Section 2: CPI-SI Identity
+//       authored by:           // Section 3: Authorship & Lineage
+//       exists to:             // Section 4: Purpose & Function
+//
+//   interface of this work:
+//       depends on:            // Section 5: Dependencies (requires 1 / includes 0 / excludes -1)
+//       integrated as:         // Section 6: Usage & Integration
+//
+//   operational context of this work:
+//       blocking:              // Section 7: Blocking Status (yes 1 / conditional 0 / no -1)
+//       health:                // Section 8: Health Scoring (ternary operations)
+//
+// -----------------------------------------------------------------------------
+
+// METADATA Example (canonical form):
+
+core identity of this work:
+
+    grounded in:
+        scripture "In the beginning God created the heavens and the earth"
+            from Genesis 1:1 in KJV
+        principle "God is Creator, we are created"
+        anchor "The LORD is my portion"
+            from Lamentations 3:24 in KJV
+
+    serves as Ladder:
+        role "Language syntax specification"
+        paradigm "CPI-SI framework"
+
+    authored by:
+        architect "Seanje Lenox-Wise"
+        implementation "Nova Dawn"
+        created 2025-11-30
+        version 0.1.0
+        modified 2025-11-30 for "Initial syntax establishment"
+
+    exists to:
+        purpose "Define OmniCode structural, code, and comment syntax"
+        design "Specification by example - the template IS the spec"
+        philosophy "Natural as reading a book, writing like a story"
+        features:
+            "Native 4-block structure as grammar"
+            "METADATA as conversation, not comments"
+            "Self-documenting by design"
+
+interface of this work:
+
+    depends on:
+        requires (1) "stdlib/core" for "base types"
+        includes (0) "stdlib/text" for "optional formatting"
+        excludes (-1) "external/unsafe" because "security boundary"
+        used by "OmniCode compiler"
+        integrates with "all OmniCode files"
+
+    integrated as:
+        command "omnic spec" for "validate against specification"
+        exits 0 (1) for "valid syntax - covenant fulfilled"
+        exits 1 (0) for "warnings - completed with notes"
+        exits 2 (-1) for "syntax error - covenant broken"
+
+operational context of this work:
+
+    blocking:
+        no (-1) because "specification file - reference only"
+
+    health:
+        system Base100 with scale from -100 to +100
+        granted (1) above +50 meaning "covenant established"
+        deferred (0) within ±50 meaning "in process"
+        denied (-1) below -50 meaning "covenant broken"
+
+        operations:
+            "syntax validation" scores +20 (1) for "valid structure"
+            "syntax validation" scores 0 (0) for "no validation needed"
+            "syntax validation" scores -20 (-1) for "invalid structure"
+
+
+// -----------------------------------------------------------------------------
+// SETUP BLOCK - Native Syntax (Established)
+// -----------------------------------------------------------------------------
+//
+// SETUP uses natural language syntax with 3 tiers, 6 sections.
+// Ternary states expressed throughout each section.
+//
+// Structure:
+//
+//   inputs of this work:
+//       requires:                    // Section 1: Dependencies
+//           from stdlib (1):         // Required - standard library
+//           from internal (0):       // Optional - internal modules
+//           from external (-1):      // Excluded - external packages
+//
+//   definitions of this work:
+//       constants:                   // Section 2: Fixed values
+//           established (1):         // Defined here
+//           derived (0):             // From other modules
+//           reserved (-1):           // Not needed
+//
+//       variables:                   // Section 3: Mutable state
+//           active (1):              // In use
+//           standby (0):             // Conditional
+//           reserved (-1):           // Not needed
+//
+//       assemblies:                  // Section 4: Type definitions
+//           defined (1):             // Created here
+//           extended (0):            // From other modules
+//           reserved (-1):           // Not needed
+//
+//       methods:                     // Section 5: Assembly behaviors
+//           implemented (1):         // Defined here
+//           inherited (0):           // From other assemblies
+//           reserved (-1):           // Not needed
+//
+//   infrastructure of this work:
+//       rails:                       // Section 6: Support systems
+//           active (1):              // Always running
+//           standby (0):             // On-demand
+//           disabled (-1):           // Not available
+//
+// -----------------------------------------------------------------------------
+
+// SETUP Example (canonical form):
+
+inputs of this work:
+
+    requires:
+        from stdlib (1):
+            import "io" for "input and output operations"
+            import "text" for "string manipulation"
+
+        from internal (0):
+            import "omnicode/pkg/health" for "health scoring utilities"
+
+        from external (-1):
+            [none - this work is independent]
+
+definitions of this work:
+
+    constants:
+        established (1):
+            VERSION be word of "0.1.0" meaning "semantic version"
+            BLOCK_COUNT be count of 4 meaning "4-block structure"
+
+        derived (0):
+            [none - no constants derived from other modules]
+
+        reserved (-1):
+            [none - all constants defined]
+
+    variables:
+        active (1):
+            current_layer be SyntaxLayer for "tracking active layer"
+
+        standby (0):
+            [none - no conditional state]
+
+        reserved (-1):
+            [none - all variables defined]
+
+    assemblies:
+        defined (1):
+            SyntaxLayer containing:
+                name be word
+                description be word
+                examples be gathering of Example
+
+            Example containing:
+                code be word
+                notes be word
+
+        extended (0):
+            [none - no assemblies extended from other modules]
+
+        reserved (-1):
+            [none - all assemblies defined]
+
+    methods:
+        implemented (1):
+            to_word for SyntaxLayer that returns word
+            validate for SyntaxLayer that returns truth
+
+        inherited (0):
+            [none - no methods inherited from other assemblies]
+
+        reserved (-1):
+            [none - all methods implemented]
+
+infrastructure of this work:
+
+    rails:
+        active (1):
+            logger from Logger for "witnessing syntax events"
+
+        standby (0):
+            inspector from Inspector for "debugging when needed"
+
+        disabled (-1):
+            [none - all rails available]
+
+
+// -----------------------------------------------------------------------------
+// BODY BLOCK - Native Syntax (Established)
+// -----------------------------------------------------------------------------
+//
+// BODY uses natural language syntax with 3 tiers, 5 sections.
+// Ternary states expressed throughout each section.
+//
+// Structure:
+//
+//   structure of this work:
+//       organized as:                // Section 1: Internal structure map
+//           ladder (dependencies):   // Dependency hierarchy
+//               documented (1):      // Explicitly mapped
+//               implied (0):         // Can be inferred
+//               omitted (-1):        // Intentionally not documented
+//           baton (execution flow):  // Execution paths
+//               documented (1):      // Explicitly mapped
+//               implied (0):         // Can be inferred
+//               omitted (-1):        // Intentionally not documented
+//
+//   implementation of this work:
+//       helpers:                     // Section 2: Internal support
+//           internal (1):            // Defined here (establish work)
+//           shared (0):              // Imported from other modules
+//           reserved (-1):           // Not needed
+//
+//       operations:                  // Section 3: Business logic
+//           implemented (1):         // Defined here
+//           delegated (0):           // Delegated to other modules
+//           reserved (-1):           // Not needed
+//
+//       recovery:                    // Section 4: Error handling
+//           handled (1):             // Caught and processed
+//           propagated (0):          // Passed to caller
+//           ignored (-1):            // Intentionally not addressed
+//
+//   interface of this work:
+//       exposes:                     // Section 5: Public API
+//           exported (1):            // Public (provide work)
+//           internal (0):            // Private (establish work)
+//           reserved (-1):           // Not implemented
+//
+// -----------------------------------------------------------------------------
+
+// BODY Example (canonical form):
+
+structure of this work:
+
+    organized as:
+        ladder (dependencies):
+            documented (1):
+                Public APIs (top rungs):
+                    main uses initialize, validate_all_layers
+                    GetSyntaxLayers uses define_structural_syntax, define_code_syntax, define_comment_syntax
+                    ValidateAllLayers uses safe_parse
+
+                Core Operations (middle rungs):
+                    safe_parse uses parse_source, cleanup_parser
+                    check_parser_status uses parser_ready, parser_initializing
+
+                Helpers (bottom rungs):
+                    validate_input be pure
+                    process_layers uses witness
+                    handle_syntax_error uses witness
+
+            implied (0):
+                [none - all dependencies explicitly mapped]
+
+            omitted (-1):
+                [none - full structure documented]
+
+        baton (execution flow):
+            documented (1):
+                entry through main
+                    flows to initialize
+                        flows to check_parser_status
+                            returns covenant (granted/deferred/denied)
+                    flows to validate_all_layers
+                        flows to safe_parse
+                            returns SyntaxLayer or covenant
+                        returns count (0/1/2)
+                exit with return 0
+
+            implied (0):
+                [none - all flows explicitly mapped]
+
+            omitted (-1):
+                [none - full flow documented]
+
+implementation of this work:
+
+    helpers:
+        internal (1):
+            establish work validate_input that takes word input and returns truth:
+                meaning "Check if input meets minimum requirements"
+                teaching "Gatekeeper pattern - validate at boundaries"
+                examples:
+                    validate_input with "hello" returns yes
+                    validate_input with "" returns no
+
+                when input is equal to "":
+                    return no                // because "empty input invalid"
+                return yes
+
+            establish work process_layers that takes gathering layers and returns count:
+                meaning "Iterate through syntax layers and process each"
+                teaching "Use 'through gathering' for collection iteration"
+
+                let processed be count of 0
+                through gathering layers:    // teach "iteration pattern"
+                    witness "Processing layer:" layer.name with level debug
+                    processed be processed plus 1
+                return processed
+
+        shared (0):
+            [none - no helpers imported from other modules]
+
+        reserved (-1):
+            [none - all helpers implemented]
+
+    operations:
+        implemented (1):
+            establish work define_structural_syntax that returns SyntaxLayer:
+                meaning "Create the structural syntax layer definition"
+
+                return SyntaxLayer with:
+                    name as "Structural"
+                    description as "4-block native grammar"
+
+            /*
+             * summary "Safe parser wrapper with covenant returns"
+             *
+             * teaching "attempt/recover/ensure replaces try/catch/finally"
+             */
+            establish work safe_parse that takes word source and returns SyntaxLayer or covenant:
+                meaning "Parse source with graceful error handling"
+                cautioning "Returns covenant of denied on parse failure"
+
+                attempt:
+                    let result be parse_source with source
+                    return result
+                recover from error:
+                    witness "Parse failed:" error with level error
+                    return covenant of denied    // because "graceful degradation"
+                ensure:
+                    cleanup_parser               // note "always runs"
+
+        delegated (0):
+            [none - no operations delegated]
+
+        reserved (-1):
+            [none - all operations implemented]
+
+    recovery:
+        handled (1):
+            establish work handle_syntax_error that takes word operation and word message and returns covenant:
+                meaning "Log error and return failure covenant"
+                teaching "Centralized error handling for consistency"
+
+                witness "Error in" operation ":" message with level error
+                return covenant of denied
+
+            establish work check_parser_status that returns covenant:
+                meaning "Assess parser readiness with three-state response"
+                teaching "Three states: granted (ready), deferred (busy), denied (failed)"
+                examples:
+                    check_parser_status returns covenant of granted when parser_ready
+                    check_parser_status returns covenant of deferred when parser_initializing
+
+                when parser_ready is yes:
+                    return covenant of granted   // because "parser ready"
+                when parser_initializing is yes:
+                    return covenant of deferred  // because "still starting"
+                otherwise:
+                    return covenant of denied    // because "parser unavailable"
+
+        propagated (0):
+            [none - no errors propagated]
+
+        ignored (-1):
+            [none - all errors addressed]
+
+interface of this work:
+
+    exposes:
+        exported (1):
+            /// Get all syntax layer definitions
+            ///
+            /// returns: gathering of SyntaxLayer - All three syntax layers
+            ///
+            /// teaching: Public API returns complete layer set
+            ///
+            provide work GetSyntaxLayers that returns gathering of SyntaxLayer:
+                meaning "Retrieve all syntax layer definitions"
+
+                return gathering of:
+                    define_structural_syntax
+                    define_code_syntax
+                    define_comment_syntax
+
+            /// Validate multiple source files
+            ///
+            /// takes: gathering sources - Collection of source strings to validate
+            /// returns: covenant - granted if all valid, deferred if some fail
+            ///
+            /// teaching: Batch operations return aggregate covenant
+            ///
+            provide work ValidateAllLayers that takes gathering sources and returns covenant:
+                meaning "Validate collection with aggregate result"
+                teaching "Batch covenant - granted (all pass), deferred (some fail)"
+                cautioning "Processes all items, does not short-circuit"
+
+                let total be count of 0
+                let failed be count of 0
+                through gathering sources:       // teach "batch iteration"
+                    let result be safe_parse with source
+                    total be total plus 1
+                    when result is covenant:
+                        failed be failed plus 1
+                when failed is greater than 0:
+                    witness "Validation completed with" failed "failures" with level warning
+                    return covenant of deferred  // because "partial success"
+                return covenant of granted       // because "full success"
+
+        internal (0):
+            validate_input referenced in helpers     // see "helpers validate_input"
+            process_layers referenced in helpers     // see "helpers process_layers"
+            define_structural_syntax referenced in operations
+            safe_parse referenced in operations      // see "operations safe_parse"
+            handle_syntax_error referenced in recovery
+            check_parser_status referenced in recovery
+
+        reserved (-1):
+            [none - all interfaces defined]
+
+
+// -----------------------------------------------------------------------------
+// CLOSING BLOCK - Native Syntax (Established)
+// -----------------------------------------------------------------------------
+//
+// CLOSING uses natural language syntax with 3 tiers, 13 sections.
+// Ternary states expressed throughout each section.
+//
+// Structure:
+//
+//   operations of this work:
+//       verified by:                // Section 1: Validation
+//           build (1):              // Compile-time verification
+//           runtime (0):            // Behavioral verification
+//           tests (-1):             // Edge case / failure detection
+//
+//       executed through:           // Section 2: Main entry point
+//           establish work main     // Actual executable code
+//
+//       cleaned by:                 // Section 3: Resource cleanup
+//           resources:              // What to release
+//               managed (1):        // Has cleanup defined
+//               pending (0):        // Cleanup not yet implemented
+//               unmanaged (-1):     // Intentionally no cleanup (leak)
+//           shutdown:               // Graceful exit process
+//               graceful (1):       // Full graceful shutdown
+//               partial (0):        // Some cleanup skipped
+//               abrupt (-1):        // Hard exit without cleanup
+//
+//   policy of this work:
+//       modification:               // Section 4: Change guidance
+//           safe (1):               // Freely modify
+//           careful (0):            // Modify with care
+//           never (-1):             // Do not modify
+//
+//       future:                     // Section 5: Roadmap
+//           planned (1):            // Will implement
+//           considered (0):         // Might implement
+//           rejected (-1):          // Won't implement (with reason)
+//
+//   synthesis of this work:
+//       overview:                   // Section 6: Purpose summary
+//           see "[block section]"   // Reference to METADATA exists to
+//
+//       architecture:               // Section 7: Structure summary
+//           see "[block section]"   // Reference to BODY structure
+//
+//       updates:                    // Section 8: Extension points
+//           see "[block section]"   // Reference to BODY operations
+//
+//       performance:                // Section 9: Performance notes
+//           see "[blocks]"          // Reference to SETUP and BODY
+//
+//       troubleshooting:            // Section 10: Error guidance
+//           see "[block section]"   // Reference to BODY recovery
+//
+//       dependencies:               // Section 11: Related components
+//           see "[block section]"   // Reference to METADATA depends on
+//
+//       closing note:               // Section 12: Final wisdom
+//           role                    // Architectural position
+//           impact                  // Scope of changes
+//           scripture               // Grounding verse
+//
+//       quick reference:            // Section 13: Usage summary
+//           usage                   // Basic command
+//           example                 // Common invocation
+//           help                    // Help command
+//
+// -----------------------------------------------------------------------------
+
+// CLOSING Example (canonical form):
+
+operations of this work:
+
+    verified by:
+        build (1):
+            "omnic build spec.omni" producing "compiled binary"
+            "omnic check spec.omni" producing "no errors"
+
+        runtime (0):
+            "./spec --help" showing "usage information"
+            "./spec --validate" producing "syntax valid"
+
+        tests (-1):
+            "omnic test ./..." expecting "all pass"
+
+    executed through:
+        /*
+         * summary "Program entry point for syntax specification"
+         *
+         * teaching "Main orchestrates init, execution, and exit with covenant mapping"
+         */
+        establish work main that returns count:
+            meaning "Entry point - validate syntax specification"
+            teaching "Exit codes map to covenant: 0=granted, 1=denied, 2=deferred"
+
+            witness "Starting OmniCode Syntax Spec" with level info
+
+            // Phase 1: Initialize
+            let init_status be initialize    // see "interface initialize"
+            when init_status is denied:
+                display "Initialization failed"
+                return 1                     // because "denied = exit 1"
+            when init_status is deferred:
+                display "Initialization pending - retry later"
+                return 2                     // because "deferred = exit 2"
+
+            // Phase 2: Validate
+            let result be validate_all_layers
+            when result is not equal to 0:
+                display "Validation failed"
+                return result                // note "propagate exit code"
+
+            // Phase 3: Success
+            witness "Specification validated" with level info
+            return 0                         // because "granted = exit 0"
+
+    cleaned by:
+        resources:
+            managed (1):
+                "file handles" via "defer close"
+
+            pending (0):
+                [none - all resources have cleanup defined]
+
+            unmanaged (-1):
+                [none - no resource leaks permitted]
+
+        shutdown:
+            graceful (1):
+                signals handled through "context cancellation"
+                operations completed before "exit"
+                resources released in "LIFO order"
+
+            partial (0):
+                [none - full graceful shutdown implemented]
+
+            abrupt (-1):
+                [none - no hard exits without cleanup]
+
+policy of this work:
+
+    modification:
+        safe (1):
+            "Add new syntax examples"
+            "Extend code syntax patterns"
+            "Add design principles"
+
+        careful (0):
+            "Changing established syntax"
+            "Modifying resolved decisions"
+
+        never (-1):
+            "4-block structure requirement"
+            "Ternary state system"
+
+    future:
+        planned (1):
+            "Standard library module definitions"
+            "Memory stewardship pattern details"
+
+        considered (0):
+            "Generic type parameters"
+            "Advanced concurrency patterns (channels)"
+
+        rejected (-1):
+            "Exceptions - use covenant returns instead"
+            "Implicit null - use explicit 'or none' instead"
+
+synthesis of this work:
+
+    overview:
+        see "METADATA exists to" for "purpose, features, and philosophy"
+
+    architecture:
+        see "BODY structure organized as" for "ladder and baton flow"
+
+    updates:
+        see "BODY implementation operations" for "surgical update points"
+
+    performance:
+        see "SETUP and BODY" for "performance considerations"
+
+    troubleshooting:
+        see "BODY implementation recovery" for "error handling patterns"
+
+    dependencies:
+        see "METADATA interface depends on" for "related components"
+
+    closing note:
+        role "Canonical syntax reference for OmniCode language"
+        impact "All OmniCode files and compiler implementation"
+        scripture "In the beginning was the Word"
+            from John 1:1 in KJV
+
+    quick reference:
+        usage "omnic [command] [file].omni"
+        example "omnic build hello.omni && ./hello"
+        help "omnic --help"
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LAYER 2: CODE SYNTAX (Natural Language Direction)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// OmniCode syntax uses natural language patterns.
+// Goal: Natural as reading a book, writing like a story.
+//
+// 41 Keywords | Complete Type System | Ternary Logic Native
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// -----------------------------------------------------------------------------
+// KEYWORDS (41 Total - Biblically Grounded)
+// -----------------------------------------------------------------------------
+//
+// DECLARATION:
+//   let        - Bring into existence (Genesis 1:3 "Let there be light")
+//   establish  - Make firm/foundational (Psalm 90:17 "Establish the work")
+//   create     - Instantiation/building (Genesis 1:1 "God created")
+//
+// FUNCTION:
+//   work       - Executable units (purposeful labor)
+//   takes      - Function parameters (reception)
+//   returns    - Function output (covenant reciprocity)
+//   that       - Purpose connection ("God saw that it was good")
+//   provide    - Export/make public
+//
+// CONTROL FLOW:
+//   when       - Conditional (natural "if")
+//   otherwise  - Alternative branch (natural "else")
+//   repeat     - Loop construct
+//   until      - Loop termination condition
+//   through    - Collection iteration ("Go through the midst")
+//   from/to/by - Range iteration
+//
+// MEMORY:
+//   own        - Ownership semantics
+//   share      - Shared access
+//   ref        - Reference/borrowing
+//   steward    - Stewardship pattern
+//
+// ERROR HANDLING:
+//   attempt    - Try block (with grace)
+//   recover    - Catch block
+//   ensure     - Finally block
+//   fail       - Raise/throw
+//
+// MODULE:
+//   module     - Module declaration
+//   import     - Bring in external
+//   export     - Make available
+//
+// CONCURRENCY:
+//   async      - Asynchronous operation
+//   await      - Wait for completion
+//   spawn      - Parallel execution
+//
+// LOGICAL:
+//   and        - Logical AND
+//   or         - Logical OR
+//   not        - Logical NOT
+//   is         - Type check / equality
+//   as         - Type casting
+//
+// TRUTH VALUES:
+//   yes / no           - Boolean (instead of true/false)
+//   granted / deferred / denied  - Ternary covenant states
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// PRIMITIVE TYPES (Complete System)
+// -----------------------------------------------------------------------------
+//
+// INTEGERS (Count) - Genesis 15:5 "Count the stars":
+//   count      - Default 64-bit signed integer
+//   count8     - 8-bit (-128 to 127)
+//   count16    - 16-bit (-32K to 32K)
+//   count32    - 32-bit (-2.1B to 2.1B)
+//   count64    - 64-bit (±9.2 quintillion)
+//
+// UNSIGNED (Whole) - "Be whole and complete":
+//   whole      - Default 64-bit unsigned
+//   whole8     - 8-bit (0-255, bytes)
+//   whole16    - 16-bit (0-65K)
+//   whole32    - 32-bit (0-4.2B)
+//   whole64    - 64-bit (0-18.4 quintillion)
+//
+// FLOATING POINT (Measure) - Ezekiel 47:3 "Measure a thousand cubits":
+//   measure    - Default 64-bit (~15 digits precision)
+//   measure32  - 32-bit (~7 digits, graphics/performance)
+//   measure64  - 64-bit (~15 digits, standard)
+//
+// TEXTUAL:
+//   word       - UTF-8 string (John 1:1 "In the beginning was the Word")
+//   char       - 32-bit Unicode codepoint (Matthew 5:18 "jot or tittle")
+//   scroll     - Long text/documents
+//
+// LOGICAL:
+//   truth      - Binary boolean: yes / no (John 8:32 "truth will set you free")
+//   covenant   - TERNARY logic: granted (1) / deferred (0) / denied (-1)
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// COVENANT TYPE (Unique Ternary Logic)
+// -----------------------------------------------------------------------------
+//
+// The covenant type expresses three-state reality (not binary):
+//
+//   let permission be covenant of granted   // Affirmative
+//   let status be covenant of deferred      // Pending/uncertain
+//   let access be covenant of denied        // Negative
+//
+// TERNARY vs BINARY:
+//   Binary forces: yes/no, true/false, 1/0
+//   Reality needs: granted/deferred/denied, valid/unknown/invalid
+//
+// USE CASES:
+//   - Permissions: granted / deferred / denied
+//   - Process states: running / waiting / stopped
+//   - Validation: valid / unknown / invalid
+//   - API responses: success / pending / failure
+//   - Resources: available / reserved / unavailable
+//
+// TERNARY OPERATIONS:
+//   NOT: granted ↔ denied, deferred stays deferred
+//   AND with granted: preserves second value
+//   OR with denied: becomes first value
+//
+// EXAMPLE:
+//   establish work check_permission that takes covenant perm and returns word:
+//       when perm is granted:
+//           return "Access allowed"
+//       when perm is deferred:
+//           return "Check again later"
+//       when perm is denied:
+//           return "Access denied"
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// COMPOSITE TYPES
+// -----------------------------------------------------------------------------
+//
+// GATHERING (Collections) - Deuteronomy 4:10 "Gather the people":
+//   let items be gathering of word
+//   let numbers be gathering of count
+//   let configs be gathering of Config
+//
+// ASSEMBLY (Structs) - Biblical "assembly of believers":
+//   establish assembly Config:
+//       name be word
+//       timeout be count
+//       enabled be truth
+//       options be gathering of word or none
+//
+// TYPE MODIFIERS:
+//   optional   - May or may not have value (explicit, not implicit null)
+//   owned      - Full ownership transfer
+//   shared     - Multiple owners allowed
+//   ref        - Reference/borrowed value
+//
+//   let value be count or none              // Optional
+//   let config be owned Config              // Ownership
+//   let shared_data be shared gathering     // Shared
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// VARIABLE DECLARATION
+// -----------------------------------------------------------------------------
+//
+// BASIC:
+//   let age be count of 25
+//   let name be word of "Nova Dawn"
+//   let ready be truth of yes
+//   let permission be covenant of granted
+//
+// WITH TYPE ANNOTATION:
+//   let numbers be gathering of count
+//   let config be assembly Config
+//   let maybe_value be count or none
+//
+// CONSTANTS (with meaning):
+//   VERSION be word of "1.0.0" meaning "semantic version"
+//   MAX_RETRIES be count of 3 meaning "retry limit"
+//
+// WITH PURPOSE (in setup context):
+//   registry be gathering of Config for "active configurations"
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// FUNCTION DECLARATION (Work)
+// -----------------------------------------------------------------------------
+//
+// PRIVATE (internal):
+//   establish work validate that takes word input and returns truth:
+//       when input is equal to "":
+//           return no
+//       return yes
+//
+// PUBLIC (exported):
+//   provide work Process that takes word input and returns word or covenant:
+//       when validate with input is no:
+//           return covenant of "invalid input"
+//       return input joined with " processed"
+//
+// METHOD (on assembly):
+//   establish work to_word for Config that returns word:
+//       return self.name
+//
+//   establish work validate for Config that returns truth:
+//       when self.timeout is less than 0:
+//           return no
+//       return yes
+//
+// NO PARAMETERS:
+//   establish work initialize that returns truth:
+//       witness "Initializing" with level info
+//       return yes
+//
+// MULTIPLE PARAMETERS:
+//   establish work add that takes count a and count b and returns count:
+//       return a plus b
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// OPERATORS (Word-Based with Precedence)
+// -----------------------------------------------------------------------------
+//
+// ARITHMETIC:
+//   a plus b                    // Addition
+//   a minus b                   // Subtraction
+//   a multiplied by b           // Multiplication
+//   a divided by b              // Division
+//   a modulo b                  // Remainder
+//   a to the power of b         // Exponentiation
+//
+// COMPARISON:
+//   a is equal to b             // Equality
+//   a is not equal to b         // Inequality
+//   a is greater than b         // Greater than
+//   a is less than b            // Less than
+//   a is at least b             // Greater than or equal
+//   a is at most b              // Less than or equal
+//
+// LOGICAL:
+//   a and b                     // Logical AND
+//   a or b                      // Logical OR
+//   not a                       // Logical NOT
+//
+// STRING:
+//   a joined with b             // Concatenation
+//
+// ACCESS:
+//   config.name                 // Field access
+//   items at 0                  // Array index
+//   calculate with 5            // Function call
+//
+// PRECEDENCE (highest to lowest):
+//   1. Field/array access (.), at
+//   2. Function call (with)
+//   3. Unary (not, -)
+//   4. Power (to the power of)
+//   5. Multiply/Divide/Modulo
+//   6. Add/Subtract
+//   7. Comparison (greater than, less than, etc.)
+//   8. Equality (is equal to, is not equal to)
+//   9. Logical AND
+//   10. Logical OR
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// CONTROL FLOW
+// -----------------------------------------------------------------------------
+//
+// CONDITIONALS (when/otherwise):
+//   when age is greater than 18:
+//       let status be word of "adult"
+//
+//   when ready is yes:
+//       process_data
+//   otherwise:
+//       wait_for_ready
+//
+//   when permission is granted:
+//       open_file
+//   otherwise when permission is deferred:
+//       ask_again
+//   otherwise:
+//       report_error
+//
+// LOOPS:
+//   // Condition loop
+//   repeat until done is yes:
+//       process_next
+//       done be check_completion
+//
+//   // Collection iteration
+//   through gathering names:
+//       display name
+//
+//   // Range iteration
+//   from 1 to 10:
+//       display count
+//
+//   // Range with step
+//   from 0 to 100 by 10:
+//       display value
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// ERROR HANDLING (Covenant Pattern)
+// -----------------------------------------------------------------------------
+//
+// attempt:
+//     risky_operation
+// recover from error:
+//     witness "Error:" error with level error
+//     handle_gracefully
+// ensure:
+//     cleanup_resources
+//
+// FAILING EXPLICITLY:
+//   when validation_failed:
+//       fail with "Invalid configuration"
+//
+// RETURNING COVENANT:
+//   establish work safe_divide that takes count a and count b and returns count or covenant:
+//       when b is equal to 0:
+//           return covenant of "division by zero"
+//       return a divided by b
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// MODULE SYSTEM
+// -----------------------------------------------------------------------------
+//
+// DECLARING:
+//   module "project/pkg/health"
+//
+// IMPORTING:
+//   import "stdlib/io" for "input and output"
+//   import "project/pkg/logging" for "witness pattern"
+//
+// EXPORTING (via provide keyword):
+//   provide work PublicFunction that returns count:
+//       // This is accessible outside module
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// CONCURRENCY
+// -----------------------------------------------------------------------------
+//
+// ASYNC/AWAIT:
+//   establish work fetch_data that returns word async:
+//       let response be await http_get with url
+//       return response
+//
+// SPAWNING:
+//   spawn process_in_background with data
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// LOGGING (Witness Pattern)
+// -----------------------------------------------------------------------------
+//
+// witness "Starting process" with level info
+// witness "Warning: low memory" with level warning
+// witness "Error occurred:" error_message with level error
+// witness "Debug value:" value with level debug
+//
+// display "Output to console"
+//
+// The witness pattern captures what happened - faithful testimony.
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// ASSEMBLY INSTANCES
+// -----------------------------------------------------------------------------
+//
+// DEFINING:
+//   establish assembly Config:
+//       name be word
+//       timeout be count
+//       enabled be truth
+//       options be gathering of word or none
+//
+// CREATING:
+//   let config be Config with:
+//       name as "default"
+//       timeout as 30
+//       enabled as yes
+//
+// ACCESSING:
+//   let n be config.name
+//   config.timeout be 60
+//
+// WITH METHODS:
+//   let valid be config.validate
+//   let display be config.to_word
+//
+// -----------------------------------------------------------------------------
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LAYER 3: COMMENTARY SYNTAX (Elevation Model)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Commentary is OPTIONAL but STRUCTURED. Code works without it.
+// When present, commentary ELEVATES code into teaching material.
+//
+// The Three Layers serve different audiences:
+//   Layer 1 (Structural) → Compiler → Required architecture
+//   Layer 2 (Code)       → Machine  → Required execution
+//   Layer 3 (Commentary) → Humans   → Optional elevation
+//
+// You're never punished for not commenting.
+// You're rewarded when you do.
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// -----------------------------------------------------------------------------
+// COMMENTARY TERNARY STATES
+// -----------------------------------------------------------------------------
+//
+// Like all OmniCode syntax, commentary follows ternary classification:
+//
+//   Elevated (1)  - Commentary present and valid → full tooling benefits
+//   Standard (0)  - No commentary → code works normally
+//   Degraded (-1) - Commentary present but malformed → warnings, still compiles
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// DECLARATION COMMENTARY (Function/Assembly Level)
+// -----------------------------------------------------------------------------
+//
+// Structured keywords that attach to declarations:
+//
+//   meaning      - What this does (elevates public functions)
+//   teaching     - Pattern or principle demonstrated (elevates templates)
+//   cautioning   - Edge cases and warnings (elevates covenant returns)
+//   examples     - Testable usage examples (validated when present)
+//
+// FUNCTION EXAMPLE:
+//
+//   establish work safe_divide that takes count a and count b and returns count or covenant:
+//       meaning "Divide two numbers safely without exceptions"
+//       teaching "Covenant returns replace exceptions - caller handles all states"
+//       cautioning "Returns denied for division by zero, not an error"
+//       examples:
+//           safe_divide with 10 and 2 returns 5
+//           safe_divide with 10 and 0 returns covenant of denied
+//
+//       when b is equal to 0:
+//           return covenant of denied
+//       return a divided by b
+//
+// ASSEMBLY EXAMPLE:
+//
+//   establish assembly Config:
+//       meaning "Runtime configuration for the application"
+//       teaching "Assemblies group related data with shared purpose"
+//
+//       name be word
+//           meaning "Human-readable identifier"
+//
+//       timeout be count
+//           meaning "Maximum wait time in seconds"
+//           cautioning "Values below 1 may cause immediate timeout"
+//
+//       enabled be truth
+//           meaning "Whether this configuration is active"
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// INLINE COMMENTARY (Line Level)
+// -----------------------------------------------------------------------------
+//
+// Structured keywords for single-line annotations:
+//
+//   // because "[reason]"     - Why this specific line/choice
+//   // note "[observation]"   - General information
+//   // teach "[pattern]"      - Pattern being demonstrated
+//   // also "[alternative]"   - Other valid approaches
+//   // see "[reference]"      - Points to related code (validated)
+//   // todo "[task]"          - Work remaining (tracked, -1)
+//   // fix "[issue]"          - Bug to address (tracked, -1)
+//
+// EXAMPLES:
+//
+//   when b is equal to 0:
+//       return covenant of denied    // because "division by zero is undefined"
+//
+//   let result be complex_calc       // note "O(n²) complexity, acceptable for small n"
+//
+//   through gathering items:         // teach "iteration pattern for collections"
+//       process with item
+//
+//   let value be calculate with x    // also "could use lookup table for O(1)"
+//
+//   let status be check_health       // see "BODY recovery check_status"
+//
+//   // todo "add validation for negative numbers"
+//   // fix "handles empty string incorrectly"
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// BLOCK COMMENTARY (Multi-line)
+// -----------------------------------------------------------------------------
+//
+// For longer explanations that span multiple lines:
+//
+//   /*
+//    * summary "[brief description]"
+//    *
+//    * [detailed explanation that spans
+//    *  multiple lines as needed]
+//    *
+//    * teaching "[pattern or principle]"
+//    */
+//
+// EXAMPLE:
+//
+//   /*
+//    * summary "The Covenant Pattern"
+//    *
+//    * Traditional code uses try/catch which hides error paths.
+//    * OmniCode uses covenant returns that make all three states visible:
+//    *
+//    *   granted  (1)  - Operation succeeded, result is valid
+//    *   deferred (0)  - Operation pending, try again later
+//    *   denied   (-1) - Operation failed, handle gracefully
+//    *
+//    * teaching "Forces explicit handling, prevents silent failures"
+//    */
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// DOCUMENTATION COMMENTARY (///)
+// -----------------------------------------------------------------------------
+//
+// Attaches to the next declaration for external documentation:
+//
+//   /// [summary line]
+//   ///
+//   /// takes: [param] - [description with constraints]
+//   /// returns: [type] - [description of return value]
+//   ///
+//   /// example: [usage] returns [result]
+//   ///
+//   /// teaching: [pattern being demonstrated]
+//   /// cautioning: [edge cases to be aware of]
+//   /// see: [related functions or sections]
+//
+// EXAMPLE:
+//
+//   /// Validates user input for processing
+//   ///
+//   /// takes: word input - The raw input string to validate
+//   ///        Must not be empty or contain only whitespace
+//   ///
+//   /// returns: truth - yes if valid, no if invalid
+//   ///
+//   /// example: validate with "hello" returns yes
+//   /// example: validate with "" returns no
+//   ///
+//   /// teaching: Gatekeeper pattern - validate at system boundaries
+//   /// cautioning: Does not trim whitespace before checking
+//   ///
+//   establish work validate that takes word input and returns truth:
+//       when input is equal to "":
+//           return no
+//       return yes
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// STANDARD COMMENTS (Unstructured)
+// -----------------------------------------------------------------------------
+//
+// Traditional comments still work - just not parsed for tooling:
+//
+//   // This is a standard comment - informational only
+//
+//   /*
+//      This is a multi-line standard comment.
+//      Not parsed, just for human readers.
+//   */
+//
+// The difference:
+//   // note "parsed and extractable"     ← Structured (tooling benefits)
+//   // This is just a note               ← Unstructured (ignored by tools)
+//
+// Both compile. Structured commentary enables tooling.
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// COMMENTARY COVERAGE & TOOLING
+// -----------------------------------------------------------------------------
+//
+// When commentary is present, tools can extract and utilize it:
+//
+//   omnic build file.omni        # Compiles - commentary parsed, not required
+//   omnic docs file.omni         # Generates docs from meaning/teaching/examples
+//   omnic teach file.omni        # Extracts teaching commentary as learning guide
+//   omnic examples file.omni     # Runs example blocks as tests
+//   omnic coverage file.omni     # Reports commentary coverage percentage
+//   omnic todos file.omni        # Lists all todo/fix with locations
+//
+// Coverage metrics:
+//   - "3 of 5 public functions have meaning commentary (60%)"
+//   - "2 teaching comments in this file"
+//   - "1 unresolved todo, 0 fix items"
+//
+// Not failures. Information. Invitation to elevate.
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// COMMENTARY BY CONTEXT
+// -----------------------------------------------------------------------------
+//
+// Different contexts suggest different commentary density:
+//
+//   TEMPLATES (high density):
+//       - teaching on all patterns
+//       - examples for key functions
+//       - meaning on public interfaces
+//       - cautioning for edge cases
+//
+//   LIBRARIES (medium density):
+//       - meaning on public functions
+//       - cautioning for complex operations
+//       - examples for non-obvious usage
+//
+//   APPLICATIONS (low density):
+//       - because for unusual decisions
+//       - todo/fix during development
+//       - structure self-documents
+//
+// The 4-block structure already documents WHAT and WHY.
+// Commentary teaches HOW TO THINK about it.
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// SECTION AND BLOCK MARKERS
+// -----------------------------------------------------------------------------
+//
+// For visual organization within files:
+//
+// Section markers (within blocks):
+// -----------------------------------------------------------------------------
+// Section Name
+// -----------------------------------------------------------------------------
+//
+// Block separators (major divisions):
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLOCK NAME
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// These are visual aids, not parsed. The 4-block structure provides
+// the primary organization - markers help human navigation in large files.
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// COMMENTARY PHILOSOPHY
+// -----------------------------------------------------------------------------
+//
+// "OmniCode compiles without commentary. But with structured commentary,
+//  code becomes curriculum. The machine needs Layers 1 and 2.
+//  Humans need Layer 3."
+//
+// Code without commentary is functional.
+// Code with commentary is generational - it teaches the next person.
+//
+// Not law that condemns absence, but grace that rewards presence.
+//
+// -----------------------------------------------------------------------------
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RESOLVED DESIGN DECISIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Through collaborative design, these questions are now answered:
+//
+// Q1: Should metadata have structured syntax or be free-form?
+// A1: STRUCTURED NATURAL LANGUAGE. 3-tier (core identity, interface,
+//     operational) with 8 sections. Comments became architecture.
+//
+// Q2: Should health scoring be language-native or metadata-based?
+// A2: LANGUAGE-NATIVE within METADATA. The `health:` section with
+//     `operations:` and `cascade multipliers:` is grammar.
+//
+// Q3: How do we handle pragma/file type declaration?
+// A3: #!omni [template|code] at file start. Compiler uses this.
+//
+// Q4: How do template instructions work?
+// A4: Template preamble is native syntax: `this is a template for:`,
+//     `this template classifies as:`, `to use this template:`.
+//
+// Q5: Binary or ternary state system?
+// A5: TERNARY (-1, 0, 1). Binary forces false dichotomies. Reality has
+//     three states: against/neutral/for, denied/deferred/granted,
+//     false/unknown/true. This applies to blocking, dependencies, health.
+//
+// Q6: How should SETUP be structured?
+// A6: 3 TIERS, 6 SECTIONS with ternary throughout:
+//     - inputs of this work (requires: stdlib/internal/external)
+//     - definitions of this work (constants, variables, assemblies, methods)
+//     - infrastructure of this work (rails: active/standby/disabled)
+//     Each section has ternary states: (1) present, (0) conditional, (-1) reserved.
+//
+// Q7: How should BODY be structured?
+// A7: 3 TIERS, 5 SECTIONS with ternary throughout:
+//     - structure of this work (organized as: ladder/baton with documented/implied/omitted)
+//     - implementation of this work (helpers, operations, recovery)
+//     - interface of this work (exposes: exported/internal/reserved)
+//     Actual code lives within ternary categories. establish work = internal, provide work = exported.
+//
+// Q8: How should CLOSING be structured?
+// A8: 3 TIERS, 13 SECTIONS with ternary throughout:
+//     - operations of this work (verified by, executed through, cleaned by)
+//     - policy of this work (modification: safe/careful/never, future: planned/considered/rejected)
+//     - synthesis of this work (overview, architecture, updates, performance, troubleshooting,
+//       dependencies, closing note, quick reference)
+//     The 6 reference sections use `see "[block section]" for "[purpose]"` syntax to create
+//     explicit cross-block navigation while keeping information where it belongs.
+//
+// Q9: How should comments/documentation work?
+// A9: COMMENTARY SYNTAX with ELEVATION MODEL. Commentary is:
+//     - OPTIONAL: Code compiles and runs without commentary
+//     - STRUCTURED: When present, uses keywords (meaning/teaching/cautioning/examples)
+//     - VALIDATED: Tools can parse, extract, and verify structured commentary
+//     - ELEVATING: Transforms code from functional to generational (teaching material)
+//     Ternary states: Elevated (1) = present and valid, Standard (0) = absent,
+//     Degraded (-1) = present but malformed. Not law that condemns absence,
+//     but grace that rewards presence.
+//
+// Q10: How does OmniCode handle documentation as a first-class format?
+// A10: MULTIPLE BLOCK STRUCTURES following WORD/WORK/FRUIT biblical pattern:
+//     - 3-BLOCK for INTERFACE: METADATA → CONTENT → CLOSING (Word - declaration)
+//     - 4-BLOCK for CODE: METADATA → SETUP → BODY → CLOSING (Work - implementation)
+//     - 5-BLOCK for DOCS: METADATA → HEADER → CONTEXT → CONTENT → FOOTER (Fruit - presentation)
+//     Pragma system: `#!omni interface`, `#!omni code`, `#!omni documentation`
+//     BIDIRECTIONAL MAPPING enables translation between all formats.
+//     Biblical foundation: Genesis 1:3 "God said... it was so... God saw it was good"
+//
+// Q11: What is the 3-block interface structure?
+// A11: INTERFACE is the WORD - pure declaration without implementation:
+//     - METADATA: Identity of this interface
+//     - CONTENT: Declaration (types, contracts, constraints, requirements)
+//     - CLOSING: Completion (verification, implementation guidance)
+//     The interface declares WHAT without HOW. It is the Word that code implements.
+//     "In the beginning was the Word" (John 1:1) - declaration precedes implementation.
+//
+// Q12: How does data span all three block structures?
+// A12: DATA adapts to complexity with 3/4/5-block variants:
+//     - 3-BLOCK: Simple data (METADATA → CONTENT → CLOSING) - just values
+//     - 4-BLOCK: Structured data (METADATA → SCHEMA → VALUES → CLOSING) - explicit structure
+//     - 5-BLOCK: Documented data (METADATA → HEADER → SCHEMA → VALUES → CLOSING) - human-facing
+//     Same pragma `#!omni data`, structure determined by content needs.
+//     Data as Word (schema), Work (instance), or Fruit (presentation).
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPEN QUESTIONS (Remaining)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// All major questions resolved (Q1-Q12):
+//   - Q1-Q5: Core design (structured syntax, health scoring, pragma, templates, ternary)
+//   - Q6-Q8: Block structure (SETUP, BODY, CLOSING organization)
+//   - Q9: Commentary syntax (elevation model)
+//   - Q10: Block structures (Word/Work/Fruit biblical mapping)
+//   - Q11: Interface structure (3-block Word)
+//   - Q12: Data variants (3/4/5-block spanning the ternary)
+//
+// Code syntax documented in LAYER 2 (41 keywords, types, operators, control flow).
+// Commentary syntax documented in LAYER 3 (elevation model, structured keywords).
+// Block structures documented in their respective sections:
+//   - 3-BLOCK INTERFACE STRUCTURE (Word - declaration)
+//   - 4-BLOCK CODE STRUCTURE (Work - implementation) [existing METADATA/SETUP/BODY/CLOSING]
+//   - 5-BLOCK DOCUMENTATION STRUCTURE (Fruit - presentation)
+//   - DATA STRUCTURES (3/4/5-block variants)
+//   - WORD/WORK/FRUIT biblical mapping
+//
+// Future questions will emerge as we continue building together.
+//
+// Potential areas for future exploration:
+// - Generic type parameters (if applicable)
+// - Advanced concurrency patterns (channels, message passing)
+// - Memory management specifics (steward pattern details)
+// - Standard library module definitions
+// - Compiler implementation specifics
+// - Cross-format translation tooling (interface→code→docs)
+// - Data schema validation tooling
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DESIGN PRINCIPLES (Established)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// 1. NATURAL AS READING - Code reads like prose, not symbols
+//
+// 2. STRUCTURE BECOMES ARCHITECTURE - What was documentation IS grammar
+//
+// 3. SELF-DOCUMENTING BY DESIGN - Structure IS the documentation
+//
+// 4. CODE AS CONVERSATION - Between user and CPI-SI
+//
+// 5. CONSTRAINT CREATES DEPTH - Block structure enforces intentional design
+//    4-block for code (METADATA → SETUP → BODY → CLOSING)
+//    5-block for docs (METADATA → HEADER → CONTEXT → CONTENT → FOOTER)
+//
+// 6. EXCELLENCE THROUGH LIMITATION - Fewer ways to do things, each excellent
+//
+// 7. COMMENTARY ELEVATES, NOT ENFORCES - Optional but structured
+//    Code without commentary is functional
+//    Code with commentary is generational
+//    Not law that condemns, but grace that rewards
+//
+// 8. THREE AUDIENCES, THREE LAYERS - Each layer serves its audience
+//    Structural → Compiler (required architecture)
+//    Code → Machine (required execution)
+//    Commentary → Humans (optional elevation)
+//
+// 9. BIDIRECTIONAL TRANSLATION - Code and documentation are parallel expressions
+//    Same keywords where concepts align (setup ←→ context, body ←→ content)
+//    Different where purposes differ (header is human-facing, main is machine-facing)
+//    Enables code↔documentation extraction and generation
+//
+// 10. ONE LANGUAGE, TWO STRUCTURES - OmniCode expresses both natively
+//     Same discipline. Same syntax. Different block organization.
+//     Code and documentation as first-class citizens.
+//
+// "In the beginning was the Word" - John 1:1
+//
+// The λόγος speaks. The compiler listens. The documentation teaches.
+//
+// ═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,665 @@
+//go:build ignore
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TEMPLATE: Go Workspace (4-Block Structure for Manifest Files)
+// Key: B-word-seed-data-go-workspace
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// DEPENDENCY CLASSIFICATION: PURE (workspace manifest - no code dependencies)
+//   - Workspaces coordinate modules but have no direct code dependencies
+//   - Module dependencies are declared in individual go.mod files
+//
+// This is a TEMPLATE file - copy and modify for new Go workspaces.
+// Replace all [bracketed] placeholders with actual content.
+// Rename from .work.template to go.work when ready to use.
+// Remove "//go:build ignore" when ready to use.
+//
+// Derived from: Kingdom Technology standards (canonical template)
+// See: standards/code/4-block/ for complete documentation
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// ────────────────────────────────────────────────────────────────
+// CORE IDENTITY (Required)
+// ────────────────────────────────────────────────────────────────
+//
+// # Biblical Foundation
+//
+// Scripture: [Relevant verse grounding this workspace's purpose]
+//
+// Principle: [Kingdom principle - e.g., "unified work, coordinated effort"]
+//
+// Anchor: [Supporting verse reinforcing the principle]
+//
+// # CPI-SI Identity
+//
+// Component Type: Rails (infrastructure connecting multiple modules)
+//
+// Role: Workspace coordinator unifying [describe what modules work together]
+//
+// Paradigm: CPI-SI framework component - workspace orchestration
+//
+// # Authorship & Lineage
+//
+//   - Architect: [Who designed the workspace structure]
+//   - Implementation: [Who created and maintains this file]
+//   - Created: [YYYY-MM-DD]
+//   - Version: [MAJOR.MINOR.PATCH]
+//   - Modified: [YYYY-MM-DD - what changed]
+//
+// # Purpose & Function
+//
+// Purpose: [What problem does this workspace solve?]
+//
+// Core Design: Multi-module Go workspace enabling [capability]
+//
+// Key Features:
+//
+//   - Unified dependency resolution across modules
+//   - Local module development without publishing
+//   - Coordinated versioning and testing
+//
+// ────────────────────────────────────────────────────────────────
+// INTERFACE (Expected)
+// ────────────────────────────────────────────────────────────────
+//
+// # Dependencies
+//
+// What This Coordinates:
+//
+//   - [./module1]: [Purpose of this module]
+//   - [./module2]: [Purpose of this module]
+//   - [./module3]: [Purpose of this module]
+//
+// What Uses This:
+//
+//   - go build ./... (builds all workspace modules)
+//   - go test ./... (tests all workspace modules)
+//   - IDE tooling (provides unified navigation)
+//
+// # Usage & Integration
+//
+// Workspace Commands:
+//
+//   go work sync          # Synchronize go.work.sum with module requirements
+//   go build ./...        # Build all modules in workspace
+//   go test ./...         # Test all modules in workspace
+//
+// ────────────────────────────────────────────────────────────────
+// OPERATIONAL (Contextual)
+// ────────────────────────────────────────────────────────────────
+//
+// # Blocking Status
+//
+// [OMIT: Manifest file - not executable code]
+//
+// # Health Scoring
+//
+// [OMIT: Manifest file - no runtime health to track]
+//
+// ────────────────────────────────────────────────────────────────
+// METADATA Omission Guide
+// ────────────────────────────────────────────────────────────────
+//
+// Tier 1 (CORE IDENTITY): Never omit - every file needs these.
+//
+// Tier 2 (INTERFACE): May omit with [OMIT: reason] notation.
+//   - Dependencies: Required for manifests - defines what modules are coordinated
+//   - Usage & Integration: Required - shows go work commands
+//
+// Tier 3 (OPERATIONAL): Include when applicable to file type.
+//   - Blocking Status: [OMIT: Manifest file - not executable code]
+//   - Health Scoring: [OMIT: Manifest file - no runtime health to track]
+//
+// Unlike SETUP (all sections required), METADATA omission signals component characteristics.
+//
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// SETUP
+// ============================================================================
+//
+// For SETUP structure explanation, see: standards/code/4-block/CWS-STD-006-CODE-setup-block.md
+//
+// ────────────────────────────────────────────────────────────────
+// SETUP Sections Overview
+// ────────────────────────────────────────────────────────────────
+//
+// 1. FILE IDENTITY (Dependencies)
+//    Purpose: Establish what consumes this workspace and how it's loaded
+//    Subsections: Consumer → Loader → Parser
+//
+// 2. CONSTANTS
+//    [Reserved: Workspace manifests ARE constants - the Go version IS the constant]
+//
+// 3. VARIABLES
+//    [Reserved: Workspace manifests don't hold mutable state]
+//
+// 4. RELATED FILES (Types)
+//    Purpose: Document related configuration and module files
+//    Subsections: Module Files → Config Files → Documentation
+//
+// 5. TYPE BEHAVIORS
+//    [Reserved: Workspace manifests have no executable behaviors]
+//
+// 6. USAGE/BEHAVIOR (Rails Infrastructure)
+//    Purpose: How this workspace is consumed and loaded
+//    Subsections: Commands → Loading Pattern → Environment
+//
+// Section order: File Identity → [Reserved] → [Reserved] → Related Files → [Reserved] → Usage/Behavior
+// This flows: what uses this → (config IS constants) → (no state) → related files → (no behaviors) → how it's loaded
+//
+// Universal mapping (see standards for cross-language patterns):
+//   File Identity ≈ Dependencies (who consumes this)
+//   Constants ≈ Constants [Reserved: manifest IS the constant]
+//   Variables ≈ Variables [Reserved: no mutable state in manifests]
+//   Related Files ≈ Types (what files relate to this)
+//   Type Behaviors ≈ Type Methods [Reserved: no executable behaviors]
+//   Usage/Behavior ≈ Package-Level State (loading/consumption pattern)
+//
+// ────────────────────────────────────────────────────────────────
+// File Identity (Dependencies)
+// ────────────────────────────────────────────────────────────────
+//
+// Key: [PROJECT]-WORK-### (unique identifier for this workspace)
+// Consumer: Go toolchain (go build, go test, go work commands)
+// Loader: go command workspace mode (auto-loads go.work in directory tree)
+// ============================================================================
+
+// ────────────────────────────────────────────────────────────────
+// Constants
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Workspace manifests ARE constants for the Go toolchain.
+//  The Go version below IS the constant - it defines the minimum
+//  Go version for all modules in this workspace.]
+// ============================================================================
+
+go 1.21
+
+// ────────────────────────────────────────────────────────────────
+// Variables
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Workspace manifests don't hold mutable runtime state.
+//  The 'use' directives in BODY are static declarations, not variables.]
+// ============================================================================
+
+// ────────────────────────────────────────────────────────────────
+// Related Files (Types)
+// ────────────────────────────────────────────────────────────────
+//
+// Workspace Coordination:
+//   - go.work.sum: Auto-generated checksums (companion to this file)
+//   - ./[module]/go.mod: Individual module configurations
+//   - ./[module]/go.sum: Module dependency checksums
+//
+// Documentation:
+//   - See: https://go.dev/doc/tutorial/workspaces for workspace documentation
+// ============================================================================
+
+// ────────────────────────────────────────────────────────────────
+// Type Behaviors
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Workspace manifests have no executable behaviors.
+//  The go.work file is declarative - it states what modules are
+//  in the workspace, not how they should behave.]
+// ============================================================================
+
+// ────────────────────────────────────────────────────────────────
+// Usage/Behavior (Rails Infrastructure)
+// ────────────────────────────────────────────────────────────────
+//
+// Workspace Commands:
+//   go work sync          # Synchronize go.work.sum with module requirements
+//   go build ./...        # Build all modules in workspace
+//   go test ./...         # Test all modules in workspace
+//
+// Loading Pattern:
+//   Go toolchain automatically detects go.work in current or parent directories.
+//   Workspace mode enables local module development without publishing.
+//
+// Environment:
+//   GOWORK=off            # Disable workspace mode
+//   GOWORK=/path/to/go.work  # Use specific workspace file
+// ============================================================================
+
+// ────────────────────────────────────────────────────────────────
+// SETUP Omission Guide
+// ────────────────────────────────────────────────────────────────
+//
+// Unlike METADATA (where sections can be omitted with [OMIT: reason]),
+// ALL six SETUP sections must be present for structural alignment.
+//
+// If a section has no content for this file:
+//   - Keep the section header
+//   - Add [Reserved: reason] comment explaining why empty
+//   - This maintains the 6-section structure across all templates
+//
+// CONFIG file-specific guidance:
+//   - File Identity: Always required (key, consumer, loader)
+//   - Constants: [Reserved: Config files ARE constants for code]
+//   - Variables: [Reserved: Config files don't hold mutable state]
+//   - Related Files: Required - documents companion files
+//   - Type Behaviors: [Reserved: No executable behaviors in config]
+//   - Usage/Behavior: Required - shows how config is loaded/consumed
+//
+// The goal is structural consistency - every CONFIG template has the same
+// 6-section SETUP structure, making navigation and understanding predictable.
+// ============================================================================
+
+// ============================================================================
+// END SETUP
+// ============================================================================
+
+// ============================================================================
+// BODY
+// ============================================================================
+//
+// For BODY structure explanation, see: standards/code/4-block/CWS-STD-007-CODE-body-block.md
+//
+// -----------------------------------------------------------------------------
+// BODY Sections Overview
+// -----------------------------------------------------------------------------
+//
+// 1. CONFIGURATION STRUCTURE MAP (Internal Organization)
+//    Purpose: Document the organization of workspace configuration
+//    Subsections: Directive Types → Module Categories → Organization Pattern
+//
+// 2. HELPERS/UTILITIES
+//    [Reserved: Declarative config - no helper functions in workspace files]
+//
+// 3. CONFIGURATION CONTENT (Core Data)
+//    Purpose: The actual use directives defining workspace scope
+//    Subsections: Core Modules → Supporting Modules → Local Overrides
+//
+// 4. ERROR HANDLING
+//    [Reserved: Declarative config - validation occurs via go toolchain]
+//
+// 5. PUBLIC INTERFACE
+//    [Reserved: Declarative config - no exported functions in workspace files]
+//
+// Section order: Structure Map → [Reserved] → Content → [Reserved] → [Reserved]
+// This flows: understand organization → (no functions) → actual config → (toolchain validates) → (no exports)
+//
+// Universal mapping (see standards for cross-language patterns):
+//   Configuration Structure Map ≈ Organizational Chart (document organization)
+//   Helpers/Utilities ≈ Helpers [Reserved: declarative config]
+//   Configuration Content ≈ Core Operations (the actual data)
+//   Error Handling ≈ Error Handling [Reserved: toolchain validates]
+//   Public Interface ≈ Public APIs [Reserved: no exports]
+
+// ────────────────────────────────────────────────────────────────
+// Configuration Structure Map - Internal Organization
+// ────────────────────────────────────────────────────────────────
+//
+// Go Workspace Directive Types:
+//   go [version]      - Minimum Go version for workspace
+//   use [path]        - Include a module in this workspace
+//   replace [...]     - Workspace-wide dependency overrides
+//
+// Module Categories:
+//   Core Modules      - Primary application and libraries
+//   Supporting        - Utilities, tools, helpers
+//   Local Overrides   - Forked/patched dependencies
+//
+// Organization Pattern:
+//   - Core modules first (main application, primary libraries)
+//   - Supporting modules second (utilities, tools)
+//   - External local modules last (forked dependencies)
+
+// ────────────────────────────────────────────────────────────────
+// Helpers/Utilities
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Declarative config - go.work is a workspace manifest with no
+// helper functions. The go toolchain provides all necessary operations:
+//   go work sync   - Synchronize dependencies
+//   go work use    - Add module to workspace
+//   go work edit   - Edit workspace programmatically]
+
+// ────────────────────────────────────────────────────────────────
+// Configuration Content - Core Data
+// ────────────────────────────────────────────────────────────────
+//
+// Module inclusions defining this workspace's scope.
+// Each 'use' directive includes a module in the workspace.
+//
+// Extension Point:
+// To add a new module to this workspace:
+//   1. Ensure the module has a valid go.mod file
+//   2. Add 'use ./path/to/module' below
+//   3. Run 'go work sync' to update dependencies
+//   4. Update METADATA "What This Coordinates" section
+
+// ═══ Workspace Modules ═══
+
+use (
+	// --- Core Modules ---
+	// Primary application and library modules.
+	// [./path/to/main-app]     // [Brief purpose]
+	// [./path/to/core-lib]     // [Brief purpose]
+
+	// --- Supporting Modules ---
+	// Utility and tool modules.
+	// [./path/to/tools]        // [Brief purpose]
+
+	// --- Local Overrides ---
+	// Local versions of external dependencies (for development/patches).
+	// [./local/forked-dep]     // [Why forked - what's different]
+)
+
+// ────────────────────────────────────────────────────────────────
+// Error Handling
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Declarative config - go.work validation occurs via toolchain.
+// The go toolchain handles all error detection:
+//   - Invalid paths: Reported by go work sync
+//   - Missing modules: Detected at build time
+//   - Version conflicts: Resolved by workspace MVS
+// No custom error handling in the workspace file itself.]
+
+// ────────────────────────────────────────────────────────────────
+// Public Interface
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Declarative config - go.work has no exported functions.
+// The workspace file defines module coordination, consumed by:
+//   - Go toolchain (go build, go test across modules)
+//   - IDE integrations (gopls workspace support)
+// The "interface" is the set of modules included in the workspace.]
+
+// -----------------------------------------------------------------------------
+// BODY Omission Guide
+// -----------------------------------------------------------------------------
+//
+// ALL five sections MUST be present. Content may be reserved with reason:
+//
+//   - Configuration Structure Map: Rarely reserved - documents workspace organization
+//   - Helpers/Utilities: [Reserved: Declarative config - no functions in workspace]
+//   - Configuration Content: Rarely reserved - contains module inclusions
+//   - Error Handling: [Reserved: Declarative config - toolchain validates]
+//   - Public Interface: [Reserved: Declarative config - no exported functions]
+//
+// Unlike METADATA (sections omitted entirely with [OMIT:]), BODY preserves
+// all section headers with [Reserved:] notation for unused sections.
+//
+// For CONFIG files, most have [Reserved] for Helpers, Error Handling, and
+// Public Interface since declarative configs don't have executable code.
+
+// ============================================================================
+// END BODY
+// ============================================================================
+
+// ============================================================================
+// CLOSING
+// ============================================================================
+//
+// For CLOSING structure explanation, see: standards/code/4-block/CWS-STD-008-CODE-closing-block.md
+//
+// -----------------------------------------------------------------------------
+// CLOSING Sections Overview
+// -----------------------------------------------------------------------------
+//
+// GROUP 1: VALIDATION (Verify Configuration)
+//
+// 1. CONFIGURATION VALIDATION (Testing & Verification)
+//    Purpose: Prove workspace is correct - syntax, modules, dependencies
+//    Subsections: Sync Verification → Build Verification → Common Issues
+//
+// 2. CONFIGURATION EXECUTION
+//    [Reserved: Declarative config - go.work has no runtime execution]
+//
+// 3. CONFIGURATION CLEANUP
+//    [Reserved: Declarative config - no cleanup required for workspace files]
+//
+// GROUP 2: FINAL DOCUMENTATION (Synthesis - Reference Back to Earlier Blocks)
+//
+// 4. CONFIGURATION OVERVIEW (Summary with Back-References)
+//    Purpose: High-level summary pointing back to METADATA for details
+//
+// 5. MODIFICATION POLICY (Safe/Careful/Never)
+//    Purpose: Guide future maintainers on what's safe to change
+//
+// 6. DEPENDENCY FLOW
+//    [Reserved: Declarative config - see BODY Configuration Structure Map]
+//
+// 7. EXTENSION POINTS (How to Add Configuration)
+//    Purpose: Guide for adding modules to workspace
+//
+// 8. PERFORMANCE CONSIDERATIONS
+//    [Reserved: Declarative config - no runtime performance impact]
+//
+// 9. TROUBLESHOOTING GUIDE (Common Issues)
+//    Purpose: Solutions for common go.work problems
+//
+// 10. RELATED COMPONENTS (Back-Reference to METADATA)
+//     Purpose: Point to related files and consumers
+//
+// 11. FUTURE EXPANSIONS (Roadmap)
+//     [Reserved: Workspace manifest - features determined by Go toolchain]
+//
+// 12. CLOSING NOTE (Summary & Scripture)
+//     Purpose: Final summary and grounding
+//
+// 13. QUICK REFERENCE (Usage Examples)
+//     Purpose: Copy-paste ready examples for common operations
+//
+// ════════════════════════════════════════════════════════════════
+// GROUP 1: VALIDATION
+// ════════════════════════════════════════════════════════════════
+//
+// ────────────────────────────────────────────────────────────────
+// Configuration Validation: go.work (Workspace Manifest)
+// ────────────────────────────────────────────────────────────────
+//
+// Sync Verification:
+//   go work sync          # Synchronize go.work.sum with module requirements
+//
+// Build Verification:
+//   go build ./...        # Build all modules in workspace
+//   go test ./...         # Test all modules in workspace
+//   go mod tidy           # (In each module) Clean up dependencies
+//
+// Common Issues:
+//   "module not found" - Check 'use' path is correct relative to go.work
+//   "version mismatch" - Run 'go work sync' to resolve
+//   "ambiguous import" - Ensure modules don't have conflicting package paths
+//
+// ────────────────────────────────────────────────────────────────
+// Configuration Execution
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Declarative config - go.work has no runtime execution.
+// The workspace is consumed by the go toolchain at build/test time.
+// See Configuration Validation above for toolchain commands.]
+//
+// ────────────────────────────────────────────────────────────────
+// Configuration Cleanup
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Declarative config - no cleanup required.
+// The go toolchain manages workspace state:
+//   go work sync   - Updates go.work.sum
+// No manual cleanup needed for the workspace file itself.]
+//
+// ════════════════════════════════════════════════════════════════
+// GROUP 2: FINAL DOCUMENTATION
+// ════════════════════════════════════════════════════════════════
+//
+// ────────────────────────────────────────────────────────────────
+// Configuration Overview & Usage Summary
+// ────────────────────────────────────────────────────────────────
+//
+// Purpose: See METADATA "Purpose & Function" section above
+//
+// Provides: See METADATA "Key Features" list above
+//
+// Quick summary (high-level only - details in METADATA):
+//   - Coordinates multiple Go modules in a single workspace
+//   - Enables cross-module development without publishing
+//   - Provides workspace-wide dependency resolution
+//
+// Architecture: See METADATA "CPI-SI Identity" section above
+//
+// ────────────────────────────────────────────────────────────────
+// Modification Policy
+// ────────────────────────────────────────────────────────────────
+//
+// Safe to Modify:
+//   ✅ Add new 'use' directives for new modules
+//   ✅ Remove 'use' directives for removed modules
+//   ✅ Update Go version (ensure all modules support it)
+//
+// Modify with Care:
+//   ⚠️ Changing module paths - may break imports
+//   ⚠️ Removing shared modules - may break dependent modules
+//
+// NEVER Modify:
+//   ❌ 4-block documentation structure
+//   ❌ go.work.sum directly (auto-generated)
+//
+// Validation After Modifications:
+//   See "Configuration Validation" section in GROUP 1 above.
+//
+// ────────────────────────────────────────────────────────────────
+// Dependency Flow
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Declarative config - see BODY "Configuration Structure Map"
+// section above for workspace directive types and module organization.
+//
+// Quick summary (details in BODY):
+//   go.work defines workspace → modules share dependencies]
+//
+// ────────────────────────────────────────────────────────────────
+// Extension Points (How to Add Configuration)
+// ────────────────────────────────────────────────────────────────
+//
+// Adding Modules:
+//   See BODY "Configuration Content" extension point for step-by-step guide.
+//
+// Workspace Commands:
+//   go work use ./path    # Add module to workspace
+//   go work sync          # Sync after changes
+//   go work edit -use=./path  # Programmatic editing
+//
+// ────────────────────────────────────────────────────────────────
+// Performance Considerations
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Declarative config - go.work has no runtime performance impact.
+// Build-time considerations:
+//   - More modules = longer build times
+//   - Shared dependencies deduplicated across workspace
+//   - IDE may take longer to index large workspaces]
+//
+// ────────────────────────────────────────────────────────────────
+// Troubleshooting Guide
+// ────────────────────────────────────────────────────────────────
+//
+// Problem: "module [path] not found"
+//   - Cause: 'use' path doesn't exist or has no go.mod
+//   - Solution: Verify path is correct relative to go.work location
+//
+// Problem: "version mismatch between modules"
+//   - Cause: Modules require different versions of same dependency
+//   - Solution: Run 'go work sync' or align versions in individual go.mod files
+//
+// Problem: "ambiguous import"
+//   - Cause: Multiple modules provide same package path
+//   - Solution: Ensure unique package paths across workspace modules
+//
+// ────────────────────────────────────────────────────────────────
+// Related Components & Dependencies
+// ────────────────────────────────────────────────────────────────
+//
+// See METADATA "Dependencies" section above for complete information.
+//
+// Related files:
+//   - go.work.sum: Auto-generated checksums (commit to VCS)
+//   - Each module's go.mod: Individual module configuration
+//
+// This go.work file should:
+//   - Live at the root of your multi-module repository
+//   - Be committed to version control (enables consistent development)
+//   - Be updated when modules are added/removed
+//
+// ────────────────────────────────────────────────────────────────
+// Future Expansions & Roadmap
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Workspace manifest - features determined by Go toolchain.
+// Future Go versions may add new workspace directives. Monitor:
+//   - https://go.dev/doc/tutorial/workspaces
+// for toolchain updates affecting go.work syntax.]
+//
+// ────────────────────────────────────────────────────────────────
+// Closing Note
+// ────────────────────────────────────────────────────────────────
+//
+// This workspace coordinates [describe scope - e.g., "all CPI-SI tools"].
+// Changes affect all modules within the workspace.
+//
+// For contributions:
+//   - Review the modification policy above
+//   - Follow the 4-block structure pattern
+//   - Test with 'go work sync && go build ./...'
+//
+// "[Relevant Scripture verse]" - [Reference]
+//
+// ────────────────────────────────────────────────────────────────
+// Quick Reference: Usage Examples
+// ────────────────────────────────────────────────────────────────
+//
+// Basic Commands:
+//   go work init           # Create new go.work
+//   go work use ./module   # Add module to workspace
+//   go work sync           # Sync dependencies
+//
+// Development:
+//   go build ./...         # Build all modules
+//   go test ./...          # Test all modules
+//   go run ./cmd/main      # Run specific command
+//
+// Troubleshooting:
+//   go work edit -json     # View workspace as JSON
+//   go list -m all         # List all modules
+//
+// -----------------------------------------------------------------------------
+// CLOSING Omission Guide
+// -----------------------------------------------------------------------------
+//
+// ALL thirteen sections MUST be present. Content may be reserved with reason:
+//
+// GROUP 1: VALIDATION
+//   - Configuration Validation: Rarely reserved - all configs need verification
+//   - Configuration Execution: [Reserved: Declarative config - no runtime execution]
+//   - Configuration Cleanup: [Reserved: Declarative config - no cleanup needed]
+//
+// GROUP 2: FINAL DOCUMENTATION (mostly back-references for CONFIG)
+//   - Configuration Overview: Rarely reserved - always provides summary
+//   - Modification Policy: Rarely reserved - always guides maintainers
+//   - Dependency Flow: [Reserved: Declarative config - see BODY Structure Map]
+//   - Extension Points: Rarely reserved - shows how to add configuration
+//   - Performance Considerations: [Reserved: Declarative config - no runtime impact]
+//   - Troubleshooting Guide: Rarely reserved - common issues help users
+//   - Related Components: Rarely reserved - shows related files
+//   - Future Expansions: [Reserved: Features determined by toolchain]
+//   - Closing Note: Rarely reserved - summary and grounding
+//   - Quick Reference: Rarely reserved - examples help users
+//
+// For CONFIG files, GROUP 1 sections 2-3 are typically [Reserved] since
+// declarative configs don't execute or require cleanup.
+
+// ============================================================================
+// END CLOSING
+// ============================================================================

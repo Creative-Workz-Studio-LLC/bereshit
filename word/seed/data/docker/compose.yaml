@@ -1,0 +1,807 @@
+#!omni template --docker
+# ═══════════════════════════════════════════════════════════════════════════
+# TEMPLATE: Docker Compose Configuration (4-Block Structure)
+# Key: B-word-seed-data-docker-compose
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# TEMPLATE: This file is a template - copy and modify before using.
+# Replace all [bracketed] placeholders with actual content.
+# Remove the "TEMPLATE" markers when ready to use.
+#
+# DEPENDENCY CLASSIFICATION: [PURE/DEPENDED] ([deps if DEPENDED])
+#   - PURE: Standard Docker services only - no external dependencies
+#   - DEPENDED: Needs external services - list them: (needs: postgres, redis)
+#
+# Derives from: B-word-omni-seed-data-4block
+#               (bereshit/word/omni/seed/data-4block.omni)
+# See: standards/code/4-block/ for complete documentation
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     [organization/project-name]
+# File:        docker-compose.yaml
+# Key:         [PROJECT-COMPOSE-###] (Docker Compose orchestration)
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: [Relevant verse grounding this configuration's purpose]
+#
+# Principle: [Kingdom principle this configuration demonstrates]
+#
+# Anchor: [Supporting verse reinforcing the principle]
+#
+# # CPI-SI Identity
+#
+# Component Type: Rails (infrastructure orchestration)
+#
+# Role: [Specific responsibility in system architecture]
+#
+# Paradigm: CPI-SI framework component - Docker Compose orchestration
+#
+# # Authorship & Lineage
+#
+#   Architect: [Who designed the configuration structure]
+#   Implementation: [Who created and maintains this config]
+#   Created: [YYYY-MM-DD]
+#   Version: [MAJOR.MINOR.PATCH]
+#   Modified: [YYYY-MM-DD - what changed]
+#
+# Version History:
+#
+#   [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
+#
+# # Purpose & Function
+#
+# Purpose: [What behavior does this configuration control?]
+#
+# Core Design: [Architectural pattern - service composition, networking, etc.]
+#
+# Key Features:
+#
+#   - [Major capability 1 this config enables]
+#   - [Major capability 2 this config enables]
+#   - [Major capability 3 this config enables]
+#
+# Philosophy: [Guiding principle for service orchestration]
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Docker Engine: [version requirement]
+#   - Docker Compose: [version requirement]
+#   - Images: [list container images referenced]
+#
+# What Uses This:
+#
+#   - Developers: Local development environment
+#   - CI/CD: Automated testing and deployment
+#
+# Integration Points:
+#
+#   - .env file: Environment variable defaults
+#   - Dockerfiles: Build context for services
+#
+# # Usage & Integration
+#
+# Basic Usage:
+#
+#   docker compose up -d         # Start all services
+#   docker compose down          # Stop all services
+#   docker compose logs -f       # Follow logs
+#
+# Integration Pattern:
+#
+#   1. Configure .env file with environment-specific values
+#   2. Run docker compose up -d to start services
+#   3. Use docker compose logs to monitor
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Configuration file - compose errors stop service creation, no runtime blocking]
+#
+# # Health Scoring
+#
+# Configuration Impact: [How misconfigurations affect system health]
+#
+# Validation Behavior:
+#   - Invalid value: [What happens - error? fallback to default?]
+#   - Missing section: [What happens - error? use defaults?]
+#   - Type mismatch: [What happens - parse error? coercion?]
+#
+# -----------------------------------------------------------------------------
+# METADATA Omission Guide
+# -----------------------------------------------------------------------------
+#
+# Tier 1 (CORE IDENTITY): Never omit - every file needs these.
+#
+# Tier 2 (INTERFACE): May omit with [OMIT: reason] notation.
+#   - Dependencies: Required - documents Docker/Compose versions and images
+#   - Usage & Integration: Required - shows docker compose commands
+#
+# Tier 3 (OPERATIONAL): Include when applicable to file type.
+#   - Blocking Status: [OMIT: Configuration file - errors stop compose up]
+#   - Health Scoring: Include if services have HEALTHCHECK configurations
+#
+# Unlike SETUP (all sections required), METADATA omission signals component characteristics.
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# SETUP
+# =============================================================================
+#
+# For SETUP structure explanation, see: standards/code/4-block/CWS-STD-006-CODE-setup-block.md
+#
+# -----------------------------------------------------------------------------
+# SETUP Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. FILE IDENTITY (Dependencies)
+#    Purpose: Establish what consumes this compose file and how it's loaded
+#    Subsections: Consumer → Loader → Specification Version
+#
+# 2. CONSTANTS
+#    [Reserved: Compose files define constants inline via x-* extensions in BODY]
+#
+# 3. VARIABLES
+#    [Reserved: Environment variables use ${VAR:-default} syntax inline in BODY]
+#
+# 4. RELATED FILES (Types)
+#    Purpose: Document related configuration files
+#    Subsections: Environment → Dockerfiles → Configuration
+#
+# 5. TYPE BEHAVIORS
+#    [Reserved: Service behaviors defined inline via healthcheck/command in BODY]
+#
+# 6. USAGE/BEHAVIOR (Rails Infrastructure)
+#    Purpose: How this compose file is consumed
+#    Subsections: Compose Commands → Environment Loading → Service Management
+#
+# Section order: File Identity → [Reserved] → [Reserved] → Related Files → [Reserved] → Usage/Behavior
+# This flows: what uses this → (constants inline) → (variables inline) → related files → (behaviors inline) → how it's used
+#
+# Universal mapping (see standards for cross-language patterns):
+#   File Identity ≈ Dependencies (who consumes this)
+#   Constants ≈ Constants [Reserved: x-* anchors defined in BODY]
+#   Variables ≈ Variables [Reserved: ${VAR} substitution in BODY]
+#   Related Files ≈ Types (what files relate to this)
+#   Type Behaviors ≈ Type Methods [Reserved: healthcheck/command in BODY]
+#   Usage/Behavior ≈ Package-Level State (compose commands)
+#
+# -----------------------------------------------------------------------------
+# File Identity (Dependencies)
+# -----------------------------------------------------------------------------
+#
+# Key: [PROJECT]-COMPOSE-### (unique identifier for this compose file)
+# Consumer: Docker Compose CLI (docker compose / docker-compose)
+# Loader: Docker Compose YAML parser (Compose Specification)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Constants
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Docker Compose defines reusable constants via x-* extension fields
+#  and YAML anchors (&name). These are placed in BODY because they're typically
+#  defined alongside the services that reference them (*name).]
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Variables
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Docker Compose supports environment variable substitution via
+#  ${VAR} and ${VAR:-default} syntax. Variables are interpolated inline in
+#  service definitions in BODY, not as separate declarations.]
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Related Files (Types)
+# -----------------------------------------------------------------------------
+#
+# Environment:
+#   - .env: Default environment variables (auto-loaded by compose)
+#   - .env.local: Local overrides (typically gitignored)
+#
+# Dockerfiles:
+#   - Dockerfile: Build context for services with build: directive
+#   - docker/*.dockerfile: Multi-dockerfile projects
+#
+# Configuration:
+#   - Config files mounted via volumes: directive
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Type Behaviors
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Docker Compose defines service behaviors via:
+#   - healthcheck: Health monitoring configuration
+#   - command: Container startup command
+#   - entrypoint: Container entrypoint override
+#  These are defined inline with each service in BODY.]
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Usage/Behavior (Rails Infrastructure)
+# -----------------------------------------------------------------------------
+#
+# Compose Commands:
+#   docker compose up -d         # Start all services (detached)
+#   docker compose down          # Stop and remove containers
+#   docker compose logs -f       # Follow service logs
+#   docker compose config        # Validate and view merged config
+#
+# Environment Loading:
+#   Shell environment → docker compose run -e → environment: → .env file
+#   (Priority: highest to lowest)
+#
+# Service Management:
+#   docker compose ps            # List running services
+#   docker compose exec [svc] sh # Shell into running service
+#   docker compose up -d --build # Rebuild and restart
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SETUP Omission Guide
+# -----------------------------------------------------------------------------
+#
+# Unlike METADATA (where sections can be omitted with [OMIT: reason]),
+# ALL six SETUP sections must be present for structural alignment.
+#
+# If a section has no content for this file:
+#   - Keep the section header
+#   - Add [Reserved: reason] comment explaining why empty
+#   - This maintains the 6-section structure across all templates
+#
+# Docker Compose-specific guidance:
+#   - File Identity: Always required (key, consumer, loader)
+#   - Constants: [Reserved: x-* extensions and anchors in BODY]
+#   - Variables: [Reserved: ${VAR} substitution inline in BODY]
+#   - Related Files: Required - documents .env and Dockerfiles
+#   - Type Behaviors: [Reserved: healthcheck/command in services]
+#   - Usage/Behavior: Required - shows docker compose commands
+#
+# The goal is structural consistency - every CONFIG template has the same
+# 6-section SETUP structure, making navigation and understanding predictable.
+# =============================================================================
+
+# =============================================================================
+# END SETUP
+# =============================================================================
+
+# =============================================================================
+# BODY
+# =============================================================================
+#
+# For BODY structure explanation, see: standards/code/4-block/CWS-STD-007-CODE-body-block.md
+#
+# -----------------------------------------------------------------------------
+# BODY Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. CONFIGURATION STRUCTURE MAP (Internal Organization)
+#    Purpose: Document the Compose specification structure and YAML conventions
+#    Subsections: Spec Structure → YAML Features → Hierarchy Overview
+#
+# 2. HELPERS/UTILITIES
+#    [Reserved: Declarative config - Compose files don't have helper functions.
+#     Reusable patterns use x-* extensions and YAML anchors in content.]
+#
+# 3. CONFIGURATION CONTENT (Core Data)
+#    Purpose: The actual Docker Compose specification elements
+#    Subsections: services → networks → volumes → x-* extensions
+#
+# 4. ERROR HANDLING
+#    [Reserved: Declarative config - docker compose validates at parse time.
+#     Errors are reported by 'docker compose config' command.]
+#
+# 5. PUBLIC INTERFACE
+#    [Reserved: Declarative config - exposed interface (ports, networks) is
+#     defined inline within service definitions in Configuration Content.]
+#
+# Section order: Configuration Structure Map → [Reserved] → Content → [Reserved] → [Reserved]
+# This flows: how it's organized → (no helpers) → what it does → (compose validates) → (interface inline)
+#
+# Universal mapping (see standards for cross-language patterns):
+#   Configuration Structure Map ≈ Organizational Chart (internal structure)
+#   Helpers/Utilities ≈ Helper Functions [Reserved: x-* extensions inline]
+#   Configuration Content ≈ Core Operations (primary functionality)
+#   Error Handling ≈ Error Handling [Reserved: compose config validates]
+#   Public Interface ≈ Public APIs [Reserved: ports/networks inline]
+#
+# -----------------------------------------------------------------------------
+# 1. Configuration Structure Map (Internal Organization)
+# -----------------------------------------------------------------------------
+#
+# Docker Compose Specification Structure:
+#   - services: Container definitions (required)
+#   - networks: Network definitions (optional)
+#   - volumes: Volume definitions (optional)
+#   - configs: Config definitions (optional, Swarm mode)
+#   - secrets: Secret definitions (optional, Swarm mode)
+#   - x-*: Extension fields for anchors/aliases (optional)
+#
+# YAML Features Used:
+#   - Key-value pairs: key: value
+#   - Nested objects: indent with 2 spaces
+#   - Arrays: - item (with dash prefix)
+#   - Anchors: &name to define, *name to reference
+#   - Environment variable substitution: ${VAR} or ${VAR:-default}
+#
+# Hierarchy Overview:
+#   services:           (top-level - container definitions)
+#     [service-name]:   (service-level - individual container)
+#       image/build:    (required - what to run)
+#       environment:    (optional - env vars)
+#       ports:          (optional - exposed ports)
+#       volumes:        (optional - data mounts)
+#       networks:       (optional - network connections)
+#       depends_on:     (optional - startup order)
+#
+# -----------------------------------------------------------------------------
+# 2. Helpers/Utilities
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Docker Compose files are declarative YAML configuration.
+#  There are no helper functions - reusable patterns are achieved through:
+#  - x-* extension fields (anchors for shared values)
+#  - YAML aliases (*name references &name)
+#  - Environment variable substitution (${VAR:-default})
+#  These are defined inline in Configuration Content (Section 3).]
+#
+# -----------------------------------------------------------------------------
+# 3. Configuration Content (Core Data)
+# -----------------------------------------------------------------------------
+#
+# Services - Container Definitions
+# -----------------------------------------------------------------------------
+# Each service defines a container to run. Services can depend on each other,
+# share networks, and mount volumes.
+
+services:
+  # [service-name]: Brief description of what this service does
+  # Example: API server, database, worker, etc.
+  [service-name]:
+    # Container image to use
+    # Format: image:tag or build context
+    image: "[image-name]:[tag]"
+    # OR build from Dockerfile:
+    # build:
+    #   context: [path/to/build/context]
+    #   dockerfile: [Dockerfile name if not default]
+
+    # Container name (optional - Docker generates if not specified)
+    container_name: "[container-name]"
+
+    # Environment variables
+    # Can use ${VAR} for host environment variable substitution
+    environment:
+      - "[VAR_NAME]=[value]"
+      - "[ANOTHER_VAR]=${HOST_VAR:-default_value}"
+
+    # Port mappings (host:container)
+    ports:
+      - "[host-port]:[container-port]"
+
+    # Volume mounts (host:container or named-volume:container)
+    volumes:
+      - "[host-path]:[container-path]"
+      - "[volume-name]:[container-path]"
+
+    # Network connections
+    networks:
+      - [network-name]
+
+    # Service dependencies (start order)
+    depends_on:
+      - [other-service-name]
+
+    # Restart policy: no, always, on-failure, unless-stopped
+    restart: unless-stopped
+
+    # Health check (optional)
+    healthcheck:
+      test: ["CMD", "[command]", "[args]"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # -----------------------------------------------------------------------------
+  # Additional Service Example
+  # -----------------------------------------------------------------------------
+  # [another-service]:
+  #   image: "[image]:[tag]"
+  #   depends_on:
+  #     - [service-name]
+
+# -----------------------------------------------------------------------------
+# Networks - Network Definitions
+# -----------------------------------------------------------------------------
+# Define custom networks for service communication.
+# Services on the same network can communicate by service name.
+
+networks:
+  [network-name]:
+    driver: bridge  # bridge, host, overlay, macvlan, none
+    # Optional: external network (not managed by Compose)
+    # external: true
+
+# -----------------------------------------------------------------------------
+# Volumes - Persistent Storage Definitions
+# -----------------------------------------------------------------------------
+# Define named volumes for data persistence across container restarts.
+
+volumes:
+  [volume-name]:
+    driver: local
+    # Optional: external volume (not managed by Compose)
+    # external: true
+
+# -----------------------------------------------------------------------------
+# Anchors and Aliases - Reusable Configuration
+# -----------------------------------------------------------------------------
+# Use anchors (&) to define reusable values, aliases (*) to reference them.
+# Useful for shared environment variables, logging config, etc.
+
+x-common-env: &common-env
+  TZ: "UTC"
+  LOG_LEVEL: "info"
+
+x-logging: &default-logging
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+# Usage in service:
+# [service-name]:
+#   environment:
+#     <<: *common-env
+#   <<: *default-logging
+
+# -----------------------------------------------------------------------------
+# 4. Error Handling
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Docker Compose files validate at parse time.
+#  The 'docker compose config' command validates syntax and schema:
+#  - YAML syntax errors (indentation, invalid characters)
+#  - Schema violations (unknown keys, wrong types)
+#  - Reference errors (missing images, networks, volumes)
+#  No programmatic error handling needed - the compose CLI handles it.]
+#
+# -----------------------------------------------------------------------------
+# 5. Public Interface
+# -----------------------------------------------------------------------------
+#
+# [Reserved: The public interface of a Compose configuration is defined inline:
+#  - ports: Exposes container ports to the host
+#  - networks: Connects services to each other
+#  - environment: Configures service behavior
+#  These are part of Configuration Content (Section 3) because they're
+#  integral to each service definition, not separate exports.]
+#
+# -----------------------------------------------------------------------------
+# BODY Omission Guide
+# -----------------------------------------------------------------------------
+#
+# Unlike METADATA (where sections can be omitted with [OMIT: reason]),
+# ALL five BODY sections must be present for structural alignment.
+#
+# If a section has no content for this file:
+#   - Keep the section header
+#   - Add [Reserved: reason] comment explaining why empty
+#   - This maintains the 5-section structure across all templates
+#
+# Docker Compose-specific guidance:
+#
+#   1. Configuration Structure Map: Required - documents spec structure and YAML conventions
+#   2. Helpers/Utilities: [Reserved: declarative config - x-* extensions inline]
+#   3. Configuration Content: Required - services, networks, volumes definitions
+#   4. Error Handling: [Reserved: docker compose config validates]
+#   5. Public Interface: [Reserved: ports/networks defined inline in services]
+#
+# The goal is structural consistency - every CONFIG template has the same
+# 5-section BODY structure, making navigation and understanding predictable.
+#
+# =============================================================================
+# END BODY
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# For CLOSING structure explanation, see: standards/code/4-block/CWS-STD-008-CODE-closing-block.md
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview
+# -----------------------------------------------------------------------------
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ GROUP 1: VALIDATION (Parse-time concerns)                                   │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │ 1. Validation           │ How to verify Compose configuration correctness   │
+# │ 2. Execution Commands   │ [Reserved: in SETUP - Usage/Behavior section]     │
+# │ 3. Cleanup              │ [Reserved: 'docker compose down' handles cleanup] │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │ GROUP 2: FINAL DOCUMENTATION (Reference sections)                           │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │ 4. Performance          │ [Reserved: depends on services - document per-svc]│
+# │ 5. Security             │ Security considerations for compose configurations│
+# │ 6. Dependencies         │ [Reserved: in METADATA - Dependencies section]    │
+# │ 7. Integration          │ Environment integration and related file guidance │
+# │ 8. Known Issues         │ [Reserved: template - no known issues to document]│
+# │ 9. Changelog            │ [Reserved: in METADATA - Version History]         │
+# │10. See Also             │ [Reserved: in METADATA - references]              │
+# │11. Modification Policy  │ What's safe to modify, what requires care         │
+# │12. Closing Note         │ Final guidance and biblical connection            │
+# │13. Attribution          │ [Reserved: in METADATA - Authorship section]      │
+# └─────────────────────────────────────────────────────────────────────────────┘
+#
+# Section order follows VALIDATION → DOCUMENTATION flow:
+#   Validation → [Reserved] → [Reserved] → [Reserved] → Security →
+#   [Reserved] → Integration → [Reserved] → [Reserved] → [Reserved] →
+#   Modification Policy → Closing Note → [Reserved]
+#
+# Universal mapping (see standards for cross-language patterns):
+#   Validation ≈ Validation (verify correctness)
+#   Execution Commands ≈ Execution [Reserved: in SETUP]
+#   Cleanup ≈ Cleanup [Reserved: docker compose down]
+#   Performance ≈ Performance [Reserved: per-service]
+#   Security ≈ Security Considerations
+#   Dependencies ≈ Dependencies [Reserved: in METADATA]
+#   Integration ≈ Integration Notes
+#   Known Issues ≈ Known Issues [Reserved: template]
+#   Changelog ≈ Changelog [Reserved: in METADATA]
+#   See Also ≈ See Also [Reserved: in METADATA]
+#   Modification Policy ≈ Modification Policy
+#   Closing Note ≈ Closing Note
+#   Attribution ≈ Attribution [Reserved: in METADATA]
+#
+# =============================================================================
+# GROUP 1: VALIDATION
+# =============================================================================
+#
+# -----------------------------------------------------------------------------
+# 1. Validation (Configuration Validation)
+# -----------------------------------------------------------------------------
+#
+# Verify Docker Compose configuration is correctly formatted and valid:
+#
+#   # Syntax and schema validation (Docker Compose built-in)
+#   docker compose config
+#   docker compose config --quiet  # Silent check, exit code only
+#
+#   # YAML syntax check (optional, for IDE integration)
+#   yamllint docker-compose.yaml
+#
+#   # Dry run (validates without starting)
+#   docker compose up --dry-run
+#
+# Common Issues:
+#
+#   "service ... has neither an image nor a build context" - Add image: or build:
+#   "mapping values not allowed" - Check indentation (must be consistent)
+#   "found character that cannot start" - Check for tabs (use spaces only)
+#   "network ... is external, and cannot be created" - Create network first
+#   "volume ... is external, and cannot be created" - Create volume first
+#
+# -----------------------------------------------------------------------------
+# 2. Execution Commands
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Execution commands are documented in SETUP - Usage/Behavior section.
+#  This avoids duplication and keeps execution information in one place.
+#  See SETUP for: docker compose up, down, logs, config commands.]
+#
+# -----------------------------------------------------------------------------
+# 3. Cleanup
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Docker Compose handles cleanup through 'docker compose down':
+#  - 'docker compose down' stops and removes containers, networks
+#  - 'docker compose down -v' also removes volumes
+#  - 'docker compose down --rmi all' also removes images
+#  No explicit cleanup section needed - the compose CLI handles it.]
+#
+# =============================================================================
+# GROUP 2: FINAL DOCUMENTATION
+# =============================================================================
+#
+# -----------------------------------------------------------------------------
+# 4. Performance Considerations
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Performance in Docker Compose depends on individual services.
+#  Document performance considerations per-service in BODY Configuration Content:
+#  - Resource limits (deploy.resources.limits)
+#  - Health check intervals (healthcheck.interval)
+#  - Restart policies (restart: unless-stopped)
+#  Template cannot provide generic performance guidance.]
+#
+# -----------------------------------------------------------------------------
+# 5. Security Considerations
+# -----------------------------------------------------------------------------
+#
+# Container security best practices for Compose configurations:
+#
+#   ✅ Use specific image tags (not :latest)
+#   ✅ Run as non-root user (user: "1000:1000")
+#   ✅ Use read-only filesystems where possible (read_only: true)
+#   ✅ Limit capabilities (cap_drop: [ALL])
+#   ✅ Don't expose sensitive ports to host unnecessarily
+#   ✅ Use secrets for sensitive data (not environment variables)
+#
+#   Consider adding:
+#   - Security contexts (security_opt)
+#   - Resource limits (deploy.resources.limits)
+#   - Network isolation (internal networks)
+#
+# -----------------------------------------------------------------------------
+# 6. Dependencies
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Dependencies are documented in METADATA - Dependencies section.
+#  This avoids duplication. See METADATA for: Docker Engine version,
+#  Compose version, base images, and what uses this configuration.]
+#
+# -----------------------------------------------------------------------------
+# 7. Integration Notes (Environment Integration)
+# -----------------------------------------------------------------------------
+#
+# Docker Compose integrates with environment variables in multiple ways:
+#
+#   1. Shell environment: Automatically available via ${VAR}
+#   2. .env file: Loaded from same directory as compose file
+#   3. env_file directive: Load from specified file(s)
+#   4. environment directive: Set directly in compose file
+#
+# Priority (highest to lowest):
+#   Shell environment > docker compose run -e > environment directive > .env file
+#
+# Default Value Patterns:
+#   ${VAR:-default}  # Use 'default' if VAR unset or empty
+#   ${VAR-default}   # Use 'default' if VAR unset
+#
+# Common Commands:
+#   docker compose up -d         # Start all services
+#   docker compose down          # Stop all services
+#   docker compose logs -f       # View logs (follow)
+#   docker compose up -d --build # Rebuild and restart
+#   docker compose up -d --scale [service]=3  # Scale service
+#
+# This Docker Compose configuration:
+#   - Uses Docker Compose Specification (v3.x compatible)
+#   - Comments use # (to end of line)
+#   - Indentation: 2 spaces (no tabs)
+#   - Processed by: docker compose CLI
+#
+# -----------------------------------------------------------------------------
+# 8. Known Issues
+# -----------------------------------------------------------------------------
+#
+# [Reserved: This is a template file - no known issues to document.
+#  When implementing for a specific project, document any known issues
+#  with service startup order, network conflicts, or volume permissions.]
+#
+# -----------------------------------------------------------------------------
+# 9. Changelog
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Version history is documented in METADATA - Authorship section.
+#  This avoids duplication and keeps version information in one place.]
+#
+# -----------------------------------------------------------------------------
+# 10. See Also
+# -----------------------------------------------------------------------------
+#
+# [Reserved: References are documented in METADATA header and SETUP.
+#  See: standards/code/4-block/ for documentation standards
+#  See: https://docs.docker.com/compose/ for Compose reference]
+#
+# -----------------------------------------------------------------------------
+# 11. Modification Policy
+# -----------------------------------------------------------------------------
+#
+# Safe to Modify:
+#   ✅ Change values within documented valid ranges
+#   ✅ Add new keys (if schema/code supports them)
+#   ✅ Add comments for clarity
+#   ✅ Reorder keys (YAML is generally order-independent)
+#
+# Modify with Care:
+#   ⚠️ Changing key names (breaks code references)
+#   ⚠️ Changing indentation (affects hierarchy)
+#   ⚠️ Removing keys (may cause null/missing errors)
+#   ⚠️ Changing anchors (affects all aliases)
+#
+# NEVER Modify:
+#   ❌ 4-block documentation structure
+#   ❌ Required keys without updating consumer code
+#   ❌ Mix tabs and spaces (YAML requires consistent spacing)
+#
+# -----------------------------------------------------------------------------
+# 12. Closing Note
+# -----------------------------------------------------------------------------
+#
+# This configuration orchestrates [describe services/purpose].
+# Changes affect container deployment, networking, and data persistence.
+#
+# Docker Compose embodies the Kingdom principle of orchestration - each service
+# serves its purpose, networks enable communication, and the whole is greater
+# than the sum of its parts. Like a body with many members, each container
+# contributes to the functioning of the complete system.
+#
+# "[Relevant Scripture verse]" - [Reference]
+#
+# "For as the body is one, and hath many members, and all the members of that
+# one body, being many, are one body: so also is Christ." - 1 Corinthians 12:12
+#
+# -----------------------------------------------------------------------------
+# 13. Attribution
+# -----------------------------------------------------------------------------
+#
+# [Reserved: Attribution is documented in METADATA - Authorship section.
+#  This avoids duplication. See METADATA for: Architect, Implementation,
+#  Created date, Version, and Version History.]
+#
+# -----------------------------------------------------------------------------
+# CLOSING Omission Guide
+# -----------------------------------------------------------------------------
+#
+# Unlike METADATA (where sections can be omitted with [OMIT: reason]),
+# ALL thirteen CLOSING sections must be present for structural alignment.
+#
+# If a section has no content for this file:
+#   - Keep the section header
+#   - Add [Reserved: reason] comment explaining why empty
+#   - This maintains the 13-section structure across all templates
+#
+# Docker Compose-specific guidance:
+#
+# GROUP 1: VALIDATION
+#   1. Validation: Required - docker compose config and common issues
+#   2. Execution Commands: [Reserved: in SETUP - Usage/Behavior section]
+#   3. Cleanup: [Reserved: docker compose down handles cleanup]
+#
+# GROUP 2: FINAL DOCUMENTATION
+#   4. Performance: [Reserved: depends on services - document per-service]
+#   5. Security: Required - container security best practices
+#   6. Dependencies: [Reserved: in METADATA - Dependencies section]
+#   7. Integration: Required - environment integration and commands
+#   8. Known Issues: [Reserved: template - no known issues]
+#   9. Changelog: [Reserved: in METADATA - Version History]
+#  10. See Also: [Reserved: in METADATA - references]
+#  11. Modification Policy: Required - safe/careful/never modify guidance
+#  12. Closing Note: Required - final guidance and biblical connection
+#  13. Attribution: [Reserved: in METADATA - Authorship section]
+#
+# The goal is structural consistency - every CONFIG template has the same
+# 13-section CLOSING structure, making navigation and understanding predictable.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

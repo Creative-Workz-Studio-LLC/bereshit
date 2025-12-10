@@ -1,0 +1,564 @@
+#!omni universal
+
+// ═══════════════════════════════════════════════════════════════════════════
+// OMNICODE UNIVERSAL TEMPLATE
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// This is the UNIVERSAL TEMPLATE - the foundation from which all OmniCode
+// templates derive. It documents the patterns common to ALL OmniCode files
+// regardless of their specific type.
+//
+// WHAT STARTS MUST END: All OmniCode files have METADATA and CLOSING blocks.
+// The MIDDLE varies by type and purpose.
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TEMPLATE SELECTION GUIDE
+// ═══════════════════════════════════════════════════════════════════════════
+
+/*
+ * WORD / WORK / FRUIT - CHOOSING YOUR TEMPLATE
+ *
+ * Based on Genesis 1 creation pattern:
+ *   "God said" (declaration) → "It was so" (implementation) → "God saw good" (evaluation)
+ *
+ * ┌─────────────┬─────────┬────────────────┬────────────────────────────────┐
+ * │ CATEGORY    │ BLOCKS  │ TEMPLATE       │ USE WHEN                       │
+ * ├─────────────┼─────────┼────────────────┼────────────────────────────────┤
+ * │ WORD (1)    │ 3-block │ interface.omni │ Pure declaration - contracts,  │
+ * │             │         │                │ type definitions, APIs         │
+ * ├─────────────┼─────────┼────────────────┼────────────────────────────────┤
+ * │ WORK (0)    │ 4-block │ code.omni      │ Implementation - executables,  │
+ * │             │         │                │ libraries, business logic      │
+ * ├─────────────┼─────────┼────────────────┼────────────────────────────────┤
+ * │ FRUIT (-1)  │ 5-block │ documentation  │ Presentation - docs, guides,   │
+ * │             │         │                │ references for human readers   │
+ * └─────────────┴─────────┴────────────────┴────────────────────────────────┘
+ *
+ * DATA spans all three (adapts to complexity):
+ *   • 3-block (data-3block.omni) - Simple data: config, settings
+ *   • 4-block (data-4block.omni) - Structured data: databases, records
+ *   • 5-block (data-5block.omni) - Documented data: specs, dictionaries
+ *
+ * AVAILABLE TEMPLATES (in bereshit/word/omni/seed/):
+ *
+ *   B-word-omni-seed-universal.omni      - Universal template (this file)
+ *   B-word-omni-seed-code.omni           - 4-block executable/library code
+ *   B-word-omni-seed-data-3block.omni    - 3-block simple data
+ *   B-word-omni-seed-data-4block.omni    - 4-block structured data
+ *   B-word-omni-seed-data-5block.omni    - 5-block documented data
+ *   B-word-omni-seed-interface.omni      - 3-block interface/contracts
+ *   B-word-omni-seed-folder.omni         - 3-block folder metadata
+ *   B-word-omni-seed-documentation.omni  - 5-block documentation
+ *
+ * FORMAT-SPECIFIC TEMPLATES (in bereshit/word/seed/):
+ *
+ *   documentation/B-word-seed-doc-asciidoc-base.adoc  - AsciiDoc 5-block
+ *   go/B-word-seed-go-executable.go                   - Go 4-block executable
+ *   go/B-word-seed-go-library.go                      - Go 4-block library
+ *   config/B-word-seed-config-makefile.mk             - Makefile configuration
+ *
+ *   These format-specific templates DERIVE FROM their OmniCode parent templates.
+ *   They implement OmniCode structure in their native format syntax.
+ *
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FORMAT FLAGS (OmniCode Stepping Down)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// OmniCode can "step down" to any format while maintaining structure awareness.
+// Format flags declare the target format in the pragma:
+//
+//   #!omni [type] --[format]
+//
+// EXAMPLES:
+//   #!omni universal          // Foundation files (syntax spec & universal template)
+//   #!omni template --omni    // Pure OmniCode (default)
+//   #!omni template --adoc    // AsciiDoc following OmniCode structure
+//   #!omni template --go      // Go following OmniCode structure
+//   #!omni documentation --adoc  // OmniCode-aware AsciiDoc documentation
+//   #!omni documentation --md    // OmniCode-aware Markdown documentation
+//   #!omni data --json        // OmniCode-structured JSON data
+//
+// TEMPLATE INHERITANCE CHAIN:
+//
+//   OmniCode Template (bereshit/word/omni/seed/)
+//         ↓ defines structure
+//   Format Template (bereshit/word/seed/[format]/)
+//         ↓ implements in format
+//   Actual Document (bereshit/[content]/)
+//         ↓ contains real content
+//
+// MAPPING DECLARATION:
+//   Format templates declare their parent in METADATA:
+//     derives_from: "bereshit/word/omni/seed/B-word-omni-seed-[type].omni"
+//
+// KEY PRINCIPLE:
+//   OmniCode steps DOWN (translates patterns to formats)
+//   Formats step UP (implement OmniCode standards in native syntax)
+//   The pragma + flag enables this bidirectional relationship
+//
+// FORMAT DEFINITIONS (Executable Specification):
+//   The actual transpiler mappings are defined in the syntax spec:
+//     → bereshit/word/omni/B-word-omni-syntax.omni
+//     → See "FORMAT DEFINITIONS (Transpiler Specification)" section
+//
+//   Format definitions use this syntax:
+//
+//     format definitions:
+//         format "[name]" for [pragma-type]:
+//             file extension "[.ext]"
+//             pragma placement "[where]"
+//
+//             pragma mappings:
+//                 "[omni-syntax]" translates to:
+//                     [target-format output instructions]
+//
+//             metadata mappings:
+//                 "[omni-field]" translates to "[target-attribute]"
+//
+//             [block] mappings:
+//                 "[omni-section]" translates to:
+//                     "[field]" → "[target-syntax]"
+//
+//   This is EXECUTABLE SPECIFICATION - the transpiler reads this syntax
+//   to perform the actual conversion between formats.
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// METADATA (UNIVERSAL)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// The METADATA block is UNIVERSAL - all OmniCode files have it.
+// It establishes identity, grounding, and operational context.
+//
+// Structure (8-rung ladder):
+//   1. Preamble - pragma, keying, classification, derivation
+//   2. Core Identity - grounding, role, authorship, purpose
+//   3. Interface - dependencies, integration points
+//   4. Operational Context - blocking, health scoring
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+this is a template for "OmniCode Universal":
+    keyed as "B-word-omni-seed-universal"
+    following "Universal Pattern"
+
+this template classifies as:
+    word (1) when "pure declaration - interface, contract, type definition"
+    work (0) when "implementation - executable code, library, business logic"
+    fruit (-1) when "presentation - documentation, reference, guide"
+
+this template derives from:
+    original (1) when "establishing universal OmniCode pattern"
+    derived (0) from "B-word-omni-syntax"
+    variant (-1) when "intentionally departing from syntax spec"
+    documented at "bereshit/word/omni/B-word-omni-syntax.omni"
+
+this template strictness is:
+    tight (1) meaning "Follow exactly - structural blocks, required sections"
+    guided (0) meaning "Adapt thoughtfully - content within structure"
+    free (-1) meaning "Principles only - teaching comments, examples"
+
+to use this template:
+    reference for understanding OmniCode patterns
+    all other templates derive from this universal foundation
+    do not copy directly - use specific templates for your file type
+
+    meaning "Universal foundation - the patterns all OmniCode files share"
+    teaching "METADATA and CLOSING are universal; MIDDLE varies by type"
+
+/*
+ * PREAMBLE GUIDANCE
+ *
+ * Every OmniCode file starts with:
+ *
+ *   #!omni [type]              - Pragma declaring file type
+ *                                 Types: code, interface, data, documentation, template
+ *
+ *   this is a [type] for "[Name]":
+ *       keyed as "[KEY]"        - Unique identifier (see keying standard)
+ *       following "[Structure]" - Which block structure it follows
+ *
+ *   this [type] classifies as:  - Ternary classification relevant to type
+ *       [positive] (1) when "[condition]"
+ *       [neutral] (0) when "[condition]"
+ *       [negative] (-1) when "[condition]"
+ *
+ *   this [type] derives from:   - Lineage and documentation
+ *       original (1) when "[condition]"
+ *       derived (0) from "[source]"
+ *       variant (-1) when "[condition]"
+ *       documented at "[path]"
+ *
+ *   to use this template:       - Only in template files
+ *       [instructions]
+ *
+ *       meaning "[What this template produces]"
+ *       teaching "[Key lesson this template demonstrates]"
+ *
+ */
+
+// ───────────────────────────────────────────────────────────────────────────
+
+core identity of this [type]:
+
+    /*
+     * GROUNDED IN - Biblical foundation (required for all OmniCode files)
+     *
+     * Every file is grounded in:
+     *   scripture - Primary verse establishing purpose
+     *   principle - Kingdom principle demonstrated
+     *   anchor - Supporting verse reinforcing principle
+     */
+    grounded in:
+        scripture "[Relevant verse grounding this file's purpose]"
+            from [Book Chapter:Verse] in [KJV/WEB]
+        principle "[Kingdom principle this file demonstrates]"
+        anchor "[Supporting verse reinforcing the principle]"
+            from [Book Chapter:Verse] in [KJV/WEB]
+
+    /*
+     * SERVES AS - Role in system architecture
+     *
+     * For CODE: Ladder/Baton/Rails (architectural position)
+     * For DATA: Data (stored truth)
+     * For INTERFACE: Word (declaration)
+     * For DOCUMENTATION: Fruit (presentation)
+     */
+    serves as [Role]:
+        role "[Specific responsibility in system/architecture]"
+        paradigm "CPI-SI framework"
+
+    /*
+     * AUTHORED BY - Attribution and versioning
+     */
+    authored by:
+        architect "[Who designed the approach/structure]"
+        implementation "[Who created the content]"
+        created [YYYY-MM-DD]
+        version [MAJOR.MINOR.PATCH]
+        modified [YYYY-MM-DD] for "[what changed]"
+
+    /*
+     * EXISTS TO - Purpose and features
+     */
+    exists to:
+        purpose "[What problem does this file solve?]"
+        design "[Architectural pattern or paradigm]"
+        philosophy "[Guiding principle for this file]"
+        features:
+            "[Major capability 1]"
+            "[Major capability 2]"
+            "[Major capability 3]"
+
+interface of this [type]:
+
+    /*
+     * DEPENDS ON - Dependencies and relationships
+     *
+     * The ternary pattern: requires/includes/excludes
+     */
+    depends on:
+        requires (1) "[dependency]" for "[purpose]"
+        includes (0) "[optional]" for "[optional purpose]"
+        excludes (-1) "[conflict]" because "[conflict reason]"
+        used by "[What consumes this file]"
+        integrates with "[Cross-component relationships]"
+
+    /*
+     * INTEGRATED AS - How this file is used
+     *
+     * Varies by type:
+     *   CODE: command invocation, exit codes
+     *   DATA: import, field access
+     *   INTERFACE: implementation, verification
+     *   DOCUMENTATION: reading, reference
+     */
+    integrated as:
+        [usage pattern] "[how to use]" for "[purpose]"
+        exits [positive] (1) for "[success condition]"
+        exits [neutral] (0) for "[partial condition]"
+        exits [negative] (-1) for "[failure condition]"
+
+operational context of this [type]:
+
+    /*
+     * BLOCKING - Does this file block operations?
+     *
+     *   yes (1) - Operations wait for this
+     *   conditional (0) - Depends on circumstance
+     *   no (-1) - Non-blocking/declarative
+     */
+    blocking:
+        [yes (1) / conditional (0) / no (-1)] because "[brief explanation]"
+        mitigation "[how issues are handled]"
+
+    /*
+     * HEALTH - Base100 health scoring (universal)
+     *
+     * All OmniCode files can be health-scored on -100 to +100 scale.
+     * Specific operations and weights vary by file type.
+     */
+    health:
+        system Base100 with scale from -100 to +100
+        granted (1) above +50 meaning "[healthy state]"
+        deferred (0) within ±50 meaning "[needs attention]"
+        denied (-1) below -50 meaning "[broken state]"
+
+        operations:
+            "[operation name]" scores +[X] (1) for "[success reason]"
+            "[operation name]" scores 0 (0) for "[neutral reason]"
+            "[operation name]" scores -[X] (-1) for "[failure reason]"
+
+        cascade multipliers:
+            "[category]" multiplies by [X] because "[rationale]"
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END METADATA
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MIDDLE BLOCKS (VARIES BY TYPE)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// The MIDDLE blocks vary based on file type and block count:
+//
+// ┌─────────────────┬───────────┬──────────────────────────────────────────┐
+// │ TYPE            │ BLOCKS    │ MIDDLE STRUCTURE                         │
+// ├─────────────────┼───────────┼──────────────────────────────────────────┤
+// │ Interface       │ 3-block   │ CONTENT (merged declaration)             │
+// │ Simple Data     │ 3-block   │ CONTENT (merged schema+values)           │
+// │ Code            │ 4-block   │ SETUP → BODY                             │
+// │ Structured Data │ 4-block   │ SCHEMA → VALUES                          │
+// │ Documentation   │ 5-block   │ HEADER → CONTEXT → CONTENT               │
+// │ Documented Data │ 5-block   │ HEADER → SCHEMA → VALUES                 │
+// └─────────────────┴───────────┴──────────────────────────────────────────┘
+//
+// For specific middle block structure, see the appropriate template:
+//   • code.omni - SETUP and BODY blocks with tier/section structure
+//   • interface.omni - CONTENT block with defines/exposes
+//   • data-3block.omni - CONTENT block with schema/values merged
+//   • data-4block.omni - SCHEMA and VALUES blocks separate
+//   • data-5block.omni - HEADER, SCHEMA, VALUES blocks
+//   • documentation.omni - HEADER, CONTEXT, CONTENT blocks
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+/*
+ * MIDDLE BLOCKS ARE TYPE-SPECIFIC
+ *
+ * This universal template does not define middle blocks because they
+ * vary significantly by type. Instead, use the appropriate specific
+ * template for your file type.
+ *
+ * The consistent principle: middle blocks contain the SUBSTANCE
+ * of the file - the actual definitions, implementations, or content.
+ * METADATA identifies WHO and WHY. MIDDLE delivers WHAT. CLOSING
+ * validates and synthesizes.
+ *
+ * See B-word-omni-syntax.omni for:
+ *   • Detailed block structures per type
+ *   • FORMAT DEFINITIONS for transpiling to other formats
+ *   • Bidirectional keyword mappings
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLOSING (UNIVERSAL)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// The CLOSING block is UNIVERSAL - all OmniCode files have it.
+// It provides verification, policy, and synthesis.
+//
+// What starts must end. METADATA opens, CLOSING closes.
+//
+// Structure varies slightly by type but always includes:
+//   • OPERATIONS - How to verify/use this file
+//   • POLICY - What can/cannot be changed
+//   • SYNTHESIS - References and closing note
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+operations of this [type]:
+
+    /*
+     * VERIFIED BY - How to validate this file
+     *
+     * Three levels (ternary pattern):
+     *   (1) - Static verification (compile-time, structural)
+     *   (0) - Runtime verification (usage, execution)
+     *   (-1) - Integrity verification (tests, compliance)
+     *
+     * TYPE-SPECIFIC ADAPTATIONS:
+     *   ┌─────────────────┬───────────────┬───────────────┬───────────────┐
+     *   │ TYPE            │ (1)           │ (0)           │ (-1)          │
+     *   ├─────────────────┼───────────────┼───────────────┼───────────────┤
+     *   │ Code            │ build         │ runtime       │ tests         │
+     *   │ Documentation   │ review        │ examples      │ validation    │
+     *   │ Interface       │ syntax        │ implementation│ contracts     │
+     *   │ Data            │ schema        │ values        │ constraints   │
+     *   │ Folder          │ structure     │ contents      │ completeness  │
+     *   └─────────────────┴───────────────┴───────────────┴───────────────┘
+     *
+     *   Universal uses generic names; specialized templates adapt to domain.
+     */
+    verified by:
+        static (1):
+            "[verification command]" producing "[expected result]"
+
+        runtime (0):
+            "[usage verification]" succeeding when "[condition met]"
+
+        integrity (-1):
+            "[issue type]" detected by "[checker/validator]"
+
+    /*
+     * ACCESSED THROUGH - How to use this file
+     *
+     * TYPE-SPECIFIC NAMING:
+     *   ┌─────────────────┬───────────────────┬────────────────────────────────┐
+     *   │ TYPE            │ SECTION NAME      │ PURPOSE                        │
+     *   ├─────────────────┼───────────────────┼────────────────────────────────┤
+     *   │ Code            │ executed through  │ main entry point, exec flow    │
+     *   │ Documentation   │ consumed through  │ reading patterns, comprehension│
+     *   │ Interface       │ implemented via   │ contract fulfillment guidance  │
+     *   │ Data            │ accessed through  │ import/query patterns          │
+     *   │ Folder          │ navigated through │ directory traversal patterns   │
+     *   └─────────────────┴───────────────────┴────────────────────────────────┘
+     *
+     *   Universal uses "accessed through"; specialized templates adapt naming.
+     */
+    accessed through:
+        /*
+         * summary "Access patterns for this [type]"
+         *
+         * [Description of how this file/component is accessed]
+         *
+         * teaching "[Key access pattern principle]"
+         */
+        to access this [type]:
+            meaning "[How users/code interact with this]"
+
+            // Step 1: [First access step]
+            "[command or import]"
+
+            // Step 2: [Second access step]
+            "[usage pattern]" returns "[result type]"
+
+            // Step 3: [Third access step]
+            "[interaction pattern]"
+
+policy of this [type]:
+
+    /*
+     * MODIFICATION - What can be changed (universal)
+     *
+     * Three levels guide safe evolution:
+     *   safe (1) - Can change without breaking things
+     *   careful (0) - May affect consumers, requires care
+     *   never (-1) - Core structure, must not change
+     */
+    modification:
+        safe (1):
+            "[Safe changes - additive, internal]"
+
+        careful (0):
+            "[Careful changes - may affect dependents]"
+
+        never (-1):
+            "[Block structure - do not modify]"
+            "[Core principles - foundational]"
+            "[Type contracts - breaking changes]"
+
+    /*
+     * FUTURE - Roadmap for this file (universal)
+     */
+    future:
+        planned (1):
+            "[Planned enhancement]"
+
+        considered (0):
+            "[Under consideration - uncertain]"
+
+        rejected (-1):
+            "[Known limitation - won't address]"
+
+synthesis of this [type]:
+
+    /*
+     * SYNTHESIS - References to key sections (universal)
+     *
+     * Provides navigation to important parts of the file.
+     * Specific sections vary by type but pattern is consistent.
+     */
+    overview:
+        see "METADATA exists to" for "purpose and philosophy"
+
+    [type-specific sections]:
+        see "[block section]" for "[what it covers]"
+
+    dependencies:
+        see "METADATA interface depends on" for "related components"
+
+    /*
+     * CLOSING NOTE - Final statement (universal)
+     *
+     * Every file ends with:
+     *   role - Architectural position
+     *   impact - What this file affects
+     *   scripture - Closing verse grounding completion
+     */
+    closing note:
+        role "[Architectural role in system]"
+        impact "[What depends on this file]"
+        scripture "[Relevant closing verse]"
+            from [Book Chapter:Verse] in [KJV/WEB]
+
+    /*
+     * QUICK REFERENCE - Common commands (universal)
+     */
+    quick reference:
+        [command type] "[command]"
+        [command type] "[command]"
+        [command type] "[command]"
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END CLOSING
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UNIVERSAL PRINCIPLES
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// These principles apply to ALL OmniCode files:
+//
+// 1. WHAT STARTS MUST END
+//    Every file has METADATA (opening) and CLOSING (closing).
+//    The middle varies, but the frame is universal.
+//
+// 2. TERNARY PATTERN
+//    Sections use three-part classification:
+//      (1) positive/primary/required
+//      (0) neutral/secondary/optional
+//      (-1) negative/tertiary/forbidden
+//
+// 3. BIBLICAL GROUNDING
+//    Every file is grounded in Scripture.
+//    This isn't decoration - it's foundation.
+//
+// 4. HEALTH SCORING
+//    Every file can be health-scored on Base100 (-100 to +100).
+//    Operations map to health impacts.
+//
+// 5. SELF-DOCUMENTATION
+//    Files describe themselves through METADATA and synthesis.
+//    Comments teach, explain, and guide.
+//
+// 6. WORD/WORK/FRUIT
+//    Files serve as Word (declaration), Work (implementation),
+//    or Fruit (presentation). Know which yours is.
+//
+// ═══════════════════════════════════════════════════════════════════════════

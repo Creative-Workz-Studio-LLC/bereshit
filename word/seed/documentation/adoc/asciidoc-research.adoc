@@ -1,0 +1,1153 @@
+////
+#!omni template --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: These are AsciiDoc document attributes - parseable by tools, used in rendering.
+Serves systems (indexing, validation, cross-reference) AND establishes identity.
+This is the "catalog card" - what systems need to know about this document.
+AsciiDoc attributes use :name: value syntax and can be referenced as {name} in content.
+
+Delete these comments when filling in, or keep for the next person.
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY - What IS this document
+//   key: Unique identifier (bereshit keying format: B-folder-domain-name)
+//   title: Document title - clear, descriptive (also sets HTML <title>)
+//   type: Document type (Standard | Guide | Template | Reference | Index | Policy | Specification | Report)
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-seed-doc-asciidoc-research
+:title: [TITLE]
+:type: Research
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE - Where is this in its lifecycle
+//   status: Lifecycle state (Draft | Active | Deprecated | Archived)
+//   version: SemVer X.Y.Z (Major = breaking, Minor = additions, Patch = fixes)
+//   revdate: AsciiDoc built-in revision date (YYYY-MM-DD)
+// ─────────────────────────────────────────────────────────────────────────────
+:status: [STATUS]
+:version: [VERSION]
+:revdate: [DATE]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL - When was this created and updated
+//   created: Creation date YYYY-MM-DD (ISO 8601)
+//   updated: Last update date YYYY-MM-DD (ISO 8601)
+// ─────────────────────────────────────────────────────────────────────────────
+:created: [DATE]
+:updated: [DATE]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION - Who created and maintains this
+//   authors: List of authors with roles - Name1 (Architect), Name2 (Implementation)
+//   author: AsciiDoc built-in primary author name
+//   email: AsciiDoc built-in author email
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: [AUTHORS]
+:author: [AUTHOR]
+:email: [EMAIL]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION - Where does this live in the ternary structure
+//   path: Ternary path /bereshit/word/ | /bereshit/work/ | /bereshit/fruit/
+// ─────────────────────────────────────────────────────────────────────────────
+:path: [PATH]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION - What OmniCode template does this implement
+//   derives_from: Path to parent OmniCode template (establishes mapping)
+//   This enables: validation against parent structure, cascade updates
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/omni/seed/B-word-omni-seed-documentation.omni
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION - How is this categorized for discovery
+//   tags: Categorization tags (template, documentation, standard)
+//   keywords: AsciiDoc built-in document keywords (for HTML meta)
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: [TAGS]
+:keywords: [KEYWORDS]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT - Why does this document exist
+//   purpose: One-line purpose statement ("Enables X for Y" or "Defines X for Y")
+//   description: AsciiDoc built-in document description (for HTML meta)
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: [PURPOSE]
+:description: [DESCRIPTION]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING - What biblical truth anchors this work
+//   biblical_foundation: Scripture reference that grounds this document
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: [SCRIPTURE]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS - How strictly should this template be followed
+//   strictness: T (Tight) = Follow exactly, structure is required
+//               G (Guided) = Adapt thoughtfully, structure is recommended
+//               F (Free) = Principles only, structure is flexible
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS - Document rendering configuration
+//   toc: Table of contents (left | right | auto | preamble)
+//   toclevels: ToC depth (1-5)
+//   sectnums: Enable section numbering
+//   icons: Admonition icons (font = Font Awesome, image = images)
+//   source-highlighter: Code syntax highlighting engine
+//   experimental: Enable kbd:[], menu:[], btn:[]
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK - The Cover
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: What readers see FIRST. The "cover" of your document.
+In 5 seconds, readers should know: What is this? Is it current? Is it for me?
+
+Contains:
+- Title (=): What IS this document (uses {title} attribute)
+- Tagline: What it enables/does (one line)
+- Badges: Visual status indicators (currency, state, type)
+- Grounding quote: Optional mission/purpose connection
+- Quick nav: Optional navigation bar for large documents
+
+This is RENDERED content - visible identity, not just metadata.
+AsciiDoc automatically generates title from = heading or :title: attribute.
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// THINKING: Document title MUST be at document level, not inside blocks.
+// This is required for AsciiDoc to recognize it as the document title.
+[[_top]]
+= {title}
+
+[.text-center]
+--
+// THINKING: Optional logo/image for branded documents
+// image::path/to/logo.png[Logo,120]
+
+*[One-line tagline describing what this enables or does]*
+
+// THINKING: The value proposition. Why does this exist? What does reader get?
+// Pattern: "The [thing] for [purpose]" or "[Verb]ing [outcome]"
+
+// THINKING: Badges provide instant visual status. Adjust colors:
+//   - Status: brightgreen (Active), yellow (Draft), red (Deprecated)
+//   - Version: blue (standard)
+//   - Type: purple, orange, or other distinguishing color
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+
+// THINKING: Optional additional badges
+// image:https://img.shields.io/badge/Type-{type}-purple?style=flat[Type]
+// image:https://img.shields.io/badge/Key-{key}-gray?style=flat[Key]
+
+// THINKING: Optional grounding quote - connects to mission/purpose
+// Use when the document has clear Kingdom significance
+_[Optional: Mission statement or grounding quote connecting to biblical foundation]_
+
+'''
+
+// THINKING: Quick navigation bar - use bullet separators for clean navigation
+// kbd:[] is for keyboard keys (Ctrl+C), NOT for navigation links
+// Link to major sections readers commonly need
+
+*<<overview,Overview>>* • *<<section-1,Section 1>>* • *<<asciidoc-toolkit,Toolkit>>* • *<<references,References>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK - The Introduction
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: What readers need to understand BEFORE the main content.
+Prepares understanding - context before content.
+
+Contains:
+- Overview: Brief description of what this covers
+- Critical concept: IMPORTANT admonition for must-know information
+- Quick Start: Optional fast path for doers
+- What This Provides: Table showing who gets what
+- Table of Contents: Automatic via :toc: attribute
+
+Layer for different readers:
+- Scan: Overview paragraph tells them what this is
+- Skim: Table shows what's here and who it serves
+- Read: They continue to Content block
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+// THINKING: Brief description - what this document covers and why it matters.
+// Keep it 2-4 sentences. Answer: What is this? Why should I care?
+// Use abbreviation definitions for technical terms.
+
+[Brief description of what this document covers and why it matters to the reader]
+
+This document follows the CWSfootnote:[CWS = CreativeWorkzStudio LLC] 5-block documentation structure.footnote:[See CWS-STD-006 for the complete 5-block documentation specification.]
+
+[IMPORTANT]
+====
+*[#Critical concept# or distinction readers MUST understand before proceeding]*
+====
+
+// THINKING: Use IMPORTANT admonition for non-negotiable concepts.
+// What misconception should we prevent? What's the key insight?
+// Use #text# sparingly for TRUE emphasis (marked/highlighted).
+// Other admonitions: NOTE, TIP, WARNING, CAUTION
+
+[NOTE]
+====
+*Scope:* [What IS and ISN'T covered by this document]
+====
+
+// THINKING: Scope prevents wasted time. Be explicit about boundaries.
+
+'''
+
+[[quick-start]]
+=== Quick Start
+
+// THINKING: Optional section for doers who want to act immediately.
+// Use numbered emoji comments for visual scanning.
+// Skip this section if the document isn't action-oriented.
+
+[source,bash]
+----
+# 1️⃣ First step description
+command-here arg1 arg2
+
+# 2️⃣ Second step description
+another-command --flag
+
+# 3️⃣ Third step description
+final-command
+----
+
+'''
+
+[[what-this-provides]]
+=== What This Document Provides
+
+// THINKING: Table showing categories, what's included, and who it serves.
+// Helps readers quickly assess if this document is for them.
+// AsciiDoc tables use |=== delimiters with cols attribute for alignment.
+
+[cols="^1,3,4,3",options="header"]
+|===
+| | Category | What You'll Find | Who It Serves
+
+| 📖
+| *[Category Name]*
+| [Description of content]
+| [Target audience]
+
+| 🔧
+| *[Category Name]*
+| [Description of content]
+| [Target audience]
+
+| 📐
+| *[Category Name]*
+| [Description of content]
+| [Target audience]
+|===
+
+// THINKING: Icon column uses emoji, but can also use Unicode symbols:
+// ✓ ✗ for status, → for flow, • for bullets, 🟢 🟡 🔴 for status indicators
+// cols="^1" centers the first column, "3,4,3" sets relative widths
+
+'''
+
+// THINKING: Table of Contents is automatic in AsciiDoc via :toc: attribute.
+// No need for manual ToC - AsciiDoc generates it from section headings.
+// Control depth with :toclevels: attribute in METADATA.
+// For manual anchors, use [[anchor-id]] above sections.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK - The Chapters
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: The actual value - organized for reader comprehension.
+This is "the chapters" - the substance of the document.
+
+Structure elements:
+- == Sections: Major topics (navigable from ToC)
+- === Subsections: Detailed breakdowns
+- Tables: |=== delimited with cols attribute
+- [%collapsible%open]: Major content most readers need
+- [%collapsible]: Optional deep-dives (closed by default)
+- Source blocks: [source,lang] with ---- delimiters
+- Admonitions: TIP, NOTE, WARNING, CAUTION, IMPORTANT
+- Cross-references: <<anchor,text>> for navigation
+
+Toolkit elements to USE naturally:
+- footnote:[hover text] for first technical term mentions
+- #text# sparingly for true emphasis (marked/highlighted)
+- kbd:[key] for keyboard shortcuts or button-like navigation
+- footnote:[text] for depth without interrupting flow
+- Symbols: ✓ ✗ → ← • ▸ for visual scanning
+
+Layer for different readers:
+- Scan: Headings and tables give the shape
+- Read: Full explanations and examples
+- Study: Collapsible sections and footnotes for depth
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[section-1]]
+== Section 1
+
+// THINKING: Introduction to this section - what it covers and why it matters.
+// Each == section should be navigable from Table of Contents.
+// Use descriptive section names, not generic "Section 1"
+
+[Introduction paragraph explaining what this section covers]
+
+[%collapsible%open]
+.Subsection Title
+====
+// THINKING: Use [%collapsible%open] for major content most people need.
+// The content is visible by default but can be collapsed.
+// Good for keeping document scannable while showing important content.
+
+[Content organized clearly - explain the concept, pattern, or information]
+
+*Key principle:* [The core idea readers should remember from this subsection]
+
+[[when-to-do-this]]
+=== When to [Do This Thing]
+
+// THINKING: Decision guidance helps readers apply knowledge.
+// Tables work well for scenario → approach → rationale patterns.
+
+[cols="2,2,3",options="header"]
+|===
+| Scenario | Approach | Rationale
+
+| *When [condition A]*
+| [What to do]
+| [Why this works]
+
+| *When [condition B]*
+| [What to do]
+| [Why this works]
+
+| *When [condition C]*
+| [What to do]
+| [Why this works]
+|===
+
+[TIP]
+====
+*[Helpful non-obvious guidance or best practice]*
+====
+
+// THINKING: TIP admonition for recommendations and best practices.
+// Use sparingly - if everything is a tip, nothing is.
+
+<<_top,↑ Back to Top>>
+====
+
+[%collapsible]
+.Optional Deep-Dive
+====
+// THINKING: Use [%collapsible] (closed by default) for optional depth.
+// Advanced users can expand; others skip without scrolling past walls of text.
+// Good for: edge cases, historical context, implementation details, theory.
+
+[Detailed information for those who need deeper understanding]
+
+*Technical details:*
+
+[source,go]
+----
+// Example code with comments explaining key aspects
+func example() {
+    // 1️⃣ First step explanation
+    doSomething()
+
+    // 2️⃣ Second step explanation
+    doSomethingElse()
+}
+----
+
+<<_top,↑ Back to Top>>
+====
+
+'''
+
+[[section-2]]
+== Section 2
+
+// THINKING: Continue with additional sections as needed.
+// Each major topic gets its own == section.
+// Maintain consistent structure across sections.
+
+[Introduction to this section]
+
+[[comparison-matrix]]
+=== Comparison or Decision Matrix
+
+// THINKING: Tables excel at showing comparisons and relationships.
+// Use cols="^" for center alignment in specific columns.
+// Use visual indicators: ✓ (yes), ✗ (no), ○ (optional), 🟢 🟡 🔴 (status)
+
+[cols="3,^1,^1,^2",options="header"]
+|===
+| Feature | Option A | Option B | Recommended
+
+| *[Feature 1]*
+| ✓
+| ✗
+| A
+
+| *[Feature 2]*
+| ✗
+| ✓
+| B
+
+| *[Feature 3]*
+| ✓
+| ✓
+| Either
+
+| *[Feature 4]*
+| ○
+| ○
+| Depends
+|===
+
+// THINKING: ✓ = yes/has, ✗ = no/missing, ○ = optional/partial
+
+[[process-workflow]]
+=== Process or Workflow
+
+// THINKING: For processes, numbered steps with clear outcomes.
+// Can also use ditaa, plantuml, or mermaid diagrams for visual workflows.
+
+. *[Step Name]* — [What to do and expected outcome]
+. *[Step Name]* — [What to do and expected outcome]
+. *[Step Name]* — [What to do and expected outcome]
+
+// THINKING: Optional diagram for visual learners
+// AsciiDoc supports various diagram types via extensions:
+// [plantuml], [ditaa], [mermaid] (if asciidoctor-diagram installed)
+
+[mermaid]
+----
+flowchart LR
+    A[Start] --> B[Step 1]
+    B --> C[Step 2]
+    C --> D[Step 3]
+    D --> E[End]
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[examples]]
+== Examples
+
+// THINKING: Real examples demonstrating concepts in practice.
+// Link to actual files when possible - proof the pattern works.
+// Show, don't just tell.
+
+Real [documents/code/systems] demonstrating these [concepts/patterns] in practice.
+
+[%collapsible%open]
+.Example 1: [Descriptive Name]
+====
+*Source:* [Link to example file or location]
+
+*What it demonstrates:*
+
+[cols="2,4",options="header"]
+|===
+| Aspect | How It's Shown
+
+| *[Concept 1]*
+| [How the example demonstrates this]
+
+| *[Concept 2]*
+| [How the example demonstrates this]
+|===
+
+*Key insight:* [What readers should learn from studying this example]
+
+<<_top,↑ Back to Top>>
+====
+
+[%collapsible]
+.Example 2: [Descriptive Name]
+====
+*Source:* [Link to example file or location]
+
+[Description and analysis of this example]
+
+<<_top,↑ Back to Top>>
+====
+
+'''
+
+[[quick-reference]]
+== Quick Reference
+
+// THINKING: Checklists, summaries, or quick-lookup information.
+// For returning users who know the content and need to verify/remember.
+// AsciiDoc checklists use [*] checked, [ ] unchecked
+
+[%collapsible%open]
+.Checklist: Before [Action]
+====
+*Verify these before proceeding:*
+
+* [ ] [Requirement or verification step]
+* [ ] [Requirement or verification step]
+* [ ] [Requirement or verification step]
+* [ ] [Requirement or verification step]
+====
+
+[%collapsible%open]
+.Quick Lookup: [Topic]
+====
+// THINKING: Reference tables for common lookups.
+// Keep it scannable - this is for quick answers, not learning.
+
+[cols="2,5",options="header"]
+|===
+| Term | Definition
+
+| *[Term 1]*
+| [Brief definition]
+
+| *[Term 2]*
+| [Brief definition]
+
+| *[Term 3]*
+| [Brief definition]
+|===
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[asciidoc-toolkit]]
+== AsciiDoc Toolkit
+
+[CAUTION]
+====
+*REMOVABLE SECTION* — This entire section ([[asciidoc-toolkit]]) is a reference toolkit for template users. Delete this section when creating final documents, or keep specific patterns you find useful. The section demonstrates AsciiDoc features but is not part of the document content.
+====
+
+// THINKING: This section demonstrates ALL available AsciiDoc features.
+// Use this as a reference when building documents - don't limit yourself!
+// Delete this section in final documents, or keep relevant patterns.
+
+[%collapsible%open]
+.Text Formatting
+====
+[cols="2,3,2",options="header"]
+|===
+| Format | Syntax | Result
+
+| Bold
+| `+*text*+`
+| *text*
+
+| Italic
+| `+_text_+`
+| _text_
+
+| Bold+Italic
+| `+*_text_*+`
+| *_text_*
+
+| Monospace
+| `++`code`+++`
+| `code`
+
+| Highlight/Mark
+| `+#text#+`
+| #text#
+
+| Superscript
+| `+^text^+`
+| x^2^
+
+| Subscript
+| `+~text~+`
+| H~2~O
+
+| Keyboard
+| `+kbd:[Ctrl+C]+`
+| kbd:[Ctrl+C]
+
+| Button
+| `+btn:[Save]+`
+| btn:[Save]
+
+| Menu
+| `+menu:File[Save As...]+`
+| menu:File[Save As...]
+|===
+
+// NOTE: kbd:[], btn:[], and menu:[] require :experimental: attribute
+====
+
+[%collapsible%open]
+.Footnotes & Inline Definitions
+====
+// THINKING: Footnotes provide hover/click definitions - great for acronyms/jargon
+
+Use footnotes for technical terms: CPI-SIfootnote:[Covenant Partnership Intelligence - Structured Intelligence] is our paradigm. CWSfootnote:[CreativeWorkzStudio LLC] is the company.
+
+*Syntax:*
+
+[source,asciidoc]
+----
+Textfootnote:[Footnote content appears at document bottom.]
+----
+====
+
+[%collapsible%open]
+.Navigation Styles
+====
+// THINKING: Multiple ways to create navigation - choose based on document style
+
+*Bullet separators:*
+*<<section-1,Section 1>>* • *<<section-2,Section 2>>* • *<<references,References>>*
+
+*Pipe separators:*
+<<section-1,Section 1>> | <<section-2,Section 2>> | <<references,References>>
+
+*Bold bullet style:*
+*<<section-1,Section 1>>* • *<<section-2,Section 2>>* • *<<references,References>>*
+
+*Arrow style:*
+<<section-1,Section 1>> → <<section-2,Section 2>> → <<references,References>>
+====
+
+[%collapsible%open]
+.File & External Links
+====
+// THINKING: AsciiDoc link syntax for connecting to other files.
+// These links work like markdown links - they navigate to actual files.
+
+*File links (relative paths):*
+[cols="2,3",options="header"]
+|===
+| Syntax | Purpose
+
+| `link:file.adoc[Display Text]`
+| Link to file in same directory
+
+| `link:../parent/file.adoc[Display Text]`
+| Link to file in parent directory
+
+| `link:child/file.adoc[Display Text]`
+| Link to file in child directory
+
+| `link:path/to/file.omni[Display Text]`
+| Link to any file type (.omni, .go, etc.)
+|===
+
+*External links (URLs):*
+[cols="2,3",options="header"]
+|===
+| Syntax | Purpose
+
+| `https://example.com[Display Text]`
+| Direct URL (auto-linked)
+
+| `link:https://example.com[Display Text]`
+| Explicit link syntax
+|===
+
+*Internal cross-references:*
+[cols="2,3",options="header"]
+|===
+| Syntax | Purpose
+
+| `<<anchor-id,Display Text>>`
+| Jump to anchor in same document
+
+| `<<_section_title>>`
+| Jump to section by auto-generated ID
+|===
+
+[NOTE]
+=====
+*Path Resolution:* Relative paths are resolved from the document's location. Use `../` to go up directories. Links connect to actual files and will navigate when the document is rendered.
+=====
+====
+
+[%collapsible%open]
+.Admonition Types
+====
+[NOTE]
+=====
+*Note:* Additional context, supplementary information, scope clarification.
+=====
+
+[TIP]
+=====
+*Tip:* Best practices, recommendations, helpful guidance.
+=====
+
+[IMPORTANT]
+=====
+*Important:* Critical concepts, must-understand information, non-negotiable.
+=====
+
+[WARNING]
+=====
+*Warning:* Potential issues, cautions, things to avoid.
+=====
+
+[CAUTION]
+=====
+*Caution:* Serious warnings, actions that could cause problems.
+=====
+====
+
+[%collapsible%open]
+.Unicode Symbols Reference
+====
+[cols="2,4,3",options="header"]
+|===
+| Category | Symbols | Use For
+
+| *Checks*
+| ✓ ✗ ✔ ✘ ☑ ☐
+| Status, completion
+
+| *Arrows*
+| → ← ↑ ↓ ↔ ⇒ ⟶
+| Flow, navigation
+
+| *Bullets*
+| • ◦ ▪ ▸ ► ‣
+| Lists, separators
+
+| *Math*
+| × ÷ ± ≠ ≤ ≥ ∞ ≈
+| Calculations
+
+| *Status*
+| 🟢 🟡 🔴 ⚪
+| Visual indicators
+
+| *Misc*
+| © ® ™ ° … § † ‡
+| Legal, typography
+
+| *Box drawing*
+| ┌ ─ ┐ │ └ ┘ ├ ┤
+| ASCII diagrams
+|===
+====
+
+[%collapsible]
+.Advanced: Diagrams
+====
+// THINKING: AsciiDoc supports various diagram types via asciidoctor-diagram extension
+
+*Mermaid (if asciidoctor-diagram installed):*
+
+[source]
+----
+[mermaid]
+....
+flowchart TD
+    A[METADATA] --> B[HEADER]
+    B --> C[CONTEXT]
+    C --> D[CONTENT]
+    D --> E[FOOTER]
+....
+----
+
+*PlantUML:*
+
+[source]
+----
+[plantuml]
+....
+@startuml
+Reader -> Document: Opens
+Document -> Reader: Shows HEADER
+Reader -> Document: Scrolls
+Document -> Reader: Shows CONTENT
+@endumScopel
+....
+----
+
+*Ditaa (ASCII art):*
+
+[source]
+----
+[ditaa]
+....
++----------+   +----------+   +----------+
+| METADATA |-->| HEADER   |-->| CONTEXT  |
++----------+   +----------+   +----------+
+                                   |
+                                   v
++----------+   +----------+   +----------+
+| FOOTER   |<--| CONTENT  |<--+          |
++----------+   +----------+   +----------+
+....
+----
+====
+
+[%collapsible]
+.Advanced: Table Alignment
+====
+[cols="<2,^2,>2",options="header"]
+|===
+| Left (default) | Center | Right
+
+| Text
+| Text
+| Text
+
+| Longer text
+| Centered
+| 123
+|===
+
+*Syntax:*
+
+[source,asciidoc]
+----
+[cols="<2,^2,>2",options="header"]
+|===
+| Left | Center | Right
+...
+|===
+----
+
+* `<` = left align
+* `^` = center align
+* `>` = right align
+* Number = relative column width
+====
+
+[%collapsible]
+.Advanced: Cross-References & Includes
+====
+// THINKING: AsciiDoc has powerful cross-referencing and include capabilities
+
+*Internal cross-references:*
+
+[source,asciidoc]
+----
+See <<section-id,display text>> for details.
+The <<overview>> section explains this.
+----
+
+*Document includes:*
+
+[source,asciidoc]
+----
+\include::path/to/file.adoc[]
+\include::path/to/file.adoc[lines=1..10]
+\include::path/to/file.adoc[tags=tagname]
+----
+
+*Benefits:*
+
+* Single source of truth via includes
+* Conditional content with ifdef/ifndef
+* Tagged regions for selective inclusion
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK - The Appendix
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: Where readers go NEXT. Resources, references, connections.
+This is the "appendix" - supporting material and navigation.
+
+Contains:
+- Biblical Foundation: Grounding in truth (the WHY beneath the what)
+- References: Links to related documents, standards, resources
+- Centered closing: Key summary, version, grounding verse
+- Cross-references: Connection to the larger ecosystem
+
+Send readers out with:
+- Grounding in truth (why this matters eternally)
+- Clear next steps (where to go from here)
+- Connection to ecosystem (how this fits the whole)
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+// THINKING: Connect the work to eternal truth.
+// Not decoration - genuine grounding that informs the document.
+// If you can't articulate how Scripture informs this work, reflect on whether
+// the document serves Kingdom purposes.
+
+[NOTE]
+====
+*[Context for why this biblical principle applies to this document's topic]*
+====
+
+_"[Scripture verse that grounds this work]"_ — *[Book Chapter:Verse]*
+
+*Applied:* [How this scriptural truth specifically informs this document's approach, structure, or content. Make the connection clear and practical.]
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+// THINKING: Organize references by type for easy discovery.
+// In AsciiDoc, use document attributes or direct links for maintainability.
+// Link generously - knowledge grows through connection.
+
+[[related-documents]]
+=== Related Documents
+
+// THINKING: Documents readers should explore next or alongside this one.
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📐
+| *link:../path/to/document.adoc[Document Title]*
+| [What it covers and why it's related]
+
+| 📖
+| *link:../path/to/document.adoc[Document Title]*
+| [What it covers and why it's related]
+|===
+
+[[standards-specs]]
+=== Standards & Specifications
+
+// THINKING: Standards this document implements or relates to.
+
+[cols="2,5",options="header"]
+|===
+| Standard | Purpose
+
+| *link:../standards/CWS-STD-001-DOC-4-block.adoc[CWS-STD-001]*
+| 4-Block Structure Standard
+
+| *link:../standards/CWS-STD-002-DOC-document-keying.adoc[CWS-STD-002]*
+| Document Keying Standard
+|===
+
+[[external-resources]]
+=== External Resources
+
+// THINKING: External links for further learning.
+
+[cols="2,5",options="header"]
+|===
+| Resource | Purpose
+
+| *https://docs.asciidoctor.org/[Asciidoctor Docs]*
+| Official AsciiDoc documentation
+
+| *https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[AsciiDoc Syntax]*
+| Quick reference guide
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+// THINKING: Cross-references to related ecosystem documents.
+// Helps readers discover connected knowledge.
+// Use link:path[text] for file links, or <<anchor,text>> for internal references
+
+* link:../path/to/document.adoc[Related Document 1] — [Brief description of relationship]
+* link:../path/to/document.adoc[Related Document 2] — [Brief description of relationship]
+* link:../path/to/document.adoc[Related Document 3] — [Brief description of relationship]
+
+'''
+
+[.text-center]
+--
+// THINKING: Centered footer provides closure and key information at a glance.
+// Summarizes identity, provides navigation, grounds in truth.
+
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"{biblical_foundation}"_ — *[Reference]*
+
+*[One line connecting this work to Kingdom purpose]*
+
+'''
+
+// THINKING: Optional company standards navigation
+// *Company Standards:*
+// link:../standards/CWS-STD-001.adoc[4-Block Structure] • link:../standards/CWS-STD-002.adoc[Document Keying]
+--
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+TEMPLATE NOTES - DELETE WHEN USING
+═══════════════════════════════════════════════════════════════════════════════
+
+This template embodies:
+- PhD dissertation RIGOR: Complete structure, clear citations, defensible
+- Bible ACCESSIBILITY: Layered for all readers, clear navigation, timeless
+
+The 5-Block Pattern:
+┌─────────────────────────────────────────────────────────────────┐
+│ METADATA   │ The catalog card - parseable identity for systems │
+├─────────────────────────────────────────────────────────────────┤
+│ HEADER     │ The cover - visible identity in 5 seconds         │
+├─────────────────────────────────────────────────────────────────┤
+│ CONTEXT    │ The introduction - prepares understanding         │
+├─────────────────────────────────────────────────────────────────┤
+│ CONTENT    │ The chapters - value organized for discovery      │
+├─────────────────────────────────────────────────────────────────┤
+│ FOOTER     │ The appendix - resources and grounding            │
+└─────────────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────────
+OMNICODE STRUCTURE MAPPING (Stepping UP)
+─────────────────────────────────────────────────────────────────
+
+This AsciiDoc template implements OmniCode's 5-block documentation structure.
+The mapping shows how AsciiDoc sections step UP to OmniCode blocks:
+
+  AsciiDoc Block    OmniCode Block    Bidirectional Mapping
+  ─────────────────────────────────────────────────────────────
+  METADATA       ←→  METADATA         Identity (same in both)
+  HEADER         ←   (doc-specific)   Humans need visible identity
+  CONTEXT        ←→  SETUP/CONTEXT    Preparation for understanding
+  CONTENT        ←→  BODY/CONTENT     The work / value delivery
+  FOOTER         ←→  CLOSING/FOOTER   Completion and resources
+
+The arrow direction:
+  ←→  = Bidirectional mapping (concepts translate both ways)
+  ←   = Documentation-specific (no code equivalent)
+
+OmniCode syntax specification:
+  → link:../omni/B-word-omni-syntax.omni[OmniCode Syntax Spec]
+  → See "FORMAT DEFINITIONS (Transpiler Specification)" section for executable mappings
+  → See "5-BLOCK DOCUMENTATION STRUCTURE" section for block descriptions
+  → See "BIDIRECTIONAL KEYWORD MAPPING" section for keyword translations
+
+KEY PRINCIPLE:
+  OmniCode can step DOWN to any format (translating patterns)
+  Formats must step UP to OmniCode's standards (implementing patterns)
+  This template is the AsciiDoc implementation of OmniCode documentation structure
+
+─────────────────────────────────────────────────────────────────
+
+Layered Reading:
+- SCAN (5 sec):    Title, badges, tagline → what is this?
+- SKIM (1 min):    Overview, tables, headings → what's the shape?
+- READ (full):     All content → understand and apply
+- STUDY (deep):    Details sections, footnotes → master it
+- REFERENCE:       Quick Reference, anchors → find what I need
+
+─────────────────────────────────────────────────────────────────
+ASCIIDOC TOOLKIT ELEMENTS - USE THESE NATURALLY THROUGHOUT
+─────────────────────────────────────────────────────────────────
+
+First technical term mentions → footnote:[Full explanation]
+True emphasis (rare)          → #highlighted text#
+Keyboard shortcuts            → kbd:[Ctrl+C]
+Buttons                       → btn:[Save]
+Menu paths                    → menu:File[Save As...]
+Cross-references              → <<anchor,Link Text>>
+Status/comparison in tables   → ✓ (yes) ✗ (no) ○ (optional)
+Flow and sequence             → A → B → C
+Collapsible content           → [%collapsible%open] for major, [%collapsible] for optional
+
+Admonitions for guidance:
+[NOTE]      - additional context, scope
+[TIP]       - recommendations, best practices
+[IMPORTANT] - critical concepts, must-know
+[WARNING]   - potential issues, cautions
+[CAUTION]   - serious warnings
+
+Diagrams when helpful (requires asciidoctor-diagram):
+[mermaid]
+....
+flowchart TD
+    A[Start] --> B[Process] --> C[End]
+....
+
+─────────────────────────────────────────────────────────────────
+
+When filling this template:
+1. Start with METADATA → establish document attributes
+2. Write HEADER → the hook that draws readers in
+3. Draft CONTEXT → prepare their understanding
+4. Build CONTENT → deliver the value (USE toolkit elements naturally!)
+5. Complete FOOTER → ground and connect
+6. Delete // THINKING comments (or keep for next person)
+7. Delete/modify AsciiDoc Toolkit section (keep as reference or remove)
+8. Verify cross-references with <<anchor,text>> syntax
+
+KEY PRINCIPLE: Don't just demonstrate toolkit elements in a separate section -
+USE them throughout. footnote:[] on first technical terms. #mark# for true emphasis.
+kbd:[] for keyboard shortcuts. Cross-references for navigation. Symbols for scanning.
+The toolkit section shows WHAT'S AVAILABLE; your document shows HOW TO USE THEM.
+
+═══════════════════════════════════════════════════════════════════════════════
+////

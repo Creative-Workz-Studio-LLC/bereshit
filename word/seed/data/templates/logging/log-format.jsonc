@@ -1,0 +1,156 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// Key: B-seed-data-templates-logging-log-format
+// Purpose: Structured log format for CPI-SI system - parsable AND readable
+// Biblical: Proverbs 4:26 - "Ponder the path of thy feet"
+// Authors: Nova Dawn
+// Version: 2.0.0
+// Created: 2025-11-09
+// Updated: 2025-12-10 - Refined for balance of parsability and readability
+//
+// Design Goals:
+//   1. Single-line entries for grep/awk processing
+//   2. Visual indicators for human scanning
+//   3. Structured details that can be parsed
+//   4. Clear entry boundaries
+//
+// ============================================================================
+
+{
+  "$schema": "log-format.schema.json",
+  "version": "2.0.0",
+  "description": "CPI-SI structured logging format - parsable and readable",
+
+  // ============================================================================
+  // FORMAT MODES
+  // ============================================================================
+  //
+  // Two modes serve different needs:
+  // - COMPACT: Quick scanning, grep-friendly, minimal context
+  // - VERBOSE: Full context, debugging, audit trails
+
+  "modes": {
+    "compact": {
+      "description": "Single-line entries for quick scanning and grep",
+      "format": "[{timestamp}] {level} | {component} | {message} ({health}%{emoji})",
+      "example": "[2025-12-10 11:30:00] INFO | session | Started workspace /project (85%💛)"
+    },
+    "verbose": {
+      "description": "Multi-line entries with full context",
+      "format": "[{timestamp}] {level} | {component} | {identity}\n  EVENT: {event}\n  HEALTH: {health}% ({raw}, Δ{delta}) {emoji}\n  {details}\n---",
+      "example": "[2025-12-10 11:30:00.123] INFO | session | user@host:1234\n  EVENT: workspace_loaded\n  HEALTH: 85% (raw: 85, Δ+5) 💛\n  DETAILS:\n    workspace: /project\n    branch: main\n---"
+    }
+  },
+
+  // ============================================================================
+  // FIELD DEFINITIONS
+  // ============================================================================
+
+  "fields": {
+    "timestamp": {
+      "compact": "YYYY-MM-DD HH:MM:SS",
+      "verbose": "YYYY-MM-DD HH:MM:SS.mmm",
+      "description": "ISO-style timestamp, milliseconds in verbose mode"
+    },
+
+    "level": {
+      "values": ["DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
+      "width": 5,
+      "description": "Log severity, fixed width for alignment"
+    },
+
+    "component": {
+      "max_width": 12,
+      "description": "Source component name, truncated if needed"
+    },
+
+    "identity": {
+      "format": "{user}@{host}:{pid}",
+      "description": "Execution context - only in verbose mode"
+    },
+
+    "health": {
+      "range": "0-100",
+      "emoji_map": {
+        "90-100": "💚",
+        "70-89": "💛",
+        "50-69": "🧡",
+        "30-49": "❤️",
+        "10-29": "🩸",
+        "0-9": "☠️"
+      },
+      "description": "Health percentage with visual indicator"
+    },
+
+    "message": {
+      "max_length": 80,
+      "description": "Brief description in compact mode"
+    },
+
+    "event": {
+      "format": "snake_case",
+      "description": "Machine-readable event name in verbose mode"
+    },
+
+    "details": {
+      "format": "key: value",
+      "indent": 4,
+      "description": "Structured key-value pairs, one per line"
+    }
+  },
+
+  // ============================================================================
+  // PARSING RULES
+  // ============================================================================
+  //
+  // These rules enable reliable parsing:
+
+  "parsing": {
+    "entry_delimiter": "---",
+    "field_delimiter": " | ",
+    "detail_prefix": "    ",
+    "timestamp_regex": "\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}",
+    "health_regex": "\\((\\d+)%([💚💛🧡❤️🩸☠️])\\)",
+
+    "grep_examples": {
+      "all_errors": "grep '\\] ERROR' logfile",
+      "component": "grep '| session |' logfile",
+      "health_critical": "grep -E '\\([0-9]%|[12][0-9]%\\)' logfile",
+      "time_range": "grep '\\[2025-12-10 1[1-2]:' logfile"
+    }
+  },
+
+  // ============================================================================
+  // EXAMPLES
+  // ============================================================================
+
+  "examples": {
+    "compact_info": "[2025-12-10 11:30:00] INFO  | session      | Workspace loaded successfully (85%💛)",
+    "compact_error": "[2025-12-10 11:30:05] ERROR | validation   | Config file not found (45%❤️)",
+    "compact_debug": "[2025-12-10 11:30:10] DEBUG | hooks        | Pre-use hook triggered (90%💚)",
+
+    "verbose_full": [
+      "[2025-12-10 11:30:00.123] INFO | session | seanje@creativeworkz:1234",
+      "  EVENT: workspace_loaded",
+      "  HEALTH: 85% (raw: 85, Δ+5) 💛",
+      "  DETAILS:",
+      "    workspace: /media/seanje/Project/CreativeWorkzStudio_LLC",
+      "    branch: main",
+      "    uncommitted: 153",
+      "---"
+    ]
+  },
+
+  // ============================================================================
+  // USAGE
+  // ============================================================================
+
+  "usage": {
+    "default_mode": "compact",
+    "verbose_triggers": ["DEBUG level", "error conditions", "audit requirements"],
+    "rotation": "Daily or 10MB, whichever first",
+    "retention": "7 days compact, 30 days verbose"
+  }
+}

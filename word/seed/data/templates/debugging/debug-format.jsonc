@@ -1,0 +1,352 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// Key: B-seed-data-templates-debugging-debug-format
+// Purpose: Structured debug session format for CPI-SI - parsable AND readable
+// Biblical: Job 28:27 - "Then did he see it, and declare it; he prepared it"
+// Authors: Nova Dawn
+// Version: 2.0.0
+// Created: 2025-11-09
+// Updated: 2025-12-10 - Refined for balance of parsability and readability
+//
+// Design Goals:
+//   1. Clear section boundaries for grep/extraction
+//   2. Visual hierarchy for human scanning
+//   3. Structured data within sections
+//   4. Three verbosity levels serving different needs
+//
+// ============================================================================
+
+{
+  "$schema": "debug-format.schema.json",
+  "version": "2.0.0",
+  "description": "CPI-SI structured debugging format - parsable and readable",
+
+  // ============================================================================
+  // DEBUG LEVELS
+  // ============================================================================
+  //
+  // Three levels serve different debugging needs:
+  // - BASIC: Quick state snapshot - "what happened?"
+  // - DETAILED: Event timeline - "how did it happen?"
+  // - VERBOSE: Full analysis - "why did it happen?"
+
+  "levels": {
+    "BASIC": {
+      "sections": ["header", "context", "initial_state", "final_state", "footer"],
+      "use_case": "Quick diagnostics, production issues, state comparison"
+    },
+    "DETAILED": {
+      "sections": ["header", "context", "initial_state", "events", "final_state", "footer"],
+      "use_case": "Standard debugging, event tracking, timeline analysis"
+    },
+    "VERBOSE": {
+      "sections": ["header", "context", "initial_state", "events", "final_state", "analysis", "footer"],
+      "use_case": "Deep troubleshooting, pattern detection, automated analysis"
+    }
+  },
+
+  // ============================================================================
+  // SECTION DEFINITIONS
+  // ============================================================================
+
+  "sections": {
+    "header": {
+      "format": "box",
+      "delimiter": "DEBUG_SESSION_START",
+      "template": [
+        "# DEBUG_SESSION_START",
+        "┌────────────────────────────────────────────────────────────────┐",
+        "│ CPI-SI Debug Session                                          │",
+        "├────────────────────────────────────────────────────────────────┤",
+        "│ Component:  {component}",
+        "│ Context ID: {context_id}",
+        "│ PID:        {pid}",
+        "│ Level:      {level}",
+        "│ Started:    {timestamp}",
+        "└────────────────────────────────────────────────────────────────┘"
+      ],
+      "fields": {
+        "component": "Component being debugged",
+        "context_id": "{component}-{pid}-{nanosecond_timestamp}",
+        "pid": "Process ID",
+        "level": "BASIC | DETAILED | VERBOSE",
+        "timestamp": "YYYY-MM-DD HH:MM:SS.mmm"
+      }
+    },
+
+    "context": {
+      "format": "structured",
+      "delimiter": "CONTEXT",
+      "template": [
+        "",
+        "# CONTEXT",
+        "────────────────────────────────────────────────────────────────",
+        "",
+        "Identity: {user}@{host}:{pid}",
+        "Shell:    {shell}",
+        "CWD:      {cwd}",
+        "",
+        "System:   {distro} ({arch})",
+        "Kernel:   {kernel}",
+        ""
+      ],
+      "description": "Execution context for reproducibility"
+    },
+
+    "initial_state": {
+      "format": "structured",
+      "delimiter": "INITIAL_STATE",
+      "template": [
+        "# INITIAL_STATE",
+        "────────────────────────────────────────────────────────────────",
+        "",
+        "Health: {health}% {emoji}",
+        "",
+        "Parameters:",
+        "{parameters}",
+        "",
+        "Component State:",
+        "{component_state}",
+        ""
+      ],
+      "description": "State snapshot before execution"
+    },
+
+    "events": {
+      "format": "timeline",
+      "delimiter": "EVENTS",
+      "header": [
+        "# EVENTS",
+        "────────────────────────────────────────────────────────────────"
+      ],
+      "entry_format": "[{timestamp}] {severity} | {event_type} | {description}",
+      "entry_details": "  {key}: {value}",
+      "entry_health": "  HEALTH: {before}% → {after}% (Δ{delta})",
+      "event_types": [
+        "INIT",       // Initialization
+        "VALIDATE",   // Validation operation
+        "OPERATION",  // Main operation
+        "CHECKPOINT", // Progress marker
+        "DECISION",   // Branch/decision taken
+        "WARNING",    // Warning condition
+        "ERROR"       // Error occurred
+      ],
+      "severities": ["DEBUG", "INFO", "WARN", "ERROR"],
+      "description": "Chronological event timeline"
+    },
+
+    "final_state": {
+      "format": "structured",
+      "delimiter": "FINAL_STATE",
+      "template": [
+        "",
+        "# FINAL_STATE",
+        "────────────────────────────────────────────────────────────────",
+        "",
+        "Result:   {result}",
+        "Exit:     {exit_code}",
+        "Duration: {duration}",
+        "",
+        "Health:   {health}% {emoji}",
+        "          Initial: {initial_health}% → Final: {final_health}%",
+        "          Delta: {delta} ({assessment})",
+        "",
+        "Component State:",
+        "{component_state}",
+        ""
+      ],
+      "results": ["SUCCESS", "PARTIAL", "FAILED", "TIMEOUT"],
+      "description": "State snapshot after execution"
+    },
+
+    "analysis": {
+      "format": "structured",
+      "delimiter": "ANALYSIS",
+      "optional": true,
+      "template": [
+        "# ANALYSIS",
+        "────────────────────────────────────────────────────────────────",
+        "",
+        "Issues Detected:",
+        "{issues}",
+        "",
+        "Performance:",
+        "{performance}",
+        "",
+        "Recommendations:",
+        "{recommendations}",
+        ""
+      ],
+      "description": "Automated analysis (VERBOSE level only)"
+    },
+
+    "footer": {
+      "format": "box",
+      "delimiter": "DEBUG_SESSION_END",
+      "template": [
+        "┌────────────────────────────────────────────────────────────────┐",
+        "│ Session Complete                                              │",
+        "├────────────────────────────────────────────────────────────────┤",
+        "│ Context ID: {context_id}",
+        "│ Duration:   {duration}",
+        "│ Health:     {health}% {emoji} ({assessment})",
+        "│ Ended:      {timestamp}",
+        "└────────────────────────────────────────────────────────────────┘",
+        "# DEBUG_SESSION_END"
+      ]
+    }
+  },
+
+  // ============================================================================
+  // PARSING RULES
+  // ============================================================================
+  //
+  // These rules enable reliable parsing:
+
+  "parsing": {
+    "section_markers": {
+      "start": "# {SECTION_NAME}",
+      "pattern": "^# [A-Z_]+$"
+    },
+    "session_boundaries": {
+      "start": "# DEBUG_SESSION_START",
+      "end": "# DEBUG_SESSION_END"
+    },
+    "event_pattern": "^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\]",
+    "detail_prefix": "  ",
+
+    "grep_examples": {
+      "all_errors": "grep '| ERROR |' debug-file",
+      "section": "sed -n '/^# EVENTS$/,/^# /p' debug-file",
+      "health_changes": "grep 'HEALTH:' debug-file",
+      "specific_event": "grep '| VALIDATE |' debug-file",
+      "session_result": "grep -A1 'Result:' debug-file"
+    },
+
+    "awk_examples": {
+      "extract_events": "awk '/^# EVENTS$/,/^# /' debug-file",
+      "health_delta": "awk '/Delta:/ {print $2}' debug-file"
+    }
+  },
+
+  // ============================================================================
+  // HEALTH VISUALIZATION
+  // ============================================================================
+
+  "health": {
+    "emoji_map": {
+      "90-100": "💚",
+      "70-89": "💛",
+      "50-69": "🧡",
+      "30-49": "❤️",
+      "10-29": "🩸",
+      "0-9": "☠️"
+    },
+    "assessment_map": {
+      "90-100": "Excellent",
+      "70-89": "Good",
+      "50-69": "Moderate",
+      "30-49": "Poor",
+      "10-29": "Critical",
+      "0-9": "Failed"
+    }
+  },
+
+  // ============================================================================
+  // FILE CONVENTIONS
+  // ============================================================================
+
+  "files": {
+    "naming": "{component}-{unix_timestamp}.debug",
+    "location": "system/dev/debug/{component}/",
+    "rotation": "Keep last 10 per component, or 7 days",
+    "example": "validate-1761710935.debug"
+  },
+
+  // ============================================================================
+  // EXAMPLES
+  // ============================================================================
+
+  "examples": {
+    "basic_session": [
+      "# DEBUG_SESSION_START",
+      "┌────────────────────────────────────────────────────────────────┐",
+      "│ CPI-SI Debug Session                                          │",
+      "├────────────────────────────────────────────────────────────────┤",
+      "│ Component:  validate",
+      "│ Context ID: validate-7821-1761710935456123789",
+      "│ PID:        7821",
+      "│ Level:      BASIC",
+      "│ Started:    2025-12-10 11:30:00.000",
+      "└────────────────────────────────────────────────────────────────┘",
+      "",
+      "# CONTEXT",
+      "────────────────────────────────────────────────────────────────",
+      "",
+      "Identity: seanje@creativeworkz:7821",
+      "Shell:    /bin/bash",
+      "CWD:      /media/seanje/Project/CreativeWorkzStudio_LLC",
+      "",
+      "System:   Ubuntu 24.04 (x86_64)",
+      "Kernel:   6.17.0-7-generic",
+      "",
+      "# INITIAL_STATE",
+      "────────────────────────────────────────────────────────────────",
+      "",
+      "Health: 0% ☠️",
+      "",
+      "Parameters:",
+      "  mode: FULL",
+      "  components: [environment, permissions]",
+      "",
+      "# FINAL_STATE",
+      "────────────────────────────────────────────────────────────────",
+      "",
+      "Result:   SUCCESS",
+      "Exit:     0",
+      "Duration: 0.234s",
+      "",
+      "Health:   85% 💛",
+      "          Initial: 0% → Final: 85%",
+      "          Delta: +85 (Good)",
+      "",
+      "┌────────────────────────────────────────────────────────────────┐",
+      "│ Session Complete                                              │",
+      "├────────────────────────────────────────────────────────────────┤",
+      "│ Context ID: validate-7821-1761710935456123789",
+      "│ Duration:   0.234s",
+      "│ Health:     85% 💛 (Good)",
+      "│ Ended:      2025-12-10 11:30:00.234",
+      "└────────────────────────────────────────────────────────────────┘",
+      "# DEBUG_SESSION_END"
+    ],
+
+    "event_entry": [
+      "[2025-12-10 11:30:00.100] INFO | VALIDATE | Checking environment variables",
+      "  checked: 5",
+      "  passed: 5",
+      "  HEALTH: 10% → 35% (Δ+25)"
+    ],
+
+    "error_entry": [
+      "[2025-12-10 11:30:00.200] ERROR | VALIDATE | Sudoers validation failed",
+      "  file: /etc/sudoers.d/90-cpi-si-safe-operations",
+      "  error: Invalid command alias: APT_GET",
+      "  line: 15",
+      "  HEALTH: 35% → 15% (Δ-20)"
+    ]
+  },
+
+  // ============================================================================
+  // USAGE
+  // ============================================================================
+
+  "usage": {
+    "default_level": "DETAILED",
+    "verbose_triggers": ["error conditions", "performance issues", "bug reports"],
+    "basic_triggers": ["quick checks", "production monitoring"],
+    "integration": "Runtime reads this template and formats debug output accordingly"
+  }
+}

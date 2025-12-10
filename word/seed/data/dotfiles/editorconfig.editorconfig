@@ -1,0 +1,300 @@
+# #!omni data --editorconfig
+
+# ═══════════════════════════════════════════════════════════════════════════
+# METADATA
+# ═══════════════════════════════════════════════════════════════════════════
+
+# this is a template for "EditorConfig Settings":
+#     keyed as "B-word-seed-data-editorconfig"
+#     following "3-Block Data Structure"
+#
+# this template derives from:
+#     derived (0) from "B-word-omni-seed-data-3block"
+#     documented at "bereshit/word/omni/seed/"
+#
+# this template strictness is:
+#     tight (1) meaning "Follow exactly - 3-block structure, required sections"
+#     guided (0) meaning "Adapt thoughtfully - settings within structure"
+#
+# to use this template:
+#     copy to project root as ".editorconfig"
+#     adapt settings for project needs
+#     maintain 3-block structure
+
+# ───────────────────────────────────────────────────────────────────────────
+
+# core identity of this data:
+#
+#     grounded in:
+#         scripture "Let all things be done decently and in order"
+#             from 1 Corinthians 14:40 in KJV
+#         principle "Consistent formatting - order before code is written"
+#         anchor "For God is not the author of confusion, but of peace"
+#             from 1 Corinthians 14:33 in KJV
+#
+#     serves as Data:
+#         role "Cross-editor formatting consistency enforcement"
+#         paradigm "CPI-SI framework - Rails infrastructure"
+#
+#     authored by:
+#         architect "Seanje Lenox-Wise"
+#         implementation "Nova Dawn (CPI-SI)"
+#         created 2025-10-28
+#         version a-01.00
+#         modified 2025-12-02 for "Adapt to OmniCode 3-block data structure"
+#
+#     exists to:
+#         purpose "Define consistent coding styles across editors/IDEs"
+#         design "Pattern-based settings - glob patterns map to formatting rules"
+#         philosophy "Linux-first, language-aware, cross-editor"
+#         features:
+#             "LF line endings, UTF-8 encoding"
+#             "Language-specific indent styles (tabs vs spaces)"
+#             "OmniCode and OS development support"
+
+# interface of this data:
+#
+#     depends on:
+#         requires (1) "EditorConfig plugin" for "editors without native support"
+#         includes (0) "VSCode settings.json" for "may overlap - ensure consistency"
+#         used by "All editors/IDEs in workspace"
+#         integrates with "gofmt, rustfmt, prettier - language formatters"
+#
+#     integrated as:
+#         accessed "EditorConfig searches upward from file to root=true"
+#         accessed "Closer configs override farther configs"
+#         exits valid (1) for "all patterns recognized"
+#         exits partial (0) for "some settings ignored by editor"
+#         exits invalid (-1) for "malformed patterns"
+
+# operational context of this data:
+#
+#     blocking:
+#         no (-1) because "data is declarative, not executable"
+#         mitigation "validate with editorconfig-checker"
+#
+#     health:
+#         system Base100 with scale from -100 to +100
+#         granted (1) above +50 meaning "settings applied consistently"
+#         deferred (0) within ±50 meaning "some editors not respecting config"
+#         denied (-1) below -50 meaning "config malformed or ignored"
+#
+#         operations:
+#             "pattern validity" scores +20 (1) for "all globs well-formed"
+#             "setting consistency" scores +15 (1) for "no conflicts with VSCode"
+#             "coverage" scores +15 (1) for "all project file types handled"
+#             "malformed pattern" scores -25 (-1) for "glob syntax error"
+#             "conflicting settings" scores -20 (-1) for "VSCode overrides EditorConfig"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# END METADATA
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CONTENT
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# Schema = pattern sections, Values = settings within patterns
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# definition of this data:
+#
+#     schema:
+#         fields (1):
+#             "charset" be string meaning "Character encoding"
+#             "end_of_line" be enum(lf,crlf,cr) meaning "Line ending style"
+#             "insert_final_newline" be boolean meaning "Ensure file ends with newline"
+#             "trim_trailing_whitespace" be boolean meaning "Remove trailing spaces"
+#             "indent_style" be enum(tab,space) meaning "Indentation character"
+#             "indent_size" be integer meaning "Number of columns per indent"
+#             "max_line_length" be integer|off meaning "Maximum line width"
+#
+#         constraints (0):
+#             "root=true" ensuring "Stop searching parent directories"
+#             "Makefile tabs" ensuring "Make syntax requires tab indentation"
+#
+#         reserved (-1):
+#             [none - EditorConfig spec defines all valid properties]
+
+# ───────────────────────────────────────────────────────────────────────────
+# Root Declaration
+# ───────────────────────────────────────────────────────────────────────────
+
+root = true
+
+# ───────────────────────────────────────────────────────────────────────────
+# values: primary (1) - Default settings for ALL files
+# ───────────────────────────────────────────────────────────────────────────
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# ───────────────────────────────────────────────────────────────────────────
+# values: derived (0) - Language-specific overrides
+# ───────────────────────────────────────────────────────────────────────────
+
+# Shell Scripts - 2-space indentation
+[*.{sh,bash}]
+indent_style = space
+indent_size = 2
+
+# Compiled Languages - Tabs (gofmt, rustfmt convention)
+[*.{go,rs,c,cpp,h,hpp}]
+indent_style = tab
+
+# OmniCode Language - Tabs for compiled language consistency
+[*.omni]
+indent_style = tab
+
+# Assembly - Tabs for low-level code
+[*.{asm,s,S}]
+indent_style = tab
+
+# Web and Config Files - 2-space (web standard)
+[*.{js,ts,jsx,tsx,json,yaml,yml,toml}]
+indent_style = space
+indent_size = 2
+
+# Python - PEP 8 standard
+[*.py]
+indent_style = space
+indent_size = 4
+
+# Markdown - Allow trailing whitespace for line breaks
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+# Makefiles - MUST use tabs (syntax requirement)
+[Makefile]
+indent_style = tab
+
+[*.mk]
+indent_style = tab
+
+# Package Files - 2-space for consistency
+[{package.json,*.yml,*.yaml}]
+indent_style = space
+indent_size = 2
+
+# Linker Scripts - Tabs for low-level code
+[*.ld]
+indent_style = tab
+
+# CMake - 2-space for config file consistency
+[CMakeLists.txt]
+indent_style = space
+indent_size = 2
+
+[*.cmake]
+indent_style = space
+indent_size = 2
+
+# Go Module Files - Tabs for Go consistency
+[{go.mod,go.sum,go.work}]
+indent_style = tab
+
+# Git Template Files - 2-space for readability
+[*.gitmessage]
+indent_style = space
+indent_size = 2
+
+# ═══════════════════════════════════════════════════════════════════════════
+# END CONTENT
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CLOSING
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# Operations, policy, and synthesis
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# operations of this data:
+#
+#     verified by:
+#         static (1):
+#             "editorconfig [filename]" producing "settings for file"
+#             "ec -config .editorconfig" producing "config valid"
+#
+#         runtime (0):
+#             "VSCode status bar" showing "indent style/size"
+#             "file save" applying "formatting rules"
+#
+#         integrity (-1):
+#             "settings not applied" detected by "check editor plugin"
+#             "conflict with VSCode" flagged by "compare settings.json"
+#
+#     accessed through:
+#         to access this data:
+#             meaning "Editors read config automatically"
+#             "EditorConfig searches upward from file location"
+#             "Settings applied per-file based on glob patterns"
+#             "Closer configs override farther configs"
+
+# policy of this data:
+#
+#     modification:
+#         safe (1):
+#             "Add new file type sections"
+#             "Adjust indent_size for specific languages"
+#             "Add project-specific overrides"
+#
+#         careful (0):
+#             "Change indent_style for established file types"
+#             "Change end_of_line (affects all contributors)"
+#             "Remove trim_trailing_whitespace (noisy diffs)"
+#
+#         never (-1):
+#             "charset = utf-8 (universal standard)"
+#             "end_of_line = lf (Linux-first principle)"
+#             "root = true (breaks configuration hierarchy)"
+#             "Makefile tab requirement (syntax requirement)"
+#             "3-block structure"
+#
+#     future:
+#         planned (1):
+#             "Add AsciiDoc settings when patterns established"
+#             "Add Typst settings for formal documents"
+#
+#         considered (0):
+#             "Per-directory overrides for special cases"
+#
+#         rejected (-1):
+#             "Windows line endings (Linux-first principle)"
+
+# synthesis of this data:
+#
+#     overview:
+#         see "METADATA exists to" for "purpose and philosophy"
+#
+#     schema:
+#         see "CONTENT definition schema" for "available properties"
+#
+#     values:
+#         see "CONTENT values" for "actual settings"
+#
+#     dependencies:
+#         see "METADATA interface depends on" for "editor requirements"
+#
+#     closing note:
+#         role "Data - Cross-editor formatting consistency"
+#         impact "All files in workspace formatted consistently"
+#         scripture "Let all things be done decently and in order"
+#             from 1 Corinthians 14:40 in KJV
+#
+#     quick reference:
+#         check "editorconfig [filename]"
+#         validate "ec -config .editorconfig"
+#         docs "https://editorconfig.org"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# END CLOSING
+# ═══════════════════════════════════════════════════════════════════════════
