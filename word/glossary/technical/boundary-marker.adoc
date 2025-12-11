@@ -1,0 +1,106 @@
+// #!omni data --adoc
+// ===========================================================================
+// METADATA BLOCK
+// ===========================================================================
+// :key: GLOSS-TECH-005
+// :term: boundary-marker
+// :category: technical
+// :status: Active
+// :created: 2025-12-11
+// :authors: Nova Dawn, Seanje Lenox-Wise
+// :biblical_foundation: Genesis 1:4
+// :companion_data: boundary-marker.jsonc
+// ===========================================================================
+
+// ===========================================================================
+// CONTENT BLOCK
+// ===========================================================================
+
+= boundary-marker
+
+*Definition:* Parseable comment format that marks block boundaries, enabling Linux tools (grep, sed, awk) to navigate and operate on structured files.
+
+[quote, Genesis 1:4 KJV]
+____
+And God saw the light, that it was good: and God divided the light from the darkness.
+____
+link:../../scripture/KJV/Genesis/Chapter_1/Verse_4.txt[Read verse ^]
+
+== Why It Matters
+
+Structure enables systematic operations. Boundary markers make blocks *addressable* - you can find, extract, replace, or validate specific blocks without loading or parsing entire files.
+
+== Format by File Type
+
+[cols="1,3"]
+|===
+|Format |Pattern
+
+|*AsciiDoc*
+a|
+----
+////
+═══════════════════════════════════════════════════════════════════════════════
+BLOCK NAME
+═══════════════════════════════════════════════════════════════════════════════
+////
+----
+
+|*Go/Bash*
+a|
+----
+// ===========================================================================
+// BLOCK NAME
+// ===========================================================================
+----
+
+|*JSONC*
+a|
+----
+// ===========================================================================
+// BLOCK NAME
+// ===========================================================================
+----
+|===
+
+== Linux Tool Integration
+
+[cols="1,2,2"]
+|===
+|Tool |Command |Purpose
+
+|*grep*
+|`grep -n 'BLOCK NAME' file`
+|Find block line numbers
+
+|*sed* (extract)
+|`sed -n '/BLOCK NAME/,/END BLOCK/p' file`
+|Extract specific block
+
+|*sed* (remove)
+|`sed -i 'N,Md' file`
+|Remove lines N through M
+|===
+
+== What This Enables
+
+* *Targeted retrieval* - extract exactly what's needed
+* *Batch operations* - process multiple files consistently
+* *Validation* - check block presence without full parse
+* *Block-by-block workflow* - edit entire blocks as units
+
+== Core Principle
+
+Comments aren't just for humans - they're *parseable structure* that enables tooling. The format is consistent so tools can rely on it.
+
+== Related Concepts
+
+* link:4-block.adoc[4-block] - code structure using boundary markers
+* link:5-block.adoc[5-block] - documentation structure using boundary markers
+* link:3-block.adoc[3-block] - data structure using boundary markers
+* link:../operations/targeted-retrieval.adoc[targeted-retrieval] - accessing information efficiently
+* link:../biblical/badal.adoc[badal] - to divide, separate (biblical root)
+
+// ===========================================================================
+// END CONTENT
+// ===========================================================================

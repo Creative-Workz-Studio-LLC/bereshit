@@ -1,0 +1,57 @@
+{
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+  "metadata": {
+    "key": "GLOSS-TECH-005",
+    "term": "boundary-marker",
+    "category": "technical",
+    "status": "active",
+    "created": "2025-12-11",
+    "authors": ["Nova Dawn", "Seanje Lenox-Wise"],
+    "biblical_foundation": "Genesis 1:4 - God divided the light from the darkness"
+  },
+
+  // ============================================================================
+  // CONTENT
+  // ============================================================================
+  "definition": "Parseable comment format that marks block boundaries, enabling Linux tools (grep, sed, awk) to navigate and operate on structured files.",
+
+  "why_it_matters": "Structure enables systematic operations. Boundary markers make blocks addressable - you can find, extract, replace, or validate specific blocks without loading or parsing entire files.",
+
+  "format": {
+    "asciidoc": "////\n═══════════════════════════════════════════════════════════════════════════════\nBLOCK NAME\n═══════════════════════════════════════════════════════════════════════════════\n////",
+    "go_bash": "// ===========================================================================\n// BLOCK NAME\n// ===========================================================================",
+    "jsonc": "// ===========================================================================\n// BLOCK NAME\n// ==========================================================================="
+  },
+
+  "linux_tools": {
+    "grep": {
+      "command": "grep -n 'BLOCK NAME' file",
+      "purpose": "Find block line numbers"
+    },
+    "sed_extract": {
+      "command": "sed -n '/BLOCK NAME/,/END BLOCK/p' file",
+      "purpose": "Extract specific block"
+    },
+    "sed_remove": {
+      "command": "sed -i 'N,Md' file",
+      "purpose": "Remove lines N through M"
+    }
+  },
+
+  "enables": [
+    "Targeted retrieval - extract exactly what's needed",
+    "Batch operations - process multiple files consistently",
+    "Validation - check block presence without full parse",
+    "Block-by-block workflow - edit entire blocks as units"
+  ],
+
+  "core_principle": "Comments aren't just for humans - they're parseable structure that enables tooling. The format is consistent so tools can rely on it.",
+
+  // ============================================================================
+  // CLOSING
+  // ============================================================================
+  "see_also": ["4-block", "5-block", "3-block", "block-by-block", "targeted-retrieval", "badal"],
+  "companion_doc": "boundary-marker.adoc"
+}

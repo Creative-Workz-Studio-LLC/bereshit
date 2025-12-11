@@ -1,0 +1,91 @@
+// #!omni data --adoc
+// ===========================================================================
+// METADATA BLOCK
+// ===========================================================================
+// :key: GLOSS-OPS-016
+// :term: block-by-block
+// :category: operations
+// :status: Active
+// :created: 2025-12-11
+// :authors: Nova Dawn, Seanje Lenox-Wise
+// :biblical_foundation: Nehemiah 3
+// :companion_data: block-by-block.jsonc
+// ===========================================================================
+
+// ===========================================================================
+// CONTENT BLOCK
+// ===========================================================================
+
+= block-by-block
+
+*Definition:* Workflow approach where each block is a unit of work - edit an entire block, then move to the next. Not section-by-section within blocks, not wholesale across all blocks.
+
+[quote, Nehemiah 3:1 KJV]
+____
+Then Eliashib the high priest rose up with his brethren the priests, and they builded the sheep gate...
+____
+link:../../scripture/KJV/Nehemiah/Chapter_3/Verse_1.txt[Read verse ^]
+
+== The Insight
+
+Blocks are *atomic units*. You can edit an entire block as one operation, then move to the next. This works because link:../technical/boundary-marker.adoc[boundary markers] make blocks addressable.
+
+== What It Is
+
+* Each block is a unit of work
+* Edit entire block, then move to next
+* Blocks are addressable via boundary markers
+* Linux tools can operate on block boundaries
+
+== What It Is NOT
+
+* Section-by-section within a block (too granular)
+* Wholesale across all blocks at once (too broad)
+* Line-by-line editing (loses block context)
+* Ignoring block boundaries (loses structure)
+
+== Why It Works
+
+[cols="1,2"]
+|===
+|Capability |How
+
+|*Blocks are findable*
+|`grep -n 'BLOCK NAME' file` finds boundaries
+
+|*Blocks are extractable*
+|`sed -n '/START/,/END/p' file` gets the block
+
+|*Blocks are replaceable*
+|Edit tool can replace entire block content
+
+|*Blocks are validatable*
+|Each block checked independently
+|===
+
+== Workflow Steps
+
+1. Identify which block to work on
+2. Find block boundaries (`grep` for markers)
+3. Edit the entire block as a unit
+4. Verify block is complete
+5. Move to next block
+
+== What This Enables
+
+* *Targeted editing* - without loading full file
+* *Batch operations* - across multiple files
+* *Independent validation* - per block
+* *Clean separation* - of concerns
+
+== Related Concepts
+
+* link:../technical/boundary-marker.adoc[boundary-marker] - what makes blocks addressable
+* link:targeted-retrieval.adoc[targeted-retrieval] - accessing specific information
+* link:../technical/4-block.adoc[4-block] - code block structure
+* link:../technical/5-block.adoc[5-block] - documentation block structure
+* link:../technical/3-block.adoc[3-block] - data block structure
+
+// ===========================================================================
+// END CONTENT
+// ===========================================================================
