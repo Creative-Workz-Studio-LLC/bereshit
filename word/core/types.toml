@@ -49,8 +49,9 @@
 #   Architect: Seanje Lenox-Wise
 #   Implementation: Nova Dawn
 #   Created: 2025-12-11
-#   Version: a-01.00
+#   Version: a-01.25
 #   Modified: 2025-12-11 - Initial creation
+#   Modified: 2025-12-12 - Added formal collection types (list, map, set, bytes)
 #
 # # Purpose & Function
 #
@@ -198,6 +199,62 @@ fixed_length = true
 heterogeneous = true           # Elements can have different types
 # Biblical syntax (sequential listing):
 #   tuple of text and number and bool3
+
+# --- Built-in Collection Types ---
+# These are primitive collections referenced throughout the type system
+
+[list]
+name = "list"
+description = "Ordered homogeneous collection — sequence of same-typed elements"
+kind = "collection"
+element_type = "generic"  # list<T> — element type specified at use
+ordered = true
+allows_duplicates = true
+length_type = "uint9"  # Max 19,682 elements (3^9)
+# Biblical syntax (multitude — "gather"):
+#   names as list of text
+#   scores as list of int27
+# See: syntax.toml [collection.list_of]
+
+[map]
+name = "map"
+description = "Key-value collection — associates keys with values"
+kind = "collection"
+key_type = "hashable"  # Keys must be primitives or text
+value_type = "generic"  # map<K,V> — types specified at use
+ordered = false  # No guaranteed iteration order
+allows_duplicate_keys = false
+# Biblical syntax (correspondence — "assigns"):
+#   ages as map of text to int27
+#   permissions as map of text to Permission
+# See: syntax.toml [collection.map_of_to]
+
+[set]
+name = "set"
+description = "Unordered unique collection — each element appears once"
+kind = "collection"
+element_type = "hashable"  # Must be comparable for uniqueness
+ordered = false
+allows_duplicates = false
+# Biblical syntax (gathering without repetition — "unique"):
+#   tags as set of text
+#   visited as set of PathID
+# See: syntax.toml [collection.set_of]
+
+[bytes]
+name = "bytes"
+description = "Binary data — sequence of uint8 values for raw storage"
+kind = "collection"
+element_type = "uint8"  # Fixed: always uint8
+definition = "list<uint8>"  # Formal definition
+ordered = true
+allows_duplicates = true
+use_cases = ["file_content", "binary_data", "serialization", "network_payload"]
+# Biblical syntax (raw matter — "substance"):
+#   content as bytes
+#   payload as bytes
+# Note: bytes is the bridge between ternary logic and binary hardware
+#       See primitives.toml [storage] for binary representation
 
 
 # -----------------------------------------------------------------------------
@@ -487,6 +544,17 @@ length_type = "uint9 (supports up to 19,682 elements)"
 packed = "Length prefix + packed key-value pairs"
 unpacked = "JSON-like object representation"
 key_constraint = "Keys must be hashable (primitives or text)"
+
+[storage_alignment.set]
+packed = "Length prefix + packed unique elements"
+unpacked = "JSON-like array with uniqueness constraint"
+element_constraint = "Elements must be hashable"
+
+[storage_alignment.bytes]
+packed = "Length prefix (uint9) + raw uint8 sequence"
+unpacked = "Base64 or hex string representation"
+element_size = "1 byte (uint8)"
+note = "Bridge between ternary logic and binary hardware storage"
 
 [storage_alignment.bible_connection]
 note = "Bible addressing (bible/addressing.toml) validates storage model"
