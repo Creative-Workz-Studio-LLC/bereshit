@@ -1,0 +1,468 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-core-README
+:title: Bereshit Core — Foundation Types, Schemas, and Contracts
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: 1.0.0
+:revdate: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-12
+:updated: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/core/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: core, types, schemas, contracts, foundation
+:keywords: foundation types, validation schemas, behavioral contracts, Phase 0
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Navigate and understand the core/ foundation — what each area does and how they relate
+:description: Entry point to Bereshit core definitions: primitives, types, schemas, contracts, and Bible encoding
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: 1 Corinthians 3:11 KJV/WEB — For other foundation can no man lay than that is laid
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*The foundation upon which all Bereshit systems are built*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+image:https://img.shields.io/badge/Phase-0-purple?style=flat[Phase]
+
+_"For other foundation can no man lay than that is laid, which is Jesus Christ."_ — 1 Corinthians 3:11 KJV
+
+'''
+
+*<<overview,Overview>>* • *<<structure,Structure>>* • *<<root-files,Root Files>>* • *<<subfolders,Subfolders>>* • *<<dependencies,Dependencies>>* • *<<biblical-foundation,Biblical Foundation>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+The `core/` folder contains the *foundation definitions* for all Bereshit systems: primitive types, composite types, validation schemas, behavioral contracts, and Bible encoding/decoding rules.
+
+[IMPORTANT]
+====
+*core/ is Phase 0's deliverable.* Everything else builds on these definitions. If core/ is wrong, everything built on it is wrong.
+====
+
+[NOTE]
+====
+*Scope:*
+
+[cols="1,3", options="header"]
+|===
+| In Scope | Out of Scope
+| Type definitions (primitives, composites) | Implementation code
+| Validation schemas | Runtime behavior
+| Behavioral contracts | Specific file formats
+| Bible encoding/decoding rules | Scripture content itself
+|===
+====
+
+'''
+
+[[what-this-provides]]
+=== What This Document Provides
+
+[cols="^1,3,4,3",options="header"]
+|===
+| | Category | What You'll Find | Who It Serves
+
+| 🗂️
+| *Navigation*
+| File and folder structure overview
+| Anyone exploring core/
+
+| 🔗
+| *Relationships*
+| How pieces depend on each other
+| Architects, maintainers
+
+| 📖
+| *Purpose*
+| Why each area exists
+| New team members, learners
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[structure]]
+== Folder Structure
+
+[source]
+----
+core/
+├── .health              # Health tracking for this folder
+├── primitives.toml      # Atomic types (Trit, HealthScore, etc.)
+├── types.toml           # Composite types (relationships, composition)
+├── keywords.toml        # Reserved words and identifiers
+├── syntax.toml          # Grammar and parsing rules
+├── validation.toml      # General validation rules
+├── bible/               # Scripture encoding/decoding
+│   ├── README.adoc      # → bible/ documentation
+│   ├── addressing.toml  # Book/chapter/verse addressing
+│   ├── encoding.toml    # True → stored conversion
+│   ├── decoding.toml    # Stored → true conversion
+│   └── translation.toml # KJV ↔ WEB mappings
+├── schemas/             # Validation schemas
+│   ├── README.adoc      # → schemas/ documentation
+│   ├── health.toml      # Health score validation
+│   ├── identity.toml    # Identity validation
+│   ├── timestamp.toml   # Temporal validation
+│   └── ...              # Other domain schemas
+└── contracts/           # Behavioral contracts
+    ├── README.adoc      # → contracts/ documentation
+    ├── health-provider.toml  # Health scoring behavior
+    ├── filesystem.toml  # File operations behavior
+    ├── identity.toml    # Identity management behavior
+    └── network.toml     # Network operations behavior
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[root-files]]
+== Root Files
+
+The root-level `.toml` files define the language itself — primitives, types, keywords, syntax, and validation.
+
+[cols="2,4,2",options="header"]
+|===
+| File | Purpose | Dependency Level
+
+| *primitives.toml*
+| Atomic types: Trit, HealthScore, Timestamp, Direction, etc.
+| Foundation (no dependencies)
+
+| *types.toml*
+| Composite types: how primitives compose into structures
+| Rung (depends on primitives)
+
+| *keywords.toml*
+| Reserved words, identifiers, naming conventions
+| Rung (depends on primitives)
+
+| *syntax.toml*
+| Grammar rules, parsing patterns, block structures
+| Rung (depends on primitives, keywords)
+
+| *validation.toml*
+| General validation rules across all types
+| Rung (depends on types)
+|===
+
+[TIP]
+====
+*Start with primitives.toml* — it has no dependencies and defines the atomic building blocks. Everything else builds from there.
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[subfolders]]
+== Subfolders
+
+Each subfolder has its own README.adoc with detailed documentation.
+
+[[bible-folder]]
+=== bible/ — Scripture Encoding/Decoding
+
+The Bible encoding system that maps between KJV and WEB translations, handling addressing, encoding, and decoding.
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| *addressing.toml*
+| Book, chapter, verse addressing (e.g., "Genesis 1:1")
+
+| *encoding.toml*
+| Converting true values to stored representation
+
+| *decoding.toml*
+| Converting stored representation back to true values
+
+| *translation.toml*
+| KJV ↔ WEB translation mappings
+|===
+
+*→ See:* link:bible/README.adoc[bible/README.adoc] for full documentation
+
+[[schemas-folder]]
+=== schemas/ — Validation Schemas
+
+Schemas define WHAT is valid — the structure and constraints for each domain type.
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| *health.toml*
+| Health score validation (0-255 storage, -100 to +100 true)
+
+| *identity.toml*
+| Identity validation (keys, names, relationships)
+
+| *timestamp.toml*
+| Temporal validation (dates, durations, epochs)
+
+| *permission.toml*
+| Permission validation (access, capabilities)
+
+| *message.toml*
+| Message validation (content, metadata)
+
+| *file-type.toml*
+| File type validation (extensions, MIME types)
+
+| *health-log.toml*
+| Health log validation (history, changes)
+
+| *health-diagnostics.toml*
+| Diagnostic validation (errors, warnings)
+|===
+
+*→ See:* link:schemas/README.adoc[schemas/README.adoc] for full documentation
+
+[[contracts-folder]]
+=== contracts/ — Behavioral Contracts
+
+Contracts define HOW components must behave — the promises they make and keep.
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| *health-provider.toml*
+| What any health provider must do (read, write, normalize)
+
+| *filesystem.toml*
+| What filesystem operations must guarantee
+
+| *identity.toml*
+| What identity management must provide
+
+| *network.toml*
+| What network operations must ensure
+|===
+
+*→ See:* link:contracts/README.adoc[contracts/README.adoc] for full documentation
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[dependencies]]
+== Dependency Graph
+
+[source]
+----
+                    ┌─────────────────┐
+                    │  primitives.toml │  ← Foundation (0)
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+         ▼                   ▼                   ▼
+  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+  │ types.toml  │    │keywords.toml│    │  bible/     │
+  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘
+         │                   │                   │
+         └───────────┬───────┘                   │
+                     │                           │
+                     ▼                           │
+              ┌─────────────┐                    │
+              │ syntax.toml │                    │
+              └──────┬──────┘                    │
+                     │                           │
+         ┌───────────┴───────────┐               │
+         │                       │               │
+         ▼                       ▼               │
+  ┌─────────────┐        ┌─────────────┐        │
+  │validation.toml│      │  schemas/   │ ◄──────┘
+  └──────┬──────┘        └──────┬──────┘
+         │                       │
+         └───────────┬───────────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │ contracts/  │  ← Top (builds on everything)
+              └─────────────┘
+----
+
+[IMPORTANT]
+====
+*Dependency direction:* Lower levels NEVER depend on higher levels. `primitives.toml` knows nothing about `contracts/`. This ensures the foundation remains stable.
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*The foundation principle:* Just as Christ is the one foundation upon which all else is built, `core/` is the one foundation upon which all Bereshit systems are built. If the foundation is wrong, everything built on it fails.
+====
+
+_"For other foundation can no man lay than that is laid, which is Jesus Christ."_ — *1 Corinthians 3:11 KJV*
+
+_"For no one can lay any other foundation than that which has been laid, which is Jesus Christ."_ — *1 Corinthians 3:11 WEB*
+
+*Applied:* The KJV's "can no man lay" and WEB's "no one can lay" express the same truth: foundations are singular and non-negotiable. `core/` serves this role — it defines the primitives, types, schemas, and contracts that everything else depends on. To change core/ is to change everything built on it. This is why Phase 0 focuses entirely on getting the foundation right.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📐
+| *link:../research/bereshit-base-mathematics.adoc[Bereshit Base Mathematics]*
+| Formal mathematical specification of the type system
+
+| 📐
+| *link:../research/bereshit-base-algorithms.adoc[Bereshit Base Algorithms]*
+| Pseudocode implementations of core operations
+
+| 📖
+| *link:../journey/phase-0/[Phase 0 Journey]*
+| How core/ was built (reproducible path)
+|===
+
+=== Subfolder Documentation
+
+* link:bible/README.adoc[bible/README.adoc] — Scripture encoding/decoding
+* link:schemas/README.adoc[schemas/README.adoc] — Validation schemas
+* link:contracts/README.adoc[contracts/README.adoc] — Behavioral contracts
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:primitives.toml[primitives.toml] — Start here for the atomic building blocks
+* link:types.toml[types.toml] — How primitives compose into structures
+* link:../research/[research/] — Mathematical and algorithmic foundations
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"For other foundation can no man lay than that is laid, which is Jesus Christ."_ — *1 Corinthians 3:11*
+
+*The foundation upon which Kingdom Technology is built.*
+--

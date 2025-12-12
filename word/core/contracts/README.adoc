@@ -1,0 +1,345 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-core-contracts-README
+:title: Behavioral Contracts — HOW Components Must Behave
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: 1.0.0
+:revdate: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-12
+:updated: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/core/contracts/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: contracts, behavior, promises, guarantees
+:keywords: behavioral contracts, interface contracts, promises, guarantees, covenants
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Document the behavioral contracts — HOW components must behave
+:description: Behavioral contracts defining the promises components make and must keep
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: Numbers 30:2 KJV/WEB — If a man vow a vow unto the LORD, he shall not break his word
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*The promises components make and must keep*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+
+_"If a man vow a vow unto the LORD, or swear an oath to bind his soul with a bond; he shall not break his word, he shall do according to all that proceedeth out of his mouth."_ — Numbers 30:2 KJV
+
+'''
+
+*<<overview,Overview>>* • *<<contract-structure,Contract Structure>>* • *<<files,Files>>* • *<<biblical-foundation,Biblical Foundation>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+The `contracts/` folder defines *HOW components must behave* — the promises they make and must keep. A health provider MUST normalize values. A filesystem operation MUST preserve integrity. These are covenants — behavioral guarantees.
+
+[IMPORTANT]
+====
+*Contracts define HOW. Schemas define WHAT.*
+
+Schemas: "A HealthScore is an integer 0-255"
+Contracts: "A health provider MUST normalize before storing"
+====
+
+[NOTE]
+====
+*Scope:*
+
+[cols="1,3", options="header"]
+|===
+| In Scope | Out of Scope
+| Behavioral requirements (MUST, SHOULD) | Data structure (see schemas/)
+| Preconditions and postconditions | Implementation details
+| Error handling requirements | Specific error messages
+| Interface guarantees | Concrete implementations
+|===
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[contract-structure]]
+== Contract Structure
+
+Each contract defines:
+
+[cols="2,4",options="header"]
+|===
+| Section | What It Specifies
+
+| *Purpose*
+| Why this contract exists, what problem it solves
+
+| *Parties*
+| Who provides and who consumes (provider/consumer)
+
+| *Preconditions*
+| What MUST be true before an operation
+
+| *Postconditions*
+| What MUST be true after an operation
+
+| *Invariants*
+| What MUST always be true
+
+| *Error handling*
+| What MUST happen when things go wrong
+|===
+
+[[requirement-levels]]
+=== Requirement Levels
+
+Following RFC 2119 semantics:
+
+[cols="1,4",options="header"]
+|===
+| Keyword | Meaning
+
+| *MUST*
+| Absolute requirement — violation breaks the contract
+
+| *MUST NOT*
+| Absolute prohibition — doing this breaks the contract
+
+| *SHOULD*
+| Strong recommendation — exceptions need justification
+
+| *SHOULD NOT*
+| Strong discouragement — exceptions need justification
+
+| *MAY*
+| Optional — implementation choice
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[files]]
+== Files
+
+[cols="2,4",options="header"]
+|===
+| File | Domain
+
+| *health-provider.toml*
+| Health scoring behavior — read, write, normalize, convert, display
+
+| *filesystem.toml*
+| File operations — create, read, update, delete, atomic operations
+
+| *identity.toml*
+| Identity management — creation, verification, relationships
+
+| *network.toml*
+| Network operations — connections, timeouts, retries, security
+|===
+
+[[health-provider]]
+=== health-provider.toml — Health Scoring
+
+What any health provider MUST do:
+
+* **Read**: MUST return valid HealthScore or error
+* **Write**: MUST normalize before storing
+* **Convert**: MUST preserve anchor (128 ↔ 0)
+* **Display**: MUST use correct level names (broken → perfect)
+
+[[filesystem]]
+=== filesystem.toml — File Operations
+
+What filesystem operations MUST guarantee:
+
+* **Atomicity**: Write MUST complete fully or not at all
+* **Integrity**: Read MUST return what was written
+* **Health tracking**: MUST update .health on modification
+* **Error handling**: MUST report, not silently fail
+
+[[identity-contract]]
+=== identity.toml — Identity Management
+
+What identity operations MUST provide:
+
+* **Uniqueness**: Keys MUST be unique within scope
+* **Traceability**: MUST maintain derives_from chains
+* **Verification**: MUST validate format on creation
+
+[[network]]
+=== network.toml — Network Operations
+
+What network operations MUST ensure:
+
+* **Timeout handling**: MUST respect configured timeouts
+* **Retry logic**: MUST implement exponential backoff
+* **Security**: MUST validate connections
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Contracts are covenants.* When a component promises behavior, it MUST keep that promise. This is the software expression of vow-keeping.
+====
+
+_"If a man vow a vow unto the LORD, or swear an oath to bind his soul with a bond; he shall not break his word, he shall do according to all that proceedeth out of his mouth."_ — *Numbers 30:2 KJV*
+
+_"When a man vows a vow to Yahweh, or swears an oath to bind his soul with a bond, he shall not break his word. He shall do according to all that proceeds out of his mouth."_ — *Numbers 30:2 WEB*
+
+*Applied:* The KJV's "shall not break his word" and WEB's "shall not break his word" (same in this case) express vow-keeping. A contract is a vow — the component declares "I WILL do this" and then MUST do it. Breaking a contract is breaking a vow. This is why contracts use MUST, not "should try to."
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📐
+| *link:../../research/bereshit-base-algorithms.adoc[Bereshit Base Algorithms]*
+| Algorithms that contracts must follow
+
+| 📖
+| *link:../schemas/README.adoc[schemas/README.adoc]*
+| Validation schemas (WHAT is valid)
+
+| 📖
+| *link:../README.adoc[core/README.adoc]*
+| Parent documentation — how contracts/ fits in core/
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:health-provider.toml[health-provider.toml] — Health scoring contract
+* link:filesystem.toml[filesystem.toml] — File operations contract
+* link:identity.toml[identity.toml] — Identity management contract
+* link:network.toml[network.toml] — Network operations contract
+* link:../schemas/[schemas/] — Validation schemas
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"When thou vowest a vow unto God, defer not to pay it."_ — *Ecclesiastes 5:4 KJV*
+
+*Promises made. Promises kept.*
+--

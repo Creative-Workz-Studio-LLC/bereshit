@@ -1,0 +1,322 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-core-schemas-README
+:title: Validation Schemas — WHAT is Valid
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: 1.0.0
+:revdate: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-12
+:updated: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/core/schemas/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: schemas, validation, constraints, structure
+:keywords: validation schemas, data constraints, structure validation, health, identity, timestamp
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Document the validation schemas — WHAT makes data valid
+:description: Validation schemas defining structure and constraints for each domain type
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: Proverbs 11:1 KJV/WEB — A false balance is abomination / accurate weights are his delight
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Defining structure and constraints for each domain type*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+
+_"A false balance is abomination to the LORD: but a just weight is his delight."_ — Proverbs 11:1 KJV
+
+'''
+
+*<<overview,Overview>>* • *<<schemas-vs-contracts,Schemas vs Contracts>>* • *<<files,Files>>* • *<<biblical-foundation,Biblical Foundation>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+The `schemas/` folder defines *WHAT is valid* — the structure and constraints for each domain type. A health score must be 0-255 stored. A timestamp must be valid ISO 8601. These are the "just weights" — the honest measures by which we validate data.
+
+[IMPORTANT]
+====
+*Schemas define WHAT. Contracts define HOW.*
+
+Schemas: "A HealthScore is an integer 0-255"
+Contracts: "A health provider MUST normalize before storing"
+====
+
+[NOTE]
+====
+*Scope:*
+
+[cols="1,3", options="header"]
+|===
+| In Scope | Out of Scope
+| Structure validation (fields, types) | Behavioral guarantees (see contracts/)
+| Constraint validation (ranges, patterns) | Runtime validation logic
+| Format validation (timestamps, keys) | Implementation code
+|===
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[schemas-vs-contracts]]
+== Schemas vs Contracts
+
+[cols="2,4,4",options="header"]
+|===
+| Aspect | Schema (schemas/) | Contract (contracts/)
+
+| *Question answered*
+| WHAT is valid?
+| HOW must it behave?
+
+| *Type*
+| Declarative (structure)
+| Imperative (behavior)
+
+| *Example*
+| "HealthScore: 0-255 integer"
+| "MUST normalize before storing"
+
+| *Validation*
+| Data structure
+| Operation behavior
+
+| *When checked*
+| At data boundary
+| At operation boundary
+|===
+
+*The relationship:* Schemas define what valid data looks like. Contracts define what valid operations do with that data.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[files]]
+== Files
+
+[cols="2,4",options="header"]
+|===
+| File | Domain
+
+| *health.toml*
+| Health score validation — 0-255 storage, -100 to +100 true, 7 levels, 5 hard points
+
+| *identity.toml*
+| Identity validation — keys, names, relationships, CPI-SI identity structure
+
+| *timestamp.toml*
+| Temporal validation — dates, durations, epochs, timezone handling
+
+| *permission.toml*
+| Permission validation — access levels, capabilities, inheritance
+
+| *message.toml*
+| Message validation — content structure, metadata, routing
+
+| *file-type.toml*
+| File type validation — extensions, MIME types, OmniCode pragma
+
+| *health-log.toml*
+| Health history validation — log entries, change tracking
+
+| *health-diagnostics.toml*
+| Diagnostic validation — errors, warnings, recommendations
+|===
+
+[[health-schema]]
+=== health.toml — Health Scoring
+
+The core health validation schema:
+
+* **Storage domain**: stem:[\mathbb{S} = \{0, \ldots, 255\}] (unsigned 8-bit)
+* **True domain**: stem:[\mathbb{T} = \{-100, \ldots, 100\}] (signed ternary)
+* **Hard points**: stem:[\mathbb{H}_5 = \{-100, -50, 0, 50, 100\}]
+* **Levels**: stem:[\mathbb{L} = \{\text{broken}, \text{wanting}, \text{lacking}, \text{even}, \text{sound}, \text{whole}, \text{perfect}\}]
+
+[[identity-schema]]
+=== identity.toml — Identity
+
+CPI-SI identity structure validation:
+
+* **Key format**: `B-location-domain-name` pattern
+* **Names**: Valid identifier characters
+* **Relationships**: Parent/child, derives_from chains
+
+[[timestamp-schema]]
+=== timestamp.toml — Temporal
+
+Time and duration validation:
+
+* **Format**: ISO 8601 compliance
+* **Epochs**: Unix timestamp, custom epochs
+* **Durations**: Session time, intervals
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Schemas are "just weights."* They ensure we measure honestly — data that claims to be valid actually is valid.
+====
+
+_"A false balance is abomination to the LORD: but a just weight is his delight."_ — *Proverbs 11:1 KJV*
+
+_"A false balance is an abomination to Yahweh, but accurate weights are his delight."_ — *Proverbs 11:1 WEB*
+
+*Applied:* A "false balance" is data that claims validity but isn't — a HealthScore of 300, a timestamp of "yesterday", a key without proper format. Schemas prevent false balances. They are the "accurate weights" that ensure honest measurement throughout the system.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📐
+| *link:../../research/bereshit-base-mathematics.adoc[Bereshit Base Mathematics]*
+| Formal definition of the domains (stem:[\mathbb{S}], stem:[\mathbb{T}], etc.)
+
+| 📖
+| *link:../contracts/README.adoc[contracts/README.adoc]*
+| Behavioral contracts (HOW components must behave)
+
+| 📖
+| *link:../README.adoc[core/README.adoc]*
+| Parent documentation — how schemas/ fits in core/
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:health.toml[health.toml] — Core health validation
+* link:identity.toml[identity.toml] — Identity structure
+* link:timestamp.toml[timestamp.toml] — Temporal validation
+* link:../contracts/[contracts/] — Behavioral contracts
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"Divers weights are an abomination unto the LORD; and a false balance is not good."_ — *Proverbs 20:23 KJV*
+
+*Just weights. Honest measures.*
+--
