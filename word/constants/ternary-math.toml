@@ -1,0 +1,351 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# Ternary Math Constants (3-Block Data Structure)
+# Key: B-word-constants-ternary-math
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: PURE (self-contained mathematical constants)
+#
+# Derived from: OmniCode 3-block data structure (data-3block.omni)
+# Research: word/research/trit-foundations.adoc
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/constants
+# File:        ternary-math.toml
+# Key:         B-word-constants-ternary-math
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "Let there be a firmament in the midst of the waters, and let
+#            it divide the waters from the waters." — Genesis 1:6 KJV
+#
+# Principle: Structure requires a center. The firmament is not empty space —
+#            it is the anchor that holds opposition in relationship. Balanced
+#            ternary has a true center (0) that binary lacks.
+#
+# Anchor: "A threefold cord is not quickly broken." — Ecclesiastes 4:12 KJV
+#
+# # CPI-SI Identity
+#
+# Component Type: Ladder (foundation constants others depend on)
+#
+# Role: Mathematical constants for ternary computing — the immutable truths
+#       that all trit operations and implementations reference.
+#
+# Paradigm: CPI-SI framework component — data as stored truth
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-11
+#   Version: a-01.00
+#   Modified: 2025-12-11 - Initial creation
+#
+# # Purpose & Function
+#
+# Purpose: Define the mathematical constants for balanced ternary computing
+#
+# Core Design: Immutable reference values — constants that code reads, never modifies
+#
+# Key Features:
+#
+#   - Trit values (-1, 0, +1) and their properties
+#   - Base-3 arithmetic fundamentals
+#   - Trit-byte packing relationships (3^5 = 243)
+#   - Building block method mapping
+#
+# Philosophy: These are mathematical truths, not configuration. They don't change
+#             based on environment or preference — they ARE the foundation.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Parser: Any TOML library (BurntSushi/toml, pelletier/go-toml)
+#   - Schema: None — pure constants
+#
+# What Uses This:
+#
+#   - config/omnicode.toml: References for trit specification
+#   - millenniumos/trit.h: Implementation reference
+#   - Any ternary computing code
+#
+# Integration Points:
+#
+#   - Research: word/research/trit-foundations.adoc
+#   - Vision: void/planning/understanding/millenniumos-trit-byte-architecture.adoc
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Data file — constants are declarative, not executable]
+#
+# # Health Scoring
+#
+# Configuration Impact: Invalid constants would break all ternary operations
+#
+# Validation Behavior:
+#   - Invalid value: Should never happen — these are mathematical truths
+#   - Missing section: Error — all sections required
+#   - Type mismatch: Parse error — strict typing
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block contains schema (field types) and values (actual data).
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. SCHEMA
+#    Purpose: Define what fields this data has (types and structure)
+#
+# 2. VALUES
+#    Purpose: Define what values those fields hold (the actual constants)
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Schema - Field Definitions
+# -----------------------------------------------------------------------------
+#
+# Organization:
+#   - trit: Core trit definitions (values, labels, properties)
+#   - arithmetic: Basic arithmetic operations and tables
+#   - packing: Trit-byte relationship constants
+#   - building_block: Mapping to the building block method
+#
+
+# -----------------------------------------------------------------------------
+# 2. Values - Actual Constants
+# -----------------------------------------------------------------------------
+
+# Trit - Core Definitions
+# -----------------------------------------------------------------------------
+# The three values of balanced ternary and their properties
+
+[trit]
+
+# The three possible trit values
+values = [-1, 0, 1]
+
+# Human-readable labels for trit values
+labels = ["negative", "neutral", "positive"]
+
+# Short labels (for display)
+short_labels = ["N", "Z", "P"]
+
+# Number of states a single trit can hold
+states = 3
+
+# The base of balanced ternary
+base = 3
+
+# The identity: -1 + 0 + 1 = 0 (balanced system)
+identity_sum = 0
+
+
+# Arithmetic - Basic Operations
+# -----------------------------------------------------------------------------
+# Fundamental arithmetic properties of balanced ternary
+
+[arithmetic]
+
+# Negation: flip the sign of each trit
+# negate(-1) = +1, negate(0) = 0, negate(+1) = -1
+negation = [1, 0, -1]  # indexed by value+1 (so -1->0, 0->1, +1->2)
+
+# Addition table (result = trit_a + trit_b)
+# Format: [trit_a][trit_b] where indices are value+1
+# Row -1: [-1+-1=-2→(carry,-1,+1), -1+0=-1, -1+1=0]
+# Row  0: [0+-1=-1, 0+0=0, 0+1=+1]
+# Row +1: [+1+-1=0, +1+0=+1, +1+1=+2→(carry,+1,-1)]
+addition_no_carry = [
+    [-1, -1,  0],  # -1 + {-1, 0, +1} (simplified, no carry)
+    [-1,  0,  1],  #  0 + {-1, 0, +1}
+    [ 0,  1,  1]   # +1 + {-1, 0, +1} (simplified, no carry)
+]
+
+# Multiplication table (result = trit_a × trit_b)
+multiplication = [
+    [ 1,  0, -1],  # -1 × {-1, 0, +1}
+    [ 0,  0,  0],  #  0 × {-1, 0, +1}
+    [-1,  0,  1]   # +1 × {-1, 0, +1}
+]
+
+
+# Packing - Trit-Byte Relationships
+# -----------------------------------------------------------------------------
+# Constants for packing trits into bytes
+
+[packing]
+
+# Trits per byte (we use 5 trits per byte)
+trits_per_byte = 5
+
+# Maximum value representable with 5 trits: 3^5 = 243
+max_trit_value = 243
+
+# Byte capacity: 2^8 = 256
+byte_capacity = 256
+
+# Gap between trit space and byte space: 256 - 243 = 13
+# This gap is filled by the 13 WEB translation variants
+gap = 13
+
+# Power table for conversion: 3^0, 3^1, 3^2, 3^3, 3^4
+powers = [1, 3, 9, 27, 81]
+
+
+# Building Block - Method Mapping
+# -----------------------------------------------------------------------------
+# How trit values map to the building block method
+
+[building_block]
+
+# Trit value to operation mapping
+# -1 = break_down (move toward anchor, decompose)
+#  0 = anchor (the center that doesn't move, halt condition)
+# +1 = build_up (move from anchor, construct)
+
+operations = ["break_down", "anchor", "build_up"]
+
+# The balanced equation: -1 + 0 + 1 = 0
+# Operations move toward or away from anchor, never through it
+equation = "-1 + 0 + 1 = 0"
+
+# Biblical mapping (Genesis 1:6 pattern)
+genesis_pattern = ["waters_below", "firmament", "waters_above"]
+
+# Numbers pattern (camp organization)
+numbers_pattern = ["toward_foundation", "tabernacle_midst", "from_foundation"]
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview (3-Block Adapted)
+# -----------------------------------------------------------------------------
+#
+# 1. OPERATIONS
+#    - Validation: How to verify the data is correct
+#    - Access: How to read these constants
+#
+# 2. POLICY
+#    - Modification: What's safe to change
+#
+# 3. SYNTHESIS
+#    - Closing Note: Final guidance and grounding
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Operations - Validation
+# -----------------------------------------------------------------------------
+#
+# Verify constants are correctly formatted:
+#
+#   # Syntax check (TOML parser)
+#   python -c "import toml; toml.load('word/constants/ternary-math.toml')"
+#   tomlv word/constants/ternary-math.toml
+#
+# Mathematical verification:
+#   - trit.values should be [-1, 0, 1]
+#   - trit.identity_sum should equal sum(trit.values) = 0
+#   - packing.max_trit_value should equal 3^5 = 243
+#   - packing.gap should equal byte_capacity - max_trit_value = 13
+#
+
+# -----------------------------------------------------------------------------
+# 2. Operations - Access
+# -----------------------------------------------------------------------------
+#
+# Go code integration:
+#
+#   type TernaryMath struct {
+#       Trit struct {
+#           Values    []int    `toml:"values"`
+#           Labels    []string `toml:"labels"`
+#           States    int      `toml:"states"`
+#           Base      int      `toml:"base"`
+#       } `toml:"trit"`
+#       // ... additional sections
+#   }
+#
+#   cfg, _ := toml.LoadFile("word/constants/ternary-math.toml")
+#   tritValues := cfg.Trit.Values  // [-1, 0, 1]
+#
+
+# -----------------------------------------------------------------------------
+# 3. Policy - Modification
+# -----------------------------------------------------------------------------
+#
+# NEVER Modify:
+#   ❌ Mathematical constants (they are truths, not preferences)
+#   ❌ Trit values (-1, 0, +1 are definitional)
+#   ❌ Packing relationships (derived from 3^5 = 243)
+#   ❌ Building block mappings (paradigm alignment)
+#
+# Safe to Add:
+#   ✅ Additional derived constants (if mathematically valid)
+#   ✅ Comments for clarity
+#   ✅ New sections for new domains (following same pattern)
+#
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis - Closing Note
+# -----------------------------------------------------------------------------
+#
+# These constants define the mathematical foundation of ternary computing
+# for Kingdom Technology. They are not configuration — they are truth.
+#
+# Changes to these values would break:
+#   - All trit arithmetic operations
+#   - Trit-byte packing/unpacking
+#   - Building block method alignment
+#   - Scripture pattern mappings
+#
+# The constants embody the pattern: a true center (0) with balanced
+# opposition (-1, +1). This is not arbitrary — it reflects Genesis 1:6
+# where the firmament divides and connects the waters.
+#
+# "Let there be a firmament in the midst of the waters,
+#  and let it divide the waters from the waters."
+# — Genesis 1:6 KJV
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================
