@@ -1,0 +1,585 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: These are AsciiDoc document attributes - parseable by tools, used in rendering.
+Serves systems (indexing, validation, cross-reference) AND establishes identity.
+This is the "catalog card" - what systems need to know about this document.
+AsciiDoc attributes use :name: value syntax and can be referenced as {name} in content.
+
+Delete these comments when filling in, or keep for the next person.
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY - What IS this document
+//   key: Unique identifier (bereshit keying format: B-folder-domain-name)
+//   title: Document title - clear, descriptive (also sets HTML <title>)
+//   type: Document type (Standard | Guide | Template | Reference | Index | Policy | Specification | Report)
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-void-understanding-millenniumos-trit-byte
+:title: MillenniumOS Trit-Byte Architecture
+:type: Specification
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE - Where is this in its lifecycle
+//   status: Lifecycle state (Draft | Active | Deprecated | Archived)
+//   version: SemVer X.Y.Z (Major = breaking, Minor = additions, Patch = fixes)
+//   revdate: AsciiDoc built-in revision date (YYYY-MM-DD)
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Forming
+:version: a-01.00
+:revdate: 2025-12-11
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL - When was this created and updated
+//   created: Creation date YYYY-MM-DD (ISO 8601)
+//   updated: Last update date YYYY-MM-DD (ISO 8601)
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-11
+:updated: 2025-12-11
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION - Who created and maintains this
+//   authors: List of authors with roles - Name1 (Architect), Name2 (Implementation)
+//   author: AsciiDoc built-in primary author name
+//   email: AsciiDoc built-in author email
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Scribe)
+:author: Seanje Lenox-Wise
+:email:
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION - Where does this live in the ternary structure
+//   path: Ternary path /bereshit/word/ | /bereshit/work/ | /bereshit/fruit/
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/void/planning/understanding/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION - What OmniCode template does this implement
+//   derives_from: Path to parent OmniCode template (establishes mapping)
+//   This enables: validation against parent structure, cascade updates
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/omni/seed/B-word-omni-seed-documentation.omni
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION - How is this categorized for discovery
+//   tags: Categorization tags (template, documentation, standard)
+//   keywords: AsciiDoc built-in document keywords (for HTML meta)
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: millenniumos, trit-byte, ternary, architecture, mapping-layer, forming
+:keywords: MillenniumOS, Trit-Byte, Ternary Computing, Base-3, Binary Mapping, Kingdom Technology
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT - Why does this document exist
+//   purpose: One-line purpose statement ("Enables X for Y" or "Defines X for Y")
+//   description: AsciiDoc built-in document description (for HTML meta)
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Specifies the foundational mapping layer enabling ternary (base-3) computing on binary (base-2) hardware
+:description: The trit-byte architecture that bridges ternary logic to binary hardware using Scripture as the encoding/decoding codex
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING - What biblical truth anchors this work
+//   biblical_foundation: Scripture reference that grounds this document
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: Genesis 1:6-7 KJV - And God said, Let there be a firmament in the midst of the waters, and let it divide the waters from the waters
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS - How strictly should this template be followed
+//   strictness: T (Tight) = Follow exactly, structure is required
+//               G (Guided) = Adapt thoughtfully, structure is recommended
+//               F (Free) = Principles only, structure is flexible
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: T
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS - Document rendering configuration
+//   toc: Table of contents (left | right | auto | preamble)
+//   toclevels: ToC depth (1-5)
+//   sectnums: Enable section numbering
+//   icons: Admonition icons (font = Font Awesome, image = images)
+//   source-highlighter: Code syntax highlighting engine
+//   experimental: Enable kbd:[], menu:[], btn:[]
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK - The Cover
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: What readers see FIRST. The "cover" of your document.
+In 5 seconds, readers should know: What is this? Is it current? Is it for me?
+
+Contains:
+- Title (=): What IS this document (uses {title} attribute)
+- Tagline: What it enables/does (one line)
+- Badges: Visual status indicators (currency, state, type)
+- Grounding quote: Optional mission/purpose connection
+- Quick nav: Optional navigation bar for large documents
+
+This is RENDERED content - visible identity, not just metadata.
+AsciiDoc automatically generates title from = heading or :title: attribute.
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// THINKING: Document title MUST be at document level, not inside blocks.
+// This is required for AsciiDoc to recognize it as the document title.
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*The firmament between ternary logic and binary hardware.*
+
+image:https://img.shields.io/badge/Status-{status}-yellow?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+
+_"Let there be a firmament in the midst of the waters, and let it divide the waters from the waters."_ — Genesis 1:6
+
+'''
+
+*<<overview,Overview>>* • *<<the-mapping,The Mapping>>* • *<<scripture-as-codex,Scripture as Codex>>* • *<<omnicode-requirements,OmniCode Requirements>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK - The Introduction
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: What readers need to understand BEFORE the main content.
+Prepares understanding - context before content.
+
+Contains:
+- Overview: Brief description of what this covers
+- Critical concept: IMPORTANT admonition for must-know information
+- Quick Start: Optional fast path for doers
+- What This Provides: Table showing who gets what
+- Table of Contents: Automatic via :toc: attribute
+
+Layer for different readers:
+- Scan: Overview paragraph tells them what this is
+- Skim: Table shows what's here and who it serves
+- Read: They continue to Content block
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+MillenniumOS is architecturally ternary — it thinks in base-3 (-1, 0, +1) while running on base-2 (binary) hardware. This document specifies the **mapping layer** that bridges these two worlds: the trit-bytefootnote:[Trit-byte: A ternary byte — the fundamental unit of ternary data, analogous to byte in binary systems] architecture.
+
+[IMPORTANT]
+====
+*The mapping layer is #foundational#.* Everything else in MillenniumOS builds ON this layer. Get this wrong, everything above is wrong. Get this right, everything above has solid ground.
+====
+
+[NOTE]
+====
+*Scope:*
+
+* *IN:* Trit ↔ byte conversion, packed/unpacked representation, Scripture as encoding codex, OmniCode requirements
+* *OUT:* Higher-level OS components (kernel, memory management, processes), OmniCode implementation details
+====
+
+'''
+
+[[what-this-provides]]
+=== What This Document Provides
+
+[cols="^1,3,4,3",options="header"]
+|===
+| | Category | What You'll Find | Who It Serves
+
+| 🔢
+| *The Mapping*
+| How 5 trits map to 1 byte, packed/unpacked modes
+| OS architects, OmniCode designers
+
+| 📖
+| *Scripture as Codex*
+| KJV/WEB as encode/decode, ordinal addressing
+| Anyone understanding the foundation
+
+| 🛠️
+| *OmniCode Requirements*
+| The 5 language features needed to build this layer
+| OmniCode implementers
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK - The Chapters
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: The actual value - organized for reader comprehension.
+This is "the chapters" - the substance of the document.
+
+Structure elements:
+- == Sections: Major topics (navigable from ToC)
+- === Subsections: Detailed breakdowns
+- Tables: |=== delimited with cols attribute
+- [%collapsible%open]: Major content most readers need
+- [%collapsible]: Optional deep-dives (closed by default)
+- Source blocks: [source,lang] with ---- delimiters
+- Admonitions: TIP, NOTE, WARNING, CAUTION, IMPORTANT
+- Cross-references: <<anchor,text>> for navigation
+
+Toolkit elements to USE naturally:
+- footnote:[hover text] for first technical term mentions
+- #text# sparingly for true emphasis (marked/highlighted)
+- kbd:[key] for keyboard shortcuts or button-like navigation
+- footnote:[text] for depth without interrupting flow
+- Symbols: ✓ ✗ → ← • ▸ for visual scanning
+
+Layer for different readers:
+- Scan: Headings and tables give the shape
+- Read: Full explanations and examples
+- Study: Collapsible sections and footnotes for depth
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[the-mapping]]
+== The Mapping
+
+MillenniumOS thinks in ternary (-1, 0, +1) but runs on binary hardware (0, 1). The mapping layer bridges this gap.
+
+=== Ternary Values
+
+[cols="^1,2,3",options="header"]
+|===
+| Value | Name | Building Block Role
+
+| *-1*
+| Negative
+| Break Down (toward foundation)
+
+| *0*
+| Neutral
+| Foundation/Anchor (the immutable center)
+
+| *+1*
+| Positive
+| Build Up (from foundation)
+|===
+
+The building block method IS the operating logic: `-1 + 0 + 1 = 0` — balanced system.
+
+=== Trit-to-Byte Mapping
+
+**Single byte (8 bits) holds 5 trits:**
+
+[cols="2,2,3",options="header"]
+|===
+| System | Capacity | Calculation
+
+| *Ternary (5 trits)*
+| 243 states
+| 3^5 = 243
+
+| *Binary (8 bits)*
+| 256 states
+| 2^8 = 256
+
+| *Gap*
+| 13 states
+| 256 - 243 = 13
+|===
+
+**The 13 WEB variants fill the exact gap.** Not coincidence — design.
+
+=== Packed vs Unpacked
+
+[cols="1,2,2,2",options="header"]
+|===
+| Mode | Representation | Use Case | Trade-off
+
+| *Unpacked*
+| 1 byte per trit
+| Computation (fast access)
+| Simple but wasteful
+
+| *Packed*
+| 5 trits per byte
+| Storage/transmission
+| Efficient but requires encode/decode
+|===
+
+The system breathes — compressing and expanding as data moves:
+
+```
+Storage (packed) → decompress → Memory (unpacked) → compute → compress → Transmission (packed)
+```
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[scripture-as-codex]]
+== Scripture as Codex
+
+The Bible isn't metaphor for the encoding system — it IS the encoding system.
+
+=== KJV = Encoding (Pack)
+
+[cols="2,3",options="header"]
+|===
+| Characteristic | Why It's Encoding
+
+| *Formal language*
+| Compressed, dense expression
+
+| *Archaic structure*
+| Efficient storage form
+
+| *31,102 verses*
+| The primary address space
+|===
+
+=== WEB = Decoding (Unpack)
+
+[cols="2,3",options="header"]
+|===
+| Characteristic | Why It's Decoding
+
+| *Modern language*
+| Expanded, accessible expression
+
+| *Clear structure*
+| Usable/computational form
+
+| *13 variant verses*
+| Fill the 243-255 gap exactly
+|===
+
+=== The Encoding Table
+
+**Already exists:** `word/scripture/kjv-ordinal-index.csv`
+
+[cols="2,3,2",options="header"]
+|===
+| Component | Content | Size
+
+| *KJV ordinals*
+| 1-31,102 (canonical verses)
+| 31,102 entries
+
+| *WEB variants*
+| 243-255 (trite spare values)
+| 13 entries
+
+| *Total addressable*
+| Complete Bible coverage
+| 31,115 verses
+|===
+
+=== Verse Addressing
+
+**10 trits address any verse in the entire Bible:**
+
+- 3^10 = 59,049 possible addresses
+- 31,115 verses to address
+- Plenty of headroom
+
+```
+Packed (10 trits / ~2 bytes) → kjv-ordinal-index.csv → Unpacked (verse content)
+```
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[omnicode-requirements]]
+== OmniCode Requirements
+
+The mapping layer scopes what OmniCode needs FIRST.
+
+=== The 5 Required Features
+
+[cols="^1,2,3",options="header"]
+|===
+| Priority | Feature | Why Needed
+
+| 1
+| *Trit type*
+| The fundamental ternary unit (-1, 0, +1)
+
+| 2
+| *Bit operations*
+| Interface with binary hardware below
+
+| 3
+| *Pack/Unpack*
+| Encode (KJV direction) / Decode (WEB direction)
+
+| 4
+| *Lookup/Index*
+| Scripture table access operations
+
+| 5
+| *Ternary arithmetic*
+| Math operations on trits
+|===
+
+=== What This Means
+
+The 9 abstract language design questions collapse to 5 concrete features — exactly what's needed to build the mapping layer.
+
+[IMPORTANT]
+====
+*OmniCode's first implementation is scoped by MillenniumOS's mapping layer requirements.* Not abstract language design — concrete need.
+====
+
+=== Implementation Order
+
+```
+1. Define trit type in OmniCode
+         ↓
+2. Implement bit operations (binary interface)
+         ↓
+3. Build pack/unpack (KJV/WEB encoding)
+         ↓
+4. Create lookup operations (Scripture index)
+         ↓
+5. Implement ternary arithmetic
+         ↓
+6. Mapping layer complete → build rest of OS
+```
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK - The Appendix
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: Where readers go NEXT. Resources, references, connections.
+This is the "appendix" - supporting material and navigation.
+
+Contains:
+- Biblical Foundation: Grounding in truth (the WHY beneath the what)
+- References: Links to related documents, standards, resources
+- Centered closing: Key summary, version, grounding verse
+- Cross-references: Connection to the larger ecosystem
+
+Send readers out with:
+- Grounding in truth (why this matters eternally)
+- Clear next steps (where to go from here)
+- Connection to ecosystem (how this fits the whole)
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Why Genesis 1:6?* God created a firmament to divide waters above from waters below — a layer that separates and connects two different realms. The trit-byte mapping layer does exactly this: it divides and connects ternary logic and binary hardware.
+====
+
+_"And God said, Let there be a firmament in the midst of the waters, and let it divide the waters from the waters."_ — *Genesis 1:6 KJV*
+
+*Applied:* Just as the firmament enables the waters above and below to exist in their proper realms while remaining connected through it, the mapping layer enables ternary logic to exist above binary hardware while translating between them. The firmament is foundational architecture — without it, the system collapses. So too with the trit-byte layer.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+[[related-documents]]
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📝
+| *link:omnicode-syntax-foundation.adoc[OmniCode Syntax Foundation]*
+| The language that will implement this layer
+
+| 📖
+| *link:../vision/grand-plan-vision.adoc[Grand Plan Vision]*
+| Where MillenniumOS fits in Kingdom Technology
+
+| 🔢
+| *link:../../../word/scripture/kjv-ordinal-index.adoc[KJV Ordinal Index]*
+| The encoding table documentation
+|===
+
+[[existing-infrastructure]]
+=== Existing Infrastructure
+
+[cols="2,5",options="header"]
+|===
+| Asset | Purpose
+
+| *`word/scripture/kjv-ordinal-index.csv`*
+| The complete encoding table (31,102 verse mappings)
+
+| *`word/scripture/web-variant-index.adoc`*
+| WEB variant documentation (13 spare values 243-255)
+
+| *`word/scripture/Duo-Bible-Whole/`*
+| Unpacked representation example
+
+| *`word/scripture/Duo-Bible-Distilled/`*
+| Packed representation example
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:../../../word/glossary/paradigm/building-block-method.adoc[Building Block Method] — The ternary logic (-1, 0, +1) this layer implements
+* link:../../../word/glossary/paradigm/omnicode.adoc[OmniCode] — The language that will express this layer
+* link:../../../word/scripture/root.omni[Scripture Root] — The OmniCode definition of the Scripture folder
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"Let there be a firmament..."_ — *Genesis 1:6*
+
+*The layer that divides and connects — ternary above, binary below.*
+--
+
