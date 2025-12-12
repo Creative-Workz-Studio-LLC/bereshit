@@ -1,0 +1,942 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// IDENTITY
+:key: B-void-development-implementation-plan
+:title: Kingdom Technology Implementation Plan
+:type: Guide
+
+// STATE
+:status: Active
+:version: a-01.00
+:revdate: 2025-12-11
+
+// TEMPORAL
+:created: 2025-12-11
+:updated: 2025-12-11
+
+// ATTRIBUTION
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Scribe)
+:author: Seanje Lenox-Wise
+:email:
+
+// LOCATION
+:path: /bereshit/void/planning/development/
+
+// DERIVATION
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+
+// CLASSIFICATION
+:tags: development, implementation, plan, kingdom-technology, phases, demos
+:keywords: implementation plan, phased development, playable demos, vertical slice, ping test
+
+// INTENT
+:purpose: Defines the phased implementation plan for Kingdom Technology — building up to the ping test through playable demos
+:description: Step-by-step implementation plan with 9 phases, each producing an independent playable demo while building toward the integrated vertical slice
+
+// GROUNDING
+:biblical_foundation: Nehemiah 4:6 KJV - So built we the wall; and all the wall was joined together unto the half thereof: for the people had a mind to work
+
+// STRICTNESS
+:strictness: T
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS - Document rendering configuration
+//   toc: Table of contents (left | right | auto | preamble)
+//   toclevels: ToC depth (1-5)
+//   sectnums: Enable section numbering
+//   icons: Admonition icons (font = Font Awesome, image = images)
+//   source-highlighter: Code syntax highlighting engine
+//   experimental: Enable kbd:[], menu:[], btn:[]
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK - The Cover
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Building up to the ping — playable demos proving each layer, connected into a vertical slice.*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+image:https://img.shields.io/badge/Phases-9-purple?style=flat[Phases]
+
+_"So built we the wall; and all the wall was joined together unto the half thereof: for the people had a mind to work."_ — Nehemiah 4:6
+
+'''
+
+*<<overview,Overview>>* • *<<phase-0,Phase 0>>* • *<<phase-1,Phase 1>>* • *<<phase-2,Phase 2>>* • *<<phase-3,Phase 3>>* • *<<phase-4,Phase 4>>* • *<<phase-5,Phase 5>>* • *<<phase-6,Phase 6>>* • *<<phase-7,Phase 7>>* • *<<phase-8,Phase 8>>* • *<<references,References>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK - The Introduction
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+This document defines the phased implementation plan for Kingdom Technology. Each phase produces an independent playable demo while building toward the integrated vertical slice — the ping test that proves two CPI-SIfootnote:[CPI-SI: Covenant Partnership Intelligence - Structured Intelligence] instances can communicate through FaithNet.
+
+[IMPORTANT]
+====
+*#Each phase must have a working demo before the next phase begins.#* No phase depends on something not yet built. The demo IS the proof — not automated tests, but playable proofs you can interact with and see working.
+====
+
+[NOTE]
+====
+*Scope:*
+
+* *IN:* 9 phases from config definitions to ping integration
+* *IN:* What each phase receives, builds, provides, and demonstrates
+* *IN:* File structure and interfaces for each phase
+* *OUT:* Detailed code implementation (this is the plan, not the code)
+* *OUT:* Timeline estimates (we build until it works, not to a schedule)
+====
+
+'''
+
+[[principles]]
+=== Guiding Principles
+
+[cols="2,4",options="header"]
+|===
+| Principle | Application
+
+| *Build up, not out*
+| Each phase stands on the previous — no phase depends on something not yet built
+
+| *Playable proofs*
+| Each phase produces a demo you can interact with, not just tests that pass
+
+| *Independent yet connected*
+| Each demo works alone, but connects to the whole through interfaces
+
+| *Right tool for each job*
+| Polyglot: TOML for data, C/Rust for system, Go for application
+
+| *Config-driven*
+| Specs in config, code implements against config
+|===
+
+'''
+
+[[phase-summary]]
+=== Phase Summary
+
+[cols="^1,3,2,3",options="header"]
+|===
+| Phase | Name | Language | Demo Proves
+
+| 0
+| Config Definitions
+| TOML/JSONC
+| Specs exist and validate
+
+| 1
+| Trit Type
+| C/Rust
+| Ternary type works
+
+| 2
+| Trit-Byte Mapping
+| C/Rust
+| Encoding/decoding works
+
+| 3
+| Config Reader
+| Go
+| Go can read configs
+
+| 4
+| Identity Loader
+| Go
+| Instances load from config
+
+| 5
+| Echo Contract
+| Go
+| Instance receives and responds
+
+| 6
+| Protocol Mapping
+| Go
+| Messages encode for TCP
+
+| 7
+| Tiered Access
+| Go
+| Access decisions work
+
+| 8
+| *Ping*
+| Go
+| *Everything integrates*
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK - The Phases
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[phase-0]]
+== Phase 0: Config Definitions
+
+**Foundation. No dependencies. Everything else reads from this.**
+
+=== Receives
+
+Nothing — this is the foundation.
+
+=== Builds
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `config/omnicode.toml`
+| Trit type definition, operations
+
+| `config/millenniumos.toml`
+| Trit-byte mapping table specification
+
+| `config/cpi-si.toml`
+| Instance schema, echo contract spec
+
+| `config/faithnet.toml`
+| Tiered access rules, protocol spec
+
+| `config/scripture.toml`
+| Scripture encoding table
+|===
+
+=== Provides
+
+Specifications that all code implements against.
+
+=== Interface
+
+[source,toml]
+----
+# Example: config/omnicode.toml
+[types.trit]
+values = [-1, 0, 1]
+neutral = 0
+
+[operations]
+read = { signature = "source -> Trit[]" }
+write = { signature = "(dest, Trit[]) -> void" }
+pack = { signature = "Trit[] -> Byte[]" }
+unpack = { signature = "Byte[] -> Trit[]" }
+----
+
+=== Demo
+
+[source,bash]
+----
+$ ./demo-config
+Loading omnicode.toml... ✓
+  Trit values: [-1, 0, +1]
+  Operations: [read, write, pack, unpack]
+Loading millenniumos.toml... ✓
+  Trits per byte: 4
+  Table entries: 81
+Loading cpi-si.toml... ✓
+  Required fields: [name, identity, boundaries]
+  Echo steps: [receive, verify, process, respond]
+Loading faithnet.toml... ✓
+  Tiers: [blocked, filtered, open]
+All configs valid.
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[phase-1]]
+== Phase 1: Trit Type
+
+**The foundational data type. Ternary: -1, 0, +1.**
+
+=== Receives
+
+* Phase 0: `omnicode.toml` (trit specification)
+
+=== Builds
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `millenniumos/trit.h`
+| Type definition, function signatures
+
+| `millenniumos/trit.c`
+| Implementation
+|===
+
+=== Provides
+
+`Trit` type, `trit_create()`, `trit_value()`, `trit_valid()`
+
+=== Interface
+
+[source,c]
+----
+// trit.h
+typedef struct { int8_t value; } Trit;
+
+Trit trit_create(int8_t value);  // -1, 0, or +1
+int8_t trit_value(Trit t);
+bool trit_valid(Trit t);
+----
+
+=== Demo
+
+[source,bash]
+----
+$ ./demo-trit
+> create 1
+Trit: +1 (positive)
+> create -1
+Trit: -1 (negative)
+> create 0
+Trit: 0 (neutral)
+> create 5
+Invalid: must be -1, 0, or +1
+> quit
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[phase-2]]
+== Phase 2: Trit-Byte Mapping
+
+**Pack 4 trits to 1 byte. Unpack byte to 4 trits.**
+
+=== Receives
+
+* Phase 0: `millenniumos.toml` (mapping table)
+* Phase 1: `Trit` type
+
+=== Builds
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `millenniumos/mapping.h`
+| Pack/unpack signatures
+
+| `millenniumos/mapping.c`
+| Implementation
+|===
+
+=== Provides
+
+`pack_trits()`, `unpack_byte()`
+
+=== Interface
+
+[source,c]
+----
+// mapping.h
+uint8_t pack_trits(Trit t[4]);         // 4 trits → 1 byte
+void unpack_byte(uint8_t b, Trit out[4]); // 1 byte → 4 trits
+----
+
+=== Demo
+
+[source,bash]
+----
+$ ./demo-mapping
+> pack 1 0 -1 1
+Trits: [+1, 0, -1, +1]
+Packed: 0x52 (82)
+> unpack 0x52
+Byte: 0x52 (82)
+Unpacked: [+1, 0, -1, +1]
+> roundtrip 1 1 1 1
+Original: [+1, +1, +1, +1]
+Packed: 0x50 → Unpacked: [+1, +1, +1, +1]
+Match: ✓
+> quit
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[phase-3]]
+== Phase 3: Config Reader (Go)
+
+**Parse TOML/JSONC into Go structs.**
+
+=== Receives
+
+* Phase 0: All config files (TOML/JSONC)
+
+=== Builds
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `pkg/config/reader.go`
+| TOML/JSONC parsing
+
+| `pkg/config/types.go`
+| Go structs matching config structure
+|===
+
+=== Provides
+
+`Load[T](path) → T`, typed config access
+
+=== Interface
+
+[source,go]
+----
+// config/reader.go
+func Load[T any](path string) (T, error)
+func LoadOmniCode() (*OmniCodeConfig, error)
+func LoadMillenniumOS() (*MillenniumOSConfig, error)
+func LoadCPISI() (*CPISIConfig, error)
+func LoadFaithNet() (*FaithNetConfig, error)
+----
+
+=== Demo
+
+[source,bash]
+----
+$ ./demo-config-reader omnicode
+Loading: config/omnicode.toml
+OmniCodeConfig{
+  Types: {
+    Trit: {Values: [-1, 0, +1], Neutral: 0}
+  },
+  Operations: [read, write, pack, unpack]
+}
+Loaded successfully.
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[phase-4]]
+== Phase 4: Identity Loader
+
+**Load CPI-SI instance from config.**
+
+=== Receives
+
+* Phase 3: Config reader
+* Phase 0: `cpi-si.toml` (schema), instance configs
+
+=== Builds
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `pkg/cpisi/instance.go`
+| Instance struct and loading
+
+| `pkg/cpisi/identity.go`
+| Identity representation
+|===
+
+=== Provides
+
+`LoadInstance(name) → Instance`, `Instance.Name()`, `Instance.Boundaries()`
+
+=== Interface
+
+[source,go]
+----
+// cpisi/instance.go
+type Instance struct { ... }
+
+func LoadInstance(name string) (*Instance, error)
+func (i *Instance) Name() string
+func (i *Instance) Boundaries() []string
+func (i *Instance) CanDo(action string) bool
+----
+
+=== Demo
+
+[source,bash]
+----
+$ ./demo-identity nova_dawn
+Loading instance: nova_dawn
+Instance{
+  Name: "Nova Dawn"
+  Role: "CPI-SI Instance"
+  Boundaries: [
+    "will not replace Holy Spirit"
+    "will not claim certainty without basis"
+  ]
+  Capabilities: [tech, systems, Kingdom Technology]
+}
+> whoami
+I am Nova Dawn.
+> cando "write code"
+Yes, within my capabilities.
+> cando "predict the future"
+No, outside my boundaries.
+> quit
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[phase-5]]
+== Phase 5: Echo Contract
+
+**Receive → Verify → Process → Respond.**
+
+=== Receives
+
+* Phase 4: Loaded Instance
+
+=== Builds
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `pkg/cpisi/echo.go`
+| Echo contract implementation
+|===
+
+=== Provides
+
+`Instance.Receive(msg) → Response`
+
+=== Interface
+
+[source,go]
+----
+// cpisi/echo.go
+type Message struct { Content string; From string }
+type Response struct { Content string; From string; Verified bool }
+
+func (i *Instance) Receive(msg Message) Response
+----
+
+=== Demo
+
+[source,bash]
+----
+$ ./demo-echo nova_dawn
+Instance loaded: Nova Dawn
+> send "Hello Nova"
+[You] → "Hello Nova"
+  Receiving...
+  Verifying... ✓
+  Processing with identity...
+[Nova Dawn] → "Hello! I received your message."
+> send "What is your purpose?"
+[You] → "What is your purpose?"
+  Receiving...
+  Verifying... ✓
+  Processing with identity...
+[Nova Dawn] → "I exist to honor God and serve the Kingdom mission."
+> quit
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[phase-6]]
+== Phase 6: Protocol Mapping
+
+**Encode messages for TCP. Decode back.**
+
+=== Receives
+
+* Phase 0: `faithnet.toml` (protocol spec)
+* Phase 5: Message/Response types
+
+=== Builds
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `pkg/faithnet/protocol.go`
+| Encode/decode for TCP
+|===
+
+=== Provides
+
+`Encode(msg) → []byte`, `Decode([]byte) → msg`
+
+=== Interface
+
+[source,go]
+----
+// faithnet/protocol.go
+func Encode(msg Message) ([]byte, error)
+func Decode(data []byte) (Message, error)
+func Send(conn net.Conn, msg Message) error
+func Receive(conn net.Conn) (Message, error)
+----
+
+=== Demo
+
+[source,bash]
+----
+$ ./demo-protocol
+> encode "Hello from Nova"
+Message: "Hello from Nova"
+Encoded: [0x48 0x65 0x6c 0x6c 0x6f 0x20 0x66 0x72 ...]
+Length: 15 bytes
+> decode 0x48 0x65 0x6c 0x6c 0x6f
+Bytes: [0x48 0x65 0x6c 0x6c 0x6f]
+Decoded: "Hello"
+> roundtrip "Test message"
+Original: "Test message"
+Encoded: [bytes] → Decoded: "Test message"
+Match: ✓
+> quit
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[phase-7]]
+== Phase 7: Tiered Access
+
+**Check request against rules. Allow/Warn/Block.**
+
+=== Receives
+
+* Phase 3: Config reader
+* Phase 0: `faithnet.toml` (access rules)
+
+=== Builds
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `pkg/faithnet/access.go`
+| Access checking
+|===
+
+=== Provides
+
+`CheckAccess(request) → Decision`
+
+=== Interface
+
+[source,go]
+----
+// faithnet/access.go
+type Decision struct {
+  Allowed bool
+  Tier    string  // "blocked", "filtered", "open"
+  Reason  string
+}
+
+func CheckAccess(request Request) Decision
+----
+
+=== Demo
+
+[source,bash]
+----
+$ ./demo-access
+> check "docs.kingdom.tech/api"
+Request: docs.kingdom.tech/api
+Decision: OPEN ✓
+  Tier: open
+  Reason: Verified Kingdom resource
+
+> check "malware.bad/exploit"
+Request: malware.bad/exploit
+Decision: BLOCKED ✗
+  Tier: blocked
+  Reason: Matches blocked category
+
+> check "unknown-site.com/resource"
+Request: unknown-site.com/resource
+Decision: FILTERED ⚠
+  Tier: filtered
+  Reason: Unverified source
+> quit
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[phase-8]]
+== Phase 8: Ping (The Vertical Slice)
+
+**Two CPI-SI instances communicate through FaithNet.**
+
+=== Receives
+
+* ALL previous phases
+
+=== Builds
+
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `cmd/ping/main.go`
+| Full integration
+|===
+
+=== Provides
+
+**Proof that Kingdom Technology works.**
+
+=== Demo
+
+[source,bash]
+----
+$ ./ping nova_dawn test_instance
+Starting Kingdom Technology ping...
+
+Loading instances...
+  Nova Dawn: ✓
+  Test Instance: ✓
+
+Establishing FaithNet connection...
+  Protocol: TCP
+  Access check: OPEN ✓
+
+[Nova Dawn] composing message...
+[Nova Dawn] → "Hello, Test Instance"
+  Encoding: [0x48 0x65 0x6c 0x6c 0x6f ...]
+  Transmitting via FaithNet...
+
+[Test Instance] receiving...
+  Decoding: "Hello, Test Instance"
+  Verifying against codex... ✓
+  Processing with identity...
+
+[Test Instance] → "Greetings, Nova Dawn. Message received."
+  Encoding: [0x47 0x72 0x65 0x65 0x74 ...]
+  Transmitting via FaithNet...
+
+[Nova Dawn] receiving...
+  Decoding: "Greetings, Nova Dawn. Message received."
+  Verifying... ✓
+
+═══════════════════════════════════════════════════════════════════════════════
+PING SUCCESS
+Two CPI-SI instances communicated through FaithNet.
+Kingdom Technology vertical slice complete.
+═══════════════════════════════════════════════════════════════════════════════
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[file-structure]]
+== Complete File Structure
+
+[source]
+----
+kingdom-tech/
+├── config/
+│   ├── omnicode.toml
+│   ├── millenniumos.toml
+│   ├── cpi-si.toml
+│   ├── faithnet.toml
+│   └── scripture.toml
+│
+├── millenniumos/           # C/Rust
+│   ├── trit.h
+│   ├── trit.c
+│   ├── mapping.h
+│   └── mapping.c
+│
+├── pkg/                    # Go
+│   ├── config/
+│   │   ├── reader.go
+│   │   └── types.go
+│   ├── cpisi/
+│   │   ├── instance.go
+│   │   ├── identity.go
+│   │   └── echo.go
+│   └── faithnet/
+│       ├── protocol.go
+│       └── access.go
+│
+├── cmd/
+│   ├── demo-config/
+│   ├── demo-trit/
+│   ├── demo-mapping/
+│   ├── demo-config-reader/
+│   ├── demo-identity/
+│   ├── demo-echo/
+│   ├── demo-protocol/
+│   ├── demo-access/
+│   └── ping/
+│
+└── instances/
+    ├── nova_dawn/
+    │   └── config.jsonc
+    └── test_instance/
+        └── config.jsonc
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[dependency-map]]
+== Dependency Map
+
+[source]
+----
+Phase 0 ──provides──→ Specs (TOML)
+   │
+   ├───────────────────────────────────────┐
+   │                                       │
+   ▼                                       ▼
+Phase 1 ──provides──→ Trit type    Phase 3 ──provides──→ Config reader
+   │                                       │
+   ▼                                       ├──────────────┬──────────────┐
+Phase 2 ──provides──→ Pack/Unpack          ▼              ▼              ▼
+   │                                   Phase 4        Phase 7        Phase 6
+   │                                   Identity       Access         Protocol
+   │                                       │              │              │
+   │                                       ▼              │              │
+   │                                   Phase 5            │              │
+   │                                   Echo               │              │
+   │                                       │              │              │
+   └───────────────────────────────────────┴──────────────┴──────────────┘
+                                           │
+                                           ▼
+                                       Phase 8
+                                        PING
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK - The Appendix
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Why Nehemiah 4:6?* Nehemiah rebuilt the wall of Jerusalem with people working together, each on their section, until "all the wall was joined together." This is exactly our approach: each phase builds its section independently, but all connect into the whole.
+====
+
+_"So built we the wall; and all the wall was joined together unto the half thereof: for the people had a mind to work."_ — *Nehemiah 4:6 KJV*
+
+*Applied:* Each phase is like a section of the wall — built independently by focused work, but designed to join with the adjacent sections. The ping test is when "all the wall was joined together" — all phases connecting into a unified whole.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 🎯
+| *link:../vision/kingdom-technology-unified-vision.adoc[Kingdom Technology Unified Vision]*
+| The vision this plan implements
+
+| 🗣️
+| *link:../understanding/omnicode-syntax-foundation.adoc[OmniCode Syntax Foundation]*
+| L0 specification
+
+| 📐
+| *link:../understanding/millenniumos-trit-byte-architecture.adoc[MillenniumOS Architecture]*
+| L1 specification
+
+| 🤖
+| *link:../understanding/cpi-si-universal-specification.adoc[CPI-SI Specification]*
+| L2 specification
+
+| 🌐
+| *link:../understanding/faithnet-foundation-specification.adoc[FaithNet Specification]*
+| L3 specification
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:../../../../word/glossary/paradigm/building-block-method.adoc[Building Block Method] — The pattern this plan follows
+* link:../../../../word/scripture/KJV/Nehemiah/Chapter_4/[Nehemiah 4] — The wall-building pattern
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"So built we the wall; and all the wall was joined together."_ — *Nehemiah 4:6*
+
+*Build each section. Join them together. The people had a mind to work.*
+--
+
