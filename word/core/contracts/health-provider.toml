@@ -1,0 +1,532 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# HealthProvider Contract (3-Block Data Structure)
+# Key: B-word-core-contracts-health-provider
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: TOP (contracts that implementations fulfill)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/schemas/health.toml, word/core/types.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/contracts
+# File:        health-provider.toml
+# Key:         B-word-core-contracts-health-provider
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "A faithful witness will not lie: but a false witness will utter
+#             lies." — Proverbs 14:5 KJV
+#
+# Principle: Contracts define what is promised. Like a covenant, a contract
+#            specifies what a component will faithfully provide. Implementations
+#            that fulfill the contract keep the promise.
+#
+# Anchor: "But let your communication be, Yea, yea; Nay, nay."
+#          — Matthew 5:37 KJV
+#
+# # CPI-SI Identity
+#
+# Component Type: Contract (interface that implementations must fulfill)
+#
+# Role: Interface contract for health providers — any tool or component that
+#       reads, writes, or calculates health values must implement this contract.
+#
+# Paradigm: CPI-SI framework component — promises as stored truth
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-11
+#   Version: a-01.00
+#   Modified: 2025-12-11 - Initial creation
+#
+# # Purpose & Function
+#
+# Purpose: Define the interface contract for health-providing components
+#
+# Core Design: Method signatures and behaviors that implementations must provide
+#
+# Key Features:
+#
+#   - Read operations (get health from path)
+#   - Write operations (set health at path)
+#   - Calculation operations (compute health from events)
+#   - Display operations (format health for output)
+#   - Hierarchy operations (aggregate child health)
+#
+# Philosophy: A contract is a promise. Any component claiming to be a
+#             HealthProvider must fulfill all methods defined here.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Schema: word/core/schemas/health.toml (health structure)
+#   - Types: word/core/types.toml (struct, method definitions)
+#   - Primitives: word/core/primitives.toml (uint9, text, bool3)
+#
+# What Uses This:
+#
+#   - bhealth: Command line health tool
+#   - CPI-SI hooks: Health updates on file operations
+#   - statusline: Health display component
+#   - Future tools: Any health-aware component
+#
+# Integration Points:
+#
+#   - Schema: word/core/schemas/health.toml
+#   - Types: word/core/types.toml
+#   - Validation: word/core/validation.toml
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Contract file — defines interface, not executable]
+#
+# # Health Scoring
+#
+# Configuration Impact: Invalid contract would break all health implementations
+#
+# Validation Behavior:
+#   - Missing method: Error — all methods required
+#   - Wrong signature: Error — must match exactly
+#   - Incomplete implementation: Compile error
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines the contract methods and their signatures.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. CONTRACT IDENTITY
+#    Purpose: Name and version of this contract
+#
+# 2. READ OPERATIONS
+#    Purpose: Methods for retrieving health values
+#
+# 3. WRITE OPERATIONS
+#    Purpose: Methods for setting health values
+#
+# 4. CALCULATION OPERATIONS
+#    Purpose: Methods for computing health from events
+#
+# 5. DISPLAY OPERATIONS
+#    Purpose: Methods for formatting health for output
+#
+# 6. HIERARCHY OPERATIONS
+#    Purpose: Methods for parent/child aggregation
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Contract Identity
+# -----------------------------------------------------------------------------
+
+[contract]
+name = "HealthProvider"
+version = "1.0.0"
+description = "Interface for components that provide health tracking"
+package = "bereshit/word/core/contracts"
+# Biblical syntax: "let HealthProvider be covenant for health tracking"
+# Contract = Covenant — promises that implementations must keep
+# See: syntax.toml [covenant.promises], [covenant.enters_covenant_with]
+
+
+# -----------------------------------------------------------------------------
+# 2. Read Operations
+# -----------------------------------------------------------------------------
+# Biblical syntax for read promises:
+#   HealthProvider promises to ReadHealth given path returning Health
+#   HealthProvider promises to HealthExists given path returning truth
+# See: syntax.toml [covenant.promises_given_returning]
+
+[methods.read_health]
+name = "ReadHealth"
+description = "Read health value from a directory"
+signature = "func(path: text) -> (Health, error)"
+# Covenant: "HealthProvider promises to ReadHealth given path returning Health"
+parameters = [
+    { name = "path", type = "text", description = "Directory path to read health from" }
+]
+returns = [
+    { name = "health", type = "Health", description = "Health struct with value, level, emoji" },
+    { name = "error", type = "error", description = "Error if health file not found or invalid" }
+]
+errors = ["not_found", "invalid_format", "permission_denied"]
+
+[methods.read_health_raw]
+name = "ReadHealthRaw"
+description = "Read raw binary string from .health file"
+signature = "func(path: text) -> (text, error)"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" }
+]
+returns = [
+    { name = "binary", type = "text", description = "8-character binary string" },
+    { name = "error", type = "error", description = "Error if file not found" }
+]
+errors = ["not_found", "permission_denied"]
+
+[methods.health_exists]
+name = "HealthExists"
+description = "Check if a .health file exists at path"
+signature = "func(path: text) -> bool3"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" }
+]
+returns = [
+    { name = "exists", type = "bool3", description = "true if exists, false if not, unknown on error" }
+]
+errors = []
+
+
+# -----------------------------------------------------------------------------
+# 3. Write Operations
+# -----------------------------------------------------------------------------
+# Biblical syntax for write promises:
+#   HealthProvider promises to WriteHealth given path and value
+#   HealthProvider promises to InitHealth given path
+# Scripture: "Write the vision, and make it plain" — Habakkuk 2:2
+# See: syntax.toml [covenant.promises_given]
+
+[methods.write_health]
+name = "WriteHealth"
+description = "Write health value to a directory"
+signature = "func(path: text, value: uint9) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path to write health to" },
+    { name = "value", type = "uint9", description = "Health value 0-255" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if write failed" }
+]
+errors = ["permission_denied", "invalid_path", "value_out_of_range"]
+
+[methods.init_health]
+name = "InitHealth"
+description = "Initialize health file with default value"
+signature = "func(path: text) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path to initialize" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if initialization failed" }
+]
+errors = ["already_exists", "permission_denied", "invalid_path"]
+
+[methods.delete_health]
+name = "DeleteHealth"
+description = "Remove health file from directory"
+signature = "func(path: text) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if deletion failed" }
+]
+errors = ["not_found", "permission_denied"]
+
+
+# -----------------------------------------------------------------------------
+# 4. Calculation Operations
+# -----------------------------------------------------------------------------
+# Biblical syntax for calculation promises:
+#   HealthProvider promises to IncreaseHealth given path and amount
+#   HealthProvider promises to ApplyEvent given path and event
+# Scripture: "I will bless thee, and multiply thy seed" — Genesis 22:17
+# See: syntax.toml [covenant.promises_given]
+
+[methods.increase_health]
+name = "IncreaseHealth"
+description = "Increase health by amount (capped at 255)"
+signature = "func(path: text, amount: uint9) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" },
+    { name = "amount", type = "uint9", description = "Amount to increase by" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+errors = ["not_found", "permission_denied"]
+
+[methods.decrease_health]
+name = "DecreaseHealth"
+description = "Decrease health by amount (floored at 0)"
+signature = "func(path: text, amount: uint9) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" },
+    { name = "amount", type = "uint9", description = "Amount to decrease by" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+errors = ["not_found", "permission_denied"]
+
+[methods.apply_event]
+name = "ApplyEvent"
+description = "Apply a health-affecting event"
+signature = "func(path: text, event: text) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" },
+    { name = "event", type = "text", description = "Event name (e.g., 'file_created', 'tests_passing')" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if event unknown or failed" }
+]
+errors = ["not_found", "unknown_event", "permission_denied"]
+
+
+# -----------------------------------------------------------------------------
+# 5. Display Operations
+# -----------------------------------------------------------------------------
+# Biblical syntax for display promises:
+#   HealthProvider promises to FormatHealth given value returning text
+#   HealthProvider promises to GetLevel given value returning text
+# Scripture: "Let your light so shine before men" — Matthew 5:16
+# See: syntax.toml [covenant.promises_given_returning]
+
+[methods.format_health]
+name = "FormatHealth"
+description = "Format health value for display"
+signature = "func(value: uint9) -> text"
+parameters = [
+    { name = "value", type = "uint9", description = "Health value 0-255" }
+]
+returns = [
+    { name = "formatted", type = "text", description = "Formatted string (e.g., '65% 💚')" }
+]
+errors = []
+
+[methods.get_level]
+name = "GetLevel"
+description = "Get health level name from value"
+signature = "func(value: uint9) -> text"
+parameters = [
+    { name = "value", type = "uint9", description = "Health value 0-255" }
+]
+returns = [
+    { name = "level", type = "text", description = "Level name (critical, poor, fair, good, excellent, perfect)" }
+]
+errors = []
+
+[methods.get_emoji]
+name = "GetEmoji"
+description = "Get emoji for health level"
+signature = "func(value: uint9) -> text"
+parameters = [
+    { name = "value", type = "uint9", description = "Health value 0-255" }
+]
+returns = [
+    { name = "emoji", type = "text", description = "Emoji character" }
+]
+errors = []
+
+
+# -----------------------------------------------------------------------------
+# 6. Hierarchy Operations
+# -----------------------------------------------------------------------------
+# Biblical syntax for hierarchy promises:
+#   HealthProvider promises to AggregateChildren given path returning health
+#   HealthProvider promises to PropagateUp given child_path
+# Scripture: "Train up a child in the way he should go" — Proverbs 22:6
+# (Parent-child relationships, generational inheritance)
+# See: syntax.toml [covenant.promises_given_returning]
+
+[methods.aggregate_children]
+name = "AggregateChildren"
+description = "Calculate parent health from children"
+signature = "func(path: text) -> (uint9, error)"
+parameters = [
+    { name = "path", type = "text", description = "Parent directory path" }
+]
+returns = [
+    { name = "health", type = "uint9", description = "Aggregated health value" },
+    { name = "error", type = "error", description = "Error if aggregation failed" }
+]
+errors = ["not_found", "no_children"]
+
+[methods.propagate_up]
+name = "PropagateUp"
+description = "Update parent health after child change"
+signature = "func(child_path: text) -> error"
+parameters = [
+    { name = "child_path", type = "text", description = "Path of changed child" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if propagation failed" }
+]
+errors = ["no_parent", "permission_denied"]
+
+[methods.list_children_health]
+name = "ListChildrenHealth"
+description = "List health of all immediate children"
+signature = "func(path: text) -> (list<Health>, error)"
+parameters = [
+    { name = "path", type = "text", description = "Parent directory path" }
+]
+returns = [
+    { name = "children", type = "list<Health>", description = "Health of each child directory" },
+    { name = "error", type = "error", description = "Error if listing failed" }
+]
+errors = ["not_found", "permission_denied"]
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview (3-Block Adapted)
+# -----------------------------------------------------------------------------
+#
+# 1. OPERATIONS
+#    - Validation: How to verify implementations
+#    - Access: How to use this contract
+#
+# 2. POLICY
+#    - Modification: What's safe to change
+#
+# 3. SYNTHESIS
+#    - Closing Note: Final guidance and grounding
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Operations - Validation
+# -----------------------------------------------------------------------------
+#
+# Verify contract is correctly formatted:
+#
+#   # Syntax check (TOML parser)
+#   python -c "import tomllib; f=open('word/core/contracts/health-provider.toml','rb'); tomllib.load(f)"
+#
+# Implementation verification:
+#   - All methods must be implemented
+#   - Signatures must match exactly
+#   - Error types must be handled
+#
+# Test an implementation:
+#   - ReadHealth must return valid Health struct
+#   - WriteHealth must persist value correctly
+#   - FormatHealth must produce valid display string
+#
+
+# -----------------------------------------------------------------------------
+# 2. Operations - Access
+# -----------------------------------------------------------------------------
+#
+# Go code integration:
+#
+#   type HealthProvider interface {
+#       ReadHealth(path string) (Health, error)
+#       ReadHealthRaw(path string) (string, error)
+#       HealthExists(path string) bool
+#       WriteHealth(path string, value uint8) error
+#       InitHealth(path string) error
+#       DeleteHealth(path string) error
+#       IncreaseHealth(path string, amount uint8) error
+#       DecreaseHealth(path string, amount uint8) error
+#       ApplyEvent(path string, event string) error
+#       FormatHealth(value uint8) string
+#       GetLevel(value uint8) string
+#       GetEmoji(value uint8) string
+#       AggregateChildren(path string) (uint8, error)
+#       PropagateUp(childPath string) error
+#       ListChildrenHealth(path string) ([]Health, error)
+#   }
+#
+# Implementing the contract:
+#
+#   type BhealthProvider struct {}
+#
+#   func (b *BhealthProvider) ReadHealth(path string) (Health, error) {
+#       // Implementation...
+#   }
+#   // ... implement all methods
+#
+#   var _ HealthProvider = (*BhealthProvider)(nil) // Compile-time check
+#
+
+# -----------------------------------------------------------------------------
+# 3. Policy - Modification
+# -----------------------------------------------------------------------------
+#
+# NEVER Modify:
+#   ❌ Existing method signatures (would break implementations)
+#   ❌ Return types (type compatibility)
+#   ❌ Required parameters (implementations depend on these)
+#   ❌ Error type names (error handling depends on these)
+#
+# Safe to Add:
+#   ✅ New methods (implementations can add them incrementally)
+#   ✅ Optional parameters with defaults
+#   ✅ Additional error types
+#   ✅ Documentation and examples
+#
+# Requires Coordination:
+#   ⚠️ Deprecating methods (notify all implementations)
+#   ⚠️ Changing method behavior (semantic versioning)
+#   ⚠️ Adding required methods (major version bump)
+#
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis - Closing Note
+# -----------------------------------------------------------------------------
+#
+# Contracts define promises. This contract specifies what any health-providing
+# component must do — not HOW to do it, but WHAT must be provided.
+#
+# The contract embodies faithfulness:
+#   - Clear promises (method signatures)
+#   - Defined expectations (return types)
+#   - Known failure modes (error types)
+#
+# Dependencies flow upward:
+#   primitives.toml → types.toml → schemas/health.toml → contracts/health-provider.toml
+#                                                        ↑ YOU ARE HERE
+#
+# Implementations fulfill this contract. The contract is the covenant.
+#
+# "A faithful witness will not lie: but a false witness will utter lies."
+# — Proverbs 14:5 KJV
+#
+# Let implementations keep their promises.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

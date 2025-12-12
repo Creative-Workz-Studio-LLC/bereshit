@@ -1,0 +1,516 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# Health Schema - CPI-SI Health Scoring (3-Block Data Structure)
+# Key: B-word-core-schemas-health
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on primitives + types, used by bhealth)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/primitives.toml, word/core/types.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/schemas
+# File:        health.toml
+# Key:         B-word-core-schemas-health
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "A merry heart doeth good like a medicine: but a broken spirit
+#             drieth the bones." — Proverbs 17:22 KJV
+#
+# Principle: Health is visible state. Just as the body shows wellness or illness,
+#            directories and files have health that can be measured and displayed.
+#            The .health file is the heartbeat visible to all who enter.
+#
+# Anchor: "Beloved, I wish above all things that thou mayest prosper and be
+#          in health, even as thy soul prospereth." — 3 John 1:2 KJV
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (schema that defines health scoring structure)
+#
+# Role: Schema definition for .health files — the 8-bit health scoring system
+#       that tracks directory and file status across the bereshit filesystem.
+#
+# Paradigm: CPI-SI framework component — health as stored state
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-11
+#   Version: a-01.00
+#   Modified: 2025-12-11 - Initial creation
+#
+# # Purpose & Function
+#
+# Purpose: Define the schema for .health files used by bhealth tool
+#
+# Core Design: 8-bit health score stored as ASCII binary string
+#
+# Key Features:
+#
+#   - 8-bit encoding: "01000001" = 65 decimal = 65% health
+#   - Human readable: ASCII binary, visible in any text editor
+#   - Ternary alignment: Maps to trit5 for compact storage
+#   - Hierarchical: Parent health reflects child health
+#   - Tool integration: bhealth reads/writes this format
+#
+# Philosophy: Health should be immediately visible. No parsing, no databases —
+#             just a file you can cat and instantly understand.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Parser: Simple text file reader (8 ASCII characters)
+#   - Primitives: word/core/primitives.toml (trit5 for compact form)
+#   - Types: word/core/types.toml (struct, constraint definitions)
+#
+# What Uses This:
+#
+#   - bhealth: Health initialization and checking tool
+#   - statusline: Display health in terminal prompt
+#   - CPI-SI hooks: Update health on file operations
+#   - Git hooks: Track health changes in commits
+#
+# Integration Points:
+#
+#   - Primitives: word/core/primitives.toml
+#   - Types: word/core/types.toml
+#   - Tools: word/work/bin/bereshit/health/bhealth
+#   - Hooks: .claude/hooks/tool/post-use.go
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Schema file — defines structure, not executable]
+#
+# # Health Scoring
+#
+# Configuration Impact: Invalid schema would break all health tracking
+#
+# Validation Behavior:
+#   - Invalid health value: Error — must be 8 ASCII 0/1 characters
+#   - Out of range: Clamp to 00000000-11111111 (0-255)
+#   - Missing file: Initialize to default (01000001 = 65)
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines the health schema structure and rules.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. HEALTH TYPE
+#    Purpose: Core health value definition (8-bit)
+#
+# 2. HEALTH LEVELS
+#    Purpose: Named states with thresholds
+#
+# 3. DISPLAY MAPPING
+#    Purpose: Emoji and color associations
+#
+# 4. FILE FORMAT
+#    Purpose: What .health files contain
+#
+# 5. CALCULATION RULES
+#    Purpose: How health is computed and updated
+#
+# 6. HIERARCHICAL RULES
+#    Purpose: How parent health relates to children
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Health Type - Core Definition
+# -----------------------------------------------------------------------------
+# 8-bit encoding stored as ASCII binary string
+
+[health]
+name = "health"
+description = "Health score value — 0 to 255 as 8-bit ASCII binary"
+base_type = "uint9"  # References primitives.toml — fits in 9 trits
+storage_format = "ascii_binary"  # "01000001" not 65
+bits = 8
+min_value = 0
+max_value = 255
+default = 65  # 01000001 — "good starting point"
+percentage_mode = true  # Display as percentage (0-100%)
+# Biblical syntax: "let health be from 0 to 255"
+# Scripture basis: "A merry heart doeth good like a medicine" — Proverbs 17:22
+# See: syntax.toml [declaration.let_be_from]
+
+[health.encoding]
+description = "How the value is stored in .health files"
+file_extension = ".health"
+line_terminator = "LF"  # Unix newline only
+exact_length = 8  # Always 8 characters
+valid_characters = ["0", "1"]
+# Example: "01000001" = 65 decimal = 65% health
+
+
+# -----------------------------------------------------------------------------
+# 2. Health Levels - Named States
+# -----------------------------------------------------------------------------
+# Ternary-aligned thresholds: critical, poor, fair, good, excellent, perfect
+#
+# Biblical syntax for levels:
+#   level chosen from critical or poor or fair or good or excellent or perfect
+#   when health below 20 then level is critical
+#   when health from 60 to 79 then level is good
+# See: syntax.toml [constraint.chosen_from], [conditional.when_then]
+
+[levels.critical]
+name = "critical"
+description = "Severely degraded — immediate attention required"
+min_percent = 0
+max_percent = 19
+binary_range = ["00000000", "00110001"]  # 0-49 (using 255 scale mapped to %)
+priority = "urgent"
+
+[levels.poor]
+name = "poor"
+description = "Degraded — needs improvement soon"
+min_percent = 20
+max_percent = 39
+binary_range = ["00110010", "01100011"]  # 50-99
+priority = "high"
+
+[levels.fair]
+name = "fair"
+description = "Acceptable but not optimal"
+min_percent = 40
+max_percent = 59
+binary_range = ["01100100", "10010101"]  # 100-149
+priority = "medium"
+
+[levels.good]
+name = "good"
+description = "Healthy — normal operating state"
+min_percent = 60
+max_percent = 79
+binary_range = ["10010110", "11000111"]  # 150-199
+priority = "low"
+
+[levels.excellent]
+name = "excellent"
+description = "Very healthy — exceeding expectations"
+min_percent = 80
+max_percent = 99
+binary_range = ["11001000", "11111110"]  # 200-254
+priority = "none"
+
+[levels.perfect]
+name = "perfect"
+description = "Maximum health — fully realized"
+min_percent = 100
+max_percent = 100
+binary_range = ["11111111", "11111111"]  # 255 only
+priority = "none"
+
+
+# -----------------------------------------------------------------------------
+# 3. Display Mapping - Visual Indicators
+# -----------------------------------------------------------------------------
+# Emoji and colors for each level
+
+[display.critical]
+emoji = "💔"
+color = "red"
+ansi_code = "\\033[31m"
+description = "Broken heart — critical state"
+
+[display.poor]
+emoji = "🩹"
+color = "orange"
+ansi_code = "\\033[33m"
+description = "Bandage — needs healing"
+
+[display.fair]
+emoji = "💛"
+color = "yellow"
+ansi_code = "\\033[93m"
+description = "Yellow heart — acceptable"
+
+[display.good]
+emoji = "💚"
+color = "green"
+ansi_code = "\\033[32m"
+description = "Green heart — healthy"
+
+[display.excellent]
+emoji = "💙"
+color = "blue"
+ansi_code = "\\033[34m"
+description = "Blue heart — excellent"
+
+[display.perfect]
+emoji = "💜"
+color = "magenta"
+ansi_code = "\\033[35m"
+description = "Purple heart — perfect"
+
+
+# -----------------------------------------------------------------------------
+# 4. File Format - .health File Structure
+# -----------------------------------------------------------------------------
+# What a .health file contains
+
+[file]
+name = ".health"
+description = "Health score file — one per directory"
+location = "directory root"  # Each directory has its own
+hidden = true  # Dot-prefixed
+content_type = "text/plain"
+
+[file.structure]
+line_count = 1  # Single line only
+content = "8 ASCII binary digits"
+example = "01000001"
+trailing_newline = true  # LF at end
+
+[file.permissions]
+read = "all"  # Anyone can read health
+write = "owner"  # Only owner/tools can modify
+execute = "none"
+
+[file.git]
+track = true  # Health files are tracked in git
+ignore = false
+commit_message_prefix = "[health]"
+
+
+# -----------------------------------------------------------------------------
+# 5. Calculation Rules - How Health Changes
+# -----------------------------------------------------------------------------
+# Rules for computing and updating health scores
+#
+# Biblical syntax for calculation:
+#   when file_created then increase health by 5
+#   when tests_failing then decrease health by 10
+#   when 30 days pass without activity then health decays by 1
+# Scripture basis: Blessings for obedience, curses for disobedience — Deuteronomy 28
+# See: syntax.toml [conditional.when_then]
+
+[calculation.initialization]
+description = "How new .health files are created"
+default_value = "01000001"  # 65 = good starting point
+trigger = "bhealth -init"
+
+[calculation.increase]
+description = "Events that increase health"
+events = [
+    "file_created",
+    "file_updated",
+    "tests_passing",
+    "documentation_added",
+    "lint_clean"
+]
+max_increase_per_event = 5
+ceiling = 255
+
+[calculation.decrease]
+description = "Events that decrease health"
+events = [
+    "file_deleted",
+    "tests_failing",
+    "lint_errors",
+    "stale_file",
+    "broken_reference"
+]
+max_decrease_per_event = 10
+floor = 0
+
+[calculation.staleness]
+description = "Health decay over time without activity"
+decay_enabled = true
+decay_rate = 1  # Lose 1 point per period
+decay_period = "30d"  # 30 days
+minimum_after_decay = 50  # Never decay below 50
+
+
+# -----------------------------------------------------------------------------
+# 6. Hierarchical Rules - Parent/Child Relationships
+# -----------------------------------------------------------------------------
+# How directory health relates to contents
+#
+# Biblical syntax for hierarchy:
+#   parent health is average of children health
+#   when child health changes then parent recalculates
+# Scripture basis: "The fathers have eaten sour grapes, and the children's
+#                   teeth are set on edge" — Ezekiel 18:2 (generational effects)
+# See: syntax.toml [conditional.when_then], [relation.is]
+
+[hierarchy.aggregation]
+description = "How parent health is computed from children"
+method = "weighted_average"  # Average of child health scores
+weights = { directories = 1.5, files = 1.0 }  # Directories weigh more
+include_hidden = false  # Don't include .dotfiles in calculation
+
+[hierarchy.propagation]
+description = "How changes propagate up the tree"
+immediate = true  # Update parent when child changes
+recalculate_on = ["child_health_change", "child_added", "child_removed"]
+
+[hierarchy.inheritance]
+description = "How new children inherit health"
+inherit_from_parent = false  # Start fresh, don't inherit
+use_default = true  # Use calculation.initialization.default_value
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview (3-Block Adapted)
+# -----------------------------------------------------------------------------
+#
+# 1. OPERATIONS
+#    - Validation: How to verify health files are correct
+#    - Access: How to read/write health values
+#
+# 2. POLICY
+#    - Modification: What's safe to change
+#
+# 3. SYNTHESIS
+#    - Closing Note: Final guidance and grounding
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Operations - Validation
+# -----------------------------------------------------------------------------
+#
+# Verify health schema is correctly formatted:
+#
+#   # Syntax check (TOML parser)
+#   python -c "import tomllib; f=open('word/core/schemas/health.toml','rb'); tomllib.load(f)"
+#
+# Health file verification:
+#   - Must be exactly 8 characters (ASCII 0/1)
+#   - Must have trailing LF
+#   - Value must be 0-255 range
+#
+# Validate a .health file:
+#   bhealth -check path/to/directory
+#
+
+# -----------------------------------------------------------------------------
+# 2. Operations - Access
+# -----------------------------------------------------------------------------
+#
+# Go code integration:
+#
+#   type Health struct {
+#       Value   uint8  // 0-255
+#       Binary  string // "01000001"
+#       Percent int    // 0-100
+#       Level   string // "good", "fair", etc.
+#       Emoji   string // "💚"
+#   }
+#
+#   func ReadHealth(path string) (Health, error) {
+#       data, err := os.ReadFile(filepath.Join(path, ".health"))
+#       if err != nil {
+#           return Health{}, err
+#       }
+#       binary := strings.TrimSpace(string(data))
+#       value, _ := strconv.ParseUint(binary, 2, 8)
+#       return Health{
+#           Value:   uint8(value),
+#           Binary:  binary,
+#           Percent: int(value) * 100 / 255,
+#           Level:   levelFromValue(uint8(value)),
+#           Emoji:   emojiFromLevel(levelFromValue(uint8(value))),
+#       }, nil
+#   }
+#
+# Command line:
+#   bhealth -init .        # Initialize health for current directory
+#   bhealth -check .       # Check and display health
+#   bhealth -set . 80      # Set health to 80%
+#
+
+# -----------------------------------------------------------------------------
+# 3. Policy - Modification
+# -----------------------------------------------------------------------------
+#
+# NEVER Modify:
+#   ❌ 8-bit encoding (binary compatibility)
+#   ❌ Level thresholds (established semantics)
+#   ❌ File format (single line, 8 chars + LF)
+#   ❌ Emoji mappings (visual consistency)
+#
+# Safe to Add:
+#   ✅ New calculation triggers
+#   ✅ Additional display formats
+#   ✅ Comments and examples
+#   ✅ Tool integration hooks
+#
+# Requires Coordination:
+#   ⚠️ Changing default value (affects all initializations)
+#   ⚠️ Modifying decay rules (affects existing health)
+#   ⚠️ Changing hierarchy rules (affects parent calculations)
+#
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis - Closing Note
+# -----------------------------------------------------------------------------
+#
+# Health is visible state. The .health file makes the invisible visible —
+# like a pulse you can check just by entering a directory.
+#
+# The schema embodies transparency:
+#   - ASCII binary is human-readable (no parsing needed)
+#   - Emoji provides instant visual feedback
+#   - Hierarchical aggregation shows systemic health
+#
+# Dependencies flow upward:
+#   primitives.toml → types.toml → schemas/health.toml → bhealth tool
+#                                  ↑ YOU ARE HERE
+#
+# Changes here affect how the entire filesystem reports its state.
+#
+# "A merry heart doeth good like a medicine: but a broken spirit drieth
+#  the bones."
+# — Proverbs 17:22 KJV
+#
+# Let the health of the work be visible.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

@@ -1,0 +1,568 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Primitive Types (3-Block Data Structure)
+# Key: B-word-core-primitives
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: LADDER (foundation that types.toml builds on)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/constants/ternary-math.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core
+# File:        primitives.toml
+# Key:         B-word-core-primitives
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "In the beginning God created the heaven and the earth."
+#            — Genesis 1:1 KJV
+#
+# Principle: Before anything complex, God established the fundamentals.
+#            Primitives are the atomic building blocks — indivisible types
+#            from which all other types are composed.
+#
+# Anchor: "The stone which the builders refused is become the head stone
+#          of the corner." — Psalm 118:22 KJV
+#
+# # CPI-SI Identity
+#
+# Component Type: Ladder (foundation types that all schemas build on)
+#
+# Role: Primitive type definitions for OmniCode — the base types that
+#       cannot be decomposed further. All complex types derive from these.
+#
+# Paradigm: CPI-SI framework component — types as stored truth
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-11
+#   Version: a-01.00
+#   Modified: 2025-12-11 - Initial creation
+#
+# # Purpose & Function
+#
+# Purpose: Define the primitive types that all OmniCode schemas build from
+#
+# Core Design: Base types that code references — the atoms of the type system
+#
+# Key Features:
+#
+#   - Trit types (trit, trit5) — balanced ternary foundation
+#   - Integer types (int9, int27, uint9, uint27) — ternary-sized
+#   - Floating point (float27) — 27-trit precision
+#   - Text (UTF-8 strings, WEB encoding)
+#   - Boolean (bool3 — ternary: false, unknown, true)
+#   - Collections (list<T>, map<K,V>)
+#
+# Philosophy: These are the indivisible atoms. Everything complex is composed
+#             from these primitives. They align with ternary math constants.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Parser: Any TOML library (BurntSushi/toml, pelletier/go-toml)
+#   - Constants: word/constants/ternary-math.toml (trit definitions)
+#
+# What Uses This:
+#
+#   - word/core/types.toml: Type composition rules
+#   - word/core/schemas/*: All schema definitions
+#   - MillenniumOS: Native type implementations
+#   - CPI-SI: Identity and health schemas
+#   - FaithNet: Message format types
+#
+# Integration Points:
+#
+#   - Constants: word/constants/ternary-math.toml
+#   - Types: word/core/types.toml (builds on this)
+#   - Vision: void/planning/vision/grand-plan-vision.adoc
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Data file — primitives are declarative, not executable]
+#
+# # Health Scoring
+#
+# Configuration Impact: Invalid primitives would break all type checking
+#
+# Validation Behavior:
+#   - Invalid primitive: Error — these are foundational
+#   - Missing section: Error — all sections required
+#   - Type mismatch: Parse error — strict typing
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines the primitive types and their properties.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 0. BINARY STORAGE MODEL
+#    Purpose: How ternary is REPRESENTED on binary hardware
+#    CRITICAL: This section grounds ALL ternary types in hardware reality
+#
+# 1. TRIT TYPES
+#    Purpose: Balanced ternary primitives (trit, trit5)
+#
+# 2. INTEGER TYPES
+#    Purpose: Ternary-sized integers (int9, int27, uint9, uint27)
+#
+# 3. FLOATING POINT
+#    Purpose: Ternary floating point (float27)
+#
+# 4. TEXT TYPES
+#    Purpose: String handling (text, char)
+#
+# 5. BOOLEAN
+#    Purpose: Ternary boolean (bool3)
+#
+# 6. COLLECTIONS
+#    Purpose: Parameterized types (list<T>, map<K,V>)
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 0. Binary Storage Model - Hardware Reality
+# -----------------------------------------------------------------------------
+# CRITICAL: We run on BINARY hardware. Ternary must be REPRESENTED in binary.
+# This section defines how ALL ternary types map to binary storage.
+#
+# Scripture: "And God said, Let there be a firmament in the midst of the waters,
+#             and let it divide the waters from the waters." — Genesis 1:6 KJV
+# (Division/separation as fundamental operation — binary divides, ternary transcends)
+
+[storage]
+hardware = "binary"
+reality = "Ternary is REPRESENTED in binary, not native hardware"
+note = "Until MillenniumOS on ternary hardware, all ternary is emulated"
+
+[storage.representations]
+description = "Two ways to store ternary values in binary"
+
+[storage.representations.unpacked]
+name = "unpacked"
+description = "Each trit as separate byte/character — human readable"
+bytes_per_trit = 1
+encoding = "ASCII digits: '0', '1', '2' (or '-', '0', '+' for balanced)"
+use_cases = ["display", "debugging", "human inspection", "text files"]
+efficiency = "~31.6% (log2(3)/8 ≈ 0.198 useful bits per bit stored)"
+example_trit5 = "'01210'"
+example_bytes = 5
+
+[storage.representations.packed]
+name = "packed"
+description = "Multiple trits packed into binary words — machine efficient"
+principle = "3^n trits fit in ceil(n * log2(3)) bits"
+use_cases = ["storage", "transmission", "computation", "memory"]
+efficiency = "~63.1% (log2(3) ≈ 1.585 bits per trit, needs 2 bits minimum)"
+
+[storage.representations.packed.trit5]
+name = "trit5 (trit-byte)"
+trits = 5
+states = 243
+bits_needed = 8
+fits_in = "1 byte"
+waste = "13 spare states (243-255)"
+note = "The 13 spare states map to WEB variant verses in Bible addressing"
+
+[storage.representations.packed.trit9]
+name = "trit9"
+trits = 9
+states = 19683
+bits_needed = 15
+fits_in = "2 bytes (16 bits)"
+waste = "46,253 spare states"
+
+[storage.representations.packed.trit27]
+name = "trit27"
+trits = 27
+states = 7625597484987
+bits_needed = 43
+fits_in = "6 bytes (48 bits)"
+waste = "significant spare capacity"
+
+[storage.conversion]
+description = "Converting between packed and unpacked"
+unpacked_to_packed = "Parse string → integer → pack into bytes"
+packed_to_unpacked = "Unpack bytes → integer → format as string"
+reference = "See bible/addressing.toml for detailed algorithms"
+
+[storage.bible_rail]
+description = "The Bible connects to ALL ternary storage"
+encoding = "KJV ordinals (31,102 verses) → ternary addresses"
+decoding = "Ternary addresses → verse references"
+spare_states = "trit5 spare (243-255) → WEB variant verses"
+note = "Bible addressing validates the entire ternary system works"
+
+
+# -----------------------------------------------------------------------------
+# 1. Trit Types - Balanced Ternary Foundation
+# -----------------------------------------------------------------------------
+# Reference: word/constants/ternary-math.toml
+# Storage: See Section 0 for binary representation
+
+[trit]
+name = "trit"
+description = "Single balanced ternary digit"
+size_trits = 1
+values = [-1, 0, 1]
+labels = ["negative", "neutral", "positive"]
+default = 0
+nullable = false
+# Biblical syntax: "there shall be trit as value of negative or neutral or positive"
+# See: syntax.toml [declaration.there_shall_be]
+
+[trit5]
+name = "trit5"
+description = "Trit-byte: 5 trits packed into one byte"
+size_trits = 5
+min_value = -121    # -(3^5 - 1) / 2
+max_value = 121     # (3^5 - 1) / 2
+total_states = 243  # 3^5
+default = 0
+nullable = false
+# Storage (see Section 0):
+#   - Packed: 1 byte (values 0-242, spare 243-255 for WEB variants)
+#   - Unpacked: 5 ASCII chars (e.g., "01210")
+# Note: The 13 spare states (243-255) map to WEB variant verses
+# Biblical syntax: "let trit5 be from -121 to 121"
+# See: syntax.toml [declaration.let_be_from]
+# See: storage.representations.packed.trit5
+
+
+# -----------------------------------------------------------------------------
+# 2. Integer Types - Ternary-Sized
+# -----------------------------------------------------------------------------
+# Sizes follow powers of 3: 9 trits, 27 trits
+
+[int9]
+name = "int9"
+description = "Signed 9-trit integer"
+size_trits = 9
+min_value = -9841   # -(3^9 - 1) / 2
+max_value = 9841    # (3^9 - 1) / 2
+total_states = 19683  # 3^9
+signed = true
+default = 0
+nullable = false
+# Biblical syntax: "let int9 be signed from -9841 to 9841"
+# See: syntax.toml [declaration.let_be_from]
+
+[uint9]
+name = "uint9"
+description = "Unsigned 9-trit integer"
+size_trits = 9
+min_value = 0
+max_value = 19682   # 3^9 - 1
+total_states = 19683  # 3^9
+signed = false
+default = 0
+nullable = false
+# Biblical syntax: "let uint9 be from 0 to 19682"
+# See: syntax.toml [declaration.let_be_from]
+
+[int27]
+name = "int27"
+description = "Signed 27-trit integer (word size)"
+size_trits = 27
+min_value = -3812798742493   # -(3^27 - 1) / 2
+max_value = 3812798742493    # (3^27 - 1) / 2
+total_states = 7625597484987  # 3^27
+signed = true
+default = 0
+nullable = false
+# Biblical syntax: "let int27 be signed Word"
+# Note: Word size in OmniCode — like "In the beginning was the Word"
+# See: syntax.toml [declaration.let_be]
+
+[uint27]
+name = "uint27"
+description = "Unsigned 27-trit integer (word size)"
+size_trits = 27
+min_value = 0
+max_value = 7625597484986   # 3^27 - 1
+total_states = 7625597484987  # 3^27
+signed = false
+default = 0
+nullable = false
+# Biblical syntax: "let uint27 be unsigned Word"
+# See: syntax.toml [declaration.let_be]
+
+
+# -----------------------------------------------------------------------------
+# 3. Floating Point - Ternary Precision
+# -----------------------------------------------------------------------------
+
+[float27]
+name = "float27"
+description = "27-trit floating point number"
+size_trits = 27
+mantissa_trits = 18
+exponent_trits = 8
+sign_trits = 1
+default = 0.0
+nullable = false
+# Note: Balanced ternary gives natural representation of negative numbers
+# Biblical syntax: "let float27 be measure with precision"
+# See: syntax.toml [declaration.let_be]
+
+
+# -----------------------------------------------------------------------------
+# 4. Text Types - String Handling
+# -----------------------------------------------------------------------------
+
+[text]
+name = "text"
+description = "UTF-8 encoded string (WEB translation standard)"
+size_trits = "variable"
+encoding = "utf-8"
+default = ""
+nullable = true
+max_length = "unbounded"  # Limited by available memory
+# Biblical syntax: "let text be Scripture" — the living Word
+# Note: Text carries meaning, like Scripture carries truth
+# See: syntax.toml [declaration.let_be]
+
+[char]
+name = "char"
+description = "Single Unicode code point"
+size_trits = 27  # Enough for all Unicode (up to 0x10FFFF)
+encoding = "utf-8"
+default = "\u0000"
+nullable = false
+# Biblical syntax: "let char be letter" — single character
+# Note: Like Hebrew letters, each has meaning
+# See: syntax.toml [declaration.let_be]
+
+
+# -----------------------------------------------------------------------------
+# 5. Boolean - Ternary Logic
+# -----------------------------------------------------------------------------
+
+[bool3]
+name = "bool3"
+description = "Ternary boolean: false, unknown, true"
+size_trits = 1
+values = [-1, 0, 1]
+labels = ["false", "unknown", "true"]
+default = 0  # unknown
+nullable = false
+# Note: Maps directly to trit values
+# -1 = false (definite no)
+#  0 = unknown (indeterminate, null-like)
+# +1 = true (definite yes)
+# Biblical syntax: "there shall be truth of false or unknown or true"
+# Scripture basis: "let your yea be yea, and your nay be nay" — James 5:12
+# See: syntax.toml [declaration.there_shall_be]
+
+
+# -----------------------------------------------------------------------------
+# 6. Collections - Parameterized Types
+# -----------------------------------------------------------------------------
+
+[list]
+name = "list"
+description = "Ordered collection of elements of type T"
+size_trits = "variable"
+parameters = ["T"]
+default = "[]"
+nullable = true
+ordered = true
+allows_duplicates = true
+# Biblical syntax: "list of Person" — like genealogy lists
+# See: syntax.toml [composition.list_of]
+
+[map]
+name = "map"
+description = "Key-value mapping from K to V"
+size_trits = "variable"
+parameters = ["K", "V"]
+default = "{}"
+nullable = true
+ordered = false
+allows_duplicates = false  # Keys must be unique
+# Biblical syntax: "map from text to number" — like census records
+# See: syntax.toml [composition.map_from_to]
+
+[set]
+name = "set"
+description = "Unordered collection of unique elements"
+size_trits = "variable"
+parameters = ["T"]
+default = "{}"
+nullable = true
+ordered = false
+allows_duplicates = false
+# Biblical syntax: "set of Person" — like tribes with no duplicates
+# See: syntax.toml [composition.list_of] (same pattern, unique semantics)
+
+
+# -----------------------------------------------------------------------------
+# 7. Special Types
+# -----------------------------------------------------------------------------
+
+[void]
+name = "void"
+description = "Absence of value (for functions with no return)"
+size_trits = 0
+nullable = false
+# Biblical syntax: represents tohu — formless void before creation
+# "And the earth was without form, and void" — Genesis 1:2
+# See: syntax.toml [nullability.can_be_void]
+
+[any]
+name = "any"
+description = "Any type (for generic/dynamic contexts)"
+size_trits = "variable"
+nullable = true
+# Note: Use sparingly — prefer explicit types
+# Biblical syntax: "whatsoever" — encompasses all types
+# "Whatsoever Adam called every living creature" — Genesis 2:19
+# See: syntax.toml [generics.hold_whatsoever]
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview (3-Block Adapted)
+# -----------------------------------------------------------------------------
+#
+# 1. OPERATIONS
+#    - Validation: How to verify the primitives are correct
+#    - Access: How to read these type definitions
+#
+# 2. POLICY
+#    - Modification: What's safe to change
+#
+# 3. SYNTHESIS
+#    - Closing Note: Final guidance and grounding
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Operations - Validation
+# -----------------------------------------------------------------------------
+#
+# Verify primitives are correctly formatted:
+#
+#   # Syntax check (TOML parser)
+#   python -c "import toml; toml.load('word/core/primitives.toml')"
+#   tomlv word/core/primitives.toml
+#
+# Type verification:
+#   - All primitives must have: name, description, size_trits, default
+#   - Numeric types must have: min_value, max_value, total_states
+#   - Collection types must have: parameters
+#   - size_trits must be positive integer or "variable"
+#
+
+# -----------------------------------------------------------------------------
+# 2. Operations - Access
+# -----------------------------------------------------------------------------
+#
+# Go code integration:
+#
+#   type Primitive struct {
+#       Name        string `toml:"name"`
+#       Description string `toml:"description"`
+#       SizeTrits   any    `toml:"size_trits"`  // int or "variable"
+#       Default     any    `toml:"default"`
+#       Nullable    bool   `toml:"nullable"`
+#   }
+#
+#   type Primitives struct {
+#       Trit   Primitive `toml:"trit"`
+#       Trit5  Primitive `toml:"trit5"`
+#       Int9   Primitive `toml:"int9"`
+#       // ... additional types
+#   }
+#
+#   cfg, _ := toml.LoadFile("word/core/primitives.toml")
+#   tritSize := cfg.Trit.SizeTrits  // 1
+#
+
+# -----------------------------------------------------------------------------
+# 3. Policy - Modification
+# -----------------------------------------------------------------------------
+#
+# NEVER Modify:
+#   ❌ Primitive names (would break all references)
+#   ❌ Trit type definitions (foundational to ternary system)
+#   ❌ Size relationships (mathematically derived)
+#   ❌ bool3 value mappings (paradigm alignment)
+#
+# Safe to Add:
+#   ✅ New primitive types (if mathematically justified)
+#   ✅ Additional metadata fields
+#   ✅ Comments for clarity
+#   ✅ Implementation notes
+#
+# Requires Coordination:
+#   ⚠️ Changing min/max values (affects all type checking)
+#   ⚠️ Adding parameters to types (affects types.toml)
+#
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis - Closing Note
+# -----------------------------------------------------------------------------
+#
+# These primitives are the atoms of the OmniCode type system. They cannot
+# be decomposed further — all complex types are composed FROM these.
+#
+# The primitives embody ternary computing principles:
+#   - Sizes are powers of 3 (1, 5, 9, 27 trits)
+#   - Boolean is ternary (false, unknown, true)
+#   - Integers have true center (balanced representation)
+#
+# Dependencies flow upward:
+#   primitives.toml → types.toml → schemas/* → contracts/*
+#
+# Changes here ripple through the entire type system. This is foundational.
+#
+# "In the beginning God created the heaven and the earth."
+# — Genesis 1:1 KJV
+#
+# Before complexity, establish the fundamentals.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

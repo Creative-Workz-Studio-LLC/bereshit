@@ -1,0 +1,625 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Type System Rules (3-Block Data Structure)
+# Key: B-word-core-types
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on primitives.toml ladder)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/primitives.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core
+# File:        types.toml
+# Key:         B-word-core-types
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "And God said, Let us make man in our image, after our likeness."
+#            — Genesis 1:26 KJV
+#
+# Principle: God created with composition and relationship in mind. Man was
+#            made in God's image — types relate to and compose from other types.
+#            Structure and relationship are fundamental to creation.
+#
+# Anchor: "For as the body is one, and hath many members, and all the members
+#          of that one body, being many, are one body." — 1 Corinthians 12:12
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (builds on primitives ladder, schemas build on this)
+#
+# Role: Type composition rules for OmniCode — how types relate, constrain,
+#       and compose. The grammar of the type system.
+#
+# Paradigm: CPI-SI framework component — relationships as stored truth
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-11
+#   Version: a-01.00
+#   Modified: 2025-12-11 - Initial creation
+#
+# # Purpose & Function
+#
+# Purpose: Define how types compose, inherit, and constrain each other
+#
+# Core Design: Rules for building complex types from primitives
+#
+# Key Features:
+#
+#   - Type composition (struct, union, tuple)
+#   - Type constraints (range, pattern, enum)
+#   - Nullability rules (optional<T>, required)
+#   - Generic type parameters (T, K, V)
+#   - Type aliases and references
+#   - Inheritance and embedding
+#
+# Philosophy: Types are not just containers — they express relationships.
+#             Good type design makes invalid states unrepresentable.
+#             The type system enforces truth at compile time.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Parser: Any TOML library (BurntSushi/toml, pelletier/go-toml)
+#   - Primitives: word/core/primitives.toml (base types to compose from)
+#
+# What Uses This:
+#
+#   - word/core/schemas/*: All schema definitions use these rules
+#   - word/core/contracts/*: Interface contracts reference type rules
+#   - word/core/validation.toml: Validation rules for type checking
+#   - MillenniumOS: Type system implementation
+#   - CPI-SI: Identity schema composition
+#   - FaithNet: Message type definitions
+#
+# Integration Points:
+#
+#   - Primitives: word/core/primitives.toml (depends on)
+#   - Schemas: word/core/schemas/* (builds toward)
+#   - Contracts: word/core/contracts/* (informs)
+#   - Validation: word/core/validation.toml (complements)
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Data file — type rules are declarative, not executable]
+#
+# # Health Scoring
+#
+# Configuration Impact: Invalid type rules would break all schema validation
+#
+# Validation Behavior:
+#   - Invalid composition rule: Error — these govern all schemas
+#   - Missing section: Error — all sections required
+#   - Circular reference: Error — must be resolvable
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines type composition rules and relationships.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# NOTE: All ternary types inherit binary storage model from primitives.toml
+#       Section 0. Composite types follow same packed/unpacked rules.
+#       See: primitives.toml [storage] for binary representation details.
+#
+# 1. COMPOSITION TYPES
+#    Purpose: How to build complex types (struct, union, tuple)
+#
+# 2. TYPE CONSTRAINTS
+#    Purpose: How to restrict type values (range, pattern, enum)
+#
+# 3. NULLABILITY
+#    Purpose: How to handle absence of value (optional, required)
+#
+# 4. GENERICS
+#    Purpose: Type parameters and polymorphism
+#
+# 5. TYPE REFERENCES
+#    Purpose: Aliases, refs, and indirection
+#
+# 6. INHERITANCE
+#    Purpose: Type embedding and extension
+#
+# 7. TYPE RELATIONSHIPS
+#    Purpose: Subtyping, compatibility, coercion rules
+#
+# 8. STORAGE ALIGNMENT
+#    Purpose: How composite types map to binary storage (see primitives.toml)
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Composition Types - Building Complex Structures
+# -----------------------------------------------------------------------------
+# How to combine primitives into compound types
+
+[struct]
+name = "struct"
+description = "Named product type — combines multiple fields into one type"
+kind = "composition"
+field_ordering = "declared"  # Fields maintain declaration order
+allows_optional_fields = true
+allows_default_values = true
+supports_embedding = true
+# Biblical syntax (Genesis 1 vav-conjunction):
+#   let Person be with name as text and age as number and active as bool3
+# See: syntax.toml [composition.with_and]
+
+[union]
+name = "union"
+description = "Sum type — value can be one of several types"
+kind = "composition"
+requires_discriminator = true  # Must know which variant is active
+variants_exclusive = true      # Only one variant at a time
+supports_pattern_matching = true
+# Biblical syntax (Deuteronomy 30:19 — life or death):
+#   Response of success as Result or failure as Error
+# See: syntax.toml [composition.of_or]
+# Ternary alignment: discriminator uses trit (-1=first, 0=second, 1=third)
+
+[tuple]
+name = "tuple"
+description = "Anonymous product type — ordered sequence of types"
+kind = "composition"
+field_ordering = "positional"  # Access by index, not name
+fixed_length = true
+heterogeneous = true           # Elements can have different types
+# Biblical syntax (sequential listing):
+#   tuple of text and number and bool3
+
+
+# -----------------------------------------------------------------------------
+# 2. Type Constraints - Restricting Valid Values
+# -----------------------------------------------------------------------------
+# How to narrow the set of valid values for a type
+
+[constraint.range]
+name = "range"
+description = "Numeric range constraint"
+applies_to = ["int9", "uint9", "int27", "uint27", "float27", "trit", "trit5"]
+properties = ["min", "max", "exclusive_min", "exclusive_max"]
+default_inclusive = true
+# Biblical syntax (Numbers — boundaries set by God):
+#   age as number from 0 to 120
+#   health as uint9 from 0 to 255
+# See: syntax.toml [quantity.from_to]
+
+[constraint.pattern]
+name = "pattern"
+description = "String pattern constraint (regex)"
+applies_to = ["text"]
+properties = ["regex", "format"]
+common_formats = ["email", "uuid", "uri", "date", "time", "datetime"]
+# Biblical syntax (Exodus — patterns for the tabernacle):
+#   email as text according to pattern of email
+#   name as text according to pattern of "[A-Z][a-z]+"
+# See: syntax.toml [constraint.according_to_pattern]
+
+[constraint.enum]
+name = "enum"
+description = "Enumeration constraint — value must be one of listed options"
+applies_to = ["text", "int9", "uint9", "int27", "uint27", "trit"]
+properties = ["values", "labels"]
+requires_exhaustive = true  # All variants must be handled
+# Biblical syntax (Deuteronomy 30:19 — choose this day):
+#   status chosen from active or inactive or pending
+#   day chosen from Sunday or Monday or Tuesday or ...
+# See: syntax.toml [constraint.chosen_from]
+
+[constraint.length]
+name = "length"
+description = "Collection/string length constraint"
+applies_to = ["text", "list", "set"]
+properties = ["min_length", "max_length", "exact_length"]
+# Biblical syntax (measurement — cubits and spans):
+#   name as text measured from 1 to 255
+#   items as list measured at most 100
+# See: syntax.toml [constraint.measured]
+
+
+# -----------------------------------------------------------------------------
+# 3. Nullability - Handling Absence of Value
+# -----------------------------------------------------------------------------
+# OmniCode uses ternary nullability aligned with bool3
+
+[nullability.optional]
+name = "optional"
+description = "Value may be absent (maps to bool3 unknown state)"
+wrapper_syntax = "optional<T>"
+default_value = "unknown"  # Ternary: 0
+presence_check = "is_present"  # Returns bool3: true/false/unknown
+# Biblical syntax (uncertain — "it may be"):
+#   middleName may be text
+#   suffix may be text
+# See: syntax.toml [nullability.may_be]
+
+[nullability.required]
+name = "required"
+description = "Value must be present (compile-time enforcement)"
+wrapper_syntax = "required<T>"
+default_value = "none"  # Must be explicitly provided
+validation = "compile_time"  # Caught before runtime
+# Biblical syntax (commandment — "thou shalt"):
+#   name must be text
+#   id must be uint27
+# See: syntax.toml [nullability.must_be]
+
+[nullability.nullable]
+name = "nullable"
+description = "Value can be explicitly null (distinct from unknown)"
+wrapper_syntax = "nullable<T>"
+null_representation = -1  # Ternary: explicit null
+# Distinction: optional = might not exist, nullable = explicitly nothing
+# Biblical syntax (void/tohu — explicitly nothing):
+#   previousOwner can be void or text
+#   deletedAt can be void or timestamp
+# See: syntax.toml [nullability.can_be_void]
+
+
+# -----------------------------------------------------------------------------
+# 4. Generics - Type Parameters
+# -----------------------------------------------------------------------------
+# Polymorphism and type abstraction
+
+[generics.parameter]
+name = "type_parameter"
+description = "Generic type placeholder"
+syntax = "T, U, V"  # Single uppercase letters by convention
+supports_constraints = true
+supports_defaults = true
+# Biblical syntax (placeholder — "whatsoever"):
+#   let Container hold whatsoever Thing
+#   let Pair hold whatsoever First and whatsoever Second
+# See: syntax.toml [generics.hold_whatsoever]
+
+[generics.constraint]
+name = "type_constraint"
+description = "Bounds on what types can fill a parameter"
+syntax = "T: Constraint"
+constraint_types = ["interface", "primitive", "comparable", "numeric"]
+# Biblical syntax (requirement — "being" or "that is"):
+#   let Container hold whatsoever Thing being Comparable
+#   sort given items as list of whatsoever T being Ordered
+# See: syntax.toml [generics.being_constraint]
+
+[generics.variance]
+name = "variance"
+description = "How generic types relate in inheritance"
+kinds = ["invariant", "covariant", "contravariant"]
+default = "invariant"
+# invariant: list<Dog> is NOT list<Animal>
+# covariant: Reader<Dog> IS Reader<Animal> (out)
+# contravariant: Writer<Animal> IS Writer<Dog> (in)
+# Biblical syntax (inheritance direction):
+#   Reader yields whatsoever (covariant — children can be used as parent)
+#   Writer receives whatsoever (contravariant — parent can receive children)
+# See: syntax.toml [generics.yields_receives]
+
+
+# -----------------------------------------------------------------------------
+# 5. Type References - Aliases and Indirection
+# -----------------------------------------------------------------------------
+# Named references and indirection for complex types
+
+[reference.alias]
+name = "type_alias"
+description = "Alternative name for existing type"
+creates_new_type = false  # Just a name, not distinct type
+syntax = "alias Name = ExistingType"
+# Biblical syntax (naming — "also called"):
+#   UserID also called int27
+#   PathString also called text
+# See: syntax.toml [naming.also_called]
+
+[reference.newtype]
+name = "newtype"
+description = "Distinct type wrapping another type"
+creates_new_type = true  # Type-safe wrapper
+syntax = "newtype Name = WrappedType"
+prevents_confusion = true  # UserID vs OrderID both int27 but distinct
+# Biblical syntax (distinct naming — separating Day from Night):
+#   let UserID be distinct int27
+#   let OrderID be distinct int27
+# See: syntax.toml [naming.distinct]
+
+[reference.ref]
+name = "ref"
+description = "Reference to another type (for recursive structures)"
+syntax = "ref<TypeName>"
+supports_cycles = true  # Enables recursive types
+lazy_resolution = true  # Resolved after all types defined
+# Biblical syntax (self-reference — genealogies referring to lineage):
+#   let Node be with value as int27 and children as list of itself
+#   let Tree be with root as Node and branches as list of Tree
+# See: syntax.toml [reference.itself]
+
+
+# -----------------------------------------------------------------------------
+# 6. Inheritance - Type Extension
+# -----------------------------------------------------------------------------
+# How types can extend or embed other types
+
+[inheritance.embed]
+name = "embed"
+description = "Composition by embedding — struct contains another struct's fields"
+syntax = "embed OtherStruct"
+field_promotion = true   # Embedded fields accessible directly
+conflict_resolution = "explicit"  # Must resolve name conflicts
+# Biblical syntax: embedding is inclusion, like tribes within Israel
+
+[inheritance.extend]
+name = "extend"
+description = "Type extension — add fields/constraints to existing type"
+syntax = "extend BaseType"
+preserves_compatibility = true  # Extended type usable as base
+# Biblical syntax (Genesis genealogies — begat):
+#   Employee from Person with department as text
+#   Person begat Employee
+# See: syntax.toml [derivation.from_with], [derivation.begat]
+
+[inheritance.implement]
+name = "implement"
+description = "Contract implementation — type satisfies interface"
+syntax = "implement Interface"
+requires_all_methods = true
+compile_time_check = true
+# Biblical syntax (covenant fulfillment):
+#   FileWriter enters covenant with Writer
+# See: syntax.toml [covenant.enters_covenant_with]
+
+
+# -----------------------------------------------------------------------------
+# 7. Type Relationships - Compatibility Rules
+# -----------------------------------------------------------------------------
+# How types relate for assignment, comparison, and coercion
+
+[relationship.subtype]
+name = "subtype"
+description = "Type A is subtype of B if A can be used where B expected"
+notation = "A <: B"
+reflexive = true   # A <: A
+transitive = true  # A <: B and B <: C implies A <: C
+# Structural subtyping: based on shape, not declaration
+# Biblical syntax (lineage — "is a"):
+#   Admin is a Person
+#   Dog is a Mammal is a Animal
+# See: syntax.toml [relation.is_a]
+
+[relationship.compatible]
+name = "compatible"
+description = "Types that can be safely assigned to each other"
+symmetric = false  # int9 compatible with int27, not reverse
+considers_constraints = true
+# int9 is compatible with int27 (widening)
+# constrained type compatible with unconstrained (narrowing)
+# Biblical syntax (fitting — "can serve as"):
+#   int9 can serve as int27
+#   Employee can serve as Person
+# See: syntax.toml [relation.can_serve_as]
+
+[relationship.coercion]
+name = "coercion"
+description = "Automatic type conversion rules"
+explicit_preferred = true  # Prefer explicit casts
+implicit_allowed = ["widening", "null_promotion"]
+never_implicit = ["narrowing", "lossy", "semantic_change"]
+# Ternary alignment: trit → int9 → int27 (widening)
+# Biblical syntax (transformation — "becomes"):
+#   int9 becomes int27 (implicit widening)
+#   text becomes int27 (explicit conversion)
+# See: syntax.toml [relation.becomes]
+
+[relationship.equality]
+name = "type_equality"
+description = "When two type expressions denote the same type"
+structural = true  # Based on structure, not name
+considers_constraints = true
+# struct { x: int27 } == struct { x: int27 } (structurally equal)
+# Biblical syntax (identity — "is the same as"):
+#   Point is the same as Coordinate (structural equality)
+#   UserID is not the same as OrderID (distinct newtypes)
+# See: syntax.toml [relation.is_same_as]
+
+
+# -----------------------------------------------------------------------------
+# 8. Storage Alignment - Binary Representation
+# -----------------------------------------------------------------------------
+# How composite types map to binary storage
+# CRITICAL: Inherits from primitives.toml [storage] — the hardware reality
+#
+# Scripture: "For which of you, intending to build a tower, sitteth not down
+#             first, and counteth the cost?" — Luke 14:28 KJV
+# (Know the storage cost before building complex types)
+
+[storage_alignment]
+description = "How composite types map to binary storage"
+inherits_from = "primitives.toml [storage]"
+note = "All ternary storage rules from primitives apply to composite types"
+
+[storage_alignment.struct]
+packed = "Sum of packed member sizes, respecting alignment"
+unpacked = "Concatenation of unpacked member representations"
+padding = "May include padding for alignment in packed form"
+
+[storage_alignment.union]
+packed = "Size of largest variant (all variants share storage)"
+unpacked = "Tag + active variant representation"
+discriminant = "Tag indicates which variant is active"
+
+[storage_alignment.list]
+packed = "Length prefix + packed elements"
+unpacked = "JSON-like array representation"
+length_type = "uint9 (supports up to 19,682 elements)"
+
+[storage_alignment.map]
+packed = "Length prefix + packed key-value pairs"
+unpacked = "JSON-like object representation"
+key_constraint = "Keys must be hashable (primitives or text)"
+
+[storage_alignment.bible_connection]
+note = "Bible addressing (bible/addressing.toml) validates storage model"
+example = "VerseAddress struct uses trit5 pair = 2 bytes packed"
+reference = "See bible/addressing.toml [ternary.packed]"
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview (3-Block Adapted)
+# -----------------------------------------------------------------------------
+#
+# 1. OPERATIONS
+#    - Validation: How to verify the type rules are correct
+#    - Access: How to read type composition rules
+#
+# 2. POLICY
+#    - Modification: What's safe to change
+#
+# 3. SYNTHESIS
+#    - Closing Note: Final guidance and grounding
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Operations - Validation
+# -----------------------------------------------------------------------------
+#
+# Verify type rules are correctly formatted:
+#
+#   # Syntax check (TOML parser)
+#   python -c "import toml; toml.load('word/core/types.toml')"
+#   tomlv word/core/types.toml
+#
+# Rule verification:
+#   - All composition types must have: name, description, kind
+#   - All constraints must have: name, applies_to
+#   - All nullability wrappers must have: wrapper_syntax, default_value
+#   - All relationships must define: name, description
+#
+# Semantic verification:
+#   - Constraint applies_to must reference valid primitives
+#   - Inheritance rules must not create cycles
+#   - Variance rules must be mathematically sound
+#
+
+# -----------------------------------------------------------------------------
+# 2. Operations - Access
+# -----------------------------------------------------------------------------
+#
+# Go code integration:
+#
+#   type CompositionType struct {
+#       Name        string `toml:"name"`
+#       Description string `toml:"description"`
+#       Kind        string `toml:"kind"`
+#   }
+#
+#   type Constraint struct {
+#       Name        string   `toml:"name"`
+#       AppliesTo   []string `toml:"applies_to"`
+#       Properties  []string `toml:"properties"`
+#   }
+#
+#   type TypeRules struct {
+#       Struct    CompositionType          `toml:"struct"`
+#       Union     CompositionType          `toml:"union"`
+#       Tuple     CompositionType          `toml:"tuple"`
+#       Constraint map[string]Constraint   `toml:"constraint"`
+#       // ... additional sections
+#   }
+#
+#   cfg, _ := toml.LoadFile("word/core/types.toml")
+#   structKind := cfg.Struct.Kind  // "composition"
+#
+
+# -----------------------------------------------------------------------------
+# 3. Policy - Modification
+# -----------------------------------------------------------------------------
+#
+# NEVER Modify:
+#   ❌ Core composition types (struct, union, tuple)
+#   ❌ Subtyping semantics (reflexive, transitive)
+#   ❌ Ternary nullability alignment
+#   ❌ Variance definitions (mathematical)
+#
+# Safe to Add:
+#   ✅ New constraint types
+#   ✅ Additional properties to existing rules
+#   ✅ Comments and examples
+#   ✅ New relationship definitions
+#
+# Requires Coordination:
+#   ⚠️ Changing coercion rules (affects all type checking)
+#   ⚠️ Modifying inheritance semantics (affects schemas)
+#   ⚠️ Adding new nullability modes (affects validation)
+#
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis - Closing Note
+# -----------------------------------------------------------------------------
+#
+# Type rules define how the primitives combine into complex structures.
+# Where primitives are atoms, these rules are the bonds — the grammar
+# that governs composition.
+#
+# The type system embodies relational principles:
+#   - Composition reflects creation's structure (many → one body)
+#   - Constraints enforce truth (invalid states unrepresentable)
+#   - Relationships enable polymorphism (parts serve the whole)
+#
+# Dependencies flow upward:
+#   primitives.toml → types.toml → schemas/* → contracts/*
+#                     ↑ YOU ARE HERE
+#
+# Changes here ripple through all schemas and contracts. This is the grammar.
+#
+# "For as the body is one, and hath many members, and all the members
+#  of that one body, being many, are one body."
+# — 1 Corinthians 12:12 KJV
+#
+# Many types, one coherent system.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

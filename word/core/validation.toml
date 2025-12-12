@@ -1,0 +1,547 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Validation Rules (3-Block Data Structure)
+# Key: B-word-core-validation
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on types, complements schemas/contracts)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/primitives.toml, word/core/types.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core
+# File:        validation.toml
+# Key:         B-word-core-validation
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "Prove all things; hold fast that which is good."
+#            — 1 Thessalonians 5:21 KJV
+#
+# Principle: Validation is proving — testing whether something meets the
+#            standard. Just as Scripture calls us to prove all things,
+#            validation rules test whether data meets its declared type.
+#
+# Anchor: "Try the spirits whether they are of God."
+#          — 1 John 4:1 KJV
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (validation rules that types and schemas use)
+#
+# Role: Validation rules for OmniCode — how to verify that values, types,
+#       and schemas meet their declared constraints.
+#
+# Paradigm: CPI-SI framework component — truth verification as stored rules
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-11
+#   Version: a-01.00
+#   Modified: 2025-12-11 - Initial creation
+#
+# # Purpose & Function
+#
+# Purpose: Define validation rules for the OmniCode type system
+#
+# Core Design: Rules for verifying type correctness at compile and runtime
+#
+# Key Features:
+#
+#   - Primitive validation (range, format, encoding)
+#   - Constraint validation (pattern, enum, length)
+#   - Structural validation (required fields, type matching)
+#   - Schema validation (block structure, required sections)
+#   - Contract validation (method signatures, implementations)
+#
+# Philosophy: Invalid data should never silently pass. Validation catches
+#             errors early, enforcing truth at the boundaries.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Primitives: word/core/primitives.toml (type definitions to validate)
+#   - Types: word/core/types.toml (composition rules to enforce)
+#
+# What Uses This:
+#
+#   - Parsers: Type validation during parsing
+#   - Compilers: Type checking during compilation
+#   - Runtime: Value validation at boundaries
+#   - Tools: bhealth, bseed, validators
+#
+# Integration Points:
+#
+#   - Primitives: word/core/primitives.toml
+#   - Types: word/core/types.toml
+#   - Schemas: word/core/schemas/*
+#   - Contracts: word/core/contracts/*
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Data file — validation rules are declarative, not executable]
+#
+# # Health Scoring
+#
+# Configuration Impact: Invalid validation rules would allow bad data through
+#
+# Validation Behavior:
+#   - Invalid rule: Error — rules must be well-formed
+#   - Missing validation: Warning — gaps in coverage
+#   - Circular validation: Error — must terminate
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines validation rules and error handling.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. PRIMITIVE VALIDATION
+#    Purpose: Rules for validating primitive types
+#
+# 2. CONSTRAINT VALIDATION
+#    Purpose: Rules for validating type constraints
+#
+# 3. STRUCTURAL VALIDATION
+#    Purpose: Rules for validating composite types
+#
+# 4. SCHEMA VALIDATION
+#    Purpose: Rules for validating OmniCode file structure
+#
+# 5. ERROR HANDLING
+#    Purpose: How validation errors are reported
+#
+# 6. VALIDATION MODES
+#    Purpose: When and how validation runs
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Primitive Validation - Base Type Rules
+# -----------------------------------------------------------------------------
+
+[primitive.trit]
+description = "Validate single trit value"
+valid_values = [-1, 0, 1]
+error_on_invalid = true
+error_code = "INVALID_TRIT"
+error_message = "Value must be -1, 0, or 1"
+
+[primitive.trit5]
+description = "Validate trit-byte value"
+min_value = -121
+max_value = 121
+error_on_invalid = true
+error_code = "INVALID_TRIT5"
+error_message = "Value must be between -121 and 121"
+
+[primitive.int9]
+description = "Validate 9-trit signed integer"
+min_value = -9841
+max_value = 9841
+error_on_invalid = true
+error_code = "INVALID_INT9"
+error_message = "Value must be between -9841 and 9841"
+
+[primitive.uint9]
+description = "Validate 9-trit unsigned integer"
+min_value = 0
+max_value = 19682
+error_on_invalid = true
+error_code = "INVALID_UINT9"
+error_message = "Value must be between 0 and 19682"
+
+[primitive.int27]
+description = "Validate 27-trit signed integer"
+min_value = -3812798742493
+max_value = 3812798742493
+error_on_invalid = true
+error_code = "INVALID_INT27"
+error_message = "Value must be between -3812798742493 and 3812798742493"
+
+[primitive.uint27]
+description = "Validate 27-trit unsigned integer"
+min_value = 0
+max_value = 7625597484986
+error_on_invalid = true
+error_code = "INVALID_UINT27"
+error_message = "Value must be between 0 and 7625597484986"
+
+[primitive.text]
+description = "Validate UTF-8 text"
+encoding = "utf-8"
+allow_empty = true
+error_on_invalid = true
+error_code = "INVALID_TEXT"
+error_message = "Text must be valid UTF-8"
+
+[primitive.bool3]
+description = "Validate ternary boolean"
+valid_values = [-1, 0, 1]
+labels = ["false", "unknown", "true"]
+error_on_invalid = true
+error_code = "INVALID_BOOL3"
+error_message = "Boolean must be false (-1), unknown (0), or true (1)"
+
+
+# -----------------------------------------------------------------------------
+# 2. Constraint Validation - Applied Constraints
+# -----------------------------------------------------------------------------
+
+[constraint.range]
+description = "Validate numeric range constraint"
+check_min = true
+check_max = true
+inclusive_by_default = true
+error_code = "RANGE_VIOLATION"
+error_message_template = "Value {value} is outside range [{min}, {max}]"
+
+[constraint.pattern]
+description = "Validate regex pattern constraint"
+regex_flavor = "PCRE"
+case_sensitive_by_default = true
+error_code = "PATTERN_VIOLATION"
+error_message_template = "Value '{value}' does not match pattern '{pattern}'"
+
+[constraint.enum]
+description = "Validate enumeration constraint"
+case_sensitive = true
+require_exhaustive_handling = true
+error_code = "ENUM_VIOLATION"
+error_message_template = "Value '{value}' is not one of {allowed_values}"
+
+[constraint.length]
+description = "Validate length constraint"
+applies_to = ["text", "list", "set"]
+check_min_length = true
+check_max_length = true
+error_code = "LENGTH_VIOLATION"
+error_message_template = "Length {actual} is outside allowed range [{min}, {max}]"
+
+
+# -----------------------------------------------------------------------------
+# 3. Structural Validation - Composite Types
+# -----------------------------------------------------------------------------
+
+[structural.struct]
+description = "Validate struct composition"
+check_required_fields = true
+check_field_types = true
+allow_extra_fields = false
+error_code = "STRUCT_VIOLATION"
+
+[structural.struct.required_field]
+error_code = "MISSING_REQUIRED_FIELD"
+error_message_template = "Required field '{field}' is missing"
+
+[structural.struct.type_mismatch]
+error_code = "FIELD_TYPE_MISMATCH"
+error_message_template = "Field '{field}' expected type {expected}, got {actual}"
+
+[structural.struct.unknown_field]
+error_code = "UNKNOWN_FIELD"
+error_message_template = "Unknown field '{field}' in struct"
+
+[structural.union]
+description = "Validate union composition"
+require_discriminator = true
+check_variant_type = true
+error_code = "UNION_VIOLATION"
+
+[structural.union.no_discriminator]
+error_code = "MISSING_DISCRIMINATOR"
+error_message = "Union value must have discriminator"
+
+[structural.union.invalid_variant]
+error_code = "INVALID_VARIANT"
+error_message_template = "Unknown variant '{variant}' in union"
+
+[structural.list]
+description = "Validate list composition"
+check_element_type = true
+check_length_constraints = true
+error_code = "LIST_VIOLATION"
+
+[structural.list.element_type]
+error_code = "LIST_ELEMENT_TYPE_MISMATCH"
+error_message_template = "List element at index {index} expected type {expected}, got {actual}"
+
+[structural.map]
+description = "Validate map composition"
+check_key_type = true
+check_value_type = true
+require_unique_keys = true
+error_code = "MAP_VIOLATION"
+
+[structural.map.duplicate_key]
+error_code = "DUPLICATE_MAP_KEY"
+error_message_template = "Duplicate key '{key}' in map"
+
+
+# -----------------------------------------------------------------------------
+# 4. Schema Validation - OmniCode File Structure
+# -----------------------------------------------------------------------------
+
+[schema.pragma]
+description = "Validate OmniCode pragma line"
+required = true
+pattern = "^#!omni\\s+(document|template|data|code)\\s+--\\w+$"
+error_code = "INVALID_PRAGMA"
+error_message = "File must start with valid OmniCode pragma (e.g., #!omni data --toml)"
+
+[schema.blocks_3]
+description = "Validate 3-block structure (data files)"
+required_blocks = ["METADATA", "CONTENT", "CLOSING"]
+order_enforced = true
+error_code = "INVALID_3_BLOCK"
+
+[schema.blocks_4]
+description = "Validate 4-block structure (code files)"
+required_blocks = ["METADATA", "SETUP", "BODY", "CLOSING"]
+order_enforced = true
+error_code = "INVALID_4_BLOCK"
+
+[schema.blocks_5]
+description = "Validate 5-block structure (documentation)"
+required_blocks = ["METADATA", "HEADER", "CONTEXT", "CONTENT", "FOOTER"]
+order_enforced = true
+error_code = "INVALID_5_BLOCK"
+
+[schema.block_boundary]
+description = "Validate block boundary markers"
+start_pattern = "^[#/]\\s*={76,}$"
+end_pattern = "^[#/]\\s*END\\s+\\w+$"
+error_code = "INVALID_BLOCK_BOUNDARY"
+
+[schema.metadata.required_fields]
+description = "Required fields in METADATA block"
+fields = ["key", "title", "version", "created"]
+error_code = "MISSING_METADATA_FIELD"
+
+
+# -----------------------------------------------------------------------------
+# 5. Error Handling - Validation Error Reporting
+# -----------------------------------------------------------------------------
+
+[errors.severity]
+description = "Error severity levels"
+levels = ["error", "warning", "info"]
+default_level = "error"
+
+[errors.severity.error]
+description = "Validation failed — must be fixed"
+blocks_operation = true
+exit_code = 1
+
+[errors.severity.warning]
+description = "Validation passed with concerns"
+blocks_operation = false
+exit_code = 0
+
+[errors.severity.info]
+description = "Informational — no action required"
+blocks_operation = false
+exit_code = 0
+
+[errors.format]
+description = "How validation errors are displayed"
+include_location = true
+include_expected = true
+include_actual = true
+include_suggestion = true
+# Format: "[ERROR] {file}:{line}:{col}: {code} - {message}"
+
+[errors.aggregation]
+description = "How multiple errors are handled"
+fail_fast = false  # Collect all errors before reporting
+max_errors = 100   # Stop after this many errors
+group_by_file = true
+
+
+# -----------------------------------------------------------------------------
+# 6. Validation Modes - When Validation Runs
+# -----------------------------------------------------------------------------
+
+[modes.compile_time]
+description = "Validation during compilation"
+enabled = true
+checks = ["primitive", "constraint", "structural", "schema"]
+strict = true
+
+[modes.runtime]
+description = "Validation during execution"
+enabled = true
+checks = ["primitive", "constraint"]
+strict = false  # May allow recovery in some cases
+
+[modes.parse_time]
+description = "Validation during parsing"
+enabled = true
+checks = ["schema", "primitive"]
+strict = true
+
+[modes.boundary]
+description = "Validation at system boundaries (API, file I/O)"
+enabled = true
+checks = ["primitive", "constraint", "structural"]
+strict = true
+# Key principle: Never trust external data
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview (3-Block Adapted)
+# -----------------------------------------------------------------------------
+#
+# 1. OPERATIONS
+#    - Validation: How to verify validation rules themselves
+#    - Access: How to use these rules
+#
+# 2. POLICY
+#    - Modification: What's safe to change
+#
+# 3. SYNTHESIS
+#    - Closing Note: Final guidance and grounding
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Operations - Validation
+# -----------------------------------------------------------------------------
+#
+# Verify validation rules are correctly formatted:
+#
+#   # Syntax check (TOML parser)
+#   python -c "import tomllib; f=open('word/core/validation.toml','rb'); tomllib.load(f)"
+#
+# Rule verification:
+#   - All error_codes must be unique
+#   - All patterns must be valid regex
+#   - All references must point to valid primitives/types
+#
+# Self-validation:
+#   - validation.toml itself follows 3-block structure
+#   - All sections have required fields
+#   - No circular validation rules
+#
+
+# -----------------------------------------------------------------------------
+# 2. Operations - Access
+# -----------------------------------------------------------------------------
+#
+# Go code integration:
+#
+#   type ValidationError struct {
+#       Code     string // "INVALID_INT9"
+#       Message  string // "Value must be between -9841 and 9841"
+#       Location string // "file.toml:42:3"
+#       Severity string // "error", "warning", "info"
+#   }
+#
+#   type Validator interface {
+#       ValidatePrimitive(value any, typeName string) []ValidationError
+#       ValidateConstraint(value any, constraint Constraint) []ValidationError
+#       ValidateStruct(value map[string]any, schema Schema) []ValidationError
+#       ValidateSchema(content []byte, blockType string) []ValidationError
+#   }
+#
+# Using validation rules:
+#
+#   errors := validator.ValidatePrimitive(myValue, "int9")
+#   if len(errors) > 0 {
+#       for _, e := range errors {
+#           log.Printf("[%s] %s: %s", e.Severity, e.Code, e.Message)
+#       }
+#   }
+#
+
+# -----------------------------------------------------------------------------
+# 3. Policy - Modification
+# -----------------------------------------------------------------------------
+#
+# NEVER Modify:
+#   ❌ Primitive validation ranges (mathematically derived)
+#   ❌ Error code format (tooling depends on consistency)
+#   ❌ Required schema blocks (structural contract)
+#   ❌ Validation mode defaults (safety critical)
+#
+# Safe to Add:
+#   ✅ New validation rules
+#   ✅ Additional error messages
+#   ✅ Custom constraint validators
+#   ✅ Documentation and examples
+#
+# Requires Coordination:
+#   ⚠️ Changing error severity (affects build failures)
+#   ⚠️ Adding required fields (affects existing schemas)
+#   ⚠️ Modifying fail_fast behavior (affects error reporting)
+#
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis - Closing Note
+# -----------------------------------------------------------------------------
+#
+# Validation is truth enforcement. These rules define what it means for
+# data to be "correct" — they are the gatekeepers at every boundary.
+#
+# The validation system embodies vigilance:
+#   - Primitive validation catches type errors early
+#   - Constraint validation enforces business rules
+#   - Schema validation ensures structural integrity
+#   - Boundary validation protects system integrity
+#
+# Dependencies flow upward:
+#   primitives.toml → types.toml → validation.toml → parsers/compilers
+#                                  ↑ YOU ARE HERE
+#
+# Changes here affect what passes through. Invalid data caught here
+# never corrupts the system.
+#
+# "Prove all things; hold fast that which is good."
+# — 1 Thessalonians 5:21 KJV
+#
+# Let nothing invalid pass unchallenged.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

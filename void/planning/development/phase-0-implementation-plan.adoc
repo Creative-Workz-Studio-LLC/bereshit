@@ -16,14 +16,14 @@ METADATA BLOCK
 // STATE
 // ─────────────────────────────────────────────────────────────────────────────
 :status: Active
-:version: a-01.00
-:revdate: 2025-12-11
+:version: a-02.75
+:revdate: 2025-12-12
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TEMPORAL
 // ─────────────────────────────────────────────────────────────────────────────
 :created: 2025-12-11
-:updated: 2025-12-11
+:updated: 2025-12-12
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ATTRIBUTION
@@ -224,16 +224,16 @@ Trackable tasks for completing Phase 0. Each task has clear deliverables.
 | Aspect | Details
 
 | *Deliverable*
-| `config/omnicode/primitives.toml`
+| `word/core/primitives.toml` ✓ DONE
 
 | *Contains*
-| Trit, trit-byte, integers (signed/unsigned), floating point, text, boolean (ternary), collections
+| Trit, trit-byte, integers (signed/unsigned), floating point, text, boolean (ternary), collections + *Section 0: Binary Storage Model*
 
 | *References*
 | `word/constants/ternary-math.toml` for trit foundations
 
 | *Blocked By*
-| Nothing (can start now)
+| Nothing — *COMPLETED 2025-12-11*
 
 | *Enables*
 | Task 2 (Type System), Task 3 (Schemas)
@@ -295,13 +295,13 @@ Trackable tasks for completing Phase 0. Each task has clear deliverables.
 | Aspect | Details
 
 | *Deliverable*
-| `config/omnicode/types.toml`
+| `word/core/types.toml` ✓ DONE
 
 | *Contains*
-| Type composition rules, inheritance patterns, constraint definitions, nullability
+| Type composition rules, inheritance patterns, constraint definitions, nullability + *Section 8: Storage Alignment*
 
 | *Blocked By*
-| Task 1 (Primitives)
+| Task 1 (Primitives) — *COMPLETED 2025-12-11*
 
 | *Enables*
 | Task 3 (Schemas), Task 5 (Validation)
@@ -342,13 +342,13 @@ Trackable tasks for completing Phase 0. Each task has clear deliverables.
 | Aspect | Details
 
 | *Deliverable*
-| `config/omnicode/schemas/` directory with schema files
+| `word/core/schemas/` directory with schema files — *PARTIAL*
 
 | *Contains*
 | File types, permissions, identity, timestamps, metadata
 
 | *Blocked By*
-| Task 1 (Primitives), Task 2 (Types)
+| Task 1 (Primitives), Task 2 (Types) — both complete
 
 | *Enables*
 | Task 4 (Contracts), parallel design of systems
@@ -357,27 +357,33 @@ Trackable tasks for completing Phase 0. Each task has clear deliverables.
 [%collapsible%open]
 .Core Schemas to Define
 ====
-[cols="2,4",options="header"]
+[cols="2,4,^1",options="header"]
 |===
-| Schema | What It Defines
+| Schema | What It Defines | Status
 
 | *file-type.toml*
 | File type definitions (code, data, documentation, etc.)
+| ☐
 
 | *permission.toml*
 | Permission model (ternary: deny, neutral, allow)
+| ☐
 
 | *identity.toml*
 | Identity schema (for CPI-SI instances, users, systems)
+| ☐
 
 | *timestamp.toml*
 | Temporal metadata (created, updated, versioning)
+| ☐
 
 | *health.toml*
 | Health scoring schema (used across all systems)
+| ✓ DONE
 
 | *message.toml*
 | Message format for inter-system communication
+| ☐
 |===
 ====
 
@@ -392,13 +398,13 @@ Trackable tasks for completing Phase 0. Each task has clear deliverables.
 | Aspect | Details
 
 | *Deliverable*
-| `config/omnicode/contracts/` directory
+| `word/core/contracts/` directory — *PARTIAL*
 
 | *Contains*
 | API contracts, protocol definitions, message formats
 
 | *Blocked By*
-| Task 3 (Schemas)
+| Task 3 (Schemas) — partial (health.toml done)
 
 | *Enables*
 | Parallel design of MillenniumOS, CPI-SI, FaithNet
@@ -407,21 +413,25 @@ Trackable tasks for completing Phase 0. Each task has clear deliverables.
 [%collapsible%open]
 .Contract Types
 ====
-[cols="2,4",options="header"]
+[cols="2,4,^1",options="header"]
 |===
-| Contract | Purpose
+| Contract | Purpose | Status
 
 | *filesystem.toml*
 | How systems interact with filesystem (CRUD operations)
+| ☐
 
 | *network.toml*
 | Network message format and protocol basics
+| ☐
 
 | *identity.toml*
 | Identity verification and authentication patterns
+| ☐
 
-| *health.toml*
+| *health-provider.toml*
 | Health reporting and monitoring interface
+| ✓ DONE
 |===
 ====
 
@@ -436,16 +446,87 @@ Trackable tasks for completing Phase 0. Each task has clear deliverables.
 | Aspect | Details
 
 | *Deliverable*
-| `config/omnicode/validation.toml`
+| `word/core/validation.toml` ✓ DONE
 
 | *Contains*
 | Validation rules, error definitions, compliance checking
 
 | *Blocked By*
-| Task 2 (Types), Task 3 (Schemas)
+| Task 2 (Types), Task 3 (Schemas) — *COMPLETED 2025-12-11*
 
 | *Enables*
 | Automated validation, schema enforcement
+|===
+
+---
+
+=== Task 6: Bible Rail (Added)
+
+*Goal:* Establish Bible as the encoding/decoding rail that validates ternary system.
+
+[cols="2,5",options="header"]
+|===
+| Aspect | Details
+
+| *Deliverable*
+| `word/core/bible/` directory ✓ DONE
+
+| *Contains*
+| Scripture-to-OmniCode encoding, reverse decoding, KJV↔WEB translation, ternary verse addressing
+
+| *Blocked By*
+| Task 1 (Primitives) for storage model
+
+| *Enables*
+| Ternary system validation, Scripture traceability
+|===
+
+[%collapsible%open]
+.Bible Rail Files
+====
+[cols="2,4,^1",options="header"]
+|===
+| File | Purpose | Status
+
+| *encoding.toml*
+| Scripture → OmniCode (Hebrew roots, Greek terms → syntax)
+| ✓ DONE
+
+| *decoding.toml*
+| OmniCode → Scripture (reverse lookup for keywords)
+| ✓ DONE
+
+| *translation.toml*
+| KJV ↔ WEB (archaic ↔ modern language mapping)
+| ✓ DONE
+
+| *addressing.toml*
+| Verse ↔ Ternary (ordinal → trit-byte, packed/unpacked)
+| ✓ DONE
+|===
+====
+
+---
+
+=== Task 7: OmniCode Syntax (Added)
+
+*Goal:* Define OmniCode keywords and syntax patterns derived from Scripture.
+
+[cols="2,5",options="header"]
+|===
+| Aspect | Details
+
+| *Deliverable*
+| `word/core/keywords.toml`, `word/core/syntax.toml` ✓ DONE
+
+| *Contains*
+| OmniCode keywords with biblical derivation, syntax patterns
+
+| *Blocked By*
+| Task 6 (Bible Rail) for encoding mappings
+
+| *Enables*
+| OmniCode transpiler, syntax validation
 |===
 
 <<_top,↑ Back to Top>>
@@ -526,34 +607,48 @@ How to know Phase 0 is complete and ready for Phase 1.
 |===
 | ✓ | Criterion | Verification
 
-| ☐
+| ✓
 | *All primitive types defined*
-| `config/omnicode/primitives.toml` exists and validates
+| `word/core/primitives.toml` exists and validates + Section 0 storage model
 
-| ☐
+| ✓
 | *Type system specified*
-| `config/omnicode/types.toml` defines composition, inheritance, constraints
+| `word/core/types.toml` defines composition, inheritance, constraints + Section 8 storage alignment
 
 | ☐
 | *Core schemas exist*
-| `config/omnicode/schemas/` contains file-type, permission, identity, health
+| `word/core/schemas/` — health.toml ✓, needs: file-type, permission, identity, timestamp, message
 
 | ☐
 | *Contracts defined*
-| `config/omnicode/contracts/` contains filesystem, network, identity
+| `word/core/contracts/` — health-provider.toml ✓, needs: filesystem, network, identity
 
-| ☐
+| ✓
 | *Validation rules specified*
-| `config/omnicode/validation.toml` exists
+| `word/core/validation.toml` exists
 
-| ☐
+| ✓
 | *All configs parse*
-| TOML syntax validates without errors
+| TOML syntax validates without errors (verified 2025-12-11)
 
-| ☐
+| ✓
 | *Cross-references resolve*
 | Types referenced in schemas exist in primitives/types
+
+| ✓
+| *Bible rail established*
+| `word/core/bible/` — encoding, decoding, translation, addressing all complete
+
+| ✓
+| *OmniCode syntax defined*
+| `word/core/keywords.toml`, `word/core/syntax.toml` exist
 |===
+
+=== Current Progress: ~75% Complete
+
+*Done:* Primitives, Types, Validation, Bible Rail, Keywords, Syntax, Health schema/contract
+
+*Remaining:* 5 schemas (file-type, permission, identity, timestamp, message), 3 contracts (filesystem, network, identity)
 
 === Transition to Phase 1
 
