@@ -226,6 +226,70 @@ note = "Bible addressing validates the entire ternary system works"
 
 
 # -----------------------------------------------------------------------------
+# 0b. Binary Storage Primitives - Actual Byte Types
+# -----------------------------------------------------------------------------
+# These are the BINARY primitives for byte-level storage on binary hardware.
+# Ternary types (Section 1+) are INTERPRETED on top of these storage types.
+#
+# Chain: Binary Storage → Ternary Interpretation → Application Schemas
+#        uint8 (0-255) → mapped to → -100 to +100 (health scale)
+#
+# Scripture: "A just weight and balance are the LORD's"
+#            — Proverbs 16:11 KJV
+# (Storage must be accurate for interpretation to be just)
+
+[uint8]
+name = "uint8"
+description = "8-bit unsigned integer — binary storage primitive"
+size_bits = 8
+size_trits = "n/a"  # Binary primitive, not ternary
+min_value = 0
+max_value = 255
+total_states = 256  # 2^8
+signed = false
+default = 0
+nullable = false
+hardware = "binary"
+role = "storage"
+# Used by: health.toml (base_type for health score storage)
+# Interpretation: 0-255 maps to ternary scale via interpretation layer
+# Example: 0 → -100, 128 → 0, 255 → +100 (health ternary mapping)
+# Biblical syntax: "let uint8 be from 0 to 255"
+
+[int8]
+name = "int8"
+description = "8-bit signed integer — binary storage primitive"
+size_bits = 8
+size_trits = "n/a"  # Binary primitive, not ternary
+min_value = -128
+max_value = 127
+total_states = 256  # 2^8
+signed = true
+default = 0
+nullable = false
+hardware = "binary"
+role = "storage"
+# Used by: signed byte storage where negative values needed at storage level
+# Note: For ternary balance (-100 to +100), prefer uint8 with interpretation
+# Biblical syntax: "let int8 be signed from -128 to 127"
+
+[storage.binary_to_ternary]
+description = "How binary storage types map to ternary interpretation"
+principle = "Binary stores, ternary interprets"
+
+[storage.binary_to_ternary.health_mapping]
+description = "Health score: uint8 storage → ternary interpretation"
+storage_type = "uint8"
+storage_range = [0, 255]
+interpretation_range = [-100, 100]
+center_storage = 128
+center_interpretation = 0
+formula_to_interpretation = "(storage - 128) * 100 / 127"
+formula_to_storage = "(interpretation * 127 / 100) + 128"
+note = "Storage is crystallized (uint8). Interpretation is built on top."
+
+
+# -----------------------------------------------------------------------------
 # 1. Trit Types - Balanced Ternary Foundation
 # -----------------------------------------------------------------------------
 # Reference: word/constants/ternary-math.toml

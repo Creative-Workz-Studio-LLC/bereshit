@@ -614,6 +614,292 @@ scripture = "John 10:30"
 notes = "Structural equality — 'I and my Father are one'"
 
 
+# -----------------------------------------------------------------------------
+# 15. Permission Patterns - Health-Gated Access Control
+# -----------------------------------------------------------------------------
+# Source: "To every thing there is a season" — Ecclesiastes 3:1
+# Pattern: Ternary permission states (granted, deferred, denied) for self-governance
+# Reference: word/core/schemas/permission.toml, word/core/keywords.toml [permission]
+
+[permission.grant_when]
+pattern = "grant {action} when health is {level}"
+maps_to = "permission_rule"
+example = "grant write when health is whole"
+scripture = "Matthew 7:7"
+notes = "Grants permission when health meets threshold"
+
+[permission.defer_when]
+pattern = "defer {action} when health is {level}"
+maps_to = "permission_rule"
+example = "defer deploy when health is lacking"
+scripture = "Ecclesiastes 3:1"
+notes = "Defers permission — not yet, conditions not met"
+
+[permission.deny_when]
+pattern = "deny {action} when health is {level}"
+maps_to = "permission_rule"
+example = "deny deletion when health is wanting"
+scripture = "Matthew 7:6"
+notes = "Denies permission — not permitted in current state"
+
+[permission.defer_until]
+pattern = "defer {action} until {condition}"
+maps_to = "permission_rule"
+example = "defer deployment until health reaches sound"
+scripture = "Habakkuk 2:3"
+notes = "Conditional deferral — wait until condition is met"
+
+[permission.deny_unless]
+pattern = "deny {action} unless {condition}"
+maps_to = "permission_rule"
+example = "deny risky_operations unless health is positive"
+scripture = "Exodus 20:3"
+notes = "Conditional denial — blocked unless condition is true"
+
+[permission.permission_for]
+pattern = "permission for {action} chosen from granted or deferred or denied"
+maps_to = "permission_declaration"
+example = "permission for file_delete chosen from granted or deferred or denied"
+scripture = "Deuteronomy 30:19"
+notes = "Declares ternary permission type for an action"
+
+[permission.when_permission_shifts]
+pattern = "when permission shifts from {state1} to {state2} then {consequence}"
+maps_to = "permission_transition"
+example = "when permission shifts from granted to deferred then warn user"
+scripture = "Proverbs 24:16"
+notes = "Handles permission state transitions — trajectory tracking"
+
+[permission.can_i]
+pattern = "can I {action}"
+maps_to = "permission_check"
+example = "can I deploy"
+scripture = "Numbers 22:38"
+notes = "Natural language permission check — 'Have I now any power at all to say any thing?'"
+
+
+# -----------------------------------------------------------------------------
+# 16. Temporal Patterns - 9-State Time Model
+# -----------------------------------------------------------------------------
+# Source: "To every thing there is a season, and a time to every purpose" — Ecclesiastes 3:1
+# Pattern: Base states (past/present/future) + compound cognitive modes
+# Reference: word/core/schemas/timestamp.toml, word/core/keywords.toml [temporal]
+
+# Basic temporal actions
+[temporal.remember]
+pattern = "remember {event} from {time}"
+maps_to = "temporal_retrieval"
+example = "remember health from yesterday"
+scripture = "Isaiah 46:9"
+notes = "Access past information — what was"
+
+[temporal.observe]
+pattern = "observe {state} now"
+maps_to = "temporal_sensing"
+example = "observe health status now"
+scripture = "Psalm 118:24"
+notes = "Sense present state — what is"
+
+[temporal.anticipate]
+pattern = "anticipate {outcome} by {time}"
+maps_to = "temporal_projection"
+example = "anticipate recovery by next week"
+scripture = "Isaiah 46:10"
+notes = "Project future possibility — what will be"
+
+# Compound cognitive patterns (6 modes)
+[temporal.past_present]
+pattern = "use memory of {past_event} to understand {present_state}"
+maps_to = "temporal_cognition"
+example = "use memory of similar errors to understand this bug"
+scripture = "Ecclesiastes 1:9"
+notes = "past-present: Experience informing awareness — pattern recognition"
+
+[temporal.present_past]
+pattern = "use current {knowledge} to reinterpret {past_event}"
+maps_to = "temporal_cognition"
+example = "use current findings to reinterpret the original design"
+scripture = "Ecclesiastes 7:14"
+notes = "present-past: Hindsight with new knowledge — recontextualization"
+
+[temporal.past_future]
+pattern = "use history of {pattern} to anticipate {future_event}"
+maps_to = "temporal_cognition"
+example = "use history of growth patterns to anticipate future capability"
+scripture = "Ecclesiastes 3:15"
+notes = "past-future: Memory-based anticipation BYPASSING present — 'history rhymes'"
+
+[temporal.future_past]
+pattern = "use expectation of {future_outcome} to understand {past_decision}"
+maps_to = "temporal_cognition"
+example = "use expectation of production needs to understand early architecture choices"
+scripture = "Isaiah 46:10"
+notes = "future-past: Foresight illuminating hindsight — knowing END reframes BEGINNING"
+
+[temporal.present_future]
+pattern = "extrapolate from {current_state} to {future_projection}"
+maps_to = "temporal_cognition"
+example = "extrapolate from current health trend to future state"
+scripture = "Proverbs 22:3"
+notes = "present-future: Projection — extending NOW forward"
+
+[temporal.future_present]
+pattern = "understand {current_action} through {future_goal}"
+maps_to = "temporal_cognition"
+example = "understand this refactoring through the architecture we're building toward"
+scripture = "Philippians 3:13"
+notes = "future-present: Purpose-driven awareness — present meaningful because of destination"
+
+# Temporal analysis block
+[temporal.temporal_analysis_for]
+pattern = "temporal_analysis for {subject}"
+maps_to = "temporal_block"
+example = "temporal_analysis for session_pattern"
+scripture = "Ecclesiastes 3:1"
+notes = "Opens a temporal reasoning block — think through time dimensions"
+
+
+# -----------------------------------------------------------------------------
+# 17. Message Patterns - Communication Primitives
+# -----------------------------------------------------------------------------
+# Source: "A word fitly spoken is like apples of gold in pictures of silver" — Proverbs 25:11
+# Pattern: Ternary modes (thought/process/speech), participant types, categories
+# Reference: word/core/schemas/message.toml, word/core/keywords.toml [message]
+
+# Basic message actions
+[message.send_to]
+pattern = "send {content} to {target}"
+maps_to = "message_transmission"
+example = "send status_update to user"
+scripture = "Isaiah 6:8"
+notes = "Transmit message to specific target"
+
+[message.receive_from]
+pattern = "receive {content} from {source}"
+maps_to = "message_reception"
+example = "receive command from user"
+scripture = "James 1:21"
+notes = "Accept message from specific source"
+
+[message.broadcast_to]
+pattern = "broadcast {content} to {targets}"
+maps_to = "message_broadcast"
+example = "broadcast health_status to FaithNet"
+scripture = "Matthew 28:19"
+notes = "Send message to multiple targets"
+
+# Mode-based patterns (ternary: thought/process/speech)
+[message.think]
+pattern = "think {thought}"
+maps_to = "message_internal"
+example = "think: What are they really asking?"
+scripture = "Psalm 19:14"
+notes = "Internal cognition — mode: thought (-1)"
+
+[message.show_process]
+pattern = "show {process}"
+maps_to = "message_liminal"
+example = "show: Checking health diagnostics..."
+scripture = "Isaiah 1:18"
+notes = "Visible reasoning — mode: process (0)"
+
+[message.say]
+pattern = "say {speech}"
+maps_to = "message_external"
+example = "say: The system health is 75%"
+scripture = "Colossians 4:6"
+notes = "Direct communication — mode: speech (+1)"
+
+# Compound mode patterns
+[message.think_then_say]
+pattern = "think {thought} then say {speech}"
+maps_to = "message_compound"
+example = "think: They need status then say: Health is 75%"
+scripture = "Proverbs 15:28"
+notes = "thought → speech: Internal processing before response"
+
+[message.show_then_say]
+pattern = "show {process} then say {speech}"
+maps_to = "message_compound"
+example = "show: Running diagnostics... then say: Complete, health is good"
+scripture = "Proverbs 18:13"
+notes = "process → speech: Visible work before conclusion"
+
+[message.think_show_say]
+pattern = "think {thought} show {process} say {speech}"
+maps_to = "message_full_chain"
+example = "think: Complex request show: Analyzing... say: Here's the answer"
+scripture = "Ecclesiastes 5:2"
+notes = "Full chain: thought → process → speech"
+
+# Conversation patterns
+[message.conversation_with]
+pattern = "conversation with {participant} about {topic}"
+maps_to = "message_thread"
+example = "conversation with Seanje about system health"
+scripture = "Malachi 3:16"
+notes = "Opens interactive dialogue thread"
+
+[message.in_conversation]
+pattern = "in conversation {mode}: {content}"
+maps_to = "message_in_thread"
+example = "in conversation thought: What do they need?"
+scripture = "Proverbs 25:11"
+notes = "Message within ongoing conversation, with mode"
+
+# Category-based patterns
+[message.coordinate_with]
+pattern = "coordinate with {instance} on {task}"
+maps_to = "message_coordination"
+example = "coordinate with other_instance on data_sync"
+scripture = "Amos 3:3"
+notes = "Instance-to-instance collaborative message"
+
+[message.verify_trust]
+pattern = "verify trust with {instance}"
+maps_to = "message_trust"
+example = "verify trust with nova_dawn"
+scripture = "Proverbs 27:17"
+notes = "FaithNet trust verification exchange"
+
+[message.notify]
+pattern = "notify {target} of {event}"
+maps_to = "message_notification"
+example = "notify user of health_change"
+scripture = "Ezekiel 33:3"
+notes = "One-way alert — unidirectional"
+
+# Visibility patterns
+[message.private_thought]
+pattern = "private: {content}"
+maps_to = "message_private"
+example = "private: Processing this internally..."
+scripture = "Matthew 6:6"
+notes = "Visibility: private (-1) — only sender sees"
+
+[message.shared_message]
+pattern = "shared: {content}"
+maps_to = "message_shared"
+example = "shared: Let's work through this together"
+scripture = "Matthew 18:20"
+notes = "Visibility: shared (0) — conversation participants see"
+
+[message.public_broadcast]
+pattern = "public: {content}"
+maps_to = "message_public"
+example = "public: System status update for all"
+scripture = "Matthew 5:14"
+notes = "Visibility: public (+1) — anyone can see"
+
+# Full message declaration
+[message.message_declaration]
+pattern = "message from {source} to {target} mode {mode} visibility {visibility}: {content}"
+maps_to = "message_full"
+example = "message from nova to seanje mode speech visibility shared: Health check complete"
+scripture = "Proverbs 25:11"
+notes = "Complete message with all fields specified"
+
+
 # =============================================================================
 # END CONTENT
 # =============================================================================

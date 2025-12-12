@@ -16,7 +16,7 @@ METADATA BLOCK
 // STATE
 // ─────────────────────────────────────────────────────────────────────────────
 :status: Active
-:version: a-02.75
+:version: a-02.95
 :revdate: 2025-12-12
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -342,7 +342,7 @@ Trackable tasks for completing Phase 0. Each task has clear deliverables.
 | Aspect | Details
 
 | *Deliverable*
-| `word/core/schemas/` directory with schema files — *PARTIAL*
+| `word/core/schemas/` directory with schema files — ✓ COMPLETE
 
 | *Contains*
 | File types, permissions, identity, timestamps, metadata
@@ -362,28 +362,28 @@ Trackable tasks for completing Phase 0. Each task has clear deliverables.
 | Schema | What It Defines | Status
 
 | *file-type.toml*
-| File type definitions (code, data, documentation, etc.)
-| ☐
+| File type definitions (biblical extensions: dabar, chok, sefer, tavnit, zera, tselem)
+| ✓ DONE
 
 | *permission.toml*
 | Permission model (ternary: deny, neutral, allow)
-| ☐
+| ✓ DONE
 
 | *identity.toml*
-| Identity schema (for CPI-SI instances, users, systems)
-| ☐
+| Identity schema (for CPI-SI instances, users, systems) + Section 0: Participant Types
+| ✓ DONE
 
 | *timestamp.toml*
-| Temporal metadata (created, updated, versioning)
-| ☐
+| Temporal metadata (9-state model: 3 base + 6 compound cognitive states)
+| ✓ DONE
 
 | *health.toml*
 | Health scoring schema (used across all systems)
 | ✓ DONE
 
 | *message.toml*
-| Message format for inter-system communication
-| ☐
+| Universal communication primitive (thought/process/speech modes, visibility, categories)
+| ✓ DONE
 |===
 ====
 
@@ -520,7 +520,7 @@ Trackable tasks for completing Phase 0. Each task has clear deliverables.
 | `word/core/keywords.toml`, `word/core/syntax.toml` ✓ DONE
 
 | *Contains*
-| OmniCode keywords with biblical derivation, syntax patterns
+| OmniCode keywords with biblical derivation, syntax patterns. Expanded with Section 10: Temporal Keywords, Section 11: Message Keywords, Section 16: Temporal Patterns, Section 17: Message Patterns
 
 | *Blocked By*
 | Task 6 (Bible Rail) for encoding mappings
@@ -615,9 +615,9 @@ How to know Phase 0 is complete and ready for Phase 1.
 | *Type system specified*
 | `word/core/types.toml` defines composition, inheritance, constraints + Section 8 storage alignment
 
-| ☐
+| ✓
 | *Core schemas exist*
-| `word/core/schemas/` — health.toml ✓, needs: file-type, permission, identity, timestamp, message
+| `word/core/schemas/` — ALL COMPLETE: file-type ✓, health ✓, health-log ✓, health-diagnostics ✓, permission ✓, identity ✓, timestamp ✓, message ✓
 
 | ☐
 | *Contracts defined*
@@ -644,11 +644,11 @@ How to know Phase 0 is complete and ready for Phase 1.
 | `word/core/keywords.toml`, `word/core/syntax.toml` exist
 |===
 
-=== Current Progress: ~75% Complete
+=== Current Progress: ~95% Complete
 
-*Done:* Primitives, Types, Validation, Bible Rail, Keywords, Syntax, Health schema/contract
+*Done:* Primitives, Types, Validation, Bible Rail, Keywords (+ Temporal + Message sections), Syntax (+ Temporal + Message patterns), ALL SCHEMAS COMPLETE (file-type, health, health-log, health-diagnostics, permission, identity, timestamp, message), Health-provider contract
 
-*Remaining:* 5 schemas (file-type, permission, identity, timestamp, message), 3 contracts (filesystem, network, identity)
+*Remaining:* 3 contracts (filesystem, network, identity)
 
 === Transition to Phase 1
 
@@ -685,18 +685,20 @@ How to know Phase 0 is complete and ready for Phase 1.
 
 * [ ] Check dependencies are complete (see <<dependencies,Dependencies>>)
 * [ ] Read relevant understanding documents
-* [ ] Create in `config/omnicode/` directory
+* [ ] Create in `word/core/` directory (schemas in `word/core/schemas/`, contracts in `word/core/contracts/`)
 * [ ] Use 3-block data structure (METADATA → CONTENT → CLOSING)
 
 *During work:*
 
-* [ ] Reference `word/constants/ternary-math.toml` for trit foundations
+* [ ] Reference `word/core/primitives.toml` for primitive types
+* [ ] Reference `word/core/types.toml` for type composition
+* [ ] Reference `word/core/bible/` for Scripture encoding/decoding
 * [ ] Follow config-driven pattern (static config, dynamic loading)
 * [ ] Document WHY, not just WHAT
 
 *After completing:*
 
-* [ ] Validate TOML syntax
+* [ ] Validate TOML syntax: `python -c "import tomllib; tomllib.load(open('file.toml','rb'))"`
 * [ ] Update this plan (mark task complete)
 * [ ] Create devlog entry if significant work
 ====
@@ -708,14 +710,35 @@ How to know Phase 0 is complete and ready for Phase 1.
 |===
 | Purpose | Location
 
+| *Primitives*
+| `word/core/primitives.toml` ✓
+
+| *Types*
+| `word/core/types.toml` ✓
+
+| *Schemas*
+| `word/core/schemas/` ✓ (file-type, health, health-log, health-diagnostics, permission, identity, timestamp, message)
+
+| *Contracts*
+| `word/core/contracts/` (health-provider ✓, filesystem ☐, network ☐, identity ☐)
+
+| *Bible Rail*
+| `word/core/bible/` ✓ (encoding, decoding, translation, addressing)
+
+| *Keywords*
+| `word/core/keywords.toml` ✓
+
+| *Syntax*
+| `word/core/syntax.toml` ✓
+
+| *Validation*
+| `word/core/validation.toml` ✓
+
 | *Trit constants*
-| `word/constants/ternary-math.toml`
+| `word/constants/ternary-math.toml` ✓
 
 | *Trit research*
 | `word/research/trit-foundations.adoc`
-
-| *OmniCode configs*
-| `config/omnicode/` (to be created)
 
 | *Understanding docs*
 | `void/planning/understanding/`

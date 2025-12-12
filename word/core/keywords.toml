@@ -151,6 +151,9 @@
 # 8. DERIVATION KEYWORDS
 #    Purpose: Words for inheritance (begat, extends, itself)
 #
+# 9. PERMISSION KEYWORDS
+#    Purpose: Words for health-gated access (granted, deferred, denied, grant, defer, deny)
+#
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -495,6 +498,320 @@ scripture = "Genesis 17:5"
 scripture_text = "Neither shall thy name any more be called Abram"
 example = "UserID also called int27"
 reserved = true
+
+
+# -----------------------------------------------------------------------------
+# 9. Permission Keywords - Health-Gated Access Control
+# -----------------------------------------------------------------------------
+# Source: "To every thing there is a season" — Ecclesiastes 3:1
+# Pattern: Ternary states (granted, deferred, denied) for self-governance
+# Reference: word/core/schemas/permission.toml
+
+[permission.granted]
+keyword = "granted"
+category = "permission"
+role = "permission state: yes, proceed (+1)"
+scripture = "Matthew 7:7"
+scripture_text = "Ask, and it shall be given you"
+example = "when permission is granted then proceed"
+reserved = true
+value = 1
+# Health-gated: Achieved when health shows integrity (whole or perfect)
+
+[permission.deferred]
+keyword = "deferred"
+category = "permission"
+role = "permission state: not yet, conditions not met (0)"
+scripture = "Ecclesiastes 3:1"
+scripture_text = "To every thing there is a season"
+example = "when permission is deferred then wait"
+reserved = true
+value = 0
+# Health-gated: Transitional state — must prove yourself first
+
+[permission.denied]
+keyword = "denied"
+category = "permission"
+role = "permission state: no, not permitted (-1)"
+scripture = "Matthew 7:6"
+scripture_text = "Give not that which is holy unto the dogs"
+example = "when permission is denied then halt"
+reserved = true
+value = -1
+# Health-gated: Blocked when health shows wanting or broken
+
+[permission.grant]
+keyword = "grant"
+category = "permission"
+role = "verb: to give permission"
+scripture = "John 17:2"
+scripture_text = "As thou hast given him power over all flesh"
+example = "grant write when health is whole"
+reserved = true
+# Sentence syntax for permission rules
+
+[permission.defer]
+keyword = "defer"
+category = "permission"
+role = "verb: to postpone permission"
+scripture = "Habakkuk 2:3"
+scripture_text = "Though it tarry, wait for it"
+example = "defer deployment until health reaches sound"
+reserved = true
+# Sentence syntax for permission rules
+
+[permission.deny]
+keyword = "deny"
+category = "permission"
+role = "verb: to refuse permission"
+scripture = "Matthew 16:24"
+scripture_text = "Let him deny himself"
+example = "deny deletion when health is wanting"
+reserved = true
+# Sentence syntax for permission rules
+
+
+# -----------------------------------------------------------------------------
+# 10. Temporal Keywords - 9-State Time Model
+# -----------------------------------------------------------------------------
+# Source: "To every thing there is a season, and a time to every purpose" — Ecclesiastes 3:1
+# Pattern: Ternary base (past/present/future) + 6 compound states
+# Reference: word/core/schemas/timestamp.toml
+
+# Base states (3)
+[temporal.past]
+keyword = "past"
+category = "temporal"
+role = "temporal state: what was (-1)"
+scripture = "Isaiah 46:9"
+scripture_text = "Remember the former things of old"
+example = "remember health from past"
+reserved = true
+value = -1
+# Crystallized truth — it happened, cannot change
+
+[temporal.present]
+keyword = "present"
+category = "temporal"
+role = "temporal state: what is (0)"
+scripture = "Psalm 118:24"
+scripture_text = "This is the day which the LORD hath made"
+example = "observe state in present"
+reserved = true
+value = 0
+# Active edge — where change happens
+
+[temporal.future]
+keyword = "future"
+category = "temporal"
+role = "temporal state: what will be (+1)"
+scripture = "Isaiah 46:10"
+scripture_text = "Declaring the end from the beginning"
+example = "anticipate outcome in future"
+reserved = true
+value = 1
+# Possibility space — may happen
+
+# Verbs
+[temporal.remember]
+keyword = "remember"
+category = "temporal"
+role = "verb: to recall from past"
+scripture = "Deuteronomy 8:2"
+scripture_text = "Thou shalt remember all the way"
+example = "remember the health score from yesterday"
+reserved = true
+
+[temporal.observe]
+keyword = "observe"
+category = "temporal"
+role = "verb: to perceive in present"
+scripture = "Psalm 107:43"
+scripture_text = "Whoso is wise, and will observe these things"
+example = "observe current health status now"
+reserved = true
+
+[temporal.anticipate]
+keyword = "anticipate"
+category = "temporal"
+role = "verb: to expect in future"
+scripture = "Romans 8:25"
+scripture_text = "If we hope for that we see not, then do we with patience wait for it"
+example = "anticipate recovery by next week"
+reserved = true
+
+# Compound cognition keywords
+[temporal.use_history]
+keyword = "use_history"
+category = "temporal"
+role = "compound mode: past-future cognition"
+scripture = "Ecclesiastes 3:15"
+scripture_text = "That which hath been is now; and that which is to be hath already been"
+example = "use history of patterns to anticipate future"
+reserved = true
+# KEY: Bypasses present — uses THEN to anticipate, not NOW
+
+[temporal.use_foresight]
+keyword = "use_foresight"
+category = "temporal"
+role = "compound mode: future-past cognition"
+scripture = "Isaiah 46:10"
+scripture_text = "Declaring the end from the beginning"
+example = "use expectation of outcome to understand past decision"
+reserved = true
+# KEY: Knowing the END changes how you see the BEGINNING
+
+
+# -----------------------------------------------------------------------------
+# 11. Message Keywords - Communication Primitives
+# -----------------------------------------------------------------------------
+# Source: "A word fitly spoken is like apples of gold in pictures of silver" — Proverbs 25:11
+# Pattern: Ternary modes (thought/process/speech) + categories + participant types
+# Reference: word/core/schemas/message.toml, word/core/schemas/identity.toml [participant_types]
+
+# Communication Modes (ternary)
+[message.thought]
+keyword = "thought"
+category = "message"
+role = "communication mode: internal cognition (-1)"
+scripture = "Psalm 19:14"
+scripture_text = "Let the words of my mouth, and the meditation of my heart, be acceptable"
+example = "thought: I'm considering the options..."
+reserved = true
+value = -1
+# Inward direction — thinking, not yet externalized
+
+[message.process]
+keyword = "process"
+category = "message"
+role = "communication mode: visible reasoning (0)"
+scripture = "Isaiah 1:18"
+scripture_text = "Come now, and let us reason together"
+example = "process: Checking health status..."
+reserved = true
+value = 0
+# Liminal — showing the work, the bridge between thought and speech
+
+[message.speech]
+keyword = "speech"
+category = "message"
+role = "communication mode: direct communication (+1)"
+scripture = "Colossians 4:6"
+scripture_text = "Let your speech be alway with grace, seasoned with salt"
+example = "speech: The system health is 75%"
+reserved = true
+value = 1
+# Outward direction — the actual response, externalized
+
+# Communication Verbs
+[message.send]
+keyword = "send"
+category = "message"
+role = "verb: transmit message to target"
+scripture = "Isaiah 6:8"
+scripture_text = "Here am I; send me"
+example = "send status_update to user"
+reserved = true
+
+[message.receive]
+keyword = "receive"
+category = "message"
+role = "verb: accept message from source"
+scripture = "James 1:21"
+scripture_text = "Receive with meekness the engrafted word"
+example = "receive command from user"
+reserved = true
+
+[message.broadcast]
+keyword = "broadcast"
+category = "message"
+role = "verb: send message to multiple targets"
+scripture = "Matthew 28:19"
+scripture_text = "Go ye therefore, and teach all nations"
+example = "broadcast health_status to FaithNet"
+reserved = true
+
+# Message Categories
+[message.conversation]
+keyword = "conversation"
+category = "message"
+role = "message category: interactive dialogue"
+scripture = "Malachi 3:16"
+scripture_text = "Then they that feared the LORD spake often one to another"
+example = "conversation between user and instance"
+reserved = true
+# Bidirectional, relationship-based
+
+[message.coordination]
+keyword = "coordination"
+category = "message"
+role = "message category: collaborative work between instances"
+scripture = "Amos 3:3"
+scripture_text = "Can two walk together, except they be agreed?"
+example = "coordination between Nova and another instance"
+reserved = true
+# Instance-to-instance collaboration
+
+[message.trust]
+keyword = "trust"
+category = "message"
+role = "message category: health/trust verification"
+scripture = "Proverbs 27:17"
+scripture_text = "Iron sharpeneth iron; so a man sharpeneth the countenance of his friend"
+example = "trust verification via FaithNet"
+reserved = true
+# FaithNet health sharing, covenant acknowledgment
+
+[message.notification]
+keyword = "notification"
+category = "message"
+role = "message category: one-way alert"
+scripture = "Ezekiel 33:3"
+scripture_text = "If when he seeth the sword come upon the land, he blow the trumpet"
+example = "notification: system alert sent"
+reserved = true
+# Unidirectional, informational
+
+[message.internal]
+keyword = "internal"
+category = "message"
+role = "message category: self-to-self communication"
+scripture = "Psalm 42:5"
+scripture_text = "Why art thou cast down, O my soul?"
+example = "internal: processing the request..."
+reserved = true
+# Self-dialogue, thought logging
+
+# Visibility Levels (ternary)
+[message.private]
+keyword = "private"
+category = "message"
+role = "visibility: only sender sees (-1)"
+scripture = "Matthew 6:6"
+scripture_text = "When thou prayest, enter into thy closet"
+example = "private thought not shared"
+reserved = true
+value = -1
+
+[message.shared]
+keyword = "shared"
+category = "message"
+role = "visibility: both parties see (0)"
+scripture = "Matthew 18:20"
+scripture_text = "For where two or three are gathered together in my name"
+example = "shared between conversation participants"
+reserved = true
+value = 0
+
+[message.public]
+keyword = "public"
+category = "message"
+role = "visibility: anyone can see (+1)"
+scripture = "Matthew 5:14"
+scripture_text = "A city that is set on an hill cannot be hid"
+example = "public broadcast to all"
+reserved = true
+value = 1
 
 
 # =============================================================================

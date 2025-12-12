@@ -25,49 +25,56 @@
 #
 # # Biblical Foundation
 #
-# Scripture: "A merry heart doeth good like a medicine: but a broken spirit
-#             drieth the bones." — Proverbs 17:22 KJV
+# Scripture: "Just balances, just weights, a just ephah, and a just hin, shall
+#            you have. I am Yahweh your God." — Leviticus 19:36 WEB
 #
-# Principle: Health is visible state. Just as the body shows wellness or illness,
-#            directories and files have health that can be measured and displayed.
-#            The .health file is the heartbeat visible to all who enter.
+# Principle: Health is measured on a JUST BALANCE — centered at zero (even balance),
+#            with positive values showing INTEGRITY (wholeness) and negative values
+#            showing WANTING (lacking). God commands accurate measurement.
 #
-# Anchor: "Beloved, I wish above all things that thou mayest prosper and be
-#          in health, even as thy soul prospereth." — 3 John 1:2 KJV
+# Anchor: "Let me be weighed in an even balance, that God may know my integrity."
+#         — Job 31:6 WEB
+#
+# Supporting: "For Yahweh is a God of knowledge. By him actions are weighed."
+#             — 1 Samuel 2:3 WEB
+#
+# Warning: "TEKEL; you are weighed in the balances, and are found wanting."
+#          — Daniel 5:27 WEB
 #
 # # CPI-SI Identity
 #
 # Component Type: Rung (schema that defines health scoring structure)
 #
-# Role: Schema definition for .health files — the 8-bit health scoring system
-#       that tracks directory and file status across the bereshit filesystem.
+# Role: Schema definition for .health files — the ternary balance scoring system
+#       that tracks directory and file integrity across the bereshit filesystem.
 #
-# Paradigm: CPI-SI framework component — health as stored state
+# Paradigm: CPI-SI framework component — health as just balance measurement
 #
 # # Authorship & Lineage
 #
 #   Architect: Seanje Lenox-Wise
 #   Implementation: Nova Dawn
 #   Created: 2025-12-11
-#   Version: a-01.00
-#   Modified: 2025-12-11 - Initial creation
+#   Version: a-02.00
+#   Modified: 2025-12-12 - Updated to ternary balance scale (-100 to +100)
 #
 # # Purpose & Function
 #
 # Purpose: Define the schema for .health files used by bhealth tool
 #
-# Core Design: 8-bit health score stored as ASCII binary string
+# Core Design: Ternary balance scale from -100 to +100, centered at 0
 #
 # Key Features:
 #
-#   - 8-bit encoding: "01000001" = 65 decimal = 65% health
-#   - Human readable: ASCII binary, visible in any text editor
-#   - Ternary alignment: Maps to trit5 for compact storage
+#   - Ternary scale: -100 (wanting) to 0 (even) to +100 (integrity)
+#   - Biblical grounding: Just balance (Leviticus 19:36), even balance (Job 31:6)
+#   - Human readable: Signed integer, visible in any text editor
+#   - Ternary native: Maps directly to balanced ternary representation
 #   - Hierarchical: Parent health reflects child health
 #   - Tool integration: bhealth reads/writes this format
 #
-# Philosophy: Health should be immediately visible. No parsing, no databases —
-#             just a file you can cat and instantly understand.
+# Philosophy: Health is weighed on a just balance. Zero is the anchor (even balance),
+#             positive indicates integrity (wholeness), negative indicates wanting (lacking).
 #
 # -----------------------------------------------------------------------------
 # INTERFACE (Expected)
@@ -77,8 +84,8 @@
 #
 # What This Needs:
 #
-#   - Parser: Simple text file reader (8 ASCII characters)
-#   - Primitives: word/core/primitives.toml (trit5 for compact form)
+#   - Parser: Simple text file reader (8 ASCII 0/1 characters → uint8)
+#   - Primitives: word/core/primitives.toml (uint8 for storage, trit5 for ternary)
 #   - Types: word/core/types.toml (struct, constraint definitions)
 #
 # What Uses This:
@@ -109,8 +116,8 @@
 #
 # Validation Behavior:
 #   - Invalid health value: Error — must be 8 ASCII 0/1 characters
-#   - Out of range: Clamp to 00000000-11111111 (0-255)
-#   - Missing file: Initialize to default (01000001 = 65)
+#   - Out of range: Clamp to 00000000-11111111 (stored 0-255)
+#   - Missing file: Initialize to default (10000000 = stored 128 = ternary 0 = even balance)
 #
 # =============================================================================
 # END METADATA
@@ -150,137 +157,330 @@
 # -----------------------------------------------------------------------------
 # 1. Health Type - Core Definition
 # -----------------------------------------------------------------------------
-# 8-bit encoding stored as ASCII binary string
+# Ternary balance scale: -100 (wanting) to 0 (even) to +100 (integrity)
+#
+# Scripture basis: "Let me be weighed in an even balance" — Job 31:6 WEB
+# The balance is CENTERED at zero, with positive (integrity) and negative (wanting).
 
 [health]
 name = "health"
-description = "Health score value — 0 to 255 as 8-bit ASCII binary"
-base_type = "uint9"  # References primitives.toml — fits in 9 trits
-storage_format = "ascii_binary"  # "01000001" not 65
-bits = 8
-min_value = 0
-max_value = 255
-default = 65  # 01000001 — "good starting point"
-percentage_mode = true  # Display as percentage (0-100%)
-# Biblical syntax: "let health be from 0 to 255"
-# Scripture basis: "A merry heart doeth good like a medicine" — Proverbs 17:22
+description = "Health score value — uint8 stored, interpreted as ternary balance"
+base_type = "uint8"  # References primitives.toml — 8-bit unsigned (0-255)
+storage_format = "binary_ascii"  # "01000001" etc.
+# Storage foundation (crystallized):
+storage_min = 0
+storage_max = 255
+storage_default = 128  # Center point
+# Ternary interpretation (built on foundation):
+#   0 = -100 (fully wanting)
+#   128 = 0 (even balance — anchor)
+#   255 = +100 (full integrity)
+# Biblical terms:
+#   129-255 = Integrity (תֻּמָּה tummah) — wholeness, completeness
+#   128 = Even Balance (מֹאזְנַיִם moznayim) — neutral, centered
+#   0-127 = Wanting (חָסֵר chaser) — lacking, deficient
+# Scripture basis: "Just balances... shall you have" — Leviticus 19:36 WEB
 # See: syntax.toml [declaration.let_be_from]
 
 [health.encoding]
 description = "How the value is stored in .health files"
 file_extension = ".health"
 line_terminator = "LF"  # Unix newline only
-exact_length = 8  # Always 8 characters
-valid_characters = ["0", "1"]
-# Example: "01000001" = 65 decimal = 65% health
+format = "binary_ascii"  # "00000000" to "11111111"
+length = 8  # Exactly 8 ASCII characters (0 or 1)
+# Crystallized foundation — do not change storage format
+
+[health.ternary]
+description = "Ternary interpretation of stored uint8 value (true score)"
+# The uint8 (0-255) maps to ternary scale (-100 to +100):
+#   stored_value → ternary_value = (stored - 128) * 100 / 127
+#   ternary_value → stored_value = (ternary * 127 / 100) + 128
+# This preserves the 8-bit foundation while enabling ternary interpretation
+interpretation_min = -100
+interpretation_max = 100
+interpretation_center = 0  # Maps to stored value 128
+# Balanced trit representation (5 trits cover -121 to +121):
+trits = 5
+# Example mappings (true score):
+#   stored=0   → ternary=-100 (fully wanting)
+#   stored=64  → ternary=-50  (wanting)
+#   stored=128 → ternary=0    (even balance)
+#   stored=192 → ternary=+50  (integrity)
+#   stored=255 → ternary=+100 (full integrity)
+
+[health.normalized]
+description = "Normalized ternary for practical display (calculus approach)"
+# The true ternary score (-100 to +100) normalizes to key points based on selected base.
+# This is the derivative approach: key inflection points on the scale.
+# Multiple bases supported for different granularity needs.
+default_base = 50  # Base50 is default (5 key points)
+
+[health.normalized.bases]
+# Each base defines the step size for normalization.
+# Formula: key_points = range(-100, 101, base) → rounds to nearest
+
+[health.normalized.bases.base1]
+description = "Full precision — every integer"
+step = 1
+points = 201  # -100 to +100 inclusive
+# No rounding needed — true score IS the normalized value
+use_case = "Precise calculations, internal processing"
+
+[health.normalized.bases.base5]
+description = "Fine granularity — 5-point steps"
+step = 5
+points = 41  # -100, -95, -90, ..., 0, ..., +95, +100
+key_points = [-100, -95, -90, -85, -80, -75, -70, -65, -60, -55, -50, -45, -40, -35, -30, -25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]
+use_case = "Detailed progress tracking, gradual changes"
+
+[health.normalized.bases.base10]
+description = "Standard granularity — 10-point steps"
+step = 10
+points = 21  # -100, -90, -80, ..., 0, ..., +90, +100
+key_points = [-100, -90, -80, -70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+use_case = "General display, percentage-like reporting"
+
+[health.normalized.bases.base20]
+description = "Moderate granularity — 20-point steps"
+step = 20
+points = 11  # -100, -80, -60, -40, -20, 0, +20, +40, +60, +80, +100
+key_points = [-100, -80, -60, -40, -20, 0, 20, 40, 60, 80, 100]
+use_case = "Quick assessments, dashboard summaries"
+
+[health.normalized.bases.base25]
+description = "Quarter-scale — 25-point steps"
+step = 25
+points = 9  # -100, -75, -50, -25, 0, +25, +50, +75, +100
+key_points = [-100, -75, -50, -25, 0, 25, 50, 75, 100]
+use_case = "Balanced granularity, maps to 7-level system boundaries"
+
+[health.normalized.bases.base50]
+description = "Coarse granularity — 50-point steps (default)"
+step = 50
+points = 5  # -100, -50, 0, +50, +100
+key_points = [-100, -50, 0, 50, 100]
+use_case = "Quick glance, status indicators, CPI-SI statusline"
+
+# NORMALIZATION FORMULA (for any base):
+#   normalized = round(true_score / base) * base
+#
+# Examples with true_score = 37:
+#   Base1:  round(37/1)*1   = 37
+#   Base5:  round(37/5)*5   = 35
+#   Base10: round(37/10)*10 = 40
+#   Base20: round(37/20)*20 = 40
+#   Base25: round(37/25)*25 = 50
+#   Base50: round(37/50)*50 = 50
+
+[health.normalized.mapping]
+# Reference mapping for Base50 (default)
+# Storage → True → Normalized (Base50)
+boundaries = [
+    { stored = 0,   true_ternary = -100, base50 = -100 },
+    { stored = 32,  true_ternary = -75,  base50 = -100, base25 = -75 },
+    { stored = 64,  true_ternary = -50,  base50 = -50 },
+    { stored = 96,  true_ternary = -25,  base50 = 0, base25 = -25 },
+    { stored = 128, true_ternary = 0,    base50 = 0 },  # center
+    { stored = 160, true_ternary = 25,   base50 = 0, base25 = 25 },
+    { stored = 192, true_ternary = 50,   base50 = 50 },
+    { stored = 224, true_ternary = 75,   base50 = 100, base25 = 75 },
+    { stored = 255, true_ternary = 100,  base50 = 100 },
+]
 
 
 # -----------------------------------------------------------------------------
-# 2. Health Levels - Named States
+# 2. Health Levels - Named States (Ternary Balance)
 # -----------------------------------------------------------------------------
-# Ternary-aligned thresholds: critical, poor, fair, good, excellent, perfect
+# Biblical framework: Integrity (+) ↔ Even Balance (0) ↔ Wanting (-)
+#
+# Scripture basis:
+#   - Integrity: Job 31:6 — "that God may know my integrity"
+#   - Wanting: Daniel 5:27 — "weighed in the balances, and found wanting"
 #
 # Biblical syntax for levels:
-#   level chosen from critical or poor or fair or good or excellent or perfect
-#   when health below 20 then level is critical
-#   when health from 60 to 79 then level is good
+#   level chosen from broken or wanting or lacking or even or sound or whole or perfect
+#   when health below -66 then level is broken
+#   when health from -32 to +32 then level is even
+#   when health above +66 then level is perfect
 # See: syntax.toml [constraint.chosen_from], [conditional.when_then]
 
-[levels.critical]
-name = "critical"
-description = "Severely degraded — immediate attention required"
-min_percent = 0
-max_percent = 19
-binary_range = ["00000000", "00110001"]  # 0-49 (using 255 scale mapped to %)
-priority = "urgent"
+# NEGATIVE LEVELS (Wanting - חָסֵר chaser)
+# Stored values 0-127 map to ternary -100 to -1
+[levels.broken]
+name = "broken"
+description = "Severely wanting — failed state, requires restoration"
+hebrew = "שָׁבַר"  # shavar - broken
+# Storage (foundation):
+min_stored = 0
+max_stored = 42
+binary_range = ["00000000", "00101010"]
+# Ternary interpretation:
+ternary_range = [-100, -67]
+direction = "wanting"
+priority = "critical"
+scripture = "Daniel 5:27 — found wanting"
 
-[levels.poor]
-name = "poor"
-description = "Degraded — needs improvement soon"
-min_percent = 20
-max_percent = 39
-binary_range = ["00110010", "01100011"]  # 50-99
+[levels.wanting]
+name = "wanting"
+description = "Significantly lacking — needs attention"
+hebrew = "חָסֵר"  # chaser - wanting, lacking
+# Storage (foundation):
+min_stored = 43
+max_stored = 84
+binary_range = ["00101011", "01010100"]
+# Ternary interpretation:
+ternary_range = [-66, -34]
+direction = "wanting"
 priority = "high"
+scripture = "Daniel 5:27 — weighed and found wanting"
 
-[levels.fair]
-name = "fair"
-description = "Acceptable but not optimal"
-min_percent = 40
-max_percent = 59
-binary_range = ["01100100", "10010101"]  # 100-149
+[levels.lacking]
+name = "lacking"
+description = "Somewhat deficient — below baseline"
+hebrew = "מַחְסוֹר"  # machsor - lack, want
+# Storage (foundation):
+min_stored = 85
+max_stored = 127
+binary_range = ["01010101", "01111111"]
+# Ternary interpretation:
+ternary_range = [-33, -1]
+direction = "wanting"
 priority = "medium"
 
-[levels.good]
-name = "good"
-description = "Healthy — normal operating state"
-min_percent = 60
-max_percent = 79
-binary_range = ["10010110", "11000111"]  # 150-199
-priority = "low"
-
-[levels.excellent]
-name = "excellent"
-description = "Very healthy — exceeding expectations"
-min_percent = 80
-max_percent = 99
-binary_range = ["11001000", "11111110"]  # 200-254
+# CENTER LEVEL (Even Balance - מֹאזְנַיִם moznayim)
+[levels.even]
+name = "even"
+description = "Even balance — baseline, neither wanting nor whole"
+hebrew = "מֹאזְנַיִם"  # moznayim - balances, scales
+# Storage (foundation):
+min_stored = 128
+max_stored = 128
+binary_range = ["10000000", "10000000"]
+# Ternary interpretation:
+ternary_range = [0, 0]
+direction = "center"
 priority = "none"
+scripture = "Job 31:6 — weighed in an even balance"
+
+# POSITIVE LEVELS (Integrity - תֻּמָּה tummah)
+# Stored values 129-255 map to ternary +1 to +100
+[levels.sound]
+name = "sound"
+description = "Somewhat whole — above baseline"
+hebrew = "תָּמִים"  # tamim - sound, whole
+# Storage (foundation):
+min_stored = 129
+max_stored = 170
+binary_range = ["10000001", "10101010"]
+# Ternary interpretation:
+ternary_range = [1, 33]
+direction = "integrity"
+priority = "none"
+
+[levels.whole]
+name = "whole"
+description = "Significantly complete — healthy state"
+hebrew = "שָׁלֵם"  # shalem - whole, complete
+# Storage (foundation):
+min_stored = 171
+max_stored = 212
+binary_range = ["10101011", "11010100"]
+# Ternary interpretation:
+ternary_range = [34, 66]
+direction = "integrity"
+priority = "none"
+scripture = "Job 2:3 — maintains his integrity"
 
 [levels.perfect]
 name = "perfect"
-description = "Maximum health — fully realized"
-min_percent = 100
-max_percent = 100
-binary_range = ["11111111", "11111111"]  # 255 only
+description = "Full integrity — complete wholeness"
+hebrew = "תֻּמָּה"  # tummah - integrity, perfection
+# Storage (foundation):
+min_stored = 213
+max_stored = 255
+binary_range = ["11010101", "11111111"]
+# Ternary interpretation:
+ternary_range = [67, 100]
+direction = "integrity"
 priority = "none"
+scripture = "Job 31:6 — that God may know my integrity"
+
+
+# LEVEL SUMMARY TABLE
+# | Stored | Binary Range | Ternary | Level | Hebrew | Direction |
+# |--------|--------------|---------|-------|--------|-----------|
+# | 0-42 | 00000000-00101010 | -100 to -67 | broken | שָׁבַר | wanting |
+# | 43-84 | 00101011-01010100 | -66 to -34 | wanting | חָסֵר | wanting |
+# | 85-127 | 01010101-01111111 | -33 to -1 | lacking | מַחְסוֹר | wanting |
+# | 128 | 10000000 | 0 | even | מֹאזְנַיִם | center |
+# | 129-170 | 10000001-10101010 | +1 to +33 | sound | תָּמִים | integrity |
+# | 171-212 | 10101011-11010100 | +34 to +66 | whole | שָׁלֵם | integrity |
+# | 213-255 | 11010101-11111111 | +67 to +100 | perfect | תֻּמָּה | integrity |
 
 
 # -----------------------------------------------------------------------------
 # 3. Display Mapping - Visual Indicators
 # -----------------------------------------------------------------------------
 # Emoji and colors for each level
+# Maps to the 7-level ternary system: broken → wanting → lacking → even → sound → whole → perfect
 
-[display.critical]
+# WANTING LEVELS (negative ternary)
+[display.broken]
+level = "broken"
 emoji = "💔"
 color = "red"
 ansi_code = "\\033[31m"
-description = "Broken heart — critical state"
+description = "Broken heart — critical state, needs restoration"
 
-[display.poor]
+[display.wanting]
+level = "wanting"
 emoji = "🩹"
 color = "orange"
 ansi_code = "\\033[33m"
-description = "Bandage — needs healing"
+description = "Bandage — significantly lacking"
 
-[display.fair]
+[display.lacking]
+level = "lacking"
 emoji = "💛"
 color = "yellow"
 ansi_code = "\\033[93m"
-description = "Yellow heart — acceptable"
+description = "Yellow heart — below baseline"
 
-[display.good]
+# CENTER LEVEL (even balance)
+[display.even]
+level = "even"
+emoji = "⚖️"
+color = "white"
+ansi_code = "\\033[37m"
+description = "Scales — even balance, baseline"
+
+# INTEGRITY LEVELS (positive ternary)
+[display.sound]
+level = "sound"
 emoji = "💚"
 color = "green"
 ansi_code = "\\033[32m"
-description = "Green heart — healthy"
+description = "Green heart — above baseline"
 
-[display.excellent]
+[display.whole]
+level = "whole"
 emoji = "💙"
 color = "blue"
 ansi_code = "\\033[34m"
-description = "Blue heart — excellent"
+description = "Blue heart — significantly whole"
 
 [display.perfect]
+level = "perfect"
 emoji = "💜"
 color = "magenta"
 ansi_code = "\\033[35m"
-description = "Purple heart — perfect"
+description = "Purple heart — full integrity"
 
 
 # -----------------------------------------------------------------------------
 # 4. File Format - .health File Structure
 # -----------------------------------------------------------------------------
-# What a .health file contains
+# What a .health file contains (CRYSTALLIZED FOUNDATION)
 
 [file]
 name = ".health"
@@ -290,10 +490,17 @@ hidden = true  # Dot-prefixed
 content_type = "text/plain"
 
 [file.structure]
+# CRYSTALLIZED — do not change storage format
 line_count = 1  # Single line only
-content = "8 ASCII binary digits"
-example = "01000001"
+content = "8 ASCII binary digits"  # Foundation: uint8 as binary
+example = "10000000"  # 128 = even balance (ternary 0)
 trailing_newline = true  # LF at end
+# Examples with ternary interpretation:
+#   "00000000" = stored 0 = ternary -100 (fully wanting)
+#   "01000000" = stored 64 = ternary -50 (wanting)
+#   "10000000" = stored 128 = ternary 0 (even balance) ← DEFAULT
+#   "11000000" = stored 192 = ternary +50 (integrity)
+#   "11111111" = stored 255 = ternary +100 (full integrity)
 
 [file.permissions]
 read = "all"  # Anyone can read health
@@ -320,11 +527,13 @@ commit_message_prefix = "[health]"
 
 [calculation.initialization]
 description = "How new .health files are created"
-default_value = "01000001"  # 65 = good starting point
+default_value = "10000000"  # 128 = even balance (ternary 0) — start at center
 trigger = "bhealth -init"
+# Ternary interpretation: New files start at even balance, neither wanting nor whole.
+# This reflects: "let him be weighed in an even balance" — Job 31:6
 
 [calculation.increase]
-description = "Events that increase health"
+description = "Events that increase health (toward integrity)"
 events = [
     "file_created",
     "file_updated",
@@ -332,11 +541,12 @@ events = [
     "documentation_added",
     "lint_clean"
 ]
-max_increase_per_event = 5
-ceiling = 255
+max_increase_per_event = 5  # Stored value increases
+ceiling = 255  # Cannot exceed full integrity (ternary +100)
+# Ternary: Moving from 128→255 = moving from 0→+100
 
 [calculation.decrease]
-description = "Events that decrease health"
+description = "Events that decrease health (toward wanting)"
 events = [
     "file_deleted",
     "tests_failing",
@@ -344,15 +554,18 @@ events = [
     "stale_file",
     "broken_reference"
 ]
-max_decrease_per_event = 10
-floor = 0
+max_decrease_per_event = 10  # Stored value decreases
+floor = 0  # Cannot go below fully wanting (ternary -100)
+# Ternary: Moving from 128→0 = moving from 0→-100
 
 [calculation.staleness]
 description = "Health decay over time without activity"
 decay_enabled = true
-decay_rate = 1  # Lose 1 point per period
+decay_rate = 1  # Stored value loses 1 per period
 decay_period = "30d"  # 30 days
-minimum_after_decay = 50  # Never decay below 50
+minimum_after_decay = 128  # Never decay below even balance (ternary 0)
+# Philosophy: Without action, health returns to baseline, not destruction.
+# Stale code isn't broken code — it's just not growing.
 
 
 # -----------------------------------------------------------------------------
@@ -436,11 +649,41 @@ use_default = true  # Use calculation.initialization.default_value
 # Go code integration:
 #
 #   type Health struct {
-#       Value   uint8  // 0-255
-#       Binary  string // "01000001"
-#       Percent int    // 0-100
-#       Level   string // "good", "fair", etc.
-#       Emoji   string // "💚"
+#       // Storage foundation (crystallized)
+#       Stored  uint8  // 0-255 (foundation)
+#       Binary  string // "10000000" etc.
+#       // Ternary interpretation (built on foundation)
+#       True       int8   // -100 to +100 (true score)
+#       Normalized int8   // -100, -50, 0, +50, +100 (key points)
+#       Level      string // "even", "whole", etc.
+#       Emoji      string // "⚖️", "💚", etc.
+#   }
+#
+#   // StoredToTrue converts storage value to true ternary score
+#   func StoredToTrue(stored uint8) int8 {
+#       // 0 → -100, 128 → 0, 255 → +100
+#       return int8((int(stored) - 128) * 100 / 127)
+#   }
+#
+#   // TrueToStored converts true ternary to storage value
+#   func TrueToStored(true_val int8) uint8 {
+#       // -100 → 0, 0 → 128, +100 → 255
+#       return uint8((int(true_val) * 127 / 100) + 128)
+#   }
+#
+#   // Normalize rounds true ternary to key points (calculus approach)
+#   // Supports multiple bases: 1, 5, 10, 20, 25, 50
+#   func Normalize(true_val int8, base int8) int8 {
+#       if base == 1 {
+#           return true_val  // Base1 = full precision
+#       }
+#       // Formula: round(true_val / base) * base
+#       return int8(math.Round(float64(true_val)/float64(base))) * base
+#   }
+#
+#   // NormalizeDefault uses Base50 (default)
+#   func NormalizeDefault(true_val int8) int8 {
+#       return Normalize(true_val, 50)
 #   }
 #
 #   func ReadHealth(path string) (Health, error) {
@@ -449,31 +692,39 @@ use_default = true  # Use calculation.initialization.default_value
 #           return Health{}, err
 #       }
 #       binary := strings.TrimSpace(string(data))
-#       value, _ := strconv.ParseUint(binary, 2, 8)
+#       stored, _ := strconv.ParseUint(binary, 2, 8)
+#       true_val := StoredToTrue(uint8(stored))
 #       return Health{
-#           Value:   uint8(value),
-#           Binary:  binary,
-#           Percent: int(value) * 100 / 255,
-#           Level:   levelFromValue(uint8(value)),
-#           Emoji:   emojiFromLevel(levelFromValue(uint8(value))),
+#           Stored:     uint8(stored),
+#           Binary:     binary,
+#           True:       true_val,
+#           Normalized: Normalize(true_val),
+#           Level:      levelFromNormalized(Normalize(true_val)),
+#           Emoji:      emojiFromLevel(levelFromNormalized(Normalize(true_val))),
 #       }, nil
 #   }
 #
 # Command line:
-#   bhealth -init .        # Initialize health for current directory
-#   bhealth -check .       # Check and display health
-#   bhealth -set . 80      # Set health to 80%
+#   bhealth -init .           # Initialize health at even balance (128)
+#   bhealth -check .          # Check and display health (shows ternary)
+#   bhealth -set . +50        # Set health to ternary +50 (stored ~192)
+#   bhealth -set . --raw 200  # Set health to stored 200 directly
 #
 
 # -----------------------------------------------------------------------------
 # 3. Policy - Modification
 # -----------------------------------------------------------------------------
 #
-# NEVER Modify:
-#   ❌ 8-bit encoding (binary compatibility)
-#   ❌ Level thresholds (established semantics)
+# CRYSTALLIZED FOUNDATION (Never Modify):
+#   ❌ uint8 storage type (0-255)
+#   ❌ 8-bit binary ASCII encoding
 #   ❌ File format (single line, 8 chars + LF)
-#   ❌ Emoji mappings (visual consistency)
+#   ❌ 128 as center point (even balance)
+#
+# INTERPRETATION LAYER (Built On Foundation):
+#   ⚖️ Ternary mapping (-100 to +100)
+#   ⚖️ Level thresholds (7-level system)
+#   ⚖️ Display mappings (emoji, colors)
 #
 # Safe to Add:
 #   ✅ New calculation triggers
@@ -482,7 +733,7 @@ use_default = true  # Use calculation.initialization.default_value
 #   ✅ Tool integration hooks
 #
 # Requires Coordination:
-#   ⚠️ Changing default value (affects all initializations)
+#   ⚠️ Changing level boundaries (affects interpretation)
 #   ⚠️ Modifying decay rules (affects existing health)
 #   ⚠️ Changing hierarchy rules (affects parent calculations)
 #
@@ -491,13 +742,15 @@ use_default = true  # Use calculation.initialization.default_value
 # 4. Synthesis - Closing Note
 # -----------------------------------------------------------------------------
 #
-# Health is visible state. The .health file makes the invisible visible —
-# like a pulse you can check just by entering a directory.
+# Health is weighed in a JUST BALANCE.
 #
-# The schema embodies transparency:
-#   - ASCII binary is human-readable (no parsing needed)
-#   - Emoji provides instant visual feedback
-#   - Hierarchical aggregation shows systemic health
+# The storage foundation (uint8, 8-bit binary) is crystallized.
+# The ternary interpretation (centered at 0, integrity vs wanting) is built on it.
+#
+# The schema embodies the biblical principle:
+#   - "Just balances, just weights... shall you have" — Leviticus 19:36
+#   - "Let me be weighed in an even balance" — Job 31:6
+#   - "You are weighed in the balances, and found wanting" — Daniel 5:27
 #
 # Dependencies flow upward:
 #   primitives.toml → types.toml → schemas/health.toml → bhealth tool
@@ -509,7 +762,7 @@ use_default = true  # Use calculation.initialization.default_value
 #  the bones."
 # — Proverbs 17:22 KJV
 #
-# Let the health of the work be visible.
+# Let the health of the work be visible — weighed in a just balance.
 #
 # =============================================================================
 # END CLOSING

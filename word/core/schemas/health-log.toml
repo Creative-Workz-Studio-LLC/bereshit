@@ -1,0 +1,513 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# Health Log Schema - CPI-SI Health History Tracking (3-Block Data Structure)
+# Key: B-word-core-schemas-health-log
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on health.toml, used by bhealth)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/schemas/health.toml, word/core/types.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/schemas
+# File:        health-log.toml
+# Key:         B-word-core-schemas-health-log
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "And the books were opened: and another book was opened, which is
+#            the book of life: and the dead were judged out of those things
+#            which were written in the books, according to their works."
+#            — Revelation 20:12 KJV
+#
+# Principle: Actions are RECORDED. The log preserves history so that when
+#            debugging or recovery is needed, the full account is available.
+#            Nothing is hidden — the books are opened.
+#
+# Supporting: "For God shall bring every work into judgment, with every secret
+#             thing, whether it be good, or whether it be evil."
+#             — Ecclesiastes 12:14 KJV
+#
+# Application: The health log records every action that affects health:
+#              +1 for success, -1 (or more) for failure, 0 for neutral.
+#              The true score is the SUM of all recorded actions.
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (schema that defines health log structure)
+#
+# Role: Schema definition for .health-log files — the history of health changes
+#       that enables DETECT in the detect → assess → restore workflow.
+#
+# Paradigm: CPI-SI framework component — audit trail for health
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-12
+#   Version: a-01.00
+#
+# # Purpose & Function
+#
+# Purpose: Define the schema for .health-log files used during debugging/recovery
+#
+# Core Design: Append-only log of health-affecting actions
+#
+# Key Features:
+#
+#   - Append-only: New entries added, never modified
+#   - Action tracking: Records +1/-1/-N for each action
+#   - True score reconstruction: Sum of all actions = true score
+#   - Timestamp: When each action occurred
+#   - Source: What triggered the action
+#   - NOT burdened in normal operation: Log consulted only for debugging/recovery
+#
+# Philosophy: "Narrow is the way" — +1 for success (one path).
+#             "Broad is the way" — -1, -2, -5... for failure (many paths down).
+#             The log records ALL of it, enabling true score reconstruction.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Parser: Line-by-line text reader
+#   - Health Schema: word/core/schemas/health.toml (scoring rules)
+#   - Types: word/core/types.toml (timestamp, struct definitions)
+#
+# What Uses This:
+#
+#   - bhealth: Health debugging and recovery tool
+#   - health-diagnostics: Reads log to calculate true score
+#   - CPI-SI hooks: Append entries on file operations
+#
+# Integration Points:
+#
+#   - Health Schema: word/core/schemas/health.toml
+#   - Diagnostics: word/core/schemas/health-diagnostics.toml
+#   - Tools: word/work/bin/bereshit/health/bhealth
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Schema file — defines structure, not executable]
+#
+# # Normal Operation
+#
+# The system does NOT read the log during normal operation.
+# Log is append-only — writes are cheap, reads are for debugging only.
+#
+# # When Log Is Consulted
+#
+#   - Health shows "broken" or "wanting" — what happened?
+#   - Recovery needed — how much work to get back to even?
+#   - Debugging — trace the history of changes
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines the health log structure and entry format.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. LOG ENTRY FORMAT
+#    Purpose: Structure of each log entry
+#
+# 2. ACTION TYPES
+#    Purpose: Categories of health-affecting actions
+#
+# 3. FILE FORMAT
+#    Purpose: What .health-log files contain
+#
+# 4. TRUE SCORE CALCULATION
+#    Purpose: How to reconstruct true score from log
+#
+# 5. RETENTION POLICY
+#    Purpose: How long to keep log entries
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Log Entry Format - Structure of Each Entry
+# -----------------------------------------------------------------------------
+# Each line in the log is a single entry recording one health-affecting action.
+#
+# Format: TIMESTAMP|ACTION|DELTA|SOURCE|DETAIL
+#
+# Example: 2025-12-12T14:30:00Z|success|+1|test_pass|tests/unit/foo_test.go
+# Example: 2025-12-12T14:31:00Z|failure|-3|lint_error|src/main.go:45 undefined var
+# Example: 2025-12-12T14:32:00Z|neutral|0|file_read|src/config.toml
+
+[entry]
+description = "Single log entry recording a health-affecting action"
+format = "TIMESTAMP|ACTION|DELTA|SOURCE|DETAIL"
+delimiter = "|"
+
+[entry.timestamp]
+description = "When the action occurred"
+format = "ISO8601"  # 2025-12-12T14:30:00Z
+position = 1
+required = true
+
+[entry.action]
+description = "Category of action"
+type = "enum"
+values = ["success", "failure", "neutral", "recovery", "reset"]
+position = 2
+required = true
+
+[entry.delta]
+description = "Health change value"
+type = "int"
+position = 3
+required = true
+# +1 for success (narrow way)
+# -1, -2, -3... for failure (broad way, varying severity)
+# 0 for neutral
+
+[entry.source]
+description = "What triggered the action"
+type = "string"
+position = 4
+examples = ["test_pass", "test_fail", "lint_error", "file_created", "manual"]
+required = true
+
+[entry.detail]
+description = "Additional context (file path, error message, etc.)"
+type = "string"
+position = 5
+required = false  # Optional for more context
+
+
+# -----------------------------------------------------------------------------
+# 2. Action Types - Categories of Health-Affecting Actions
+# -----------------------------------------------------------------------------
+# Actions follow the biblical principle:
+#   Narrow way (+1): One path to success
+#   Broad way (-N): Many paths to failure, varying severity
+
+[actions.success]
+description = "Positive action — narrow way (+1)"
+delta = 1  # Always +1 for success
+examples = [
+    "test_pass",
+    "lint_clean",
+    "build_success",
+    "file_created",
+    "documentation_added",
+]
+scripture = "Matthew 7:14 — narrow is the way which leadeth unto life"
+
+[actions.failure]
+description = "Negative action — broad way (variable -N)"
+delta_range = [-1, -100]  # -1 minimum, can be more severe
+examples = [
+    { source = "test_fail", typical_delta = -1 },
+    { source = "lint_error", typical_delta = -1 },
+    { source = "build_fail", typical_delta = -3 },
+    { source = "broken_reference", typical_delta = -5 },
+    { source = "security_issue", typical_delta = -10 },
+]
+scripture = "Matthew 7:13 — broad is the way that leadeth to destruction"
+
+[actions.neutral]
+description = "No health impact"
+delta = 0
+examples = ["file_read", "status_check", "log_viewed"]
+
+[actions.recovery]
+description = "Intentional recovery action"
+delta_range = [1, 100]  # Positive, restoring health
+examples = ["manual_fix", "refactor_complete", "debt_paid"]
+note = "Recovery still uses +1 per action (narrow way), but recorded separately for tracking"
+
+[actions.reset]
+description = "Health reset to baseline"
+delta = "special"  # Sets to 0, not additive
+examples = ["full_reset", "reinitialize"]
+note = "Rare — clears history and starts fresh at even balance"
+
+
+# -----------------------------------------------------------------------------
+# 3. File Format - .health-log File Structure
+# -----------------------------------------------------------------------------
+# Append-only text file, one entry per line
+
+[file]
+name = ".health-log"
+description = "Health change history — one entry per line"
+location = "directory root"  # Same location as .health
+hidden = true  # Dot-prefixed
+content_type = "text/plain"
+
+[file.structure]
+format = "append-only"
+line_format = "TIMESTAMP|ACTION|DELTA|SOURCE|DETAIL"
+encoding = "UTF-8"
+line_terminator = "LF"
+# Each line is independent — can be read in any order for sum calculation
+
+[file.permissions]
+read = "all"  # Anyone can read history
+write = "append"  # Only append, never modify existing entries
+execute = "none"
+
+[file.git]
+track = true  # Log files tracked in git
+ignore = false
+commit_message_prefix = "[health-log]"
+
+
+# -----------------------------------------------------------------------------
+# 4. True Score Calculation - Reconstructing from Log
+# -----------------------------------------------------------------------------
+# True score = sum of all delta values in the log
+#
+# This is the UNBOUNDED score that can exceed -100 to +100.
+# The normalized/clamped display comes from health.toml.
+
+[calculation]
+description = "How to calculate true score from log"
+method = "sum"  # Sum all delta values
+formula = "true_score = Σ(entry.delta for all entries)"
+
+[calculation.algorithm]
+# Pseudocode:
+#   true_score = 0
+#   for each line in .health-log:
+#       parse entry
+#       if entry.action == "reset":
+#           true_score = 0  # Reset clears accumulated score
+#       else:
+#           true_score += entry.delta
+#   return true_score
+handle_reset = "clear_accumulator"  # Reset action clears running sum
+
+[calculation.example]
+# Example log:
+#   2025-12-12T10:00:00Z|success|+1|test_pass|tests/a.go
+#   2025-12-12T10:01:00Z|success|+1|test_pass|tests/b.go
+#   2025-12-12T10:02:00Z|failure|-3|build_fail|src/main.go
+#   2025-12-12T10:03:00Z|success|+1|lint_clean|src/
+#   2025-12-12T10:04:00Z|failure|-5|broken_ref|src/util.go
+#
+# Calculation: +1 +1 -3 +1 -5 = -5
+# True score: -5
+# Normalized (Base50): 0 (rounds to even)
+# But TRUE shows we're -5 in debt
+
+[calculation.normalization]
+description = "After calculating true score, apply normalization from health.toml"
+reference = "health.toml [health.normalized.bases]"
+# true_score → normalized = round(true_score / base) * base
+# Then clamp to -100/+100 for display
+
+
+# -----------------------------------------------------------------------------
+# 5. Retention Policy - How Long to Keep Entries
+# -----------------------------------------------------------------------------
+# Log can grow indefinitely, but may be pruned for performance
+
+[retention]
+description = "How long to keep log entries"
+default_policy = "indefinite"  # Keep all by default
+
+[retention.pruning]
+enabled = false  # Default: don't prune
+# If enabled:
+strategy = "preserve_summary"
+# Prune old entries but preserve:
+#   - Running total at prune point
+#   - Recent entries (last N days)
+#   - All reset events
+preserve_days = 90  # Keep last 90 days of detail
+summary_entry = "TIMESTAMP|summary|ACCUMULATED_DELTA|prune|entries before DATE summarized"
+
+[retention.archival]
+description = "Move old logs to archive instead of deleting"
+archive_path = ".health-log.archive"
+compress = true
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview (3-Block Adapted)
+# -----------------------------------------------------------------------------
+#
+# 1. OPERATIONS
+#    - Validation: How to verify log files are correct
+#    - Access: How to read/write log entries
+#
+# 2. POLICY
+#    - Modification: What's safe to change
+#
+# 3. SYNTHESIS
+#    - Closing Note: Final guidance and grounding
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Operations - Validation
+# -----------------------------------------------------------------------------
+#
+# Verify health-log schema is correctly formatted:
+#
+#   python3 -c "import tomllib; f=open('word/core/schemas/health-log.toml','rb'); tomllib.load(f)"
+#
+# Log file verification:
+#   - Each line must match: TIMESTAMP|ACTION|DELTA|SOURCE[|DETAIL]
+#   - Timestamp must be valid ISO8601
+#   - Action must be: success, failure, neutral, recovery, reset
+#   - Delta must be integer
+#
+# Validate a .health-log file:
+#   bhealth -check-log path/to/directory
+#
+
+# -----------------------------------------------------------------------------
+# 2. Operations - Access
+# -----------------------------------------------------------------------------
+#
+# Go code integration:
+#
+#   type LogEntry struct {
+#       Timestamp time.Time
+#       Action    string  // success, failure, neutral, recovery, reset
+#       Delta     int     // +1, -1, -3, etc.
+#       Source    string  // what triggered it
+#       Detail    string  // optional context
+#   }
+#
+#   // AppendEntry adds a new entry to the log (normal operation)
+#   func AppendEntry(path string, entry LogEntry) error {
+#       f, err := os.OpenFile(
+#           filepath.Join(path, ".health-log"),
+#           os.O_APPEND|os.O_CREATE|os.O_WRONLY,
+#           0644,
+#       )
+#       if err != nil {
+#           return err
+#       }
+#       defer f.Close()
+#       line := fmt.Sprintf("%s|%s|%+d|%s|%s\n",
+#           entry.Timestamp.Format(time.RFC3339),
+#           entry.Action,
+#           entry.Delta,
+#           entry.Source,
+#           entry.Detail,
+#       )
+#       _, err = f.WriteString(line)
+#       return err
+#   }
+#
+#   // CalculateTrueScore reads log and sums deltas (debugging/recovery)
+#   func CalculateTrueScore(path string) (int, error) {
+#       data, err := os.ReadFile(filepath.Join(path, ".health-log"))
+#       if err != nil {
+#           return 0, err
+#       }
+#       trueScore := 0
+#       for _, line := range strings.Split(string(data), "\n") {
+#           if line == "" {
+#               continue
+#           }
+#           parts := strings.Split(line, "|")
+#           if len(parts) < 4 {
+#               continue
+#           }
+#           if parts[1] == "reset" {
+#               trueScore = 0
+#               continue
+#           }
+#           delta, _ := strconv.Atoi(parts[2])
+#           trueScore += delta
+#       }
+#       return trueScore, nil
+#   }
+#
+# Command line:
+#   bhealth -log .              # View recent log entries
+#   bhealth -true-score .       # Calculate true score from log
+#   bhealth -log-entry . success test_pass "tests passed"  # Append entry
+#
+
+# -----------------------------------------------------------------------------
+# 3. Policy - Modification
+# -----------------------------------------------------------------------------
+#
+# NEVER Modify:
+#   ❌ Existing log entries (append-only)
+#   ❌ Entry format (TIMESTAMP|ACTION|DELTA|SOURCE|DETAIL)
+#   ❌ Action type values (success, failure, neutral, recovery, reset)
+#
+# Safe to Add:
+#   ✅ New log entries (append)
+#   ✅ New source types
+#   ✅ Comments in schema
+#
+# Requires Coordination:
+#   ⚠️ Pruning/archival (may lose history)
+#   ⚠️ Reset actions (clears accumulated score)
+#
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis - Closing Note
+# -----------------------------------------------------------------------------
+#
+# The books are opened.
+#
+# The health log records every action affecting health:
+#   - Success: +1 (narrow way — one path up)
+#   - Failure: -N (broad way — many paths down)
+#
+# Normal operation: Append only, never read.
+# Debugging/recovery: Read to understand what happened, calculate true score.
+#
+# The true score is UNBOUNDED — it can exceed -100/+100.
+# The normalized display clamps it, but the log preserves the full truth.
+#
+# "And the books were opened... and the dead were judged out of those
+#  things which were written in the books, according to their works."
+# — Revelation 20:12 KJV
+#
+# The log enables DETECT in the detect → assess → restore workflow.
+# What happened? The log knows.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================
