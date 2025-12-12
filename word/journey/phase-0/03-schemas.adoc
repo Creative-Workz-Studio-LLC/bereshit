@@ -1,0 +1,408 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-journey-phase0-03-schemas
+:title: Phase 0 Journey — Building Schemas
+:type: Journey
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: 1.0.0
+:revdate: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-12
+:updated: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/journey/phase-0/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: journey, phase-0, schemas, validation
+:keywords: schemas, validation, constraints, just weights, range validation
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Document how schemas/ was built — validation rules
+:description: Step 3 of Phase 0: Building WHAT makes data valid
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: Proverbs 11:1 KJV/WEB — A just weight is his delight
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Third creation: defining what is valid*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Phase-0-purple?style=flat[Phase]
+image:https://img.shields.io/badge/Step-3%20of%205-blue?style=flat[Step]
+
+_"A false balance is abomination to the LORD: but a just weight is his delight."_ — Proverbs 11:1 KJV
+
+'''
+
+*<<purpose,Purpose>>* • *<<input,Input>>* • *<<process,Process>>* • *<<output,Output>>* • *<<verification,Verification>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[purpose]]
+== Purpose
+
+This document describes *how `schemas/` was built* — the validation rules that define WHAT makes data valid.
+
+[IMPORTANT]
+====
+*Schemas define WHAT is valid.* Contracts (next step) define HOW to behave. This distinction is critical.
+====
+
+[NOTE]
+====
+*This document answers:*
+
+* What did we have after building types?
+* What validation domains need schemas?
+* How did we create and populate `schemas/`?
+* How do schemas prevent "false balances"?
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[input]]
+== Input: What We Had
+
+From link:02-types.adoc[02-types]:
+
+* `primitives.toml` with atomic types
+* `types.toml` with composition rules
+* Mathematical constraints from research (domains, ranges)
+
+[source]
+----
+primitives.toml     ← Foundation
+       ↓
+types.toml          ← Composition
+       ↓
+schemas/            ← To be built (this step)
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[process]]
+== Process: How We Built
+
+=== 1. Identify Validation Domains
+
+What needs validation rules? We identified the domains requiring constraints:
+
+[cols="2,4",options="header"]
+|===
+| Domain | What to Validate
+
+| *Health*
+| Scores (0-255), levels (7 values), hard points, conversions
+
+| *Identity*
+| Keys (pattern: `B-location-domain-name`), names, relationships
+
+| *Timestamp*
+| Dates (ISO 8601), durations, epochs
+
+| *Permission*
+| Access levels, capabilities
+
+| *Message*
+| Content, metadata, routing
+
+| *FileType*
+| Extensions, MIME types
+|===
+
+=== 2. Create Schema Files
+
+[source,bash]
+----
+mkdir -p word/core/schemas
+
+cp word/seed/data/toml/toml-data.toml word/core/schemas/health.toml
+cp word/seed/data/toml/toml-data.toml word/core/schemas/identity.toml
+cp word/seed/data/toml/toml-data.toml word/core/schemas/timestamp.toml
+cp word/seed/data/toml/toml-data.toml word/core/schemas/permission.toml
+cp word/seed/data/toml/toml-data.toml word/core/schemas/message.toml
+cp word/seed/data/toml/toml-data.toml word/core/schemas/file-type.toml
+----
+
+=== 3. Define Constraints
+
+For each schema, we specified three types of constraints:
+
+[cols="2,4,3",options="header"]
+|===
+| Constraint Type | Description | Example
+
+| *Range*
+| Numeric bounds
+| HealthScore: 0-255
+
+| *Pattern*
+| String format rules
+| Key: `B-location-domain-name`
+
+| *Format*
+| Standard formats
+| Timestamp: ISO 8601
+|===
+
+=== 4. Ground in Scripture
+
+Schemas are "just weights" — they prevent false balances (invalid data claiming validity). A HealthScore of 300 is a "false balance" that schemas reject.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[output]]
+== Output: What We Produced
+
+[source]
+----
+word/core/schemas/
+├── health.toml           # Health score validation
+├── identity.toml         # Key and name validation
+├── timestamp.toml        # Temporal validation
+├── permission.toml       # Access level validation
+├── message.toml          # Message content validation
+├── file-type.toml        # File extension validation
+├── health-log.toml       # Health history validation
+└── health-diagnostics.toml  # Diagnostic data validation
+----
+
+=== Key Schema Example
+
+[source,toml]
+----
+[schema.health_score]
+type = "HealthScore"
+constraints = [
+    { rule = "range", min = 0, max = 255 },
+    { rule = "type", expected = "uint8" }
+]
+error_message = "HealthScore must be 0-255"
+biblical_anchor = "Proverbs 11:1"
+
+[schema.bereshit_key]
+type = "Key"
+constraints = [
+    { rule = "pattern", regex = "^B-[a-z]+-[a-z]+-[a-z]+$" },
+    { rule = "prefix", value = "B-" }
+]
+error_message = "Key must follow B-location-domain-name pattern"
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[verification]]
+== Verification
+
+How we knew it was correct:
+
+[cols="2,4,^1",options="header"]
+|===
+| Check | Criteria | ✓
+
+| *Completeness*
+| All domains have schemas
+| ✓
+
+| *Consistency*
+| Constraints match type definitions
+| ✓
+
+| *No false balances*
+| Invalid data is rejected
+| ✓
+
+| *Biblical grounding*
+| Schemas = just weights
+| ✓
+
+| *3-block structure*
+| Each schema: METADATA → CONTENT → CLOSING
+| ✓
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[next-step]]
+== Next Step
+
+With schemas defined (WHAT is valid), proceed to:
+
+*→ link:04-contracts.adoc[04-contracts.adoc]* — Building behavioral contracts (HOW to behave)
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Schemas are "just weights."* They ensure data that claims to be valid actually is valid. A false balance claims to weigh correctly but lies. Schemas prevent this deception.
+====
+
+_"A false balance is abomination to the LORD: but a just weight is his delight."_ — *Proverbs 11:1 KJV*
+
+_"A false balance is an abomination to Yahweh, but accurate weights are his delight."_ — *Proverbs 11:1 WEB*
+
+*Applied:* Schemas are "just weights" — they ensure data that claims to be valid actually is valid. A HealthScore of 300 is a "false balance" that schemas reject. The validation rules are the weights that test whether data is what it claims to be.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Journey Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| Step | Document | What It Covers
+
+| 0
+| link:00-starting-point.adoc[00-starting-point.adoc]
+| What existed before Phase 0
+
+| 1
+| link:01-primitives.adoc[01-primitives.adoc]
+| Building primitive types
+
+| 2
+| link:02-types.adoc[02-types.adoc]
+| Building composite types
+
+| 3
+| *03-schemas.adoc* (this document)
+| Building validation schemas
+
+| 4
+| link:04-contracts.adoc[04-contracts.adoc]
+| Building behavioral contracts
+
+| 5
+| link:05-synthesis.adoc[05-synthesis.adoc]
+| How pieces work together
+|===
+
+=== Source Documents
+
+* `word/core/primitives.toml` — Primitive types
+* `word/core/types.toml` — Composite types
+* `word/research/bereshit-base-mathematics.adoc` — Domain constraints
+* `word/seed/data/toml/toml-data.toml` — 3-block template
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+← link:02-types.adoc[Previous: Types] | *Step 3 of 5* | link:04-contracts.adoc[Next: Contracts] →
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+'''
+
+_"A just weight is his delight."_ — *Proverbs 11:1*
+
+*Valid data only. No false balances.*
+--

@@ -1,0 +1,397 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-journey-phase0-01-primitives
+:title: Phase 0 Journey — Building Primitives
+:type: Journey
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: 1.0.0
+:revdate: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-12
+:updated: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/journey/phase-0/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: journey, phase-0, primitives, atomic-types
+:keywords: primitives, atomic types, trit, health score, building blocks
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Document how primitives.toml was built — the atomic types
+:description: Step 1 of Phase 0: Building the atomic building blocks from research
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: Genesis 1:3-5 KJV/WEB — And God said, Let there be light
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*First creation: the atomic building blocks*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Phase-0-purple?style=flat[Phase]
+image:https://img.shields.io/badge/Step-1%20of%205-blue?style=flat[Step]
+
+_"And God said, Let there be light: and there was light."_ — Genesis 1:3 KJV
+
+'''
+
+*<<purpose,Purpose>>* • *<<input,Input>>* • *<<process,Process>>* • *<<output,Output>>* • *<<verification,Verification>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[purpose]]
+== Purpose
+
+This document describes *how `primitives.toml` was built* — the atomic types that form the foundation for everything else.
+
+[IMPORTANT]
+====
+*Journey documents are reproducibility proofs.* Following this document with the prerequisites from link:00-starting-point.adoc[00-starting-point] will produce the same `primitives.toml`.
+====
+
+[NOTE]
+====
+*This document answers:*
+
+* What did we have before building primitives?
+* How did we identify the atomic types?
+* How did we create and populate `primitives.toml`?
+* How did we verify it was correct?
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[input]]
+== Input: What We Had
+
+From link:00-starting-point.adoc[00-starting-point]:
+
+* Research documents defining ternary mathematics
+* Mathematical domains from `bereshit-base-mathematics.adoc`:
+** stem:[\mathbb{S}] — Storage domain (0-255)
+** stem:[\mathbb{T}] — True value domain (-100 to +100)
+** stem:[\mathbb{H}_5] — Hard point anchors
+** stem:[\mathbb{L}] — Level names (7 values)
+** stem:[\mathbb{D}] — Direction (-1, 0, +1)
+* Empty `core/` folder ready for content
+* 3-block data template: `word/seed/data/toml/toml-data.toml`
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[process]]
+== Process: How We Built
+
+=== 1. Identify Atomic Types
+
+From `bereshit-base-mathematics.adoc`, we extracted the primitive types — types that cannot be broken down further:
+
+[cols="2,4",options="header"]
+|===
+| Type | Mathematical Definition
+
+| *Trit*
+| Single balanced ternary digit: stem:[\{-1, 0, +1\}]
+
+| *HealthScore*
+| Storage domain: stem:[\mathbb{S} = \{0, \ldots, 255\}]
+
+| *TrueValue*
+| True domain: stem:[\mathbb{T} = \{-100, \ldots, 100\}]
+
+| *Direction*
+| Temporal dimension: stem:[\mathbb{D} = \{-1, 0, +1\}]
+
+| *Level*
+| State names: stem:[\mathbb{L}] (7 values: Dead, Critical, Poor, Fair, Good, Excellent, Perfect)
+
+| *HardPoint*
+| Coarse anchors: stem:[\mathbb{H}_5 = \{-100, -50, 0, 50, 100\}]
+|===
+
+=== 2. Create primitives.toml
+
+Using the 3-block data template:
+
+[source,bash]
+----
+cp word/seed/data/toml/toml-data.toml word/core/primitives.toml
+----
+
+=== 3. Define Each Primitive
+
+For each type, we specified:
+
+* **Name**: The type identifier (e.g., `Trit`, `HealthScore`)
+* **Domain**: Mathematical set it represents
+* **Storage**: How it's stored (bytes, bits)
+* **Validation**: Constraints that make it valid (ranges, allowed values)
+
+=== 4. Ground in Scripture
+
+Each primitive traces to biblical source:
+
+[cols="2,4",options="header"]
+|===
+| Primitive | Biblical Grounding
+
+| *Trit*
+| Genesis 1:6 — Division creating thirds (firmament dividing waters)
+
+| *HealthScore*
+| Proverbs 11:1 — Just weights (accurate measurement)
+
+| *Level*
+| Biblical state language (Psalm 23:1 "wanting" → Psalm 18:30 "perfect")
+
+| *Direction*
+| Ecclesiastes 3:1-8 — Time for every purpose (past, present, future)
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[output]]
+== Output: What We Produced
+
+[source]
+----
+word/core/primitives.toml   # ~22KB, all atomic types defined
+----
+
+The file contains:
+
+* **METADATA block**: Identity, purpose, biblical grounding
+* **CONTENT block**: Type definitions with domains, storage, validation
+* **CLOSING block**: Validation rules, relationships
+
+=== Key Types Defined
+
+[source,toml]
+----
+[primitives.trit]
+name = "Trit"
+domain = "{-1, 0, +1}"
+storage = "2 bits (packed: 5 trits per byte)"
+biblical_anchor = "Genesis 1:6"
+
+[primitives.health_score]
+name = "HealthScore"
+domain = "0..255"
+storage = "1 byte (uint8)"
+biblical_anchor = "Proverbs 11:1"
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[verification]]
+== Verification
+
+How we knew it was correct:
+
+[cols="2,4,^1",options="header"]
+|===
+| Check | Criteria | ✓
+
+| *Completeness*
+| All mathematical domains from research represented
+| ✓
+
+| *Consistency*
+| Types match research definitions exactly
+| ✓
+
+| *No dependencies*
+| `primitives.toml` depends on nothing else in `core/`
+| ✓
+
+| *Biblical grounding*
+| Each type traces to Scripture
+| ✓
+
+| *3-block structure*
+| METADATA → CONTENT → CLOSING
+| ✓
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[next-step]]
+== Next Step
+
+With primitives defined, proceed to:
+
+*→ link:02-types.adoc[02-types.adoc]* — Building composite types from primitives
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Light was the first creation.* Before anything else could exist, there had to be light — the atomic element that makes everything else visible and possible.
+====
+
+_"And God said, Let there be light: and there was light. And God saw the light, that it was good: and God divided the light from the darkness."_ — *Genesis 1:3-4 KJV*
+
+_"God said, 'Let there be light,' and there was light. God saw the light, and saw that it was good. God divided the light from the darkness."_ — *Genesis 1:3-4 WEB*
+
+*Applied:* Light was the first creation — the atomic building block before anything else could be made. Primitives are our "light" — the atomic types from which all else is composed. Without `primitives.toml`, nothing else in `core/` can exist.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Journey Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| Step | Document | What It Covers
+
+| 0
+| link:00-starting-point.adoc[00-starting-point.adoc]
+| What existed before Phase 0
+
+| 1
+| *01-primitives.adoc* (this document)
+| Building primitive types
+
+| 2
+| link:02-types.adoc[02-types.adoc]
+| Building composite types
+
+| 3
+| link:03-schemas.adoc[03-schemas.adoc]
+| Building validation schemas
+
+| 4
+| link:04-contracts.adoc[04-contracts.adoc]
+| Building behavioral contracts
+
+| 5
+| link:05-synthesis.adoc[05-synthesis.adoc]
+| How pieces work together
+|===
+
+=== Source Documents
+
+* `word/research/bereshit-base-mathematics.adoc` — Mathematical domains
+* `word/research/trit-foundations.adoc` — Trit theory
+* `word/seed/data/toml/toml-data.toml` — 3-block template
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+← link:00-starting-point.adoc[Previous: Starting Point] | *Step 1 of 5* | link:02-types.adoc[Next: Types] →
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+'''
+
+_"And God said, Let there be light: and there was light."_ — *Genesis 1:3*
+
+*First light. First types. Foundation begins.*
+--

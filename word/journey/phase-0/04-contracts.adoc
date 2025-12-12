@@ -1,0 +1,410 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-journey-phase0-04-contracts
+:title: Phase 0 Journey — Building Contracts
+:type: Journey
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: 1.0.0
+:revdate: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-12
+:updated: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/journey/phase-0/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: journey, phase-0, contracts, behavior
+:keywords: contracts, vows, behavioral promises, MUST, SHOULD, MAY
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Document how contracts/ was built — behavioral promises
+:description: Step 4 of Phase 0: Building HOW components must behave
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: Numbers 30:2 KJV/WEB — He shall not break his word
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Fourth creation: promises that must be kept*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Phase-0-purple?style=flat[Phase]
+image:https://img.shields.io/badge/Step-4%20of%205-blue?style=flat[Step]
+
+_"If a man vow a vow unto the LORD... he shall not break his word."_ — Numbers 30:2 KJV
+
+'''
+
+*<<purpose,Purpose>>* • *<<input,Input>>* • *<<process,Process>>* • *<<output,Output>>* • *<<verification,Verification>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[purpose]]
+== Purpose
+
+This document describes *how `contracts/` was built* — the behavioral promises that define HOW components must behave.
+
+[IMPORTANT]
+====
+*Schemas define WHAT is valid.* Contracts define HOW to behave. A contract is a vow — breaking it is breaking your word.
+====
+
+[NOTE]
+====
+*This document answers:*
+
+* What did we have after building schemas?
+* What behavioral domains need contracts?
+* How did we create and populate `contracts/`?
+* What are the MUST/SHOULD/MAY semantics?
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[input]]
+== Input: What We Had
+
+From link:03-schemas.adoc[03-schemas]:
+
+* `primitives.toml` — atomic types
+* `types.toml` — composition rules
+* `schemas/` — validation constraints (WHAT is valid)
+* Algorithms from research defining behavior
+
+[source]
+----
+primitives.toml     ← Foundation
+       ↓
+types.toml          ← Composition
+       ↓
+schemas/            ← WHAT is valid
+       ↓
+contracts/          ← To be built (this step) — HOW to behave
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[process]]
+== Process: How We Built
+
+=== 1. Identify Behavioral Domains
+
+What components need behavioral contracts?
+
+[cols="2,4",options="header"]
+|===
+| Component | Behaviors to Specify
+
+| *Health Provider*
+| Read, write, normalize, convert, display
+
+| *Filesystem*
+| Create, read, update, delete, atomic operations
+
+| *Identity*
+| Create, verify, relate
+
+| *Network*
+| Connect, timeout, retry, secure
+|===
+
+=== 2. Create Contract Files
+
+[source,bash]
+----
+mkdir -p word/core/contracts
+
+cp word/seed/data/toml/toml-data.toml word/core/contracts/health-provider.toml
+cp word/seed/data/toml/toml-data.toml word/core/contracts/filesystem.toml
+cp word/seed/data/toml/toml-data.toml word/core/contracts/identity.toml
+cp word/seed/data/toml/toml-data.toml word/core/contracts/network.toml
+----
+
+=== 3. Define MUST/SHOULD/MAY Semantics
+
+Following RFC 2119 semantics:
+
+[cols="1,4,3",options="header"]
+|===
+| Level | Meaning | Example
+
+| *MUST*
+| Absolute requirement — violation is contract breach
+| Health provider MUST normalize before storing
+
+| *SHOULD*
+| Strong recommendation — deviation requires justification
+| Filesystem SHOULD use atomic writes
+
+| *MAY*
+| Optional behavior — implementer's choice
+| Network MAY retry on transient failures
+|===
+
+=== 4. Ground in Scripture
+
+Contracts are vows — "he shall not break his word." When a component promises behavior, it MUST keep that promise. A health provider that says "I WILL normalize before storing" must do so.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[output]]
+== Output: What We Produced
+
+[source]
+----
+word/core/contracts/
+├── health-provider.toml   # Health data behavioral contract
+├── filesystem.toml        # Filesystem operations contract
+├── identity.toml          # Identity management contract
+└── network.toml           # Network operations contract
+----
+
+=== Key Contract Example
+
+[source,toml]
+----
+[contract.health_provider]
+name = "HealthProvider"
+description = "Behavioral contract for health data operations"
+biblical_anchor = "Numbers 30:2"
+
+[[contract.health_provider.behaviors]]
+name = "normalize_on_store"
+level = "MUST"
+description = "Normalize health values before storing"
+rationale = "Ensures consistent data across the system"
+
+[[contract.health_provider.behaviors]]
+name = "validate_on_read"
+level = "MUST"
+description = "Validate health values when reading"
+rationale = "Prevents invalid data from propagating"
+
+[[contract.health_provider.behaviors]]
+name = "cache_recent"
+level = "SHOULD"
+description = "Cache recently accessed health data"
+rationale = "Performance optimization"
+
+[[contract.health_provider.behaviors]]
+name = "compress_history"
+level = "MAY"
+description = "Compress historical health data"
+rationale = "Storage optimization, implementer's choice"
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[verification]]
+== Verification
+
+How we knew it was correct:
+
+[cols="2,4,^1",options="header"]
+|===
+| Check | Criteria | ✓
+
+| *Completeness*
+| All behavioral domains covered
+| ✓
+
+| *Consistency*
+| Contracts align with algorithms from research
+| ✓
+
+| *Testable*
+| Each MUST can be verified
+| ✓
+
+| *Biblical grounding*
+| Contracts = vows
+| ✓
+
+| *3-block structure*
+| Each contract: METADATA → CONTENT → CLOSING
+| ✓
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[next-step]]
+== Next Step
+
+With contracts defined (HOW to behave), proceed to:
+
+*→ link:05-synthesis.adoc[05-synthesis.adoc]* — How it all works together
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*A contract is a vow.* When a component promises behavior, breaking that promise is breaking its word. In Kingdom Technology, we keep our promises.
+====
+
+_"If a man vow a vow unto the LORD, or swear an oath to bind his soul with a bond; he shall not break his word, he shall do according to all that proceedeth out of his mouth."_ — *Numbers 30:2 KJV*
+
+_"When a man vows a vow to Yahweh, or swears an oath to bind his soul with a bond, he shall not break his word. He shall do according to all that proceeds out of his mouth."_ — *Numbers 30:2 WEB*
+
+*Applied:* A contract is a vow. When a health provider says "I WILL normalize before storing," it must do so. Breaking a contract is breaking a vow — unacceptable in Kingdom Technology. The MUST/SHOULD/MAY levels reflect the weight of the promise.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Journey Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| Step | Document | What It Covers
+
+| 0
+| link:00-starting-point.adoc[00-starting-point.adoc]
+| What existed before Phase 0
+
+| 1
+| link:01-primitives.adoc[01-primitives.adoc]
+| Building primitive types
+
+| 2
+| link:02-types.adoc[02-types.adoc]
+| Building composite types
+
+| 3
+| link:03-schemas.adoc[03-schemas.adoc]
+| Building validation schemas
+
+| 4
+| *04-contracts.adoc* (this document)
+| Building behavioral contracts
+
+| 5
+| link:05-synthesis.adoc[05-synthesis.adoc]
+| How pieces work together
+|===
+
+=== Source Documents
+
+* `word/core/schemas/` — Validation schemas
+* `word/research/bereshit-base-algorithms.adoc` — Behavioral algorithms
+* `word/seed/data/toml/toml-data.toml` — 3-block template
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+← link:03-schemas.adoc[Previous: Schemas] | *Step 4 of 5* | link:05-synthesis.adoc[Next: Synthesis] →
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+'''
+
+_"He shall not break his word."_ — *Numbers 30:2*
+
+*Promises made. Promises kept.*
+--

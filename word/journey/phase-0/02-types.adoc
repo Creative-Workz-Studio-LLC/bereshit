@@ -1,0 +1,407 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-journey-phase0-02-types
+:title: Phase 0 Journey — Building Types
+:type: Journey
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: 1.0.0
+:revdate: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-12
+:updated: 2025-12-12
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/journey/phase-0/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: journey, phase-0, types, composition
+:keywords: types, composition, struct, array, optional, composite types
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Document how types.toml was built — composite types from primitives
+:description: Step 2 of Phase 0: Building composition rules for how primitives combine
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: Genesis 1:26 KJV/WEB — Let us make man in our image
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Second creation: composition and relationship*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Phase-0-purple?style=flat[Phase]
+image:https://img.shields.io/badge/Step-2%20of%205-blue?style=flat[Step]
+
+_"And God said, Let us make man in our image, after our likeness."_ — Genesis 1:26 KJV
+
+'''
+
+*<<purpose,Purpose>>* • *<<input,Input>>* • *<<process,Process>>* • *<<output,Output>>* • *<<verification,Verification>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[purpose]]
+== Purpose
+
+This document describes *how `types.toml` was built* — the composition rules that define how primitives combine into complex structures.
+
+[IMPORTANT]
+====
+*Journey documents are reproducibility proofs.* Following this document after completing link:01-primitives.adoc[01-primitives] will produce the same `types.toml`.
+====
+
+[NOTE]
+====
+*This document answers:*
+
+* What did we have after building primitives?
+* What composition patterns exist?
+* How did we create and populate `types.toml`?
+* How do types relate to primitives?
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[input]]
+== Input: What We Had
+
+From link:01-primitives.adoc[01-primitives]:
+
+* `primitives.toml` with all atomic types defined
+* Mathematical composition rules from research
+* Understanding of how types relate hierarchically
+
+[source]
+----
+primitives.toml     ← Foundation (exists)
+       ↓
+types.toml          ← To be built (this step)
+       ↓
+[depends on primitives]
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[process]]
+== Process: How We Built
+
+=== 1. Identify Composition Patterns
+
+How do primitives combine? We identified four primary patterns:
+
+[cols="2,4,3",options="header"]
+|===
+| Pattern | Description | Example
+
+| *Struct*
+| Named collection of fields
+| Health = {score: HealthScore, level: Level}
+
+| *Array*
+| Fixed or variable length sequences
+| TritArray = Trit[n]
+
+| *Map*
+| Key-value associations
+| Symptoms = Map<string, HealthScore>
+
+| *Optional*
+| Nullable wrapper types
+| MaybeLevel = Level?
+|===
+
+=== 2. Define Type Relationships
+
+Types form a dependency hierarchy:
+
+[source]
+----
+                  ┌─────────────────┐
+                  │  primitives.toml │  ← Foundation
+                  └────────┬────────┘
+                           │
+           ┌───────────────┼───────────────┐
+           │               │               │
+           ▼               ▼               ▼
+    ┌───────────┐   ┌───────────┐   ┌───────────┐
+    │  Health   │   │ TritArray │   │  Identity │
+    │  struct   │   │   array   │   │   struct  │
+    └───────────┘   └───────────┘   └───────────┘
+           │
+           ↓
+    Depends on: HealthScore, Level (primitives)
+----
+
+=== 3. Create types.toml
+
+Using the 3-block data template:
+
+[source,bash]
+----
+cp word/seed/data/toml/toml-data.toml word/core/types.toml
+----
+
+=== 4. Define Composition Rules
+
+For each composite type, we specified:
+
+* **Name**: The type identifier
+* **Composition**: How it combines primitives
+* **Fields**: What primitives/types it contains
+* **Dependencies**: What it requires to exist
+
+=== 5. Ground in Scripture
+
+_"Let us make man in our image"_ — God created through composition and relationship. Man is composed of dust (primitive) + breath of life (composition). Types compose primitives just as man is composed of elements.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[output]]
+== Output: What We Produced
+
+[source]
+----
+word/core/types.toml   # ~27KB, composition rules defined
+----
+
+The file contains:
+
+* **METADATA block**: Identity, purpose, dependencies
+* **CONTENT block**: Composite type definitions
+* **CLOSING block**: Composition validation rules
+
+=== Key Types Defined
+
+[source,toml]
+----
+[types.health]
+name = "Health"
+composition = "struct"
+fields = [
+    { name = "score", type = "HealthScore" },
+    { name = "level", type = "Level" },
+    { name = "direction", type = "Direction" }
+]
+depends_on = ["primitives.health_score", "primitives.level", "primitives.direction"]
+
+[types.trit_array]
+name = "TritArray"
+composition = "array"
+element = "Trit"
+depends_on = ["primitives.trit"]
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[verification]]
+== Verification
+
+How we knew it was correct:
+
+[cols="2,4,^1",options="header"]
+|===
+| Check | Criteria | ✓
+
+| *Depends only on primitives*
+| No circular dependencies
+| ✓
+
+| *Complete composition*
+| All needed structures definable
+| ✓
+
+| *Referential integrity*
+| All referenced primitives exist
+| ✓
+
+| *Biblical grounding*
+| Composition reflects creation pattern
+| ✓
+
+| *3-block structure*
+| METADATA → CONTENT → CLOSING
+| ✓
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[next-step]]
+== Next Step
+
+With types defined, proceed to:
+
+*→ link:03-schemas.adoc[03-schemas.adoc]* — Building validation schemas
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Man is composite.* Created from dust (primitive element) + breath of life (divine composition). Complex beings emerge from simple elements through intentional composition.
+====
+
+_"And God said, Let us make man in our image, after our likeness."_ — *Genesis 1:26 KJV*
+
+_"God said, 'Let's make man in our image, after our likeness.'"_ — *Genesis 1:26 WEB*
+
+*Applied:* Man is composite — formed from dust (primitive) + breath of life (composition). Types compose primitives into meaningful structures, just as God composed man from elements. The "image" is the pattern; the "likeness" is the implementation.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Journey Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| Step | Document | What It Covers
+
+| 0
+| link:00-starting-point.adoc[00-starting-point.adoc]
+| What existed before Phase 0
+
+| 1
+| link:01-primitives.adoc[01-primitives.adoc]
+| Building primitive types
+
+| 2
+| *02-types.adoc* (this document)
+| Building composite types
+
+| 3
+| link:03-schemas.adoc[03-schemas.adoc]
+| Building validation schemas
+
+| 4
+| link:04-contracts.adoc[04-contracts.adoc]
+| Building behavioral contracts
+
+| 5
+| link:05-synthesis.adoc[05-synthesis.adoc]
+| How pieces work together
+|===
+
+=== Source Documents
+
+* `word/core/primitives.toml` — Primitive types (dependency)
+* `word/research/bereshit-base-mathematics.adoc` — Composition theory
+* `word/seed/data/toml/toml-data.toml` — 3-block template
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+← link:01-primitives.adoc[Previous: Primitives] | *Step 2 of 5* | link:03-schemas.adoc[Next: Schemas] →
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+'''
+
+_"And God said, Let us make man in our image."_ — *Genesis 1:26*
+
+*Composition creates complexity. Primitives become structures.*
+--
