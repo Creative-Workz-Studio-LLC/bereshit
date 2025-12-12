@@ -1,0 +1,1098 @@
+////
+#!omni document --adoc
+===============================================================================
+METADATA BLOCK
+===============================================================================
+////
+
+// -----------------------------------------------------------------------------
+// IDENTITY
+// -----------------------------------------------------------------------------
+:key: B-word-research-ternary-logic-algorithms
+:title: Ternary Logic Algorithms: Three-Valued Logic and Comparison Operations
+:type: Research
+
+// -----------------------------------------------------------------------------
+// STATE
+// -----------------------------------------------------------------------------
+:status: Active
+:version: a-01.00
+:revdate: 2025-12-12
+
+// -----------------------------------------------------------------------------
+// TEMPORAL
+// -----------------------------------------------------------------------------
+:created: 2025-12-12
+:updated: 2025-12-12
+
+// -----------------------------------------------------------------------------
+// ATTRIBUTION
+// -----------------------------------------------------------------------------
+:authors: Nova Dawn (Researcher), Seanje Lenox-Wise (Architect)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// -----------------------------------------------------------------------------
+// LOCATION
+// -----------------------------------------------------------------------------
+:path: /bereshit/word/research/
+
+// -----------------------------------------------------------------------------
+// DERIVATION
+// -----------------------------------------------------------------------------
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// -----------------------------------------------------------------------------
+// CLASSIFICATION
+// -----------------------------------------------------------------------------
+:tags: ternary, logic, algorithms, kleene, three-valued, comparison, truth-tables
+:keywords: Ternary Logic, Three-Valued Logic, Kleene Logic, K3, Comparison Operations, Truth Tables, Balanced Ternary Logic
+
+// -----------------------------------------------------------------------------
+// INTENT
+// -----------------------------------------------------------------------------
+:purpose: Define the complete algorithms for logic operations in balanced ternary
+:description: Research document defining three-valued logic operations (AND, OR, NOT), comparison algorithms, and the mathematical foundations of Kleene logic (K3) as applied to balanced ternary systems
+
+// -----------------------------------------------------------------------------
+// GROUNDING
+// -----------------------------------------------------------------------------
+:biblical_foundation: Matthew 5:37 KJV/WEB - Let your yes be yes and your no be no
+
+// -----------------------------------------------------------------------------
+// STRICTNESS
+// -----------------------------------------------------------------------------
+:strictness: G
+
+// -----------------------------------------------------------------------------
+// ASCIIDOC SETTINGS
+// -----------------------------------------------------------------------------
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+===============================================================================
+END METADATA
+===============================================================================
+////
+
+////
+===============================================================================
+HEADER BLOCK
+===============================================================================
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Complete algorithms for three-valued logic in balanced ternary*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+image:https://img.shields.io/badge/Type-{type}-purple?style=flat[Type]
+
+_"But let your communication be, Yea, yea; Nay, nay."_ — Matthew 5:37 KJV
+
+_"But let your 'Yes' be 'Yes' and your 'No' be 'No.'"_ — Matthew 5:37 WEB
+
+'''
+
+*<<overview,Overview>>* • *<<truth-values,Truth Values>>* • *<<monadic-ops,Monadic Operations>>* • *<<dyadic-ops,Dyadic Operations>>* • *<<comparison,Comparison>>* • *<<derived-constants,Constants>>*
+
+--
+
+'''
+
+////
+===============================================================================
+CONTEXT BLOCK
+===============================================================================
+////
+
+[[overview]]
+== Overview
+
+This document defines the *logic algorithms* for balanced ternary systems. While link:ternary-arithmetic-algorithms.adoc[Ternary Arithmetic Algorithms] handles numerical computation, this document specifies *logical operations* — how truth values combine.
+
+[IMPORTANT]
+====
+*Three-valued logic is not a compromise between true and false.* The middle value represents genuine *uncertainty* or *unknown* — a fundamentally different epistemic state. This maps directly to balanced ternary's natural center at zero.
+====
+
+[NOTE]
+====
+*Scope:*
+
+* **IN:** Truth value definitions, monadic operations (NOT, etc.), dyadic operations (AND, OR, etc.), comparison algorithms, Kleene logic foundations
+* **OUT:** Arithmetic operations (Paper 2), base conversion (Paper 4), storage/packing (Paper 5)
+====
+
+'''
+
+[[historical-context]]
+=== Historical Context
+
+Three-valued logic has deep mathematical roots:
+
+[cols="1,2,4",options="header"]
+|===
+| Year | Contributor | Contribution
+
+| *1920*
+| Jan Łukasiewicz
+| First formal three-valued logic system (Ł3)
+
+| *1938*
+| Stephen Cole Kleene
+| Kleene logic (K3) with "unknown" semantics
+
+| *1952*
+| Nikolay Brusentsov
+| Setun computer using balanced ternary
+
+| *1960s*
+| Various
+| Database NULL handling follows three-valued patterns
+
+| *2000s*
+| Modern
+| Quantum computing partial states, fuzzy logic
+|===
+
+[TIP]
+====
+*Kleene logic (K3)* is the standard three-valued logic for computer science. It treats the middle value as "unknown but determinate" — something that IS either true or false, we just don't know which.
+====
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+===============================================================================
+CONTENT BLOCK
+===============================================================================
+////
+
+[[truth-values]]
+== Truth Values
+
+=== The Three States
+
+[cols="^1,^1,^1,3",options="header"]
+|===
+| Symbol | Trit | Name | Meaning
+
+| *T* or *⊤*
+| +1
+| True
+| Definitely true, affirmed, known positive
+
+| *U* or *?*
+| 0
+| Unknown
+| Uncertain, indeterminate, neither affirmed nor denied
+
+| *F* or *⊥*
+| -1
+| False
+| Definitely false, denied, known negative
+|===
+
+=== Mapping to Balanced Ternary
+
+The mapping is natural:
+
+[cols="2,2,4",options="header"]
+|===
+| Logic | Trit | Why
+
+| *True = +1*
+| Positive
+| Affirmation, presence, "yes"
+
+| *Unknown = 0*
+| Zero/Center
+| Neither positive nor negative, uncertainty
+
+| *False = -1*
+| Negative
+| Denial, absence, "no"
+|===
+
+[NOTE]
+====
+*Scripture connection:*
+
+* *KJV:* "Yea, yea" (+1, +1) and "Nay, nay" (-1, -1) — clear affirmation and denial
+* *WEB:* "'Yes' be 'Yes'" and "'No' be 'No'" — same truth, different encoding
+* *Both:* "Whatsoever is more than these" / "Whatever is more" — the problematic middle
+
+The scripture describes a ternary logic system: affirm clearly (+1), deny clearly (-1), ambiguity (0) "cometh of evil."
+====
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[monadic-ops]]
+== Monadic Operations
+
+Monadic operationsfootnote:[Monadic: Operations that take one input] transform a single truth value.
+
+=== NOT (Negation)
+
+The fundamental inversion operation.
+
+[cols="^2,^2,3",options="header"]
+|===
+| Input | Output | Meaning
+
+| T (+1)
+| F (-1)
+| True becomes false
+
+| U (0)
+| U (0)
+| Unknown remains unknown
+
+| F (-1)
+| T (+1)
+| False becomes true
+|===
+
+[source,pseudocode]
+----
+function NOT(x):
+    return -x    // Simple negation in balanced ternary
+----
+
+[IMPORTANT]
+====
+*NOT of Unknown is Unknown.* If we don't know whether something is true, we also don't know whether it's false. This is Kleene's key insight.
+====
+
+=== INCREMENT (Next Higher Truth)
+
+[cols="^2,^2,3",options="header"]
+|===
+| Input | Output | Meaning
+
+| T (+1)
+| T (+1)
+| True saturates at true
+
+| U (0)
+| T (+1)
+| Unknown becomes true
+
+| F (-1)
+| U (0)
+| False becomes unknown
+|===
+
+[source,pseudocode]
+----
+function INCREMENT(x):
+    if x == 1:
+        return 1       // Saturate at true
+    else:
+        return x + 1   // Move toward true
+----
+
+=== DECREMENT (Next Lower Truth)
+
+[cols="^2,^2,3",options="header"]
+|===
+| Input | Output | Meaning
+
+| T (+1)
+| U (0)
+| True becomes unknown
+
+| U (0)
+| F (-1)
+| Unknown becomes false
+
+| F (-1)
+| F (-1)
+| False saturates at false
+|===
+
+[source,pseudocode]
+----
+function DECREMENT(x):
+    if x == -1:
+        return -1      // Saturate at false
+    else:
+        return x - 1   // Move toward false
+----
+
+=== ABSOLUTE (Certainty Measure)
+
+Returns whether we have definite knowledge.
+
+[cols="^2,^2,3",options="header"]
+|===
+| Input | Output | Meaning
+
+| T (+1)
+| T (+1)
+| Certain (definitely true)
+
+| U (0)
+| F (-1)
+| Uncertain (don't know)
+
+| F (-1)
+| T (+1)
+| Certain (definitely false)
+|===
+
+[source,pseudocode]
+----
+function ABSOLUTE(x):
+    if x == 0:
+        return -1      // Uncertainty is definite lack of knowledge
+    else:
+        return 1       // Both true and false are certain states
+----
+
+=== SIGN (Polarity Without Uncertainty)
+
+[cols="^2,^2,3",options="header"]
+|===
+| Input | Output | Meaning
+
+| T (+1)
+| T (+1)
+| Positive polarity
+
+| U (0)
+| U (0)
+| No polarity (uncertain)
+
+| F (-1)
+| F (-1)
+| Negative polarity
+|===
+
+This is the identity function for logic values but useful for clarity.
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[dyadic-ops]]
+== Dyadic Operations
+
+Dyadic operationsfootnote:[Dyadic: Operations that take two inputs] combine two truth values.
+
+=== AND (Conjunction)
+
+[cols="^2,^1,^1,^1",options="header"]
+|===
+| AND | F | U | T
+
+| *F*
+| F
+| F
+| F
+
+| *U*
+| F
+| U
+| U
+
+| *T*
+| F
+| U
+| T
+|===
+
+[source,pseudocode]
+----
+function AND(a, b):
+    return MIN(a, b)    // Conjunction is minimum in Kleene logic
+----
+
+[TIP]
+====
+*Understanding AND with Unknown:*
+
+* `T AND U = U` — True AND something-unknown is still unknown
+* `F AND U = F` — False AND anything is false (short-circuit)
+* `U AND U = U` — Two unknowns remain unknown
+====
+
+=== OR (Disjunction)
+
+[cols="^2,^1,^1,^1",options="header"]
+|===
+| OR | F | U | T
+
+| *F*
+| F
+| U
+| T
+
+| *U*
+| U
+| U
+| T
+
+| *T*
+| T
+| T
+| T
+|===
+
+[source,pseudocode]
+----
+function OR(a, b):
+    return MAX(a, b)    // Disjunction is maximum in Kleene logic
+----
+
+[TIP]
+====
+*Understanding OR with Unknown:*
+
+* `F OR U = U` — False OR something-unknown is still unknown
+* `T OR U = T` — True OR anything is true (short-circuit)
+* `U OR U = U` — Two unknowns remain unknown
+====
+
+=== NAND (NOT AND)
+
+[cols="^2,^1,^1,^1",options="header"]
+|===
+| NAND | F | U | T
+
+| *F*
+| T
+| T
+| T
+
+| *U*
+| T
+| U
+| U
+
+| *T*
+| T
+| U
+| F
+|===
+
+[source,pseudocode]
+----
+function NAND(a, b):
+    return NOT(AND(a, b))    // Or equivalently: -MIN(a, b)
+----
+
+=== NOR (NOT OR)
+
+[cols="^2,^1,^1,^1",options="header"]
+|===
+| NOR | F | U | T
+
+| *F*
+| T
+| U
+| F
+
+| *U*
+| U
+| U
+| F
+
+| *T*
+| F
+| F
+| F
+|===
+
+[source,pseudocode]
+----
+function NOR(a, b):
+    return NOT(OR(a, b))    // Or equivalently: -MAX(a, b)
+----
+
+=== XOR (Exclusive Or)
+
+[cols="^2,^1,^1,^1",options="header"]
+|===
+| XOR | F | U | T
+
+| *F*
+| F
+| U
+| T
+
+| *U*
+| U
+| U
+| U
+
+| *T*
+| T
+| U
+| F
+|===
+
+[source,pseudocode]
+----
+function XOR(a, b):
+    // XOR: exactly one is true
+    // In three-valued: if either is unknown, result is unknown
+    if a == 0 OR b == 0:
+        return 0
+    else if a == b:
+        return -1      // Same definite values: not exclusive
+    else:
+        return 1       // Different definite values: exclusive
+----
+
+=== CONSENSUS (Agreement)
+
+Returns True if both agree, False if they disagree, Unknown otherwise.
+
+[cols="^2,^1,^1,^1",options="header"]
+|===
+| CONSENSUS | F | U | T
+
+| *F*
+| T
+| U
+| F
+
+| *U*
+| U
+| U
+| U
+
+| *T*
+| F
+| U
+| T
+|===
+
+[source,pseudocode]
+----
+function CONSENSUS(a, b):
+    if a == 0 OR b == 0:
+        return 0       // Can't determine agreement with unknown
+    else if a == b:
+        return 1       // Both agree (same definite value)
+    else:
+        return -1      // Disagree (opposite definite values)
+----
+
+=== EQUALITY
+
+Tests whether two values are the same.
+
+[cols="^2,^1,^1,^1",options="header"]
+|===
+| EQ | F | U | T
+
+| *F*
+| T
+| F
+| F
+
+| *U*
+| F
+| T
+| F
+
+| *T*
+| F
+| F
+| T
+|===
+
+[source,pseudocode]
+----
+function EQUALITY(a, b):
+    if a == b:
+        return 1       // Same value (including both unknown)
+    else:
+        return -1      // Different values
+----
+
+[NOTE]
+====
+*Difference from CONSENSUS:* EQUALITY tests structural equality (are these the same trit?). CONSENSUS tests logical agreement (do these represent the same truth state, accounting for uncertainty?).
+====
+
+=== IMPLICATION (Material Conditional)
+
+[cols="^2,^1,^1,^1",options="header"]
+|===
+| → | F | U | T
+
+| *F*
+| T
+| T
+| T
+
+| *U*
+| U
+| U
+| T
+
+| *T*
+| F
+| U
+| T
+|===
+
+[source,pseudocode]
+----
+function IMPLIES(a, b):
+    return OR(NOT(a), b)    // Standard definition: ¬a ∨ b
+----
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[demorgan]]
+== DeMorgan's Laws
+
+DeMorgan's laws hold in Kleene logic:
+
+[cols="3,3",options="header"]
+|===
+| Law | Formula
+
+| *NOT(A AND B) = NOT(A) OR NOT(B)*
+| ¬(a ∧ b) ≡ ¬a ∨ ¬b
+
+| *NOT(A OR B) = NOT(A) AND NOT(B)*
+| ¬(a ∨ b) ≡ ¬a ∧ ¬b
+|===
+
+=== Proof by Truth Table
+
+[%collapsible%open]
+.DeMorgan's First Law Verification
+====
+[cols="^1,^1,^1,^1,^1,^1,^1",options="header"]
+|===
+| a | b | a∧b | ¬(a∧b) | ¬a | ¬b | ¬a∨¬b
+
+| F | F | F | T | T | T | T
+| F | U | F | T | T | U | T
+| F | T | F | T | T | F | T
+| U | F | F | T | U | T | T
+| U | U | U | U | U | U | U
+| U | T | U | U | U | F | U
+| T | F | F | T | F | T | T
+| T | U | U | U | F | U | U
+| T | T | T | F | F | F | F
+|===
+
+*Columns 4 and 7 are identical.* ✓
+====
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[comparison]]
+== Comparison Operations
+
+=== Three-Way Compare
+
+The balanced ternary comparison naturally returns a trit:
+
+[cols="3,^1,4",options="header"]
+|===
+| Comparison | Result | Meaning
+
+| *a < b*
+| -1 (F)
+| First is less than second
+
+| *a = b*
+| 0 (U)
+| First equals second
+
+| *a > b*
+| +1 (T)
+| First is greater than second
+|===
+
+[source,pseudocode]
+----
+function COMPARE(a, b):
+    if a < b:
+        return -1
+    else if a == b:
+        return 0
+    else:
+        return 1
+----
+
+[IMPORTANT]
+====
+*The comparison result IS a valid trit.* Unlike binary systems that need separate flags or multiple bits, balanced ternary comparison produces a single trit that can be used directly in further computation.
+====
+
+=== Multi-Trit Comparison
+
+Compare two balanced ternary numbers from most to least significant:
+
+[source,pseudocode]
+----
+function COMPARE_NUMBERS(a[], b[], n):
+    for i = n-1 down to 0:    // Most significant first
+        cmp = COMPARE(a[i], b[i])
+        if cmp != 0:
+            return cmp        // Found difference
+    return 0                  // All trits equal
+----
+
+=== Sign Determination
+
+The sign of a balanced ternary number is determined by its most significant non-zero trit:
+
+[source,pseudocode]
+----
+function SIGN(x[], n):
+    for i = n-1 down to 0:
+        if x[i] != 0:
+            return x[i]       // First non-zero trit determines sign
+    return 0                  // Number is zero
+----
+
+=== Equality Testing
+
+[source,pseudocode]
+----
+function EQUALS(a[], b[], n):
+    for i = 0 to n-1:
+        if a[i] != b[i]:
+            return -1         // False: difference found
+    return 1                  // True: all trits match
+----
+
+=== Relational Operators
+
+Build all relational operators from three-way compare:
+
+[source,pseudocode]
+----
+function LESS_THAN(a[], b[], n):
+    return COMPARE_NUMBERS(a, b, n) == -1
+
+function LESS_OR_EQUAL(a[], b[], n):
+    return COMPARE_NUMBERS(a, b, n) != 1
+
+function GREATER_THAN(a[], b[], n):
+    return COMPARE_NUMBERS(a, b, n) == 1
+
+function GREATER_OR_EQUAL(a[], b[], n):
+    return COMPARE_NUMBERS(a, b, n) != -1
+----
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[derived-constants]]
+== Derived Constants
+
+These constants extend `word/constants/ternary-math.toml` with logic algorithm data.
+
+=== Truth Tables (for implementation)
+
+[source,toml]
+----
+[logic.and]
+# AND: MIN(a, b)
+# Indexed as [a+1][b+1] to convert -1,0,1 to 0,1,2
+table = [
+    [-1, -1, -1],   # a=-1 (F): F AND anything = F
+    [-1,  0,  0],   # a=0 (U): U AND F = F, U AND U = U, U AND T = U
+    [-1,  0,  1]    # a=1 (T): T AND F = F, T AND U = U, T AND T = T
+]
+
+[logic.or]
+# OR: MAX(a, b)
+table = [
+    [-1,  0,  1],   # a=-1 (F): F OR F = F, F OR U = U, F OR T = T
+    [ 0,  0,  1],   # a=0 (U): U OR F = U, U OR U = U, U OR T = T
+    [ 1,  1,  1]    # a=1 (T): T OR anything = T
+]
+
+[logic.not]
+# NOT: -x
+table = [1, 0, -1]  # NOT(F) = T, NOT(U) = U, NOT(T) = F
+----
+
+=== Comparison Constants
+
+[source,toml]
+----
+[comparison]
+less_than = -1
+equal = 0
+greater_than = 1
+
+[comparison.names]
+negative = "less_than"
+zero = "equal"
+positive = "greater_than"
+----
+
+=== Operational Constants
+
+[cols="3,4,4",options="header"]
+|===
+| Constant | Value | Purpose
+
+| *truth_values*
+| 3 (F, U, T)
+| Number of distinct truth states
+
+| *monadic_ops*
+| 3¹ = 3 possible inputs
+| Space for single-input operations
+
+| *dyadic_ops*
+| 3² = 9 entries per table
+| Space for two-input operations
+
+| *kleene_identity*
+| NOT(NOT(x)) = x
+| Double negation returns original
+
+| *and_identity*
+| T (True)
+| x AND T = x
+
+| *or_identity*
+| F (False)
+| x OR F = x
+
+| *and_annihilator*
+| F (False)
+| x AND F = F
+
+| *or_annihilator*
+| T (True)
+| x OR T = T
+|===
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[algorithm-complexity]]
+== Algorithm Complexity
+
+[cols="2,3,3,3",options="header"]
+|===
+| Operation | Time | Space | Notes
+
+| *NOT (single trit)*
+| O(1)
+| O(1)
+| Simple negation
+
+| *NOT (n trits)*
+| O(n)
+| O(n)
+| Negate each trit
+
+| *AND/OR (single trit)*
+| O(1)
+| O(1)
+| Table lookup
+
+| *AND/OR (n trits)*
+| O(n)
+| O(n)
+| Trit-wise operation
+
+| *Compare (n trits)*
+| O(n)
+| O(1)
+| Early exit possible
+
+| *Sign*
+| O(n)
+| O(1)
+| Worst case scans all trits
+|===
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+===============================================================================
+FOOTER BLOCK
+===============================================================================
+////
+
+[[biblical-foundation-footer]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Why Matthew 5:37?* Christ's teaching on truthful speech maps directly to three-valued logic. Two translations encode the same truth:
+
+*KJV:* "But let your communication be, Yea, yea; Nay, nay: for whatsoever is more than these cometh of evil."
+
+*WEB:* "But let your 'Yes' be 'Yes' and your 'No' be 'No.' Whatever is more than these is of the evil one."
+====
+
+*Applied:*
+
+[cols="2,4",options="header"]
+|===
+| Logic Value | Scripture Mapping
+
+| *True (+1)*
+| "Yea, yea" / "'Yes' be 'Yes'" — Clear affirmation
+
+| *False (-1)*
+| "Nay, nay" / "'No' be 'No'" — Clear denial
+
+| *Unknown (0)*
+| "Whatsoever is more than these" / "Whatever is more" — The problematic middle ground that "cometh of evil" / "is of the evil one"
+|===
+
+The scripture describes an encoding/decoding system. KJV and WEB encode the same truth differently, yet both convey:
+
+1. **Clear affirmation is good** (+1)
+2. **Clear denial is good** (-1)
+3. **Ambiguity is problematic** (0 as a moral state to avoid)
+
+*Supporting Scripture:*
+
+* *James 5:12 KJV* — "Let your yea be yea; and your nay, nay; lest ye fall into condemnation."
+* *James 5:12 WEB* — "Let your 'yes' be 'yes,' and your 'no,' 'no;' so that you don't fall into hypocrisy."
+
+Note the encoding difference: "condemnation" (KJV) vs "hypocrisy" (WEB), with the Textus Receptus note "under judgment." Three encodings of the same consequence for living in the ambiguous middle.
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📄
+| *link:ternary-mathematical-foundations.adoc[Ternary Mathematical Foundations]*
+| Why ternary is optimal (Paper 1)
+
+| 📄
+| *link:ternary-arithmetic-algorithms.adoc[Ternary Arithmetic Algorithms]*
+| Arithmetic operations (Paper 2)
+
+| 📐
+| *link:../constants/ternary-math.toml[Ternary Math Constants]*
+| Base constants these algorithms use
+
+| 📖
+| *bereshit/word/scripture/KJV/*
+| King James Version (formal encoding)
+
+| 📖
+| *bereshit/word/scripture/WEB/*
+| World English Bible (modern encoding)
+|===
+
+=== External Resources
+
+[cols="2,5",options="header"]
+|===
+| Resource | Purpose
+
+| *https://en.wikipedia.org/wiki/Three-valued_logic[Wikipedia: Three-Valued Logic]*
+| Overview of three-valued logic systems
+
+| *https://en.wikipedia.org/wiki/Kleene%27s_K3_logic[Wikipedia: Kleene's K3 Logic]*
+| Formal definition of Kleene logic
+
+| *https://homepage.divms.uiowa.edu/~jones/ternary/logic.shtml[Douglas W. Jones: Ternary Logic]*
+| Comprehensive logic operations for balanced ternary
+
+| *https://plato.stanford.edu/entries/logic-manyvalued/[SEP: Many-Valued Logic]*
+| Stanford Encyclopedia of Philosophy treatment
+
+| *Kleene, S.C. (1952). Introduction to Metamathematics*
+| Original source for K3 logic
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:ternary-mathematical-foundations.adoc[Ternary Mathematical Foundations] — Why ternary is optimal (Paper 1)
+* link:ternary-arithmetic-algorithms.adoc[Ternary Arithmetic Algorithms] — Addition, subtraction, multiplication, division (Paper 2)
+* link:ternary-conversion-algorithms.adoc[Ternary Conversion Algorithms] — Base conversion procedures (Paper 4)
+* link:ternary-storage-algorithms.adoc[Ternary Storage Algorithms] — Packing and unpacking (Paper 5)
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"But let your 'Yes' be 'Yes' and your 'No' be 'No.'"_ — *Matthew 5:37 WEB*
+
+_"Let your yea be yea; and your nay, nay."_ — *James 5:12 KJV*
+
+*Clear affirmation. Clear denial. The middle ground "cometh of evil."*
+--
+
+////
+===============================================================================
+END FOOTER
+===============================================================================
+////

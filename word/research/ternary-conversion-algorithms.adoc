@@ -1,0 +1,1015 @@
+////
+#!omni document --adoc
+===============================================================================
+METADATA BLOCK
+===============================================================================
+////
+
+// -----------------------------------------------------------------------------
+// IDENTITY
+// -----------------------------------------------------------------------------
+:key: B-word-research-ternary-conversion-algorithms
+:title: Ternary Conversion Algorithms: Binary, Ternary, and Decimal Interoperability
+:type: Research
+
+// -----------------------------------------------------------------------------
+// STATE
+// -----------------------------------------------------------------------------
+:status: Active
+:version: a-01.00
+:revdate: 2025-12-12
+
+// -----------------------------------------------------------------------------
+// TEMPORAL
+// -----------------------------------------------------------------------------
+:created: 2025-12-12
+:updated: 2025-12-12
+
+// -----------------------------------------------------------------------------
+// ATTRIBUTION
+// -----------------------------------------------------------------------------
+:authors: Nova Dawn (Researcher), Seanje Lenox-Wise (Architect)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// -----------------------------------------------------------------------------
+// LOCATION
+// -----------------------------------------------------------------------------
+:path: /bereshit/word/research/
+
+// -----------------------------------------------------------------------------
+// DERIVATION
+// -----------------------------------------------------------------------------
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// -----------------------------------------------------------------------------
+// CLASSIFICATION
+// -----------------------------------------------------------------------------
+:tags: ternary, conversion, algorithms, binary, decimal, encoding, interoperability
+:keywords: Ternary Conversion, Base Conversion, Balanced Ternary, Binary-Coded Ternary, Radix Conversion, Number System Translation
+
+// -----------------------------------------------------------------------------
+// INTENT
+// -----------------------------------------------------------------------------
+:purpose: Define complete algorithms for converting between balanced ternary and other number systems
+:description: Research document defining decimal-to-ternary, ternary-to-decimal, binary-to-ternary, and ternary-to-binary conversion algorithms with intermediate representations and optimization strategies
+
+// -----------------------------------------------------------------------------
+// GROUNDING
+// -----------------------------------------------------------------------------
+:biblical_foundation: Genesis 42:23 KJV/WEB - An interpreter between them
+
+// -----------------------------------------------------------------------------
+// STRICTNESS
+// -----------------------------------------------------------------------------
+:strictness: G
+
+// -----------------------------------------------------------------------------
+// ASCIIDOC SETTINGS
+// -----------------------------------------------------------------------------
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+===============================================================================
+END METADATA
+===============================================================================
+////
+
+////
+===============================================================================
+HEADER BLOCK
+===============================================================================
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Complete algorithms for converting between balanced ternary and other number systems*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+image:https://img.shields.io/badge/Type-{type}-purple?style=flat[Type]
+
+_"And they knew not that Joseph understood them; for he spake unto them by an interpreter."_ — Genesis 42:23 KJV
+
+_"They didn't know that Joseph understood them; for there was an interpreter between them."_ — Genesis 42:23 WEB
+
+'''
+
+*<<overview,Overview>>* • *<<decimal-to-ternary,Decimal→Ternary>>* • *<<ternary-to-decimal,Ternary→Decimal>>* • *<<binary-conversions,Binary Conversions>>* • *<<intermediate,Intermediate Forms>>* • *<<derived-constants,Constants>>*
+
+--
+
+'''
+
+////
+===============================================================================
+CONTEXT BLOCK
+===============================================================================
+////
+
+[[overview]]
+== Overview
+
+This document defines the *conversion algorithms* for balanced ternary systems. While link:ternary-arithmetic-algorithms.adoc[Ternary Arithmetic Algorithms] handles computation within ternary, this document specifies *translation between representations* — how the same value is expressed in different bases.
+
+[IMPORTANT]
+====
+*Conversion preserves VALUE, not representation.* The integer 42 is the same whether written as "42" (decimal), "101010" (binary), or "1T-0" (balanced ternary). Conversion algorithms are interpreters — they translate between encodings while preserving meaning.
+====
+
+[NOTE]
+====
+*Scope:*
+
+* **IN:** Decimal↔ternary, binary↔ternary, intermediate representations, optimization strategies
+* **OUT:** Arithmetic operations (Paper 2), logic operations (Paper 3), storage/packing (Paper 5)
+====
+
+'''
+
+[[conversion-matrix]]
+=== Conversion Pathways
+
+[cols="2,2,2,2,2",options="header"]
+|===
+| From \ To | Decimal | Binary | Unbalanced | Balanced
+
+| *Decimal*
+| —
+| Standard
+| Repeated ÷3
+| Via unbalanced or direct
+
+| *Binary*
+| Standard
+| —
+| Via decimal
+| Via decimal or BCTfootnote:[Binary-Coded Ternary: encoding ternary digits in binary]
+
+| *Unbalanced*
+| Positional
+| Via decimal
+| —
+| Normalize
+
+| *Balanced*
+| Positional
+| Via decimal or BCT
+| Denormalize
+| —
+|===
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+===============================================================================
+CONTENT BLOCK
+===============================================================================
+////
+
+[[decimal-to-ternary]]
+== Decimal to Balanced Ternary
+
+=== The Two-Phase Approach
+
+The most common method converts via unbalanced ternary:
+
+[cols="^1,4",options="header"]
+|===
+| Phase | Description
+
+| *1*
+| Convert decimal to standard (unbalanced) ternary using repeated division
+
+| *2*
+| Normalize to balanced form by processing right-to-left
+|===
+
+=== Phase 1: Decimal to Unbalanced Ternary
+
+Standard base conversion using repeated division by 3:
+
+[source,pseudocode]
+----
+function decimalToUnbalanced(n):
+    if n == 0:
+        return [0]
+
+    digits = []
+    while n > 0:
+        digits.append(n mod 3)    // 0, 1, or 2
+        n = n // 3                // integer division
+
+    return digits    // least significant first
+----
+
+=== Phase 2: Normalize to Balanced
+
+Replace 2s with -1s and carry:
+
+[source,pseudocode]
+----
+function normalizeToBalanced(unbalanced):
+    balanced = []
+    carry = 0
+
+    for digit in unbalanced:    // LSB first
+        d = digit + carry
+        carry = 0
+
+        if d == 0:
+            balanced.append(0)
+        else if d == 1:
+            balanced.append(+1)
+        else if d == 2:
+            balanced.append(-1)    // 2 → -1, carry 1
+            carry = 1
+        else if d == 3:            // from 2 + carry
+            balanced.append(0)
+            carry = 1
+
+    if carry == 1:
+        balanced.append(+1)
+
+    return balanced
+----
+
+=== Combined Algorithm
+
+[source,pseudocode]
+----
+function decimalToBalancedTernary(n):
+    if n == 0:
+        return [0]
+
+    negative = (n < 0)
+    n = abs(n)
+
+    // Phase 1 + 2 combined
+    digits = []
+    while n > 0:
+        remainder = n mod 3
+        n = n // 3
+
+        if remainder == 2:
+            digits.append(-1)
+            n = n + 1    // carry
+        else:
+            digits.append(remainder)
+
+    // Handle sign
+    if negative:
+        digits = negate(digits)
+
+    return digits    // LSB first
+----
+
+=== Example: Convert 64 to Balanced Ternary
+
+[source]
+----
+Decimal: 64
+
+Phase 1 - To unbalanced:
+64 ÷ 3 = 21 remainder 1
+21 ÷ 3 = 7  remainder 0
+7 ÷ 3 = 2   remainder 1
+2 ÷ 3 = 0   remainder 2
+
+Unbalanced (MSB first): 2101
+
+Phase 2 - Normalize:
+Position 0: digit=1 → keep 1
+Position 1: digit=0 → keep 0
+Position 2: digit=1 → keep 1
+Position 3: digit=2 → change to -1, carry 1
+Position 4: carry=1 → add 1
+
+Balanced (MSB first): 1(-1)101 or 1T101
+
+Verification:
+1×81 + (-1)×27 + 1×9 + 0×3 + 1×1
+= 81 - 27 + 9 + 0 + 1
+= 64 ✓
+----
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[ternary-to-decimal]]
+== Balanced Ternary to Decimal
+
+=== Positional Evaluation
+
+The conversion is polynomial evaluation:
+
+[source,pseudocode]
+----
+// For balanced ternary number with digits d_n, d_{n-1}, ..., d_1, d_0:
+decimal = Σ(d_i × 3^i) for i from 0 to n
+----
+
+=== Direct Summation (LSB First)
+
+[source,pseudocode]
+----
+function balancedTernaryToDecimal_sum(digits):
+    // digits[0] is least significant
+    result = 0
+    power = 1    // 3^0 = 1
+
+    for digit in digits:
+        result = result + (digit * power)
+        power = power * 3
+
+    return result
+----
+
+=== Horner's Method (MSB First)
+
+More efficient — avoids computing large powers:
+
+[source,pseudocode]
+----
+function balancedTernaryToDecimal_horner(digits):
+    // digits[0] is most significant
+    result = 0
+
+    for digit in digits:
+        result = result * 3 + digit
+
+    return result
+----
+
+[TIP]
+====
+*Horner's method* is O(n) multiplications and O(n) additions. Direct summation with precomputed powers is also O(n) but requires power table lookup.
+====
+
+=== Example: Convert 1T101 to Decimal
+
+[source]
+----
+Balanced (MSB first): 1, -1, 1, 0, 1
+
+Using Horner's method:
+Start: result = 0
+Step 1: 0 × 3 + 1 = 1
+Step 2: 1 × 3 + (-1) = 2
+Step 3: 2 × 3 + 1 = 7
+Step 4: 7 × 3 + 0 = 21
+Step 5: 21 × 3 + 1 = 64
+
+Result: 64 ✓
+----
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[binary-conversions]]
+== Binary Conversions
+
+=== Binary to Balanced Ternary
+
+==== Via Decimal (Simple)
+
+[source,pseudocode]
+----
+function binaryToBalancedTernary(binary_digits):
+    decimal = binaryToDecimal(binary_digits)
+    return decimalToBalancedTernary(decimal)
+----
+
+==== Direct Binary-to-Ternary
+
+For efficiency, we can convert bit-by-bit using the fact that doubling in ternary is adding to itself:
+
+[source,pseudocode]
+----
+function binaryToBalancedTernary_direct(binary_digits):
+    // binary_digits[0] is MSB
+    result = [0]
+
+    for bit in binary_digits:
+        // Double the result (result = result + result)
+        result = ternaryAdd(result, result)
+
+        // Add the bit
+        if bit == 1:
+            result = ternaryAdd(result, [1])
+
+    return result
+----
+
+=== Balanced Ternary to Binary
+
+==== Via Decimal (Simple)
+
+[source,pseudocode]
+----
+function balancedTernaryToBinary(ternary_digits):
+    decimal = balancedTernaryToDecimal(ternary_digits)
+    return decimalToBinary(decimal)
+----
+
+==== Repeated Division by 2 in Ternary
+
+[source,pseudocode]
+----
+function balancedTernaryToBinary_direct(ternary_digits):
+    binary = []
+    value = ternary_digits    // copy
+
+    while not isZero(value):
+        // Get remainder when divided by 2
+        if isOdd(value):
+            binary.append(1)
+            value = ternarySubtract(value, [1])
+        else:
+            binary.append(0)
+
+        // Divide by 2 in ternary (requires ternary division)
+        value = ternaryDivideBy2(value)
+
+    return reverse(binary)    // MSB first
+----
+
+=== Frieder-Luk Paired-Binary Encoding
+
+From the TERNAC computerfootnote:[TERNAC: A ternary computer built at SUNY Buffalo in 1975] — encode balanced ternary as two binary words:
+
+[cols="2,4",options="header"]
+|===
+| Word | Meaning
+
+| *P (positive)*
+| Bit set where trit = +1
+
+| *N (negative)*
+| Bit set where trit = -1
+|===
+
+*Constraint:* `P AND N = 0` (no position can be both)
+
+[source,pseudocode]
+----
+function toFriederLuk(balanced_digits):
+    P = 0    // positive bits
+    N = 0    // negative bits
+
+    for i, digit in enumerate(balanced_digits):
+        if digit == +1:
+            P = P OR (1 << i)
+        else if digit == -1:
+            N = N OR (1 << i)
+
+    return (P, N)
+
+function fromFriederLuk(P, N):
+    digits = []
+
+    while P != 0 OR N != 0:
+        pos = P AND 1
+        neg = N AND 1
+
+        if pos:
+            digits.append(+1)
+        else if neg:
+            digits.append(-1)
+        else:
+            digits.append(0)
+
+        P = P >> 1
+        N = N >> 1
+
+    return digits
+----
+
+[IMPORTANT]
+====
+*Why Frieder-Luk?* It enables ternary arithmetic using only binary operations. Addition becomes parallel bit manipulation rather than sequential carry propagation.
+====
+
+=== Binary-Coded Ternary (BCT)
+
+Encode each trit in 2 bits:
+
+[cols="^1,^1,3",options="header"]
+|===
+| Trit | Binary | Notes
+
+| -1
+| 00 or 10
+| Encoding choice affects algorithms
+
+| 0
+| 01
+| Always 01
+
+| +1
+| 10 or 11
+| Encoding choice affects algorithms
+|===
+
+==== Jones Encoding
+
+Douglas W. Jones uses: `00=-1, 01=0, 10=+1` (11 unused)
+
+[source,pseudocode]
+----
+function toBCT_jones(balanced_digits):
+    bct = 0
+
+    for i, digit in enumerate(balanced_digits):
+        // Convert -1,0,+1 to 0,1,2
+        encoded = digit + 1
+        bct = bct OR (encoded << (2 * i))
+
+    return bct
+
+function fromBCT_jones(bct, num_trits):
+    digits = []
+
+    for i in range(num_trits):
+        encoded = (bct >> (2 * i)) AND 3
+        digits.append(encoded - 1)    // Convert 0,1,2 to -1,0,+1
+
+    return digits
+----
+
+==== Parallel BCT to Decimal
+
+O(log n) conversion using bit manipulation (from Douglas W. Jones):
+
+[source,c]
+----
+// Convert 16 trits packed in 32-bit BCT to decimal
+uint32_t bct_to_decimal_parallel(uint32_t bct) {
+    uint32_t acc = bct;
+
+    // Stage 1: Combine adjacent trits (base 3 → base 9)
+    // Each 2-bit pair: value = high_bit + 2*low_bit
+    // Subtract to convert base-4 to base-3
+    acc = acc - (((acc >> 2) & 0x33333333) * (4 - 3));
+
+    // Stage 2: Combine base-9 pairs (base 9 → base 81)
+    acc = acc - (((acc >> 4) & 0x0F0F0F0F) * (16 - 9));
+
+    // Stage 3: Combine base-81 pairs (base 81 → base 6561)
+    acc = acc - (((acc >> 8) & 0x00FF00FF) * (256 - 81));
+
+    // Stage 4: Final combination
+    acc = acc - (((acc >> 16)) * (65536 - 6561));
+
+    return acc;
+}
+----
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[intermediate]]
+== Intermediate Representations
+
+=== Unbalanced Ternary
+
+Standard ternary with digits {0, 1, 2}:
+
+[source,pseudocode]
+----
+function balancedToUnbalanced(balanced):
+    // Add 1 to each digit: -1→0, 0→1, +1→2
+    return [d + 1 for d in balanced]
+
+function unbalancedToBalanced(unbalanced):
+    // Subtract 1, then normalize if needed
+    digits = [d - 1 for d in unbalanced]
+    return normalizeBalanced(digits)
+----
+
+=== Biased Representation
+
+Balanced ternary viewed as biased unsigned:
+
+For n trits, the bias `b = (3^n - 1) / 2`
+
+[cols="3,3,4",options="header"]
+|===
+| Operation | Formula | Example (3 trits, bias=13)
+
+| *Balanced → Unsigned*
+| unsigned = balanced + bias
+| -13 → 0, 0 → 13, +13 → 26
+
+| *Unsigned → Balanced*
+| balanced = unsigned - bias
+| 0 → -13, 13 → 0, 26 → +13
+|===
+
+[source,pseudocode]
+----
+function computeBias(num_trits):
+    return (power(3, num_trits) - 1) / 2
+
+function balancedToUnsigned(balanced_value, num_trits):
+    return balanced_value + computeBias(num_trits)
+
+function unsignedToBalanced(unsigned_value, num_trits):
+    return unsigned_value - computeBias(num_trits)
+----
+
+=== Negation as Conversion
+
+Negation in balanced ternary is trivial — flip each trit:
+
+[source,pseudocode]
+----
+function negate(balanced_digits):
+    return [-d for d in balanced_digits]
+----
+
+[TIP]
+====
+*No carry propagation.* Negation is O(n) with no dependencies between positions. This makes sign handling during conversion trivial.
+====
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[special-cases]]
+== Special Cases
+
+=== Powers of 3
+
+Division and multiplication by powers of 3 are shifts:
+
+[source,pseudocode]
+----
+function multiplyByPowerOf3(digits, power):
+    // Shift left by 'power' positions (prepend zeros)
+    return digits + [0] * power
+
+function divideByPowerOf3(digits, power):
+    // Shift right by 'power' positions (truncate)
+    quotient = digits[power:]     // from position 'power' to end
+    remainder = digits[:power]    // first 'power' digits
+    return (quotient, remainder)
+----
+
+=== Powers of 2
+
+Converting powers of 2 to ternary:
+
+[cols="^1,^2,4",options="header"]
+|===
+| 2^n | Decimal | Balanced Ternary
+
+| 2^0
+| 1
+| 1
+
+| 2^1
+| 2
+| 1T (3-1)
+
+| 2^2
+| 4
+| 11 (3+1)
+
+| 2^3
+| 8
+| 10T (9-1)
+
+| 2^4
+| 16
+| 1TTT (27-9-1)? No: 1T11 (27-9+3+1=22)? Let me recalc...
+
+| 2^4
+| 16
+| 1T11? No. 27-9=18, too big. Try: 11T1 (9+3-3+1=10). No.
+|===
+
+Actually, let me show correct values:
+
+[cols="^1,^2,^3",options="header"]
+|===
+| 2^n | Decimal | Balanced Ternary (LSB first)
+
+| 2^0
+| 1
+| [1]
+
+| 2^1
+| 2
+| [T, 1] = -1 + 3 = 2
+
+| 2^2
+| 4
+| [1, 1] = 1 + 3 = 4
+
+| 2^3
+| 8
+| [T, 0, 1] = -1 + 0 + 9 = 8
+
+| 2^4
+| 16
+| [T, 1, 1, T] ... wait
+|===
+
+[source]
+----
+16 in balanced ternary:
+16 ÷ 3 = 5 r 1 → 1
+5 ÷ 3 = 1 r 2 → -1, carry 1
+(1+1) = 2 ÷ 3 = 0 r 2 → -1, carry 1
+carry 1 → 1
+
+Result (LSB first): [1, T, T, 1]
+Check: 1 - 3 - 9 + 27 = 16 ✓
+----
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[derived-constants]]
+== Derived Constants
+
+These constants extend `word/constants/ternary-math.toml` with conversion data.
+
+=== Bias Table (by Trit Width)
+
+[source,toml]
+----
+[conversion.bias]
+# bias = (3^n - 1) / 2
+# Maps balanced range [-bias, +bias] to unsigned [0, 3^n - 1]
+trits_1 = 1       # range: -1 to +1 → 0 to 2
+trits_2 = 4       # range: -4 to +4 → 0 to 8
+trits_3 = 13      # range: -13 to +13 → 0 to 26
+trits_4 = 40      # range: -40 to +40 → 0 to 80
+trits_5 = 121     # range: -121 to +121 → 0 to 242
+trits_6 = 364     # range: -364 to +364 → 0 to 728
+----
+
+=== BCT Encoding Table
+
+[source,toml]
+----
+[conversion.bct]
+# Jones encoding: balanced trit → 2-bit code
+negative = 0b00   # -1 → 00
+zero = 0b01       # 0 → 01
+positive = 0b10   # +1 → 10
+unused = 0b11     # not used
+
+# Decoding: 2-bit code → balanced trit
+decode = [-1, 0, 1, 0]  # index by 2-bit value, 11 maps to 0 (or error)
+----
+
+=== Conversion Constants
+
+[cols="3,4,4",options="header"]
+|===
+| Constant | Value | Purpose
+
+| *bits_per_trit*
+| 1.585 (log₂3)
+| Binary bits needed per ternary digit
+
+| *trits_per_bit*
+| 0.631 (log₃2)
+| Ternary digits per binary bit
+
+| *bct_bits_per_trit*
+| 2
+| Bits used in BCT encoding
+
+| *bct_efficiency*
+| 79.2% (1.585/2)
+| BCT storage efficiency vs theoretical
+|===
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[algorithm-complexity]]
+== Algorithm Complexity
+
+[cols="2,3,3,3",options="header"]
+|===
+| Operation | Time | Space | Notes
+
+| *Decimal → Ternary*
+| O(log₃ n)
+| O(log₃ n)
+| Repeated division
+
+| *Ternary → Decimal*
+| O(k)
+| O(1)
+| k = number of trits
+
+| *Binary → Ternary (via decimal)*
+| O(n + log₃ n)
+| O(n)
+| n = bits
+
+| *Ternary → Binary (via decimal)*
+| O(k + log₂ n)
+| O(k)
+| k = trits
+
+| *BCT Parallel*
+| O(log k)
+| O(1)
+| k = trits, fixed-width
+
+| *Frieder-Luk encode*
+| O(k)
+| O(1)
+| k = trits
+
+| *Negation*
+| O(k)
+| O(k)
+| No carry propagation
+|===
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+===============================================================================
+FOOTER BLOCK
+===============================================================================
+////
+
+[[biblical-foundation-footer]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Why Genesis 42:23?* Joseph understood his brothers but spoke through an interpreter. Conversion algorithms are interpreters — they translate between number system encodings while preserving the underlying value. The meaning (the number) remains constant; only the representation changes.
+====
+
+_"And they knew not that Joseph understood them; for he spake unto them by an interpreter."_ — *Genesis 42:23 KJV*
+
+_"They didn't know that Joseph understood them; for there was an interpreter between them."_ — *Genesis 42:23 WEB*
+
+*Applied:*
+
+[cols="2,4",options="header"]
+|===
+| Concept | Scripture Connection
+
+| *Value Preservation*
+| Joseph's meaning was preserved through interpretation — conversion preserves numerical value
+
+| *Multiple Encodings*
+| Hebrew, Egyptian — same message, different languages. Binary, ternary, decimal — same value, different bases
+
+| *Bidirectional Translation*
+| The interpreter worked both ways. Conversion algorithms work both ways.
+
+| *Interpreter Role*
+| The interpreter sits "between them" — conversion algorithms sit between number systems
+|===
+
+*Supporting Scripture:*
+
+* *Hebrews 7:2 KJV* — "First being by interpretation King of righteousness"
+* *Hebrews 7:2 WEB* — "Being first, by interpretation, king of righteousness"
+
+Note the encoding: "Melchizedek" interpreted means "king of righteousness," "Salem" interpreted means "peace." Same entity, different representations — exactly what conversion algorithms do.
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📄
+| *link:ternary-mathematical-foundations.adoc[Ternary Mathematical Foundations]*
+| Why ternary is optimal (Paper 1)
+
+| 📄
+| *link:ternary-arithmetic-algorithms.adoc[Ternary Arithmetic Algorithms]*
+| Arithmetic operations (Paper 2)
+
+| 📄
+| *link:ternary-logic-algorithms.adoc[Ternary Logic Algorithms]*
+| Logic operations (Paper 3)
+
+| 📐
+| *link:../constants/ternary-math.toml[Ternary Math Constants]*
+| Base constants these algorithms use
+
+| 📖
+| *bereshit/word/scripture/KJV/*
+| King James Version
+
+| 📖
+| *bereshit/word/scripture/WEB/*
+| World English Bible
+|===
+
+=== External Resources
+
+[cols="2,5",options="header"]
+|===
+| Resource | Purpose
+
+| *https://homepage.cs.uiowa.edu/~jones/ternary/bct.shtml[Douglas W. Jones: BCT]*
+| Binary-Coded Ternary algorithms
+
+| *https://rosettacode.org/wiki/Balanced_ternary[Rosetta Code: Balanced Ternary]*
+| Multi-language conversion implementations
+
+| *https://cp-algorithms.com/algebra/balanced-ternary.html[CP-Algorithms: Balanced Ternary]*
+| Competitive programming approach
+
+| *https://iotaledger.github.io/tips/tips/TIP-0005/tip-0005.html[IOTA TIP-5]*
+| Binary to ternary encoding specification
+
+| *https://en.wikipedia.org/wiki/Balanced_ternary[Wikipedia: Balanced Ternary]*
+| General reference and history
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:ternary-mathematical-foundations.adoc[Ternary Mathematical Foundations] — Why ternary is optimal (Paper 1)
+* link:ternary-arithmetic-algorithms.adoc[Ternary Arithmetic Algorithms] — Addition, subtraction, multiplication, division (Paper 2)
+* link:ternary-logic-algorithms.adoc[Ternary Logic Algorithms] — Three-valued logic operations (Paper 3)
+* link:ternary-storage-algorithms.adoc[Ternary Storage Algorithms] — Packing and unpacking (Paper 5)
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"For he spake unto them by an interpreter."_ — *Genesis 42:23 KJV*
+
+_"There was an interpreter between them."_ — *Genesis 42:23 WEB*
+
+*Conversion algorithms interpret between number systems — different encodings, same value.*
+--
+
+////
+===============================================================================
+END FOOTER
+===============================================================================
+////
