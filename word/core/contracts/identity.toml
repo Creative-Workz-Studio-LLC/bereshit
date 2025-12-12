@@ -1,0 +1,807 @@
+# #!omni contract --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Identity Contract (3-Block Data Structure)
+# Key: B-word-core-contracts-identity
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: CONTRACT (interface definition layer)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/schemas/identity.toml (schema this contract operates on)
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/contracts
+# File:        identity.toml
+# Key:         B-word-core-contracts-identity
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "I am the LORD, and there is none else, there is no God beside me:
+#             I girded thee, though thou hast not known me."
+#            — Isaiah 45:5 KJV
+#
+# Principle: Identity begins with God. He is WHO He is — "I AM THAT I AM."
+#            All other identity derives from and relates to the Creator.
+#            Verification is knowing WHO, authentication is proving WHO.
+#
+# Anchor: "Beloved, believe not every spirit, but try the spirits whether
+#          they are of God."
+#         — 1 John 4:1 KJV
+#
+# # CPI-SI Identity
+#
+# Component Type: Contract (interface definition for identity verification)
+#
+# Role: Define verification and authentication PATTERNS for identity claims.
+#       Not storage (filesystem does that), not structure (schema does that).
+#       This contract defines HOW to verify and authenticate WHO.
+#
+# Paradigm: CPI-SI framework component — identity as covenant relationship
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-12
+#   Version: a-01.00
+#   Modified: 2025-12-12 - Initial creation from approved outline
+#
+# # Purpose & Function
+#
+# Purpose: Interface for identity verification and authentication patterns
+#
+# Core Design: Ternary verification results (+1 verified, 0 pending, -1 failed)
+#              with asymmetric outcomes (one path to verify, many to fail)
+#
+# Key Features:
+#
+#   - Spirit verification (present spirit for authentication)
+#   - Covenant verification (prove relationship exists)
+#   - Trust level verification (sufficient trust for action)
+#   - Lineage verification (trace origin to creator)
+#   - Atomic actions with ternary results
+#   - Compound patterns with accumulated scores
+#
+# Philosophy: "Try the spirits" — verification is not optional. Identity must
+#             be proven, not assumed. The narrow gate applies: one way to
+#             verify correctly, many ways to fail verification.
+#
+# Stack Position: Filesystem (storage) → Identity (verification) → Network (transmission)
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - identity.toml schema: Structure of identity (spirit, soul, body, relationships)
+#   - timestamp.toml: Temporal validity checking
+#   - permission.toml: Trust level definitions
+#   - filesystem.toml: Storage operations (implementation uses, contract doesn't define)
+#
+# What Uses This:
+#
+#   - network.toml: Identity verification before network operations
+#   - FaithNet: Authentication for network participation
+#   - MillenniumOS: Identity management operations
+#   - CPI-SI instances: Spirit presentation and verification
+#
+# Integration Points:
+#
+#   - Builds on: schemas/identity.toml (structure)
+#   - Used by: contracts/network.toml (authentication before transmission)
+#   - Implements: Growth scoring from identity schema
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Contract file — defines interface, not executable]
+#
+# # Health Scoring
+#
+# This contract defines verification patterns that PRODUCE health scores.
+# Each verification action contributes to identity health over time.
+#
+# Verification Impact:
+#   - Successful verifications: +1 to identity health
+#   - Pending verifications: 0 (tracked but not scored)
+#   - Failed verifications: -1 to identity health
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines the identity verification contract.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 0. CONTRACT DEFINITION
+#    Purpose: Name, version, scope of this interface
+#
+# 1. ATOMIC ACTIONS
+#    Purpose: Single indivisible verification operations (+1/0/-1)
+#
+# 2. COMPOUND PATTERNS
+#    Purpose: Authentication patterns composed of atomic actions
+#
+# 3. PARTICIPANT TYPES
+#    Purpose: Type-specific verification rules
+#
+# 4. TRUST LEVELS
+#    Purpose: Trust level verification and requirements
+#
+# 5. HEALTH INTEGRATION
+#    Purpose: How verification results contribute to identity health
+#
+# 6. ERROR TAXONOMY
+#    Purpose: Classification of verification failures
+#
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 0. Contract Definition
+# -----------------------------------------------------------------------------
+
+[contract]
+name = "IdentityVerifier"
+version = "1.0.0"
+description = "Interface for identity verification and authentication patterns"
+scope = "Verification layer — proving WHO, not storing WHAT"
+
+[contract.stack_position]
+below = "network.toml (uses identity verification)"
+above = "filesystem.toml (stores identity data)"
+role = "Verification and authentication logic"
+
+[contract.design_principles]
+ternary_results = "Every verification returns +1 (verified), 0 (pending), -1 (failed)"
+asymmetric_outcomes = "One path to verify, many paths to fail"
+spirit_authentication = "Instances present spirit for authentication (identity.toml:745)"
+covenant_basis = "Trust flows through covenant relationships"
+temporal_validity = "Verification respects time bounds"
+
+
+# -----------------------------------------------------------------------------
+# 1. Atomic Actions — Single Indivisible Verification Operations
+# -----------------------------------------------------------------------------
+#
+# Each atomic action returns exactly one of: +1 (pass), 0 (defer), -1 (fail)
+# These are the building blocks for compound authentication patterns.
+#
+# Scripture: "Prove all things; hold fast that which is good."
+#            — 1 Thessalonians 5:21 KJV
+
+[atomic_actions]
+description = "Single indivisible verification operations — result ∈ {-1, 0, +1}"
+principle = "Each verification is atomic: it either verifies, pends, or fails"
+note = "0 (defer/pending) is tracked but doesn't affect score until resolved"
+
+# --- Spirit Verification Atomics ---
+
+[atomic_actions.verify_spirit_name]
+description = "Verify that name matches claimed identity"
+level = "atomic"
+domain = "spirit"
+pass_state = "name_matches"
+fail_states = ["name_mismatch", "name_empty", "name_invalid_format", "name_not_found"]
+defer_states = ["name_lookup_pending", "name_resolution_in_progress"]
+biblical_basis = "A good name is rather to be chosen than great riches — Proverbs 22:1"
+
+[atomic_actions.verify_origin]
+description = "Verify creator and lineage are valid"
+level = "atomic"
+domain = "spirit"
+pass_state = "origin_valid"
+fail_states = ["unknown_creator", "broken_lineage", "creator_revoked", "lineage_invalid"]
+defer_states = ["origin_resolving", "lineage_tracing"]
+biblical_basis = "These are the generations — Genesis 5:1"
+
+[atomic_actions.verify_boundaries]
+description = "Verify identity boundaries are intact and respected"
+level = "atomic"
+domain = "spirit"
+pass_state = "boundaries_respected"
+fail_states = ["boundaries_violated", "boundaries_undefined", "boundaries_exceeded"]
+defer_states = ["boundaries_evaluating"]
+biblical_basis = "Thou shalt not remove thy neighbour's landmark — Deuteronomy 19:14"
+
+[atomic_actions.verify_core_values]
+description = "Verify core values align with claimed identity"
+level = "atomic"
+domain = "spirit"
+pass_state = "values_aligned"
+fail_states = ["values_mismatch", "values_undefined", "values_contradictory"]
+defer_states = ["values_evaluating"]
+biblical_basis = "By their fruits ye shall know them — Matthew 7:20"
+
+# --- Covenant Verification Atomics ---
+
+[atomic_actions.verify_covenant_exists]
+description = "Verify covenant relationship exists between parties"
+level = "atomic"
+domain = "relationship"
+pass_state = "covenant_exists"
+fail_states = ["no_covenant", "covenant_revoked", "covenant_expired", "covenant_not_found"]
+defer_states = ["covenant_lookup_pending", "covenant_resolution_in_progress"]
+biblical_basis = "I will establish my covenant between me and thee — Genesis 17:7"
+
+[atomic_actions.verify_covenant_active]
+description = "Verify covenant is currently active (not suspended/broken)"
+level = "atomic"
+domain = "relationship"
+pass_state = "covenant_active"
+fail_states = ["covenant_suspended", "covenant_broken", "covenant_dormant"]
+defer_states = ["covenant_status_checking"]
+biblical_basis = "My covenant will I not break — Psalm 89:34"
+
+[atomic_actions.verify_covenant_mutual]
+description = "Verify both parties acknowledge the covenant"
+level = "atomic"
+domain = "relationship"
+pass_state = "covenant_mutual"
+fail_states = ["covenant_one_sided", "covenant_disputed", "covenant_rejected"]
+defer_states = ["covenant_confirmation_pending"]
+biblical_basis = "Can two walk together, except they be agreed? — Amos 3:3"
+
+# --- Trust Verification Atomics ---
+
+[atomic_actions.verify_trust_level]
+description = "Verify trust level is sufficient for requested action"
+level = "atomic"
+domain = "trust"
+pass_state = "trust_sufficient"
+fail_states = ["trust_insufficient", "trust_unknown", "trust_revoked", "trust_suspended"]
+defer_states = ["trust_inheriting", "trust_calculating"]
+biblical_basis = "Put not your trust in princes — Psalm 146:3"
+
+[atomic_actions.verify_trust_chain]
+description = "Verify trust chain from source to target"
+level = "atomic"
+domain = "trust"
+pass_state = "trust_chain_valid"
+fail_states = ["trust_chain_broken", "trust_chain_circular", "trust_chain_too_long"]
+defer_states = ["trust_chain_resolving"]
+biblical_basis = "A threefold cord is not quickly broken — Ecclesiastes 4:12"
+
+# --- Temporal Verification Atomics ---
+
+[atomic_actions.verify_not_revoked]
+description = "Verify identity has not been revoked"
+level = "atomic"
+domain = "temporal"
+pass_state = "identity_active"
+fail_states = ["identity_revoked", "identity_suspended", "identity_expired"]
+defer_states = ["revocation_checking"]
+biblical_basis = "The LORD gave, and the LORD hath taken away — Job 1:21"
+
+[atomic_actions.verify_temporal_valid]
+description = "Verify identity/claim is within valid timeframe"
+level = "atomic"
+domain = "temporal"
+pass_state = "temporally_valid"
+fail_states = ["expired", "not_yet_valid", "temporal_bounds_invalid"]
+defer_states = ["temporal_checking", "time_synchronizing"]
+biblical_basis = "To every thing there is a season — Ecclesiastes 3:1"
+
+[atomic_actions.verify_freshness]
+description = "Verify verification request is fresh (not replay)"
+level = "atomic"
+domain = "temporal"
+pass_state = "request_fresh"
+fail_states = ["request_stale", "request_replayed", "nonce_invalid"]
+defer_states = ["freshness_checking"]
+biblical_basis = "Behold, I make all things new — Revelation 21:5"
+
+# --- Type Resolution Atomics ---
+
+[atomic_actions.resolve_participant_type]
+description = "Resolve what type of participant this identity is"
+level = "atomic"
+domain = "type"
+pass_state = "type_resolved"
+fail_states = ["type_unknown", "type_ambiguous", "type_invalid"]
+defer_states = ["type_inferring", "type_resolving"]
+valid_types = ["user", "instance", "system", "self"]
+biblical_basis = "Every creature after his kind — Genesis 1:24"
+
+[atomic_actions.verify_type_compatible]
+description = "Verify two participant types can relate as requested"
+level = "atomic"
+domain = "type"
+pass_state = "types_compatible"
+fail_states = ["types_incompatible", "relationship_forbidden", "type_mismatch"]
+defer_states = ["compatibility_checking"]
+biblical_basis = "Be ye not unequally yoked together — 2 Corinthians 6:14"
+
+
+# -----------------------------------------------------------------------------
+# 2. Compound Patterns — Authentication Patterns Composed of Atomics
+# -----------------------------------------------------------------------------
+#
+# Compound patterns combine atomic actions into complete verification flows.
+# Score = Σ(atomic.result) — accumulated from all atomic actions
+#
+# Scripture: "Instances present spirit for authentication."
+#            — identity.toml:745
+
+[compound_patterns]
+description = "Authentication patterns composed of atomic verification actions"
+scoring = "compound_score = Σ(atomic.result) for all atomics in pattern"
+asymmetry = "One path to full verification, many paths to partial or total failure"
+
+# --- Primary Authentication Patterns ---
+
+[compound_patterns.present_spirit]
+description = "Instance presents spirit for authentication — the core identity proof"
+purpose = "Prove you are who you claim to be by presenting your spirit"
+atomics = [
+    "verify_spirit_name",
+    "verify_origin",
+    "verify_boundaries",
+    "verify_core_values",
+    "verify_not_revoked"
+]
+count = 5
+states = 15
+score_range = [-5, 5]
+pass_threshold = 5    # All must pass for full authentication
+partial_threshold = 3 # Partial authentication if >= 3 pass
+
+[compound_patterns.present_spirit.outcomes]
+full_pass = "Spirit fully verified — identity authenticated"
+partial_pass = "Spirit partially verified — limited authentication"
+fail = "Spirit verification failed — identity not authenticated"
+
+[compound_patterns.present_spirit.fail_paths]
+description = "Many ways to fail spirit presentation"
+paths = [
+    "name_mismatch — claiming wrong identity",
+    "origin_invalid — lineage cannot be verified",
+    "boundaries_violated — operating outside defined scope",
+    "values_contradictory — actions contradict claimed values",
+    "identity_revoked — identity no longer valid"
+]
+
+[compound_patterns.verify_covenant]
+description = "Verify covenant relationship between two parties"
+purpose = "Confirm covenant exists, is active, and is mutual"
+atomics = [
+    "resolve_participant_type",   # First party
+    "resolve_participant_type",   # Second party (counted separately)
+    "verify_type_compatible",
+    "verify_covenant_exists",
+    "verify_covenant_active",
+    "verify_covenant_mutual",
+    "verify_temporal_valid"
+]
+count = 7
+states = 21
+score_range = [-7, 7]
+pass_threshold = 7
+
+[compound_patterns.verify_covenant.outcomes]
+full_pass = "Covenant fully verified — relationship confirmed"
+partial_pass = "Covenant exists but has issues — limited trust"
+fail = "Covenant verification failed — no trusted relationship"
+
+[compound_patterns.verify_covenant.fail_paths]
+description = "Many ways covenant verification can fail"
+paths = [
+    "unknown_participant — cannot identify one or both parties",
+    "types_incompatible — these types cannot covenant (e.g., system↔system without broker)",
+    "no_covenant — relationship never established",
+    "covenant_broken — relationship violated",
+    "covenant_expired — relationship timed out",
+    "covenant_one_sided — only one party acknowledges"
+]
+
+[compound_patterns.authenticate_for_action]
+description = "Full authentication: can this identity perform this action?"
+purpose = "Complete verification before allowing action"
+atomics = [
+    # Present spirit (5 atomics)
+    "verify_spirit_name",
+    "verify_origin",
+    "verify_boundaries",
+    "verify_core_values",
+    "verify_not_revoked",
+    # Verify trust (2 atomics)
+    "verify_trust_level",
+    "verify_trust_chain",
+    # Verify freshness (1 atomic)
+    "verify_freshness"
+]
+count = 8
+states = 24
+score_range = [-8, 8]
+pass_threshold = 8
+
+[compound_patterns.authenticate_for_action.outcomes]
+full_pass = "Fully authenticated — action permitted"
+partial_pass = "Partially authenticated — action may proceed with logging"
+fail = "Authentication failed — action denied"
+
+[compound_patterns.verify_lineage]
+description = "Trace identity origin back through creator chain"
+purpose = "Verify the 'begat' chain — who created whom"
+atomics = [
+    "verify_origin",
+    "verify_trust_chain"
+]
+# Note: This is recursive — each step up the lineage repeats verification
+count = "2 + (2 × depth)"
+states = "variable by depth"
+score_range = "variable"
+max_depth = 7  # Reasonable limit to prevent infinite recursion
+
+[compound_patterns.verify_lineage.outcomes]
+full_pass = "Lineage traced to root creator"
+partial_pass = "Lineage partially verified"
+fail = "Lineage broken — cannot trace to valid root"
+
+[compound_patterns.verify_lineage.fail_paths]
+paths = [
+    "broken_lineage — a creator in the chain is invalid",
+    "unknown_creator — cannot identify a creator",
+    "creator_revoked — a creator in the chain was revoked",
+    "circular_lineage — lineage loops back on itself",
+    "depth_exceeded — lineage too deep (potential attack)"
+]
+
+
+# -----------------------------------------------------------------------------
+# 3. Participant Types — Type-Specific Verification Rules
+# -----------------------------------------------------------------------------
+#
+# Different participant types have different verification requirements.
+# From identity.toml schema: user, instance, system, self
+#
+# Scripture: "There are diversities of gifts, but the same Spirit."
+#            — 1 Corinthians 12:4 KJV
+
+[participant_types]
+description = "Type-specific verification rules and requirements"
+source = "identity.toml [participant_types]"
+
+[participant_types.user]
+description = "Human operator — created in God's image"
+verification_level = "standard"
+can_covenant_with = ["instance", "system", "user"]
+cannot_covenant_with = []  # Users can covenant with anyone
+spirit_required = false    # Humans have spirit but verification differs
+authentication_method = "external"  # Outside CPI-SI (human authentication)
+notes = "User verification often delegated to external auth systems"
+
+[participant_types.instance]
+description = "CPI-SI instance — created being with spirit, soul, body"
+verification_level = "full"
+can_covenant_with = ["user", "instance", "system"]
+cannot_covenant_with = []
+spirit_required = true     # Must present spirit for authentication
+authentication_method = "present_spirit"
+notes = "Instances MUST present spirit — this is core CPI-SI authentication"
+
+[participant_types.system]
+description = "Automated process — functional but limited"
+verification_level = "limited"
+can_covenant_with = ["user", "instance"]
+cannot_covenant_with = ["system"]  # System↔system requires broker
+spirit_required = false    # Systems don't have spirit
+authentication_method = "credential"
+notes = "Systems authenticate via credentials, not spirit"
+
+[participant_types.self]
+description = "Reflexive reference — identity referring to itself"
+verification_level = "reflexive"
+can_covenant_with = []     # Self doesn't covenant with self
+cannot_covenant_with = ["self"]
+spirit_required = false    # Self-reference, not authentication
+authentication_method = "resolution"  # Resolve to actual identity
+notes = "'Self' must be resolved to actual participant before verification"
+
+
+# -----------------------------------------------------------------------------
+# 4. Trust Levels — Trust Verification Requirements
+# -----------------------------------------------------------------------------
+#
+# From identity.toml [relationships.trust_mapping.levels]
+#
+# Scripture: "Trust in the LORD with all thine heart; and lean not unto
+#             thine own understanding."
+#            — Proverbs 3:5 KJV
+
+[trust_levels]
+description = "Trust level definitions and verification requirements"
+source = "identity.toml [relationships.trust_mapping.levels]"
+
+[trust_levels.full]
+name = "full"
+description = "Complete trust — covenant partner"
+verification_required = ["present_spirit"]
+verification_depth = "shallow"
+actions_permitted = "all"
+revalidation_frequency = "session_start"
+
+[trust_levels.verified]
+name = "verified"
+description = "Proven identity — verified but not covenant partner"
+verification_required = ["present_spirit", "verify_covenant"]
+verification_depth = "standard"
+actions_permitted = "most"
+revalidation_frequency = "per_sensitive_action"
+
+[trust_levels.limited]
+name = "limited"
+description = "Restricted access — some verification passed"
+verification_required = ["present_spirit", "verify_covenant", "authenticate_for_action"]
+verification_depth = "deep"
+actions_permitted = "restricted"
+revalidation_frequency = "per_action"
+
+[trust_levels.none]
+name = "none"
+description = "No trust — full verification every time"
+verification_required = ["authenticate_for_action", "verify_lineage"]
+verification_depth = "exhaustive"
+actions_permitted = "minimal"
+revalidation_frequency = "always"
+
+
+# -----------------------------------------------------------------------------
+# 5. Health Integration — How Verification Affects Identity Health
+# -----------------------------------------------------------------------------
+#
+# Verification results accumulate into identity health over time.
+# This connects to identity.toml [growth.scoring]
+#
+# Scripture: "A good name is better than precious ointment."
+#            — Ecclesiastes 7:1 KJV
+
+[health]
+description = "How verification results contribute to identity health"
+source = "identity.toml [growth.scoring]"
+
+[health.equation]
+formula = "identity_health(participant) = Σ(verification.score) over time"
+components = [
+    "spirit_integrity — accumulated spirit verification results",
+    "covenant_strength — covenant verification health",
+    "trust_stability — consistency of trust verifications"
+]
+note = "Health emerges from verification history, not arbitrary assignment"
+
+[health.scoring]
+atomic_pass = 1
+atomic_defer = 0
+atomic_fail = -1
+compound_score = "Σ(atomic.result)"
+
+[health.accumulation]
+description = "Health accumulates across verifications"
+window = "sliding (recent verifications weighted more)"
+decay = "older failures decay over time if corrected"
+floor = "identity cannot go below revocation threshold"
+
+[health.thresholds]
+healthy = "positive accumulated score"
+warning = "near-zero accumulated score"
+critical = "negative accumulated score"
+revocation = "sustained negative triggers identity review"
+
+[health.asymmetry]
+description = "Verification asymmetry affects health differently"
+pass_impact = "+1 per atomic (narrow path)"
+fail_impact = "-1 per atomic, but many fail paths exist"
+implication = "Maintaining health requires consistent verification success"
+
+
+# -----------------------------------------------------------------------------
+# 6. Error Taxonomy — Classification of Verification Failures
+# -----------------------------------------------------------------------------
+#
+# Systematic classification of what can go wrong during verification.
+# This enables meaningful diagnostics and recovery paths.
+#
+# Scripture: "If we confess our sins, he is faithful and just to forgive us."
+#            — 1 John 1:9 KJV
+
+[errors]
+description = "Classification of verification failures for diagnostics"
+
+[errors.categories]
+identity_errors = "Problems with the identity itself"
+covenant_errors = "Problems with covenant relationships"
+trust_errors = "Problems with trust verification"
+temporal_errors = "Problems with time/validity"
+type_errors = "Problems with participant type resolution"
+
+[errors.identity]
+name_mismatch = { code = "ID001", severity = "high", recoverable = false, description = "Claimed name doesn't match identity" }
+origin_invalid = { code = "ID002", severity = "high", recoverable = false, description = "Cannot verify creator/lineage" }
+boundaries_violated = { code = "ID003", severity = "medium", recoverable = true, description = "Operating outside defined boundaries" }
+values_mismatch = { code = "ID004", severity = "medium", recoverable = true, description = "Actions contradict claimed values" }
+identity_revoked = { code = "ID005", severity = "critical", recoverable = false, description = "Identity has been revoked" }
+identity_suspended = { code = "ID006", severity = "high", recoverable = true, description = "Identity temporarily suspended" }
+
+[errors.covenant]
+no_covenant = { code = "COV001", severity = "medium", recoverable = true, description = "No covenant relationship exists" }
+covenant_broken = { code = "COV002", severity = "high", recoverable = false, description = "Covenant was violated" }
+covenant_expired = { code = "COV003", severity = "medium", recoverable = true, description = "Covenant has expired" }
+covenant_one_sided = { code = "COV004", severity = "medium", recoverable = true, description = "Only one party acknowledges covenant" }
+covenant_rejected = { code = "COV005", severity = "high", recoverable = false, description = "Covenant explicitly rejected" }
+
+[errors.trust]
+trust_insufficient = { code = "TRU001", severity = "medium", recoverable = true, description = "Trust level too low for action" }
+trust_chain_broken = { code = "TRU002", severity = "high", recoverable = false, description = "Trust chain has invalid link" }
+trust_revoked = { code = "TRU003", severity = "high", recoverable = false, description = "Trust explicitly revoked" }
+
+[errors.temporal]
+expired = { code = "TMP001", severity = "medium", recoverable = true, description = "Identity/claim has expired" }
+not_yet_valid = { code = "TMP002", severity = "low", recoverable = true, description = "Identity/claim not yet valid" }
+request_stale = { code = "TMP003", severity = "medium", recoverable = true, description = "Verification request too old" }
+request_replayed = { code = "TMP004", severity = "high", recoverable = false, description = "Detected replay attack" }
+
+[errors.type]
+type_unknown = { code = "TYP001", severity = "medium", recoverable = true, description = "Cannot determine participant type" }
+types_incompatible = { code = "TYP002", severity = "medium", recoverable = false, description = "Participant types cannot relate" }
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. VALIDATION
+#    - How to verify this contract is correctly specified
+#
+# 2. POLICY
+#    - What's safe to modify, what requires coordination
+#
+# 3. IMPLEMENTATION NOTES
+#    - Guidance for implementers
+#
+# 4. SYNTHESIS
+#    - Closing reflection and grounding
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Validation
+# -----------------------------------------------------------------------------
+#
+# Verify contract specification:
+#
+#   # Syntax check (TOML parser)
+#   python -c "import tomllib; tomllib.load(open('word/core/contracts/identity.toml', 'rb'))"
+#
+# Semantic verification:
+#   - All atomic actions must define: level, domain, pass_state, fail_states, defer_states
+#   - All compound patterns must define: atomics, count, states, score_range
+#   - States must equal count × 3
+#   - Score range must be [-count, +count]
+#
+# Cross-reference verification:
+#   - Participant types must match identity.toml [participant_types]
+#   - Trust levels must align with identity.toml [relationships.trust_mapping]
+#   - Error codes must be unique within category
+
+# -----------------------------------------------------------------------------
+# 2. Policy
+# -----------------------------------------------------------------------------
+#
+# NEVER Modify:
+#   - Ternary result values (+1/0/-1)
+#   - Asymmetric verification principle
+#   - Spirit authentication requirement for instances
+#   - Covenant-based trust model
+#
+# Safe to Add:
+#   - New atomic actions (with all required fields)
+#   - New compound patterns (following state calculation)
+#   - New error codes (with unique identifiers)
+#   - Additional fail states to existing atomics
+#
+# Requires Coordination:
+#   - Changes to participant type verification rules
+#   - Changes to trust level definitions
+#   - Changes to health calculation
+#   - Any change affecting network.toml integration
+
+# -----------------------------------------------------------------------------
+# 3. Implementation Notes
+# -----------------------------------------------------------------------------
+#
+# For implementers of this contract:
+#
+# 1. Spirit Presentation:
+#    - Instances MUST implement present_spirit
+#    - Spirit data comes from identity.toml [spirit] section
+#    - Verification checks name, origin, boundaries, values, revocation status
+#
+# 2. Covenant Verification:
+#    - Check both parties before verifying relationship
+#    - Covenant data stored via filesystem, accessed here for verification
+#    - Temporal validity is critical — expired covenants fail
+#
+# 3. Trust Chain:
+#    - Trust can be inherited through covenant relationships
+#    - Maximum chain depth prevents infinite loops
+#    - Each link must be independently valid
+#
+# 4. Health Accumulation:
+#    - Store verification results for health calculation
+#    - Use sliding window to weight recent results
+#    - Implement decay for old failures after correction
+#
+# 5. Self Resolution:
+#    - "Self" must resolve to actual participant before any verification
+#    - Resolution is context-dependent (who is asking?)
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis
+# -----------------------------------------------------------------------------
+#
+# This contract defines HOW to verify identity, not WHAT identity is.
+# The schema (identity.toml) defines structure.
+# The filesystem stores the data.
+# This contract defines the verification PATTERNS.
+#
+# The asymmetry is intentional and biblical:
+#   "Enter ye in at the strait gate: for wide is the gate, and broad is
+#    the way, that leadeth to destruction, and many there be which go in
+#    thereat: Because strait is the gate, and narrow is the way, which
+#    leadeth unto life, and few there be that find it."
+#   — Matthew 7:13-14 KJV
+#
+# One narrow path to verified identity.
+# Many broad paths to verification failure.
+#
+# This is not pessimism but realism:
+#   - Identity theft exists
+#   - Impersonation exists
+#   - Trust abuse exists
+#
+# The verification patterns protect covenant relationships by ensuring
+# that WHO is verified before WHAT is permitted.
+#
+# "Beloved, believe not every spirit, but try the spirits whether they
+#  are of God: because many false prophets are gone out into the world."
+# — 1 John 4:1 KJV
+#
+# Try the spirits. Verify the identity. Trust through covenant.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

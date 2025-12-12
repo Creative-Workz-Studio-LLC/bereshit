@@ -1,0 +1,1404 @@
+# #!omni contract --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# FilesystemProvider Contract (3-Block Data Structure)
+# Key: B-word-core-contracts-filesystem
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: TOP (contracts that implementations fulfill)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/schemas/*.toml, word/core/types.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/contracts
+# File:        filesystem.toml
+# Key:         B-word-core-contracts-filesystem
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "Write the vision, and make it plain upon tables, that he may run
+#             that readeth it." — Habakkuk 2:2 KJV
+#
+# Principle: Every atomic action yields +1, 0, or -1. Pass has one path; fail
+#            has many. Health emerges from accumulation. 0 is valid and tracked.
+#            The filesystem is where truth is written and read — the storage
+#            layer bridging Language → Filesystem → Identity → Network.
+#
+# Anchor: "In the beginning God created the heaven and the earth."
+#          — Genesis 1:1 KJV
+#
+# # CPI-SI Identity
+#
+# Component Type: Contract (interface that implementations must fulfill)
+#
+# Role: Interface contract for filesystem operations — any tool or component
+#       that reads, writes, or manages files must implement this contract.
+#       Bridges OmniCode (language) to FaithNet (network) through storage.
+#
+# Paradigm: CPI-SI framework component — atomic actions accumulate to health
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-12
+#   Version: a-01.00
+#   Modified: 2025-12-12 - Initial creation
+#
+# # Purpose & Function
+#
+# Purpose: Define the interface contract for filesystem operations with
+#          atomic action tracking and health calculation
+#
+# Core Design: Every operation decomposes into atomic actions (+1/0/-1).
+#              Compound actions sum atomics. Health emerges from accumulation.
+#
+# Key Features:
+#
+#   - Atomic actions: Indivisible operations returning exactly +1, 0, or -1
+#   - Compound actions: Compositions of atomics with calculated scores
+#   - Asymmetric outcomes: One pass path, many fail paths
+#   - Health integration: Score emerges from accumulated action results
+#   - Full traceability: Every fail state is identified and tracked
+#   - Language bridge: OmniCode validation and pragma parsing
+#   - Network bridge: Sync preparation for FaithNet
+#
+# Philosophy: The filesystem is the body where truth is stored. Every action
+#             leaves a mark. Health is not set — it emerges from what happened.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Primitives: word/core/primitives.toml (trit, uint9, text, bool3, bytes)
+#   - Types: word/core/types.toml (struct, method definitions)
+#   - Permission: word/core/schemas/permission.toml (access control)
+#   - Identity: word/core/schemas/identity.toml (actor tracking)
+#   - Timestamp: word/core/schemas/timestamp.toml (temporal metadata)
+#   - FileType: word/core/schemas/file-type.toml (biblical extensions)
+#   - Health: word/core/schemas/health.toml (health structure)
+#
+# What Uses This:
+#
+#   - MillenniumOS: Operating system file operations
+#   - CPI-SI hooks: File change triggers
+#   - bhealth: Health tracking via filesystem actions
+#   - FaithNet: Network sync builds on filesystem
+#   - OmniCode transpiler: File validation and conversion
+#
+# Integration Points:
+#
+#   - Up: primitives.toml, types.toml
+#   - Across: permission.toml, identity.toml, timestamp.toml, file-type.toml
+#   - Down: network.toml (FaithNet)
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Contract file — defines interface, not executable]
+#
+# # Health Scoring
+#
+# Configuration Impact: Invalid contract would break all filesystem implementations
+#
+# Validation Behavior:
+#   - Missing method: Error — all methods required
+#   - Wrong signature: Error — must match exactly
+#   - Incomplete implementation: Compile error
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines atomic actions, compound actions, types, and methods.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. CONTRACT IDENTITY
+#    Purpose: Name, version, and scope of this contract
+#
+# 2. ATOMIC ACTIONS
+#    Purpose: Indivisible operations returning +1, 0, or -1
+#
+# 3. COMPOUND ACTIONS
+#    Purpose: Compositions of atomics with score = Σ(atomic.result)
+#
+# 4. ACTION RESULT TYPES
+#    Purpose: Structures for tracking action outcomes
+#
+# 5. HEALTH INTEGRATION
+#    Purpose: How health emerges from accumulated scores
+#
+# 6. CONTRACT METHODS
+#    Purpose: Interface methods implementations must provide
+#
+# 7. SUPPORTING TYPES
+#    Purpose: Structures used by methods
+#
+# 8. ERROR CATALOG
+#    Purpose: All possible fail states across atomic actions
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Contract Identity
+# -----------------------------------------------------------------------------
+
+[contract]
+name = "FilesystemProvider"
+version = "1.0.0"
+description = "Interface for file operations, action tracking, and health calculation"
+package = "bereshit/word/core/contracts"
+scope = "Storage layer bridging Language → Filesystem → Identity → Network"
+# Biblical syntax: "let FilesystemProvider be covenant for file operations"
+# Contract = Covenant — promises that implementations must keep
+# See: syntax.toml [covenant.promises], [covenant.enters_covenant_with]
+
+[contract.dependencies]
+primitives = "word/core/primitives.toml"
+types = "word/core/types.toml"
+permission = "word/core/schemas/permission.toml"
+identity = "word/core/schemas/identity.toml"
+timestamp = "word/core/schemas/timestamp.toml"
+file_type = "word/core/schemas/file-type.toml"
+health = "word/core/schemas/health.toml"
+
+
+# -----------------------------------------------------------------------------
+# 2. Atomic Actions
+# -----------------------------------------------------------------------------
+# Indivisible operations. Each returns exactly +1 (pass), 0 (defer), or -1 (fail).
+# Pass has ONE path. Fail has MANY paths. This asymmetry is fundamental.
+#
+# Scripture: "Enter ye in at the strait gate: for wide is the gate, and broad
+#             is the way, that leadeth to destruction" — Matthew 7:13 KJV
+
+[atomic_actions]
+description = "Single indivisible operations — result ∈ {-1, 0, +1}"
+
+# --- Byte-level operations ---
+
+[atomic_actions.read_byte]
+level = "atomic"
+pass_state = "byte_read"
+fail_states = ["not_found", "permission_denied", "corrupted", "locked"]
+defer_states = ["queued", "blocked"]
+
+[atomic_actions.write_byte]
+level = "atomic"
+pass_state = "byte_written"
+fail_states = ["permission_denied", "disk_full", "locked", "hardware_error"]
+defer_states = ["queued", "blocked"]
+
+# --- Permission operations ---
+
+[atomic_actions.check_permission]
+level = "atomic"
+pass_state = "access_granted"
+fail_states = ["access_denied", "identity_unknown", "permission_undefined"]
+defer_states = ["identity_pending"]
+
+[atomic_actions.grant_permission]
+level = "atomic"
+pass_state = "permission_granted"
+fail_states = ["permission_denied", "invalid_permission", "identity_unknown"]
+defer_states = ["pending_approval"]
+
+[atomic_actions.revoke_permission]
+level = "atomic"
+pass_state = "permission_revoked"
+fail_states = ["permission_denied", "not_granted", "identity_unknown"]
+defer_states = []
+
+# --- Path operations ---
+
+[atomic_actions.validate_path]
+level = "atomic"
+pass_state = "path_valid"
+fail_states = ["path_invalid", "path_too_long", "illegal_characters", "reserved_name"]
+defer_states = []
+
+[atomic_actions.resolve_path]
+level = "atomic"
+pass_state = "path_resolved"
+fail_states = ["not_found", "broken_symlink", "circular_reference"]
+defer_states = ["resolving"]
+
+[atomic_actions.check_exists]
+level = "atomic"
+pass_state = "exists"
+fail_states = ["not_found"]
+defer_states = ["checking"]
+
+[atomic_actions.check_empty]
+level = "atomic"
+pass_state = "is_empty"
+fail_states = ["not_empty", "not_found", "not_directory"]
+defer_states = ["checking"]
+
+# --- Allocation operations ---
+
+[atomic_actions.allocate_space]
+level = "atomic"
+pass_state = "space_allocated"
+fail_states = ["disk_full", "quota_exceeded", "fragmented"]
+defer_states = ["allocating"]
+
+[atomic_actions.free_space]
+level = "atomic"
+pass_state = "space_freed"
+fail_states = ["not_allocated", "in_use", "corrupted"]
+defer_states = ["freeing"]
+
+# --- Metadata operations ---
+
+[atomic_actions.read_metadata]
+level = "atomic"
+pass_state = "metadata_read"
+fail_states = ["not_found", "corrupted", "permission_denied"]
+defer_states = ["reading"]
+
+[atomic_actions.write_metadata]
+level = "atomic"
+pass_state = "metadata_written"
+fail_states = ["permission_denied", "disk_full", "locked"]
+defer_states = ["writing"]
+
+[atomic_actions.update_timestamp]
+level = "atomic"
+pass_state = "timestamp_updated"
+fail_states = ["permission_denied", "invalid_time"]
+defer_states = []
+
+[atomic_actions.remove_entry]
+level = "atomic"
+pass_state = "entry_removed"
+fail_states = ["not_found", "permission_denied", "in_use"]
+defer_states = ["removing"]
+
+# --- Verification operations ---
+
+[atomic_actions.verify_hash]
+level = "atomic"
+pass_state = "hash_matches"
+fail_states = ["hash_mismatch", "hash_missing", "corrupted"]
+defer_states = ["computing"]
+
+[atomic_actions.verify_structure]
+level = "atomic"
+pass_state = "structure_valid"
+fail_states = ["missing_pragma", "invalid_block_order", "missing_section", "syntax_error"]
+defer_states = ["validating"]
+
+[atomic_actions.read_pragma]
+level = "atomic"
+pass_state = "pragma_read"
+fail_states = ["no_pragma", "invalid_pragma", "permission_denied"]
+defer_states = ["reading"]
+
+# --- Identity operations (bridges to identity.toml) ---
+
+[atomic_actions.verify_actor]
+level = "atomic"
+pass_state = "actor_verified"
+fail_states = ["unknown_actor", "signature_invalid", "expired", "revoked"]
+defer_states = ["verifying"]
+
+# --- Network operations (bridges to network.toml / FaithNet) ---
+
+[atomic_actions.send_packet]
+level = "atomic"
+pass_state = "packet_sent"
+fail_states = ["network_unreachable", "timeout", "rejected", "malformed"]
+defer_states = ["queued", "retrying"]
+
+[atomic_actions.receive_packet]
+level = "atomic"
+pass_state = "packet_received"
+fail_states = ["timeout", "corrupted", "rejected", "malformed"]
+defer_states = ["waiting"]
+
+[atomic_actions.verify_trust]
+level = "atomic"
+pass_state = "trust_verified"
+fail_states = ["untrusted", "signature_invalid", "expired", "revoked", "unknown_source"]
+defer_states = ["verifying"]
+
+
+# -----------------------------------------------------------------------------
+# 3. Compound Actions
+# -----------------------------------------------------------------------------
+# Compositions of atomic actions. Score = Σ(atomic results). States = N × 3.
+# A compound action with 7 atomics has 21 possible states (7 × 3) and
+# a score range of [-7, +7].
+#
+# Scripture: "For which of you, intending to build a tower, sitteth not down
+#             first, and counteth the cost" — Luke 14:28 KJV
+
+[compound_actions]
+description = "Composed of atomic actions — score = Σ(atomic.result), states = N × 3"
+
+[compound_actions.read_file]
+description = "Read file content"
+atomics = ["validate_path", "check_exists", "check_permission", "read_metadata", "read_byte"]
+count = 5
+states = 15
+score_range = [-5, 5]
+
+[compound_actions.write_file]
+description = "Write content to file"
+atomics = ["validate_path", "check_permission", "allocate_space", "write_byte", "write_metadata", "update_timestamp", "verify_hash"]
+count = 7
+states = 21
+score_range = [-7, 7]
+
+[compound_actions.create_file]
+description = "Create new file"
+atomics = ["validate_path", "check_permission", "check_exists", "allocate_space", "write_byte", "write_metadata", "update_timestamp"]
+count = 7
+states = 21
+score_range = [-7, 7]
+
+[compound_actions.delete_file]
+description = "Remove file"
+atomics = ["validate_path", "check_exists", "check_permission", "free_space", "remove_entry", "write_metadata", "update_timestamp"]
+count = 7
+states = 21
+score_range = [-7, 7]
+
+[compound_actions.create_directory]
+description = "Create directory"
+atomics = ["validate_path", "check_permission", "check_exists", "allocate_space", "write_metadata"]
+count = 5
+states = 15
+score_range = [-5, 5]
+
+[compound_actions.delete_directory]
+description = "Remove directory"
+atomics = ["validate_path", "check_exists", "check_permission", "check_empty", "free_space", "remove_entry", "write_metadata"]
+count = 7
+states = 21
+score_range = [-7, 7]
+
+[compound_actions.move_file]
+description = "Move file from source to destination"
+atomics = ["validate_path", "validate_path", "check_exists", "check_permission", "check_permission", "write_metadata", "write_metadata", "update_timestamp"]
+count = 8
+states = 24
+score_range = [-8, 8]
+
+[compound_actions.copy_file]
+description = "Copy file to destination"
+atomics = ["validate_path", "validate_path", "check_exists", "check_permission", "check_permission", "allocate_space", "read_byte", "write_byte", "write_metadata", "verify_hash"]
+count = 10
+states = 30
+score_range = [-10, 10]
+
+[compound_actions.validate_structure]
+description = "Validate OmniCode block structure"
+atomics = ["read_pragma", "verify_structure", "verify_structure", "verify_structure", "verify_structure"]
+count = 5
+states = 15
+score_range = [-5, 5]
+note = "verify_structure called for: pragma, block_boundaries, block_order, required_sections"
+
+[compound_actions.sync_file]
+description = "Synchronize file to network (FaithNet)"
+atomics = ["read_metadata", "verify_hash", "verify_actor", "send_packet", "receive_packet", "verify_trust", "write_metadata"]
+count = 7
+states = 21
+score_range = [-7, 7]
+
+[compound_actions.get_file_info]
+description = "Get file metadata and type"
+atomics = ["validate_path", "check_exists", "check_permission", "read_metadata", "read_pragma"]
+count = 5
+states = 15
+score_range = [-5, 5]
+
+
+# -----------------------------------------------------------------------------
+# 4. Action Result Types
+# -----------------------------------------------------------------------------
+# Structures for tracking outcomes. 0 is valid and tracked — defer actions
+# exist in the record even though they don't move the score.
+
+[types.trit_result]
+description = "The ternary result of any atomic action"
+pass = 1
+defer = 0
+fail = -1
+note = "0 is a valid number — defer actions are tracked"
+
+[types.atomic_result]
+description = "Result of a single atomic action"
+fields = [
+    { name = "action_id", type = "text", description = "Unique identifier for this action instance" },
+    { name = "action_type", type = "text", description = "Which atomic action (e.g., 'read_byte')" },
+    { name = "result", type = "trit", description = "Exactly +1, 0, or -1" },
+    { name = "state", type = "text", description = "Which pass/defer/fail state (e.g., 'permission_denied')" },
+    { name = "timestamp", type = "Timestamp", description = "When this action occurred" }
+]
+
+[types.compound_result]
+description = "Result of a compound action (sum of atomics)"
+fields = [
+    { name = "action_id", type = "text", description = "Unique identifier for this compound action" },
+    { name = "action_type", type = "text", description = "Which compound action (e.g., 'create_file')" },
+    { name = "atomics", type = "list<AtomicResult>", description = "All atomic results that compose this" },
+    { name = "score", type = "int9", description = "Σ(atomic.result) — the compound score" },
+    { name = "pass_count", type = "uint9", description = "How many atomics returned +1" },
+    { name = "defer_count", type = "uint9", description = "How many atomics returned 0" },
+    { name = "fail_count", type = "uint9", description = "How many atomics returned -1" },
+    { name = "actor", type = "Participant", description = "Who performed this action" },
+    { name = "path", type = "text", description = "Primary path this action affected" },
+    { name = "timestamp", type = "Timestamp", description = "When this action completed" }
+]
+
+
+# -----------------------------------------------------------------------------
+# 5. Health Integration
+# -----------------------------------------------------------------------------
+# Health emerges from accumulated compound action scores.
+# health(path) = Σ(compound_action.score) for all actions on path
+#
+# Scripture: "Be not deceived; God is not mocked: for whatsoever a man soweth,
+#             that shall he also reap." — Galatians 6:7 KJV
+
+[health]
+description = "Health emerges from accumulated compound action scores"
+
+[health.equation]
+formula = "health(path) = Σ(compound_action.score) for all actions on path"
+components = "pass_count - fail_count (defers contribute 0 but are tracked)"
+note = "Health is not set — it emerges from what happened"
+
+[health.diagnostics]
+description = "Breakdown of which states were hit"
+tracks = ["pass_states_by_type", "defer_states_by_type", "fail_states_by_type"]
+purpose = "When health drops, know exactly which fail states were hit"
+example = """
+health = +45
+  total_actions: 130
+  passes: 80 (+80)
+  defers: 15 (0)
+  fails: 35 (-35)
+  fail_breakdown:
+    - permission_denied: 12
+    - validation_failed: 8
+    - timeout: 7
+    - corrupted: 5
+    - not_found: 3
+"""
+
+
+# -----------------------------------------------------------------------------
+# 6. Contract Methods
+# -----------------------------------------------------------------------------
+# Interface methods implementations must provide. Each method that modifies
+# state returns a CompoundResult for health tracking.
+
+[methods]
+description = "Interface methods implementations must provide"
+
+# --- Read Operations ---
+
+[methods.read_file]
+name = "ReadFile"
+description = "Read file content"
+signature = "func(path: text, actor: Participant) -> (content: bytes, result: CompoundResult, error)"
+compound_action = "read_file"
+parameters = [
+    { name = "path", type = "text", description = "File path to read" },
+    { name = "actor", type = "Participant", description = "Who is reading" }
+]
+returns = [
+    { name = "content", type = "bytes", description = "File content" },
+    { name = "result", type = "CompoundResult", description = "Action result for health tracking" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.read_text]
+name = "ReadText"
+description = "Read file content as UTF-8 text"
+signature = "func(path: text, actor: Participant) -> (content: text, result: CompoundResult, error)"
+compound_action = "read_file"
+parameters = [
+    { name = "path", type = "text", description = "File path to read" },
+    { name = "actor", type = "Participant", description = "Who is reading" }
+]
+returns = [
+    { name = "content", type = "text", description = "File content as text" },
+    { name = "result", type = "CompoundResult", description = "Action result for health tracking" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.list_directory]
+name = "ListDirectory"
+description = "List directory contents"
+signature = "func(path: text, actor: Participant) -> (entries: list<FileEntry>, result: CompoundResult, error)"
+links_to = "file-type.toml"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" },
+    { name = "actor", type = "Participant", description = "Who is listing" }
+]
+returns = [
+    { name = "entries", type = "list<FileEntry>", description = "Directory contents" },
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.file_exists]
+name = "FileExists"
+description = "Check if file exists"
+signature = "func(path: text) -> bool3"
+note = "Simple check, minimal tracking"
+parameters = [
+    { name = "path", type = "text", description = "Path to check" }
+]
+returns = [
+    { name = "exists", type = "bool3", description = "true/false/unknown" }
+]
+
+[methods.get_file_type]
+name = "GetFileType"
+description = "Get file type (biblical extension)"
+signature = "func(path: text) -> (file_type: FileType, error)"
+links_to = "file-type.toml"
+parameters = [
+    { name = "path", type = "text", description = "File path" }
+]
+returns = [
+    { name = "file_type", type = "FileType", description = "Biblical file type" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.get_permission]
+name = "GetPermission"
+description = "Get permission for path"
+signature = "func(path: text) -> (permission: Permission, error)"
+links_to = "permission.toml"
+parameters = [
+    { name = "path", type = "text", description = "Path to check" }
+]
+returns = [
+    { name = "permission", type = "Permission", description = "Permission level" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+# --- Write Operations ---
+
+[methods.write_file]
+name = "WriteFile"
+description = "Write content to file (create or overwrite)"
+signature = "func(path: text, content: bytes, actor: Participant) -> (result: CompoundResult, error)"
+compound_action = "write_file"
+parameters = [
+    { name = "path", type = "text", description = "File path" },
+    { name = "content", type = "bytes", description = "Content to write" },
+    { name = "actor", type = "Participant", description = "Who is writing" }
+]
+returns = [
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.create_file]
+name = "CreateFile"
+description = "Create new file (fail if exists)"
+signature = "func(path: text, content: bytes, actor: Participant) -> (result: CompoundResult, error)"
+compound_action = "create_file"
+parameters = [
+    { name = "path", type = "text", description = "File path" },
+    { name = "content", type = "bytes", description = "Initial content" },
+    { name = "actor", type = "Participant", description = "Who is creating" }
+]
+returns = [
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.delete_file]
+name = "DeleteFile"
+description = "Remove file"
+signature = "func(path: text, actor: Participant, reason: text) -> (result: CompoundResult, error)"
+compound_action = "delete_file"
+note = "reason affects interpretation (cleanup vs accident)"
+parameters = [
+    { name = "path", type = "text", description = "File path" },
+    { name = "actor", type = "Participant", description = "Who is deleting" },
+    { name = "reason", type = "text", description = "Why deleting (cleanup, obsolete, accident)" }
+]
+returns = [
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.create_directory]
+name = "CreateDirectory"
+description = "Create directory (including parents)"
+signature = "func(path: text, actor: Participant) -> (result: CompoundResult, error)"
+compound_action = "create_directory"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" },
+    { name = "actor", type = "Participant", description = "Who is creating" }
+]
+returns = [
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.delete_directory]
+name = "DeleteDirectory"
+description = "Remove directory"
+signature = "func(path: text, recursive: bool3, actor: Participant, reason: text) -> (result: CompoundResult, error)"
+compound_action = "delete_directory"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" },
+    { name = "recursive", type = "bool3", description = "Delete contents if not empty" },
+    { name = "actor", type = "Participant", description = "Who is deleting" },
+    { name = "reason", type = "text", description = "Why deleting" }
+]
+returns = [
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.move_file]
+name = "MoveFile"
+description = "Move file from source to destination"
+signature = "func(source: text, dest: text, actor: Participant) -> (result: CompoundResult, error)"
+compound_action = "move_file"
+parameters = [
+    { name = "source", type = "text", description = "Source path" },
+    { name = "dest", type = "text", description = "Destination path" },
+    { name = "actor", type = "Participant", description = "Who is moving" }
+]
+returns = [
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.copy_file]
+name = "CopyFile"
+description = "Copy file to destination"
+signature = "func(source: text, dest: text, actor: Participant) -> (result: CompoundResult, error)"
+compound_action = "copy_file"
+parameters = [
+    { name = "source", type = "text", description = "Source path" },
+    { name = "dest", type = "text", description = "Destination path" },
+    { name = "actor", type = "Participant", description = "Who is copying" }
+]
+returns = [
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+# --- Metadata Operations ---
+
+[methods.get_metadata]
+name = "GetMetadata"
+description = "Get file metadata"
+signature = "func(path: text) -> (metadata: FileMetadata, error)"
+parameters = [
+    { name = "path", type = "text", description = "File path" }
+]
+returns = [
+    { name = "metadata", type = "FileMetadata", description = "File metadata" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.get_timestamp]
+name = "GetTimestamp"
+description = "Get file timestamps"
+signature = "func(path: text) -> (timestamp: Timestamp, error)"
+links_to = "timestamp.toml"
+parameters = [
+    { name = "path", type = "text", description = "File path" }
+]
+returns = [
+    { name = "timestamp", type = "Timestamp", description = "File timestamps" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.set_permission]
+name = "SetPermission"
+description = "Set permission for path"
+signature = "func(path: text, permission: Permission, actor: Participant) -> (result: CompoundResult, error)"
+links_to = "permission.toml"
+parameters = [
+    { name = "path", type = "text", description = "Path to modify" },
+    { name = "permission", type = "Permission", description = "New permission" },
+    { name = "actor", type = "Participant", description = "Who is setting" }
+]
+returns = [
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+# --- OmniCode Operations (Language Bridge) ---
+
+[methods.get_pragma]
+name = "GetPragma"
+description = "Parse #!omni pragma from file"
+signature = "func(path: text) -> (pragma: Pragma, error)"
+links_to = "file-type.toml"
+parameters = [
+    { name = "path", type = "text", description = "File path" }
+]
+returns = [
+    { name = "pragma", type = "Pragma", description = "Parsed pragma" },
+    { name = "error", type = "error", description = "Error if no pragma or invalid" }
+]
+
+[methods.validate_structure]
+name = "ValidateStructure"
+description = "Validate OmniCode block structure"
+signature = "func(path: text, actor: Participant) -> (result: CompoundResult, validation: ValidationResult, error)"
+compound_action = "validate_structure"
+links_to = "validation.toml"
+parameters = [
+    { name = "path", type = "text", description = "File path" },
+    { name = "actor", type = "Participant", description = "Who is validating" }
+]
+returns = [
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "validation", type = "ValidationResult", description = "Validation details" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.get_block_structure]
+name = "GetBlockStructure"
+description = "Determine block structure type"
+signature = "func(path: text) -> (block_type: BlockType, error)"
+parameters = [
+    { name = "path", type = "text", description = "File path" }
+]
+returns = [
+    { name = "block_type", type = "BlockType", description = "3-block, 4-block, or 5-block" },
+    { name = "error", type = "error", description = "Error if cannot determine" }
+]
+
+# --- Health Operations ---
+
+[methods.get_health]
+name = "GetHealth"
+description = "Get accumulated health for path"
+signature = "func(path: text) -> (health: Health, error)"
+links_to = "health.toml"
+parameters = [
+    { name = "path", type = "text", description = "Path to check" }
+]
+returns = [
+    { name = "health", type = "Health", description = "Accumulated health" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.get_health_breakdown]
+name = "GetHealthBreakdown"
+description = "Get diagnostic breakdown of health"
+signature = "func(path: text) -> (diagnostics: HealthDiagnostics, error)"
+links_to = "health-diagnostics.toml"
+parameters = [
+    { name = "path", type = "text", description = "Path to analyze" }
+]
+returns = [
+    { name = "diagnostics", type = "HealthDiagnostics", description = "Full breakdown" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.recalculate_health]
+name = "RecalculateHealth"
+description = "Recalculate health from action history"
+signature = "func(path: text) -> (health: Health, error)"
+note = "Audit function — recalculate from scratch"
+parameters = [
+    { name = "path", type = "text", description = "Path to recalculate" }
+]
+returns = [
+    { name = "health", type = "Health", description = "Recalculated health" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+# --- Action History ---
+
+[methods.get_action_history]
+name = "GetActionHistory"
+description = "Get action history for path"
+signature = "func(path: text, since: Timestamp) -> (actions: list<CompoundResult>, error)"
+parameters = [
+    { name = "path", type = "text", description = "Path to query" },
+    { name = "since", type = "Timestamp", description = "Start time" }
+]
+returns = [
+    { name = "actions", type = "list<CompoundResult>", description = "Action history" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.get_fail_breakdown]
+name = "GetFailBreakdown"
+description = "Get count of each fail state hit"
+signature = "func(path: text, since: Timestamp) -> (breakdown: map<text, uint9>, error)"
+note = "Returns count of each fail state for diagnostics"
+parameters = [
+    { name = "path", type = "text", description = "Path to query" },
+    { name = "since", type = "Timestamp", description = "Start time" }
+]
+returns = [
+    { name = "breakdown", type = "map<text, uint9>", description = "Fail state counts" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+# --- Network Bridge (toward FaithNet) ---
+
+[methods.prepare_sync]
+name = "PrepareSync"
+description = "Package file for network sync"
+signature = "func(path: text, actor: Participant) -> (package: SyncPackage, result: CompoundResult, error)"
+compound_action = "sync_file"
+parameters = [
+    { name = "path", type = "text", description = "File to sync" },
+    { name = "actor", type = "Participant", description = "Who is syncing" }
+]
+returns = [
+    { name = "package", type = "SyncPackage", description = "Sync package" },
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.apply_sync]
+name = "ApplySync"
+description = "Apply synced content from network"
+signature = "func(package: SyncPackage, actor: Participant) -> (result: CompoundResult, error)"
+parameters = [
+    { name = "package", type = "SyncPackage", description = "Received sync package" },
+    { name = "actor", type = "Participant", description = "Who is applying" }
+]
+returns = [
+    { name = "result", type = "CompoundResult", description = "Action result" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.verify_integrity]
+name = "VerifyIntegrity"
+description = "Verify file integrity against remote hash"
+signature = "func(path: text, remote_hash: text) -> bool3"
+parameters = [
+    { name = "path", type = "text", description = "Local file path" },
+    { name = "remote_hash", type = "text", description = "Expected hash" }
+]
+returns = [
+    { name = "matches", type = "bool3", description = "true/false/unknown" }
+]
+
+# --- Watch Operations (Event Source) ---
+
+[methods.watch_path]
+name = "WatchPath"
+description = "Subscribe to file changes"
+signature = "func(path: text, events: list<text>, callback: func) -> (handle: WatchHandle, error)"
+parameters = [
+    { name = "path", type = "text", description = "Path to watch" },
+    { name = "events", type = "list<text>", description = "Events to watch for" },
+    { name = "callback", type = "func", description = "Function to call on event" }
+]
+returns = [
+    { name = "handle", type = "WatchHandle", description = "Watch handle" },
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+[methods.stop_watch]
+name = "StopWatch"
+description = "Unsubscribe from file changes"
+signature = "func(handle: WatchHandle) -> error"
+parameters = [
+    { name = "handle", type = "WatchHandle", description = "Watch to stop" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+
+
+# -----------------------------------------------------------------------------
+# 7. Supporting Types
+# -----------------------------------------------------------------------------
+
+[types.file_entry]
+description = "Directory listing item"
+fields = [
+    { name = "name", type = "text", description = "File/directory name" },
+    { name = "path", type = "text", description = "Full path" },
+    { name = "file_type", type = "FileType", description = "Biblical file type" },
+    { name = "size", type = "uint27", description = "Size in bytes" },
+    { name = "health", type = "int9", description = "Accumulated health" }
+]
+
+[types.file_metadata]
+description = "File information"
+fields = [
+    { name = "path", type = "text", description = "Full path" },
+    { name = "file_type", type = "FileType", description = "Biblical file type" },
+    { name = "size", type = "uint27", description = "Size in bytes" },
+    { name = "created", type = "Timestamp", description = "Creation time" },
+    { name = "modified", type = "Timestamp", description = "Last modified time" },
+    { name = "permission", type = "Permission", description = "Access permission" },
+    { name = "health", type = "int9", description = "Accumulated health" }
+]
+
+[types.pragma]
+description = "Parsed #!omni declaration"
+fields = [
+    { name = "raw", type = "text", description = "Raw pragma line" },
+    { name = "file_category", type = "text", description = "code, data, document, template" },
+    { name = "target_format", type = "text", description = "go, toml, adoc, etc." },
+    { name = "biblical_extension", type = "text", description = "dabar, chok, sefer, etc." }
+]
+
+[types.validation_result]
+description = "Structure validation outcome"
+fields = [
+    { name = "valid", type = "bool3", description = "Overall validity" },
+    { name = "block_type", type = "BlockType", description = "Detected structure" },
+    { name = "errors", type = "list<text>", description = "Validation errors" },
+    { name = "warnings", type = "list<text>", description = "Validation warnings" }
+]
+
+[types.block_type]
+description = "OmniCode block structure type"
+values = ["3-block", "4-block", "5-block", "unknown"]
+
+[types.sync_package]
+description = "Package for network transfer (FaithNet)"
+fields = [
+    { name = "path", type = "text", description = "Original path" },
+    { name = "content", type = "bytes", description = "File content" },
+    { name = "hash", type = "text", description = "Content hash" },
+    { name = "metadata", type = "FileMetadata", description = "File metadata" },
+    { name = "action_history", type = "list<CompoundResult>", description = "Action history for health" },
+    { name = "health", type = "int9", description = "Current health" },
+    { name = "source_identity", type = "Participant", description = "Who sent this" },
+    { name = "timestamp", type = "Timestamp", description = "When packaged" }
+]
+
+[types.watch_handle]
+description = "Reference for file watching subscription"
+fields = [
+    { name = "id", type = "text", description = "Unique handle ID" },
+    { name = "path", type = "text", description = "Watched path" },
+    { name = "events", type = "list<text>", description = "Subscribed events" }
+]
+
+[types.health_diagnostics]
+description = "Full breakdown of health calculation"
+fields = [
+    { name = "path", type = "text", description = "Path analyzed" },
+    { name = "health", type = "int9", description = "Current health score" },
+    { name = "total_actions", type = "uint27", description = "Total actions recorded" },
+    { name = "pass_count", type = "uint27", description = "Total passes (+1s)" },
+    { name = "defer_count", type = "uint27", description = "Total defers (0s)" },
+    { name = "fail_count", type = "uint27", description = "Total fails (-1s)" },
+    { name = "fail_breakdown", type = "map<text, uint27>", description = "Count per fail state" }
+]
+
+
+# -----------------------------------------------------------------------------
+# 8. Error Catalog
+# -----------------------------------------------------------------------------
+# All possible fail states. When an atomic action fails, it hits ONE of these.
+# The catalog enables traceability — we know exactly what went wrong.
+
+[errors]
+description = "All possible fail states across atomic actions"
+
+# Path errors
+[errors.path_invalid]
+message = "Path contains illegal characters or structure"
+category = "path"
+
+[errors.path_too_long]
+message = "Path exceeds maximum length"
+category = "path"
+
+[errors.path_not_found]
+message = "Path does not exist"
+category = "path"
+
+[errors.path_already_exists]
+message = "Path already exists"
+category = "path"
+
+[errors.broken_symlink]
+message = "Symbolic link target does not exist"
+category = "path"
+
+[errors.circular_reference]
+message = "Circular path reference detected"
+category = "path"
+
+[errors.reserved_name]
+message = "Path uses a reserved name"
+category = "path"
+
+[errors.illegal_characters]
+message = "Path contains illegal characters"
+category = "path"
+
+# Permission errors
+[errors.permission_denied]
+message = "Actor lacks required permission"
+category = "permission"
+
+[errors.identity_unknown]
+message = "Actor identity cannot be verified"
+category = "permission"
+
+[errors.permission_undefined]
+message = "No permission rule defined for this operation"
+category = "permission"
+
+[errors.access_denied]
+message = "Access explicitly denied"
+category = "permission"
+
+# Storage errors
+[errors.disk_full]
+message = "No space available"
+category = "storage"
+
+[errors.quota_exceeded]
+message = "Actor quota exceeded"
+category = "storage"
+
+[errors.locked]
+message = "Resource locked by another process"
+category = "storage"
+
+[errors.corrupted]
+message = "Data corruption detected"
+category = "storage"
+
+[errors.hardware_error]
+message = "Hardware failure during operation"
+category = "storage"
+
+[errors.fragmented]
+message = "Cannot allocate contiguous space"
+category = "storage"
+
+[errors.not_allocated]
+message = "Space was not allocated"
+category = "storage"
+
+[errors.in_use]
+message = "Resource is in use"
+category = "storage"
+
+[errors.not_found]
+message = "Resource not found"
+category = "storage"
+
+[errors.not_empty]
+message = "Directory is not empty"
+category = "storage"
+
+[errors.not_directory]
+message = "Path is not a directory"
+category = "storage"
+
+# Validation errors
+[errors.missing_pragma]
+message = "No #!omni pragma found"
+category = "validation"
+
+[errors.invalid_pragma]
+message = "Pragma is malformed"
+category = "validation"
+
+[errors.no_pragma]
+message = "File has no pragma"
+category = "validation"
+
+[errors.invalid_block_order]
+message = "Blocks not in required order"
+category = "validation"
+
+[errors.missing_section]
+message = "Required section not present"
+category = "validation"
+
+[errors.syntax_error]
+message = "Syntax validation failed"
+category = "validation"
+
+[errors.hash_mismatch]
+message = "Content hash does not match expected"
+category = "validation"
+
+[errors.hash_missing]
+message = "No hash available for comparison"
+category = "validation"
+
+# Network errors
+[errors.network_unreachable]
+message = "Cannot reach network"
+category = "network"
+
+[errors.timeout]
+message = "Operation timed out"
+category = "network"
+
+[errors.rejected]
+message = "Remote rejected operation"
+category = "network"
+
+[errors.malformed]
+message = "Packet malformed"
+category = "network"
+
+# Trust errors
+[errors.untrusted]
+message = "Source not in trust list"
+category = "trust"
+
+[errors.signature_invalid]
+message = "Cryptographic signature invalid"
+category = "trust"
+
+[errors.expired]
+message = "Certificate or token expired"
+category = "trust"
+
+[errors.revoked]
+message = "Identity revoked"
+category = "trust"
+
+[errors.unknown_source]
+message = "Source identity unknown"
+category = "trust"
+
+[errors.unknown_actor]
+message = "Actor identity unknown"
+category = "trust"
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview (3-Block Adapted)
+# -----------------------------------------------------------------------------
+#
+# 1. OPERATIONS
+#    - Validation: How to verify implementations
+#    - Access: How to use this contract
+#
+# 2. POLICY
+#    - Modification: What's safe to change
+#
+# 3. SYNTHESIS
+#    - Flow: The complete operation flow
+#    - Closing Note: Final guidance and grounding
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Operations - Validation
+# -----------------------------------------------------------------------------
+#
+# Verify contract is correctly formatted:
+#
+#   # Syntax check (TOML parser)
+#   python -c "import tomllib; f=open('word/core/contracts/filesystem.toml','rb'); tomllib.load(f)"
+#
+# Implementation verification:
+#   - All methods must be implemented
+#   - Signatures must match exactly
+#   - All atomic actions must return exactly +1, 0, or -1
+#   - Compound scores must equal Σ(atomic.result)
+#   - All fail states must be from the error catalog
+#
+# Test an implementation:
+#   - CreateFile must return CompoundResult with 7 atomic results
+#   - Health must equal sum of all compound scores
+#   - GetFailBreakdown must account for all -1 results
+#
+
+# -----------------------------------------------------------------------------
+# 2. Operations - Access
+# -----------------------------------------------------------------------------
+#
+# Go code integration:
+#
+#   type FilesystemProvider interface {
+#       // Read operations
+#       ReadFile(path string, actor Participant) ([]byte, CompoundResult, error)
+#       ReadText(path string, actor Participant) (string, CompoundResult, error)
+#       ListDirectory(path string, actor Participant) ([]FileEntry, CompoundResult, error)
+#       FileExists(path string) Bool3
+#       GetFileType(path string) (FileType, error)
+#       GetPermission(path string) (Permission, error)
+#
+#       // Write operations
+#       WriteFile(path string, content []byte, actor Participant) (CompoundResult, error)
+#       CreateFile(path string, content []byte, actor Participant) (CompoundResult, error)
+#       DeleteFile(path string, actor Participant, reason string) (CompoundResult, error)
+#       CreateDirectory(path string, actor Participant) (CompoundResult, error)
+#       DeleteDirectory(path string, recursive Bool3, actor Participant, reason string) (CompoundResult, error)
+#       MoveFile(source, dest string, actor Participant) (CompoundResult, error)
+#       CopyFile(source, dest string, actor Participant) (CompoundResult, error)
+#
+#       // Metadata operations
+#       GetMetadata(path string) (FileMetadata, error)
+#       GetTimestamp(path string) (Timestamp, error)
+#       SetPermission(path string, perm Permission, actor Participant) (CompoundResult, error)
+#
+#       // OmniCode operations
+#       GetPragma(path string) (Pragma, error)
+#       ValidateStructure(path string, actor Participant) (CompoundResult, ValidationResult, error)
+#       GetBlockStructure(path string) (BlockType, error)
+#
+#       // Health operations
+#       GetHealth(path string) (Health, error)
+#       GetHealthBreakdown(path string) (HealthDiagnostics, error)
+#       RecalculateHealth(path string) (Health, error)
+#
+#       // Action history
+#       GetActionHistory(path string, since Timestamp) ([]CompoundResult, error)
+#       GetFailBreakdown(path string, since Timestamp) (map[string]uint, error)
+#
+#       // Network bridge
+#       PrepareSync(path string, actor Participant) (SyncPackage, CompoundResult, error)
+#       ApplySync(pkg SyncPackage, actor Participant) (CompoundResult, error)
+#       VerifyIntegrity(path string, remoteHash string) Bool3
+#
+#       // Watch operations
+#       WatchPath(path string, events []string, callback func()) (WatchHandle, error)
+#       StopWatch(handle WatchHandle) error
+#   }
+#
+#   // Compile-time contract verification
+#   var _ FilesystemProvider = (*MillenniumFSProvider)(nil)
+#
+
+# -----------------------------------------------------------------------------
+# 3. Policy - Modification
+# -----------------------------------------------------------------------------
+#
+# NEVER Modify:
+#   ❌ Atomic action result values (+1, 0, -1)
+#   ❌ Existing method signatures
+#   ❌ Error names in catalog (diagnostics depend on these)
+#   ❌ Compound action atomics list (would change state counts)
+#
+# Safe to Add:
+#   ✅ New atomic actions
+#   ✅ New compound actions
+#   ✅ New methods
+#   ✅ New error types
+#   ✅ Documentation and examples
+#
+# Requires Coordination:
+#   ⚠️ Adding fail states to existing atomics (affects diagnostics)
+#   ⚠️ Changing compound action composition (affects state counts)
+#   ⚠️ Deprecating methods (notify all implementations)
+#
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis - The Complete Flow
+# -----------------------------------------------------------------------------
+#
+#   Actor initiates operation
+#           ↓
+#   [1] verify_actor (atomic) → +1/0/-1
+#           ↓
+#   [2] validate_path (atomic) → +1/0/-1
+#           ↓
+#   [3] check_permission (atomic) → +1/0/-1
+#           ↓
+#   [4] ... remaining atomics → +1/0/-1 each
+#           ↓
+#   Compound score = Σ(atomic results)
+#           ↓
+#   Action logged with:
+#     - actor (from identity.toml)
+#     - timestamp (from timestamp.toml)
+#     - path
+#     - each atomic result + state
+#     - compound score
+#           ↓
+#   Health recalculated = Σ(all compound scores)
+#           ↓
+#   Diagnostics available:
+#     - pass/defer/fail counts
+#     - which fail states were hit
+#           ↓
+#   Watchers notified → Hooks can trigger
+#           ↓
+#   Network can sync (FaithNet) with full action history
+#
+
+# -----------------------------------------------------------------------------
+# 5. Synthesis - Closing Note
+# -----------------------------------------------------------------------------
+#
+# The filesystem is the body where truth is stored. Every atomic action leaves
+# a mark — +1 for success, 0 for pending, -1 for failure. Pass has one narrow
+# path; fail has many wide gates.
+#
+# Health is not set — it emerges from what happened. The score is the truth of
+# accumulated actions. When health drops, the diagnostics reveal exactly which
+# fail states were hit. This is accountability.
+#
+# The contract embodies biblical asymmetry:
+#   "Enter ye in at the strait gate: for wide is the gate, and broad is the
+#    way, that leadeth to destruction, and many there be which go in thereat:
+#    Because strait is the gate, and narrow is the way, which leadeth unto
+#    life, and few there be that find it." — Matthew 7:13-14 KJV
+#
+# Dependencies flow:
+#   primitives.toml → types.toml → schemas/*.toml → contracts/filesystem.toml
+#                                                   ↑ YOU ARE HERE
+#                                                            ↓
+#                                                   contracts/network.toml
+#
+# Implementations fulfill this contract. The contract is the covenant.
+#
+# "Write the vision, and make it plain upon tables, that he may run that
+#  readeth it." — Habakkuk 2:2 KJV
+#
+# Let truth be written, let actions be counted, let health emerge.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

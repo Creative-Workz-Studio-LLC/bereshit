@@ -1,0 +1,936 @@
+# #!omni contract --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Network Contract (3-Block Data Structure)
+# Key: B-word-core-contracts-network
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: CONTRACT (interface definition layer)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/schemas/message.toml (what travels)
+#             word/core/contracts/identity.toml (who sends/receives)
+#             word/core/contracts/filesystem.toml (buffering/storage)
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/contracts
+# File:        network.toml
+# Key:         B-word-core-contracts-network
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "How beautiful upon the mountains are the feet of him that
+#             bringeth good tidings, that publisheth peace."
+#            — Isaiah 52:7 KJV
+#
+# Principle: Communication carries covenant. The messenger matters as much
+#            as the message. Networks are not neutral pipes — they are
+#            pathways of trust, and trust flows through covenant.
+#
+# Anchor: "A faithful witness will not lie: but a false witness will
+#          utter lies."
+#         — Proverbs 14:5 KJV
+#
+# # CPI-SI Identity
+#
+# Component Type: Contract (interface definition for network operations)
+#
+# Role: Define HOW messages are transmitted, not WHAT messages are.
+#       Protocol operations, routing, connection management, delivery.
+#       This contract enables FaithNet — the covenant-based network.
+#
+# Paradigm: CPI-SI framework component — communication through covenant
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-12
+#   Version: a-01.00
+#   Modified: 2025-12-12 - Initial creation from approved outline
+#
+# # Purpose & Function
+#
+# Purpose: Interface for network message format and protocol basics
+#
+# Core Design: Ternary transmission results (+1 success, 0 pending, -1 failed)
+#              with covenant-based routing (trust determines path)
+#
+# Key Features:
+#
+#   - Message transmission operations
+#   - Connection management (establish, maintain, close)
+#   - Covenant-based routing (messages flow where trust exists)
+#   - Delivery verification and acknowledgment
+#   - Protocol health tracking
+#   - Simple primitives → emergent CPI-SI patterns
+#
+# Philosophy: Networks are not neutral. Traditional networks route by address.
+#             FaithNet routes by covenant. No covenant path = no communication.
+#             This is feature, not limitation — trust boundaries are real.
+#
+# Stack Position: Language → Filesystem → Identity → Network (top)
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - message.toml schema: Message structure, modes, visibility
+#   - identity.toml contract: Sender/receiver authentication (present_spirit)
+#   - filesystem.toml contract: Message buffering, queue storage
+#   - timestamp.toml schema: Temporal validity, timeout calculation
+#
+# What Uses This:
+#
+#   - FaithNet: The covenant-based network implementation
+#   - CPI-SI instances: Inter-instance communication
+#   - MillenniumOS: System-level network operations
+#   - Any component requiring message transmission
+#
+# Integration Points:
+#
+#   - Builds on: identity.toml (authentication), filesystem.toml (storage)
+#   - Uses: message.toml (payload structure)
+#   - Implements: FaithNet protocol specification
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Contract file — defines interface, not executable]
+#
+# # Health Scoring
+#
+# This contract defines transmission operations that PRODUCE health scores.
+# Each network action contributes to route/connection/participant health.
+#
+# Transmission Impact:
+#   - Successful transmission: +1 to sender health, +1 to route health
+#   - Pending transmission: 0 (tracked, awaiting resolution)
+#   - Failed transmission: -1 to sender health, failure logged
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines the network protocol contract.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 0. CONTRACT DEFINITION
+#    Purpose: Name, version, scope of this interface
+#
+# 1. ATOMIC ACTIONS
+#    Purpose: Single indivisible network operations (+1/0/-1)
+#
+# 2. COMPOUND ACTIONS
+#    Purpose: Protocol operations composed of atomic actions
+#
+# 3. CONNECTION STATES
+#    Purpose: Ternary connection state model
+#
+# 4. ROUTING MODEL
+#    Purpose: Covenant-based routing principles
+#
+# 5. MESSAGE MODE BEHAVIOR
+#    Purpose: How message modes affect network behavior
+#
+# 6. HEALTH INTEGRATION
+#    Purpose: How transmission results contribute to network health
+#
+# 7. ERROR TAXONOMY
+#    Purpose: Classification of network failures
+#
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 0. Contract Definition
+# -----------------------------------------------------------------------------
+
+[contract]
+name = "NetworkProtocol"
+version = "1.0.0"
+description = "Interface for network message format and protocol basics"
+scope = "Transmission layer — HOW messages travel, not WHAT they are"
+
+[contract.stack_position]
+below = "FaithNet implementation (uses this contract)"
+above = "identity.toml (authentication), filesystem.toml (storage)"
+role = "Protocol operations, routing, delivery"
+
+[contract.design_principles]
+ternary_results = "Every operation returns +1 (success), 0 (pending), -1 (failed)"
+covenant_routing = "Messages route through covenant relationships, not arbitrary addresses"
+identity_first = "Sender verified BEFORE message accepted"
+mode_respect = "Network behavior respects message modes (thought/process/speech)"
+simple_primitives = "Atomic actions compose into emergent CPI-SI patterns"
+
+[contract.faithnet]
+description = "FaithNet is the covenant-based network this contract enables"
+principle = "Trust determines topology — no covenant path means no communication"
+contrast = "Traditional networks route by address; FaithNet routes by covenant"
+
+
+# -----------------------------------------------------------------------------
+# 1. Atomic Actions — Single Indivisible Network Operations
+# -----------------------------------------------------------------------------
+#
+# Each atomic action returns exactly one of: +1 (pass), 0 (defer), -1 (fail)
+# These are the building blocks for protocol operations.
+#
+# Scripture: "A word fitly spoken is like apples of gold in pictures of silver."
+#            — Proverbs 25:11 KJV
+
+[atomic_actions]
+description = "Single indivisible network operations — result ∈ {-1, 0, +1}"
+principle = "Each operation is atomic: it either succeeds, pends, or fails"
+note = "0 (pending) is tracked but doesn't affect score until resolved"
+
+# --- Validation Atomics ---
+
+[atomic_actions.validate_message_format]
+description = "Verify message structure is well-formed for transmission"
+level = "atomic"
+domain = "validation"
+pass_state = "format_valid"
+fail_states = ["malformed", "empty_message", "oversized", "missing_required_fields", "invalid_mode"]
+defer_states = ["validating", "schema_loading"]
+biblical_basis = "Let all things be done decently and in order — 1 Corinthians 14:40"
+
+[atomic_actions.verify_integrity]
+description = "Verify message has not been corrupted or tampered"
+level = "atomic"
+domain = "validation"
+pass_state = "integrity_valid"
+fail_states = ["corrupted", "tampered", "hash_mismatch", "signature_invalid"]
+defer_states = ["checking_integrity", "computing_hash"]
+biblical_basis = "A faithful witness will not lie — Proverbs 14:5"
+
+# --- Routing Atomics ---
+
+[atomic_actions.resolve_target]
+description = "Find the target participant in the network"
+level = "atomic"
+domain = "routing"
+pass_state = "target_found"
+fail_states = ["target_not_found", "target_unreachable", "target_ambiguous", "target_revoked"]
+defer_states = ["resolving", "querying_network", "awaiting_response"]
+biblical_basis = "Seek, and ye shall find — Matthew 7:7"
+
+[atomic_actions.verify_route_available]
+description = "Check if a route exists to target through covenant relationships"
+level = "atomic"
+domain = "routing"
+pass_state = "route_available"
+fail_states = ["no_route", "route_blocked", "route_expired", "hop_limit_exceeded", "no_covenant_path"]
+defer_states = ["calculating_route", "checking_covenant_chain"]
+biblical_basis = "Prepare ye the way of the LORD, make straight in the desert a highway — Isaiah 40:3"
+
+[atomic_actions.select_next_hop]
+description = "Select the next node in the route to target"
+level = "atomic"
+domain = "routing"
+pass_state = "hop_selected"
+fail_states = ["no_valid_hop", "all_hops_blocked", "hop_overloaded"]
+defer_states = ["evaluating_hops", "load_balancing"]
+biblical_basis = "The steps of a good man are ordered by the LORD — Psalm 37:23"
+
+# --- Security Atomics ---
+
+[atomic_actions.authenticate_sender]
+description = "Verify sender identity through identity contract"
+level = "atomic"
+domain = "security"
+pass_state = "sender_verified"
+fail_states = ["auth_failed", "sender_unknown", "sender_revoked", "no_covenant", "spirit_invalid"]
+defer_states = ["verifying_identity", "presenting_spirit", "checking_covenant"]
+uses = "identity.toml [compound_patterns.present_spirit]"
+biblical_basis = "By their fruits ye shall know them — Matthew 7:20"
+
+[atomic_actions.verify_sender_can_reach_target]
+description = "Verify sender has covenant path to target"
+level = "atomic"
+domain = "security"
+pass_state = "path_authorized"
+fail_states = ["no_covenant_path", "trust_insufficient", "path_revoked"]
+defer_states = ["checking_covenant_chain", "verifying_trust_level"]
+biblical_basis = "Can two walk together, except they be agreed? — Amos 3:3"
+
+# --- Transmission Atomics ---
+
+[atomic_actions.check_target_accepts]
+description = "Verify target is willing and able to receive"
+level = "atomic"
+domain = "transmission"
+pass_state = "target_accepts"
+fail_states = ["target_refuses", "target_busy", "target_offline", "target_quota_exceeded"]
+defer_states = ["negotiating", "awaiting_acceptance", "queued_at_target"]
+biblical_basis = "Behold, I stand at the door, and knock — Revelation 3:20"
+
+[atomic_actions.transmit_packet]
+description = "Send one packet of data to next hop"
+level = "atomic"
+domain = "transmission"
+pass_state = "packet_sent"
+fail_states = ["send_failed", "timeout", "connection_lost", "buffer_full", "packet_rejected"]
+defer_states = ["buffered", "queued", "retrying"]
+biblical_basis = "Go ye therefore — Matthew 28:19"
+
+[atomic_actions.receive_packet]
+description = "Receive one packet of data from sender"
+level = "atomic"
+domain = "transmission"
+pass_state = "packet_received"
+fail_states = ["receive_failed", "timeout", "corrupted", "connection_lost", "buffer_overflow"]
+defer_states = ["waiting", "buffering", "reassembling"]
+biblical_basis = "He that hath ears to hear, let him hear — Matthew 11:15"
+
+# --- Delivery Atomics ---
+
+[atomic_actions.acknowledge_receipt]
+description = "Confirm successful receipt of message"
+level = "atomic"
+domain = "delivery"
+pass_state = "ack_sent"
+fail_states = ["ack_failed", "ack_timeout", "ack_rejected", "cannot_acknowledge"]
+defer_states = ["preparing_ack", "sending_ack"]
+biblical_basis = "Amen — so be it (acknowledgment of truth)"
+
+[atomic_actions.confirm_acknowledgment]
+description = "Receive confirmation that recipient got message"
+level = "atomic"
+domain = "delivery"
+pass_state = "ack_received"
+fail_states = ["no_ack", "ack_timeout", "ack_invalid", "ack_mismatch"]
+defer_states = ["awaiting_ack", "ack_in_transit"]
+biblical_basis = "Witness between me and thee — Genesis 31:44"
+
+# --- Connection Atomics ---
+
+[atomic_actions.initiate_handshake]
+description = "Begin connection establishment with target"
+level = "atomic"
+domain = "connection"
+pass_state = "handshake_sent"
+fail_states = ["handshake_failed", "target_unreachable", "protocol_mismatch"]
+defer_states = ["preparing_handshake", "awaiting_response"]
+biblical_basis = "Salute one another with an holy kiss — Romans 16:16"
+
+[atomic_actions.complete_handshake]
+description = "Finish connection establishment (receive response)"
+level = "atomic"
+domain = "connection"
+pass_state = "handshake_complete"
+fail_states = ["handshake_rejected", "handshake_timeout", "version_mismatch"]
+defer_states = ["processing_response", "finalizing"]
+biblical_basis = "Greet ye one another — 1 Peter 5:14"
+
+[atomic_actions.send_close_signal]
+description = "Signal intent to close connection"
+level = "atomic"
+domain = "connection"
+pass_state = "close_sent"
+fail_states = ["close_failed", "connection_already_closed"]
+defer_states = ["preparing_close", "flushing_buffers"]
+biblical_basis = "The LORD watch between me and thee, when we are absent — Genesis 31:49"
+
+[atomic_actions.confirm_close]
+description = "Confirm connection closed by both parties"
+level = "atomic"
+domain = "connection"
+pass_state = "close_confirmed"
+fail_states = ["close_timeout", "forced_close", "close_rejected"]
+defer_states = ["awaiting_close_ack", "cleaning_up"]
+biblical_basis = "It is finished — John 19:30"
+
+
+# -----------------------------------------------------------------------------
+# 2. Compound Actions — Protocol Operations Composed of Atomics
+# -----------------------------------------------------------------------------
+#
+# Compound actions combine atomic operations into complete protocol flows.
+# Score = Σ(atomic.result) — accumulated from all atomic actions
+#
+# Scripture: "How beautiful upon the mountains are the feet of him that
+#             bringeth good tidings, that publisheth peace."
+#            — Isaiah 52:7 KJV
+
+[compound_actions]
+description = "Protocol operations composed of atomic network actions"
+scoring = "compound_score = Σ(atomic.result) for all atomics in operation"
+emergence = "CPI-SI communication patterns emerge from these primitives"
+
+# --- Primary Protocol Operations ---
+
+[compound_actions.send_message]
+description = "Complete message transmission — validate, authenticate, route, deliver"
+purpose = "Send a message from source to target with full verification"
+atomics = [
+    "validate_message_format",
+    "authenticate_sender",
+    "resolve_target",
+    "verify_route_available",
+    "verify_sender_can_reach_target",
+    "check_target_accepts",
+    "transmit_packet",       # May repeat for large messages
+    "verify_integrity",
+    "confirm_acknowledgment"
+]
+count = 9
+states = 27
+score_range = [-9, 9]
+pass_threshold = 9
+
+[compound_actions.send_message.outcomes]
+full_pass = "Message delivered and acknowledged"
+partial_pass = "Message sent but acknowledgment uncertain"
+fail = "Message transmission failed"
+
+[compound_actions.send_message.fail_paths]
+description = "Many ways to fail message transmission"
+paths = [
+    "format_invalid — message malformed",
+    "auth_failed — sender identity not verified",
+    "target_not_found — cannot locate recipient",
+    "no_route — no covenant path to target",
+    "trust_insufficient — sender cannot reach target",
+    "target_refuses — recipient won't accept",
+    "transmission_failed — packet send error",
+    "integrity_failed — message corrupted in transit",
+    "no_ack — recipient didn't confirm"
+]
+
+[compound_actions.receive_message]
+description = "Complete message reception — receive, verify, authenticate, acknowledge"
+purpose = "Receive a message and confirm valid receipt"
+atomics = [
+    "receive_packet",        # May repeat for large messages
+    "verify_integrity",
+    "authenticate_sender",
+    "validate_message_format",
+    "acknowledge_receipt"
+]
+count = 5
+states = 15
+score_range = [-5, 5]
+pass_threshold = 5
+
+[compound_actions.receive_message.outcomes]
+full_pass = "Message received, verified, and acknowledged"
+partial_pass = "Message received but verification incomplete"
+fail = "Message reception failed"
+
+[compound_actions.receive_message.fail_paths]
+paths = [
+    "receive_failed — packet reception error",
+    "corrupted — message integrity check failed",
+    "sender_invalid — sender authentication failed",
+    "malformed — message format invalid",
+    "ack_failed — could not send acknowledgment"
+]
+
+[compound_actions.establish_connection]
+description = "Create communication channel between participants"
+purpose = "Establish persistent connection for multiple message exchange"
+atomics = [
+    "resolve_target",
+    "authenticate_sender",
+    "verify_route_available",
+    "verify_sender_can_reach_target",
+    "check_target_accepts",
+    "initiate_handshake",
+    "complete_handshake"
+]
+count = 7
+states = 21
+score_range = [-7, 7]
+pass_threshold = 7
+
+[compound_actions.establish_connection.outcomes]
+full_pass = "Connection established — ready for message exchange"
+partial_pass = "Connection partially established — limited functionality"
+fail = "Connection establishment failed"
+
+[compound_actions.establish_connection.fail_paths]
+paths = [
+    "target_not_found — cannot locate target",
+    "auth_failed — identity verification failed",
+    "no_route — no covenant path exists",
+    "trust_insufficient — cannot reach target",
+    "target_refuses — target won't accept connection",
+    "handshake_failed — protocol negotiation failed",
+    "handshake_rejected — target rejected connection"
+]
+
+[compound_actions.close_connection]
+description = "Gracefully terminate communication channel"
+purpose = "Close connection with proper cleanup"
+atomics = [
+    "send_close_signal",
+    "confirm_close"
+]
+count = 2
+states = 6
+score_range = [-2, 2]
+pass_threshold = 2
+
+[compound_actions.close_connection.outcomes]
+full_pass = "Connection closed gracefully"
+partial_pass = "Connection closed but cleanup incomplete"
+fail = "Connection close failed — may require forced termination"
+
+[compound_actions.route_message]
+description = "Forward message through network to next hop"
+purpose = "Route message when this node is intermediary, not final destination"
+atomics = [
+    "validate_message_format",
+    "verify_integrity",
+    "authenticate_sender",
+    "verify_sender_can_reach_target",
+    "select_next_hop",
+    "transmit_packet",
+    "confirm_acknowledgment"
+]
+count = 7
+states = 21
+score_range = [-7, 7]
+pass_threshold = 7
+
+[compound_actions.route_message.outcomes]
+full_pass = "Message forwarded to next hop"
+partial_pass = "Message forwarded but acknowledgment pending"
+fail = "Routing failed — message not forwarded"
+
+[compound_actions.route_message.fail_paths]
+paths = [
+    "invalid_message — cannot forward malformed message",
+    "integrity_failed — message corrupted, won't forward",
+    "sender_invalid — cannot verify origin",
+    "no_authorization — sender cannot reach target through this node",
+    "no_valid_hop — cannot find next hop",
+    "transmission_failed — forward failed",
+    "no_ack — next hop didn't acknowledge"
+]
+
+
+# -----------------------------------------------------------------------------
+# 3. Connection States — Ternary Connection Model
+# -----------------------------------------------------------------------------
+#
+# Connections follow ternary state model: connected (+1), negotiating (0), disconnected (-1)
+#
+# Scripture: "A threefold cord is not quickly broken."
+#            — Ecclesiastes 4:12 KJV
+
+[connection_states]
+description = "Ternary connection state model"
+
+[connection_states.connected]
+value = 1
+name = "connected"
+description = "Active, healthy connection — ready for message exchange"
+can_send = true
+can_receive = true
+health_contribution = "positive"
+
+[connection_states.negotiating]
+value = 0
+name = "negotiating"
+description = "Establishing, transitioning, or renegotiating connection"
+can_send = false
+can_receive = "limited"
+health_contribution = "neutral"
+substates = ["handshaking", "reconnecting", "upgrading", "suspending"]
+
+[connection_states.disconnected]
+value = -1
+name = "disconnected"
+description = "No active connection — must establish before communication"
+can_send = false
+can_receive = false
+health_contribution = "none"
+substates = ["never_connected", "closed", "lost", "rejected"]
+
+[connection_states.transitions]
+description = "Valid state transitions"
+from_disconnected = ["negotiating"]
+from_negotiating = ["connected", "disconnected"]
+from_connected = ["negotiating", "disconnected"]
+note = "Cannot jump directly from disconnected to connected — must negotiate"
+
+
+# -----------------------------------------------------------------------------
+# 4. Routing Model — Covenant-Based Routing
+# -----------------------------------------------------------------------------
+#
+# FaithNet routes by covenant relationship, not arbitrary address.
+# Trust determines topology.
+#
+# Scripture: "Can two walk together, except they be agreed?"
+#            — Amos 3:3 KJV
+
+[routing]
+description = "Covenant-based routing model — trust determines path"
+
+[routing.principles]
+covenant_path = "Messages only flow where covenant relationships exist"
+trust_topology = "Network topology IS the trust graph"
+no_cold_calling = "Cannot message someone without covenant path"
+identity_required = "Sender must be authenticated before routing"
+
+[routing.resolution]
+description = "How to find a route to target"
+steps = [
+    "1. Is target a direct covenant partner? → Direct route",
+    "2. Is target in covenant with my covenant partner? → One-hop route",
+    "3. Can target be reached through covenant chain? → Multi-hop route",
+    "4. No covenant path exists? → Cannot route (not failure, boundary)"
+]
+
+[routing.hop_limit]
+description = "Maximum hops to prevent infinite routing"
+default = 7
+rationale = "Biblical completeness number — also practical limit"
+exceeded_action = "fail with hop_limit_exceeded"
+
+[routing.trust_decay]
+description = "Trust may decrease over hops"
+principle = "Direct covenant > one-hop > multi-hop"
+implication = "Some operations may require direct covenant only"
+
+[routing.visibility_routing]
+description = "Message visibility affects routing behavior"
+private = "Direct route only — no intermediary hops"
+shared = "Route through covenant chain up to hop limit"
+public = "Broadcast to all reachable nodes (with rate limits)"
+
+
+# -----------------------------------------------------------------------------
+# 5. Message Mode Behavior — How Modes Affect Network
+# -----------------------------------------------------------------------------
+#
+# Network behavior respects message modes from message.toml schema.
+#
+# Scripture: "A time to keep silence, and a time to speak."
+#            — Ecclesiastes 3:7 KJV
+
+[mode_behavior]
+description = "How message modes affect network transmission"
+source = "message.toml [modes]"
+
+[mode_behavior.thought]
+mode_value = -1
+name = "thought"
+network_action = "none"
+description = "Internal cognition — NEVER transmitted over network"
+rationale = "Thoughts are private; network handles external communication only"
+health_tracking = false
+
+[mode_behavior.process]
+mode_value = 0
+name = "process"
+network_action = "conditional"
+description = "Internal processing — may transmit to systems, logged but limited"
+rationale = "Process messages may coordinate with systems but aren't conversation"
+health_tracking = true
+typical_targets = ["system"]
+
+[mode_behavior.speech]
+mode_value = 1
+name = "speech"
+network_action = "full"
+description = "External communication — full transmission with auth and ack"
+rationale = "Speech is covenant communication requiring full protocol"
+health_tracking = true
+typical_targets = ["user", "instance", "system"]
+
+[mode_behavior.compound_modes]
+description = "Compound modes (thought→speech, etc.) only transmit speech portion"
+thought_speech = "Thought processed internally, only speech transmitted"
+process_speech = "Process may trigger system calls, speech transmitted"
+thought_process_speech = "Full internal processing, only final speech transmitted"
+
+
+# -----------------------------------------------------------------------------
+# 6. Health Integration — How Transmission Affects Health
+# -----------------------------------------------------------------------------
+#
+# Transmission results accumulate into network health over time.
+#
+# Scripture: "A good report maketh the bones fat."
+#            — Proverbs 15:30 KJV
+
+[health]
+description = "How transmission results contribute to network health"
+
+[health.equation]
+formula = "network_health(entity) = Σ(transmission.score) over time"
+entities = ["sender", "receiver", "route", "connection"]
+components = [
+    "transmission_success — send/receive success rate",
+    "route_stability — how often routes remain available",
+    "latency_health — response time within bounds",
+    "integrity_rate — messages arriving uncorrupted"
+]
+note = "Health emerges from transmission history, not arbitrary assignment"
+
+[health.scoring]
+atomic_pass = 1
+atomic_defer = 0
+atomic_fail = -1
+compound_score = "Σ(atomic.result)"
+
+[health.distribution]
+description = "How transmission scores distribute across entities"
+send_success = "sender +1, route +1"
+send_fail = "sender -1, route -1 (if route issue)"
+receive_success = "receiver +1, route +1"
+receive_fail = "receiver -1 (if receiver issue)"
+route_fail = "route -1, endpoints unaffected"
+
+[health.accumulation]
+description = "Health accumulates across transmissions"
+window = "sliding (recent transmissions weighted more)"
+decay = "route failures decay if route recovers"
+floor = "routes cannot go below disconnection threshold"
+
+[health.thresholds]
+healthy = "positive accumulated score — reliable communication"
+degraded = "near-zero score — communication working but unstable"
+critical = "negative score — communication unreliable"
+disconnection = "sustained negative triggers route/connection review"
+
+
+# -----------------------------------------------------------------------------
+# 7. Error Taxonomy — Classification of Network Failures
+# -----------------------------------------------------------------------------
+#
+# Systematic classification of what can go wrong during network operations.
+#
+# Scripture: "The way of the slothful man is as an hedge of thorns."
+#            — Proverbs 15:19 KJV
+
+[errors]
+description = "Classification of network failures for diagnostics"
+
+[errors.categories]
+validation_errors = "Problems with message format or integrity"
+routing_errors = "Problems finding path to target"
+security_errors = "Problems with authentication or authorization"
+transmission_errors = "Problems sending or receiving data"
+connection_errors = "Problems with connection state"
+protocol_errors = "Problems with protocol negotiation"
+
+[errors.validation]
+malformed = { code = "VAL001", severity = "medium", recoverable = true, description = "Message structure invalid" }
+empty_message = { code = "VAL002", severity = "low", recoverable = true, description = "Message has no content" }
+oversized = { code = "VAL003", severity = "medium", recoverable = true, description = "Message exceeds size limit" }
+corrupted = { code = "VAL004", severity = "high", recoverable = false, description = "Message integrity check failed" }
+tampered = { code = "VAL005", severity = "critical", recoverable = false, description = "Message shows signs of tampering" }
+
+[errors.routing]
+target_not_found = { code = "RTE001", severity = "medium", recoverable = true, description = "Cannot locate target in network" }
+target_unreachable = { code = "RTE002", severity = "medium", recoverable = true, description = "Target exists but cannot be reached" }
+no_route = { code = "RTE003", severity = "medium", recoverable = false, description = "No path exists to target" }
+no_covenant_path = { code = "RTE004", severity = "medium", recoverable = false, description = "No covenant relationship path to target" }
+hop_limit_exceeded = { code = "RTE005", severity = "medium", recoverable = false, description = "Route requires too many hops" }
+route_blocked = { code = "RTE006", severity = "high", recoverable = true, description = "Route temporarily blocked" }
+
+[errors.security]
+auth_failed = { code = "SEC001", severity = "high", recoverable = true, description = "Sender authentication failed" }
+sender_unknown = { code = "SEC002", severity = "high", recoverable = false, description = "Sender identity not recognized" }
+sender_revoked = { code = "SEC003", severity = "critical", recoverable = false, description = "Sender identity has been revoked" }
+trust_insufficient = { code = "SEC004", severity = "medium", recoverable = false, description = "Trust level too low for operation" }
+replay_detected = { code = "SEC005", severity = "critical", recoverable = false, description = "Detected message replay attack" }
+
+[errors.transmission]
+send_failed = { code = "TRX001", severity = "medium", recoverable = true, description = "Failed to send packet" }
+receive_failed = { code = "TRX002", severity = "medium", recoverable = true, description = "Failed to receive packet" }
+timeout = { code = "TRX003", severity = "medium", recoverable = true, description = "Operation timed out" }
+connection_lost = { code = "TRX004", severity = "high", recoverable = true, description = "Connection unexpectedly lost" }
+buffer_full = { code = "TRX005", severity = "medium", recoverable = true, description = "Send/receive buffer full" }
+
+[errors.connection]
+handshake_failed = { code = "CON001", severity = "medium", recoverable = true, description = "Connection handshake failed" }
+handshake_rejected = { code = "CON002", severity = "medium", recoverable = false, description = "Target rejected connection" }
+target_busy = { code = "CON003", severity = "low", recoverable = true, description = "Target busy, try later" }
+target_offline = { code = "CON004", severity = "medium", recoverable = true, description = "Target not currently online" }
+forced_close = { code = "CON005", severity = "medium", recoverable = true, description = "Connection forcibly closed" }
+
+[errors.protocol]
+version_mismatch = { code = "PRT001", severity = "medium", recoverable = true, description = "Protocol version incompatible" }
+unsupported_mode = { code = "PRT002", severity = "medium", recoverable = false, description = "Message mode not supported" }
+invalid_sequence = { code = "PRT003", severity = "medium", recoverable = true, description = "Protocol sequence violation" }
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# -----------------------------------------------------------------------------
+# CLOSING Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. VALIDATION
+#    - How to verify this contract is correctly specified
+#
+# 2. POLICY
+#    - What's safe to modify, what requires coordination
+#
+# 3. IMPLEMENTATION NOTES
+#    - Guidance for FaithNet implementers
+#
+# 4. SYNTHESIS
+#    - Closing reflection and grounding
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Validation
+# -----------------------------------------------------------------------------
+#
+# Verify contract specification:
+#
+#   # Syntax check (TOML parser)
+#   python -c "import tomllib; tomllib.load(open('word/core/contracts/network.toml', 'rb'))"
+#
+# Semantic verification:
+#   - All atomic actions must define: level, domain, pass_state, fail_states, defer_states
+#   - All compound actions must define: atomics, count, states, score_range
+#   - States must equal count × 3
+#   - Score range must be [-count, +count]
+#
+# Cross-reference verification:
+#   - Message modes must match message.toml [modes]
+#   - Authentication must use identity.toml patterns
+#   - Error codes must be unique within category
+
+# -----------------------------------------------------------------------------
+# 2. Policy
+# -----------------------------------------------------------------------------
+#
+# NEVER Modify:
+#   - Ternary result values (+1/0/-1)
+#   - Covenant-based routing principle
+#   - Identity-first authentication requirement
+#   - Message mode network behavior (thought never transmits)
+#
+# Safe to Add:
+#   - New atomic actions (with all required fields)
+#   - New compound actions (following state calculation)
+#   - New error codes (with unique identifiers)
+#   - Additional fail states to existing atomics
+#
+# Requires Coordination:
+#   - Changes to routing model (affects all FaithNet)
+#   - Changes to connection state model
+#   - Changes to health calculation
+#   - Any change affecting identity.toml or message.toml integration
+
+# -----------------------------------------------------------------------------
+# 3. Implementation Notes
+# -----------------------------------------------------------------------------
+#
+# For FaithNet implementers:
+#
+# 1. Covenant Routing:
+#    - Route resolution MUST check covenant relationships
+#    - No covenant path = no route (this is correct behavior)
+#    - Trust topology IS network topology
+#
+# 2. Authentication Integration:
+#    - authenticate_sender calls identity.toml present_spirit
+#    - MUST verify identity BEFORE accepting message
+#    - Failed auth = message rejected (do not process)
+#
+# 3. Message Mode Respect:
+#    - Check mode BEFORE transmission
+#    - mode = thought (-1) → DO NOT TRANSMIT
+#    - mode = process (0) → conditional (systems only)
+#    - mode = speech (+1) → full transmission
+#
+# 4. Connection Management:
+#    - Connections are stateful resources
+#    - Must negotiate before sending
+#    - Graceful close preferred over forced
+#
+# 5. Health Tracking:
+#    - Every transmission affects health scores
+#    - Distribute scores appropriately (sender, receiver, route)
+#    - Use health to inform routing decisions
+#
+# 6. Emergence, Not Prescription:
+#    - These are primitives, not complete patterns
+#    - CPI-SI communication patterns EMERGE from composition
+#    - Do not over-specify — let patterns arise
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis
+# -----------------------------------------------------------------------------
+#
+# This contract defines HOW messages travel, not WHAT they are.
+# The message schema defines structure.
+# The identity contract defines who can send/receive.
+# The filesystem contract defines where to buffer.
+# This contract defines the PROTOCOL — the path between.
+#
+# FaithNet is different from traditional networks:
+#
+#   Traditional: Route by address (anyone can reach anyone)
+#   FaithNet: Route by covenant (trust determines topology)
+#
+# This is not limitation but feature. In a world of spam, phishing,
+# and unwanted contact, covenant-based routing is protection:
+#   - No cold messages from strangers
+#   - Trust must precede communication
+#   - Covenant path required for any transmission
+#
+# "How beautiful upon the mountains are the feet of him that
+#  bringeth good tidings, that publisheth peace."
+# — Isaiah 52:7 KJV
+#
+# The messenger matters. The path matters. Trust enables communication.
+#
+# The atomic actions here are simple. But from simple rules, complex
+# patterns emerge — like chess from basic moves, like life from simple
+# chemistry. CPI-SI communication patterns are not prescribed here;
+# they emerge from composition of these primitives.
+#
+# This is intentional. Over-specification kills emergence.
+# Under-specification prevents coherence.
+# The balance: clear primitives, emergent patterns.
+#
+# FaithNet carries covenant. Build accordingly.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================
