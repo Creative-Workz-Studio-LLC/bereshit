@@ -219,7 +219,7 @@ CONTENT BLOCK - The Phases
 
 Nothing — this is the foundation.
 
-=== Builds
+=== Originally Planned
 
 [cols="2,4",options="header"]
 |===
@@ -241,44 +241,133 @@ Nothing — this is the foundation.
 | Scripture encoding table
 |===
 
+=== Actually Built (23 files)
+
+Foundation work revealed deeper structure needed. What emerged:
+
+[cols="2,3,^1",options="header"]
+|===
+| Category | Files in `word/core/` | Count
+
+| *Core Definitions*
+| `primitives.toml`, `types.toml`, `validation.toml`, `keywords.toml`, `syntax.toml`
+| 5
+
+| *Schemas*
+| `schemas/file-type.toml`, `health.toml`, `health-log.toml`, `health-diagnostics.toml`, `permission.toml`, `identity.toml`, `timestamp.toml`, `message.toml`
+| 8
+
+| *Contracts*
+| `contracts/health-provider.toml`, `filesystem.toml`, `identity.toml`, `network.toml`
+| 4
+
+| *Bible Rail*
+| `bible/encoding.toml`, `decoding.toml`, `translation.toml`, `addressing.toml`
+| 4
+
+| *Constants*
+| `constants/ternary-math.toml`
+| 1
+
+| *Research*
+| `word/research/trit-foundations.adoc`
+| 1
+
+| *Total*
+|
+| *23*
+|===
+
 === Provides
 
-Specifications that all code implements against.
+Specifications that all code implements against. Richer than planned — ternary thinking exposed hidden assumptions.
 
 === Interface
 
 [source,toml]
 ----
-# Example: config/omnicode.toml
-[types.trit]
-values = [-1, 0, 1]
-neutral = 0
+# Example: word/core/primitives.toml
+[primitives.trit]
+description = "Ternary digit: negative, neutral, positive"
+values = { negative = -1, neutral = 0, positive = 1 }
+storage = { bits = 2, bytes = 1, trits_per_byte = 4 }
 
-[operations]
-read = { signature = "source -> Trit[]" }
-write = { signature = "(dest, Trit[]) -> void" }
-pack = { signature = "Trit[] -> Byte[]" }
-unpack = { signature = "Byte[] -> Trit[]" }
+[primitives.trit_byte]
+description = "4 trits packed into 1 byte (81 states)"
+storage = { bits = 8, bytes = 1, states = 81 }
 ----
 
 === Demo
 
+*Actual output (2025-12-12):*
+
 [source,bash]
 ----
-$ ./demo-config
-Loading omnicode.toml... ✓
-  Trit values: [-1, 0, +1]
-  Operations: [read, write, pack, unpack]
-Loading millenniumos.toml... ✓
-  Trits per byte: 4
-  Table entries: 81
-Loading cpi-si.toml... ✓
-  Required fields: [name, identity, boundaries]
-  Echo steps: [receive, verify, process, respond]
-Loading faithnet.toml... ✓
-  Tiers: [blocked, filtered, open]
-All configs valid.
+$ BERESHIT_ROOT=/media/seanje-lenox-wise/Project/Bereshit ./demo-config
+════════════════════════════════════════════════════════════════
+Phase 0 Demo: Config Loader Validation
+════════════════════════════════════════════════════════════════
+
+Bereshit Root: /media/seanje-lenox-wise/Project/Bereshit
+
+Loading Phase 0 configurations...
+
+────────────────────────────────────────────────────────────────
+Results Summary
+────────────────────────────────────────────────────────────────
+
+  bible: [encoding decoding translation addressing]
+  primitives: [trit trit3 trit9 trit27 trit_byte uint_tiny ...]
+  types: [health_score health_score_unsigned timestamp ...]
+  schemas: [file-type health health-log health-diagnostics ...]
+  contracts: [health-provider filesystem identity network]
+
+────────────────────────────────────────────────────────────────
+✓ Phase 0 Validation: PASSED
+  All specifications exist and are well-formed.
+════════════════════════════════════════════════════════════════
 ----
+
+*Validation Statistics:*
+[cols="2,2",options="header"]
+|===
+| Category | Count
+| Bible Rail | 4 files
+| Primitives | 17 types
+| Types | 18 composite types
+| Schemas | 8 files
+| Contracts | 4 files
+|===
+
+=== Implementation Artifacts
+
+*Config Loader (Go Package):*
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `word/work/pkg/config/loader.go`
+| Config loader library — foundation for Phase 3 Config Reader
+
+| `word/work/pkg/config/loader-api.adoc`
+| API reference documentation
+|===
+
+*Demo Program:*
+[cols="2,4",options="header"]
+|===
+| File | Purpose
+
+| `tov/demo/phase-0/demo-config/main.go`
+| Phase 0 validation demo — proves "specs exist and validate"
+
+| `go.work`
+| Go workspace at repo root for local module resolution
+|===
+
+=== ✓ Phase 0 Complete (2025-12-12)
+
+All specifications exist and validate. Foundation is ready for Phase 1.
 
 <<_top,↑ Back to Top>>
 
