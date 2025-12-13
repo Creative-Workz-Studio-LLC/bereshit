@@ -306,6 +306,28 @@ nullable = false
 # Biblical syntax: "there shall be trit as value of negative or neutral or positive"
 # See: syntax.toml [declaration.there_shall_be]
 
+# Balanced ↔ Unsigned Conversion
+# ------------------------------
+# Balanced trits (-1, 0, +1) must convert to unsigned (0, 1, 2) for packing.
+# This is the foundation of all pack/unpack operations.
+#
+# Why unsigned? Packing algorithms (Horner's method) require non-negative values.
+# The conversion is a simple +1/-1 offset, preserving the ternary relationships.
+#
+# See: word/constants/ternary-math.toml [algorithms.conversion]
+
+[trit.conversion]
+balanced_to_unsigned = "unsigned = balanced + 1"
+unsigned_to_balanced = "balanced = unsigned - 1"
+balanced_values = [-1, 0, 1]
+unsigned_values = [0, 1, 2]
+# Mapping table:
+#   balanced  |  unsigned  |  label
+#   ---------+-----------+----------
+#      -1    |     0      |  negative
+#       0    |     1      |  neutral
+#      +1    |     2      |  positive
+
 [trit5]
 name = "trit5"
 description = "Trit-byte: 5 trits packed into one byte"

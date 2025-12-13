@@ -242,8 +242,9 @@ const (
 	// BiblePath is the relative path to Bible rail configs.
 	BiblePath = "word/core/bible"
 
-	// ConstantsPath is the relative path to constants.
-	ConstantsPath = "word/core/constants"
+	// ConstantsPath is the relative path to mathematical constants.
+	// Contains ternary-math.toml with powers, algorithms, dimensions, Genesis 1:1 mapping.
+	ConstantsPath = "word/constants"
 )
 
 //--- Defaults ---
@@ -594,6 +595,18 @@ func LoadAll() LoadResult {
 		result.Summary["bible"] = names
 	}
 
+	if constants, err := LoadConstants(); err != nil { // load all word/constants/*.toml
+		result.Errors = append(result.Errors, err)
+		result.Valid = false
+	} else {
+		result.Configs["constants"] = constants
+		var names []string
+		for _, c := range constants {
+			names = append(names, c.Name)
+		}
+		result.Summary["constants"] = names
+	}
+
 	return result
 }
 
@@ -641,6 +654,18 @@ func LoadContracts() ([]*ConfigFile, error) {
 // The "Bible Rail" is the foundational navigation system for Scripture in Bereshit.
 func LoadBibleRail() ([]*ConfigFile, error) {
 	path := filepath.Join(bereshitRoot, BiblePath)
+	return loadDirectory(path)
+}
+
+// LoadConstants loads all files from word/constants/.
+//
+// Contains: Mathematical constants for ternary operations.
+//   - ternary-math.toml: Powers arrays (trit5, trit9, trit27), pack/unpack algorithms,
+//     Genesis 1:1 mapping (TIME/SPACE/MATTER), cognitive dimensions, moral compass.
+//
+// These constants are the foundation for Phase 1 trit type implementation.
+func LoadConstants() ([]*ConfigFile, error) {
+	path := filepath.Join(bereshitRoot, ConstantsPath)
 	return loadDirectory(path)
 }
 
