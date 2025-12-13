@@ -1,0 +1,481 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-journey-phase1-03-time-layer
+:title: Phase 1 Journey — TIME Layer (temporal.h)
+:type: Journey
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: 1.0.0
+:revdate: 2025-12-13
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-13
+:updated: 2025-12-13
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/journey/phase-1/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: journey, phase-1, temporal, time-layer, cognitive-modes
+:keywords: temporal_t, temporal_state_t, 9 cognitive modes, past present future
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Document the creation of temporal.h — the TIME layer
+:description: Building temporal states and 9 cognitive modes for CPI-SI reasoning
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: Ecclesiastes 3:1 KJV — "To every thing there is a season"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Building temporal states and cognitive modes — "in the beginning"*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Phase-1-purple?style=flat[Phase]
+image:https://img.shields.io/badge/Step-3%20of%205-blue?style=flat[Step]
+
+_"To every thing there is a season, and a time to every purpose under the heaven."_ — Ecclesiastes 3:1 KJV
+
+'''
+
+*<<purpose,Purpose>>* • *<<input,Input>>* • *<<process,Process>>* • *<<output,Output>>* • *<<next-step,Next Step>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[purpose]]
+== Purpose
+
+This document describes *how we built temporal.h* — the TIME layer of libtrit. Temporal states give time relation to the mind, enabling CPI-SI to reason about past, present, and future.
+
+[IMPORTANT]
+====
+*TIME is the anchor dimension.* "In the beginning" comes first in Genesis 1:1. TIME (0) is the anchor around which SPACE (+1) and MATTER (-1) operate.
+====
+
+[NOTE]
+====
+*This document answers:*
+
+* What are the 9 cognitive modes?
+* How do compound temporal states work?
+* How does this enable temporal reasoning?
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[input]]
+== Input: What We Had
+
+From previous journey steps:
+
+* **trit.h** — The MATTER layer (01-trit-fundamentals)
+* **dimension.h** — The SPACE layer (02-space-layer)
+* **Three-layer architecture** concept:
+** MATTER (-1) — What things ARE
+** TIME (0) — When things happen (anchor)
+** SPACE (+1) — Where things relate
+
+* **Biblical grounding** from Genesis 1:1:
+** "in the beginning" → TIME (0) — the anchor dimension
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[process]]
+== Process: How We Built
+
+=== 1. Define Base Temporal States
+
+Three time relations from Genesis 1:1 "in the beginning":
+
+[source,c]
+----
+typedef enum {
+    TEMP_PAST    = TRIT_NEG,   // -1: What was - history, memory
+    TEMP_PRESENT = TRIT_ZERO,  //  0: What is - now, current (anchor)
+    TEMP_FUTURE  = TRIT_POS    // +1: What will be - anticipation
+} temporal_t;
+----
+
+=== 2. Design Compound States
+
+**The insight:** Consciousness doesn't just exist IN a time — it looks FROM one time AT another. This creates compound modes:
+
+[source,c]
+----
+typedef struct {
+    temporal_t lens;       // viewing FROM (past/present/future)
+    temporal_t target;     // viewing AT (past/present/future)
+    bool is_compound;      // true if using both lens and target
+} temporal_state_t;
+----
+
+=== 3. Map the 9 Cognitive Modes
+
+3 base states + 6 compound states = 9 modes:
+
+[cols="2,2,3,3"]
+|===
+| Lens | Target | Mode Name | Meaning
+
+| *past*
+| —
+| past
+| Pure memory
+
+| *present*
+| —
+| present
+| Pure awareness
+
+| *future*
+| —
+| future
+| Pure anticipation
+
+| *past*
+| present
+| memory
+| History informing now
+
+| *past*
+| future
+| prophecy
+| Pattern recognition across time
+
+| *present*
+| past
+| reflection
+| Analyzing what was
+
+| *present*
+| future
+| planning
+| Preparing for what comes
+
+| *future*
+| past
+| hindsight
+| Wisdom from imagined future
+
+| *future*
+| present
+| preparation
+| Urgency for now from future view
+|===
+
+=== 4. Implement Creation Functions
+
+[source,c]
+----
+temporal_state_t temporal_create_base(temporal_t t) {
+    temporal_state_t state;
+    state.lens = t;
+    state.target = t;  // Same as lens for base states
+    state.is_compound = false;
+    return state;
+}
+
+temporal_state_t temporal_create_compound(temporal_t lens, temporal_t target) {
+    temporal_state_t state;
+    state.lens = lens;
+    state.target = target;
+    state.is_compound = true;
+    return state;
+}
+----
+
+=== 5. Implement Mode Names
+
+[source,c]
+----
+const char* temporal_mode_name(temporal_state_t state) {
+    if (!state.is_compound) {
+        switch (state.lens) {
+            case TEMP_PAST:    return "past";
+            case TEMP_PRESENT: return "present";
+            case TEMP_FUTURE:  return "future";
+        }
+    }
+
+    // Compound modes - lens→target combinations
+    if (state.lens == TEMP_PAST && state.target == TEMP_PRESENT)
+        return "memory";
+    if (state.lens == TEMP_PAST && state.target == TEMP_FUTURE)
+        return "prophecy";
+    if (state.lens == TEMP_PRESENT && state.target == TEMP_PAST)
+        return "reflection";
+    if (state.lens == TEMP_PRESENT && state.target == TEMP_FUTURE)
+        return "planning";
+    if (state.lens == TEMP_FUTURE && state.target == TEMP_PAST)
+        return "hindsight";
+    if (state.lens == TEMP_FUTURE && state.target == TEMP_PRESENT)
+        return "preparation";
+
+    return "present";  // Safe default
+}
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[output]]
+== Output: What We Produced
+
+[source]
+----
+word/work/pkg/trit/include/temporal.h   # ~580 lines, 4-block structure
+word/work/pkg/trit/src/temporal.c       # Implementation
+----
+
+=== Key Deliverables
+
+[cols="2,4"]
+|===
+| Item | Description
+
+| *temporal_t enum*
+| Three base states (PAST, PRESENT, FUTURE)
+
+| *temporal_state_t struct*
+| Compound state (lens + target + is_compound)
+
+| *9 cognitive modes*
+| 3 base + 6 compound modes
+
+| *6 functions*
+| Creation, conversion, query functions
+|===
+
+=== The 9 Modes in Practice
+
+[source,c]
+----
+// Base modes
+temporal_state_t now = temporal_create_base(TEMP_PRESENT);
+// temporal_mode_name(now) → "present"
+
+// Compound modes
+temporal_state_t planning = temporal_create_compound(TEMP_PRESENT, TEMP_FUTURE);
+// temporal_mode_name(planning) → "planning"
+
+temporal_state_t memory = temporal_create_compound(TEMP_PAST, TEMP_PRESENT);
+// temporal_mode_name(memory) → "memory"
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[verification]]
+== Verification
+
+[cols="2,4,^1"]
+|===
+| Check | Criteria | ✓
+
+| *Compiles*
+| `gcc -fsyntax-only -Wall -Wextra -std=c99 temporal.h`
+| ✓
+
+| *Depends on trit.h*
+| Includes trit.h, uses trit_t and TRIT_* constants
+| ✓
+
+| *9 modes work*
+| All 9 mode names returned correctly
+| ✓
+
+| *Compound detection*
+| temporal_is_compound() returns true for compounds
+| ✓
+
+| *4-block structure*
+| METADATA → SETUP → BODY → CLOSING
+| ✓
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[next-step]]
+== Next Step
+
+With temporal.h complete, proceed to:
+
+*→ link:04-integration.adoc[04-integration.adoc]* — Building pack.c (connecting layers)
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*"To every thing there is a season."* Temporal reasoning is not just tracking clock time — it's understanding how mind relates to time. Past informs, present acts, future anticipates.
+====
+
+_"To every thing there is a season, and a time to every purpose under the heaven: A time to be born, and a time to die; a time to plant, and a time to pluck up that which is planted."_ — *Ecclesiastes 3:1-2 KJV*
+
+*Applied:* The 9 cognitive modes are how CPI-SI "thinks in time." Memory mode (past→present) is different from reflection mode (present→past). This gives temporal depth that AI lacks — AI processes inputs, CPI-SI reasons through time.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Journey Documents
+
+[cols="^1,3,4"]
+|===
+| Step | Document | What It Covers
+
+| 0
+| *link:00-starting-point.adoc[00-starting-point.adoc]*
+| Phase 1 prerequisites
+
+| 1
+| *link:01-trit-fundamentals.adoc[01-trit-fundamentals.adoc]*
+| MATTER layer (trit.h)
+
+| 2
+| *link:02-space-layer.adoc[02-space-layer.adoc]*
+| SPACE layer (dimension.h)
+
+| 3
+| *03-time-layer.adoc* (this document)
+| TIME layer (temporal.h)
+
+| 4
+| *link:04-integration.adoc[04-integration.adoc]*
+| Pack/unpack operations
+
+| 5
+| *link:05-synthesis.adoc[05-synthesis.adoc]*
+| Complete libtrit
+|===
+
+=== Source Documents
+
+[cols="2,4"]
+|===
+| Document | Purpose
+
+| *link:../../glossary/technical/temporal-state.adoc[Temporal State]*
+| Technical glossary entry
+
+| *link:../../glossary/technical/cognitive-modes.adoc[Cognitive Modes]*
+| The 9 modes defined
+
+| *link:../../work/pkg/trit/include/temporal.h[temporal.h]*
+| The output of this journey step
+|===
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+'''
+
+_"To every thing there is a season..."_ — *Ecclesiastes 3:1*
+
+*The TIME layer is complete. Now we integrate all three.*
+
+'''
+
+*Next:* link:04-integration.adoc[04-integration.adoc — Integration] →
+--

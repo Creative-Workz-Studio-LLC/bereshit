@@ -244,7 +244,8 @@ const (
 
 	// ConstantsPath is the relative path to mathematical constants.
 	// Contains ternary-math.toml with powers, algorithms, dimensions, Genesis 1:1 mapping.
-	ConstantsPath = "word/constants"
+	// Located in word/core/ alongside primitives.toml and types.toml.
+	ConstantsPath = "word/core"
 )
 
 //--- Defaults ---
@@ -595,7 +596,7 @@ func LoadAll() LoadResult {
 		result.Summary["bible"] = names
 	}
 
-	if constants, err := LoadConstants(); err != nil { // load all word/constants/*.toml
+	if constants, err := LoadConstants(); err != nil { // load word/core/ternary-math.toml
 		result.Errors = append(result.Errors, err)
 		result.Valid = false
 	} else {
@@ -657,16 +658,21 @@ func LoadBibleRail() ([]*ConfigFile, error) {
 	return loadDirectory(path)
 }
 
-// LoadConstants loads all files from word/constants/.
+// LoadConstants loads word/core/ternary-math.toml.
 //
 // Contains: Mathematical constants for ternary operations.
-//   - ternary-math.toml: Powers arrays (trit5, trit9, trit27), pack/unpack algorithms,
+//   - Powers arrays (trit5, trit9, trit27), pack/unpack algorithms,
 //     Genesis 1:1 mapping (TIME/SPACE/MATTER), cognitive dimensions, moral compass.
 //
 // These constants are the foundation for Phase 1 trit type implementation.
+// Returns slice for API consistency with other Load* functions.
 func LoadConstants() ([]*ConfigFile, error) {
-	path := filepath.Join(bereshitRoot, ConstantsPath)
-	return loadDirectory(path)
+	path := filepath.Join(bereshitRoot, ConstantsPath, "ternary-math.toml")
+	cfg, err := loadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return []*ConfigFile{cfg}, nil
 }
 
 // ============================================================================

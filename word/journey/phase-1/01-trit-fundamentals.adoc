@@ -1,0 +1,449 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-journey-phase1-01-trit-fundamentals
+:title: Phase 1 Journey — Trit Fundamentals (MATTER Layer)
+:type: Journey
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: 1.0.0
+:revdate: 2025-12-13
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-13
+:updated: 2025-12-13
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/journey/phase-1/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: journey, phase-1, trit, matter-layer, c-library
+:keywords: trit_t, trit5_t, balanced ternary, matter layer, Genesis 1:1
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Document the creation of trit.h — the MATTER layer foundation
+:description: Building the fundamental trit types that form the base of libtrit
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: Genesis 1:1 KJV — "the earth" maps to MATTER (-1)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Building the foundational trit types — "the earth"*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Phase-1-purple?style=flat[Phase]
+image:https://img.shields.io/badge/Step-1%20of%205-blue?style=flat[Step]
+
+_"In the beginning God created the heaven and the earth."_ — Genesis 1:1 KJV
+
+'''
+
+*<<purpose,Purpose>>* • *<<input,Input>>* • *<<process,Process>>* • *<<output,Output>>* • *<<next-step,Next Step>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[purpose]]
+== Purpose
+
+This document describes *how we built trit.h* — the MATTER layer of libtrit. The trit type is the atomic building block: what things ARE, not how they relate (SPACE) or when they occur (TIME).
+
+[IMPORTANT]
+====
+*Journey documents are reproducibility proofs.* Starting from Phase 0 outputs and following this document, you can recreate the same `trit.h` header.
+====
+
+[NOTE]
+====
+*This document answers:*
+
+* What did we have before building trit.h?
+* How did we design the trit type system?
+* What types and constants did we create?
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[input]]
+== Input: What We Had
+
+From Phase 0 and research:
+
+* **Research documents** defining ternary mathematics:
+** `ternary-mathematical-foundations.adoc` — radix economy, why base 3
+** `ternary-storage-algorithms.adoc` — packing trits into bytes
+** `ternary-packing-algorithms.adoc` — Horner's method proofs
+
+* **Core definitions** from `word/core/primitives.toml`:
+** Trit domain: {-1, 0, +1}
+** Pack ratios: 5 trits/byte, 9 trits/2 bytes, 27 trits/6 bytes
+** State counts: 3^5=243, 3^9=19683, 3^27=7.6T
+
+* **Biblical grounding** from Genesis 1:1:
+** "the earth" → MATTER (-1) — what things ARE
+** "in the beginning" → TIME (0) — when things happen
+** "the heavens" → SPACE (+1) — where things relate
+
+* **4-block code template**: `word/seed/code/c/header.h`
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[process]]
+== Process: How We Built
+
+=== 1. Map Trit Values to Dimensions
+
+From Genesis 1:1, we mapped the three cognitive dimensions:
+
+[cols="^1,2,3,3"]
+|===
+| Value | Dimension | Genesis 1:1 | Cognitive Meaning
+
+| *-1*
+| MATTER
+| "the earth"
+| What things ARE (break down)
+
+| *0*
+| TIME
+| "in the beginning"
+| When things happen (anchor)
+
+| *+1*
+| SPACE
+| "the heavens"
+| Where things relate (build up)
+|===
+
+=== 2. Design Type Hierarchy
+
+We needed types at different scales:
+
+[source]
+----
+trit_t     → single digit (-1, 0, +1)          → int8_t
+trit5_t    → 5 trits packed (243 states)       → uint8_t
+trit9_t    → 9 trits packed (19,683 states)    → uint16_t
+trit27_t   → 27 trits packed (7.6T states)     → uint64_t
+----
+
+=== 3. Define Constants and Macros
+
+Three categories of constants:
+
+*Computational values:*
+[source,c]
+----
+#define TRIT_NEG   (-1)
+#define TRIT_ZERO  (0)
+#define TRIT_POS   (+1)
+----
+
+*Dimensional aliases:*
+[source,c]
+----
+#define TRIT_MATTER  TRIT_NEG   // "the earth"
+#define TRIT_TIME    TRIT_ZERO  // "in the beginning"
+#define TRIT_SPACE   TRIT_POS   // "the heavens"
+----
+
+*Conversion macros:*
+[source,c]
+----
+#define TRIT_TO_UNSIGNED(t)   ((t) + 1)   // -1→0, 0→1, +1→2
+#define UNSIGNED_TO_TRIT(u)   ((u) - 1)   // 0→-1, 1→0, 2→+1
+----
+
+=== 4. Precompute Power Arrays
+
+For Horner's method pack/unpack, we precomputed 3^n values:
+
+[source,c]
+----
+static const uint8_t TRIT5_POWERS[5] = {
+    1, 3, 9, 27, 81
+};
+
+static const uint16_t TRIT9_POWERS[9] = {
+    1, 3, 9, 27, 81, 243, 729, 2187, 6561
+};
+
+static const uint64_t TRIT27_POWERS[27] = {
+    1ULL, 3ULL, 9ULL, 27ULL, /* ... */ 2541865828329ULL
+};
+----
+
+=== 5. Declare Function Prototypes
+
+Single trit operations (src/trit.c):
+[source,c]
+----
+trit_t trit_create(int value);
+bool trit_valid(trit_t t);
+int trit_value(trit_t t);
+trit_t trit_negate(trit_t t);
+trit_t trit_add(trit_t a, trit_t b);
+trit_t trit_multiply(trit_t a, trit_t b);
+----
+
+Pack/unpack operations (src/pack.c):
+[source,c]
+----
+trit5_t trit5_pack(const trit_t trits[5]);
+void trit5_unpack(trit5_t packed, trit_t trits[5]);
+bool trit5_is_spare(trit5_t value);  // Bible Rail detection
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[output]]
+== Output: What We Produced
+
+[source]
+----
+word/work/pkg/trit/include/trit.h   # ~600 lines, 4-block structure
+----
+
+The file contains:
+
+* **METADATA block**: Biblical grounding, CPI-SI identity, API documentation
+* **SETUP block**: Includes, defines, types, function prototypes
+* **BODY block**: Organizational chart, declared units summary
+* **CLOSING block**: Validation, modification policy, quick reference
+
+=== Key Deliverables
+
+[cols="2,4"]
+|===
+| Item | Description
+
+| *4 types*
+| trit_t, trit5_t, trit9_t, trit27_t
+
+| *15 constants*
+| TRIT_NEG/ZERO/POS, TRIT_MATTER/TIME/SPACE, storage sizes, state counts
+
+| *3 power arrays*
+| TRIT5_POWERS, TRIT9_POWERS, TRIT27_POWERS
+
+| *13 function prototypes*
+| 6 trit ops + 7 pack ops
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[verification]]
+== Verification
+
+[cols="2,4,^1"]
+|===
+| Check | Criteria | ✓
+
+| *Compiles*
+| `gcc -fsyntax-only -Wall -Wextra -std=c99 trit.h`
+| ✓
+
+| *Self-contained*
+| Only needs stdint.h from standard library
+| ✓
+
+| *No dependencies*
+| Foundation layer — nothing internal needed
+| ✓
+
+| *Biblical grounding*
+| All dimensional constants trace to Genesis 1:1
+| ✓
+
+| *4-block structure*
+| METADATA → SETUP → BODY → CLOSING
+| ✓
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[next-step]]
+== Next Step
+
+With trit.h complete, proceed to:
+
+*→ link:02-space-layer.adoc[02-space-layer.adoc]* — Building dimension.h (SPACE layer)
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*"The earth" is MATTER — what things ARE.* The trit type is the atomic substance of ternary computing. Just as earth is the concrete foundation of creation, trit_t is the concrete foundation of libtrit.
+====
+
+_"In the beginning God created the heaven and the earth."_ — *Genesis 1:1 KJV*
+
+*Applied:* We started with MATTER (-1) because it's what things ARE. The other dimensions (TIME and SPACE) have meaning only in relation to MATTER. Just as "the earth" comes last in Genesis 1:1 but is the concrete substrate, trit.h defines the concrete types that SPACE and TIME layers build upon.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Journey Documents
+
+[cols="^1,3,4"]
+|===
+| Step | Document | What It Covers
+
+| 0
+| *link:00-starting-point.adoc[00-starting-point.adoc]*
+| Phase 1 prerequisites
+
+| 1
+| *01-trit-fundamentals.adoc* (this document)
+| MATTER layer (trit.h)
+
+| 2
+| *link:02-space-layer.adoc[02-space-layer.adoc]*
+| SPACE layer (dimension.h)
+
+| 3
+| *link:03-time-layer.adoc[03-time-layer.adoc]*
+| TIME layer (temporal.h)
+
+| 4
+| *link:04-integration.adoc[04-integration.adoc]*
+| Pack/unpack operations
+
+| 5
+| *link:05-synthesis.adoc[05-synthesis.adoc]*
+| Complete libtrit
+|===
+
+=== Source Documents
+
+[cols="2,4"]
+|===
+| Document | Purpose
+
+| *link:../../research/ternary/ternary-mathematical-foundations.adoc[Mathematical Foundations]*
+| Radix economy, why base 3
+
+| *link:../../research/ternary/ternary-packing-algorithms.adoc[Packing Algorithms]*
+| Horner's method proofs
+
+| *link:../../work/pkg/trit/include/trit.h[trit.h]*
+| The output of this journey step
+|===
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+'''
+
+_"In the beginning God created the heaven and the earth."_ — *Genesis 1:1*
+
+*The MATTER layer is complete. Now we add SPACE.*
+
+'''
+
+*Next:* link:02-space-layer.adoc[02-space-layer.adoc — SPACE Layer] →
+--

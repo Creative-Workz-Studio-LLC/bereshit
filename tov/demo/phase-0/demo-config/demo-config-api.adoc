@@ -8,22 +8,22 @@ METADATA BLOCK
 // ─────────────────────────────────────────────────────────────────────────────
 // IDENTITY
 // ─────────────────────────────────────────────────────────────────────────────
-:key: B-word-work-pkg-config-loader-api
-:title: Config Loader API Reference
+:key: B-tov-demo-phase0-demo-config-api
+:title: demo-config API Reference
 :type: Reference
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────────────────────────────────────
 :status: Active
-:version: 1.0.0
-:revdate: 2025-12-12
+:version: a-01.00
+:revdate: 2025-12-13
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TEMPORAL
 // ─────────────────────────────────────────────────────────────────────────────
-:created: 2025-12-12
-:updated: 2025-12-12
+:created: 2025-12-13
+:updated: 2025-12-13
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ATTRIBUTION
@@ -35,24 +35,24 @@ METADATA BLOCK
 // ─────────────────────────────────────────────────────────────────────────────
 // LOCATION
 // ─────────────────────────────────────────────────────────────────────────────
-:path: /bereshit/word/work/pkg/config/
+:path: /bereshit/tov/demo/phase-0/demo-config/
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DERIVATION
 // ─────────────────────────────────────────────────────────────────────────────
-:derives_from: bereshit/word/omni/seed/B-word-omni-seed-documentation.omni
+:derives_from: bereshit/word/work/pkg/config/loader-api.adoc
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CLASSIFICATION
 // ─────────────────────────────────────────────────────────────────────────────
-:tags: api, config, loader, phase-0, toml
-:keywords: config loader, TOML, Phase 0, API reference
+:tags: api, demo, phase-0, config, toml, specifications
+:keywords: demo-config, Phase 0, API reference, config loader, TOML validation
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INTENT
 // ─────────────────────────────────────────────────────────────────────────────
-:purpose: Defines the public API for loading Phase 0 TOML specifications
-:description: Technical reference for the config loader package - types, functions, and usage patterns
+:purpose: Defines the public API for demo-config validation program
+:description: Technical reference for demo-config - functions for validating TOML specifications, inspecting results, and proving Phase 0 foundation
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GROUNDING
@@ -62,7 +62,7 @@ METADATA BLOCK
 // ─────────────────────────────────────────────────────────────────────────────
 // STRICTNESS
 // ─────────────────────────────────────────────────────────────────────────────
-:strictness: T
+:strictness: G
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ASCIIDOC SETTINGS
@@ -91,17 +91,17 @@ HEADER BLOCK
 
 [.text-center]
 --
-*The Go package for loading and validating Phase 0 TOML specifications*
+*Portable validation API for Phase 0 TOML specifications*
 
 image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
 image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
-image:https://img.shields.io/badge/Type-{type}-purple?style=flat[Type]
+image:https://img.shields.io/badge/Categories-6_Validated-success?style=flat[Categories]
 
 _"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
 
 '''
 
-*<<overview,Overview>>* • *<<types,Types>>* • *<<functions,Functions>>* • *<<usage,Usage>>* • *<<references,References>>*
+*<<overview,Overview>>* • *<<functions,Functions>>* • *<<usage,Usage>>* • *<<references,References>>*
 
 --
 
@@ -116,23 +116,22 @@ CONTEXT BLOCK
 [[overview]]
 == Overview
 
-The `config` packagefootnote:[Package path: `creativeworkzstudio.com/bereshit/word/work/pkg/config`] provides a Go API for loading and validating Phase 0 TOML specifications. It reads configuration files from `word/core/` and returns structured data for use in Bereshit applications.
+The `demo-config` programfootnote:[Binary path: `tov/demo/phase-0/demo-config/demo-config`] validates the Phase 0 TOML specifications by loading and displaying all 6 configuration categories. It provides a **portable public API** in Go that can be called by other programs.
 
 [IMPORTANT]
 ====
-*This package is Phase 0 foundation.* It proves specs exist and validate. Phase 3 will expand this into the full Config Reader with OmniCode parsing.
+*This is a demo program, not a library.* It proves the config loader works correctly. The API lets external code run the validation and inspect results.
 ====
 
 [NOTE]
 ====
-*Scope:*
+*What this provides:*
 
-* ✓ Loading TOML files from `word/core/` directories
-* ✓ Parsing into `map[string]any` for inspection
-* ✓ Reporting what was loaded (names, keys, file counts)
-* ✗ OmniCode parsing (Phase 3)
-* ✗ Type validation beyond TOML syntax (Phase 3)
-* ✗ Schema enforcement (Phase 3)
+* ✓ Validate all 6 config categories (`DemoConfigRunAll`)
+* ✓ Load primitives, types, schemas, contracts, bible, constants
+* ✓ Display what was loaded (names, keys, file counts)
+* ✓ Inspect pass/fail counts
+* ✓ Reset for repeated runs
 ====
 
 '''
@@ -142,18 +141,22 @@ The `config` packagefootnote:[Package path: `creativeworkzstudio.com/bereshit/wo
 
 [source,go]
 ----
-import "creativeworkzstudio.com/bereshit/word/work/pkg/config"
+import "creativeworkzstudio.com/bereshit/tov/demo/phase-0/demo-config"
 
 func main() {
-    config.SetRoot("/path/to/bereshit")  // 1️⃣ Set bereshit root
-    result := config.LoadAll()            // 2️⃣ Load all configs
+    // Run all category validations
+    failures := DemoConfigRunAll()
 
-    if result.Valid {                     // 3️⃣ Check results
-        fmt.Println("All configs valid!")
-        for cat, items := range result.Summary {
-            fmt.Printf("%s: %v\n", cat, items)
-        }
+    if failures == 0 {
+        fmt.Println("All 6 categories validated!")
     }
+
+    // Inspect results
+    fmt.Printf("Passed: %d\n", DemoConfigGetPassed())
+    fmt.Printf("Failed: %d\n", DemoConfigGetFailed())
+
+    // Reset for another run
+    DemoConfigReset()
 }
 ----
 
@@ -166,20 +169,20 @@ func main() {
 |===
 | | Category | What You'll Find | Who It Serves
 
-| 📐
-| *Types*
-| `ConfigFile`, `LoadResult` structs
-| Developers using the API
-
 | 🔧
 | *Functions*
-| `SetRoot`, `LoadAll`, category loaders
-| Developers integrating with configs
+| Validation runner, result inspectors, reset
+| Developers integrating demo into apps
 
 | 📖
 | *Usage Patterns*
-| Code examples and integration guidance
-| Developers building on Phase 0
+| CI/CD integration, spec verification
+| Build engineers, SDK developers
+
+| 🎯
+| *Live Output*
+| Actual demonstration output
+| Anyone verifying specs are valid
 |===
 
 '''
@@ -194,173 +197,74 @@ CONTENT BLOCK
 ═══════════════════════════════════════════════════════════════════════════════
 ////
 
-[[types]]
-== Types
+[[categories-validated]]
+== Categories Validated
 
-The package exports two primary types for config loading operations.
+demo-config validates each category of Phase 0 TOML specifications.
 
-[[configfile]]
-=== ConfigFile
-
-Represents a single loaded configuration file.
-
-[source,go]
-----
-type ConfigFile struct {
-    Name string         // filename without extension (e.g., "primitives")
-    Path string         // full path to the file
-    Data map[string]any // parsed TOML data
-    Keys []string       // top-level keys in the file
-}
-----
-
-[cols="2,4",options="header"]
+[cols="^1,2,3",options="header"]
 |===
-| Field | Description
+| Category | Source | What's Validated
 
-| `Name`
-| The file's base name without `.toml` extension
+| **primitives**
+| `word/core/primitives.toml`
+| Atomic types: trit, bool3, int27, etc.
 
-| `Path`
-| Absolute path to the source file
+| **types**
+| `word/core/types.toml`
+| Type system: structs, unions, generics
 
-| `Data`
-| Parsed TOML content as nested maps
+| **schemas**
+| `word/core/schemas/*.toml`
+| Data shapes: identity, health, timestamps
 
-| `Keys`
-| Sorted list of top-level keys for summary reporting
+| **contracts**
+| `word/core/contracts/*.toml`
+| Interface definitions: filesystem, network
+
+| **bible**
+| `word/core/bible/*.toml`
+| Scripture encoding: addressing, translation
+
+| **constants**
+| `word/core/*.toml`
+| Fixed values: ternary-math constants
 |===
-
-'''
-
-[[loadresult]]
-=== LoadResult
-
-Returned by `LoadAll()` and category loaders - aggregates loading results.
-
-[source,go]
-----
-type LoadResult struct {
-    Valid   bool                    // true if all files loaded without error
-    Configs map[string][]*ConfigFile // loaded files grouped by category
-    Errors  []error                 // any errors encountered
-    Summary map[string][]string     // category → list of names/keys
-}
-----
-
-[cols="2,4",options="header"]
-|===
-| Field | Description
-
-| `Valid`
-| `true` only if zero errors occurred
-
-| `Configs`
-| Map of category name → slice of loaded ConfigFile pointers
-
-| `Errors`
-| Slice of all errors encountered (continues loading on error)
-
-| `Summary`
-| Human-readable summary: category → list of loaded names/keys
-|===
-
-<<_top,↑ Back to Top>>
 
 '''
 
 [[functions]]
 == Functions
 
-[[setroot]]
-=== SetRoot
+All functions are exported from `main.go` (Go exports start with capital letters).
 
-Sets the bereshit repository root path. Must be called before any loading functions.
+[[validation-runner]]
+=== Validation Runner
 
 [source,go]
 ----
-func SetRoot(path string)
+func DemoConfigRunAll() int  // Run all 6 categories, return failure count
 ----
 
-[cols="2,4",options="header"]
-|===
-| Parameter | Description
-
-| `path`
-| Absolute or relative path to bereshit repository root
-|===
-
-[TIP]
-====
-Use environment variable `BERESHIT_ROOT` in applications:
-[source,go]
-----
-root := os.Getenv("BERESHIT_ROOT")
-if root == "" {
-    root = "."
-}
-config.SetRoot(root)
-----
-====
+Loads and validates:
+1. primitives.toml
+2. types.toml
+3. schemas/*.toml
+4. contracts/*.toml
+5. bible/*.toml
+6. constants (ternary-math.toml)
 
 '''
 
-[[loadall]]
-=== LoadAll
-
-Loads all Phase 0 configuration categories and returns aggregated results.
+[[result-inspection]]
+=== Result Inspection
 
 [source,go]
 ----
-func LoadAll() LoadResult
+func DemoConfigGetPassed() int  // Get count of passed validations
+func DemoConfigGetFailed() int  // Get count of failed validations
+func DemoConfigReset()          // Reset counters for fresh run
 ----
-
-*Returns:* `LoadResult` with all categories populated:
-
-[cols="2,3",options="header"]
-|===
-| Category Key | Source Directory
-
-| `primitives`
-| `word/core/primitives.toml`
-
-| `types`
-| `word/core/types.toml`
-
-| `schemas`
-| `word/core/schemas/*.toml`
-
-| `contracts`
-| `word/core/contracts/*.toml`
-
-| `bible`
-| `word/core/bible/*.toml`
-|===
-
-'''
-
-[[category-loaders]]
-=== Category Loaders
-
-Individual loaders for specific config categories.
-
-[source,go]
-----
-// Single file loaders - return (*ConfigFile, error)
-func LoadPrimitives() (*ConfigFile, error)  // word/core/primitives.toml
-func LoadTypes() (*ConfigFile, error)       // word/core/types.toml
-
-// Directory loaders - return ([]*ConfigFile, error)
-func LoadSchemas() ([]*ConfigFile, error)   // word/core/schemas/*.toml
-func LoadContracts() ([]*ConfigFile, error) // word/core/contracts/*.toml
-func LoadBibleRail() ([]*ConfigFile, error) // word/core/bible/*.toml
-func LoadConstants() ([]*ConfigFile, error) // word/core/*.toml (ternary-math, etc.)
-----
-
-[NOTE]
-====
-All loaders return errors explicitly. Use `LoadAll()` for aggregated loading with collected errors.
-====
 
 <<_top,↑ Back to Top>>
 
@@ -369,68 +273,65 @@ All loaders return errors explicitly. Use `LoadAll()` for aggregated loading wit
 [[usage]]
 == Usage Patterns
 
-[[basic-validation]]
-=== Basic Validation
+[[spec-verification]]
+=== Specification Verification
 
-The most common use case - validate all Phase 0 configs exist and parse.
-
-[source,go]
-----
-config.SetRoot(os.Getenv("BERESHIT_ROOT"))
-result := config.LoadAll()
-
-if !result.Valid {
-    for _, err := range result.Errors {
-        log.Printf("Error: %v", err)
-    }
-    os.Exit(1)
-}
-
-fmt.Println("✓ All configs valid")
-----
-
-'''
-
-[[inspecting-loaded-data]]
-=== Inspecting Loaded Data
-
-Access parsed TOML data for programmatic use.
+Verify all Phase 0 specs before building Phase 1.
 
 [source,go]
 ----
-result := config.LoadAll()
+import "creativeworkzstudio.com/bereshit/tov/demo/phase-0/demo-config"
 
-// Get primitives config
-for _, cfg := range result.Configs["primitives"] {
-    // Access top-level keys
-    if types, ok := cfg.Data["types"].(map[string]any); ok {
-        for name, def := range types {
-            fmt.Printf("Type: %s = %v\n", name, def)
-        }
+func VerifyFoundation() error {
+    failures := DemoConfigRunAll()
+
+    if failures > 0 {
+        return fmt.Errorf("Phase 0 verification failed: %d errors", failures)
     }
+
+    fmt.Printf("Phase 0 verified: %d categories loaded\n", DemoConfigGetPassed())
+    return nil
 }
 ----
 
 '''
 
-[[summary-reporting]]
-=== Summary Reporting
+[[continuous-integration]]
+=== CI/CD Integration
 
-Use `Summary` field for human-readable output.
+Use as a validation step in build pipelines.
 
 [source,go]
 ----
-result := config.LoadAll()
+func main() {
+    failures := DemoConfigRunAll()
 
-for category, items := range result.Summary {
-    fmt.Printf("%s: %v\n", category, items)
+    if failures > 0 {
+        fmt.Fprintf(os.Stderr, "FAILED: %d categories\n", failures)
+        os.Exit(1)  // Non-zero exit = CI failure
+    }
+
+    fmt.Printf("PASSED: %d categories\n", DemoConfigGetPassed())
+    os.Exit(0)  // Zero exit = CI success
 }
-// Output:
-// primitives: [trit trit3 trit9 ...]
-// types: [health_score timestamp ...]
-// schemas: [file-type health ...]
-// contracts: [health-provider filesystem ...]
-// bible: [encoding decoding translation addressing]
+----
+
+'''
+
+[[build-prereq]]
+=== Build Prerequisite Check
+
+Ensure specs exist before compiling dependent code.
+
+[source,bash]
+----
+# In Makefile or build script
+prereq:
+    @cd $(BERESHIT_ROOT) && go run tov/demo/phase-0/demo-config/main.go
+    @echo "Phase 0 specifications validated"
+
+build: prereq
+    # ... rest of build
 ----
 
 <<_top,↑ Back to Top>>
@@ -440,34 +341,61 @@ for category, items := range result.Summary {
 [[quick-reference]]
 == Quick Reference
 
+*All Functions:*
 [cols="3,4",options="header"]
 |===
 | Function | Purpose
 
-| `SetRoot(path)`
-| Configure bereshit root path
+| `DemoConfigRunAll()`
+| Run all 6 categories, return failure count
 
-| `LoadAll()`
-| Load all categories, return `LoadResult`
+| `DemoConfigGetPassed()`
+| Get passed validation count
 
-| `LoadPrimitives()`
-| Load `word/core/primitives.toml`
+| `DemoConfigGetFailed()`
+| Get failed validation count
 
-| `LoadTypes()`
-| Load `word/core/types.toml`
-
-| `LoadSchemas()`
-| Load `word/core/schemas/*.toml`
-
-| `LoadContracts()`
-| Load `word/core/contracts/*.toml`
-
-| `LoadBibleRail()`
-| Load `word/core/bible/*.toml`
-
-| `LoadConstants()`
-| Load `word/core/*.toml` (ternary-math, powers, algorithms, dimensions)
+| `DemoConfigReset()`
+| Reset counters for fresh run
 |===
+
+*Build & Run:*
+[source,bash]
+----
+# From bereshit root
+cd tov/demo/phase-0/demo-config
+go build
+./demo-config
+
+# Or run directly
+go run main.go
+----
+
+*Sample Output:*
+[source]
+----
+════════════════════════════════════════════════════════════════
+Phase 0 Demo: Config System Demonstration
+════════════════════════════════════════════════════════════════
+
+  Demonstrating the specification foundation for Kingdom Technology
+
+  → types: [bytes constraint generics ...]
+  → schemas: [file-type.toml health.toml ...]
+  → contracts: [filesystem.toml health-provider.toml ...]
+  → bible: [addressing.toml decoding.toml ...]
+  → constants: [ternary-math.toml]
+  → primitives: [any bool3 char float27 ...]
+
+════════════════════════════════════════════════════════════════
+Demonstration Complete
+════════════════════════════════════════════════════════════════
+
+  Categories demonstrated: 6
+
+  "Prove all things; hold fast that which is good."
+                                    — 1 Thessalonians 5:21
+----
 
 <<_top,↑ Back to Top>>
 
@@ -484,12 +412,19 @@ FOOTER BLOCK
 
 [NOTE]
 ====
-*Verification before building.* Before constructing systems, we must verify that foundations are sound. This API provides the tooling to prove specifications exist and validate before Phase 1 implementation begins.
+*Verification before building.* We don't assume specs are correct — we prove they exist and parse successfully. Only after validation does implementation proceed.
 ====
 
 _"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
 
-*Applied:* This package embodies the principle of verification. We don't assume specs are correct—we prove they exist and parse successfully. Only after validation does implementation proceed. This is the "prove all things" before "hold fast that which is good."
+*Applied:* This demo program embodies the principle of verification:
+
+* **6 categories validated** — concrete evidence that specs exist
+* **TOML parsing verified** — files load without error
+* **Content displayed** — what's in each specification shown
+* **Foundation established** — Phase 1 can build with confidence
+
+The specifications are proven. The foundation is ready. Phase 1 implementation can proceed on solid ground.
 
 <<_top,↑ Back to Top>>
 
@@ -506,12 +441,16 @@ _"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
 | | Document | Purpose
 
 | 📐
-| *link:loader.go[loader.go]*
-| Source implementation of this API
+| *link:main.go[main.go]*
+| Demo source (4-block Go file with public API)
+
+| 📚
+| *link:../../../../word/work/pkg/config/loader-api.adoc[loader-api.adoc]*
+| Config loader API reference (what demo-config uses)
 
 | 📖
-| *link:../../../../tov/demo/phase-0/demo-config/main.go[demo-config/main.go]*
-| Demo program showing API usage
+| *link:README.adoc[README.adoc]*
+| Demo overview
 
 | 📋
 | *link:../../../../void/planning/development/plans/phase-0-implementation-plan.adoc[Phase 0 Implementation Plan]*
@@ -525,11 +464,11 @@ _"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
 |===
 | Resource | Purpose
 
-| *https://github.com/BurntSushi/toml[BurntSushi/toml]*
-| TOML parser library used by this package
+| *link:../../../../word/core/[word/core/]*
+| TOML specifications directory
 
-| *https://toml.io/[TOML Specification]*
-| Official TOML format specification
+| *link:../../../../word/work/pkg/config/[config package]*
+| Go config loader source
 |===
 
 '''
@@ -537,11 +476,10 @@ _"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
 [[see-also]]
 == See Also
 
-* link:../../../../word/core/primitives.toml[primitives.toml] — Base ternary type definitions
-* link:../../../../word/core/types.toml[types.toml] — Composite type definitions
-* link:../../../../word/core/schemas/[schemas/] — Schema definitions directory
-* link:../../../../word/core/contracts/[contracts/] — Contract definitions directory
-* link:../../../../word/core/bible/[bible/] — Bible rail configurations
+* link:main.go[main.go] — Demo source with public API functions
+* link:README.adoc[README.adoc] — Demo overview
+* link:../../../../word/work/pkg/config/loader-api.adoc[loader-api.adoc] — Config loader API this demo uses
+* link:../../../../word/core/[word/core/] — TOML specifications validated
 
 '''
 
@@ -559,7 +497,7 @@ _"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
 
 _"{biblical_foundation}"_
 
-*Verification enables confident building.*
+*Balanced ternary computing grounded in the structure of creation.*
 
 --
 

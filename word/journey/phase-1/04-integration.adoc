@@ -1,0 +1,442 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-journey-phase1-04-integration
+:title: Phase 1 Journey — Integration (pack.c)
+:type: Journey
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: 1.0.0
+:revdate: 2025-12-13
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-13
+:updated: 2025-12-13
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/journey/phase-1/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-research.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: journey, phase-1, pack, unpack, horner, bible-rail
+:keywords: pack.c, Horner's method, spare states, Bible Rail, roundtrip
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Document the creation of pack.c — connecting all three layers
+:description: Implementing pack/unpack operations and Bible Rail spare states
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: Proverbs 11:1 KJV — "A false balance is abomination"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Connecting all layers with pack/unpack operations*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Phase-1-purple?style=flat[Phase]
+image:https://img.shields.io/badge/Step-4%20of%205-blue?style=flat[Step]
+
+_"A false balance is abomination to the LORD: but a just weight is his delight."_ — Proverbs 11:1 KJV
+
+'''
+
+*<<purpose,Purpose>>* • *<<input,Input>>* • *<<process,Process>>* • *<<output,Output>>* • *<<next-step,Next Step>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[purpose]]
+== Purpose
+
+This document describes *how we built pack.c* — the integration layer connecting MATTER, SPACE, and TIME. Pack/unpack operations store balanced ternary values efficiently while preserving spare states for Bible Rail.
+
+[IMPORTANT]
+====
+*Pack/unpack must be exact.* A "false balance" (lossy encoding) would corrupt data. Mathematical proofs establish roundtrip correctness.
+====
+
+[NOTE]
+====
+*This document answers:*
+
+* How does Horner's method enable efficient packing?
+* What are spare states and why are they reserved?
+* How do we verify roundtrip correctness?
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[input]]
+== Input: What We Had
+
+From previous journey steps:
+
+* **trit.h** — Types (trit_t, trit5_t, etc.) and power arrays
+* **dimension.h** — Cognitive dimensions and navigation
+* **temporal.h** — Temporal states and 9 cognitive modes
+* **Research documents**:
+** `ternary-packing-algorithms.adoc` — Mathematical proofs
+** `ternary-storage-algorithms.adoc` — Storage patterns
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[process]]
+== Process: How We Built
+
+=== 1. Implement Horner's Method for Pack
+
+Polynomial evaluation without computing powers explicitly:
+
+[source,c]
+----
+trit5_t trit5_pack(const trit_t trits[5]) {
+    int value = 0;
+    for (int i = 4; i >= 0; i--) {
+        value = value * 3 + (trits[i] + 1);  // +1 shifts -1,0,+1 to 0,1,2
+    }
+    return (trit5_t)value;
+}
+----
+
+**Why Horner's method works:**
+----
+value = t[0]×3⁰ + t[1]×3¹ + t[2]×3² + t[3]×3³ + t[4]×3⁴
+
+Factored:
+value = t[0] + 3×(t[1] + 3×(t[2] + 3×(t[3] + 3×t[4])))
+----
+
+=== 2. Implement Unpack (Inverse Operation)
+
+Repeated division to extract digits:
+
+[source,c]
+----
+void trit5_unpack(trit5_t packed, trit_t trits[5]) {
+    uint8_t value = packed;
+    for (int i = 0; i < 5; i++) {
+        trits[i] = (value % 3) - 1;  // -1 shifts 0,1,2 to -1,0,+1
+        value = value / 3;
+    }
+}
+----
+
+=== 3. Implement Spare State Detection (Bible Rail)
+
+The math: 3^5 = 243 valid states, 2^8 = 256 byte values → 13 spare states (243-255)
+
+[source,c]
+----
+bool trit5_is_spare(trit5_t value) {
+    return value >= 243;  // 243-255 are Bible Rail reserved
+}
+----
+
+**Spare state purpose:**
+
+[cols="2,4"]
+|===
+| Range | Use
+
+| 0-242
+| Valid packed trit values
+
+| 243-254
+| KJV↔WEB translation variant markers
+
+| 255
+| Reserved (escape/special)
+|===
+
+=== 4. Extend to Other Sizes
+
+Same algorithms for 9 and 27 trits:
+
+[source,c]
+----
+trit9_t trit9_pack(const trit_t trits[9]);
+void trit9_unpack(trit9_t packed, trit_t trits[9]);
+
+trit27_t trit27_pack(const trit_t trits[27]);
+void trit27_unpack(trit27_t packed, trit_t trits[27]);
+----
+
+=== 5. Implement Source Files for All Modules
+
+[cols="2,4"]
+|===
+| File | Purpose
+
+| *src/trit.c*
+| Single trit operations (create, negate, add, multiply)
+
+| *src/pack.c*
+| Pack/unpack operations (all sizes)
+
+| *src/dimension.c*
+| Conversion and navigation functions
+
+| *src/temporal.c*
+| Temporal state creation and queries
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[output]]
+== Output: What We Produced
+
+[source]
+----
+word/work/pkg/trit/src/trit.c        # Single trit operations
+word/work/pkg/trit/src/pack.c        # Pack/unpack operations
+word/work/pkg/trit/src/dimension.c   # Dimension functions
+word/work/pkg/trit/src/temporal.c    # Temporal functions
+----
+
+=== Key Deliverables
+
+[cols="2,4"]
+|===
+| Item | Description
+
+| *Pack functions*
+| trit5_pack, trit9_pack, trit27_pack
+
+| *Unpack functions*
+| trit5_unpack, trit9_unpack, trit27_unpack
+
+| *Bible Rail detection*
+| trit5_is_spare — identifies spare states
+
+| *4 source files*
+| Complete implementation of all declared functions
+|===
+
+=== Roundtrip Verification
+
+[source,c]
+----
+// For any valid trit array:
+trit_t original[5] = {TRIT_NEG, TRIT_ZERO, TRIT_POS, TRIT_ZERO, TRIT_NEG};
+trit5_t packed = trit5_pack(original);
+trit_t unpacked[5];
+trit5_unpack(packed, unpacked);
+
+// unpacked == original (exact roundtrip)
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[verification]]
+== Verification
+
+[cols="2,4,^1"]
+|===
+| Check | Criteria | ✓
+
+| *Compiles*
+| `make` builds libtrit.a without warnings
+| ✓
+
+| *Roundtrip correctness*
+| unpack(pack(t)) == t for all valid t
+| ✓
+
+| *Spare detection*
+| trit5_is_spare(243) == true
+| ✓
+
+| *Range preservation*
+| Pack produces 0-242, never 243-255
+| ✓
+
+| *Mathematical proof*
+| See ternary-packing-algorithms.adoc
+| ✓
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[next-step]]
+== Next Step
+
+With pack.c complete, proceed to:
+
+*→ link:05-synthesis.adoc[05-synthesis.adoc]* — Complete libtrit synthesis
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*"A just weight is his delight."* Pack/unpack must be exact — no data lost, no corruption. The mathematical proofs guarantee "just weight" in our encoding.
+====
+
+_"A false balance is abomination to the LORD: but a just weight is his delight."_ — *Proverbs 11:1 KJV*
+
+*Applied:* God delights in accuracy. The spare states (243-255) are not accidental — the math naturally provides room for Scripture encoding. The structure of creation (ternary) provides space for the Word.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Journey Documents
+
+[cols="^1,3,4"]
+|===
+| Step | Document | What It Covers
+
+| 0
+| *link:00-starting-point.adoc[00-starting-point.adoc]*
+| Phase 1 prerequisites
+
+| 1
+| *link:01-trit-fundamentals.adoc[01-trit-fundamentals.adoc]*
+| MATTER layer (trit.h)
+
+| 2
+| *link:02-space-layer.adoc[02-space-layer.adoc]*
+| SPACE layer (dimension.h)
+
+| 3
+| *link:03-time-layer.adoc[03-time-layer.adoc]*
+| TIME layer (temporal.h)
+
+| 4
+| *04-integration.adoc* (this document)
+| Pack/unpack operations
+
+| 5
+| *link:05-synthesis.adoc[05-synthesis.adoc]*
+| Complete libtrit
+|===
+
+=== Source Documents
+
+[cols="2,4"]
+|===
+| Document | Purpose
+
+| *link:../../research/ternary/ternary-packing-algorithms.adoc[Packing Algorithms]*
+| Mathematical proofs
+
+| *link:../../glossary/biblical/bible-rail.adoc[Bible Rail]*
+| Spare state usage
+
+| *link:../../work/pkg/trit/src/pack.c[pack.c]*
+| The output of this journey step
+|===
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+'''
+
+_"A just weight is his delight."_ — *Proverbs 11:1*
+
+*All layers connected. Now we synthesize.*
+
+'''
+
+*Next:* link:05-synthesis.adoc[05-synthesis.adoc — Synthesis] →
+--

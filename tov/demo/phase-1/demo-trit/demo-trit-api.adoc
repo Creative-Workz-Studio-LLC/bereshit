@@ -8,22 +8,22 @@ METADATA BLOCK
 // ─────────────────────────────────────────────────────────────────────────────
 // IDENTITY
 // ─────────────────────────────────────────────────────────────────────────────
-:key: B-word-work-pkg-config-loader-api
-:title: Config Loader API Reference
+:key: B-tov-demo-phase1-demo-trit-api
+:title: demo-trit API Reference
 :type: Reference
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────────────────────────────────────
 :status: Active
-:version: 1.0.0
-:revdate: 2025-12-12
+:version: a-01.00
+:revdate: 2025-12-13
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TEMPORAL
 // ─────────────────────────────────────────────────────────────────────────────
-:created: 2025-12-12
-:updated: 2025-12-12
+:created: 2025-12-13
+:updated: 2025-12-13
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ATTRIBUTION
@@ -35,34 +35,34 @@ METADATA BLOCK
 // ─────────────────────────────────────────────────────────────────────────────
 // LOCATION
 // ─────────────────────────────────────────────────────────────────────────────
-:path: /bereshit/word/work/pkg/config/
+:path: /bereshit/tov/demo/phase-1/demo-trit/
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DERIVATION
 // ─────────────────────────────────────────────────────────────────────────────
-:derives_from: bereshit/word/omni/seed/B-word-omni-seed-documentation.omni
+:derives_from: bereshit/word/work/pkg/trit/libtrit-api.adoc
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CLASSIFICATION
 // ─────────────────────────────────────────────────────────────────────────────
-:tags: api, config, loader, phase-0, toml
-:keywords: config loader, TOML, Phase 0, API reference
+:tags: api, demo, phase-1, trit, three-layer, MATTER, SPACE, TIME
+:keywords: demo-trit, Phase 1, API reference, three-layer architecture, validation
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INTENT
 // ─────────────────────────────────────────────────────────────────────────────
-:purpose: Defines the public API for loading Phase 0 TOML specifications
-:description: Technical reference for the config loader package - types, functions, and usage patterns
+:purpose: Defines the public API for demo-trit validation program
+:description: Technical reference for demo-trit - functions for running layer tests, inspecting results, and integrating into educational games
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GROUNDING
 // ─────────────────────────────────────────────────────────────────────────────
-:biblical_foundation: Prove all things; hold fast that which is good. — 1 Thessalonians 5:21
+:biblical_foundation: By their fruits ye shall know them. — Matthew 7:20
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STRICTNESS
 // ─────────────────────────────────────────────────────────────────────────────
-:strictness: T
+:strictness: G
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ASCIIDOC SETTINGS
@@ -91,17 +91,17 @@ HEADER BLOCK
 
 [.text-center]
 --
-*The Go package for loading and validating Phase 0 TOML specifications*
+*Portable validation API for libtrit three-layer architecture*
 
 image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
 image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
-image:https://img.shields.io/badge/Type-{type}-purple?style=flat[Type]
+image:https://img.shields.io/badge/Steps-25_Demonstrated-success?style=flat[Steps]
 
-_"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
+_"By their fruits ye shall know them."_ — *Matthew 7:20*
 
 '''
 
-*<<overview,Overview>>* • *<<types,Types>>* • *<<functions,Functions>>* • *<<usage,Usage>>* • *<<references,References>>*
+*<<overview,Overview>>* • *<<functions,Functions>>* • *<<usage,Usage>>* • *<<references,References>>*
 
 --
 
@@ -116,23 +116,23 @@ CONTEXT BLOCK
 [[overview]]
 == Overview
 
-The `config` packagefootnote:[Package path: `creativeworkzstudio.com/bereshit/word/work/pkg/config`] provides a Go API for loading and validating Phase 0 TOML specifications. It reads configuration files from `word/core/` and returns structured data for use in Bereshit applications.
+The `demo-trit` programfootnote:[Binary path: `tov/demo/phase-1/demo-trit/demo-trit`] validates the libtrit three-layer architecture through 25 demonstration steps. It provides a **portable public API** that can be called by games, tutorials, and SDK examples.
 
 [IMPORTANT]
 ====
-*This package is Phase 0 foundation.* It proves specs exist and validate. Phase 3 will expand this into the full Config Reader with OmniCode parsing.
+*This is a demo program, not a library.* It validates libtrit works correctly. The API lets external code run specific layer tests and inspect results.
 ====
 
 [NOTE]
 ====
-*Scope:*
+*What this provides:*
 
-* ✓ Loading TOML files from `word/core/` directories
-* ✓ Parsing into `map[string]any` for inspection
-* ✓ Reporting what was loaded (names, keys, file counts)
-* ✗ OmniCode parsing (Phase 3)
-* ✗ Type validation beyond TOML syntax (Phase 3)
-* ✗ Schema enforcement (Phase 3)
+* ✓ Run all 25 demonstration steps (`demo_trit_run_all`)
+* ✓ Test individual layers (MATTER, SPACE, TIME)
+* ✓ Test Bible Rail spare state detection
+* ✓ Test 3D integration across all layers
+* ✓ Inspect pass/fail counts
+* ✓ Reset for repeated runs
 ====
 
 '''
@@ -140,20 +140,30 @@ The `config` packagefootnote:[Package path: `creativeworkzstudio.com/bereshit/wo
 [[quick-start]]
 === Quick Start
 
-[source,go]
+[source,c]
 ----
-import "creativeworkzstudio.com/bereshit/word/work/pkg/config"
+// Link against demo-trit to use the validation API
 
-func main() {
-    config.SetRoot("/path/to/bereshit")  // 1️⃣ Set bereshit root
-    result := config.LoadAll()            // 2️⃣ Load all configs
+int main(void) {
+    // Run all layer tests
+    int failures = demo_trit_run_all();
 
-    if result.Valid {                     // 3️⃣ Check results
-        fmt.Println("All configs valid!")
-        for cat, items := range result.Summary {
-            fmt.Printf("%s: %v\n", cat, items)
-        }
+    if (failures == 0) {
+        printf("All 25 steps passed!\n");
     }
+
+    // Or run specific layers
+    demo_trit_matter();      // MATTER layer only
+    demo_trit_space();       // SPACE layer only
+    demo_trit_time();        // TIME layer only
+    demo_trit_bible_rail();  // Bible Rail only
+    demo_trit_integration(); // 3D integration
+
+    // Inspect results
+    printf("Passed: %d\n", demo_trit_get_passed());
+    printf("Failed: %d\n", demo_trit_get_failed());
+
+    return failures;
 }
 ----
 
@@ -166,20 +176,20 @@ func main() {
 |===
 | | Category | What You'll Find | Who It Serves
 
-| 📐
-| *Types*
-| `ConfigFile`, `LoadResult` structs
-| Developers using the API
-
 | 🔧
 | *Functions*
-| `SetRoot`, `LoadAll`, category loaders
-| Developers integrating with configs
+| Test runners, result inspectors, reset
+| Developers integrating demo into apps
 
 | 📖
 | *Usage Patterns*
-| Code examples and integration guidance
-| Developers building on Phase 0
+| Game integration, educational examples
+| Game developers, tutorial authors
+
+| 🎯
+| *Live Output*
+| Actual demonstration output
+| Anyone verifying libtrit works
 |===
 
 '''
@@ -194,173 +204,89 @@ CONTENT BLOCK
 ═══════════════════════════════════════════════════════════════════════════════
 ////
 
-[[types]]
-== Types
+[[layers-tested]]
+== Layers Tested
 
-The package exports two primary types for config loading operations.
+demo-trit validates each layer of the libtrit three-layer architecture.
 
-[[configfile]]
-=== ConfigFile
-
-Represents a single loaded configuration file.
-
-[source,go]
-----
-type ConfigFile struct {
-    Name string         // filename without extension (e.g., "primitives")
-    Path string         // full path to the file
-    Data map[string]any // parsed TOML data
-    Keys []string       // top-level keys in the file
-}
-----
-
-[cols="2,4",options="header"]
+[cols="^1,2,3,3",options="header"]
 |===
-| Field | Description
+| Layer | Function | Steps | What's Validated
 
-| `Name`
-| The file's base name without `.toml` extension
+| **MATTER**
+| `demo_trit_matter()`
+| 8
+| Trit creation, arithmetic, negation
 
-| `Path`
-| Absolute path to the source file
+| **SPACE**
+| `demo_trit_space()`
+| 4
+| Dimensions, packing, state space
 
-| `Data`
-| Parsed TOML content as nested maps
+| **TIME**
+| `demo_trit_time()`
+| 4
+| Temporal states, 9 cognitive modes
 
-| `Keys`
-| Sorted list of top-level keys for summary reporting
+| **Bible Rail**
+| `demo_trit_bible_rail()`
+| 4
+| Spare state detection (243-255)
+
+| **Integration**
+| `demo_trit_integration()`
+| 5
+| Cross-layer tracing (-1, 0, +1)
 |===
-
-'''
-
-[[loadresult]]
-=== LoadResult
-
-Returned by `LoadAll()` and category loaders - aggregates loading results.
-
-[source,go]
-----
-type LoadResult struct {
-    Valid   bool                    // true if all files loaded without error
-    Configs map[string][]*ConfigFile // loaded files grouped by category
-    Errors  []error                 // any errors encountered
-    Summary map[string][]string     // category → list of names/keys
-}
-----
-
-[cols="2,4",options="header"]
-|===
-| Field | Description
-
-| `Valid`
-| `true` only if zero errors occurred
-
-| `Configs`
-| Map of category name → slice of loaded ConfigFile pointers
-
-| `Errors`
-| Slice of all errors encountered (continues loading on error)
-
-| `Summary`
-| Human-readable summary: category → list of loaded names/keys
-|===
-
-<<_top,↑ Back to Top>>
 
 '''
 
 [[functions]]
 == Functions
 
-[[setroot]]
-=== SetRoot
+All functions are declared in `main.c` and available when linking against demo-trit.
 
-Sets the bereshit repository root path. Must be called before any loading functions.
+[[test-runners]]
+=== Test Runners
 
-[source,go]
+*Run all tests:*
+
+[source,c]
 ----
-func SetRoot(path string)
+int demo_trit_run_all(void);  // Run all 25 steps, return failure count
 ----
 
-[cols="2,4",options="header"]
-|===
-| Parameter | Description
+*Run individual layers:*
 
-| `path`
-| Absolute or relative path to bereshit repository root
-|===
+[source,c]
+----
+int demo_trit_matter(void);       // Test MATTER layer (8 steps)
+int demo_trit_space(void);        // Test SPACE layer (4 steps)
+int demo_trit_time(void);         // Test TIME layer (4 steps)
+int demo_trit_bible_rail(void);   // Test Bible Rail (4 steps)
+int demo_trit_integration(void);  // Test 3D integration (5 steps)
+----
 
-[TIP]
-====
-Use environment variable `BERESHIT_ROOT` in applications:
-[source,go]
+*Run selected layers:*
+
+[source,c]
 ----
-root := os.Getenv("BERESHIT_ROOT")
-if root == "" {
-    root = "."
-}
-config.SetRoot(root)
+int demo_trit_run_layers(int matter, int space, int time, int bible, int integration);
+// Pass 1 to run layer, 0 to skip
+// Example: demo_trit_run_layers(1, 1, 0, 0, 0) runs MATTER + SPACE only
 ----
-====
 
 '''
 
-[[loadall]]
-=== LoadAll
+[[result-inspection]]
+=== Result Inspection
 
-Loads all Phase 0 configuration categories and returns aggregated results.
-
-[source,go]
+[source,c]
 ----
-func LoadAll() LoadResult
+int demo_trit_get_passed(void);  // Get count of passed steps
+int demo_trit_get_failed(void);  // Get count of failed steps
+void demo_trit_reset(void);      // Reset counters for fresh run
 ----
-
-*Returns:* `LoadResult` with all categories populated:
-
-[cols="2,3",options="header"]
-|===
-| Category Key | Source Directory
-
-| `primitives`
-| `word/core/primitives.toml`
-
-| `types`
-| `word/core/types.toml`
-
-| `schemas`
-| `word/core/schemas/*.toml`
-
-| `contracts`
-| `word/core/contracts/*.toml`
-
-| `bible`
-| `word/core/bible/*.toml`
-|===
-
-'''
-
-[[category-loaders]]
-=== Category Loaders
-
-Individual loaders for specific config categories.
-
-[source,go]
-----
-// Single file loaders - return (*ConfigFile, error)
-func LoadPrimitives() (*ConfigFile, error)  // word/core/primitives.toml
-func LoadTypes() (*ConfigFile, error)       // word/core/types.toml
-
-// Directory loaders - return ([]*ConfigFile, error)
-func LoadSchemas() ([]*ConfigFile, error)   // word/core/schemas/*.toml
-func LoadContracts() ([]*ConfigFile, error) // word/core/contracts/*.toml
-func LoadBibleRail() ([]*ConfigFile, error) // word/core/bible/*.toml
-func LoadConstants() ([]*ConfigFile, error) // word/core/*.toml (ternary-math, etc.)
-----
-
-[NOTE]
-====
-All loaders return errors explicitly. Use `LoadAll()` for aggregated loading with collected errors.
-====
 
 <<_top,↑ Back to Top>>
 
@@ -369,68 +295,76 @@ All loaders return errors explicitly. Use `LoadAll()` for aggregated loading wit
 [[usage]]
 == Usage Patterns
 
-[[basic-validation]]
-=== Basic Validation
+[[game-integration]]
+=== Educational Game Integration
 
-The most common use case - validate all Phase 0 configs exist and parse.
+Use demo-trit as level validation in an educational game.
 
-[source,go]
+[source,c]
 ----
-config.SetRoot(os.Getenv("BERESHIT_ROOT"))
-result := config.LoadAll()
-
-if !result.Valid {
-    for _, err := range result.Errors {
-        log.Printf("Error: %v", err)
-    }
-    os.Exit(1)
+// Level 1: Teach MATTER layer
+if (demo_trit_matter() == 0) {
+    show_message("You understand balanced ternary!");
+    unlock_next_level();
 }
 
-fmt.Println("✓ All configs valid")
-----
+// Level 2: Teach SPACE layer
+if (demo_trit_space() == 0) {
+    show_message("You understand dimensions and packing!");
+    unlock_next_level();
+}
 
-'''
-
-[[inspecting-loaded-data]]
-=== Inspecting Loaded Data
-
-Access parsed TOML data for programmatic use.
-
-[source,go]
-----
-result := config.LoadAll()
-
-// Get primitives config
-for _, cfg := range result.Configs["primitives"] {
-    // Access top-level keys
-    if types, ok := cfg.Data["types"].(map[string]any); ok {
-        for name, def := range types {
-            fmt.Printf("Type: %s = %v\n", name, def)
-        }
-    }
+// Final boss: All layers
+demo_trit_reset();  // Fresh start
+if (demo_trit_run_all() == 0) {
+    show_completion_screen();
+    printf("Passed: %d steps\n", demo_trit_get_passed());
 }
 ----
 
 '''
 
-[[summary-reporting]]
-=== Summary Reporting
+[[selective-testing]]
+=== Selective Layer Testing
 
-Use `Summary` field for human-readable output.
+Run specific combinations of layers.
 
-[source,go]
+[source,c]
 ----
-result := config.LoadAll()
+// Test only the foundational layers (MATTER + SPACE)
+int failures = demo_trit_run_layers(
+    1,  // matter: yes
+    1,  // space: yes
+    0,  // time: no
+    0,  // bible: no
+    0   // integration: no
+);
 
-for category, items := range result.Summary {
-    fmt.Printf("%s: %v\n", category, items)
+// Test only advanced layers (TIME + Bible Rail)
+demo_trit_reset();
+failures = demo_trit_run_layers(0, 0, 1, 1, 0);
+----
+
+'''
+
+[[continuous-integration]]
+=== CI/CD Integration
+
+Use as a validation step in build pipelines.
+
+[source,c]
+----
+int main(void) {
+    int failures = demo_trit_run_all();
+
+    if (failures > 0) {
+        fprintf(stderr, "FAILED: %d steps\n", failures);
+        return 1;  // Non-zero exit = CI failure
+    }
+
+    printf("PASSED: %d steps\n", demo_trit_get_passed());
+    return 0;  // Zero exit = CI success
 }
-// Output:
-// primitives: [trit trit3 trit9 ...]
-// types: [health_score timestamp ...]
-// schemas: [file-type health ...]
-// contracts: [health-provider filesystem ...]
-// bible: [encoding decoding translation addressing]
 ----
 
 <<_top,↑ Back to Top>>
@@ -440,34 +374,73 @@ for category, items := range result.Summary {
 [[quick-reference]]
 == Quick Reference
 
+*All Functions:*
 [cols="3,4",options="header"]
 |===
 | Function | Purpose
 
-| `SetRoot(path)`
-| Configure bereshit root path
+| `demo_trit_run_all()`
+| Run all 25 steps, return failure count
 
-| `LoadAll()`
-| Load all categories, return `LoadResult`
+| `demo_trit_matter()`
+| Test MATTER layer (8 steps)
 
-| `LoadPrimitives()`
-| Load `word/core/primitives.toml`
+| `demo_trit_space()`
+| Test SPACE layer (4 steps)
 
-| `LoadTypes()`
-| Load `word/core/types.toml`
+| `demo_trit_time()`
+| Test TIME layer (4 steps)
 
-| `LoadSchemas()`
-| Load `word/core/schemas/*.toml`
+| `demo_trit_bible_rail()`
+| Test Bible Rail (4 steps)
 
-| `LoadContracts()`
-| Load `word/core/contracts/*.toml`
+| `demo_trit_integration()`
+| Test 3D integration (5 steps)
 
-| `LoadBibleRail()`
-| Load `word/core/bible/*.toml`
+| `demo_trit_run_layers(...)`
+| Run selected layers (5 int flags)
 
-| `LoadConstants()`
-| Load `word/core/*.toml` (ternary-math, powers, algorithms, dimensions)
+| `demo_trit_get_passed()`
+| Get passed step count
+
+| `demo_trit_get_failed()`
+| Get failed step count
+
+| `demo_trit_reset()`
+| Reset counters for fresh run
 |===
+
+*Build & Run:*
+[source,bash]
+----
+# Build libtrit first
+cd word/work/pkg/trit && make
+
+# Build and run demo
+cd tov/demo/phase-1/demo-trit
+make
+./demo-trit
+----
+
+*Sample Output:*
+[source]
+----
+════════════════════════════════════════════════════════════════
+Phase 1 Demo: libtrit Three-Layer Architecture
+════════════════════════════════════════════════════════════════
+
+  Demonstrating balanced ternary computing grounded in Genesis 1:1
+
+...
+
+════════════════════════════════════════════════════════════════
+Demonstration Complete
+════════════════════════════════════════════════════════════════
+
+  Steps demonstrated: 25
+
+  "By their fruits ye shall know them." — Matthew 7:20
+----
 
 <<_top,↑ Back to Top>>
 
@@ -484,12 +457,19 @@ FOOTER BLOCK
 
 [NOTE]
 ====
-*Verification before building.* Before constructing systems, we must verify that foundations are sound. This API provides the tooling to prove specifications exist and validate before Phase 1 implementation begins.
+*Validation by demonstration.* We don't claim the architecture works — we prove it by showing the fruit. Each layer test demonstrates that the implementation matches the design. The fruit reveals the tree.
 ====
 
-_"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
+_"By their fruits ye shall know them."_ — *Matthew 7:20*
 
-*Applied:* This package embodies the principle of verification. We don't assume specs are correct—we prove they exist and parse successfully. Only after validation does implementation proceed. This is the "prove all things" before "hold fast that which is good."
+*Applied:* This demo program is living proof that libtrit works:
+
+* **25 demonstration steps** — concrete evidence, not theory
+* **Layer-by-layer validation** — MATTER, SPACE, TIME each proven
+* **Integration test** — all three layers working together
+* **Bible Rail verification** — spare states (243-255) correctly detected
+
+The fruit: balanced ternary computing with three cognitive layers grounded in Genesis 1:1 — working code that honors God through technical excellence.
 
 <<_top,↑ Back to Top>>
 
@@ -506,16 +486,20 @@ _"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
 | | Document | Purpose
 
 | 📐
-| *link:loader.go[loader.go]*
-| Source implementation of this API
+| *link:main.c[main.c]*
+| Demo source (4-block C file with public API)
+
+| 📚
+| *link:../../../../word/work/pkg/trit/libtrit-api.adoc[libtrit-api.adoc]*
+| Library API reference (what demo-trit validates)
 
 | 📖
-| *link:../../../../tov/demo/phase-0/demo-config/main.go[demo-config/main.go]*
-| Demo program showing API usage
+| *link:README.adoc[README.adoc]*
+| Demo overview and three-layer architecture
 
 | 📋
-| *link:../../../../void/planning/development/plans/phase-0-implementation-plan.adoc[Phase 0 Implementation Plan]*
-| Planning document with full Phase 0 context
+| *link:../../../../void/planning/development/plans/phase-1-implementation-plan.adoc[Phase 1 Implementation Plan]*
+| Planning document with full Phase 1 context
 |===
 
 [[external-resources]]
@@ -525,11 +509,11 @@ _"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
 |===
 | Resource | Purpose
 
-| *https://github.com/BurntSushi/toml[BurntSushi/toml]*
-| TOML parser library used by this package
+| *link:../../../../word/work/pkg/trit/README.adoc[libtrit README]*
+| Library overview and testing philosophy
 
-| *https://toml.io/[TOML Specification]*
-| Official TOML format specification
+| *link:../../../../word/work/pkg/trit/[libtrit package]*
+| Full library source and headers
 |===
 
 '''
@@ -537,11 +521,10 @@ _"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
 [[see-also]]
 == See Also
 
-* link:../../../../word/core/primitives.toml[primitives.toml] — Base ternary type definitions
-* link:../../../../word/core/types.toml[types.toml] — Composite type definitions
-* link:../../../../word/core/schemas/[schemas/] — Schema definitions directory
-* link:../../../../word/core/contracts/[contracts/] — Contract definitions directory
-* link:../../../../word/core/bible/[bible/] — Bible rail configurations
+* link:main.c[main.c] — Demo source with public API functions
+* link:README.adoc[README.adoc] — Demo overview and architecture
+* link:Makefile[Makefile] — Build configuration
+* link:../../../../word/work/pkg/trit/libtrit-api.adoc[libtrit-api.adoc] — Library API this demo validates
 
 '''
 
@@ -559,7 +542,7 @@ _"Prove all things; hold fast that which is good."_ — *1 Thessalonians 5:21*
 
 _"{biblical_foundation}"_
 
-*Verification enables confident building.*
+*Balanced ternary computing grounded in the structure of creation.*
 
 --
 

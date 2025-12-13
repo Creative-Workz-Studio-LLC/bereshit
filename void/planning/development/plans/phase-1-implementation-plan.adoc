@@ -15,15 +15,15 @@ METADATA BLOCK
 // ─────────────────────────────────────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────────────────────────────────────
-:status: Active
-:version: a-01.95
-:revdate: 2025-12-12
+:status: Complete
+:version: b-01.00
+:revdate: 2025-12-13
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TEMPORAL
 // ─────────────────────────────────────────────────────────────────────────────
 :created: 2025-12-12
-:updated: 2025-12-12
+:updated: 2025-12-13
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ATTRIBUTION
@@ -161,21 +161,21 @@ This document defines the trackable implementation tasks for Phase 1 of Kingdom 
 
 | 4
 | Demo (SPACE)
-| 0/7
-| Pending
+| 7/7
+| ✓ Complete
 
 | 5
 | Unit Tests
-| 0/5
-| Pending
+| 7/7
+| ✓ Complete
 
 | 6
 | Documentation
-| 0/3
-| Pending
+| 3/3
+| ✓ Complete
 |===
 
-*Current State:* Core library (`libtrit.a`) complete with trit.c and pack.c. Demo and tests pending.
+*Current State:* **Phase 1 Complete.** Core library (`libtrit.a`), demo program (`demo-trit`), unit tests, and documentation all complete. Ready for Phase 2.
 
 '''
 
@@ -683,37 +683,37 @@ multiplication = [       # mul(a,b) = table[a+1][b+1]
 | 4.1
 | *Create demo main.c*
 | `tov/demo/phase-1/demo-trit/main.c` — 4-block executable
-| Pending
+| ✓ Done
 
 | 4.2
 | *Create demo Makefile*
 | `tov/demo/phase-1/demo-trit/Makefile`
-| Pending
+| ✓ Done
 
 | 4.3
 | *Test Matter dimension*
 | Demo tests trit creation, value verification
-| Pending
+| ✓ Done
 
 | 4.4
 | *Test Space dimension*
 | Demo tests pack/unpack, position verification
-| Pending
+| ✓ Done
 
 | 4.5
 | *Test Time dimension*
 | Demo tests operation sequence, roundtrip
-| Pending
+| ✓ Done
 
 | 4.6
 | *Test Bible Rail*
 | Demo tests spare state detection (243-255)
-| Pending
+| ✓ Done
 
 | 4.7
 | *Create demo README*
 | `tov/demo/phase-1/demo-trit/README.adoc` — 5-block documentation
-| Pending
+| ✓ Done
 |===
 
 [%collapsible%open]
@@ -761,30 +761,42 @@ Testing spare states (BIBLE RAIL)...
 | Task | Goal | Deliverable | Status
 
 | 5.1
-| *Test trit edge cases*
-| `src/trit_test.c` — boundary values, invalid input
-| Pending
+| *Test trit core operations*
+| `pkg/trit/test/trit_test.c` — 24 assertions (edge cases, roundtrip, arithmetic)
+| ✓ Complete
 
 | 5.2
-| *Test all trit5 states*
-| `src/trit_test.c` — roundtrip all 243 values
-| Pending
+| *Test pack/unpack*
+| `pkg/trit/test/pack_test.c` — 21 assertions (trit5→trit9→trit27)
+| ✓ Complete
 
 | 5.3
-| *Test trit9 states*
-| `src/trit_test.c` — sample from 19,683 values
-| Pending
+| *Test dimension framework*
+| `pkg/trit/test/dimension_test.c` — 23 assertions (TIME/SPACE/MATTER, directions)
+| ✓ Complete
 
 | 5.4
-| *Test trit27 boundaries*
-| `src/trit_test.c` — min, max, zero, edge cases
-| Pending
+| *Test temporal operations*
+| `pkg/trit/test/temporal_test.c` — 25 assertions (states, timestamps, sequences)
+| ✓ Complete
 
 | 5.5
-| *Test arithmetic tables*
-| `src/trit_test.c` — verify against ternary-math.toml
-| Pending
+| *Integration test*
+| `pkg/trit/test/integration_test.c` — 7 assertions (full type system flow)
+| ✓ Complete
+
+| 5.6
+| *Go config loader tests*
+| `pkg/config/loader_test.go` — 8 tests (all Load* functions)
+| ✓ Complete
+
+| 5.7
+| *Bug fix: ConstantsPath*
+| `pkg/config/loader.go` — Fixed path word/constants → word/core (test-detected)
+| ✓ Complete
 |===
+
+*Note:* Task 5.7 was detected by TestLoadConstants — tests designed expecting faults, caught drift from design.
 
 <<_top,↑ Back to Top>>
 
@@ -800,7 +812,7 @@ Testing spare states (BIBLE RAIL)...
 
 | 6.1
 | *Create API reference*
-| `word/work/pkg/trit/trit-api.adoc` — 5-block documentation
+| `word/work/pkg/trit/libtrit-api.adoc` — 5-block documentation
 | Pending
 
 | 6.2
@@ -931,13 +943,13 @@ How to know Phase 1 is complete and ready for Phase 2.
 | *Spare states detected*
 | `trit5_is_spare()` identifies 243-255 as Bible Rail values
 
-|
+| ✓
 | *Demo passes*
-| `./demo-trit` tests Matter, Space, Time dimensions successfully
+| `./demo-trit` tests Matter, Space, Time dimensions successfully (25 steps)
 
-|
+| ✓
 | *Unit tests pass*
-| All test cases pass: boundary, roundtrip, spare detection
+| All test cases pass: boundary, roundtrip, spare detection (39 tests)
 
 | ✓
 | *Library linkable*

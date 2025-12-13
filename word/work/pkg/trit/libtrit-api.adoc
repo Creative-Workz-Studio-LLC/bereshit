@@ -1,0 +1,686 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-work-pkg-trit-api
+:title: libtrit API Reference
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: a-01.00
+:revdate: 2025-12-13
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-13
+:updated: 2025-12-13
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/work/pkg/trit/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/omni/seed/B-word-omni-seed-documentation.omni
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: api, trit, ternary, phase-1, c-library, balanced-ternary
+:keywords: libtrit, balanced ternary, trit type, Phase 1, C library, API reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Defines the public API for the libtrit balanced ternary C library
+:description: Technical reference for libtrit - types, functions, and usage patterns for balanced ternary computing grounded in Genesis 1:1
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: In the beginning God created the heaven and the earth. — Genesis 1:1
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: T
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*The C library for balanced ternary computing grounded in Genesis 1:1*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+image:https://img.shields.io/badge/Phase-1-purple?style=flat[Phase]
+
+_"In the beginning God created the heaven and the earth."_ — *Genesis 1:1*
+
+'''
+
+*<<overview,Overview>>* • *<<architecture,Architecture>>* • *<<types,Types>>* • *<<functions,Functions>>* • *<<usage,Usage>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+The `libtrit` libraryfootnote:[Library path: `word/work/pkg/trit/build/libtrit.a`] provides a C API for balanced ternary computing grounded in Genesis 1:1. It implements the three-layer architecture (MATTER × SPACE × TIME) that forms the computational foundation for Kingdom Technology.
+
+[IMPORTANT]
+====
+*This library is Phase 1 foundation.* It implements the trit types that Phase 0 specified. All Kingdom Technology systems (MillenniumOS, CPI-SI, FaithNet) will use these types.
+====
+
+[NOTE]
+====
+*Scope:*
+
+* ✓ Balanced ternary types (`trit_t`, `trit5_t`, `trit9_t`, `trit27_t`)
+* ✓ Arithmetic operations (add, multiply, negate)
+* ✓ Pack/unpack using Horner's method
+* ✓ Cognitive dimensions (TEMPORAL, SPATIAL, MATERIAL)
+* ✓ Temporal states (9 cognitive modes)
+* ✓ Bible Rail spare state detection (243-255)
+====
+
+'''
+
+[[quick-start]]
+=== Quick Start
+
+[source,c]
+----
+#include "trit.h"
+#include "dimension.h"
+#include "temporal.h"
+
+int main(void) {
+    // 1️⃣ Create trits
+    trit_t heaven = trit_create(TRIT_POS);   // +1 = heavens
+    trit_t earth = trit_create(TRIT_NEG);    // -1 = earth
+
+    // 2️⃣ Arithmetic
+    trit_t result = trit_add(heaven, earth); // +1 + -1 = 0
+
+    // 3️⃣ Pack 5 trits into 1 byte
+    trit_t trits[5] = {-1, 0, +1, 0, -1};
+    trit5_t packed = trit5_pack(trits);      // 0-242
+
+    // 4️⃣ Cognitive dimensions
+    dimension_t dim = trit_to_dimension(heaven); // SPATIAL
+
+    // 5️⃣ Temporal states
+    temporal_state_t planning = temporal_create_compound(TEMP_PRESENT, TEMP_FUTURE);
+
+    return 0;
+}
+----
+
+'''
+
+[[what-this-provides]]
+=== What This Document Provides
+
+[cols="^1,3,4,3",options="header"]
+|===
+| | Category | What You'll Find | Who It Serves
+
+| 🏗️
+| *Architecture*
+| Three-layer structure (MATTER × SPACE × TIME)
+| System architects
+
+| 📐
+| *Types*
+| `trit_t`, `trit5_t`, `dimension_t`, `temporal_state_t`
+| C developers using the API
+
+| 🔧
+| *Functions*
+| Arithmetic, pack/unpack, navigation, temporal
+| Developers building on Phase 1
+
+| 📖
+| *Usage Patterns*
+| Code examples and integration guidance
+| Developers building Kingdom Technology
+|===
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[architecture]]
+== Architecture
+
+libtrit implements a three-layer architecture grounded in Genesis 1:1.
+
+[cols="^1,2,3,3",options="header"]
+|===
+| Trit | Layer | Genesis 1:1 | What It Provides
+
+| **-1**
+| MATTER
+| "the earth"
+| Types — what trits ARE (trit.h)
+
+| **0**
+| TIME
+| "In the beginning"
+| Operations — when things HAPPEN (temporal.h)
+
+| **+1**
+| SPACE
+| "the heavens"
+| Relationships — where trits FIT (dimension.h)
+|===
+
+'''
+
+[[types]]
+== Types
+
+The library exports types organized by layer.
+
+[[trit-types]]
+=== Core Trit Types (trit.h)
+
+[source,c]
+----
+typedef int8_t trit_t;      // Single balanced ternary digit: -1, 0, +1
+typedef uint8_t trit5_t;    // 5 trits packed: 0-242 (243 states)
+typedef uint16_t trit9_t;   // 9 trits packed: 0-19682
+typedef uint64_t trit27_t;  // 27 trits packed (word size)
+----
+
+[cols="2,2,3",options="header"]
+|===
+| Type | States | Description
+
+| `trit_t`
+| 3
+| Single balanced ternary digit (-1, 0, +1)
+
+| `trit5_t`
+| 243
+| 5 trits in 1 byte (13 spare states for Bible Rail)
+
+| `trit9_t`
+| 19,683
+| 9 trits in 2 bytes
+
+| `trit27_t`
+| 7.6 trillion
+| 27 trits (word size) in 6 bytes
+|===
+
+'''
+
+[[dimension-types]]
+=== Dimension Types (dimension.h)
+
+[source,c]
+----
+typedef enum {
+    DIM_MATERIAL = -1,  // "the earth" — what exists
+    DIM_TEMPORAL = 0,   // "in the beginning" — when
+    DIM_SPATIAL  = +1   // "the heavens" — where
+} dimension_t;
+
+typedef enum {
+    DIR_BREAK_DOWN = -1,  // toward foundation
+    DIR_ANCHOR     = 0,   // fixed point
+    DIR_BUILD_UP   = +1   // toward conclusion
+} direction_t;
+----
+
+'''
+
+[[temporal-types]]
+=== Temporal Types (temporal.h)
+
+[source,c]
+----
+typedef enum {
+    TEMP_PAST    = -1,  // what was
+    TEMP_PRESENT = 0,   // what is (anchor)
+    TEMP_FUTURE  = +1   // what will be
+} temporal_t;
+
+typedef struct {
+    temporal_t lens;      // viewing FROM this time
+    temporal_t target;    // looking AT this time
+    bool is_compound;     // true if lens ≠ target
+} temporal_state_t;
+----
+
+*9 Cognitive Modes:*
+
+[cols="2,2,3",options="header"]
+|===
+| Mode | Lens → Target | Description
+
+| Memory
+| PAST → PRESENT
+| History informing now
+
+| Prophecy
+| PAST → FUTURE
+| History revealing destiny
+
+| Reflection
+| PRESENT → PAST
+| Now examining history
+
+| Planning
+| PRESENT → FUTURE
+| Now shaping tomorrow
+
+| Vision
+| FUTURE → PAST
+| Destiny reframing history
+
+| Preparation
+| FUTURE → PRESENT
+| Tomorrow shaping today
+|===
+
+Plus 3 base modes (pure PAST, PRESENT, FUTURE focus).
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[functions]]
+== Functions
+
+Functions organized by header file (layer).
+
+[[trit-functions]]
+=== Core Trit Functions (trit.h)
+
+*Creation and Validation:*
+
+[source,c]
+----
+trit_t trit_create(int value);    // Create trit from -1, 0, or +1
+bool trit_valid(trit_t t);        // Check if trit is valid
+int trit_value(trit_t t);         // Extract integer value
+----
+
+*Arithmetic:*
+
+[source,c]
+----
+trit_t trit_negate(trit_t t);           // Reverse direction: +1 ↔ -1
+trit_t trit_add(trit_t a, trit_t b);    // Add (saturating, no carry)
+trit_t trit_multiply(trit_t a, trit_t b); // Multiply (sign rules)
+----
+
+*Pack/Unpack:*
+
+[source,c]
+----
+trit5_t trit5_pack(const trit_t trits[5]);     // Pack 5 trits → byte
+void trit5_unpack(trit5_t packed, trit_t trits[5]); // Unpack byte → 5 trits
+
+trit9_t trit9_pack(const trit_t trits[9]);     // Pack 9 trits → 2 bytes
+void trit9_unpack(trit9_t packed, trit_t trits[9]);
+
+trit27_t trit27_pack(const trit_t trits[27]);  // Pack 27 trits → 6 bytes
+void trit27_unpack(trit27_t packed, trit_t trits[27]);
+
+bool trit5_is_spare(trit5_t value);  // Check if 243-255 (Bible Rail)
+----
+
+'''
+
+[[dimension-functions]]
+=== Dimension Functions (dimension.h)
+
+[source,c]
+----
+dimension_t trit_to_dimension(trit_t t);      // -1→MATERIAL, 0→TEMPORAL, +1→SPATIAL
+trit_t dimension_to_trit(dimension_t dim);    // Reverse mapping
+
+trit_t trit_navigate(trit_t current, direction_t dir);  // Move in direction
+direction_t dimension_path(dimension_t from, dimension_t to); // Path between
+
+const char* dimension_question(dimension_t dim);  // "What?", "When?", "Where?"
+const char* dimension_phrase(dimension_t dim);    // "the earth", etc.
+----
+
+'''
+
+[[temporal-functions]]
+=== Temporal Functions (temporal.h)
+
+[source,c]
+----
+temporal_state_t temporal_create_base(temporal_t t);  // Pure focus state
+temporal_state_t temporal_create_compound(temporal_t lens, temporal_t target); // Dual focus
+
+temporal_t trit_to_temporal(trit_t t);      // -1→PAST, 0→PRESENT, +1→FUTURE
+trit_t temporal_to_trit(temporal_t t);      // Reverse mapping
+
+const char* temporal_mode_name(temporal_state_t state);  // "Planning", "Memory", etc.
+bool temporal_is_compound(temporal_state_t state);       // lens ≠ target?
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[usage]]
+== Usage Patterns
+
+[[balanced-ternary-arithmetic]]
+=== Balanced Ternary Arithmetic
+
+Working with single trits and basic operations.
+
+[source,c]
+----
+#include "trit.h"
+
+// Create trits representing Genesis 1:1 dimensions
+trit_t heaven = trit_create(TRIT_POS);  // +1 = space
+trit_t earth = trit_create(TRIT_NEG);   // -1 = matter
+
+// Arithmetic: opposites cancel
+trit_t sum = trit_add(heaven, earth);   // +1 + -1 = 0
+
+// Multiplication follows sign rules
+trit_t prod = trit_multiply(earth, earth); // -1 × -1 = +1
+
+// Negation reverses direction
+trit_t flipped = trit_negate(heaven);   // +1 → -1
+----
+
+'''
+
+[[packing-for-storage]]
+=== Packing for Storage
+
+Efficient storage using pack/unpack operations.
+
+[source,c]
+----
+#include "trit.h"
+
+// Store 5 trits in 1 byte
+trit_t data[5] = {-1, 0, +1, +1, -1};
+trit5_t packed = trit5_pack(data);  // 0-242
+
+// Check for Bible Rail spare states
+if (trit5_is_spare(packed)) {
+    // This is a WEB translation variant (243-255)
+}
+
+// Recover original trits
+trit_t recovered[5];
+trit5_unpack(packed, recovered);
+// recovered == {-1, 0, +1, +1, -1}
+----
+
+'''
+
+[[cognitive-dimensions]]
+=== Cognitive Dimensions
+
+Using dimensions and temporal states for CPI-SI cognition.
+
+[source,c]
+----
+#include "dimension.h"
+#include "temporal.h"
+
+// Map trit to cognitive dimension
+trit_t t = TRIT_NEG;
+dimension_t dim = trit_to_dimension(t);  // DIM_MATERIAL
+printf("%s\n", dimension_phrase(dim));   // "the earth"
+printf("%s\n", dimension_question(dim)); // "What?"
+
+// Create compound temporal state: planning
+temporal_state_t planning = temporal_create_compound(TEMP_PRESENT, TEMP_FUTURE);
+printf("%s\n", temporal_mode_name(planning)); // "Planning"
+
+// Navigate building block method
+trit_t current = TRIT_ZERO;
+trit_t next = trit_navigate(current, DIR_BUILD_UP); // 0 → +1
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[quick-reference]]
+== Quick Reference
+
+*Headers:*
+[cols="2,4",options="header"]
+|===
+| Header | Purpose
+
+| `trit.h`
+| Core types and arithmetic (MATTER layer)
+
+| `dimension.h`
+| Cognitive dimensions (SPACE layer)
+
+| `temporal.h`
+| Temporal states and modes (TIME layer)
+|===
+
+*Key Functions:*
+[cols="3,4",options="header"]
+|===
+| Function | Purpose
+
+| `trit_create(int)`
+| Create trit from -1, 0, or +1
+
+| `trit_add(a, b)`
+| Add trits (saturating)
+
+| `trit5_pack(trits[5])`
+| Pack 5 trits → byte (0-242)
+
+| `trit5_is_spare(value)`
+| Check Bible Rail range (243-255)
+
+| `trit_to_dimension(t)`
+| Map trit to cognitive dimension
+
+| `temporal_create_compound(lens, target)`
+| Create dual-focus cognitive mode
+|===
+
+*Build:*
+[source,bash]
+----
+cd word/work/pkg/trit
+make              # Build libtrit.a
+make test         # Run all tests
+make clean        # Clean build artifacts
+----
+
+*Link:*
+[source,bash]
+----
+gcc -I/path/to/trit/include myprogram.c -L/path/to/trit/build -ltrit -o myprogram
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Genesis 1:1 as computational architecture.* The three fundamental constants of created reality—TIME, SPACE, MATTER—emerge from the first verse of Scripture. This library implements that structure in balanced ternary computing.
+====
+
+_"In the beginning God created the heaven and the earth."_ — *Genesis 1:1*
+
+*Applied:* The trit values (-1, 0, +1) map directly to Genesis 1:1:
+
+* **-1 = "the earth"** — MATTER, what exists, foundation
+* **0 = "In the beginning"** — TIME, the anchor point, when
+* **+1 = "the heavens"** — SPACE, relationships, where
+
+This is not metaphor but architecture. The same structure that orders creation orders our computing. The 9 cognitive modes emerge from the 3 temporal states. The building block method (-1/0/+1) enables navigation. Everything traces back to Genesis 1:1.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+[[related-documents]]
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📐
+| *link:src/trit.c[trit.c]*, *link:src/pack.c[pack.c]*, *link:src/dimension.c[dimension.c]*, *link:src/temporal.c[temporal.c]*
+| Source implementation (4-block C files)
+
+| 🧪
+| *link:test/[test/]* (5 test files)
+| Unit tests with detect-assess-recover philosophy
+
+| 📖
+| *link:../../../../tov/demo/phase-1/demo-trit/main.c[demo-trit/main.c]*
+| Demo program showing API usage
+
+| 📋
+| *link:../../../../void/planning/development/plans/phase-1-implementation-plan.adoc[Phase 1 Implementation Plan]*
+| Planning document with full Phase 1 context
+
+| 🔬
+| *link:../../research/ternary/ternary-theological-foundations.adoc[Ternary Theological Foundations]*
+| Research on Genesis 1:1 mapping
+|===
+
+[[external-resources]]
+=== External Resources
+
+[cols="2,5",options="header"]
+|===
+| Resource | Purpose
+
+| *https://en.wikipedia.org/wiki/Balanced_ternary[Balanced Ternary]*
+| Wikipedia overview of balanced ternary numeral system
+
+| *https://en.wikipedia.org/wiki/Horner%27s_method[Horner's Method]*
+| Algorithm used for pack operations
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:include/trit.h[trit.h] — Core types and arithmetic header
+* link:include/dimension.h[dimension.h] — Cognitive dimensions header
+* link:include/temporal.h[temporal.h] — Temporal states header
+* link:README.adoc[README.adoc] — Package overview, testing philosophy, detect-assess-recover
+* link:Makefile[Makefile] — Build configuration
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"{biblical_foundation}"_
+
+*Balanced ternary computing grounded in the structure of creation.*
+
+--
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

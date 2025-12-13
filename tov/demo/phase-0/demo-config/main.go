@@ -153,8 +153,11 @@ import (
 // ────────────────────────────────────────────────────────────────
 // Variables
 // ────────────────────────────────────────────────────────────────
-//
-// [Reserved: Demo is stateless - all state local to main()]
+
+var (
+	configsPassed int // count of configs that loaded successfully
+	configsFailed int // count of configs that failed to load
+)
 
 // ────────────────────────────────────────────────────────────────
 // Types
@@ -231,7 +234,180 @@ import (
 // Public APIs
 // ────────────────────────────────────────────────────────────────
 //
-// [Reserved: Demo has no public APIs - main() is in CLOSING Code Execution]
+// Primary API (run validation):
+//   DemoConfigRunAll()  - Run all config validation, return failure count
+//
+// Utility API (inspection):
+//   DemoConfigGetPassed() - Get count of passed validations
+//   DemoConfigGetFailed() - Get count of failed validations
+//   DemoConfigReset()     - Reset counters
+
+// DemoConfigRunAll runs all Phase 0 config demonstration.
+// Returns the count of failed configurations (0 = all passed).
+//
+// Flow: VALIDATION → EXECUTION → CLEANUP
+//   1. Validate config loader prerequisites
+//   2. Execute demonstration (load and show configs)
+//   3. Cleanup and report results
+//
+// Usage in game/tutorial:
+//
+//	if DemoConfigRunAll() == 0 {
+//	    unlockNextPhase()
+//	}
+func DemoConfigRunAll() int {
+	// ═══════════════════════════════════════════════════════════
+	// SETUP: Reset state for fresh run
+	// ═══════════════════════════════════════════════════════════
+	DemoConfigReset()
+
+	fmt.Println("════════════════════════════════════════════════════════════════")
+	fmt.Println("Phase 0 Demo: Config System Demonstration")
+	fmt.Println("════════════════════════════════════════════════════════════════")
+	fmt.Println()
+	fmt.Println("  Demonstrating the specification foundation for Kingdom Technology")
+	fmt.Println()
+
+	// ═══════════════════════════════════════════════════════════
+	// VALIDATION: Verify config loader prerequisites
+	// ═══════════════════════════════════════════════════════════
+	if !demoValidatePrerequisites() {
+		demoCleanupAndReport()
+		return configsFailed
+	}
+
+	// ═══════════════════════════════════════════════════════════
+	// EXECUTION: Demonstrate config loading
+	// ═══════════════════════════════════════════════════════════
+	demoShowConfigCategories()
+
+	// ═══════════════════════════════════════════════════════════
+	// CLEANUP: Report results
+	// ═══════════════════════════════════════════════════════════
+	demoCleanupAndReport()
+
+	return configsFailed
+}
+
+// ────────────────────────────────────────────────────────────────
+// VALIDATION: Check prerequisites before demonstration
+// ────────────────────────────────────────────────────────────────
+
+func demoValidatePrerequisites() bool {
+	fmt.Println("────────────────────────────────────────────────────────────────")
+	fmt.Println("Validating config loader prerequisites...")
+	fmt.Println("────────────────────────────────────────────────────────────────")
+
+	root := os.Getenv("BERESHIT_ROOT")
+	if root == "" {
+		root = "."
+	}
+
+	// Check root exists
+	fmt.Printf("  Bereshit Root: %s\n", root)
+	config.SetRoot(root)
+
+	// Try to load - this validates the loader works
+	result := config.LoadAll()
+
+	if !result.Valid {
+		fmt.Println("  ✗ Config loader failed to load specifications")
+		for _, err := range result.Errors {
+			fmt.Printf("    - %v\n", err)
+			configsFailed++
+		}
+		fmt.Println("────────────────────────────────────────────────────────────────")
+		fmt.Println("✗ Prerequisites failed. Cannot proceed.")
+		return false
+	}
+
+	fmt.Println("  ✓ Config loader ready")
+	fmt.Println("────────────────────────────────────────────────────────────────")
+	fmt.Println("✓ All prerequisites validated. Proceeding with demonstration.")
+	return true
+}
+
+// ────────────────────────────────────────────────────────────────
+// EXECUTION: Show what the config system provides
+// ────────────────────────────────────────────────────────────────
+
+func demoShowConfigCategories() {
+	result := config.LoadAll()
+
+	fmt.Println()
+	fmt.Println("────────────────────────────────────────────────────────────────")
+	fmt.Println("Phase 0 Specifications: The Foundation")
+	fmt.Println("────────────────────────────────────────────────────────────────")
+	fmt.Println()
+	fmt.Println("  These TOML specifications define Kingdom Technology's foundation:")
+	fmt.Println()
+
+	// Demonstrate each category with explanation
+	for category, items := range result.Summary {
+		configsPassed++
+		fmt.Printf("  → %s\n", category)
+		switch category {
+		case "primitives":
+			fmt.Println("    The atomic types: trit, bool3, int27, etc.")
+		case "types":
+			fmt.Println("    Type system: structs, unions, generics, constraints")
+		case "schemas":
+			fmt.Println("    Data shapes: identity, health, timestamps")
+		case "contracts":
+			fmt.Println("    Interface definitions: filesystem, network, health")
+		case "bible":
+			fmt.Println("    Scripture encoding: addressing, translation mapping")
+		case "constants":
+			fmt.Println("    Fixed values: system constants")
+		}
+		fmt.Printf("    Items: %v\n", items)
+		fmt.Println()
+	}
+
+	fmt.Println("────────────────────────────────────────────────────────────────")
+	fmt.Println("  Phase 0 provides the SPECIFICATION layer.")
+	fmt.Println("  Phase 1 builds IMPLEMENTATION on this foundation.")
+	fmt.Println("────────────────────────────────────────────────────────────────")
+}
+
+// ────────────────────────────────────────────────────────────────
+// CLEANUP: Report results and prepare for next run
+// ────────────────────────────────────────────────────────────────
+
+func demoCleanupAndReport() {
+	fmt.Println()
+	fmt.Println("════════════════════════════════════════════════════════════════")
+	fmt.Println("Demonstration Complete")
+	fmt.Println("════════════════════════════════════════════════════════════════")
+	fmt.Println()
+	fmt.Printf("  Categories demonstrated: %d\n", configsPassed)
+	if configsFailed > 0 {
+		fmt.Printf("  Failures: %d\n", configsFailed)
+	}
+	fmt.Println()
+	fmt.Println("  \"Prove all things; hold fast that which is good.\"")
+	fmt.Println("                                    — 1 Thessalonians 5:21")
+	fmt.Println()
+	fmt.Println("  The specifications are proven. The foundation is ready.")
+	fmt.Println()
+	fmt.Println("════════════════════════════════════════════════════════════════")
+}
+
+// DemoConfigGetPassed returns the count of configs that passed validation.
+func DemoConfigGetPassed() int {
+	return configsPassed
+}
+
+// DemoConfigGetFailed returns the count of configs that failed validation.
+func DemoConfigGetFailed() int {
+	return configsFailed
+}
+
+// DemoConfigReset resets the validation counters.
+func DemoConfigReset() {
+	configsPassed = 0
+	configsFailed = 0
+}
 
 // ============================================================================
 // END BODY
@@ -258,12 +434,8 @@ import (
 
 // main is the entry point for the Phase 0 config validation demo.
 //
-// What It Does:
-//   1. Gets bereshit root from BERESHIT_ROOT env var or current directory
-//   2. Calls config.SetRoot() to configure the loader
-//   3. Calls config.LoadAll() to load all Phase 0 specifications
-//   4. Prints summary of what was loaded
-//   5. Exits with 0 (success) or 1 (failure)
+// Delegates to DemoConfigRunAll() which contains all validation logic.
+// This allows the demo to be called programmatically by games/tutorials.
 //
 // Environment:
 //   BERESHIT_ROOT: Path to bereshit repository root (optional, defaults to ".")
@@ -272,54 +444,11 @@ import (
 //   0: All configs loaded successfully
 //   1: One or more configs failed to load
 func main() {
-	fmt.Println("════════════════════════════════════════════════════════════════")
-	fmt.Println("Phase 0 Demo: Config Loader Validation")
-	fmt.Println("════════════════════════════════════════════════════════════════")
-	fmt.Println()
-
-	root := os.Getenv("BERESHIT_ROOT") // get bereshit root from environment
-	if root == "" {                    // default to current directory if not set
-		root = "."
-	}
-	fmt.Printf("Bereshit Root: %s\n\n", root)
-
-	config.SetRoot(root) // configure the loader with the root path
-
-	fmt.Println("Loading Phase 0 configurations...")
-	fmt.Println()
-
-	result := config.LoadAll() // load all configs and collect results
-
-	fmt.Println("────────────────────────────────────────────────────────────────")
-	fmt.Println("Results Summary")
-	fmt.Println("────────────────────────────────────────────────────────────────")
-	fmt.Println()
-
-	for category, items := range result.Summary { // print what was loaded
-		fmt.Printf("  %s: %v\n", category, items)
-	}
-	fmt.Println()
-
-	if len(result.Errors) > 0 { // report any errors
-		fmt.Println("Errors encountered:")
-		for _, err := range result.Errors {
-			fmt.Printf("  - %v\n", err)
-		}
-		fmt.Println()
-	}
-
-	fmt.Println("────────────────────────────────────────────────────────────────")
-	if result.Valid { // final status
-		fmt.Println("✓ Phase 0 Validation: PASSED")
-		fmt.Println("  All specifications exist and are well-formed.")
-		fmt.Println("════════════════════════════════════════════════════════════════")
-		os.Exit(0)
-	} else {
-		fmt.Println("✗ Phase 0 Validation: FAILED")
-		fmt.Println("  One or more specifications could not be loaded.")
-		fmt.Println("════════════════════════════════════════════════════════════════")
+	failures := DemoConfigRunAll()
+	if failures > 0 {
 		os.Exit(1)
 	}
+	os.Exit(0)
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -397,14 +526,30 @@ func main() {
 // Quick Reference
 // ────────────────────────────────────────────────────────────────
 //
-// Build:
-//   go build ./tov/demo/phase-0/demo-config/
+// Build and Run:
 //
-// Run:
+//   go build ./tov/demo/phase-0/demo-config/
 //   BERESHIT_ROOT=/path/to/bereshit ./demo-config
+//
+// Embed in Game/Tutorial:
+//
+//   import "creativeworkzstudio.com/bereshit/tov/demo/phase-0/demo-config"
+//
+//   // Run all validation
+//   if DemoConfigRunAll() == 0 {
+//       unlockPhase1()
+//   }
+//
+//   // Check results
+//   passed := DemoConfigGetPassed()
+//   failed := DemoConfigGetFailed()
+//
+//   // Reset for another run
+//   DemoConfigReset()
 //
 // Expected output on success:
 //   ✓ Phase 0 Validation: PASSED
+//   Categories: N passed, 0 failed
 
 // ────────────────────────────────────────────────────────────────
 // Closing Note

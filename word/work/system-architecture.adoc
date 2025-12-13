@@ -1,0 +1,650 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-word-work-system-architecture
+:title: Bereshit System Architecture
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: a-01.00
+:revdate: 2025-12-13
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-13
+:updated: 2025-12-13
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/word/work/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/omni/seed/B-word-omni-seed-documentation.omni
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: architecture, system, bereshit, dependency-flow, components, three-layer
+:keywords: system architecture, dependency flow, void-word-tov, Phase 0, Phase 1, three-layer
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Documents how Bereshit system components relate and dependencies flow
+:description: Technical architecture reference showing component relationships, phase dependencies, and the three-layer design (MATTER, SPACE, TIME)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: For as the heavens are higher than the earth, so are my ways higher than your ways. — Isaiah 55:9
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*How components relate and dependencies flow in Kingdom Technology*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+image:https://img.shields.io/badge/Phases-0_and_1_Complete-success?style=flat[Phases]
+
+_"For as the heavens are higher than the earth, so are my ways higher than your ways."_ — *Isaiah 55:9*
+
+'''
+
+*<<overview,Overview>>* • *<<folder-structure,Folders>>* • *<<phases,Phases>>* • *<<three-layers,Three Layers>>* • *<<dependencies,Dependencies>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+The Bereshit systemnfootnote:[Hebrew: בְּרֵאשִׁית - "In the beginning" (Genesis 1:1)] organizes Kingdom Technology into a phased implementation with clear dependencies and folder semantics. This document maps how components relate.
+
+[IMPORTANT]
+====
+*This is the reference architecture.* It shows what exists, how pieces connect, and where dependencies flow. Individual components have their own API docs.
+====
+
+[NOTE]
+====
+*What this document covers:*
+
+* ✓ Folder structure (void → word → tov)
+* ✓ Phase organization (Phase 0: specs, Phase 1: trit library)
+* ✓ Three-layer architecture (MATTER × SPACE × TIME)
+* ✓ Dependency flow between components
+* ✓ Demo programs proving each phase
+====
+
+'''
+
+[[what-this-provides]]
+=== What This Document Provides
+
+[cols="^1,3,4,3",options="header"]
+|===
+| | Category | What You'll Find | Who It Serves
+
+| 🏗️
+| *Folder Structure*
+| void/word/tov semantics from Genesis 1
+| All developers
+
+| 📦
+| *Phases*
+| What each phase builds, how they depend
+| Project managers, architects
+
+| 🧠
+| *Three Layers*
+| MATTER × SPACE × TIME cognitive architecture
+| System architects, CPI-SI developers
+
+| 🔗
+| *Dependencies*
+| What depends on what, build order
+| Build engineers, CI/CD
+|===
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[folder-structure]]
+== Folder Structure
+
+The Bereshit root organizes according to Genesis 1 semantics.
+
+[cols="^1,2,3,3",options="header"]
+|===
+| Folder | Hebrew | Genesis Reference | Contains
+
+| **void/**
+| תֹהוּ (tohu)
+| "without form" (Gen 1:2)
+| Planning, imports, exploratory work — what's not yet formed
+
+| **word/**
+| דָּבָר (dabar)
+| "And God said" (Gen 1:3+)
+| Definitions, specifications, core code — the spoken word
+
+| **tov/**
+| טוֹב (tov)
+| "it was good" (Gen 1:4+)
+| Results, demos, outputs — the verified good
+|===
+
+'''
+
+[[void-planning]]
+=== void/ — Planning and Exploration
+
+[source]
+----
+void/
+├── planning/
+│   └── development/
+│       ├── plans/          # Implementation plans (living docs)
+│       └── devlogs/        # Historical records (artifacts)
+└── imports/                # External concepts being integrated
+----
+
+'''
+
+[[word-definitions]]
+=== word/ — Definitions and Code
+
+[source]
+----
+word/
+├── core/                   # TOML specifications (Phase 0)
+│   ├── primitives.toml     # Atomic types
+│   ├── types.toml          # Composite types
+│   ├── schemas/            # Validation schemas
+│   ├── contracts/          # Behavioral contracts
+│   └── bible/              # Scripture encoding specs
+├── work/
+│   ├── pkg/                # Implementation packages
+│   │   ├── config/         # Go config loader (Phase 0)
+│   │   └── trit/           # C trit library (Phase 1)
+│   └── system-architecture.adoc  # This document
+├── research/               # Mathematical foundations
+├── glossary/               # Term definitions
+├── journey/                # Reproducibility docs
+├── scripture/              # KJV and WEB searchable
+└── seed/                   # Templates
+----
+
+'''
+
+[[tov-results]]
+=== tov/ — Verified Results
+
+[source]
+----
+tov/
+└── demo/
+    ├── phase-0/
+    │   └── demo-config/    # Go program: validates TOML specs
+    └── phase-1/
+        └── demo-trit/      # C program: validates libtrit
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[phases]]
+== Phases
+
+Each phase builds on the previous, with demos proving completion.
+
+[[phase-0]]
+=== Phase 0: Specifications
+
+*Goal:* Define the type system before implementing it.
+
+[cols="2,4,3",options="header"]
+|===
+| Component | What It Does | Location
+
+| *primitives.toml*
+| Atomic types (trit, bool3, int27, etc.)
+| `word/core/primitives.toml`
+
+| *types.toml*
+| Composite types (structs, unions, generics)
+| `word/core/types.toml`
+
+| *schemas/*
+| Validation shapes (health, identity, file-type)
+| `word/core/schemas/`
+
+| *contracts/*
+| Behavioral promises (filesystem, health-provider)
+| `word/core/contracts/`
+
+| *bible/*
+| Scripture encoding (addressing, translation)
+| `word/core/bible/`
+
+| *demo-config*
+| Go program proving specs load correctly
+| `tov/demo/phase-0/demo-config/`
+|===
+
+'''
+
+[[phase-1]]
+=== Phase 1: Trit Library
+
+*Goal:* Implement the trit types in C with three-layer architecture.
+
+[cols="2,4,3",options="header"]
+|===
+| Component | What It Does | Location
+
+| *libtrit.a*
+| Static C library with trit types and operations
+| `word/work/pkg/trit/build/libtrit.a`
+
+| *trit.h*
+| MATTER layer: types, arithmetic, pack/unpack
+| `word/work/pkg/trit/include/trit.h`
+
+| *dimension.h*
+| SPACE layer: cognitive dimensions, navigation
+| `word/work/pkg/trit/include/dimension.h`
+
+| *temporal.h*
+| TIME layer: temporal states, 9 cognitive modes
+| `word/work/pkg/trit/include/temporal.h`
+
+| *demo-trit*
+| C program proving library works (25 steps)
+| `tov/demo/phase-1/demo-trit/`
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[three-layers]]
+== Three-Layer Architecture
+
+Phase 1's libtrit implements a cognitive architecture grounded in Genesis 1:1.
+
+[cols="^1,2,3,3",options="header"]
+|===
+| Trit | Layer | Genesis 1:1 | What It Provides
+
+| **-1**
+| MATTER
+| "the earth"
+| Types — what trits ARE (trit.h)
+
+| **0**
+| TIME
+| "In the beginning"
+| Sequence — when things HAPPEN (temporal.h)
+
+| **+1**
+| SPACE
+| "the heavens"
+| Relationships — where trits FIT (dimension.h)
+|===
+
+'''
+
+[[layer-composition]]
+=== Layer Composition
+
+The layers compose to form complete cognitive states:
+
+[cols="2,4",options="header"]
+|===
+| Concept | Formula
+
+| *Cognitive Mode*
+| MATTER × SPACE × TIME = trit × dimension × temporal_state
+
+| *9 Temporal States*
+| 3 base (past/present/future) + 6 compound (lens → target)
+
+| *Building Block Method*
+| Foundation (0) → Build Up (+1) → Break Down (-1)
+|===
+
+'''
+
+[[two-directions]]
+=== Two Directions
+
+The same structure supports two traversal directions:
+
+[cols="2,3,3",options="header"]
+|===
+| Direction | Order | Meaning
+
+| *Creation (God's way)*
+| TIME → SPACE → MATTER
+| Top-down: eternity into existence
+
+| *Implementation (our way)*
+| MATTER → SPACE → TIME
+| Bottom-up: concrete toward understanding
+|===
+
+The Bible Rail is where these directions meet — Scripture bridging revelation and implementation.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[dependencies]]
+== Dependency Flow
+
+[IMPORTANT]
+====
+*Build order matters.* Each component depends on what came before.
+====
+
+[[build-order]]
+=== Build Order
+
+[source]
+----
+1. word/core/*.toml          # Phase 0 specs (no dependencies)
+2. word/work/pkg/config/     # Config loader (reads TOML)
+3. tov/demo/phase-0/demo-config/  # Proves Phase 0 (uses config)
+4. word/work/pkg/trit/       # Phase 1 library (from specs)
+5. tov/demo/phase-1/demo-trit/    # Proves Phase 1 (uses libtrit)
+----
+
+'''
+
+[[dependency-diagram]]
+=== Dependency Diagram
+
+[source]
+----
+                    ┌─────────────────────┐
+                    │   word/core/*.toml  │ ← Phase 0 Specs
+                    │   (primitives,      │
+                    │    types, schemas)  │
+                    └─────────┬───────────┘
+                              │ reads
+                    ┌─────────▼───────────┐
+                    │  word/work/pkg/     │
+                    │    config/ (Go)     │ ← Config Loader
+                    └─────────┬───────────┘
+                              │ uses
+                    ┌─────────▼───────────┐
+                    │ tov/demo/phase-0/   │
+                    │   demo-config       │ ← Proves Phase 0
+                    └─────────────────────┘
+
+                    ┌─────────────────────┐
+                    │   word/core/*.toml  │ ← Phase 0 Specs
+                    └─────────┬───────────┘
+                              │ defines
+                    ┌─────────▼───────────┐
+                    │  word/work/pkg/     │
+                    │    trit/ (C)        │ ← Trit Library
+                    └─────────┬───────────┘
+                              │ uses
+                    ┌─────────▼───────────┐
+                    │ tov/demo/phase-1/   │
+                    │   demo-trit         │ ← Proves Phase 1
+                    └─────────────────────┘
+----
+
+'''
+
+[[demo-verification]]
+=== Demo Verification
+
+Each demo program proves its phase works:
+
+[cols="2,3,3",options="header"]
+|===
+| Demo | What It Proves | Success Criteria
+
+| *demo-config*
+| All 6 TOML categories load correctly
+| "Categories demonstrated: 6"
+
+| *demo-trit*
+| All 3 layers work with correct output
+| "Steps demonstrated: 25"
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[quick-reference]]
+== Quick Reference
+
+*Folders:*
+[cols="2,4",options="header"]
+|===
+| Folder | Purpose
+
+| `void/`
+| Planning, exploration (not yet formed)
+
+| `word/`
+| Definitions, code (spoken into being)
+
+| `tov/`
+| Results, demos (verified good)
+|===
+
+*Key Locations:*
+[cols="3,4",options="header"]
+|===
+| Path | What's There
+
+| `word/core/`
+| Phase 0 TOML specifications
+
+| `word/work/pkg/config/`
+| Go config loader
+
+| `word/work/pkg/trit/`
+| C trit library (libtrit)
+
+| `tov/demo/phase-0/demo-config/`
+| Phase 0 validation demo
+
+| `tov/demo/phase-1/demo-trit/`
+| Phase 1 validation demo
+|===
+
+*Build Commands:*
+[source,bash]
+----
+# Phase 0: Config loader
+cd word/work/pkg/config && go build
+
+# Phase 0: Demo
+cd tov/demo/phase-0/demo-config && go run main.go
+
+# Phase 1: Trit library
+cd word/work/pkg/trit && make
+
+# Phase 1: Demo
+cd tov/demo/phase-1/demo-trit && make run
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Genesis 1 as system architecture.* The folder structure (void/word/tov) mirrors creation: formless → spoken → good. The three-layer architecture (MATTER/SPACE/TIME) emerges from Genesis 1:1. This is not decoration but design principle.
+====
+
+_"For as the heavens are higher than the earth, so are my ways higher than your ways, and my thoughts than your thoughts."_ — *Isaiah 55:9*
+
+*Applied:* God's creation direction (TIME → SPACE → MATTER) and our implementation direction (MATTER → SPACE → TIME) meet in Scripture — the Bible Rail. This architecture honors that structure:
+
+* **void/** = תֹהוּ (tohu) — without form (before creation)
+* **word/** = דָּבָר (dabar) — "Let there be..." (speaking into being)
+* **tov/** = טוֹב (tov) — "it was good" (verified result)
+
+The system architecture reflects the creation narrative. What God did once at cosmic scale, we echo at code scale.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+[[related-documents]]
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📐
+| *link:pkg/trit/libtrit-api.adoc[libtrit-api.adoc]*
+| C library API reference (Phase 1)
+
+| 📐
+| *link:pkg/config/loader-api.adoc[loader-api.adoc]*
+| Go config loader API reference (Phase 0)
+
+| 🎯
+| *link:../../tov/demo/phase-0/demo-config/demo-config-api.adoc[demo-config-api.adoc]*
+| Phase 0 demo API
+
+| 🎯
+| *link:../../tov/demo/phase-1/demo-trit/demo-trit-api.adoc[demo-trit-api.adoc]*
+| Phase 1 demo API
+
+| 📋
+| *link:../../void/planning/development/plans/phase-1-implementation-plan.adoc[Phase 1 Plan]*
+| Implementation plan with full context
+
+| 🔬
+| *link:../research/ternary/ternary-theological-foundations.adoc[Theological Foundations]*
+| Genesis 1:1 mapping research
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:pkg/trit/README.adoc[libtrit README] — Library overview and testing
+* link:pkg/config/README.adoc[config README] — Config loader overview
+* link:../glossary/index.adoc[Glossary] — Term definitions
+* link:../journey/phase-0/00-starting-point.adoc[Phase 0 Journey] — Reproducibility docs
+* link:../journey/phase-1/00-starting-point.adoc[Phase 1 Journey] — Reproducibility docs
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"{biblical_foundation}"_
+
+*Kingdom Technology architecture — from void through word to good.*
+
+--
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

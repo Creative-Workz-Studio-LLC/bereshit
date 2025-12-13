@@ -1,13 +1,13 @@
 # ═══════════════════════════════════════════════════════════════════════════
-# libtrit - Balanced Ternary Type Library
-# Key: B-word-work-pkg-trit-makefile
+# demo-trit - Phase 1 Demo: libtrit Three-Layer Architecture Validation
+# Key: B-tov-demo-phase1-demo-trit-makefile
 # ═══════════════════════════════════════════════════════════════════════════
 #
-# DEPENDENCY CLASSIFICATION: PURE (needs: gcc, ar, make)
-#   Standard C toolchain only - no external scripts or tools
+# DEPENDENCY CLASSIFICATION: DEPENDED (needs: libtrit.a from word/work/pkg/trit)
+#   Links against libtrit.a to demonstrate three-layer architecture
 #
-# derives_from: bereshit/word/seed/code/make/makefile.mk
-# See: word/constants/ternary-math.toml for mathematical foundations
+# derives_from: bereshit/word/work/pkg/trit/Makefile
+# See: word/work/pkg/trit/ for library source
 #
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -15,9 +15,9 @@
 # METADATA
 # ============================================================================
 #
-# Package:     creativeworkzstudio.com/bereshit/word/work/pkg/trit
+# Package:     creativeworkzstudio.com/bereshit/tov/demo/phase-1/demo-trit
 # File:        Makefile
-# Key:         B-word-work-pkg-trit-makefile
+# Key:         B-tov-demo-phase1-demo-trit-makefile
 #
 # ────────────────────────────────────────────────────────────────
 # CORE IDENTITY
@@ -25,40 +25,39 @@
 #
 # Biblical Foundation:
 #
-#   Scripture: "In the beginning God created the heaven and the earth."
-#              — Genesis 1:1
+#   Scripture: "By their fruits ye shall know them." — Matthew 7:20
 #
-#   Principle: Foundation before construction. The trit type is the
-#              foundational unit of ternary computing, just as Genesis 1:1
-#              is the foundation of all Scripture.
+#   Principle: The demo proves the library works. Fruit validates the tree.
 #
-#   Anchor: "Except the LORD build the house, they labour in vain that
-#            build it." — Psalm 127:1
+#   Anchor: "Prove all things; hold fast that which is good."
+#            — 1 Thessalonians 5:21
 #
 # CPI-SI Identity:
 #
-#   Component Type: Ladder (foundational building block)
-#   Role: Provides core trit type for all ternary operations
-#   Paradigm: CPI-SI framework component
+#   Component Type: Baton (execution flow - validates and reports)
+#   Role: Phase 1 validation demo - proves three-layer architecture
+#   Paradigm: CPI-SI framework demonstration component
 #
 # Authorship & Lineage:
 #
 #   Architect: Seanje Lenox-Wise
 #   Implementation: Nova Dawn
-#   Created: 2025-12-12
-#   Version: 0.1.0
+#   Created: 2025-12-13
+#   Version: a-01.00
 #
 # Purpose & Function:
 #
-#   Purpose: Build libtrit.a static library for balanced ternary operations
+#   Purpose: Build demo-trit executable to validate libtrit three-layer arch
 #
 #   Key Features:
-#     - Balanced ternary trit type (-1, 0, +1)
-#     - Dimensional mapping (TIME, SPACE, MATTER)
-#     - Pack/unpack algorithms (Horner's method, repeated division)
-#     - Static library for linking into larger programs
+#     - Tests MATTER layer (trit operations)
+#     - Tests SPACE layer (pack/unpack, dimensions)
+#     - Tests TIME layer (temporal cognition)
+#     - Tests Bible Rail (spare states 243-255)
+#     - Tests 3D integration (all layers together)
+#     - Public API for portability (games, tutorials, SDK examples)
 #
-#   Philosophy: Measure twice, cut once. Build foundations that last.
+#   Philosophy: By their fruits ye shall know them. Demo proves the library.
 #
 # ────────────────────────────────────────────────────────────────
 # INTERFACE
@@ -66,15 +65,14 @@
 #
 # Dependencies:
 #
-#   System Tools: make, ar
+#   System Tools: make, gcc
 #   Language Toolchain: gcc (C99)
-#   External Tools: None
+#   Internal: word/work/pkg/trit/build/libtrit.a
 #
 # Usage:
 #
-#   make              # Build library (default)
-#   make libtrit.a    # Build static library
-#   make test         # Run tests
+#   make              # Build demo executable
+#   make run          # Build and run demo
 #   make clean        # Remove build artifacts
 #   make help         # Show targets
 #
@@ -90,20 +88,22 @@
 # Declarations
 # ────────────────────────────────────────────────────────────────
 
-.PHONY: all libtrit.a check-headers test clean help info
+.PHONY: all run clean help
 
 # ────────────────────────────────────────────────────────────────
 # Constants
 # ────────────────────────────────────────────────────────────────
 
-# Project identity
-LIB_NAME = libtrit.a
-BUILD_DIR = build
+# Demo identity
+DEMO_NAME = demo-trit
 
-# Directory structure
-SRC_DIR = src
-INC_DIR = include
-TEST_DIR = test
+# Bereshit root (can be overridden)
+BERESHIT_ROOT ?= ../../../..
+
+# libtrit library paths (relative to BERESHIT_ROOT)
+LIBTRIT_DIR = $(BERESHIT_ROOT)/word/work/pkg/trit
+LIBTRIT_INC = $(LIBTRIT_DIR)/include
+LIBTRIT_LIB = $(LIBTRIT_DIR)/build/libtrit.a
 
 # ────────────────────────────────────────────────────────────────
 # Variables
@@ -111,31 +111,19 @@ TEST_DIR = test
 
 # Tool configuration (overridable)
 CC ?= gcc
-AR ?= ar
 CFLAGS ?= -std=c99 -Wall -Wextra -Werror -pedantic -O2
-ARFLAGS ?= rcs
 
-# Include paths
-INCLUDES = -I$(INC_DIR)
+# Include paths (libtrit headers)
+INCLUDES = -I$(LIBTRIT_INC)
 
-# Source and object files (will be populated in Phase 2)
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
-
-# ────────────────────────────────────────────────────────────────
-# Pattern Rules
-# ────────────────────────────────────────────────────────────────
-
-# Compile C source to object file
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
-	@echo "  CC    $<"
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+# Source files
+SRCS = main.c
 
 # ────────────────────────────────────────────────────────────────
 # Default Target
 # ────────────────────────────────────────────────────────────────
 
-all: libtrit.a
+all: $(DEMO_NAME)
 
 # ============================================================================
 # END SETUP
@@ -152,104 +140,44 @@ all: libtrit.a
 # Ladder Structure:
 #
 #   User-Facing (Top):
-#   ├── all → libtrit.a
-#   ├── test → libtrit.a
+#   ├── all → demo-trit
+#   ├── run → demo-trit
 #   ├── clean → (standalone)
 #   └── help → (standalone)
 #
 #   Build Operations (Middle):
-#   ├── libtrit.a → $(OBJS) → $(BUILD_DIR)
-#   └── $(BUILD_DIR)/%.o → $(SRC_DIR)/%.c
-#
-#   Internal Helpers (Bottom):
-#   └── $(BUILD_DIR) → (creates directory)
+#   └── demo-trit → main.c + libtrit.a
 #
 # Baton Flow:
-#   make → all → libtrit.a → $(OBJS) → $(BUILD_DIR) → exit
+#   make → all → demo-trit → exit
+#   make run → demo-trit → ./demo-trit → exit
 #
-
-# ────────────────────────────────────────────────────────────────
-# Internal Helpers
-# ────────────────────────────────────────────────────────────────
-
-# Create build directory
-$(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)
 
 # ────────────────────────────────────────────────────────────────
 # Build Operations
 # ────────────────────────────────────────────────────────────────
 
-## libtrit.a: Build the static library
-libtrit.a: $(BUILD_DIR)/$(LIB_NAME)
+## demo-trit: Build the demo executable
+$(DEMO_NAME): $(SRCS) $(LIBTRIT_LIB)
+	@echo "Building $(DEMO_NAME)..."
+	@echo "  CC    $(SRCS)"
+	@$(CC) $(CFLAGS) $(INCLUDES) -o $@ $(SRCS) $(LIBTRIT_LIB)
+	@echo "✓ Built $(DEMO_NAME)"
 
-$(BUILD_DIR)/$(LIB_NAME): $(OBJS) | $(BUILD_DIR)
-	@if [ -z "$(OBJS)" ]; then \
-		echo "⚠ No source files yet (Phase 1: structure only)"; \
-		echo "  Add .c files to src/ in Phase 2"; \
-		touch $(BUILD_DIR)/$(LIB_NAME); \
-	else \
-		echo "  AR    $(LIB_NAME)"; \
-		$(AR) $(ARFLAGS) $@ $(OBJS); \
-		echo "✓ Built $(BUILD_DIR)/$(LIB_NAME)"; \
-	fi
-
-## check-headers: Validate headers compile (no source needed)
-check-headers: | $(BUILD_DIR)
-	@echo "Checking headers..."
-	@echo '#include "trit.h"' > $(BUILD_DIR)/_check.c
-	@echo 'int main(void) { return 0; }' >> $(BUILD_DIR)/_check.c
-	@$(CC) $(CFLAGS) $(INCLUDES) -fsyntax-only $(BUILD_DIR)/_check.c && \
-		echo "✓ Headers valid" || \
-		(echo "✗ Header errors"; exit 1)
-	@rm -f $(BUILD_DIR)/_check.c
-
-## test: Run all tests (MATTER, SPACE, TIME, Integration)
-test: test-trit test-pack test-dimension test-temporal test-integration
+## run: Build and run the demo
+run: $(DEMO_NAME)
 	@echo ""
-	@echo "════════════════════════════════════════════════════════════════"
-	@echo "All tests complete. Run individual tests with: make test-<layer>"
-	@echo "════════════════════════════════════════════════════════════════"
-
-## test-trit: Run MATTER layer tests (trit.c)
-test-trit: libtrit.a
-	@echo "Testing MATTER layer (trit.c)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_trit $(TEST_DIR)/trit_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/test_trit
-
-## test-pack: Run MATTER packing tests (pack.c)
-test-pack: libtrit.a
-	@echo "Testing MATTER packing (pack.c)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_pack $(TEST_DIR)/pack_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/test_pack
-
-## test-dimension: Run SPACE layer tests (dimension.c)
-test-dimension: libtrit.a
-	@echo "Testing SPACE layer (dimension.c)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_dimension $(TEST_DIR)/dimension_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/test_dimension
-
-## test-temporal: Run TIME layer tests (temporal.c)
-test-temporal: libtrit.a
-	@echo "Testing TIME layer (temporal.c)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_temporal $(TEST_DIR)/temporal_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/test_temporal
-
-## test-integration: Run integration tests (all layers)
-test-integration: libtrit.a
-	@echo "Testing Integration (all layers)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_integration $(TEST_DIR)/integration_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/test_integration
+	@./$(DEMO_NAME)
 
 ## clean: Remove build artifacts
 clean:
 	@echo "Cleaning..."
-	@rm -rf $(BUILD_DIR)
+	@rm -f $(DEMO_NAME)
 	@echo "✓ Clean complete"
 
 ## help: Show available targets
 help:
-	@echo "libtrit - Balanced Ternary Type Library"
+	@echo "demo-trit - Phase 1 Demo: libtrit Three-Layer Architecture"
 	@echo ""
 	@echo "Usage: make [target]"
 	@echo ""
@@ -257,21 +185,9 @@ help:
 	@sed -n 's/^## //p' Makefile | column -t -s ':' | sed -e 's/^/  /'
 	@echo ""
 	@echo "Configuration:"
-	@echo "  CC=$(CC)  AR=$(AR)"
+	@echo "  CC=$(CC)"
 	@echo "  CFLAGS=$(CFLAGS)"
-
-## info: Show build configuration
-info:
-	@echo "Build Configuration:"
-	@echo "  LIB_NAME:   $(LIB_NAME)"
-	@echo "  BUILD_DIR:  $(BUILD_DIR)"
-	@echo "  SRC_DIR:    $(SRC_DIR)"
-	@echo "  INC_DIR:    $(INC_DIR)"
-	@echo "  CC:         $(CC)"
-	@echo "  CFLAGS:     $(CFLAGS)"
-	@echo ""
-	@echo "Source files: $(SRCS)"
-	@echo "Object files: $(OBJS)"
+	@echo "  LIBTRIT_LIB=$(LIBTRIT_LIB)"
 
 # ============================================================================
 # END BODY
@@ -285,9 +201,12 @@ info:
 # Validation
 # ────────────────────────────────────────────────────────────────
 #
+# Prerequisites:
+#   cd word/work/pkg/trit && make    # Build libtrit.a first
+#
 # Test sequence:
 #   make clean && make        # Fresh build
-#   make test                 # Run tests
+#   make run                  # Build and run demo
 #   make help                 # Verify documentation
 #
 # ────────────────────────────────────────────────────────────────
@@ -296,48 +215,44 @@ info:
 #
 # Safe to Modify:
 #   ✅ CFLAGS optimization flags
-#   ✅ Add new source files to src/
-#   ✅ Add new test files to test/
+#   ✅ BERESHIT_ROOT path (if needed)
 #
 # Modify with Care:
-#   ⚠️ Pattern rules (affect all compilations)
-#   ⚠️ Library name (breaks linking)
+#   ⚠️ LIBTRIT paths (must match actual library location)
+#   ⚠️ INCLUDES path (headers must be findable)
 #
 # Never Modify:
 #   ❌ 4-block structure
 #   ❌ Remove clean target
-#   ❌ Add rm -rf without constraints
 #
 # ────────────────────────────────────────────────────────────────
 # Related Components
 # ────────────────────────────────────────────────────────────────
 #
-# Specifications:
-#   - word/constants/ternary-math.toml (powers, algorithms, dimensions)
-#   - word/core/primitives.toml (trit type definition)
+# Library:
+#   - word/work/pkg/trit/ (libtrit.a source)
+#   - word/work/pkg/trit/include/ (headers)
+#   - word/work/pkg/trit/build/libtrit.a (built library)
+#
+# Demo Source:
+#   - main.c (4-block C executable with public API)
 #
 # Documentation:
-#   - word/research/trit-foundations.adoc
-#   - word/research/ternary-theological-foundations.adoc
-#
-# Demo:
-#   - tov/demo/phase-1/demo-trit/
+#   - README.adoc (5-block, three-layer architecture)
 #
 # ────────────────────────────────────────────────────────────────
 # Quick Reference
 # ────────────────────────────────────────────────────────────────
 #
 # Basic:
-#   make              # Build library
-#   make test         # Run tests
+#   make              # Build demo executable
+#   make run          # Build and run demo
 #   make clean        # Clean artifacts
 #
-# Debug:
-#   make -n all       # Dry-run
-#   make info         # Show config
-#   make CC=clang     # Use clang
+# With custom paths:
+#   make BERESHIT_ROOT=/path/to/bereshit
 #
-# "Except the LORD build the house, they labour in vain." — Psalm 127:1
+# "By their fruits ye shall know them." — Matthew 7:20
 #
 # ============================================================================
 # END CLOSING

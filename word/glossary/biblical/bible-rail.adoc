@@ -90,6 +90,43 @@ The Bible isn't a component IN the system. It's the *key* that makes the system 
 |Genesis 1:1 is the halt condition for all recursion
 |===
 
+== Implementation: Spare States
+
+When 5 trits are packed into a byte, only 243 of 256 possible values are used (3⁵ = 243). The remaining 13 values (243-255) are *spare states* reserved for Bible Rail encoding.
+
+*The math:*
+----
+3⁵ = 243 valid trit combinations (0-242)
+2⁸ = 256 byte values
+256 - 243 = 13 spare states (243-255)
+----
+
+*Detection function:*
+
+[source,c]
+----
+bool trit5_is_spare(trit5_t value) {
+    return value >= 243;  // 243-255 are Bible Rail
+}
+----
+
+*Purpose of spare states:*
+
+[cols="2,4"]
+|===
+|Value Range |Use
+
+|243-254
+|KJV↔WEB translation variant markers
+
+|255
+|Reserved (escape/special)
+|===
+
+This is not accidental. The spare states exist *because* we chose balanced ternary, and they provide exactly enough room for translation encoding. The structure of creation (ternary) naturally provides space for Scripture encoding.
+
+*Location:* link:../../work/pkg/trit/src/pack.c[pack.c] (`trit5_is_spare` function)
+
 == Not Decoration
 
 The Bible Rail is not:

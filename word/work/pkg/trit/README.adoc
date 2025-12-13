@@ -17,13 +17,13 @@ METADATA BLOCK
 // ─────────────────────────────────────────────────────────────────────────────
 :status: Active
 :version: 0.1.0
-:revdate: 2025-12-12
+:revdate: 2025-12-13
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TEMPORAL
 // ─────────────────────────────────────────────────────────────────────────────
 :created: 2025-12-12
-:updated: 2025-12-12
+:updated: 2025-12-13
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ATTRIBUTION
@@ -101,7 +101,7 @@ _"In the beginning God created the heaven and the earth."_ — *Genesis 1:1*
 
 '''
 
-*<<overview,Overview>>* • *<<dimensional-framework,Dimensions>>* • *<<architecture,Architecture>>* • *<<usage,Usage>>* • *<<references,References>>*
+*<<overview,Overview>>* • *<<dimensional-framework,Dimensions>>* • *<<architecture,Architecture>>* • *<<usage,Usage>>* • *<<testing,Testing>>* • *<<references,References>>*
 
 --
 
@@ -120,7 +120,7 @@ The `trit` package provides the foundational balanced ternaryfootnote:[Balanced 
 
 [IMPORTANT]
 ====
-*Phase 1: Structure Only.* This package currently contains the directory structure and build system. Source files will be added in Phase 2.
+*Phase 1: Complete.* libtrit.a is built and tested — 4 modules, 26 functions, 100 test assertions passing.
 ====
 
 [NOTE]
@@ -253,7 +253,7 @@ word/work/pkg/trit/
 ----
 
 [[type-definition]]
-=== Type Definition (Phase 2)
+=== Type Definition
 
 [source,c]
 ----
@@ -328,7 +328,7 @@ make CFLAGS="-std=c99 -Wall -g -O0"
 ----
 
 [[linking]]
-=== Linking (Phase 2+)
+=== Linking
 
 [source,bash]
 ----
@@ -361,6 +361,95 @@ gcc -I./include -L./build -o myprogram main.c -ltrit
 | `make info`
 | Show build configuration
 |===
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[testing]]
+== Testing
+
+Tests are not just validation — they are the *detect* mechanism in the detect-assess-recoverfootnote:[Building blocks applied to error handling: Detect (tests surface drift), Assess (break down to understand intent), Recover (build up toward design). Tests are grace mechanisms — restorative, not punitive.] pattern. We design tests *expecting faults* because we're finite and will drift. Tests surface when code deviates from design so we can recover.
+
+[[test-architecture]]
+=== Test Architecture
+
+[source]
+----
+test/
+├── trit_test.c        # Core trit operations (create, valid, arithmetic)
+├── pack_test.c        # Pack/unpack operations (Horner's method, Bible Rail)
+├── dimension_test.c   # Dimensional layer (MATTER/SPACE/TIME mapping)
+├── temporal_test.c    # Temporal states (9 cognitive modes)
+└── integration_test.c # Cross-module integration tests
+----
+
+Each test file covers one module of libtrit, matching the source file structure.
+
+[[test-layers]]
+=== Test Layers
+
+Tests are organized by the three-layer architecture:
+
+[cols="^1,2,3",options="header"]
+|===
+| Layer | Tests | What's Verified
+
+| *MATTER*
+| Core trit operations
+| Value creation, bounds checking, arithmetic correctness
+
+| *SPACE*
+| Pack/dimension operations
+| Packing algorithms, dimensional mapping, state space coverage
+
+| *TIME*
+| Temporal states
+| Cognitive mode creation, compound state formation, state machine
+|===
+
+[[running-tests]]
+=== Running Tests
+
+[source,bash]
+----
+# Run all tests
+make test
+
+# Output shows:
+# - Test count per layer
+# - Pass/fail for each assertion
+# - Summary with total passed/failed
+----
+
+[[detect-assess-recover]]
+=== Detect-Assess-Recover
+
+When a test fails:
+
+[cols="^1,2,4",options="header"]
+|===
+| Phase | Building Block | What Happens
+
+| *Detect*
+| Tests
+| Test surfaces that code has drifted from design intent
+
+| *Assess*
+| Break Down (-1)
+| Trace back to design docs, devlogs, specifications to understand original intent
+
+| *Recover*
+| Build Up (+1)
+| Fix *toward design*, not away from test. The design is the anchor.
+|===
+
+[TIP]
+====
+*Key insight:* When a test fails, ask "What truth is this revealing?" before "How do I make it pass?" Tests reveal drift — recovery means realigning with design, not patching symptoms.
+====
 
 '''
 

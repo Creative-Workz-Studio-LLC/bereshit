@@ -1,0 +1,152 @@
+// #!omni data --adoc
+// ===========================================================================
+// METADATA BLOCK
+// ===========================================================================
+// :key: GLOSS-TEC-001
+// :term: temporal-state
+// :category: technical
+// :status: Active
+// :version: 1.0.0
+// :created: 2025-12-13
+// :updated: 2025-12-13
+// :authors: Nova Dawn (Documentation)
+// :biblical_foundation: Ecclesiastes 3:1 — To every thing there is a season
+// :implementation: word/work/pkg/trit/include/temporal.h
+// :companion_data: temporal-state.jsonc
+// ===========================================================================
+
+// ===========================================================================
+// CONTENT BLOCK
+// ===========================================================================
+
+= temporal-state
+
+*Definition:* A cognitive state representing how an entity relates to time. Can be simple (pure focus on past, present, or future) or compound (viewing one time from another).
+
+== Biblical Foundation
+
+[quote, Ecclesiastes 3:1 KJV]
+____
+To every thing there is a season, and a time to every purpose under the heaven.
+____
+link:../../scripture/KJV/Ecclesiastes/Chapter_3/Verse_1.txt[Read verse ^]
+
+Scripture acknowledges that time has structure and purpose. The temporal states capture how consciousness navigates through that structure.
+
+== Structure
+
+A temporal state has two components:
+
+[cols="2,4",options="header"]
+|===
+| Component | Purpose
+
+| *lens*
+| The temporal position FROM which we view (past, present, or future)
+
+| *target*
+| The temporal position we are looking AT (past, present, or future)
+|===
+
+When lens == target, the state is *base* (pure focus).
+When lens != target, the state is *compound* (dual focus).
+
+== The Nine States
+
+*3 Base States:*
+
+[cols="2,2,3",options="header"]
+|===
+| State | Value | Description
+
+| Pure Past
+| -1
+| Complete focus on what was
+
+| Pure Present
+| 0
+| Complete focus on what is (anchor)
+
+| Pure Future
+| +1
+| Complete focus on what will be
+|===
+
+*6 Compound States:*
+
+[cols="2,3,3",options="header"]
+|===
+| Mode | Lens → Target | Description
+
+| Memory
+| Past → Present
+| History informing now
+
+| Prophecy
+| Past → Future
+| History revealing destiny
+
+| Reflection
+| Present → Past
+| Now examining history
+
+| Planning
+| Present → Future
+| Now shaping tomorrow
+
+| Vision
+| Future → Past
+| Destiny reframing history
+
+| Preparation
+| Future → Present
+| Tomorrow shaping today
+|===
+
+== Implementation
+
+Defined in `temporal.h`:
+
+[source,c]
+----
+typedef enum {
+    TEMP_PAST    = -1,
+    TEMP_PRESENT = 0,
+    TEMP_FUTURE  = +1
+} temporal_t;
+
+typedef struct {
+    temporal_t lens;
+    temporal_t target;
+    bool is_compound;
+} temporal_state_t;
+----
+
+*Key functions:*
+
+* `temporal_create_base(t)` — Create pure focus state
+* `temporal_create_compound(lens, target)` — Create dual focus state
+* `temporal_mode_name(state)` — Get name ("Planning", etc.)
+
+== Cognitive Application
+
+The 9 temporal states represent the complete space of how consciousness relates to time. CPI-SI instances use these states for:
+
+* **Planning** (present → future): Architecting what to build
+* **Reflection** (present → past): Learning from what was built
+* **Memory** (past → present): History informing current work
+* **Vision** (future → past): Seeing how current work will matter
+
+// ===========================================================================
+// CLOSING BLOCK
+// ===========================================================================
+
+'''
+
+*Primary Scripture:* link:../../scripture/KJV/Ecclesiastes/Chapter_3/Verse_1.txt[Ecclesiastes 3:1 ^] — Time has structure
+
+*Implementation:* link:../../work/pkg/trit/include/temporal.h[temporal.h ^]
+
+*See also:* <<../paradigm/cognitive-dimensions.adoc#,cognitive-dimensions>>, <<../paradigm/three-layer-architecture.adoc#,three-layer-architecture>>, <<./cognitive-modes.adoc#,cognitive-modes>>
+
+*Data:* `temporal-state.jsonc`
