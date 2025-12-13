@@ -24,14 +24,14 @@ References: ternary-arithmetic.adoc, ternary-logic.adoc, ternary-conversion.adoc
 // STATE - Where is this in its lifecycle
 // ─────────────────────────────────────────────────────────────────────────────
 :status: Draft
-:version: a-01.00
-:revdate: 2025-12-12
+:version: a-01.25
+:revdate: 2025-12-13
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TEMPORAL - When was this created and updated
 // ─────────────────────────────────────────────────────────────────────────────
 :created: 2025-12-12
-:updated: 2025-12-12
+:updated: 2025-12-13
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ATTRIBUTION - Who created and maintains this
@@ -109,7 +109,7 @@ _"A just weight is his delight"_ — Algorithms that encode righteousness throug
 
 '''
 
-*<<overview,Overview>>* • *<<scale-normalization,Scale Normalization>>* • *<<state-resolution,State Resolution>>* • *<<temporal-integration,Temporal Integration>>* • *<<biblical-foundation,Biblical Foundation>>*
+*<<overview,Overview>>* • *<<scale-normalization,Scale Normalization>>* • *<<state-resolution,State Resolution>>* • *<<temporal-integration,Temporal Integration>>* • *<<calculus-operations,Calculus Operations>>* • *<<biblical-foundation,Biblical Foundation>>*
 
 --
 
@@ -189,6 +189,11 @@ A timestamp isn't just when — it's HOW we think about when.
 | *Temporal Integration*
 | Algorithms combining health with 9 cognitive modes
 | CPI-SI instance reasoning
+
+| Δ
+| *Calculus Operations*
+| Algorithms for change detection, rates, thresholds, trends
+| Predictive health analysis
 |===
 
 '''
@@ -706,6 +711,375 @@ END ALGORITHM
 
 '''
 
+[[calculus-operations]]
+== Algorithm Family 4: Calculus Operations
+
+Detect and measure change over time — the discrete analog of calculus.
+
+[NOTE]
+====
+*Biblical grounding:*
+
+* *Ecclesiastes 3:1* — "To every thing there is a season" — Time awareness, when to act
+* *Genesis 1:14* — "for signs, and for seasons, and for days, and years" — Discrete time intervals
+* *Proverbs 22:28* — "Remove not the ancient landmark" — Boundaries (גְּבוּל gevul) as thresholds
+====
+
+These operations enable health systems to know *when* precision matters:
+
+[cols="2,4", options="header"]
+|===
+| Operation | Purpose
+| *Difference* | How much changed? (Δ)
+| *Rate* | How fast is it changing? (derivative approximation)
+| *Accumulation* | Total change over time? (integral approximation)
+| *Threshold* | Did we cross a boundary? (level transition)
+| *Trend* | Which direction overall? (returns trit_t)
+| *Critical* | Does rate exceed alarm threshold?
+|===
+
+[%collapsible%open]
+.Algorithm 4.1: TritDifference — Change Detection
+====
+*Calculates the delta between two health values*
+
+This is the foundation of change detection — the discrete analog of differentiation.
+
+[source,pseudocode]
+----
+ALGORITHM TritDifference(current: int8, previous: int8) → int8
+    // current: current true ternary score (-100 to +100)
+    // previous: previous true ternary score (-100 to +100)
+    // returns: difference (can exceed -100 to +100 range)
+
+    delta ← current - previous
+
+    RETURN delta
+END ALGORITHM
+
+ALGORITHM TritDifferenceNormalized(current: int8, previous: int8) → int8
+    // Returns difference normalized to -100 to +100 range
+    // Useful when comparing differences across scales
+
+    delta ← current - previous
+
+    // Clamp to valid range
+    IF delta < -100 THEN
+        delta ← -100
+    END IF
+    IF delta > 100 THEN
+        delta ← 100
+    END IF
+
+    RETURN delta
+END ALGORITHM
+----
+
+*Key Properties:*
+
+* Positive delta = improving (toward integrity)
+* Negative delta = declining (toward wanting)
+* Zero delta = stable
+====
+
+[%collapsible%open]
+.Algorithm 4.2: TritRate — Rate of Change
+====
+*Calculates rate of change over time — discrete derivative approximation*
+
+[source,pseudocode]
+----
+ALGORITHM TritRate(
+    current: int8,
+    previous: int8,
+    time_delta: uint32    // time units between readings
+) → int8
+    // Returns rate of change per time unit
+    // Approximates the derivative: dHealth/dTime
+
+    IF time_delta = 0 THEN
+        RETURN 0  // Avoid division by zero
+    END IF
+
+    delta ← current - previous
+    rate ← delta / time_delta
+
+    // Clamp to valid range
+    IF rate < -100 THEN
+        rate ← -100
+    END IF
+    IF rate > 100 THEN
+        rate ← 100
+    END IF
+
+    RETURN rate
+END ALGORITHM
+----
+
+*Time units are configurable:* seconds, minutes, hours, days — depending on context.
+
+*Example:*
+[source]
+----
+current = +50, previous = +25, time_delta = 5 days
+rate = (50 - 25) / 5 = +5 per day (improving)
+
+current = -25, previous = +50, time_delta = 3 days
+rate = (-25 - 50) / 3 = -25 per day (declining rapidly)
+----
+====
+
+[%collapsible%open]
+.Algorithm 4.3: TritAccumulate — Running Sum
+====
+*Calculates accumulated change over a time window — discrete integral approximation*
+
+[source,pseudocode]
+----
+ALGORITHM TritAccumulate(
+    history: int8[],      // array of true ternary scores
+    window_size: uint32   // number of readings to consider
+) → int8
+    // Returns accumulated change over the window
+    // Approximates the integral: ∫Health dt
+
+    IF LENGTH(history) < 2 THEN
+        RETURN 0  // Not enough data
+    END IF
+
+    // Use last 'window_size' entries (or all if fewer)
+    start_index ← MAX(0, LENGTH(history) - window_size)
+    total_change ← 0
+
+    FOR i ← start_index + 1 TO LENGTH(history) - 1
+        delta ← history[i] - history[i-1]
+        total_change ← total_change + delta
+    END FOR
+
+    // This equals: history[last] - history[start]
+    // But computing incrementally allows weighted accumulation later
+
+    RETURN total_change
+END ALGORITHM
+
+ALGORITHM TritAccumulateWeighted(
+    history: TemporalHealth[],
+    window_size: uint32
+) → int8
+    // Time-weighted accumulation — recent changes matter more
+
+    start_index ← MAX(0, LENGTH(history) - window_size)
+    weighted_sum ← 0
+    total_weight ← 0
+
+    FOR i ← start_index + 1 TO LENGTH(history) - 1
+        delta ← history[i].true_value - history[i-1].true_value
+        weight ← i - start_index  // More recent = higher weight
+
+        weighted_sum ← weighted_sum + (delta × weight)
+        total_weight ← total_weight + weight
+    END FOR
+
+    IF total_weight = 0 THEN
+        RETURN 0
+    END IF
+
+    RETURN weighted_sum / total_weight
+END ALGORITHM
+----
+====
+
+[%collapsible%open]
+.Algorithm 4.4: ThresholdCrossed — Level Boundary Detection
+====
+*Detects when health crosses a level boundary (landmark/gevul)*
+
+"Remove not the ancient landmark" — Proverbs 22:28
+
+The 7 levels are the landmarks. Crossing one is significant.
+
+[source,pseudocode]
+----
+ALGORITHM ThresholdCrossed(
+    current: int8,
+    previous: int8
+) → ThresholdEvent
+    // Returns information about level boundary crossings
+
+    STRUCTURE ThresholdEvent
+        crossed: bool           // Did we cross a boundary?
+        direction: int8         // -1 = worsened, +1 = improved
+        from_level: string      // Previous level name
+        to_level: string        // Current level name
+        significance: int8      // Number of levels crossed (1-6)
+    END STRUCTURE
+
+    event.from_level ← TrueToLevel(previous)
+    event.to_level ← TrueToLevel(current)
+    event.crossed ← (event.from_level ≠ event.to_level)
+
+    IF NOT event.crossed THEN
+        event.direction ← 0
+        event.significance ← 0
+        RETURN event
+    END IF
+
+    // Calculate direction and significance
+    level_order ← ["broken", "wanting", "lacking", "even",
+                   "sound", "whole", "perfect"]
+
+    from_index ← INDEX_OF(level_order, event.from_level)
+    to_index ← INDEX_OF(level_order, event.to_level)
+
+    event.significance ← ABS(to_index - from_index)
+
+    IF to_index > from_index THEN
+        event.direction ← +1  // Improved
+    ELSE
+        event.direction ← -1  // Worsened
+    END IF
+
+    RETURN event
+END ALGORITHM
+----
+
+*Significance levels:*
+
+[cols="^1,3,3", options="header"]
+|===
+| Levels | Example | Interpretation
+| 1 | lacking → even | Minor transition
+| 2 | lacking → sound | Moderate improvement
+| 3+ | broken → sound | Major shift — investigate
+|===
+====
+
+[%collapsible%open]
+.Algorithm 4.5: TrendDirection — Overall Direction
+====
+*Returns ternary trend indicator — the building block method applied to time*
+
+This formalizes CalculateTrend from Algorithm 3.4.
+
+[source,pseudocode]
+----
+ALGORITHM TrendDirection(
+    history: int8[],      // array of true ternary scores
+    threshold: int8       // minimum delta to be considered non-stable
+) → int8
+    // Returns: -1 (declining), 0 (stable), +1 (improving)
+    // This IS the building block method applied to health over time
+
+    IF LENGTH(history) < 2 THEN
+        RETURN 0  // Not enough data — anchor at stable
+    END IF
+
+    first ← history[0]
+    last ← history[LENGTH(history) - 1]
+    delta ← last - first
+
+    // Apply ternary threshold (default 25 = one hard point)
+    IF threshold = 0 THEN
+        threshold ← 25
+    END IF
+
+    IF delta < -threshold THEN
+        RETURN -1  // Declining (break_down direction)
+    ELSE IF delta > threshold THEN
+        RETURN +1  // Improving (build_up direction)
+    ELSE
+        RETURN 0   // Stable (anchor)
+    END IF
+END ALGORITHM
+----
+
+*The result IS a trit:*
+
+[cols="^1,2,3", options="header"]
+|===
+| Value | Direction | Building Block Meaning
+| -1 | Declining | Breaking down (toward matter/foundation)
+| 0 | Stable | Anchored (present moment)
+| +1 | Improving | Building up (toward heaven/aspiration)
+|===
+====
+
+[%collapsible%open]
+.Algorithm 4.6: CriticalRate — Alert Detection
+====
+*Detects when rate of decline exceeds threshold — needs attention*
+
+[source,pseudocode]
+----
+ALGORITHM CriticalRate(
+    rate: int8,              // from TritRate()
+    critical_threshold: int8 // rate at which to alert (negative)
+) → CriticalAlert
+    // Checks if rate of change indicates critical situation
+
+    STRUCTURE CriticalAlert
+        is_critical: bool     // Should we alert?
+        severity: string      // "warning", "critical", "emergency"
+        rate: int8            // The rate that triggered
+        message: string       // Human-readable description
+    END STRUCTURE
+
+    alert.rate ← rate
+    alert.is_critical ← false
+
+    // Default threshold: -10 per time unit
+    IF critical_threshold = 0 THEN
+        critical_threshold ← -10
+    END IF
+
+    // Only negative rates can be critical
+    IF rate >= 0 THEN
+        alert.severity ← "none"
+        alert.message ← "Health stable or improving"
+        RETURN alert
+    END IF
+
+    // Check severity levels
+    IF rate <= critical_threshold × 3 THEN
+        alert.is_critical ← true
+        alert.severity ← "emergency"
+        alert.message ← "Rapid decline — immediate attention required"
+
+    ELSE IF rate <= critical_threshold × 2 THEN
+        alert.is_critical ← true
+        alert.severity ← "critical"
+        alert.message ← "Significant decline — attention needed"
+
+    ELSE IF rate <= critical_threshold THEN
+        alert.is_critical ← true
+        alert.severity ← "warning"
+        alert.message ← "Decline detected — monitor closely"
+
+    ELSE
+        alert.severity ← "none"
+        alert.message ← "Minor decline within tolerance"
+    END IF
+
+    RETURN alert
+END ALGORITHM
+----
+
+*Severity mapping:*
+
+[cols="2,3,3", options="header"]
+|===
+| Severity | Rate Range (default) | Response
+| none | rate > -10 | Normal fluctuation
+| warning | -10 to -19 | Monitor
+| critical | -20 to -29 | Investigate
+| emergency | <= -30 | Immediate action
+|===
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
 [[synthesis]]
 == Synthesis: The Complete Pipeline
 
@@ -739,6 +1113,14 @@ DISPLAY: 💔 🩹 💛 ⚖️ 💚 💙 💜
     ↓ HealthTrajectory()
 
 TEMPORAL REASONING: "Using history to anticipate future"
+
+    ↓ TritDifference(), TritRate(), ThresholdCrossed()
+
+CALCULUS OPERATIONS: Δ change, rate of change, boundary detection
+
+    ↓ TrendDirection(), CriticalRate()
+
+PREDICTIVE ANALYSIS: Overall direction, alert conditions
 ----
 ====
 
@@ -774,6 +1156,18 @@ health := CreateTemporalHealth(stored, time.Now().Unix(), temporal)
 // Layer 7: Temporal Reasoning
 trajectory := HealthTrajectory(history, "past-future")
 // "Based on history, health is trending toward 'perfect'"
+
+// Layer 8: Calculus Operations (change detection)
+prev_health := int8(50)  // Previous normalized value
+curr_health := int8(66)  // Current true value
+delta := TritDifference(prev_health, curr_health)  // +1 (improving)
+rate := TritRate(delta, prev_health)               // rate of change
+
+// Layer 9: Predictive Analysis
+trend := TrendDirection(history, 5)                // Overall direction
+alert := CriticalRate(rate, +1)                    // Is rate critical?
+crossed := ThresholdCrossed(prev_health, curr_health, 50)  // Crossed boundary?
+// crossed = true: health crossed from "sound" zone into "whole" zone
 ----
 ====
 

@@ -190,12 +190,110 @@ addition_no_carry = [
     [ 0,  1,  1]   # +1 + {-1, 0, +1} (simplified, no carry)
 ]
 
+# Half adder - proper carry-aware addition for multi-trit operations
+# Input: (a, b) where a,b ∈ {-1, 0, +1}
+# Output: (carry, sum) - indexed as [a+1][b+1] to convert -1,0,+1 to 0,1,2
+# Biblical grounding: Proverbs 11:1 - accurate weights require proper calculation
+[operations.half_adder]
+sum = [
+    [ 1, -1,  0],   # a=-1: (-1)+(-1)=+1(c:-1), (-1)+0=-1, (-1)+1=0
+    [-1,  0,  1],   # a=0:  0+(-1)=-1, 0+0=0, 0+1=+1
+    [ 0,  1, -1]    # a=+1: (+1)+(-1)=0, (+1)+0=+1, (+1)+(+1)=-1(c:+1)
+]
+carry = [
+    [-1,  0,  0],   # a=-1: only (-1)+(-1) generates carry=-1
+    [ 0,  0,  0],   # a=0:  zero never generates carry
+    [ 0,  0,  1]    # a=+1: only (+1)+(+1) generates carry=+1
+]
+
+# Full adder - adds two trits plus carry_in for multi-trit arithmetic
+# Input: (a, b, c_in) where a,b,c_in ∈ {-1, 0, +1}
+# Output: (c_out, sum) - indexed as [a+1][b+1][c_in+1]
+# 27 total combinations (3³)
+[operations.full_adder]
+# sum[a+1][b+1][c_in+1] - the sum output
+sum = [
+    # a=-1
+    [
+        [ 0,  1, -1],   # b=-1: c_in={-1,0,+1}
+        [ 1, -1,  0],   # b=0:  c_in={-1,0,+1}
+        [-1,  0,  1]    # b=+1: c_in={-1,0,+1}
+    ],
+    # a=0
+    [
+        [ 1, -1,  0],   # b=-1: c_in={-1,0,+1}
+        [-1,  0,  1],   # b=0:  c_in={-1,0,+1}
+        [ 0,  1, -1]    # b=+1: c_in={-1,0,+1}
+    ],
+    # a=+1
+    [
+        [-1,  0,  1],   # b=-1: c_in={-1,0,+1}
+        [ 0,  1, -1],   # b=0:  c_in={-1,0,+1}
+        [ 1, -1,  0]    # b=+1: c_in={-1,0,+1}
+    ]
+]
+# carry_out[a+1][b+1][c_in+1] - the carry output
+carry_out = [
+    # a=-1
+    [
+        [-1, -1,  0],   # b=-1: c_in={-1,0,+1}
+        [-1,  0,  0],   # b=0:  c_in={-1,0,+1}
+        [ 0,  0,  0]    # b=+1: c_in={-1,0,+1}
+    ],
+    # a=0
+    [
+        [-1,  0,  0],   # b=-1: c_in={-1,0,+1}
+        [ 0,  0,  0],   # b=0:  c_in={-1,0,+1}
+        [ 0,  0,  1]    # b=+1: c_in={-1,0,+1}
+    ],
+    # a=+1
+    [
+        [ 0,  0,  0],   # b=-1: c_in={-1,0,+1}
+        [ 0,  0,  1],   # b=0:  c_in={-1,0,+1}
+        [ 0,  1,  1]    # b=+1: c_in={-1,0,+1}
+    ]
+]
+
 # Multiplication table (result = trit_a × trit_b)
 multiplication = [
     [ 1,  0, -1],  # -1 × {-1, 0, +1}
     [ 0,  0,  0],  #  0 × {-1, 0, +1}
     [-1,  0,  1]   # +1 × {-1, 0, +1}
 ]
+
+# Subtraction - composed operation using negation + addition
+# Biblical grounding: Genesis 1:4 - God divided (separated) light from darkness
+# Pattern: a - b = a + negate(b)
+# Implementation: use negation table, then half_adder/full_adder
+[operations.subtraction]
+# Step 1: negate(b) using negation table above
+# Step 2: add(a, negate(b)) using half_adder or full_adder
+# This is a COMPOSED operation, not a lookup table
+method = "negate_then_add"
+
+# Division - balanced ternary division with centered remainder
+# Biblical grounding: Genesis 1:6-7 - "Let there be a firmament... and let it divide"
+# Key insight: remainder stays centered around zero, |r| ≤ divisor/2
+[operations.division]
+# Division constants for implementation
+method = "long_division"
+remainder_rule = "centered"  # |remainder| ≤ divisor/2
+
+# Quotient digit selection based on partial remainder
+# If partial_remainder > divisor/2: quotient_digit = +1, remainder -= divisor
+# If partial_remainder < -divisor/2: quotient_digit = -1, remainder += divisor
+# Otherwise: quotient_digit = 0
+[operations.division.quotient_selection]
+positive_threshold = "divisor / 2"      # If remainder > this, q = +1
+negative_threshold = "-divisor / 2"     # If remainder < this, q = -1
+# Between thresholds: q = 0
+
+# Division by powers of 3 is shift (O(1))
+[operations.division.shift]
+# divide_by_3 = right shift 1 position
+# divide_by_9 = right shift 2 positions
+# divide_by_27 = right shift 3 positions
+powers_of_3 = [1, 3, 9, 27, 81, 243]  # 3^0 through 3^5
 
 
 # Packing - Trit-Byte Relationships
