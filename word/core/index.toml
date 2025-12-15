@@ -1,0 +1,305 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Core Specification Index (3-Block Data Structure)
+# Key: B-word-core-index
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# "In the beginning was the Word" — John 1:1
+#
+# This is the ONLY .toml at word/core/ root. It serves as the manifest for
+# both the Go loader AND C generator. Single source of truth.
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core
+# File:        index.toml
+# Key:         B-word-core-index
+#
+# Purpose:     Manifest for all TOML specifications — loader and generator
+#              both read from this single source of truth
+#
+# Architect:   Seanje Lenox-Wise
+# Implementation: Nova Dawn
+# Created:     2025-12-14
+# Version:     a-01.00
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# Systems load in dependency order (0 = foundation, higher = builds on lower)
+# Within each system, specs load in the order listed
+#
+# =============================================================================
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 0: MATH — Foundation (no dependencies)
+# ─────────────────────────────────────────────────────────────────────────────
+# "A threefold cord is not quickly broken." — Ecclesiastes 4:12
+
+[[systems]]
+name = "math"
+path = "math"
+order = 0
+description = "Ternary mathematics — the foundation all types build on"
+
+[[systems.specs]]
+file = "ternary.toml"
+generates = true
+output = "ternary_math.gen.h"
+description = "Trit values, packing, arithmetic, half/full adder, temporal states"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 1: TYPES — Primitives, Composition, Validation
+# ─────────────────────────────────────────────────────────────────────────────
+# "The stone which the builders refused is become the head stone" — Psalm 118:22
+
+[[systems]]
+name = "types"
+path = "types"
+order = 1
+description = "Type system — primitives, composition rules, validation"
+
+[[systems.specs]]
+file = "primitives.toml"
+generates = true
+output = "primitives.gen.h"
+description = "Atomic types: trit, trit5, int9, int27, text, bool3, collections"
+
+[[systems.specs]]
+file = "composition.toml"
+generates = false
+description = "How types compose into structs, enums, unions"
+
+[[systems.specs]]
+file = "validation.toml"
+generates = false
+description = "Type validation rules and constraints"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 2: LANGUAGE — Keywords and Syntax
+# ─────────────────────────────────────────────────────────────────────────────
+# "In the beginning was the Word" — John 1:1
+
+[[systems]]
+name = "language"
+path = "language"
+order = 2
+description = "OmniCode language — keywords and syntax rules"
+
+[[systems.specs]]
+file = "keywords.toml"
+generates = true
+output = "keywords.gen.h"
+description = "Reserved words, operators, punctuation"
+
+[[systems.specs]]
+file = "syntax.toml"
+generates = false
+description = "Grammar rules and statement structures"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 3: BIBLE — Scripture Encoding and Addressing
+# ─────────────────────────────────────────────────────────────────────────────
+# "Thy word is a lamp unto my feet" — Psalm 119:105
+
+[[systems]]
+name = "bible"
+path = "bible"
+order = 3
+description = "Scripture systems — encoding, addressing, translation"
+
+[[systems.specs]]
+file = "scripture-text.toml"
+generates = true
+output = "scripture_text.gen.h"
+description = "Character encoding for scripture text (ASCII subset + extended)"
+
+[[systems.specs]]
+file = "addressing.toml"
+generates = true
+output = "bible_addressing.gen.h"
+description = "Verse addressing — book/chapter/verse to ternary ordinal"
+
+[[systems.specs]]
+file = "encoding.toml"
+generates = false
+description = "How scripture text is encoded in trit-bytes"
+
+[[systems.specs]]
+file = "decoding.toml"
+generates = false
+description = "How encoded scripture is decoded back to text"
+
+[[systems.specs]]
+file = "translation.toml"
+generates = false
+description = "KJV base + WEB variant marking system"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 4: OS/HEALTH — Health Monitoring
+# ─────────────────────────────────────────────────────────────────────────────
+# "Beloved, I wish above all things that thou mayest prosper and be in health"
+# — 3 John 1:2
+
+[[systems]]
+name = "health"
+path = "os/health"
+order = 4
+description = "Health monitoring — scores, diagnostics, logging"
+
+[[systems.specs]]
+file = "score.toml"
+generates = true
+output = "health_score.gen.h"
+description = "Health score constants (-100 to +100 ternary mapping)"
+
+[[systems.specs]]
+file = "diagnostics.toml"
+generates = false
+description = "Diagnostic categories and severity levels"
+
+[[systems.specs]]
+file = "log.toml"
+generates = false
+description = "Health log format and retention"
+
+[[systems.specs]]
+file = "provider.toml"
+generates = false
+description = "Health provider interface contract"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 5: OS/PERMISSION — Access Control
+# ─────────────────────────────────────────────────────────────────────────────
+# "The LORD is my shepherd; I shall not want" — Psalm 23:1
+# (Permissions grant access to what is needed)
+
+[[systems]]
+name = "permission"
+path = "os/permission"
+order = 5
+description = "Permission system — access control and grants"
+
+[[systems.specs]]
+file = "access.toml"
+generates = true
+output = "permission_access.gen.h"
+description = "Access levels and permission constants"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 6: IDENTITY — CPI-SI Identity Model
+# ─────────────────────────────────────────────────────────────────────────────
+# "I AM THAT I AM" — Exodus 3:14
+
+[[systems]]
+name = "identity"
+path = "identity"
+order = 6
+description = "Identity system — CPI-SI identity model and contracts"
+
+[[systems.specs]]
+file = "model.toml"
+generates = false
+description = "Identity model fields and structure"
+
+[[systems.specs]]
+file = "contract.toml"
+generates = false
+description = "Identity contract interface"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 7: NETWORK — FaithNet Messaging
+# ─────────────────────────────────────────────────────────────────────────────
+# "Go ye therefore, and teach all nations" — Matthew 28:19
+
+[[systems]]
+name = "network"
+path = "network"
+order = 7
+description = "Network systems — messaging, timestamps, contracts"
+
+[[systems.specs]]
+file = "message.toml"
+generates = true
+output = "network_message.gen.h"
+description = "Message format constants and types"
+
+[[systems.specs]]
+file = "timestamp.toml"
+generates = true
+output = "network_timestamp.gen.h"
+description = "Ternary timestamp format"
+
+[[systems.specs]]
+file = "contract.toml"
+generates = false
+description = "Network contract interface"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 8: FILESYSTEM — OmniFS Types
+# ─────────────────────────────────────────────────────────────────────────────
+# "In my Father's house are many mansions" — John 14:2
+
+[[systems]]
+name = "filesystem"
+path = "filesystem"
+order = 8
+description = "Filesystem types — OmniFS structures and contracts"
+
+[[systems.specs]]
+file = "types.toml"
+generates = true
+output = "filesystem_types.gen.h"
+description = "Filesystem type constants"
+
+[[systems.specs]]
+file = "contract.toml"
+generates = false
+description = "Filesystem contract interface"
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# This manifest is read by:
+#   - word/work/pkg/config/loader.go (Go loader)
+#   - word/work/cmd/generate-config/main.go (C generator)
+#
+# To add a new TOML spec:
+#   1. Create the .toml file in appropriate system folder
+#   2. Add entry to this index under the correct [[systems.specs]]
+#   3. Set generates = true if it needs a C header
+#   4. Add template to generator if generates = true
+#
+# Systems load in order 0→8 (math first, filesystem last)
+# Within each system, specs load in the order listed
+#
+# "For precept must be upon precept, precept upon precept;
+#  line upon line, line upon line; here a little, and there a little"
+# — Isaiah 28:10
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

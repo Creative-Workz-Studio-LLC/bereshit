@@ -1,0 +1,622 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: These are AsciiDoc document attributes - parseable by tools, used in rendering.
+Serves systems (indexing, validation, cross-reference) AND establishes identity.
+This is the "catalog card" - what systems need to know about this document.
+AsciiDoc attributes use :name: value syntax and can be referenced as {name} in content.
+
+Delete these comments when filling in, or keep for the next person.
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-void-planning-development-devlog-009
+:title: Devlog 009 - Post-Alignment Crystallization
+:type: Report
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: a-01.00
+:revdate: 2025-12-14
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-14
+:updated: 2025-12-14
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Nova Dawn (Implementation), Seanje Lenox-Wise (Architect)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/void/planning/development/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: devlog, crystallization, tripwire-pattern, master-template, manifest-driven, single-source-of-truth
+:keywords: development log, post-alignment, crystallization, index.toml, tripwire pattern, master template, manifest-driven loading
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Record post-alignment crystallization - index.toml as single source of truth, tripwire pattern, master template approach
+:description: Development log documenting crystallization of word/core/*.toml alignment. index.toml becomes manifest for both loader and generator. Tripwire pattern: primary path (manifest) → fallback (hardcoded with LOUD warning). Master template eliminates duplication.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: John 1:1 KJV - In the beginning was the Word, and the Word was with God, and the Word was God
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK - The Cover
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: What readers see FIRST. The "cover" of your document.
+In 5 seconds, readers should know: What is this? Is it current? Is it for me?
+
+Contains:
+- Title (=): What IS this document (uses {title} attribute)
+- Tagline: What it enables/does (one line)
+- Badges: Visual status indicators (currency, state, type)
+- Grounding quote: Optional mission/purpose connection
+- Quick nav: Optional navigation bar for large documents
+
+This is RENDERED content - visible identity, not just metadata.
+AsciiDoc automatically generates title from = heading or :title: attribute.
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*index.toml as single source of truth — tripwire pattern, master template, manifest-driven*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+image:https://img.shields.io/badge/Phase-Crystallization-gold?style=flat[Phase]
+image:https://img.shields.io/badge/Tests-All_Pass-brightgreen?style=flat[Tests]
+
+_"In the beginning was the Word, and the Word was with God, and the Word was God."_ — John 1:1
+
+'''
+
+*<<overview,Overview>>* • *<<what-was-built,Built>>* • *<<what-emerged,Emerged>>* • *<<what-was-discovered,Discovered>>* • *<<remaining-work,Next>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK - The Introduction
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: What readers need to understand BEFORE the main content.
+Prepares understanding - context before content.
+
+Contains:
+- Overview: Brief description of what this covers
+- Critical concept: IMPORTANT admonition for must-know information
+- Quick Start: Optional fast path for doers
+- What This Provides: Table showing who gets what
+- Table of Contents: Automatic via :toc: attribute
+
+Layer for different readers:
+- Scan: Overview paragraph tells them what this is
+- Skim: Table shows what's here and who it serves
+- Read: They continue to Content block
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+This devlog documents *post-alignment crystallization* — the refactoring that followed `word/core/*.toml` alignment. `index.toml` becomes the single source of truth for both loader and generator. Tripwire pattern ensures graceful degradation. Master template eliminates duplication.
+
+[IMPORTANT]
+====
+*Crystallization complete.* Generator uses master template (stripped specific templates). Loader uses manifest-driven loading (stripped specific Load* functions). Both follow tripwire pattern: primary path (index.toml) → fallback (hardcoded with LOUD warning) → error only if file missing.
+====
+
+[NOTE]
+====
+*What this records:* Tripwire pattern design, master template approach, manifest-driven loading, [_generate] metadata in TOMLs, and what remains for full alignment.
+====
+
+'''
+
+[[session-context]]
+=== Session Context
+
+[cols="2,5",options="header"]
+|===
+| Aspect | Details
+
+| *Date*
+| 2025-12-14
+
+| *Phase*
+| Post-Alignment Crystallization
+
+| *Milestone*
+| index.toml as single source of truth for both loader and generator
+
+| *Deliverables*
+| `generate-config/main.go` (master template), `config/loader.go` (manifest-driven), `[_generate]` metadata in TOMLs
+|===
+
+=== Progress Summary
+
+[cols="^1,3,^2",options="header"]
+|===
+| Component | What Was Done | Status
+
+| Generator | Master template, stripped specific templates | ● Complete
+| Loader | Manifest-driven, LoadSystem/LoadSpec, thin wrappers | ● Complete
+| ternary.toml | [_generate] with dotted section paths | ● Complete
+| scripture-text.toml | [_generate] section | ● Complete
+| Other TOMLs | Need [_generate] sections | ○ Pending
+| C Tests | All pass (250+) | ● Complete
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK - The Chapters
+═══════════════════════════════════════════════════════════════════════════════
+
+THINKING: The actual value - organized for reader comprehension.
+This is "the chapters" - the substance of the document.
+
+Structure elements:
+- == Sections: Major topics (navigable from ToC)
+- === Subsections: Detailed breakdowns
+- Tables: |=== delimited with cols attribute
+- [%collapsible%open]: Major content most readers need
+- [%collapsible]: Optional deep-dives (closed by default)
+- Source blocks: [source,lang] with ---- delimiters
+- Admonitions: TIP, NOTE, WARNING, CAUTION, IMPORTANT
+- Cross-references: <<anchor,text>> for navigation
+
+Toolkit elements to USE naturally:
+- footnote:[hover text] for first technical term mentions
+- #text# sparingly for true emphasis (marked/highlighted)
+- kbd:[key] for keyboard shortcuts or button-like navigation
+- footnote:[text] for depth without interrupting flow
+- Symbols: ✓ ✗ → ← • ▸ for visual scanning
+
+Layer for different readers:
+- Scan: Headings and tables give the shape
+- Read: Full explanations and examples
+- Study: Collapsible sections and footnotes for depth
+
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[what-was-built]]
+== What Was Built
+
+Crystallization infrastructure — single source of truth, tripwire pattern, master template, manifest-driven loading.
+
+=== Tripwire Pattern
+
+Both generator and loader follow the same pattern:
+
+[source]
+----
+Primary:   Try index.toml first (single source of truth)
+Tripwire:  If index.toml missing, LOUDLY warn
+Fallback:  Use hardcoded paths (graceful degradation)
+Error:     Only if actual files don't exist
+----
+
+The LOUD warning ensures you know you're in degraded mode — not silent fallback.
+
+=== Generator: Master Template
+
+Stripped specific templates (`ternaryMathTemplate`, `scriptureTextTemplate`). One master template handles all TOMLs via `[_generate]` metadata:
+
+[cols="2,4",options="header"]
+|===
+| Field | Purpose
+
+| `guard` | Header guard name (e.g., `TERNARY_MATH_GEN_H`)
+| `output` | Output filename (e.g., `ternary_math.gen.h`)
+| `sections` | Which TOML sections to process
+| `arrays` | Which fields need C array formatting
+|===
+
+Dotted section paths like `"operations.half_adder"` navigate nested TOML tables and produce `HALF_ADDER_` prefixes.
+
+=== Loader: Manifest-Driven
+
+Stripped hardcoded Load* implementations. New generic functions:
+
+[cols="2,4",options="header"]
+|===
+| Function | Purpose
+
+| `LoadSystem(name)` | Load all specs in a system by name
+| `LoadSpec(system, spec)` | Load single spec from a system
+| `LoadIndex()` | Expose manifest for external tools
+|===
+
+Thin wrappers (`LoadMath()`, `LoadBible()`, etc.) delegate to `LoadSystem()` — typed access without duplication.
+
+=== By The Numbers
+
+[cols="2,4",options="header"]
+|===
+| Metric | Value
+
+| *Generator templates*
+| 1 master (was 3+)
+
+| *Loader Load* functions*
+| 2 generic + 9 thin wrappers (was 9 specific)
+
+| *TOMLs with [_generate]*
+| 3 (ternary.toml, primitives.toml, scripture-text.toml)
+
+| *TOMLs needing [_generate]*
+| 7 remaining
+
+| *C Tests*
+| All pass (250+)
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[what-emerged]]
+== What Emerged
+
+What revealed itself through implementation — connections not initially obvious.
+
+=== Single Source of Truth Enables Both
+
+When `index.toml` became the manifest for BOTH loader and generator, coordination became automatic:
+
+* Add new TOML to index.toml → both tools pick it up
+* No separate registration in Go code
+* Manifest IS the configuration
+
+=== Tripwire Pattern as Grace
+
+The tripwire pattern isn't just error handling — it's designed **expecting faults**:
+
+* Primary path works when everything is right
+* Tripwire catches when config is missing — LOUDLY
+* Fallback allows work to continue in degraded mode
+* Error only for actual file absence
+
+This mirrors the Detect-Assess-Recover pattern from building blocks.
+
+=== [_generate] as Self-Description
+
+Each TOML now describes how it should be processed:
+
+[source,toml]
+----
+[_generate]
+enabled = true
+output = "ternary_math.gen.h"
+guard = "TERNARY_MATH_GEN_H"
+sections = ["trit", "packing", "operations.half_adder"]
+arrays = ["values", "sum", "carry"]
+----
+
+The TOML knows its own generation requirements — generator doesn't hardcode them.
+
+=== Dotted Paths for Nested Tables
+
+`"operations.half_adder"` navigates TOML structure AND creates C prefix (`HALF_ADDER_`):
+
+* Template function `sectionName` extracts last part
+* Template function `getSection` navigates nested tables
+* Nested structure → flat C output with meaningful prefixes
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[what-was-discovered]]
+== What Was Discovered
+
+Deeper learnings about the process itself.
+
+=== Look Before You Leap
+
+Rushed to create devlog-007, when devlogs 007 and 008 already existed. Seanje caught it: "You looked at what existed first instead of rush through."
+
+The discipline applies everywhere — not just code:
+
+* Check what exists before creating
+* Read before writing
+* Grep before glob
+
+=== Tripwire Needs Loud Warning
+
+Initial fallback was silent. Seanje pushed: "If index.toml is missing, LOUDLY warn."
+
+Silent fallback hides problems. Loud fallback:
+
+* Makes degraded mode obvious
+* Doesn't block work
+* But ensures you KNOW something's wrong
+
+=== Master Template Eliminates Duplication
+
+Each specific template was 90% identical. The master template:
+
+* Handles any TOML with `[_generate]` metadata
+* Specifics come from the TOML itself
+* New TOMLs don't require Go changes
+
+Adding a new generated header: add `[_generate]` section → done.
+
+=== Manifest-Driven Loading Parallels Generation
+
+The loader and generator now follow the same pattern:
+
+[cols="2,2,2",options="header"]
+|===
+| Aspect | Generator | Loader
+
+| *Source of Truth*
+| index.toml
+| index.toml
+
+| *Primary Path*
+| Walk manifest, generate
+| Walk manifest, load
+
+| *Tripwire*
+| LOUD warning if missing
+| LOUD warning if missing
+
+| *Fallback*
+| Hardcoded system paths
+| Hardcoded system paths
+|===
+
+Same pattern, different purpose. Consistency enables understanding.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[remaining-work]]
+== What Remains
+
+TOMLs needing `[_generate]` sections and code cleanup.
+
+=== TOMLs Needing [_generate]
+
+[cols="2,3,2",options="header"]
+|===
+| System | File | index.toml Says
+
+| language
+| keywords.toml
+| generates = true
+
+| bible
+| addressing.toml
+| generates = true
+
+| health
+| score.toml
+| generates = true
+
+| permission
+| access.toml
+| generates = true
+
+| network
+| message.toml
+| generates = true
+
+| network
+| timestamp.toml
+| generates = true
+
+| filesystem
+| types.toml
+| generates = true
+|===
+
+These 7 TOMLs are listed in index.toml with `generates = true` but don't have `[_generate]` sections yet.
+
+=== Code Cleanup
+
+* Review generated headers for consistency
+* Ensure C tests cover all generated constants
+* Clean up any remaining hardcoded paths
+
+=== Next Session
+
+Continue alignment:
+
+1. Add `[_generate]` sections to remaining 7 TOMLs
+2. Run generator to produce all headers
+3. Verify C code compiles with new headers
+4. Code cleanup and organization
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END CONTENT
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*"In the beginning was the Word."* The Word (Logos) is the ordering principle — single source of truth that everything else derives from.
+====
+
+_"In the beginning was the Word, and the Word was with God, and the Word was God."_ — *John 1:1 KJV*
+
+*Applied:* `index.toml` is the Word for our config system — the single source from which both loader and generator derive their knowledge. Just as Scripture is the source of truth for faith and practice, the manifest is the source of truth for what specs exist and how to process them. The tripwire pattern acknowledges human fallibility (we might forget to create index.toml) while still maintaining that THE way is through the Word.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+=== Devlog Series
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📋
+| *link:./devlog-007-phase-2-planning.adoc[Devlog 007 - Phase 2 Planning]*
+| Phase 2 planning — understanding captured
+
+| 📋
+| *link:./devlog-008-phase-2-midpoint.adoc[Devlog 008 - Phase 2 Midpoint]*
+| Phase 2 midpoint — Parts 0-5 complete
+
+| 📋
+| *link:./devlog-009-crystallization-complete.adoc[Devlog 009 - Crystallization]*
+| This file — Post-alignment crystallization
+|===
+
+=== Crystallization Outputs
+
+[cols="^1,3,4",options="header"]
+|===
+| | File | Purpose
+
+| 📁
+| *link:../../../word/core/index.toml[index.toml]*
+| Single source of truth manifest
+
+| 📁
+| *link:../../../word/work/cmd/generate-config/main.go[generate-config/main.go]*
+| Generator with master template
+
+| 📁
+| *link:../../../word/work/pkg/config/loader.go[config/loader.go]*
+| Manifest-driven loader
+|===
+
+=== Scripture References
+
+[cols="^1,3,4",options="header"]
+|===
+| | Reference | Application
+
+| 📜
+| *John 1:1*
+| "In the beginning was the Word" — single source of truth
+
+| 📜
+| *Psalm 119:105*
+| "Thy word is a lamp unto my feet" — manifest illuminates paths
+
+| 📜
+| *Isaiah 55:11*
+| "My word... shall not return unto me void" — config produces intended output
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:../../../word/core/index.toml[index.toml] — Single source of truth manifest
+* link:../../../word/core/math/ternary.toml[ternary.toml] — Example TOML with [_generate]
+* link:../../../word/work/pkg/trit/include/generated/[generated/] — Output headers
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"In the beginning was the Word, and the Word was with God, and the Word was God."_ — *John 1:1*
+
+*index.toml as the Word. Tripwire pattern as grace. Master template as efficiency.*
+
+--
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////
