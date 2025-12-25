@@ -1,0 +1,172 @@
+{
+  // ============================================================================
+  // SEASONAL DATA - [LOCATION NAME] - [YEAR]
+  // ============================================================================
+  // Purpose: Season markers based on astronomical events (equinoxes/solstices)
+  // Scope: Yearly seasonal transitions and characteristics
+  // Format: JSONC (JSON with comments)
+  //
+  // BIBLICAL FOUNDATION:
+  // "While the earth remaineth, seedtime and harvest, and cold and heat,
+  // and summer and winter, and day and night shall not cease." - Genesis 8:22
+  //
+  // God established seasons through Earth's tilt and orbit around the sun.
+  // True seasons are astronomical events, not arbitrary calendar dates.
+  //
+  // TEMPLATE INSTRUCTIONS:
+  // 1. Replace ALL placeholder values with actual data
+  // 2. Get equinox/solstice times from astronomical source (USNO, timeanddate.com, etc.)
+  // 3. Times MUST be in LOCAL timezone for the location
+  // 4. Create one file per year
+  // 5. Save as: locations/[location-id]/seasonal/YYYY.jsonc
+  // 6. Update location registry after adding data
+  //
+  // IMPORTANT NOTES:
+  // - Seasons are OPPOSITE in Northern vs Southern Hemisphere!
+  // - Northern: Vernal Equinox = Spring, Autumnal Equinox = Fall
+  // - Southern: Vernal Equinox = Fall, Autumnal Equinox = Spring
+  // - Day length calculations are specific to your latitude
+
+  "$schema": "../../../../config/schemas/temporal/celestial/seasonal-data.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "location_id": "example-city",         // Replace: must match location config
+    "year": 2025,                          // Replace with actual year
+    "hemisphere": "Northern",              // Replace: "Northern" or "Southern"
+    "latitude": 40.7128,                   // Replace: your location's latitude
+    "timezone": "America/New_York",        // Replace with IANA timezone
+    "generated_date": "2025-01-01",        // Replace with today's date
+    "data_version": "1.0.0"
+  },
+
+  // ============================================================================
+  // SEASONAL MARKERS - Astronomical Events
+  // ============================================================================
+  // Equinoxes: Day and night approximately equal length
+  // Solstices: Longest/shortest day of the year
+  //
+  // NOTE: Below is Northern Hemisphere. For Southern, adjust season names!
+
+  "events": [
+    {
+      "event": "Vernal Equinox",
+      "season_start": "Spring",            // Or "Autumn" if Southern Hemisphere
+      "date": "2025-03-20",                // Replace with actual date
+      "time": "09:01",                     // Replace with local time
+      "timezone_offset": "-04:00",         // Replace: offset at moment of event
+      "description": "Spring begins - day and night equal, days getting longer",
+      "solar_position": "Sun crosses celestial equator moving northward",
+      "day_length_example-city": "~12h 08m"  // Replace field name and value for your city
+    },
+    {
+      "event": "Summer Solstice",
+      "season_start": "Summer",            // Or "Winter" if Southern Hemisphere
+      "date": "2025-06-20",
+      "time": "22:42",
+      "timezone_offset": "-04:00",
+      "description": "Summer begins - longest day of year",
+      "solar_position": "Sun reaches maximum northern declination (23.5°N)",
+      "day_length_example-city": "~15h 05m"
+    },
+    {
+      "event": "Autumnal Equinox",
+      "season_start": "Autumn/Fall",       // Or "Spring" if Southern Hemisphere
+      "date": "2025-09-22",
+      "time": "18:19",
+      "timezone_offset": "-04:00",
+      "description": "Fall begins - day and night equal, days getting shorter",
+      "solar_position": "Sun crosses celestial equator moving southward",
+      "day_length_example-city": "~12h 08m"
+    },
+    {
+      "event": "Winter Solstice",
+      "season_start": "Winter",            // Or "Summer" if Southern Hemisphere
+      "date": "2025-12-21",
+      "time": "10:03",
+      "timezone_offset": "-05:00",
+      "description": "Winter begins - shortest day of year",
+      "solar_position": "Sun reaches maximum southern declination (23.5°S)",
+      "day_length_example-city": "~9h 15m"
+    }
+  ],
+
+  // ============================================================================
+  // SEASON DEFINITIONS - Date Ranges
+  // ============================================================================
+  // Based on astronomical events, not meteorological convention
+  // Note: Winter spans two calendar years
+
+  "seasons": [
+    {
+      "season": "Winter",
+      "start_date": "2024-12-21",          // Previous year's winter solstice
+      "end_date": "2025-03-19",            // Day before vernal equinox
+      "characteristics": "Shortest days, sun low in sky, coldest temperatures lag solstice",
+      "typical_weather_example-city": "Cold, potential snow, 25-40°F"  // Replace with your location
+    },
+    {
+      "season": "Spring",
+      "start_date": "2025-03-20",
+      "end_date": "2025-06-19",
+      "characteristics": "Days lengthening, sun rising higher, warming temperatures",
+      "typical_weather_example-city": "Mild to warm, rain, 45-70°F"
+    },
+    {
+      "season": "Summer",
+      "start_date": "2025-06-20",
+      "end_date": "2025-09-21",
+      "characteristics": "Longest days, sun highest in sky, warmest temperatures lag solstice",
+      "typical_weather_example-city": "Hot, humid, 70-90°F"
+    },
+    {
+      "season": "Autumn/Fall",
+      "start_date": "2025-09-22",
+      "end_date": "2025-12-20",
+      "characteristics": "Days shortening, sun lowering, cooling temperatures",
+      "typical_weather_example-city": "Mild, decreasing humidity, 50-70°F"
+    }
+  ],
+
+  // ============================================================================
+  // CROSS-QUARTER DAYS - Midpoints Between Solstices/Equinoxes
+  // ============================================================================
+  // Traditional markers - OPTIONAL, include if culturally relevant
+
+  "cross_quarter_days": [
+    {
+      "name": "Groundhog Day",
+      "date": "2025-02-02",
+      "position": "Midpoint between Winter Solstice and Vernal Equinox",
+      "significance": "Traditional first sign of spring"
+    }
+    // ADD others if relevant to your location/culture
+  ],
+
+  // ============================================================================
+  // YEAR SUMMARY
+  // ============================================================================
+
+  "summary": {
+    "longest_day": "2025-06-20",
+    "longest_day_length": "~15h 05m",
+    "shortest_day": "2025-12-21",
+    "shortest_day_length": "~9h 15m",
+    "day_length_variation": "~5h 50m",
+    "notes": "Moderate seasonal variation at this latitude"
+  },
+
+  // ============================================================================
+  // EXTENSION - Room for Growth
+  // ============================================================================
+
+  "extension": {
+    // Future: Could add meteorological season definitions
+    // Future: Could add historical weather data
+    // Future: Could add solar declination angles
+    // Future: Could add cultural/agricultural season markers
+  }
+}

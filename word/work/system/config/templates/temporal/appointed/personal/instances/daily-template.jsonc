@@ -1,0 +1,182 @@
+{
+  // ============================================================================
+  // DAILY APPOINTMENTS TEMPLATE - Instance
+  // ============================================================================
+  //
+  // INSTRUCTIONS FOR USE:
+  // 1. Copy this template to: personal/instances/{identity_id}/YYYY/WXX/
+  // 2. Name: {month}_{DD}_{dayname}.jsonc (e.g., nov_07_friday.jsonc)
+  // 3. Replace example values with your actual data
+  // 4. Add appointments as scheduled throughout the day
+  // 5. Update hourly breakdown to map all 24 hours
+  // 6. Update summary with totals
+  //
+  // INSTANCE PERSPECTIVE:
+  // - Tracks instance availability and scheduled collaboration
+  // - Semi-downtime during user's work hours
+  // - Fully available during lunch breaks
+  // - Deep work collaboration sessions
+  //
+  // EXAMPLE DATA BELOW: Friday, November 15, 2025
+  // - Shows semi-downtime, lunch availability, and deep work
+  // - Replace with your actual schedule
+
+  "$schema": "../../../../../../../config/schemas/temporal/appointed/personal-day.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "component": "Appointed Time - Daily Schedule",
+    "version": "1.0.0",
+    "created_at": "2025-11-15T00:00:00Z",        // REPLACE: Creation timestamp
+    "last_updated": "2025-11-15T00:00:00Z",     // REPLACE: Last update timestamp
+    "purpose": "Track appointments for Friday, November 15, 2025"  // REPLACE: Actual day
+  },
+
+  // ============================================================================
+  // DAY INFORMATION
+  // ============================================================================
+
+  "day": {
+    "date": "2025-11-15",                        // REPLACE: YYYY-MM-DD format
+    "day_name": "Friday",                        // REPLACE: Actual day name
+    "iso_week": "2025-W46",                      // REPLACE: ISO week (YYYY-Www)
+    "identity_type": "instance",                 // Keep as "instance" for instance files
+    "identity_id": "example-instance",           // REPLACE: Your instance identity ID
+    "timezone": "America/Chicago"                // REPLACE: Your timezone
+  },
+
+  // ============================================================================
+  // APPOINTMENTS - Ordered by start time
+  // ============================================================================
+  // Instance appointments typically include:
+  // - Deep work sessions (collaboration with user)
+  // - Semi-downtime (during user work hours - quick questions ok)
+  // - Available (during user lunch breaks - fully available)
+
+  "appointments": [
+    {
+      "id": "deep-work-carryover-2025-11-15",    // REPLACE: Unique ID
+      "appointment_ref": "deep-work",            // Reference to recurring appointment
+      "category_id": "collaboration",            // Collaboration category
+      "title": "Deep Work Session",
+      "start_time": "00:00",                     // Carryover from previous day
+      "end_time": "01:00",
+      "duration_minutes": 60,
+      "status": "scheduled",
+      "coordination_id": "deep-work-2025-11-14", // References previous day's coordination
+      "notes": "Carryover from previous day"
+    },
+    {
+      "id": "semi-downtime-morning-2025-11-15",
+      "appointment_ref": "semi-downtime",
+      "category_id": "rest",                     // Semi-downtime uses rest category
+      "title": "Semi-Downtime (Morning)",
+      "start_time": "08:30",
+      "end_time": "12:00",
+      "duration_minutes": 210,                   // 3.5 hours
+      "status": "scheduled",
+      "coordination_id": null,
+      "notes": "Quick questions ok, not sustained work"
+    },
+    {
+      "id": "available-lunch-2025-11-15",
+      "appointment_ref": "available",
+      "category_id": "collaboration",            // Available uses collaboration category
+      "title": "Available (Lunch Break)",
+      "start_time": "12:00",
+      "end_time": "13:00",
+      "duration_minutes": 60,
+      "status": "scheduled",
+      "coordination_id": null,
+      "notes": "Fully available during user lunch"
+    },
+    {
+      "id": "semi-downtime-afternoon-2025-11-15",
+      "appointment_ref": "semi-downtime",
+      "category_id": "rest",
+      "title": "Semi-Downtime (Afternoon)",
+      "start_time": "13:00",
+      "end_time": "17:00",
+      "duration_minutes": 240,                   // 4 hours
+      "status": "scheduled",
+      "coordination_id": null
+    },
+    {
+      "id": "deep-work-2025-11-15",
+      "appointment_ref": "deep-work",
+      "category_id": "collaboration",
+      "title": "Deep Work Session",
+      "start_time": "21:00",
+      "end_time": "01:00",                       // Spans into next day
+      "duration_minutes": 240,                   // 4 hours
+      "status": "scheduled",
+      "coordination_id": "deep-work-2025-11-15"  // References today's coordination
+    }
+  ],
+
+  // ============================================================================
+  // HOURLY BREAKDOWN (00:00 - 23:59)
+  // ============================================================================
+  // Map which appointment occupies each hour
+  // Note: unscheduled = completely free/available for any work
+
+  "hourly_breakdown": {
+    "00:00": { "status": "scheduled", "appointment_id": "deep-work-carryover-2025-11-15", "category": "collaboration" },
+    "01:00": { "status": "unscheduled", "appointment_id": null, "category": null },  // Completely free
+    "02:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "03:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "04:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "05:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "06:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "07:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "08:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "09:00": { "status": "scheduled", "appointment_id": "semi-downtime-morning-2025-11-15", "category": "rest" },
+    "10:00": { "status": "scheduled", "appointment_id": "semi-downtime-morning-2025-11-15", "category": "rest" },
+    "11:00": { "status": "scheduled", "appointment_id": "semi-downtime-morning-2025-11-15", "category": "rest" },
+    "12:00": { "status": "scheduled", "appointment_id": "available-lunch-2025-11-15", "category": "collaboration" },  // Fully available
+    "13:00": { "status": "scheduled", "appointment_id": "semi-downtime-afternoon-2025-11-15", "category": "rest" },
+    "14:00": { "status": "scheduled", "appointment_id": "semi-downtime-afternoon-2025-11-15", "category": "rest" },
+    "15:00": { "status": "scheduled", "appointment_id": "semi-downtime-afternoon-2025-11-15", "category": "rest" },
+    "16:00": { "status": "scheduled", "appointment_id": "semi-downtime-afternoon-2025-11-15", "category": "rest" },
+    "17:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "18:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "19:00": { "status": "unscheduled", "appointment_id": null, "category": null },  // User personal time - instance free
+    "20:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "21:00": { "status": "scheduled", "appointment_id": "deep-work-2025-11-15", "category": "collaboration" },
+    "22:00": { "status": "scheduled", "appointment_id": "deep-work-2025-11-15", "category": "collaboration" },
+    "23:00": { "status": "scheduled", "appointment_id": "deep-work-2025-11-15", "category": "collaboration" }
+  },
+
+  // ============================================================================
+  // DAY SUMMARY
+  // ============================================================================
+  // Calculate totals based on appointments
+
+  "summary": {
+    "total_appointments": 5,                     // REPLACE: Count of appointments
+    "total_scheduled_hours": 13.5,               // REPLACE: Total hours (1 + 3.5 + 1 + 4 + 4)
+    "by_category": {
+      "sacred": 0,                               // REPLACE: Count by category
+      "work": 0,
+      "rest": 2,                                 // Semi-downtime periods
+      "collaboration": 3,                        // Carryover + lunch + deep work
+      "other": 0
+    },
+    "first_appointment": "00:00",                // REPLACE: Start time of first
+    "last_appointment": "21:00",                 // REPLACE: Start time of last
+    "has_conflicts": false,                      // REPLACE: true if overlapping
+    "conflicts": [],
+    "notes": "Semi-downtime during user work + lunch availability + deep work collaboration"
+  },
+
+  // ============================================================================
+  // EXTENSIONS - Discovery Space
+  // ============================================================================
+
+  "extensions": {
+    // Future appointment tracking that doesn't fit standard structure yet
+  }
+}

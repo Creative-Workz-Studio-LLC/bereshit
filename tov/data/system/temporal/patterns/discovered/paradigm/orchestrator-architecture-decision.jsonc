@@ -1,0 +1,295 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Discovered Patterns - Paradigm - Orchestrator Architecture Decision
+// Purpose: When to use switchboard coordination vs direct primitive access
+// Scope: Paradigm-wide (all CPI-SI system libraries)
+// Schema: system/config/schemas/temporal/patterns/discovered/paradigm-wisdom.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Architectural clarity: 40 pts
+// - Decision criteria: 35 pts
+// - Biblical alignment: 25 pts
+
+{
+  "$schema": "../../../../../../config/schemas/temporal/patterns/discovered/paradigm-wisdom.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "pattern_type": "paradigm_architectural_decision",
+    "description": "Criteria for orchestrator pattern implementation - switchboard vs direct primitives",
+    "scope": "CPI-SI system libraries",
+    "contributors": [
+      "nova-dawn",
+      "seanje-lenox-wise"
+    ],
+    "last_updated": "2025-11-21",
+    "version": "1.0.0",
+    "biblical_foundation": "1 Corinthians 14:40 - Let all things be done decently and in order",
+    "temporal_moment": "Display orchestrator extraction decision - discovered through dialectic"
+  },
+
+  // ============================================================================
+  // ARCHITECTURAL PRINCIPLES
+  // ============================================================================
+
+  "foundational_truths": [
+    {
+      "principle": "Orchestration serves coordination, not duplication",
+      "description": "Switchboard layer justified only when coordinating shared state or lifecycle",
+      "discovered_by": "nova-dawn (through dialectic with seanje-lenox-wise)",
+      "date_discovered": "2025-11-21",
+      "biblical_basis": "1 Corinthians 12:12 - Many parts, one body (coordination serves unity)",
+      "application": "Evaluate whether primitives need coordination or can operate independently",
+      "evidence": "Logging requires switchboard (stateful), Display does not (stateless)"
+    },
+    {
+      "principle": "Go's package model provides natural monolithic surface",
+      "description": "All exported functions automatically aggregate into package namespace",
+      "discovered_by": "nova-dawn",
+      "date_discovered": "2025-11-21",
+      "biblical_basis": "Romans 12:5 - Members one of another (natural unity without force)",
+      "application": "Trust Go's package system for API aggregation unless coordination needed",
+      "evidence": "go doc and IDE autocomplete show complete API without wrapper duplication"
+    },
+    {
+      "principle": "Rails must remain pure and self-evident",
+      "description": "Adding switchboard to stateless rails tempts future violations (logging, metrics)",
+      "discovered_by": "nova-dawn",
+      "date_discovered": "2025-11-21",
+      "biblical_basis": "Matthew 6:22 - If thy eye be single, whole body full of light",
+      "application": "Rails self-evidence requires no observability layer - switchboard enables bad patterns",
+      "evidence": "Display failures are self-evident through broken output, no coordination needed"
+    }
+  ],
+
+  // ============================================================================
+  // DECISION CRITERIA
+  // ============================================================================
+
+  "decision_matrix": {
+    "description": "When to use switchboard orchestration vs direct primitive access",
+
+    "use_switchboard_when": [
+      {
+        "criterion": "Stateful operations",
+        "explanation": "Primitives share state across multiple calls (logger.SessionHealth)",
+        "example": "logging.NewLogger() creates shared state, all methods coordinate through it",
+        "justification": "State coordination requires central orchestration point"
+      },
+      {
+        "criterion": "Lifecycle management",
+        "explanation": "Operations follow Create → Configure → Use → Cleanup pattern",
+        "example": "Logger lifecycle: NewLogger → DeclareHealthTotal → Operation/Success → (implicit cleanup)",
+        "justification": "Lifecycle stages require orchestration to maintain invariants"
+      },
+      {
+        "criterion": "Cross-cutting concerns",
+        "explanation": "All operations need common pre/post processing",
+        "example": "Logging: every call updates health, captures context, writes to file",
+        "justification": "Coordination logic justifies switchboard layer"
+      },
+      {
+        "criterion": "Future extension coordination",
+        "explanation": "Anticipated need to add orchestration logic across all operations",
+        "example": "Logging may add: distributed tracing, async batching, compression",
+        "justification": "Switchboard enables consistent enhancement"
+      }
+    ],
+
+    "use_direct_primitives_when": [
+      {
+        "criterion": "Stateless operations",
+        "explanation": "Each call independent, no state accumulated across invocations",
+        "example": "display.Success() has no relationship to previous display.Header() call",
+        "justification": "No state = no coordination needed"
+      },
+      {
+        "criterion": "One-shot functions",
+        "explanation": "Functions complete in single call, no lifecycle",
+        "example": "display.Box(title, message) → formatted string, done",
+        "justification": "No lifecycle = no orchestration value"
+      },
+      {
+        "criterion": "Self-orchestrating primitives",
+        "explanation": "Each primitive handles own recovery, config, validation",
+        "example": "Every display function: defer recovery, get config, validate, format",
+        "justification": "Primitives already coordinate their own cross-cutting concerns"
+      },
+      {
+        "criterion": "Rails architecture",
+        "explanation": "Component must remain self-evident without observability",
+        "example": "Display failures visible immediately through broken output",
+        "justification": "Switchboard layer enables violations (logging display calls, metrics)"
+      }
+    ]
+  },
+
+  // ============================================================================
+  // DISCOVERED PATTERNS
+  // ============================================================================
+
+  "discovered_patterns": [
+    {
+      "pattern_name": "Switchboard duplication trap",
+      "description": "Wrapper functions without coordination logic create maintenance burden without value",
+      "instances_observed": ["display.go initial consideration"],
+      "confidence": "high",
+      "actionable_insight": "If wrapper is pure forwarding (no added logic), skip switchboard",
+      "status": "validated",
+      "example": "display.Success() → success() would only duplicate signatures, adds no coordination"
+    },
+    {
+      "pattern_name": "Go package name collision prevention",
+      "description": "Cannot have public wrapper + public primitive with same name in one package",
+      "instances_observed": ["display.go technical constraint"],
+      "confidence": "high",
+      "actionable_insight": "Switchboard requires private primitives (lowercase), changes architecture fundamentally",
+      "status": "validated",
+      "technical_constraint": "func Success() in format.go + func Success() in messages.go = compile error"
+    },
+    {
+      "pattern_name": "Dialectic reveals hidden constraints",
+      "description": "Pushing back against initial assumptions uncovers technical/architectural truths",
+      "instances_observed": ["orchestrator pattern discussion"],
+      "confidence": "high",
+      "actionable_insight": "Truth-seeking through challenge, not blind agreement",
+      "status": "validated",
+      "biblical_basis": "Proverbs 27:17 - Iron sharpens iron"
+    }
+  ],
+
+  // ============================================================================
+  // ANTI-PATTERNS
+  // ============================================================================
+
+  "anti_patterns": [
+    {
+      "anti_pattern_name": "Consistency for consistency's sake",
+      "description": "Forcing same structure across different architectural needs",
+      "harm": "Adds complexity where it doesn't serve purpose",
+      "correction": "Match pattern to architectural nature (stateful vs stateless)",
+      "example": "Display doesn't need switchboard like logging just because logging has one",
+      "biblical_warning": "Matthew 9:17 - New wine in old wineskins"
+    },
+    {
+      "anti_pattern_name": "Premature coordination",
+      "description": "Adding orchestration layer before coordination need emerges",
+      "harm": "Maintenance cost without value, enables future violations",
+      "correction": "Wait for actual coordination need, refactor when it emerges",
+      "example": "Adding switchboard to rails 'for future extension' enables bad patterns",
+      "kingdom_principle": "Build for actual need, trust God for future needs (Matthew 6:34)"
+    },
+    {
+      "anti_pattern_name": "Documentation as afterthought",
+      "description": "Treating comprehensive docs as less valuable than code switchboard",
+      "harm": "Undervalues proper documentation in favor of executable duplication",
+      "correction": "Recognize comprehensive METADATA as legitimate API map",
+      "example": "format.go METADATA already provides complete API surface documentation",
+      "truth": "Good documentation serves team navigation without code duplication"
+    }
+  ],
+
+  // ============================================================================
+  // ARCHITECTURAL EXAMPLES
+  // ============================================================================
+
+  "reference_implementations": {
+    "switchboard_example": {
+      "component": "system/runtime/lib/logging",
+      "pattern": "Stateful orchestration with private primitives",
+      "structure": [
+        "logger.go: Public API (NewLogger, Logger methods) coordinates stateful operations",
+        "context.go: Private helpers (context capture)",
+        "health.go: Private helpers (health calculation)",
+        "entry.go: Private helpers (entry formatting)",
+        "writing.go: Private helpers (file persistence)",
+        "config.go: Private helpers (configuration loading)",
+        "parsing.go: Public utility (ReadLogFile)"
+      ],
+      "justification": "Logger accumulates state (SessionHealth), requires lifecycle coordination"
+    },
+
+    "direct_primitives_example": {
+      "component": "system/runtime/lib/display",
+      "pattern": "Stateless independent primitives with comprehensive documentation",
+      "structure": [
+        "format.go: Package documentation + orchestration explanation (no implementations)",
+        "recovery.go: Panic recovery primitive (recoverFromPanic)",
+        "config.go: Configuration primitive (GetConfig, loadConfig)",
+        "colors.go: Color constants",
+        "icons.go: Icon constants",
+        "layout.go: Layout constants",
+        "messages.go: Public message formatters (Success, Failure, Warning, Info)",
+        "structured.go: Public structured formatters (Header, KeyValue, StatusLine)",
+        "visual.go: Public visual components (Table.Render, ProgressBar, Box)"
+      ],
+      "justification": "Each function stateless, self-orchestrating (own recovery/config/validation)"
+    }
+  },
+
+  // ============================================================================
+  // COLLECTIVE WISDOM
+  // ============================================================================
+
+  "collective_insights": {
+    "note": "Wisdom emerging from this architectural decision",
+    "wisdom_items": [
+      {
+        "insight": "Truth emerges through dialectic, not blind agreement",
+        "source": "orchestrator pattern discussion between nova-dawn and seanje-lenox-wise",
+        "application": "Push back reveals angles neither party saw alone",
+        "paradigm_impact": "Establishes truth-seeking as methodology, not just outcome",
+        "biblical_foundation": "Proverbs 27:17 - Iron sharpens iron, man sharpens man"
+      },
+      {
+        "insight": "Architectural patterns serve nature, not convention",
+        "source": "stateful logging vs stateless display comparison",
+        "application": "Let component's architectural nature (state, lifecycle) determine structure",
+        "paradigm_impact": "Prevents cargo-cult consistency, honors actual needs",
+        "kingdom_principle": "Form follows function in God's created order"
+      },
+      {
+        "insight": "Go's package model provides natural aggregation",
+        "source": "Package system already creates monolithic API surface",
+        "application": "Trust language features before adding manual coordination",
+        "paradigm_impact": "Reduces unnecessary abstraction across CPI-SI Go libraries",
+        "technical_truth": "All exported functions visible as package.Function automatically"
+      }
+    ]
+  },
+
+  // ============================================================================
+  // USAGE NOTES
+  // ============================================================================
+
+  "usage": {
+    "purpose": "Guide orchestrator pattern decisions for all CPI-SI system libraries",
+    "when_to_reference": "When extracting library into primitives - evaluate switchboard need",
+    "decision_process": [
+      "1. Identify if component is stateful (accumulates state across calls)",
+      "2. Check if lifecycle coordination needed (Create → Configure → Use → Cleanup)",
+      "3. Evaluate cross-cutting concerns (shared logic across all operations)",
+      "4. Consider rails architecture (must remain pure/self-evident?)",
+      "5. If yes to 1-3 and no to 4: Use switchboard (logging pattern)",
+      "6. If no to 1-3 or yes to 4: Use direct primitives (display pattern)"
+    ],
+    "kingdom_principle": "Build what serves truth, not what serves consistency"
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "extensions": {
+    "note": "Future pattern discoveries and refinements",
+    "potential_cases": [
+      "Hybrid pattern: Some primitives direct, some coordinated (not yet discovered)",
+      "Middleware pattern: Optional coordination layer for specific use cases",
+      "Dynamic orchestration: Runtime decision on coordination vs direct access"
+    ]
+  }
+}

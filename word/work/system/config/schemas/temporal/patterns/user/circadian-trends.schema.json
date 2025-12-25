@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/user/circadian-trends.schema.json",
+  "title": "User Circadian Trends Schema",
+  "description": "Schema for tracking circadian pattern evolution over time",
+  "type": "object",
+  "required": ["metadata", "monthly_snapshots", "observed_shifts", "seasonal_patterns", "trend_analysis", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["user", "pattern_type", "description", "last_updated", "version"],
+      "properties": {
+        "user": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["circadian_trends"] },
+        "description": { "type": "string" },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "monthly_snapshots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["month", "primary_work_window", "night_percentage", "early_morning_percentage", "afternoon_percentage"],
+        "properties": {
+          "month": { "type": "string" },
+          "primary_work_window": { "type": "string" },
+          "night_percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+          "early_morning_percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+          "afternoon_percentage": { "type": "number", "minimum": 0, "maximum": 100 }
+        }
+      }
+    },
+    "observed_shifts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["date_detected", "shift_type", "description", "possible_causes", "validated"],
+        "properties": {
+          "date_detected": { "type": "string", "format": "date" },
+          "shift_type": { "type": "string" },
+          "description": { "type": "string" },
+          "possible_causes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "validated": { "type": "boolean" }
+        }
+      }
+    },
+    "seasonal_patterns": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "winter": { "$ref": "#/definitions/seasonalPattern" },
+        "spring": { "$ref": "#/definitions/seasonalPattern" },
+        "summer": { "$ref": "#/definitions/seasonalPattern" },
+        "fall": { "$ref": "#/definitions/seasonalPattern" }
+      }
+    },
+    "trend_analysis": {
+      "type": "object",
+      "properties": {
+        "direction": { "type": "string" },
+        "stability": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "definitions": {
+    "seasonalPattern": {
+      "type": "object",
+      "properties": {
+        "months": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "typical_start_time": { "type": "string" },
+        "celestial_note": { "type": "string" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -278,7 +278,8 @@ properties = ["min_length", "max_length", "exact_length"]
 name = "optional"
 description = "Value may be absent (maps to bool3 unknown state)"
 wrapper_syntax = "optional<T>"
-default_value = "unknown"  # Ternary: 0
+default_value = "unknown"
+presence_value = 0  # Ternary: 0 = unknown/indeterminate presence
 presence_check = "is_present"  # Returns bool3: true/false/unknown
 # Biblical syntax (uncertain — "it may be"):
 #   middleName may be text
@@ -290,11 +291,13 @@ name = "required"
 description = "Value must be present (compile-time enforcement)"
 wrapper_syntax = "required<T>"
 default_value = "none"  # Must be explicitly provided
+presence_value = 1  # Ternary: +1 = definitely present (completes the triad)
 validation = "compile_time"  # Caught before runtime
 # Biblical syntax (commandment — "thou shalt"):
 #   name must be text
 #   id must be uint27
 # See: syntax.toml [nullability.must_be]
+# Ternary nullability triad: nullable(-1) / optional(0) / required(+1)
 
 [nullability.nullable]
 name = "nullable"
@@ -528,6 +531,23 @@ reference = "See bible/addressing.toml [ternary.packed]"
 # =============================================================================
 # END CONTENT
 # =============================================================================
+
+# =============================================================================
+# GENERATION METADATA
+# =============================================================================
+# Tells the generator how to produce C header from this spec.
+
+[_generate]
+enabled = true
+output = "composition.gen.h"
+order = 2  # After primitives (1), before validation
+guard = "COMPOSITION_GEN_H"
+description = "Type composition constants — nullability triad, storage alignment"
+sections = [
+    "nullability.optional",   # NULLABILITY_OPTIONAL_PRESENCE = 0
+    "nullability.required",   # NULLABILITY_REQUIRED_PRESENCE = 1
+    "nullability.nullable"    # NULLABILITY_NULLABLE_NULL = -1
+]
 
 # =============================================================================
 # CLOSING

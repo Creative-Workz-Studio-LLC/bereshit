@@ -1,0 +1,788 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY — What IS this document?
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-tov-demo-phase0-demo-config-readme
+:title: Phase 0 Demo
+:subtitle: Proving the Foundation Before Building
+:type: Guide
+// AsciiDoc standard attributes
+:doctype: article
+:lang: en
+:description: Understanding the Phase 0 Demo — what all that foundation work was building toward
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE — Lifecycle tracking (includes TEMPORAL)
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: a-01.50
+:revnumber: {version}
+:created: 2025-12-12
+:revdate: 2025-12-15
+:revremark: Enhanced with full AsciiDoc features for PhD rigor + accessibility
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION — Who created and owns this?
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Author)
+:author: Seanje Lenox-Wise
+:author_2: Nova Dawn
+:email: seanje.lenox@creativeworkzstudio.com
+:email_2: nova@creativeworkzstudio.com
+:organization: CreativeWorkzStudio LLC
+:copyright: © 2025 CreativeWorkzStudio LLC. All rights reserved.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION — Where does this document live?
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/tov/demo/phase-0/demo-config/docs/
+:docdir: docs
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION — What template/parent does this come from?
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/seed/documentation/adoc/guide-template.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION — How is this categorized?
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: demo, phase-0, validation, foundation, proof
+:keywords: Phase 0, demo, config validation, specs exist, tripwire, dependency graph
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT — Why does this document exist?
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Explains what Phase 0 achieved and why the demo matters
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING — Biblical anchor
+// ─────────────────────────────────────────────────────────────────────────────
+:verse-ref: 1 Thessalonians 5:21
+:verse-kjv-path: {kjv}1_Thessalonians/Chapter_5/Verse_21.txt
+:verse-kjv-text: Prove all things; hold fast that which is good.
+:verse-web-path: {web}1_Thessalonians/Chapter_5/Verse_21.txt
+:verse-web-text: Test all things, and hold firmly that which is good.
+:biblical_foundation: {verse-kjv-text}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS — How strictly should this be interpreted?
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS — Rendering configuration
+// ─────────────────────────────────────────────────────────────────────────────
+// Table of Contents
+:toc: left
+:toc-title: Contents
+:toclevels: 4
+// Section formatting
+:sectnums:
+:sectnumlevels: 4
+:sectanchors:
+:sectlinks:
+// Icons and syntax highlighting
+:icons: font
+:icon-set: fas
+:source-highlighter: highlight.js
+// Enable experimental features (kbd, btn, menu macros)
+:experimental:
+// Link behavior
+:hide-uri-scheme:
+:linkattrs:
+// Cross-reference styling
+:xrefstyle: short
+// Captions for figures and tables
+:table-caption: Table
+:figure-caption: Figure
+:example-caption: Example
+:listing-caption: Listing
+// Collapsible blocks support
+:collapsible:
+// PDF/print settings
+:pdf-page-size: Letter
+:media: prepress
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVIGATION — Path attributes for linking (DRY principle)
+// ─────────────────────────────────────────────────────────────────────────────
+// From docs/ to Bereshit root requires 5 levels up
+:root: ../../../../../
+// Primary divisions
+:word: {root}word/
+:void: {root}void/
+:tov: {root}tov/
+// Common destinations in word/
+:core: {word}core/
+:work: {word}work/
+:seed: {word}seed/
+:scripture: {word}scripture/
+:kjv: {scripture}KJV/
+:web: {scripture}WEB/
+// Package paths
+:config-pkg: {work}pkg/config/
+:trit-pkg: {work}pkg/trit/
+// Specific source files
+:loader-api: {config-pkg}loader-api.adoc
+:loader-go: {config-pkg}loader.go
+:loader-test: {config-pkg}loader_test.go
+:go-work: {root}go.work
+// Planning paths
+:plans: {void}planning/development/plans/
+:devlogs: {void}planning/development/devlogs/
+// Specific plan documents
+:phase-0-plan: {plans}phase-0-implementation-plan.adoc
+:phase-2-plan: {plans}phase-2-implementation-plan.adoc
+:kingdom-plan: {plans}kingdom-technology-implementation-plan.adoc
+// Demo paths
+:demo-phase0: {tov}demo/phase-0/
+:demo-phase1: {tov}demo/phase-1/
+:demo-trit: {demo-phase1}demo-trit/
+// System directories (9 systems)
+:sys-math: {core}math/
+:sys-types: {core}types/
+:sys-language: {core}language/
+:sys-bible: {core}bible/
+:sys-health: {core}health/
+:sys-permission: {core}permission/
+:sys-identity: {core}identity/
+:sys-network: {core}network/
+:sys-filesystem: {core}filesystem/
+// Key files
+:core-index: {core}index.toml
+:ternary-math: {sys-math}ternary-math.toml
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT ATTRIBUTES — Reusable narrative/data elements
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase and scope
+:phase: Phase 0
+:phase-status: COMPLETE
+:system-count: 9
+:spec-count: 23
+:original-plan-count: 5
+// Narrative — The Story
+:the-question: Do our specifications exist and are they well-formed?
+:the-answer: Yes — {spec-count} TOML specification files across {system-count} systems, all validated.
+:the-hook: We planned {original-plan-count} config files. We built {spec-count} across {system-count} systems. This is the story of why.
+:the-proof: A running program that loads every config and reports what it found. If it passes, the foundation is sound.
+// Display — Human-readable status
+:status-line: {phase} *{phase-status}* — {system-count} systems, {spec-count} specs validated
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}: {subtitle}
+{authors}
+v{version}, {revdate}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EPIGRAPH — Scripture grounding
+// ─────────────────────────────────────────────────────────────────────────────
+
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+
+_{verse-web-text}_ — link:{verse-web-path}[WEB]
+____
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEAD — The hook / purpose
+// ─────────────────────────────────────────────────────────────────────────────
+
+[.lead.text-center]
+*{the-hook}*
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ABSTRACT — Key facts at a glance
+// ─────────────────────────────────────────────────────────────────────────────
+
+[abstract]
+--
+icon:question-circle[] *The Question:* _{the-question}_
+
+icon:check-circle[] *The Answer:* {the-answer}
+
+icon:flask[] *The Proof:* {the-proof}
+--
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATUS — Document data table
+// ─────────────────────────────────────────────────────────────────────────────
+
+.Document Status
+[cols="^1,^1,^1,^1,^1",options="header,autowidth",frame="topbot"]
+|===
+| Status | Phase | Type | Systems | Specs
+
+| {status}
+| {phase-status}
+| {type}
+| {system-count}
+| {spec-count}
+|===
+
+'''
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVIGATION — Quick links to major sections
+// ─────────────────────────────────────────────────────────────────────────────
+
+*<<overview,Overview>>* • *<<what-phase-0-delivered,What Phase 0 Delivered>>* • *<<running-the-demo,Running the Demo>>* • *<<next-steps,Next Steps>>*
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END HEADER
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW — What is this and why it matters
+// ─────────────────────────────────────────────────────────────────────────────
+
+[[overview]]
+== Overview
+
+[.lead]
+This demo is the culmination of link:{phase-0-plan}[{phase}] — all that work defining primitives, types, schemas, contracts, and the Bible Rail footnote:[The Bible Rail is our Scripture integration system — encoding, decoding, translation, and addressing. See link:{sys-bible}[bible/].] proven correct.
+
+[NOTE]
+====
+*Why a demo, not just tests?*
+
+Tests verify code works. This demo verifies _the specifications themselves exist and are well-formed_. It's the difference between "does this function return the right value?" and "do we have a foundation to build on?"
+====
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIENCE — Who is this document for
+// ─────────────────────────────────────────────────────────────────────────────
+
+=== Audience
+
+****
+[.lead]
+*Who is this document for?*
+
+[horizontal]
+icon:briefcase[] *Technical Lead*:: Proof that specs exist and validate — foundation is sound
+icon:cog[] *Developer*:: How to run the demo, understand tripwire/dependency validation
+icon:graduation-cap[] *Learner*:: Understanding ternary thinking and why {phase} matters
+****
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCOPE — What this document covers
+// ─────────────────────────────────────────────────────────────────────────────
+
+=== Scope
+
+****
+[.lead]
+*What does this document cover?*
+
+[horizontal]
+icon:map-signs[] *<<the-journey,The Journey>>*:: Why {phase} matters — from {original-plan-count} planned files to {system-count} systems
+icon:check-circle[] *<<what-we-proved,The Proof>>*:: What the demo proves — {file-count} TOML specs validated
+icon:terminal[] *<<running-it,Running It>>*:: How to run it yourself — build, run, test commands
+icon:road[] *<<whats-next,What's Next>>*:: The roadmap ahead
+****
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PREREQUISITES — What you need before proceeding
+// ─────────────────────────────────────────────────────────────────────────────
+
+=== Prerequisites
+
+****
+[.lead]
+*What do you need before proceeding?*
+
+[horizontal]
+icon:folder-open[] *Repository*:: link:{root}[Bereshit repository] cloned locally
+icon:terminal[] *Go 1.23+*:: https://go.dev/dl/[Download here^] if not installed
+icon:file[] *TOML basics*:: Basic understanding of TOML configuration files
+****
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KEY TERMS — Terminology reference
+// ─────────────────────────────────────────────────────────────────────────────
+
+=== Key Terms
+
+.icon:book[] Click to expand terminology reference
+[%collapsible]
+======
+****
+[.lead]
+*What terms will you encounter?*
+
+[horizontal]
+icon:crosshairs[] *Tripwire* footnote:[See link:demo-config-api.adoc#diagnostic-apis[Diagnostic APIs] for implementation.]:: Validation pattern comparing manifest (what SHOULD exist) vs filesystem (what DOES exist). Detects drift.
+icon:sitemap[] *Dependency Graph* footnote:[Validated by `config.ValidateDependencyGraph()` in link:{config-pkg}loader.go[loader.go].]:: Directed acyclic graph of system dependencies: math → types → language → ... → filesystem.
+icon:balance-scale[] *Ternary Status* footnote:[Based on balanced ternary mathematics. See link:{ternary-math}[ternary-math.toml].]:: Three-valued result: PASS (+1), HALF PASS (0), FAIL (-1). No binary true/false.
+icon:list-alt[] *index.toml* footnote:[Master manifest at link:{core-index}[word/core/index.toml]. Each system has its own.]:: Manifest file in each system directory listing its TOML specs and dependencies.
+****
+======
+
+'''
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUICK START — Fast path for doers (RESERVED - README guides through journey)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WHAT THIS PROVIDES — Document contents (RESERVED - see Scope section above)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RETURN — Back to top navigation
+// ─────────────────────────────────────────────────────────────────────────────
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END CONTEXT
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[the-journey]]
+== The Journey to Phase 0
+
+[.lead]
+{phase} started with a simple question: *{the-question}*
+
+=== The Original Plan
+
+****
+[.lead]
+*What we thought we needed:*
+
+We planned {original-plan-count} config files:
+
+.Original Plan
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| File | Purpose
+
+| `config/omnicode.toml`
+| Trit type definition
+
+| `config/millenniumos.toml`
+| Trit-byte mapping
+
+| `config/cpi-si.toml`
+| Instance schema
+
+| `config/faithnet.toml`
+| Protocol spec
+
+| `config/scripture.toml`
+| Scripture encoding
+|===
+****
+
+=== What Actually Emerged
+
+****
+[.lead]
+*What ternary thinking revealed:*
+
+Ternary thinking exposed hidden assumptions. Binary systems hide complexity in implicit defaults. Ternary forces you to name every state.
+
+We ended up with *{file-count} TOML spec files* across *{system-count} systems* in dependency order:
+
+.Systems in Dependency Order
+[cols="^1,2,4",options="header,autowidth",frame="topbot"]
+|===
+| Order | System | What It Defines
+
+| 0
+| *link:{sys-math}[math]*
+| Ternary mathematics — powers, algorithms, dimensions, Genesis 1:1 constants
+
+| 1
+| *link:{sys-types}[types]*
+| Type system — primitives (trit, trit3, trit9, trit27, trit_byte) and composition
+
+| 2
+| *link:{sys-language}[language]*
+| OmniCode language — keywords and syntax definitions
+
+| 3
+| *link:{sys-bible}[bible]*
+| Scripture integration — encoding, decoding, translation, addressing
+
+| 4
+| *link:{sys-health}[health]*
+| Health monitoring — scores, diagnostics, logging
+
+| 5
+| *link:{sys-permission}[permission]*
+| Access control — permission types and policies
+
+| 6
+| *link:{sys-identity}[identity]*
+| CPI-SI identity — instance model and schemas
+
+| 7
+| *link:{sys-network}[network]*
+| FaithNet — messaging protocols and schemas
+
+| 8
+| *link:{sys-filesystem}[filesystem]*
+| OmniFS — file structures and metadata
+|===
+
+Each system has its own directory under link:{core}[`word/core/`] with an `index.toml` manifest.
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[what-we-proved]]
+== What We Proved
+
+[.lead]
+The journey from {original-plan-count} files to {file-count} files across {system-count} systems raised a question: *{the-question}*
+
+=== The Proof
+
+****
+[.lead]
+*What running the demo reveals:*
+
+[source,bash]
+----
+$ cd tov/demo/phase-0/demo-config && make test
+════════════════════════════════════════════════════════════════
+Phase 0 Demo: Config System Demonstration
+════════════════════════════════════════════════════════════════
+
+  ┌─ Tripwire: Manifest vs Filesystem ─────────────────────────┐
+  │ Manifest files:   23                                       │
+  │ Discovered files: 23                                       │
+  │ ✓ Tripwire PASSED - manifest matches filesystem            │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ Dependency Graph Validation ──────────────────────────────┐
+  │ ✓ No circular dependencies                                 │
+  │ ✓ All referenced specs exist                               │
+  │ ✓ Dependency graph VALID                                   │
+  └────────────────────────────────────────────────────────────┘
+
+  Systems: math → types → language → bible → health →
+           permission → identity → network → filesystem
+
+  Status: ✓ PASS (+1)
+
+════════════════════════════════════════════════════════════════
+----
+****
+
+=== The Verdict
+
+****
+[.lead]
+*What this proves:*
+
+[horizontal]
+icon:check-circle[] *Tripwire*:: Every file declared in `index.toml` manifests exists on disk — no phantom specs, no missing files
+icon:sitemap[] *Dependency Graph*:: Systems load in correct order — no circular dependencies, all references resolve
+icon:cube[] *TOML Validity*:: All {file-count} specification files parse successfully — well-formed syntax throughout
+
+[NOTE]
+====
+*Why this matters:* {the-proof}
+====
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[running-it]]
+== Running the Demo
+
+[.lead]
+{the-proof}
+
+[TIP]
+====
+*Before you begin:* Ensure you have the <<prerequisites,prerequisites>> in place — Go 1.23+ and the Bereshit repository cloned.
+====
+
+=== Build & Run
+
+****
+[.lead]
+*How to execute the demo:*
+
+[source,bash]
+----
+cd tov/demo/phase-0/demo-config
+
+make build      # Build to bin/demo-config
+make run        # Build and run
+make test       # Run and verify exit code
+make diagnostic # Run comprehensive loader diagnostic
+make status     # Show current state
+----
+
+[horizontal]
+icon:cog[] *`make build`*:: Compile the demo binary to `bin/demo-config`
+icon:play[] *`make run`*:: Build and execute — see the output
+icon:check[] *`make test`*:: Run and verify exit code (CI-friendly)
+icon:stethoscope[] *`make diagnostic`*:: Deep diagnostic — useful for debugging
+icon:info-circle[] *`make status`*:: Show current build state
+****
+
+=== Understanding the Output
+
+****
+[.lead]
+*What the status codes mean:*
+
+.Ternary Status Values
+[cols="^1,^1,4",options="header,autowidth",frame="topbot"]
+|===
+| Status | Value | Meaning
+
+| icon:check-circle[] PASS
+| `+1`
+| Primary path works — `index.toml` manifests load successfully
+
+| icon:exclamation-circle[] HALF PASS
+| `0`
+| Fallback works — tripwire triggered, but specs still valid
+
+| icon:times-circle[] FAIL
+| `-1`
+| System broken — check `make diagnostic` for details
+|===
+
+.Exit Codes
+[cols="^1,4",options="header,autowidth",frame="topbot"]
+|===
+| Code | Meaning
+
+| `0`
+| icon:check[] Status is PASS or HALF PASS — {phase} validated
+
+| `1`
+| icon:times[] Status is FAIL — run `make diagnostic` for details
+|===
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[whats-next]]
+== What's Next
+
+[.lead]
+{phase} is the foundation. Everything else builds on it.
+
+****
+[.lead]
+*The roadmap from here:*
+
+See the link:{kingdom-plan}[Kingdom Technology Implementation Plan] for the full vision.
+
+.Phase Progression
+[cols="^1,3,4,3",options="header,autowidth",frame="topbot"]
+|===
+| | Phase | What It Builds | Reads From Phase 0
+
+| icon:check-circle[]
+| *link:{demo-phase1}[Phase 1]* (COMPLETE)
+| link:{trit-pkg}[libtrit] — Trit type in C
+| link:{sys-types}[types/]
+
+| icon:spinner[]
+| *link:{phase-2-plan}[Phase 2]* (IN PROGRESS)
+| Trit-byte packing
+| link:{sys-types}[types/]
+
+| icon:clock-o[]
+| *Phase 3*
+| Config Reader (Go)
+| All link:{core}[TOML specs]
+
+| icon:clock-o[]
+| *Phase 4*
+| CPI-SI Identity
+| link:{sys-types}[types/], link:{sys-identity}[identity/]
+
+| icon:clock-o[]
+| *Phase 5*
+| Echo Contract
+| link:{sys-network}[network/], link:{sys-identity}[identity/]
+
+| icon:clock-o[]
+| *Phase 6-8*
+| FaithNet, Access, Ping
+| Everything
+|===
+
+[NOTE]
+====
+*The pattern:* Each phase reads from {phase} specifications, then produces validated implementations. The chain of verification continues.
+====
+****
+
+[.text-center]
+*The specs are proven. Now we build.*
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+****
+[.lead]
+*Why "{verse-ref}"?*
+
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+____
+
+[horizontal]
+icon:book[] *The Principle*:: Before building, we verify. Before trusting, we test. This isn't skepticism — it's wisdom. The foundation must be sound before you build on it.
+icon:flask[] *Applied*:: {phase} embodies this principle. We didn't assume our specifications were correct — we built a demo that proves they exist and parse. Only after this verification does Phase 1 begin. This is "prove all things" in action.
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+****
+[.lead]
+*Where to go from here:*
+
+.Related Documents
+[cols="^1,3,4",options="header,autowidth",frame="topbot"]
+|===
+| | Document | Purpose
+
+| icon:code[]
+| *link:../main.go[main.go]*
+| The demo program source code
+
+| icon:cog[]
+| *link:../Makefile[Makefile]*
+| Build targets (build, run, test, diagnostic, status)
+
+| icon:book[]
+| *link:demo-config-api.adoc[demo-config API Reference]*
+| Public API for this demo (diagnostic functions)
+
+| icon:book[]
+| *link:{loader-api}[Config Loader API Reference]*
+| The config loader package this demo uses
+
+| icon:code[]
+| *link:{loader-go}[loader.go]*
+| Config loader implementation source
+
+| icon:file-text[]
+| *link:{phase-0-plan}[{phase} Implementation Plan]*
+| Detailed planning document
+
+| icon:file-text[]
+| *link:{kingdom-plan}[Kingdom Technology Plan]*
+| Full implementation roadmap (Phases 0-8)
+|===
+
+.Additional Resources
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Resource | Purpose
+
+| link:demo-config-api.adoc[demo-config API Reference]
+| Public API functions for this demo
+
+| link:{loader-test}[loader_test.go]
+| Test patterns showing API usage
+
+| link:{go-work}[go.work]
+| Go workspace configuration
+
+| link:{devlogs}[devlogs/]
+| Development history and decisions
+|===
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[.text-center]
+--
+*<<_top,icon:arrow-up[] Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {revdate}
+
+'''
+
+_"{verse-kjv-text}"_ — *{verse-ref}*
+
+*The foundation is proven. Now we build.*
+
+--
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

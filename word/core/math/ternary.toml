@@ -137,50 +137,6 @@
 # =============================================================================
 
 # ═════════════════════════════════════════════════════════════════════════════
-# GENERATION METADATA — Instructions for generate-config
-# ═════════════════════════════════════════════════════════════════════════════
-# This section tells the generator how to produce C headers from this TOML.
-# Underscore prefix (_) indicates internal metadata, not data content.
-
-[_generate]
-enabled = true
-output = "ternary_math.gen.h"
-order = 0  # Foundation — generates first, no dependencies
-guard = "TERNARY_MATH_GEN_H"
-description = "Ternary math constants"
-template = "complex"  # Has arrays that need special formatting
-
-# Sections to generate (in order)
-# Each section.field becomes SECTION_FIELD in C
-# Use dotted names for nested sections (e.g., "operations.half_adder")
-sections = [
-    "trit",                   # TRIT_STATES, TRIT_BASE, TRIT_VALUES
-    "packing",                # PACKING_TRITS_PER_BYTE, power tables
-    "arithmetic",             # ARITHMETIC_NEGATION, multiplication tables
-    "operations.half_adder",  # HALF_ADDER_SUM, HALF_ADDER_CARRY
-    "operations.full_adder",  # FULL_ADDER_SUM, FULL_ADDER_CARRY_OUT
-    "temporal_states.structure", # TEMPORAL_BASE_COUNT, etc.
-    "dimensions.temporal",    # DIMENSION_TEMPORAL
-    "dimensions.spatial",     # DIMENSION_SPATIAL
-    "dimensions.material"     # DIMENSION_MATERIAL
-]
-
-# Array fields that need special C formatting
-# Format: "field" for top-level arrays in each section
-arrays = [
-    "values",           # trit.values → 1D array
-    "trit5_powers",     # packing.* → 1D arrays
-    "trit9_powers",
-    "trit27_powers",
-    "negation",         # arithmetic.* → 1D and 2D arrays
-    "multiplication",
-    "addition_no_carry",
-    "sum",              # operations.*.sum → 2D and 3D arrays
-    "carry",
-    "carry_out"
-]
-
-# ═════════════════════════════════════════════════════════════════════════════
 # TRIT CORE — The Three Values of Balanced Ternary
 # ═════════════════════════════════════════════════════════════════════════════
 # "A threefold cord is not quickly broken." — Ecclesiastes 4:12
@@ -447,6 +403,50 @@ formula     = "trit = (value % 3) - 1; value = value / 3"
 # =============================================================================
 # END CONTENT
 # =============================================================================
+
+# =============================================================================
+# GENERATION METADATA
+# =============================================================================
+# Tells the generator how to produce C header from this spec.
+# Underscore prefix (_) indicates internal metadata, not data content.
+
+[_generate]
+enabled = true
+output = "ternary_math.gen.h"
+order = 0  # Foundation — generates first, no dependencies
+guard = "TERNARY_MATH_GEN_H"
+description = "Ternary math constants"
+template = "complex"  # Has arrays that need special formatting
+
+# Sections to generate (in order)
+# Each section.field becomes SECTION_FIELD in C
+# Use dotted names for nested sections (e.g., "operations.half_adder")
+sections = [
+    "trit",                   # TRIT_STATES, TRIT_BASE, TRIT_VALUES
+    "packing",                # PACKING_TRITS_PER_BYTE, power tables
+    "arithmetic",             # ARITHMETIC_NEGATION, multiplication tables
+    "operations.half_adder",  # HALF_ADDER_SUM, HALF_ADDER_CARRY
+    "operations.full_adder",  # FULL_ADDER_SUM, FULL_ADDER_CARRY_OUT
+    "temporal_states.structure", # TEMPORAL_BASE_COUNT, etc.
+    "dimensions.temporal",    # DIMENSION_TEMPORAL
+    "dimensions.spatial",     # DIMENSION_SPATIAL
+    "dimensions.material"     # DIMENSION_MATERIAL
+]
+
+# Array fields that need special C formatting
+# Format: "field" for top-level arrays in each section
+arrays = [
+    "values",           # trit.values → 1D array
+    "trit5_powers",     # packing.* → 1D arrays
+    "trit9_powers",
+    "trit27_powers",
+    "negation",         # arithmetic.* → 1D and 2D arrays
+    "multiplication",
+    "addition_no_carry",
+    "sum",              # operations.*.sum → 2D and 3D arrays
+    "carry",
+    "carry_out"
+]
 
 # =============================================================================
 # CLOSING

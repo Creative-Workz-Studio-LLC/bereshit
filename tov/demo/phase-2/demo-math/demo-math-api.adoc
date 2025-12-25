@@ -1,0 +1,554 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-tov-demo-phase2-demo-math-api
+:title: demo-math API Reference
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: a-01.00
+:revdate: 2025-12-14
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-14
+:updated: 2025-12-14
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/tov/demo/phase-2/demo-math/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/tov/demo/phase-1/demo-trit/demo-trit-api.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: api, demo, phase-2, math, arithmetic, comparison, conversion, normalization, calculus
+:keywords: demo-math, Phase 2, API reference, math operations, 5 families
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Defines the public API for demo-math demonstration program
+:description: Technical reference for demo-math - functions for running family demos, inspecting results, and integrating into educational games
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: A false balance is abomination to the LORD: but a just weight is his delight. — Proverbs 11:1
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Portable validation API for libtrit math operations (5 families)*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Version-{version}-blue?style=flat[Version]
+image:https://img.shields.io/badge/Steps-21_Demonstrated-success?style=flat[Steps]
+
+_"A just weight is his delight."_ — *Proverbs 11:1*
+
+'''
+
+*<<overview,Overview>>* • *<<functions,Functions>>* • *<<usage,Usage>>* • *<<references,References>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+The `demo-math` programfootnote:[Binary path: `tov/demo/phase-2/demo-math/demo-math`] validates the libtrit math operations through 21 demonstration steps across 5 families. It provides a **portable public API** that can be called by games, tutorials, and SDK examples.
+
+[IMPORTANT]
+====
+*This is a demo program, not a library.* It validates libtrit math operations work correctly. The API lets external code run specific family demos and inspect results.
+====
+
+[NOTE]
+====
+*What this provides:*
+
+* ✓ Run all 21 demonstration steps (`demo_math_run_all`)
+* ✓ Test individual families (arithmetic, comparison, conversion, normalization, calculus)
+* ✓ Test temporal integration (calculus + TIME layer)
+* ✓ Inspect pass/fail counts
+* ✓ Reset for repeated runs
+====
+
+'''
+
+[[quick-start]]
+=== Quick Start
+
+[source,c]
+----
+// Link against demo-math to use the validation API
+
+int main(void) {
+    // Run all family demos
+    int failures = demo_math_run_all();
+
+    if (failures == 0) {
+        printf("All 21 steps passed!\n");
+    }
+
+    // Or run specific families
+    demo_math_arithmetic();      // Family 1: half/full adder
+    demo_math_comparison();      // Family 2: ternary cmp
+    demo_math_conversion();      // Family 3: trit↔int
+    demo_math_normalization();   // Family 4: 7 health levels
+    demo_math_calculus();        // Family 5: change detection
+    demo_math_integration();     // Calculus + temporal context
+
+    // Inspect results
+    printf("Passed: %d\n", demo_math_get_passed());
+    printf("Failed: %d\n", demo_math_get_failed());
+
+    return failures;
+}
+----
+
+'''
+
+[[what-this-provides]]
+=== What This Document Provides
+
+[cols="^1,3,4,3",options="header"]
+|===
+| | Category | What You'll Find | Who It Serves
+
+| 🔧
+| *Functions*
+| Family runners, result inspectors, reset
+| Developers integrating demo into apps
+
+| 📖
+| *Usage Patterns*
+| Game integration, educational examples
+| Game developers, tutorial authors
+
+| 🎯
+| *Live Output*
+| Actual demonstration output
+| Anyone verifying libtrit math works
+|===
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[families-demonstrated]]
+== Families Demonstrated
+
+demo-math validates each of the 5 math operation families added in Phase 2.
+
+[cols="^1,2,3,3",options="header"]
+|===
+| Family | Function | Steps | What's Validated
+
+| **Arithmetic**
+| `demo_math_arithmetic()`
+| 3
+| Half/full adder with carry
+
+| **Comparison**
+| `demo_math_comparison()`
+| 3
+| Ternary cmp returning trit_t
+
+| **Conversion**
+| `demo_math_conversion()`
+| 3
+| trit↔int, stored↔true
+
+| **Normalization**
+| `demo_math_normalization()`
+| 3
+| 7 levels, Hebrew names, emoji
+
+| **Calculus**
+| `demo_math_calculus()`
+| 5
+| difference, rate, accumulate, trend
+
+| **Integration**
+| `demo_math_integration()`
+| 4
+| Calculus + temporal context
+|===
+
+'''
+
+[[functions]]
+== Functions
+
+All functions are declared in `main.c` and available when linking against demo-math.
+
+[[demo-runners]]
+=== Demo Runners
+
+*Run all demos:*
+
+[source,c]
+----
+int demo_math_run_all(void);  // Run all 21 steps, return failure count
+----
+
+*Run individual families:*
+
+[source,c]
+----
+int demo_math_arithmetic(void);      // Family 1: half/full adder (3 steps)
+int demo_math_comparison(void);      // Family 2: ternary cmp (3 steps)
+int demo_math_conversion(void);      // Family 3: trit↔int (3 steps)
+int demo_math_normalization(void);   // Family 4: 7 health levels (3 steps)
+int demo_math_calculus(void);        // Family 5: change detection (5 steps)
+int demo_math_integration(void);     // Calculus + temporal (4 steps)
+----
+
+'''
+
+[[result-inspection]]
+=== Result Inspection
+
+[source,c]
+----
+int demo_math_get_passed(void);  // Get count of demos passed
+int demo_math_get_failed(void);  // Get count of failures
+void demo_math_reset(void);      // Reset counters for fresh run
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[usage]]
+== Usage Patterns
+
+[[game-integration]]
+=== Educational Game Integration
+
+Use demo-math as level validation in an educational game.
+
+[source,c]
+----
+// Level 1: Teach arithmetic
+if (demo_math_arithmetic() == 0) {
+    show_message("You understand carry-aware addition!");
+    unlock_next_level();
+}
+
+// Level 2: Teach comparison
+if (demo_math_comparison() == 0) {
+    show_message("You understand ternary comparison!");
+    unlock_next_level();
+}
+
+// Final boss: All families
+demo_math_reset();  // Fresh start
+if (demo_math_run_all() == 0) {
+    show_completion_screen();
+    printf("Passed: %d steps\n", demo_math_get_passed());
+}
+----
+
+'''
+
+[[progressive-unlocking]]
+=== Progressive Family Unlocking
+
+Unlock families as students master each one.
+
+[source,c]
+----
+// Foundation families first
+if (demo_math_arithmetic() == 0 && demo_math_comparison() == 0) {
+    unlock_conversion_family();
+}
+
+// Advanced families after conversion
+if (demo_math_conversion() == 0) {
+    unlock_normalization_family();
+    unlock_calculus_family();
+}
+
+// Temporal integration as final
+demo_math_reset();
+if (demo_math_run_all() == 0) {
+    unlock_temporal_integration();
+}
+----
+
+'''
+
+[[continuous-integration]]
+=== CI/CD Integration
+
+Use as a validation step in build pipelines.
+
+[source,c]
+----
+int main(void) {
+    int failures = demo_math_run_all();
+
+    if (failures > 0) {
+        fprintf(stderr, "FAILED: %d steps\n", failures);
+        return 1;  // Non-zero exit = CI failure
+    }
+
+    printf("PASSED: %d steps\n", demo_math_get_passed());
+    return 0;  // Zero exit = CI success
+}
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[quick-reference]]
+== Quick Reference
+
+*All Functions:*
+[cols="3,4",options="header"]
+|===
+| Function | Purpose
+
+| `demo_math_run_all()`
+| Run all 21 steps, return failure count
+
+| `demo_math_arithmetic()`
+| Family 1: half/full adder (3 steps)
+
+| `demo_math_comparison()`
+| Family 2: ternary cmp (3 steps)
+
+| `demo_math_conversion()`
+| Family 3: trit↔int (3 steps)
+
+| `demo_math_normalization()`
+| Family 4: 7 health levels (3 steps)
+
+| `demo_math_calculus()`
+| Family 5: change detection (5 steps)
+
+| `demo_math_integration()`
+| Calculus + temporal (4 steps)
+
+| `demo_math_get_passed()`
+| Get passed step count
+
+| `demo_math_get_failed()`
+| Get failed step count
+
+| `demo_math_reset()`
+| Reset counters for fresh run
+|===
+
+*Build & Run:*
+[source,bash]
+----
+# Build libtrit first
+cd word/work/pkg/trit && make
+
+# Build and run demo
+cd tov/demo/phase-2/demo-math
+make
+./demo-math
+----
+
+*Sample Output:*
+[source]
+----
+════════════════════════════════════════════════════════════════
+Phase 2 Demo: Mathematical Operations (5 Families)
+════════════════════════════════════════════════════════════════
+
+  Demonstrating 5 math operation families + temporal integration
+
+...
+
+════════════════════════════════════════════════════════════════
+Demonstration Complete
+════════════════════════════════════════════════════════════════
+
+  Steps demonstrated: 21
+
+  "A just weight is his delight." — Proverbs 11:1
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Just weights, accurate measures.* We don't claim the math operations work — we prove it by demonstrating 21 steps across 5 families. The accuracy validates the design.
+====
+
+_"A false balance is abomination to the LORD: but a just weight is his delight."_ — *Proverbs 11:1*
+
+*Applied:* This demo program is living proof that libtrit math works:
+
+* **21 demonstration steps** — concrete evidence, not theory
+* **Family-by-family validation** — arithmetic, comparison, conversion, normalization, calculus each proven
+* **Temporal integration** — calculus operations working with TIME layer
+* **Health level verification** — 7 levels with Hebrew names and emoji
+
+The fruit: math operations with accurate measures — working code that honors God through precision.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+[[related-documents]]
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📐
+| *link:main.c[main.c]*
+| Demo source (4-block C file with public API)
+
+| 📚
+| *link:../../../../word/work/pkg/trit/include/math.h[math.h]*
+| Math operations header (what demo-math validates)
+
+| 📖
+| *link:README.adoc[README.adoc]*
+| Demo overview and 5 families architecture
+
+| 📋
+| *link:../../../../void/planning/development/plans/phase-2-implementation-plan.adoc[Phase 2 Implementation Plan]*
+| Planning document with full Phase 2 context
+|===
+
+[[external-resources]]
+=== External Resources
+
+[cols="2,5",options="header"]
+|===
+| Resource | Purpose
+
+| *link:../../../../word/work/pkg/trit/README.adoc[libtrit README]*
+| Library overview and testing philosophy
+
+| *link:../../../../tov/demo/phase-1/demo-trit/[Phase 1 Demo]*
+| Three-layer architecture demo (prior phase)
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:main.c[main.c] — Demo source with public API functions
+* link:README.adoc[README.adoc] — Demo overview and 5 families
+* link:Makefile[Makefile] — Build configuration
+* link:../../../../word/work/pkg/trit/include/math.h[math.h] — Math operations this demo validates
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"{biblical_foundation}"_
+
+*21 steps demonstrated. The 5 math families work.*
+
+--
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

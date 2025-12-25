@@ -1,0 +1,375 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# TEMPLATE: TOML Configuration File (4-Block Structure for Config Files)
+# Key: LANG-TEMPLATE-011
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# This is a TEMPLATE file - copy and modify for new TOML configurations.
+# Replace all [bracketed] placeholders with actual content.
+# Rename to appropriate config name (e.g., logging.toml, parser.toml).
+#
+# Derived from: templates/code/config/CODE-CONFIG-001-CONFIG-toml.toml (root template)
+# See: standards/code/4-block/ for complete documentation
+#
+# Compiler-Specific Adaptations:
+#   - Configuration for compiler phases (lexer, parser, semantic, codegen)
+#   - Integration with CPI-SI health scoring
+#   - Behavioral tuning vs language definition separation
+#   - Runtime configurable options for compiler behavior
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# # Biblical Foundation
+#
+# Scripture: "For which of you, intending to build a tower, sitteth not down
+# first, and counteth the cost, whether he have sufficient to finish it?"
+# - Luke 14:28
+#
+# Principle: Configuration is counting the cost before building. It separates
+# what CAN change (behavior) from what MUST remain fixed (definition).
+# The compiler's language definition is immutable truth; its behavior is tunable.
+#
+# Anchor: "To every thing there is a season, and a time to every purpose
+# under the heaven." - Ecclesiastes 3:1
+#
+# # CPI-SI Identity
+#
+# Component Type: [Ladder/Baton/Rails - choose based on config role]
+#
+# Compiler Phase Guidance:
+#   - Lexer config: Rails (controls scanning behavior across all tokens)
+#   - Parser config: Rails (controls parsing behavior across all rules)
+#   - Semantic config: Rails (controls type checking behavior)
+#   - Codegen config: Rails (controls code generation options)
+#   - Logging config: Rails (infrastructure for all phases)
+#   - Health config: Rails (scoring infrastructure)
+#
+# Role: [Specific responsibility in compiler architecture]
+#
+# Paradigm: CPI-SI framework component - compiler configuration
+#
+# # Authorship & Lineage
+#
+#   - Architect: Seanje Lenox-Wise (language design)
+#   - Implementation: Nova Dawn (CPI-SI)
+#   - Created: [YYYY-MM-DD]
+#   - Version: [MAJOR.MINOR.PATCH]
+#   - Modified: [YYYY-MM-DD - what changed]
+#
+# # Purpose & Function
+#
+# Purpose: [What behavior does this configuration control?]
+#
+# Core Design: [Architectural pattern - behavioral tuning, feature flags, etc.]
+#
+# Key Features:
+#
+#   - [Major capability 1 this config enables]
+#   - [Major capability 2 this config enables]
+#   - [Major capability 3 this config enables]
+#
+# # Configuration Philosophy
+#
+# Design Principle: Language Definition in Code, Behavioral Tuning in Config
+#
+# What STAYS in code (immutable truth):
+#   - Token types and their meanings
+#   - Grammar rules and syntax
+#   - Type system definitions
+#   - Semantic analysis rules
+#
+# What goes in config (tunable behavior):
+#   - Scanning limits and thresholds
+#   - Logging verbosity
+#   - Health scoring weights
+#   - Output formatting preferences
+#   - Debug/development toggles
+#
+# # Health Scoring
+#
+# Configuration Impact: [How misconfigurations affect system health]
+#
+# Validation Behavior:
+#   - Invalid value: [What happens - error? fallback to default?]
+#   - Missing section: [What happens - error? use defaults?]
+#   - Type mismatch: [What happens - parse error? coercion?]
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# SETUP
+# =============================================================================
+#
+# Configuration file identity and system linkage.
+# Establishes what system reads this file and how it's loaded.
+#
+# File Identity:
+#   - Key: [CONFIG-KEY-###] (unique identifier for this config file)
+#   - Consumer: [package/system that reads this - e.g., pkg/logging]
+#   - Loader: [how it's loaded - e.g., config.Load(), embed.FS]
+#
+# Related Files:
+#   - Code: [path/to/config.go - Go code that parses this]
+#   - Docs: [path/to/docs - documentation for these settings]
+#   - Tests: [path/to/config_test.go - tests for config loading]
+#
+# Loading Behavior:
+#   - [When loaded - startup? on-demand? hot-reload?]
+#   - [What happens if file missing - error? defaults?]
+#   - [Environment overrides? - e.g., CONFIG_PATH env var]
+#
+# =============================================================================
+# END SETUP
+# =============================================================================
+
+# =============================================================================
+# BODY
+# =============================================================================
+#
+# Configuration sections organized by concern.
+# Each [section] groups related settings for clarity and maintenance.
+#
+# Organization Pattern:
+#   - Core settings first (most commonly modified)
+#   - Feature settings second (optional capabilities)
+#   - Advanced settings last (rarely modified)
+#
+# Section Naming:
+#   - Lowercase with underscores for multi-word: [feature_flags]
+#   - Match the domain/concept being configured
+#   - Be consistent with code that reads these sections
+#
+# Extension Point:
+# To add a new configuration section:
+#   1. Add [section_name] header with descriptive comment
+#   2. Add key = value pairs with inline comments
+#   3. Update the Go loader to read the new section
+#   4. Update documentation and tests
+#   5. Consider health scoring implications
+
+# -----------------------------------------------------------------------------
+# [Section 1 Name] - [Brief Description]
+# -----------------------------------------------------------------------------
+# [Detailed explanation of what this section controls]
+# [Why these settings are grouped together]
+
+[section_name]
+
+# [Setting description - what it controls, valid values, default]
+# Type: [string/int/float/bool/array/table]
+# Default: [default value if not specified]
+# Example: setting_name = "value"
+# setting_name = "[value]"
+
+# [Another setting description]
+# Type: [type]
+# Default: [default]
+# another_setting = [value]
+
+# -----------------------------------------------------------------------------
+# [Section 2 Name] - [Brief Description]
+# -----------------------------------------------------------------------------
+# [Detailed explanation]
+
+[another_section]
+
+# [Setting description]
+# some_setting = "[value]"
+
+# -----------------------------------------------------------------------------
+# Nested Table Example - [Brief Description]
+# -----------------------------------------------------------------------------
+# For complex configuration with sub-categories.
+# Access in code: config.Parent.Child.Setting
+
+[parent.child]
+
+# [Setting in nested table]
+nested_setting = "[value]"
+
+# -----------------------------------------------------------------------------
+# Array of Tables Example - [Brief Description]
+# -----------------------------------------------------------------------------
+# For lists of structured items (e.g., multiple handlers, rules).
+# Each [[array_name]] creates a new item in the array.
+
+# [[handlers]]
+# name = "handler1"
+# enabled = true
+
+# [[handlers]]
+# name = "handler2"
+# enabled = false
+
+# =============================================================================
+# END BODY
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# -----------------------------------------------------------------------------
+# Configuration Validation
+# -----------------------------------------------------------------------------
+#
+# Verify configuration is correctly formatted and valid:
+#
+#   # Syntax check (TOML parser)
+#   tomlv [config-file].toml           # Using tomlv tool
+#   python -c "import toml; toml.load('[config-file].toml')"  # Python
+#   go run validate_config.go          # Custom Go validator
+#
+# Integration Verification:
+#   # Run with config to verify behavior
+#   [command] --config=[config-file].toml
+#
+#   # Run tests that exercise configuration
+#   go test ./path/to/package -v
+#
+# Common Issues:
+#
+#   "invalid TOML" - Check for:
+#     - Missing quotes around strings with special characters
+#     - Incorrect array syntax (use [item] not item[])
+#     - Tab characters (TOML prefers spaces)
+#     - Duplicate keys in same section
+#
+#   "key not found" - Check for:
+#     - Section name matches code expectation
+#     - Key spelling matches struct field tags
+#     - Nested path is correct (parent.child.key)
+#
+#   "type mismatch" - Check for:
+#     - Strings have quotes: key = "value"
+#     - Numbers don't have quotes: key = 42
+#     - Booleans are lowercase: key = true
+#     - Arrays use brackets: key = [1, 2, 3]
+#
+# -----------------------------------------------------------------------------
+# Modification Policy
+# -----------------------------------------------------------------------------
+#
+# Safe to Modify:
+#   ✅ Change values within documented valid ranges
+#   ✅ Add new keys (if code supports them)
+#   ✅ Add comments for clarity
+#   ✅ Reorder sections (TOML is order-independent)
+#
+# Modify with Care:
+#   ⚠️ Changing section names - breaks code looking for old names
+#   ⚠️ Changing key names - breaks struct field mapping
+#   ⚠️ Changing value types - may cause parse errors
+#   ⚠️ Removing keys - may cause nil pointer errors if required
+#
+# NEVER Modify:
+#   ❌ 4-block documentation structure
+#   ❌ Remove required keys without code changes
+#   ❌ Change types without updating Go structs
+#   ❌ Add keys not supported by code (silently ignored = confusion)
+#
+# -----------------------------------------------------------------------------
+# Default Values
+# -----------------------------------------------------------------------------
+#
+# The code that loads this configuration should define sensible defaults
+# for all optional settings. This file documents what those defaults are.
+#
+# Pattern: Code defines defaults, config overrides them.
+#
+# Default Documentation Format:
+#   [section]
+#   # key = default_value  # Uncomment to override default
+#
+# This makes it clear what the default is while allowing easy customization.
+#
+# -----------------------------------------------------------------------------
+# Environment Integration
+# -----------------------------------------------------------------------------
+#
+# Configuration can be overridden by environment variables:
+#
+#   [Environment variable pattern - e.g., PREFIX_SECTION_KEY]
+#   [How env vars map to config keys]
+#   [Priority: env var > config file > code default]
+#
+# Example:
+#   OMNICODE_LOGGING_VERBOSE=true overrides [logging] verbose = false
+#
+# -----------------------------------------------------------------------------
+# Integration Notes
+# -----------------------------------------------------------------------------
+#
+# This configuration file should:
+#   - Live alongside the code that reads it (pkg/config/[name]/)
+#   - Be committed to version control
+#   - Have a corresponding Go struct for type-safe access
+#   - Be loaded early in application startup
+#
+# Related files:
+#   - [config.go]: Go struct definitions and loader
+#   - [config_test.go]: Tests for config loading and validation
+#   - [types.go]: Type definitions if complex
+#   - [accessors.go]: Convenience methods for config access
+#
+# Code Integration Pattern:
+#
+#   // In Go code
+#   type Config struct {
+#       SectionName struct {
+#           SettingName string `toml:"setting_name"`
+#       } `toml:"section_name"`
+#   }
+#
+#   cfg, err := config.Load("path/to/config.toml")
+#   if err != nil {
+#       return fmt.Errorf("load config: %w", err)
+#   }
+#   value := cfg.SectionName.SettingName
+#
+# -----------------------------------------------------------------------------
+# Closing Note
+# -----------------------------------------------------------------------------
+#
+# This configuration controls [describe scope - e.g., "lexer scanning behavior",
+# "parser error recovery", "health scoring weights"]. Changes affect [describe
+# impact - e.g., "all tokenization", "AST construction", "health reporting"].
+#
+# Compiler Configuration Philosophy:
+#   - Language definition stays in code (compile-time, type-safe)
+#   - Behavioral tuning goes in config (runtime configurable)
+#   - If it changes HOW the compiler works, it's config
+#   - If it changes WHAT OmniCode IS, it's code
+#
+# Prefer sensible defaults. Most users should never need to modify these.
+# Configuration exists for debugging, profiling, and edge-case tuning.
+#
+# "In the beginning was the Word..." - John 1:1
+#
+# -----------------------------------------------------------------------------
+# Quick Reference: Configuration Examples
+# -----------------------------------------------------------------------------
+#
+# Example 1: Development Configuration
+#   [section_name]
+#   setting_name = "dev_value"
+#   debug_enabled = true
+#
+# Example 2: Production Configuration
+#   [section_name]
+#   setting_name = "prod_value"
+#   debug_enabled = false
+#
+# Example 3: Minimal Configuration (rely on defaults)
+#   # Only override what you need
+#   [section_name]
+#   setting_name = "custom_value"
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

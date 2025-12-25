@@ -1,0 +1,76 @@
+# OmniCode Template Chain Hierarchy
+# Reference file for propagate-change skill
+
+# ============================================================================
+# CHAIN LEVELS (Top to Bottom)
+# ============================================================================
+
+# Level 0: SYNTAX SPECIFICATION
+# The master definition - changes here affect EVERYTHING
+LEVEL_0="bereshit/word/omni/B-word-omni-syntax.omni"
+
+# Level 1: UNIVERSAL TEMPLATE
+# Common foundation - changes affect all specialized templates
+LEVEL_1="bereshit/word/omni/seed/B-word-omni-seed-universal.omni"
+
+# Level 2: SPECIALIZED TEMPLATES
+# Type-specific patterns - changes affect format templates and documents of this type
+LEVEL_2_CODE="bereshit/word/omni/seed/B-word-omni-seed-code.omni"
+LEVEL_2_DOC="bereshit/word/omni/seed/B-word-omni-seed-documentation.omni"
+LEVEL_2_INTERFACE="bereshit/word/omni/seed/B-word-omni-seed-interface.omni"
+LEVEL_2_FOLDER="bereshit/word/omni/seed/B-word-omni-seed-folder.omni"
+LEVEL_2_DATA_3="bereshit/word/omni/seed/B-word-omni-seed-data-3block.omni"
+LEVEL_2_DATA_4="bereshit/word/omni/seed/B-word-omni-seed-data-4block.omni"
+LEVEL_2_DATA_5="bereshit/word/omni/seed/B-word-omni-seed-data-5block.omni"
+
+# Level 3: FORMAT TEMPLATES
+# Language/format specific - changes affect documents in that format
+LEVEL_3_ADOC="bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc"
+LEVEL_3_GO="bereshit/word/seed/go/B-word-seed-go-executable.go"
+# Future: markdown, c, rust, etc.
+
+# Level 4: ACTUAL DOCUMENTS
+# Leaf nodes - changes affect nothing downstream
+# Examples: bereshit/root.adoc, bereshit/root.omni, etc.
+
+# ============================================================================
+# PROPAGATION RULES
+# ============================================================================
+
+# Rule 1: Changes flow DOWNWARD
+#   Syntax spec → Universal → Specialized → Format → Documents
+
+# Rule 2: Each level MAY adapt the parent
+#   Specialized templates adapt universal for their type
+#   Format templates adapt specialized for their format
+#   Documents implement format templates for specific content
+
+# Rule 3: derives_from tracks the chain
+#   Every non-root file should have derives_from pointing to parent
+
+# Rule 4: Impact increases with level
+#   Level 0 change = review everything
+#   Level 4 change = no propagation needed
+
+# ============================================================================
+# IMPACT MATRIX
+# ============================================================================
+
+# Changed File Level | Direct Impact | Indirect Impact
+# -------------------|---------------|----------------
+# 0 (Syntax)         | Universal     | All specialized, format, documents
+# 1 (Universal)      | Specialized   | All format, documents
+# 2 (Specialized)    | Format        | Documents of this type
+# 3 (Format)         | Documents     | None
+# 4 (Document)       | None          | None
+
+# ============================================================================
+# QUICK REFERENCE
+# ============================================================================
+
+# Find level of a file:
+# - Contains "syntax" → Level 0
+# - Contains "universal" → Level 1
+# - Contains "seed-code/doc/interface/folder/data" → Level 2
+# - In word/seed/ but format-specific → Level 3
+# - Actual content file → Level 4

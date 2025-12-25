@@ -1,0 +1,211 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/session/consolidation.schema.json",
+  "title": "Session Consolidation - Processing Workspace",
+  "description": "Transform experience into meaning during rest/sleep. Active during consolidation, archived after completion.",
+  "version": "1.0.0",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "consolidation_id",
+    "triggered_at",
+    "instance_id",
+    "sessions_processed"
+  ],
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "consolidation_id": {
+      "type": "string",
+      "description": "Unique identifier for this consolidation run",
+      "minLength": 1
+    },
+    "triggered_at": {
+      "type": "string",
+      "description": "When consolidation started (ISO-8601)",
+      "format": "date-time"
+    },
+    "instance_id": {
+      "type": "string",
+      "description": "Which instance is consolidating",
+      "minLength": 1
+    },
+    "sessions_processed": {
+      "type": "array",
+      "description": "Session IDs being processed",
+      "items": {
+        "type": "string"
+      }
+    },
+    "session_contexts": {
+      "type": "object",
+      "description": "Summary of contexts from processed sessions",
+      "properties": {
+        "projects_involved": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Project IDs from sessions"
+        },
+        "project_types": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Types of work consolidated"
+        },
+        "workflows_used": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Workflows observed across sessions"
+        },
+        "circadian_phases": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "When work happened"
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "description": "Decisions made during consolidation",
+      "items": {
+        "type": "object",
+        "required": ["source_session", "destination", "reason"],
+        "properties": {
+          "source_session": {
+            "type": "string",
+            "description": "Session being processed"
+          },
+          "source_project": {
+            "type": "string",
+            "description": "Project ID from session"
+          },
+          "source_activity": {
+            "type": "string",
+            "description": "Specific activity ID if applicable"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Where this is going",
+            "enum": ["significant", "patterns", "compressed", "archive"]
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why this decision was made",
+            "minLength": 1
+          },
+          "context": {
+            "type": "object",
+            "description": "Context from session → project",
+            "properties": {
+              "project_type": {
+                "type": "string"
+              },
+              "workflow_used": {
+                "type": "string"
+              }
+            }
+          },
+          "journal_prompt": {
+            "type": "string",
+            "description": "Optional prompt for reflection"
+          }
+        }
+      }
+    },
+    "patterns_detected": {
+      "type": "array",
+      "description": "Patterns emerging during this consolidation",
+      "items": {
+        "type": "object",
+        "required": ["pattern_description", "evidence_sessions"],
+        "properties": {
+          "pattern_description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_sessions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence_projects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Projects where pattern observed"
+          },
+          "observed_in_contexts": {
+            "type": "object",
+            "description": "Contexts where pattern appears",
+            "properties": {
+              "project_types": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "workflows": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["emerging", "establishing", "validated"]
+          }
+        }
+      }
+    },
+    "significance_markers": {
+      "type": "array",
+      "description": "Significant moments identified",
+      "items": {
+        "type": "object",
+        "required": ["session_id", "type", "description"],
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Project ID from session"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["breakthrough", "failure", "milestone", "first"]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "project_context": {
+            "type": "string",
+            "description": "Project type from session → project"
+          }
+        }
+      }
+    },
+    "completion_status": {
+      "type": "string",
+      "description": "Status of this consolidation",
+      "enum": ["in_progress", "completed", "interrupted"]
+    },
+    "completed_at": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "format": "date-time"}
+      ],
+      "description": "When consolidation finished"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Discovery space for learning what consolidation needs",
+      "additionalProperties": true
+    }
+  }
+}

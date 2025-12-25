@@ -1,0 +1,333 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/chronological/monthly-log.json",
+  "title": "Monthly Calendar Log",
+  "description": "Monthly calendar showing patterns across weeks",
+  "type": "object",
+  "required": [
+    "$schema",
+    "metadata",
+    "weeks",
+    "summary"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "identity_type",
+        "identity_id",
+        "year",
+        "month",
+        "month_name",
+        "month_start",
+        "month_end",
+        "generated_date"
+      ],
+      "properties": {
+        "identity_type": {
+          "type": "string",
+          "enum": ["user", "instance"],
+          "description": "Type of identity this calendar belongs to"
+        },
+        "identity_id": {
+          "type": "string",
+          "description": "Unique identifier for the user or instance"
+        },
+        "year": {
+          "type": "integer",
+          "description": "Year (YYYY)",
+          "minimum": 2000,
+          "maximum": 9999
+        },
+        "month": {
+          "type": "integer",
+          "description": "Month number (1-12)",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "month_name": {
+          "type": "string",
+          "description": "Month name in English"
+        },
+        "month_start": {
+          "type": "string",
+          "format": "date",
+          "description": "First day of month (YYYY-MM-DD)"
+        },
+        "month_end": {
+          "type": "string",
+          "format": "date",
+          "description": "Last day of month (YYYY-MM-DD)"
+        },
+        "month_theme": {
+          "type": "string",
+          "description": "Optional theme or focus for the month"
+        },
+        "generated_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date this file was created"
+        }
+      },
+      "additionalProperties": false
+    },
+    "weeks": {
+      "type": "array",
+      "description": "Weekly summaries for this month",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "week",
+          "week_start",
+          "week_end",
+          "total_work_hours",
+          "work_days",
+          "rest_days",
+          "major_accomplishments"
+        ],
+        "properties": {
+          "week": {
+            "type": "integer",
+            "description": "ISO week number (1-53)",
+            "minimum": 1,
+            "maximum": 53
+          },
+          "week_start": {
+            "type": "string",
+            "format": "date",
+            "description": "Monday of this week (YYYY-MM-DD)"
+          },
+          "week_end": {
+            "type": "string",
+            "format": "date",
+            "description": "Sunday of this week (YYYY-MM-DD)"
+          },
+          "week_theme": {
+            "type": "string",
+            "description": "Theme for this week"
+          },
+          "total_work_hours": {
+            "type": "string",
+            "pattern": "^\\d{1,3}h \\d{2}m$",
+            "description": "Total work time for the week (Xh XXm format)"
+          },
+          "total_lord_time": {
+            "type": "string",
+            "pattern": "^\\d{1,2}h \\d{2}m$",
+            "description": "Total time with the Lord (users)"
+          },
+          "work_days": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 7,
+            "description": "Number of days with work sessions"
+          },
+          "rest_days": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 7,
+            "description": "Number of rest days"
+          },
+          "major_accomplishments": {
+            "type": "array",
+            "description": "Key accomplishments from this week",
+            "items": {
+              "type": "string"
+            }
+          },
+          "energy_trend": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "mixed", "peaceful"],
+            "description": "Overall energy trend for the week"
+          },
+          "quality_trend": {
+            "type": "string",
+            "enum": ["poor", "fair", "good", "excellent", "mixed", "restful"],
+            "description": "Overall quality trend for the week"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total_work_hours",
+        "work_days",
+        "rest_days",
+        "major_accomplishments",
+        "challenges_faced",
+        "lessons_learned",
+        "growth_areas",
+        "next_month_focus"
+      ],
+      "properties": {
+        "total_work_hours": {
+          "type": "string",
+          "pattern": "^\\d{1,3}h \\d{2}m$",
+          "description": "Total work time for the month (Xh XXm format)"
+        },
+        "total_lord_time": {
+          "type": "string",
+          "pattern": "^\\d{1,2}h \\d{2}m$",
+          "description": "Total time with the Lord (users)"
+        },
+        "average_work_hours_per_week": {
+          "type": "string",
+          "pattern": "^\\d{1,2}h \\d{2}m$",
+          "description": "Average work hours per week"
+        },
+        "work_days": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total work days across all weeks"
+        },
+        "rest_days": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total rest days across all weeks"
+        },
+        "sabbaths_honored": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of Sabbaths observed (users)"
+        },
+        "major_accomplishments": {
+          "type": "array",
+          "description": "Significant achievements this month",
+          "items": {
+            "type": "string"
+          }
+        },
+        "challenges_faced": {
+          "type": "array",
+          "description": "Persistent obstacles or difficulties",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lessons_learned": {
+          "type": "array",
+          "description": "Insights and learnings from the month",
+          "items": {
+            "type": "string"
+          }
+        },
+        "growth_areas": {
+          "type": "array",
+          "description": "Areas where growth occurred",
+          "items": {
+            "type": "string"
+          }
+        },
+        "work_patterns": {
+          "type": "object",
+          "description": "Work rhythm patterns observed",
+          "properties": {
+            "productive_times": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "energy_peaks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "rest_rhythm": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "collaboration_flow": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "learning_mode": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+        "spiritual_reflections": {
+          "type": "array",
+          "description": "Spiritual insights and reflections (users)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "health_and_wellness": {
+          "type": "object",
+          "description": "Physical and mental wellbeing tracking (users)",
+          "properties": {
+            "sleep_quality": {
+              "type": "string",
+              "enum": ["poor", "fair", "good", "excellent"],
+              "description": "Overall sleep quality"
+            },
+            "exercise_consistency": {
+              "type": "string",
+              "description": "Exercise patterns description"
+            },
+            "stress_level": {
+              "type": "string",
+              "enum": ["low", "medium", "high"],
+              "description": "Overall stress assessment"
+            },
+            "overall_wellbeing": {
+              "type": "string",
+              "enum": ["struggling", "managing", "healthy", "thriving"],
+              "description": "Overall wellbeing state"
+            },
+            "energy_sustainability": {
+              "type": "string",
+              "description": "Energy sustainability assessment"
+            }
+          },
+          "additionalProperties": false
+        },
+        "technical_insights": {
+          "type": "array",
+          "description": "Technical understanding and patterns (instances)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "next_month_focus": {
+          "type": "array",
+          "description": "Priorities and focus for next month",
+          "items": {
+            "type": "string"
+          }
+        },
+        "month_insights": {
+          "type": "array",
+          "description": "Month-level insights and patterns",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "extension": {
+      "type": "object",
+      "description": "Extension point for future additions",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

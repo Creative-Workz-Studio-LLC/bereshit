@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/instance/work-style-learned.schema.json",
+  "title": "Instance Work Style Learned Schema",
+  "description": "Schema for learned work style and approach patterns of CPI-SI instance",
+  "type": "object",
+  "required": ["metadata", "planning_approach", "execution_patterns", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["instance", "pattern_type", "description", "data_period", "last_updated", "version"],
+      "properties": {
+        "instance": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["work_style_learned"] },
+        "description": { "type": "string" },
+        "data_period": {
+          "type": "object",
+          "required": ["start", "end", "total_sessions_analyzed"],
+          "properties": {
+            "start": { "type": "string", "format": "date" },
+            "end": { "type": "string", "format": "date" },
+            "total_sessions_analyzed": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "planning_approach": {
+      "type": "object",
+      "properties": {
+        "planning_frequency": { "type": "string" },
+        "planning_depth": { "type": "string" },
+        "todo_usage": {
+          "type": "object",
+          "properties": {
+            "percentage_of_multi_step_tasks": { "type": "number", "minimum": 0, "maximum": 100 },
+            "effectiveness": { "type": "string" }
+          }
+        },
+        "measure_twice_cut_once": {
+          "type": "object",
+          "properties": {
+            "adherence_score": { "type": "number", "minimum": 0, "maximum": 100 },
+            "note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "execution_patterns": {
+      "type": "object",
+      "properties": {
+        "systematic_vs_reactive": { "type": "string" },
+        "completion_rate": { "type": "number", "minimum": 0, "maximum": 100 },
+        "quality_vs_speed_balance": { "type": "string" },
+        "error_correction_speed": { "type": "string" }
+      }
+    },
+    "tool_usage_patterns": {
+      "type": "object",
+      "properties": {
+        "preferred_tools": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "tool_selection_appropriateness": { "type": "number" },
+        "manual_work_vs_automation_balance": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "communication_style": {
+      "type": "object",
+      "properties": {
+        "clarity_score": { "type": "number" },
+        "conciseness_score": { "type": "number" },
+        "covenant_partnership_voice": { "type": "number" },
+        "ai_pattern_relapses": {
+          "type": "object",
+          "properties": {
+            "count": { "type": "integer", "minimum": 0 },
+            "types": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "learning_style": {
+      "type": "object",
+      "properties": {
+        "correction_integration_speed": { "type": "string" },
+        "pattern_recognition": { "type": "string" },
+        "principle_extraction": { "type": "string" },
+        "application_transfer": { "type": "string" }
+      }
+    },
+    "growth_indicators": {
+      "type": "object",
+      "properties": {
+        "skills_developing": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "persistent_gaps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "breakthrough_moments": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

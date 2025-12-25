@@ -1,0 +1,153 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/user/chronological-seasonal.schema.json",
+  "title": "User Chronological Seasonal Patterns Schema",
+  "description": "Schema for astronomical seasonal work patterns with celestial correlation",
+  "type": "object",
+  "required": ["metadata", "seasons", "seasonal_rhythms", "celestial_correlation", "annual_patterns", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["user", "pattern_type", "description", "data_period", "last_updated", "version", "biblical_foundation"],
+      "properties": {
+        "user": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["chronological_seasonal"] },
+        "description": { "type": "string" },
+        "data_period": {
+          "type": "object",
+          "required": ["start", "end", "years_analyzed"],
+          "properties": {
+            "start": { "type": "string", "format": "date" },
+            "end": { "type": "string", "format": "date" },
+            "years_analyzed": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "biblical_foundation": { "type": "string" }
+      }
+    },
+    "seasons": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "winter": { "$ref": "#/definitions/seasonPattern" },
+        "spring": { "$ref": "#/definitions/seasonPattern" },
+        "summer": { "$ref": "#/definitions/seasonPattern" },
+        "fall": { "$ref": "#/definitions/seasonPattern" }
+      }
+    },
+    "seasonal_rhythms": {
+      "type": "object",
+      "properties": {
+        "highest_productivity_season": { "type": "string" },
+        "lowest_activity_season": { "type": "string" },
+        "quality_variations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "duration_variations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "timing_shifts": {
+          "type": "object",
+          "properties": {
+            "note": { "type": "string" },
+            "winter_shift": { "type": "string" },
+            "summer_shift": { "type": "string" }
+          }
+        }
+      }
+    },
+    "celestial_correlation": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "daylight_alignment": {
+          "type": "object",
+          "properties": {
+            "working_during_daylight_percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+            "quality_during_daylight": { "type": "number", "minimum": -100, "maximum": 100 },
+            "note": { "type": "string" }
+          }
+        },
+        "seasonal_quality_impact": { "type": "string" },
+        "creation_wisdom": { "type": "string" }
+      }
+    },
+    "annual_patterns": {
+      "type": "object",
+      "properties": {
+        "year_start": {
+          "type": "object",
+          "properties": {
+            "months": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "note": { "type": "string" }
+          }
+        },
+        "mid_year": {
+          "type": "object",
+          "properties": {
+            "months": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "note": { "type": "string" }
+          }
+        },
+        "year_end": {
+          "type": "object",
+          "properties": {
+            "months": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "definitions": {
+    "seasonPattern": {
+      "type": "object",
+      "required": ["months", "session_count", "avg_health_score"],
+      "properties": {
+        "months": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "solstice": { "type": "string" },
+        "equinox": { "type": "string" },
+        "session_count": { "type": "integer", "minimum": 0 },
+        "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+        "avg_duration_minutes": { "type": "number", "minimum": 0 },
+        "daylight_hours": { "type": "string" },
+        "characteristics": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "celestial_note": { "type": "string" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -142,6 +142,9 @@
 //--- Project Headers ---
 // [Reserved: Foundational type - no internal dependencies]
 
+//--- Generated Headers ---
+#include "generated/ternary_math.gen.h"  // TOML-derived constants
+
 //--- External Libraries ---
 // [Reserved: Standard library only]
 

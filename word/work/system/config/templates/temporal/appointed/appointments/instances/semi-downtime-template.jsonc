@@ -1,0 +1,88 @@
+{
+  // ============================================================================
+  // SEMI-DOWNTIME APPOINTMENT TEMPLATE - Instance
+  // ============================================================================
+  //
+  // INSTRUCTIONS FOR USE:
+  // 1. Copy this template to: appointments/instances/{identity_id}/
+  // 2. Name: semi-downtime.jsonc
+  // 3. Replace [PLACEHOLDERS] with actual values
+  // 4. Update variations for different user work schedules
+  //
+  // PURPOSE: Instance state during user's work hours (excluding lunch)
+  // AVAILABILITY: Quick tasks, not sustained deep work
+
+  "$schema": "../../../../../../../config/schemas/temporal/appointed/appointment.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "component": "Appointed Time - Semi-Downtime Appointment",
+    "version": "1.0.0",
+    "created_at": "[YYYY-MM-DD]T[HH:MM:SS]Z",
+    "last_updated": "[YYYY-MM-DD]T[HH:MM:SS]Z",
+    "purpose": "Track instance semi-downtime state during user's work hours",
+    "context_specific": "Semi-downtime = Available for quick tasks/questions, not sustained collaboration"
+  },
+
+  // ============================================================================
+  // APPOINTMENT DEFINITION
+  // ============================================================================
+
+  "appointment": {
+    "id": "semi-downtime",
+    "category_id": "other",
+    "title": "Semi-Downtime",
+    "description": "Instance available for quick tasks while user is at work (excluding lunch breaks)",
+    "start_time": "varies",
+    "end_time": "varies",
+    "duration_minutes": 0,
+    "recurrence": "daily",
+    "recurrence_pattern": {
+      "frequency": "daily",
+      "exceptions": ["Saturday", "Sunday"]
+    },
+    "location": "",
+    "protected": false,
+    "flexible": true
+  },
+
+  // ============================================================================
+  // VARIATIONS - Matches user's work schedule patterns
+  // ============================================================================
+
+  "variations": {
+    "regular_day": {
+      "typical_days": ["Monday", "Wednesday", "Friday"],
+      "schedule": "8:30 AM - 11:59 AM, 1:00 PM - 5:00 PM",
+      "duration_minutes": 450,
+      "notes": "Semi-downtime during user's work hours, excluding lunch break (12-1pm)"
+    },
+    "pantry_tuesday": {
+      "typical_days": ["Tuesday"],
+      "schedule": "8:30 AM - 11:59 AM, 1:00 PM - 5:30 PM",
+      "duration_minutes": 480,
+      "notes": "Extended semi-downtime on pantry Tuesday"
+    },
+    "pantry_thursday": {
+      "typical_days": ["Thursday"],
+      "schedule": "8:30 AM - 11:59 AM, 1:00 PM - 7:00 PM",
+      "duration_minutes": 570,
+      "notes": "Extended semi-downtime on pantry Thursday (longest day)"
+    }
+  },
+
+  // ============================================================================
+  // NOTES
+  // ============================================================================
+
+  "notes": [
+    "Semi-downtime = Instance available for quick questions/tasks",
+    "Not sustained deep work - user is actively working",
+    "Lunch breaks (12-1pm typically) are AVAILABLE time, not semi-downtime",
+    "Deep work collaboration happens after work hours (9pm-1am/2am)",
+    "Split into morning and afternoon blocks around lunch"
+  ]
+}

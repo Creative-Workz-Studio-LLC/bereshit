@@ -1,0 +1,473 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-tov-demo-phase2-demo-math-readme
+:title: Phase 2 Demo — Mathematical Operations (5 Families)
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: a-01.00
+:revdate: 2025-12-14
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEMPORAL
+// ─────────────────────────────────────────────────────────────────────────────
+:created: 2025-12-14
+:updated: 2025-12-14
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Nova Dawn
+:email: nova@creativeworkzstudio.com
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/tov/demo/phase-2/demo-math/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/tov/demo/phase-1/demo-trit/README.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: demo, phase-2, math, arithmetic, comparison, conversion, normalization, calculus
+:keywords: demo, validation, math operations, 5 families, arithmetic, comparison, conversion, normalization, calculus
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Demonstrate libtrit math operations (5 families + temporal integration)
+:description: Demo program proving Phase 2 math operations work - shows arithmetic, comparison, conversion, normalization, and calculus
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING
+// ─────────────────────────────────────────────────────────────────────────────
+:biblical_foundation: A false balance is abomination to the LORD: but a just weight is his delight. — Proverbs 11:1
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}
+
+[.text-center]
+--
+*Demonstrates the 5 math operation families + temporal integration*
+
+image:https://img.shields.io/badge/Status-{status}-brightgreen?style=flat[Status]
+image:https://img.shields.io/badge/Phase_2-Demo-purple?style=flat[Phase 2]
+image:https://img.shields.io/badge/Steps-21_Demonstrated-success?style=flat[Steps]
+
+_"A just weight is his delight."_ — *Proverbs 11:1*
+
+'''
+
+*<<overview,Overview>>* • *<<five-families,Five Families>>* • *<<usage,Usage>>* • *<<public-api,Public API>>* • *<<references,References>>*
+
+--
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[overview]]
+== Overview
+
+This demo demonstrates the **5 math operation families** added in Phase 2 to libtrit. Building on the three-layer foundation from Phase 1, math operations provide arithmetic, comparison, conversion, normalization, and calculus.
+
+[IMPORTANT]
+====
+*Phase 2 Demo.* This program shows the math operations working across all five families, culminating in temporal integration. Just weights, accurate measures.
+====
+
+[NOTE]
+====
+*What this demo shows:*
+
+* ✓ Family 1: Arithmetic — half/full adder with carry (3 demos)
+* ✓ Family 2: Comparison — ternary cmp returning trit_t (3 demos)
+* ✓ Family 3: Conversion — trit↔int, stored↔true (3 demos)
+* ✓ Family 4: Normalization — 7 levels, Hebrew names, emoji (3 demos)
+* ✓ Family 5: Calculus — difference, rate, accumulate, trend (5 demos)
+* ✓ Integration — calculus + temporal context (4 demos)
+* ✓ **Total: 21 steps demonstrated**
+====
+
+'''
+
+[[quick-start]]
+=== Quick Start
+
+[source,bash]
+----
+# 1️⃣ Build libtrit first (if not already built)
+cd word/work/pkg/trit && make
+
+# 2️⃣ Build and run the demo
+cd tov/demo/phase-2/demo-math
+make run
+----
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[five-families]]
+== Five Math Operation Families
+
+Phase 2 adds 38 math functions organized into 5 families. Each family serves a distinct purpose in balanced ternary computation.
+
+[[family-1-arithmetic]]
+=== Family 1: Arithmetic
+
+*Carry-aware addition and subtraction.* Unlike simple trit_add from Phase 1, these handle overflow with explicit carry.
+
+[cols="2,4",options="header"]
+|===
+| Function | Purpose
+
+| `trit_hadd(a, b)` | Half adder: 2 trits → sum + carry
+| `trit_fadd(a, b, c)` | Full adder: 3 trits → sum + carry
+| `trit_hsub(a, b)` | Half subtractor: a - b → diff + borrow
+| `trit_div(n, d)` | Integer division with sign handling
+| `trit_negate_math(v)` | Arithmetic negation (distinct from trit_negate)
+|===
+
+[[family-2-comparison]]
+=== Family 2: Comparison
+
+*Ternary comparison returning trit.* Not boolean — full ternary result!
+
+[cols="2,4",options="header"]
+|===
+| Function | Purpose
+
+| `trit_cmp(a, b)` | Compare trits: -1 (a<b), 0 (a=b), +1 (a>b)
+| `trit5_cmp(a, b)` | Compare packed trit5_t values
+|===
+
+[[family-3-conversion]]
+=== Family 3: Conversion
+
+*Transform between representations.* Bridge the trit world and integer world.
+
+[cols="2,4",options="header"]
+|===
+| Function | Purpose
+
+| `trit_to_int(t)` | Trit → integer (-1, 0, +1)
+| `int_to_trit(i)` | Integer → trit (clamps to range)
+| `stored_to_true(s)` | Byte (0-255) → health (-100 to +100)
+| `true_to_stored(t)` | Health (-100 to +100) → byte (0-255)
+|===
+
+[[family-4-normalization]]
+=== Family 4: Normalization
+
+*Health levels with semantic meaning.* 7 levels from Perfect (+3) to Broken (-3).
+
+[cols="2,4",options="header"]
+|===
+| Function | Purpose
+
+| `trit_base_round(v, base)` | Round to ternary base (3, 9, 27)
+| `trit_normalize(v)` | Clamp to valid range [-121, +121]
+| `trit_level(v)` | Map value to health level (-3 to +3)
+| `level_name(lvl)` | English name ("Perfect", "Whole", etc.)
+| `level_hebrew(lvl)` | Hebrew name ("Tamim", "Shalem", etc.)
+| `level_emoji(lvl)` | Visual indicator (💛, 💚, etc.)
+|===
+
+[[family-5-calculus]]
+=== Family 5: Calculus
+
+*Change detection over time.* These are inherently temporal — they track how values change.
+
+[cols="2,4",options="header"]
+|===
+| Function | Purpose
+
+| `trit_difference(prev, curr)` | Direction of change: -1/0/+1
+| `trit_rate(delta, time)` | Rate of change as trit
+| `trit_accumulate(acc, value)` | Running total with overflow protection
+| `trit_threshold(value, threshold)` | Value vs threshold as trit
+| `trend_direction(history, count)` | Overall trend from history array
+|===
+
+[TIP]
+====
+*Why calculus is temporal:* Difference compares NOW to BEFORE. Rate measures change OVER TIME. Trend projects PAST into FUTURE. These operations naturally integrate with the TIME layer from Phase 1.
+====
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[public-api]]
+== Public API
+
+This demo provides a **portable public API** — callable by games, tutorials, SDK examples.
+
+[[primary-api]]
+=== Primary API (Run Demos)
+
+[source,c]
+----
+int demo_math_run_all(void);         // Run all demos, return failure count
+int demo_math_arithmetic(void);      // Family 1: half/full adder
+int demo_math_comparison(void);      // Family 2: ternary cmp
+int demo_math_conversion(void);      // Family 3: trit↔int
+int demo_math_normalization(void);   // Family 4: 7 health levels
+int demo_math_calculus(void);        // Family 5: change detection
+int demo_math_integration(void);     // Calculus + temporal context
+----
+
+[[utility-api]]
+=== Utility API (Inspection)
+
+[source,c]
+----
+int demo_math_get_passed(void);    // Get count of demos passed
+int demo_math_get_failed(void);    // Get count of failures
+void demo_math_reset(void);        // Reset counters
+----
+
+[[game-example]]
+=== Usage in Educational Game
+
+[source,c]
+----
+// Level 1: Teach arithmetic
+if (demo_math_arithmetic() == 0) {
+    unlock_next_level();
+}
+
+// Final: Show temporal integration
+if (demo_math_run_all() == 0) {
+    show_completion_screen();
+}
+----
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[usage]]
+== Usage
+
+[[building]]
+=== Building
+
+[source,bash]
+----
+# 1. Build libtrit first
+cd word/work/pkg/trit && make
+
+# 2. Build demo
+cd tov/demo/phase-2/demo-math && make
+
+# 3. Run demo
+./demo-math
+# or
+make run
+----
+
+[[make-targets]]
+=== Make Targets
+
+[cols="2,4",options="header"]
+|===
+| Target | Description
+
+| `make` / `make all`
+| Build demo executable
+
+| `make run`
+| Build and run demo
+
+| `make clean`
+| Remove demo executable
+
+| `make help`
+| Show all targets
+|===
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Just weights, accurate measures.* The demo proves the math operations work. 21 steps demonstrated — 5 families of operations verified. This is Kingdom Technology: accuracy that can be trusted.
+====
+
+_"A false balance is abomination to the LORD: but a just weight is his delight."_ — *Proverbs 11:1*
+
+*Applied:* The 5 math families (arithmetic, comparison, conversion, normalization, calculus) demonstrate that balanced ternary math is not just theoretical but practical and elegant. The calculus family shows how math and time naturally integrate — change IS temporal. Just weights.
+
+'''
+
+<<_top,↑ Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+[[library]]
+=== Library
+
+[cols="^1,3,4",options="header"]
+|===
+| | Component | Purpose
+
+| 📚
+| *link:../../../../word/work/pkg/trit/[word/work/pkg/trit/]*
+| libtrit source code
+
+| 📚
+| *link:../../../../word/work/pkg/trit/include/[include/]*
+| Header files (trit.h, math.h, temporal.h)
+
+| 📚
+| *link:../../../../word/work/pkg/trit/build/libtrit.a[libtrit.a]*
+| Built static library
+|===
+
+[[demo-files]]
+=== Demo Files
+
+[cols="^1,3,4",options="header"]
+|===
+| | File | Purpose
+
+| 🎯
+| *link:main.c[main.c]*
+| Demo source (4-block, public API)
+
+| 🎯
+| *link:Makefile[Makefile]*
+| Build system (4-block)
+
+| 🎯
+| *link:demo-math-api.adoc[demo-math-api.adoc]*
+| API reference documentation
+|===
+
+[[journey]]
+=== Journey Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📖
+| *link:../../../../void/planning/development/devlogs/devlog-007-phase-2-planning.adoc[devlog-007]*
+| Phase 2 planning and math operations
+
+| 📖
+| *link:../../../../void/planning/development/plans/phase-2-implementation-plan.adoc[phase-2-plan]*
+| Phase 2 implementation plan
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:../../../../word/work/pkg/trit/README.adoc[libtrit README] — Library documentation
+* link:../../../../word/work/pkg/trit/include/math.h[math.h] — Math operations header
+* link:../../../../tov/demo/phase-1/demo-trit/[Phase 1 Demo] — Three-layer architecture demo
+* link:../../../../tov/demo/phase-0/demo-config/[Phase 0 Demo] — Config validation demo
+
+'''
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"{biblical_foundation}"_
+
+*21 steps demonstrated. The 5 math families work.*
+
+--
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

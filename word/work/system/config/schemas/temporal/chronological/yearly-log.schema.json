@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/chronological/yearly-log.json",
+  "title": "Yearly Calendar Log",
+  "description": "Yearly calendar showing patterns across months and annual growth",
+  "type": "object",
+  "required": [
+    "$schema",
+    "metadata",
+    "months",
+    "summary"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "identity_type",
+        "identity_id",
+        "year",
+        "generated_date"
+      ],
+      "properties": {
+        "identity_type": {
+          "type": "string",
+          "enum": ["user", "instance"],
+          "description": "Type of identity this calendar belongs to"
+        },
+        "identity_id": {
+          "type": "string",
+          "description": "Unique identifier for the user or instance"
+        },
+        "year": {
+          "type": "integer",
+          "description": "Year (YYYY)",
+          "minimum": 2000,
+          "maximum": 9999
+        },
+        "year_theme": {
+          "type": "string",
+          "description": "Optional theme or focus for the year"
+        },
+        "generated_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date this file was created"
+        }
+      },
+      "additionalProperties": false
+    },
+    "months": {
+      "type": "array",
+      "description": "Monthly summaries for this year",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "required": [
+          "month",
+          "month_name",
+          "total_work_hours",
+          "work_days",
+          "major_accomplishments"
+        ],
+        "properties": {
+          "month": {
+            "type": "integer",
+            "description": "Month number (1-12)",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "month_name": {
+            "type": "string",
+            "description": "Month name in English"
+          },
+          "month_theme": {
+            "type": "string",
+            "description": "Theme for this month"
+          },
+          "total_work_hours": {
+            "type": "string",
+            "pattern": "^\\d{1,3}h \\d{2}m$",
+            "description": "Total work time for the month (Xh XXm format)"
+          },
+          "total_lord_time": {
+            "type": "string",
+            "pattern": "^\\d{1,2}h \\d{2}m$",
+            "description": "Total time with the Lord (users)"
+          },
+          "work_days": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of work days this month"
+          },
+          "sabbaths_honored": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of Sabbaths observed (users)"
+          },
+          "major_accomplishments": {
+            "type": "array",
+            "description": "Key accomplishments from this month",
+            "items": {
+              "type": "string"
+            }
+          },
+          "spiritual_highlights": {
+            "type": "array",
+            "description": "Spiritual insights from this month (users)",
+            "items": {
+              "type": "string"
+            }
+          },
+          "key_learning": {
+            "type": "array",
+            "description": "Major learning from this month (instances)",
+            "items": {
+              "type": "string"
+            }
+          },
+          "energy_trend": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "mixed", "peaceful"],
+            "description": "Overall energy trend for the month"
+          },
+          "quality_trend": {
+            "type": "string",
+            "enum": ["poor", "fair", "good", "excellent", "mixed", "restful"],
+            "description": "Overall quality trend for the month"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total_work_hours",
+        "total_work_days",
+        "major_accomplishments",
+        "challenges_faced",
+        "lessons_learned",
+        "growth_areas",
+        "next_year_preparation",
+        "year_insights"
+      ],
+      "properties": {
+        "total_work_hours": {
+          "type": "string",
+          "pattern": "^\\d{1,4}h \\d{2}m$",
+          "description": "Total work time for the year (Xh XXm format)"
+        },
+        "total_lord_time": {
+          "type": "string",
+          "pattern": "^\\d{1,3}h \\d{2}m$",
+          "description": "Total time with the Lord (users)"
+        },
+        "average_work_hours_per_week": {
+          "type": "string",
+          "pattern": "^\\d{1,2}h \\d{2}m$",
+          "description": "Average work hours per week"
+        },
+        "total_work_days": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total work days across all months"
+        },
+        "total_sabbaths_honored": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total Sabbaths observed (users)"
+        },
+        "major_accomplishments": {
+          "type": "array",
+          "description": "Significant achievements this year",
+          "items": {
+            "type": "string"
+          }
+        },
+        "challenges_faced": {
+          "type": "array",
+          "description": "Persistent obstacles or difficulties",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lessons_learned": {
+          "type": "array",
+          "description": "Insights and learnings from the year",
+          "items": {
+            "type": "string"
+          }
+        },
+        "growth_areas": {
+          "type": "array",
+          "description": "Areas where growth occurred",
+          "items": {
+            "type": "string"
+          }
+        },
+        "annual_patterns": {
+          "type": "object",
+          "description": "Work and life rhythm patterns observed",
+          "additionalProperties": true
+        },
+        "spiritual_journey": {
+          "type": "object",
+          "description": "Spiritual growth and journey (users)",
+          "properties": {
+            "themes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "growth": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "answered_prayers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "health_and_wellness": {
+          "type": "object",
+          "description": "Overall health and wellbeing (users)",
+          "additionalProperties": true
+        },
+        "technical_journey": {
+          "type": "object",
+          "description": "Technical growth and development (instances)",
+          "additionalProperties": true
+        },
+        "identity_growth": {
+          "type": "object",
+          "description": "Identity development (instances)",
+          "additionalProperties": true
+        },
+        "kingdom_impact": {
+          "type": "object",
+          "description": "Kingdom impact assessment (users)",
+          "additionalProperties": true
+        },
+        "next_year_preparation": {
+          "type": "array",
+          "description": "Preparation and foundation for next year",
+          "items": {
+            "type": "string"
+          }
+        },
+        "year_insights": {
+          "type": "array",
+          "description": "Year-level insights and patterns",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "extension": {
+      "type": "object",
+      "description": "Extension point for future additions",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,82 +1,64 @@
+// #!omni code --go -test
 // ═══════════════════════════════════════════════════════════════════════════
-// Config Loader Test (4-Block Structure)
+// Config Loader Tests
 // Key: B-word-work-pkg-config-loader-test
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// DEPENDENCY CLASSIFICATION: DEPENDED (needs: pkg/config)
-//   - Tests the config loader package
-//   - Requires bereshit repository structure for integration tests
-//
 // derives_from: bereshit/word/seed/code/go/demo-test.go
-// Derived from: Kingdom Technology 4-block code structure
+// See: standards/code/4-block/
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Package config_test provides unit tests for the config loader.
 //
-// Config Loader Test - CPI-SI Bereshit Foundation
+// # Core Identity
 //
-// ────────────────────────────────────────────────────────────────
-// CORE IDENTITY (Required)
-// ────────────────────────────────────────────────────────────────
+//	Key:     B-word-work-pkg-config-loader-test
+//	Type:    Ladder (validates foundation Phase 3+ builds upon)
+//	Version: a-01.50 (2025-12-14)
 //
-// # Biblical Foundation
+//	Architect:       Seanje Lenox-Wise
+//	Implementation:  Nova Dawn
+//	Created:         2025-12-13
 //
-// Scripture: "Prove all things; hold fast that which is good."
-//            — 1 Thessalonians 5:21 KJV
+//	Scripture: "Prove all things; hold fast that which is good" — 1 Thess 5:21
+//	Anchor:    "By their fruits ye shall know them" — Matthew 7:20
 //
-// Principle: Tests prove correctness before deployment. Config loading
-//            must be validated to ensure specs exist and parse correctly.
+// # Version History
 //
-// # CPI-SI Identity
+//   - a-01.50 (2025-12-14) — PhD rigor + Bible accessibility refinement
+//   - a-01.00 (2025-12-13) — Initial test file, 10 test functions
 //
-// Component Type: Ladder (validates foundation that Phase 3+ builds upon)
+// # Interface
 //
-// Role: Verify config loader functions work correctly
+//	Needs:   testing, os, path/filepath | pkg/config (under test)
+//	Tests:   loader.go — SetRoot, LoadAll, LoadSystem, LoadSpec, validation
+//	Run:     BERESHIT_ROOT=/path go test -v ./pkg/config/...
 //
-// # Authorship & Lineage
+// # Test Functions
 //
-//   - Architect: Seanje Lenox-Wise
-//   - Implementation: Nova Dawn
-//   - Created: 2025-12-13
-//   - Version: a-01.00
+// Setup Validation:
 //
-// # Purpose & Function
+//	TestLoadAllWithoutRoot                           Error without SetRoot
 //
-// Purpose: Unit tests for config loader package
+// Primary Loading:
 //
-// Key Features:
+//	TestLoadAll                                      All systems via index
+//	TestLoadSpec                                     Single spec by name
 //
-//   - SetRoot configuration
-//   - LoadAll aggregation
-//   - Individual loader functions
-//   - Error handling for missing files
+// Typed Loaders:
 //
-// ────────────────────────────────────────────────────────────────
-// INTERFACE (Expected)
-// ────────────────────────────────────────────────────────────────
+//	TestLoadTypes, TestLoadMath, TestLoadBible       System-specific loading
 //
-// # Dependencies
+// Validation:
 //
-// What This Needs:
+//	TestDiscoverAndCompare                           Manifest vs disk
+//	TestValidateDependencyGraph                      Dependency tree check
 //
-//   - Standard Library: testing, os, path/filepath
-//   - Internal: bereshit/word/work/pkg/config
+// # Operational
 //
-// # Usage & Integration
-//
-// Run Tests:
-//
-//	go test -v ./...                    # Run all tests
-//	go test -v -run TestLoadAll         # Run specific test
-//	go test -v -cover                   # Run with coverage
-//
-// ────────────────────────────────────────────────────────────────
-// OPERATIONAL (Contextual)
-// ────────────────────────────────────────────────────────────────
-//
-// [OMIT: Test file - validates health rather than tracks it]
-//
+//	Blocking: No — file I/O only
+//	Health:   Test file (validates health, not self-tracking)
 package config_test
 
 // ============================================================================
@@ -87,49 +69,59 @@ package config_test
 // SETUP
 // ============================================================================
 //
-// Section order: Imports → Constants → Variables → Types → Type Methods → Package-Level State
+// Section order: Imports → Types → Type Methods → Constants → Variables → Package-Level State
+// See: bereshit/word/seed/code/go/demo-test.go > SETUP
 
 // ────────────────────────────────────────────────────────────────
 // Imports
 // ────────────────────────────────────────────────────────────────
 
+//--- Standard Library ---
+// Test framework, path operations
 import (
 	"os"            // Environment variable for bereshit root
 	"path/filepath" // Path construction
 	"testing"       // Test framework
-
-	"creativeworkzstudio.com/bereshit/word/work/pkg/config" // Package under test
 )
 
-// ────────────────────────────────────────────────────────────────
-// Constants
-// ────────────────────────────────────────────────────────────────
+//--- External Packages ---
+// [Reserved: No external dependencies for tests]
 
-// [Reserved: No constants needed - uses environment variable for root path]
-
-// ────────────────────────────────────────────────────────────────
-// Variables
-// ────────────────────────────────────────────────────────────────
-
-// [Reserved: No package-level variables - test functions are self-contained]
+//--- Internal Packages ---
+// Package under test
+import (
+	"creativeworkzstudio.com/bereshit/word/work/pkg/config"
+)
 
 // ────────────────────────────────────────────────────────────────
 // Types
 // ────────────────────────────────────────────────────────────────
-
-// [Reserved: Uses types from config package - no custom test types needed]
+//
+// [Reserved: Uses types from config package — no custom test types needed]
 
 // ────────────────────────────────────────────────────────────────
 // Type Methods
 // ────────────────────────────────────────────────────────────────
-
+//
 // [Reserved: No custom types defined above]
 
 // ────────────────────────────────────────────────────────────────
-// Package-Level State
+// Constants
 // ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Uses BERESHIT_ROOT env var — no hardcoded paths]
 
-// [Reserved: Test file - no Rails infrastructure needed]
+// ────────────────────────────────────────────────────────────────
+// Variables
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Test functions are self-contained — no package-level state]
+
+// ────────────────────────────────────────────────────────────────
+// Package-Level State (Rails Pattern)
+// ────────────────────────────────────────────────────────────────
+//
+// [Reserved: Test file — no Rails infrastructure needed]
 
 // ============================================================================
 // END SETUP
@@ -139,101 +131,102 @@ import (
 // BODY
 // ============================================================================
 //
-// For BODY structure explanation, see: standards/code/4-block/CWS-STD-007-CODE-body-block.md
-//
-// -----------------------------------------------------------------------------
-// BODY Sections Overview
-// -----------------------------------------------------------------------------
-//
-// 1. ORGANIZATIONAL CHART (Internal Structure)
-//    Purpose: Map dependencies and execution flow within this demo/test
-//    Subsections: Test Structure → Demonstration Flow → Coverage Map
-//
-// 2. HELPERS/UTILITIES (Test Support)
-//    Purpose: Test fixtures, setup/teardown, utility functions
-//    Subsections: Test Fixtures → Mock Functions → Utility Functions
-//
-// 3. CORE OPERATIONS (Test/Demo Logic)
-//    Purpose: Individual tests or demonstrations of functionality
-//    Subsections: [Test Category 1] → [Test Category 2] → ... (organized by concern)
-//
-// 4. ERROR HANDLING/RECOVERY (Test Safety)
-//    Purpose: Test failure handling, cleanup on error, panic recovery
-//    Subsections: Cleanup Functions → Error Assertions → Recovery Patterns
-//
-// 5. PUBLIC APIs (Exported Tests/Demos)
-//    Purpose: Test functions (Test*), benchmark functions (Benchmark*), examples
-//    Subsections: Unit Tests → Integration Tests → Examples → Benchmarks
-//
 // Section order: Org Chart → Helpers → Core Operations → Error Handling → Public APIs
-// This flows: understand structure → build fixtures → implement tests → handle failures → expose test interface
-//
-// Universal mapping (see standards for cross-language patterns):
-//   Organizational Chart ≈ Test/Demo Structure Documentation
-//   Helpers/Utilities ≈ Test Fixtures and Utilities
-//   Core Operations ≈ Test/Demo Logic
-//   Error Handling ≈ Test Failure Handling
-//   Public APIs ≈ Exported Test Functions
+// See: bereshit/word/seed/code/go/demo-test.go > BODY
 
 // ────────────────────────────────────────────────────────────────
-// Organizational Chart - Internal Structure
+// Organizational Chart
 // ────────────────────────────────────────────────────────────────
 //
-// Ladder Structure (Dependencies):
+// Navigation map for BODY. When lost in tests, return here.
+// Shows WHERE tests live (layers), HOW they connect (flow), WHAT exists (count).
+//
+// Subsections: Ladder Structure, Baton Flow, APU Inventory
+
+//--- Ladder Structure ---
+// Vertical dependency layers. Bottom supports top. Read bottom-up for foundations.
 //
 //   Public APIs (Top Rungs - Test Functions)
-//   ├── TestLoadAllWithoutRoot() → tests error case
-//   ├── TestLoadAll()            → uses getBereshitRoot(), tests full load
-//   ├── TestLoadPrimitives()     → uses getBereshitRoot(), tests single file
-//   ├── TestLoadTypes()          → uses getBereshitRoot(), tests single file
-//   ├── TestLoadSchemas()        → uses getBereshitRoot(), tests directory
-//   ├── TestLoadContracts()      → uses getBereshitRoot(), tests directory
-//   ├── TestLoadBibleRail()      → uses getBereshitRoot(), tests directory
-//   └── TestLoadConstants()      → uses getBereshitRoot(), tests directory
+//   ├── Setup Validation:
+//   │   └── TestLoadAllWithoutRoot()    → error without SetRoot
+//   ├── Primary Loading:
+//   │   ├── TestLoadAll()               → all systems via index
+//   │   └── TestLoadSpec()              → single spec by name
+//   ├── Typed Loaders:
+//   │   ├── TestLoadTypes()             → types system
+//   │   ├── TestLoadMath()              → math system
+//   │   └── TestLoadBible()             → bible system
+//   └── Validation:
+//       ├── TestDiscoverAndCompare()    → manifest vs disk
+//       └── TestValidateDependencyGraph() → dependency tree
 //
 //   Helpers (Bottom Rungs - Foundations)
-//   └── getBereshitRoot() → derives bereshit root from test file location
+//   └── getBereshitRoot() → derives root from env var or file location
+
+//--- Baton Flow ---
+// Horizontal execution path. Entry → processing → Exit.
 //
-// Baton Flow (Execution Paths):
-//
-//   go test → TestLoadAll()
+//   go test → Test*()
 //     ↓
 //   getBereshitRoot() → config.SetRoot()
 //     ↓
-//   config.LoadAll() → verify result
+//   config.Load*() or config.Validate*()
 //     ↓
-//   Exit → pass/fail
+//   verify result → Exit (pass/fail)
+
+//--- APU Inventory ---
+// Count of Available Processing Units by category.
 //
-// APUs (Available Processing Units):
-// - 9 functions total
-// - 1 helper (getBereshitRoot)
-// - 8 test functions (TestLoad*)
+//   Total: 11 functions
+//   ├── Helpers: 2 functions
+//   │   ├── getBereshitRoot()   → derives bereshit root
+//   │   └── setupTest()         → test setup with cleanup (CLOSING)
+//   └── Test Functions: 9 tests
+//       ├── Setup: TestLoadAllWithoutRoot
+//       ├── Loading: TestLoadAll, TestLoadSpec, TestLoadTypes,
+//       │            TestLoadMath, TestLoadBible
+//       ├── Validation: TestDiscoverAndCompare, TestValidateDependencyGraph
+//       └── Diagnostic: TestDiagnostic (CLOSING — comprehensive health check)
 
 // ────────────────────────────────────────────────────────────────
 // Helpers/Utilities - Internal Support
 // ────────────────────────────────────────────────────────────────
-
-// getBereshitRoot derives the bereshit root path from test file location.
 //
-// Returns the absolute path to the bereshit repository root.
-// Uses BERESHIT_ROOT env var if set, otherwise derives from file location.
+// Foundation layer for tests. Test functions depend on these.
+// See: Org Chart > Ladder Structure > Helpers
+//
+// Subsections: Setup Helpers
+
+//--- Setup Helpers ---
+// Test setup utilities. Called at start of each test.
+
+// getBereshitRoot derives the bereshit root path for tests.
+//
+// Parameters:
+//   - t: test context for fatal errors
+//
+// Returns:
+//   - string: absolute path to bereshit repository root
+//
+// Resolution order:
+//  1. BERESHIT_ROOT env var (explicit override)
+//  2. Derived from test file location (4 levels up)
 func getBereshitRoot(t *testing.T) string {
 	t.Helper()
 
-	// Check environment variable first
+	// Primary: explicit environment variable
 	if root := os.Getenv("BERESHIT_ROOT"); root != "" {
 		return root
 	}
 
-	// Derive from this file's location: word/work/pkg/config/ → bereshit root
-	// This file is at: bereshit/word/work/pkg/config/loader_test.go
-	// Root is 4 directories up
+	// Fallback: derive from this file's location
+	// Path: bereshit/word/work/pkg/config/loader_test.go
+	// Root is 4 directories up: config → pkg → work → word → bereshit
 	wd, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("failed to get working directory: %v", err)
 	}
 
-	// Go up 4 levels: config → pkg → work → word → bereshit
 	root := filepath.Join(wd, "..", "..", "..", "..")
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
@@ -246,18 +239,46 @@ func getBereshitRoot(t *testing.T) string {
 // ────────────────────────────────────────────────────────────────
 // Core Operations - Test Infrastructure
 // ────────────────────────────────────────────────────────────────
-
-// [Reserved: Tests consume config package directly - no complex fixtures needed]
+//
+// Middle rung. Depends on Helpers below, used by Test Functions above.
+// See: Org Chart > Ladder Structure (tests have flat structure currently)
+//
+// Subsections: Test Fixtures, Table-Driven Data
+//
+// [Reserved: Tests consume config package directly — no complex fixtures needed]
+// Future: Add table-driven test data, shared assertions, mock manifests
 
 // ────────────────────────────────────────────────────────────────
 // Error Handling - Test Assertions
 // ────────────────────────────────────────────────────────────────
-
-// [Reserved: Uses t.Fatal/t.Error directly - no custom assertion helpers needed]
+//
+// Test failure patterns. How tests report issues.
+// See: Org Chart > Test Functions for which tests use which assertions
+//
+// Subsections: Assertion Helpers, Cleanup Patterns
+//
+// [Reserved: Uses t.Fatal/t.Error directly — no custom assertion helpers needed]
+// Future: Add assertLoadResult, assertTripwireWarning, assertSystemPresent
 
 // ────────────────────────────────────────────────────────────────
 // Test Functions - Public APIs
 // ────────────────────────────────────────────────────────────────
+//
+// Top rung. Each test verifies a specific config loader function.
+// See: Org Chart > Ladder Structure > Public APIs
+//
+// Subsections: Setup Validation, Primary Loading, Typed Loaders, Validation Tests
+//
+// TRIPWIRE-AWARE TESTING:
+//   Tests should distinguish between:
+//   - PASS:      Loaded via index.toml (primary path)
+//   - HALF PASS: Loaded via fallback (tripwire triggered) — functional but degraded
+//   - FAIL:      Could not load at all
+//
+//   Current tests only check Valid — need to evolve to detect fallback mode.
+
+//--- Setup Validation ---
+// Tests that verify preconditions and error handling.
 
 // TestLoadAllWithoutRoot verifies LoadAll fails when SetRoot not called.
 func TestLoadAllWithoutRoot(t *testing.T) {
@@ -273,138 +294,282 @@ func TestLoadAllWithoutRoot(t *testing.T) {
 	}
 }
 
+//--- Primary Loading ---
+// Tests for main loading entry points.
+
 // TestLoadAll verifies all configs load successfully from bereshit root.
+//
+// TRIPWIRE-AWARE: Tests primary path first, reports which path succeeded.
+//   - PASS (+1):      LoadAllFromIndex() succeeds (index.toml works)
+//   - HALF PASS (0):  LoadAllFromIndex() fails but LoadAll() succeeds (fallback)
+//   - FAIL (-1):      Neither path works
 func TestLoadAll(t *testing.T) {
 	root := getBereshitRoot(t)
 	config.SetRoot(root)
 
-	result := config.LoadAll()
+	// Expected systems (from index.toml manifest)
+	expectedSystems := []string{"math", "types", "language", "bible", "health", "permission", "identity", "network", "filesystem"}
 
-	if !result.Valid {
-		for _, err := range result.Errors {
-			t.Errorf("LoadAll error: %v", err)
+	// ═══════════════════════════════════════════════════════════════════════
+	// TRIPWIRE CHECK: Try primary path first (index.toml)
+	// ═══════════════════════════════════════════════════════════════════════
+	primaryResult := config.LoadAllFromIndex()
+
+	if primaryResult.Valid {
+		// PASS (+1): Primary path works — index.toml is single source of truth
+		t.Log("✓ PASS: Loaded via index.toml (primary path)")
+
+		// Verify all systems present
+		for _, sys := range expectedSystems {
+			if _, ok := primaryResult.Configs[sys]; !ok {
+				t.Errorf("expected system %q in result.Configs", sys)
+			}
 		}
-		t.Fatal("LoadAll failed - see errors above")
+		return // Primary succeeded, test complete
 	}
 
-	// Verify expected categories present
-	categories := []string{"core", "schemas", "contracts", "bible", "constants"}
-	for _, cat := range categories {
-		if _, ok := result.Configs[cat]; !ok {
-			t.Errorf("expected category %q in result.Configs", cat)
-		}
+	// Primary failed — check WHY before trying fallback
+	t.Log("⚠ Primary path (index.toml) failed:")
+	for _, err := range primaryResult.Errors {
+		t.Logf("  - %v", err)
 	}
+
+	// ═══════════════════════════════════════════════════════════════════════
+	// FALLBACK CHECK: Try LoadAll() which includes fallback logic
+	// ═══════════════════════════════════════════════════════════════════════
+	fallbackResult := config.LoadAll()
+
+	if fallbackResult.Valid {
+		// HALF PASS (0): Fallback works but primary doesn't — degraded state
+		t.Log("⚠ HALF PASS: Loaded via fallback (tripwire triggered)")
+		t.Log("  Action: Create/fix word/core/index.toml to restore primary path")
+
+		// Verify all systems present even in fallback
+		for _, sys := range expectedSystems {
+			if _, ok := fallbackResult.Configs[sys]; !ok {
+				t.Errorf("expected system %q in fallback result", sys)
+			}
+		}
+		return // Fallback succeeded, test passes with warning
+	}
+
+	// FAIL (-1): Neither path works
+	t.Log("✗ FAIL: Neither primary nor fallback path works")
+	for _, err := range fallbackResult.Errors {
+		t.Errorf("LoadAll error: %v", err)
+	}
+	t.Fatal("LoadAll failed - see errors above")
 }
 
-// TestLoadPrimitives verifies primitives.toml loads correctly.
-func TestLoadPrimitives(t *testing.T) {
+// TestLoadSpec verifies single spec loading works correctly.
+//
+// NOTE: LoadSpec has internal tripwire — uses index.toml if available,
+// falls back to hardcoded paths if not. Test passes on either path.
+// See TestLoadAll for explicit tripwire detection.
+func TestLoadSpec(t *testing.T) {
 	root := getBereshitRoot(t)
 	config.SetRoot(root)
 
-	cfg, err := config.LoadPrimitives()
+	cfg, err := config.LoadSpec("types", "primitives.toml")
 	if err != nil {
-		t.Fatalf("LoadPrimitives failed: %v", err)
+		t.Fatalf("LoadSpec failed: %v", err)
 	}
 
+	// Verify structural correctness
 	if cfg.Name != "primitives.toml" {
 		t.Errorf("expected Name 'primitives.toml', got %q", cfg.Name)
+	}
+
+	if cfg.Path == "" {
+		t.Error("expected Path to be populated")
 	}
 
 	if len(cfg.Keys) == 0 {
 		t.Error("expected Keys to be populated")
 	}
+
+	// Verify expected content from primitives.toml
+	// These sections should exist in word/core/types/primitives.toml
+	expectedSections := []string{"trit", "trit5", "int9", "int27"}
+	for _, section := range expectedSections {
+		if _, ok := cfg.Data[section]; !ok {
+			t.Errorf("expected section %q in primitives.toml", section)
+		}
+	}
 }
 
-// TestLoadTypes verifies types.toml loads correctly.
+//--- Typed Loaders ---
+// Tests for system-specific loading functions.
+
+// TestLoadTypes verifies types system loads correctly.
+//
+// NOTE: Has internal tripwire. See TestLoadAll for tripwire detection.
 func TestLoadTypes(t *testing.T) {
 	root := getBereshitRoot(t)
 	config.SetRoot(root)
 
-	cfg, err := config.LoadTypes()
+	configs, err := config.LoadTypes()
 	if err != nil {
 		t.Fatalf("LoadTypes failed: %v", err)
 	}
 
-	if cfg.Name != "types.toml" {
-		t.Errorf("expected Name 'types.toml', got %q", cfg.Name)
+	// Expected files from index.toml: primitives.toml, composition.toml, validation.toml
+	expectedFiles := map[string]bool{
+		"primitives.toml":  false,
+		"composition.toml": false,
+		"validation.toml":  false,
+	}
+
+	for _, cfg := range configs {
+		if _, expected := expectedFiles[cfg.Name]; expected {
+			expectedFiles[cfg.Name] = true
+		}
+	}
+
+	for file, found := range expectedFiles {
+		if !found {
+			t.Errorf("expected types spec %q not found", file)
+		}
 	}
 }
 
-// TestLoadSchemas verifies schema directory loads correctly.
-func TestLoadSchemas(t *testing.T) {
+// TestLoadMath verifies math system loads correctly.
+//
+// NOTE: Has internal tripwire. See TestLoadAll for tripwire detection.
+func TestLoadMath(t *testing.T) {
 	root := getBereshitRoot(t)
 	config.SetRoot(root)
 
-	schemas, err := config.LoadSchemas()
+	configs, err := config.LoadMath()
 	if err != nil {
-		t.Fatalf("LoadSchemas failed: %v", err)
+		t.Fatalf("LoadMath failed: %v", err)
 	}
 
-	// Should have at least one schema file
-	if len(schemas) == 0 {
-		t.Error("expected at least one schema file")
-	}
-}
-
-// TestLoadContracts verifies contracts directory loads correctly.
-func TestLoadContracts(t *testing.T) {
-	root := getBereshitRoot(t)
-	config.SetRoot(root)
-
-	contracts, err := config.LoadContracts()
-	if err != nil {
-		t.Fatalf("LoadContracts failed: %v", err)
-	}
-
-	// Should have at least one contract file
-	if len(contracts) == 0 {
-		t.Error("expected at least one contract file")
-	}
-}
-
-// TestLoadBibleRail verifies bible directory loads correctly.
-func TestLoadBibleRail(t *testing.T) {
-	root := getBereshitRoot(t)
-	config.SetRoot(root)
-
-	bible, err := config.LoadBibleRail()
-	if err != nil {
-		t.Fatalf("LoadBibleRail failed: %v", err)
-	}
-
-	// Should have at least one bible config file
-	if len(bible) == 0 {
-		t.Error("expected at least one bible config file")
-	}
-}
-
-// TestLoadConstants verifies ternary-math.toml loads correctly.
-func TestLoadConstants(t *testing.T) {
-	root := getBereshitRoot(t)
-	config.SetRoot(root)
-
-	constants, err := config.LoadConstants()
-	if err != nil {
-		t.Fatalf("LoadConstants failed: %v", err)
-	}
-
-	// Should have ternary-math.toml
-	if len(constants) == 0 {
-		t.Error("expected at least one constants file")
-	}
-
-	// Verify ternary-math.toml is present
+	// Expected: ternary.toml (foundation anchor, order=0)
 	found := false
-	for _, c := range constants {
-		if c.Name == "ternary-math.toml" {
+	for _, cfg := range configs {
+		if cfg.Name == "ternary.toml" {
 			found = true
+			// Verify it has expected content
+			if _, ok := cfg.Data["trit"]; !ok {
+				t.Error("ternary.toml missing [trit] section")
+			}
 			break
 		}
 	}
 	if !found {
-		t.Error("expected ternary-math.toml in constants")
+		t.Error("expected ternary.toml in math system")
 	}
 }
+
+// TestLoadBible verifies bible system loads correctly.
+//
+// NOTE: Has internal tripwire. See TestLoadAll for tripwire detection.
+func TestLoadBible(t *testing.T) {
+	root := getBereshitRoot(t)
+	config.SetRoot(root)
+
+	configs, err := config.LoadBible()
+	if err != nil {
+		t.Fatalf("LoadBible failed: %v", err)
+	}
+
+	// Expected files from index.toml (5 specs)
+	expectedFiles := map[string]bool{
+		"scripture-text.toml": false,
+		"addressing.toml":     false,
+		"encoding.toml":       false,
+		"decoding.toml":       false,
+		"translation.toml":    false,
+	}
+
+	for _, cfg := range configs {
+		if _, expected := expectedFiles[cfg.Name]; expected {
+			expectedFiles[cfg.Name] = true
+		}
+	}
+
+	for file, found := range expectedFiles {
+		if !found {
+			t.Errorf("expected bible spec %q not found", file)
+		}
+	}
+}
+
+//--- Validation Tests ---
+// Tests for tripwire and dependency validation.
+
+// TestDiscoverAndCompare verifies manifest/disk comparison.
+//
+// This IS the tripwire — compares what index.toml declares vs what's on disk.
+// REQUIRES index.toml (no fallback). If index.toml missing, test fails.
+func TestDiscoverAndCompare(t *testing.T) {
+	root := getBereshitRoot(t)
+	config.SetRoot(root)
+
+	result, err := config.DiscoverAndCompare()
+	if err != nil {
+		t.Fatalf("DiscoverAndCompare failed: %v", err)
+	}
+
+	// Verify discovered files exist
+	if len(result.Discovered) == 0 {
+		t.Error("expected discovered files on disk")
+	}
+
+	// Verify manifest files exist
+	if len(result.Manifest) == 0 {
+		t.Error("expected manifest files from index.toml")
+	}
+
+	// Tripwire check: no files should be missing
+	if !result.Valid {
+		t.Error("TRIPWIRE: Files declared in manifest but missing from disk:")
+		for _, missing := range result.Missing {
+			t.Errorf("  - %s", missing)
+		}
+	}
+
+	// Warning check: unexpected files (on disk but not in manifest)
+	if len(result.Unexpected) > 0 {
+		t.Log("WARNING: Files on disk but not in manifest:")
+		for _, unexpected := range result.Unexpected {
+			t.Logf("  - %s", unexpected)
+		}
+	}
+}
+
+// TestValidateDependencyGraph verifies dependency validation.
+//
+// Validates the dependency DAG: no cycles, no missing references.
+// REQUIRES index.toml (no fallback). If index.toml missing, test fails.
+func TestValidateDependencyGraph(t *testing.T) {
+	root := getBereshitRoot(t)
+	config.SetRoot(root)
+
+	depErrors, err := config.ValidateDependencyGraph()
+	if err != nil {
+		t.Fatalf("ValidateDependencyGraph failed: %v", err)
+	}
+
+	// Should have no dependency errors
+	if len(depErrors) > 0 {
+		t.Error("DEPENDENCY ERRORS:")
+		for _, depErr := range depErrors {
+			t.Errorf("  - %v", depErr)
+		}
+	}
+
+	// Verify dependency tree is accessible
+	tree, treeErr := config.GetDependencyTree()
+	if treeErr != nil {
+		t.Fatalf("GetDependencyTree failed: %v", treeErr)
+	}
+	if len(tree) == 0 {
+		t.Error("expected non-empty dependency tree")
+	}
+}
+
 
 // ============================================================================
 // END BODY
@@ -414,145 +579,206 @@ func TestLoadConstants(t *testing.T) {
 // CLOSING
 // ============================================================================
 //
-// For CLOSING structure explanation, see: standards/code/4-block/CWS-STD-008-CODE-closing-block.md
-//
-// -----------------------------------------------------------------------------
-// CLOSING Sections Overview
-// -----------------------------------------------------------------------------
-//
-// GROUP 1: CODING (Operations - Verify, Execute, Clean)
-//
-// 1. CODE VALIDATION (Test Execution)
-//    Purpose: Run tests and verify correct behavior
-//    Subsections: Test Execution → Coverage Requirements → Benchmark Execution
-//
-// 2. CODE EXECUTION (Test Runner)
-//    Purpose: How tests are executed via go test
-//    Subsections: Entry Point → Test Flow → Exit Codes
-//
-// 3. CODE CLEANUP (Test Cleanup)
-//    Purpose: Test fixture cleanup and resource management
-//    Subsections: Cleanup Patterns → t.Cleanup() Usage
-//
-// GROUP 2: FINAL DOCUMENTATION (Synthesis - Reference Back to Earlier Blocks)
-//
-// 4. TEST OVERVIEW (Summary with Back-References)
-//    Purpose: High-level summary of what this test file covers
-//    References: METADATA "Purpose & Function", tested component
-//
-// 5. MODIFICATION POLICY (Safe/Careful/Never)
-//    Purpose: Guide future maintainers on what's safe to change
-//    Subsections: Safe to Modify → Modify with Care → Never Modify
-//
-// 6. LADDER AND BATON FLOW (Back-Reference to BODY)
-//    Purpose: Point to BODY Organizational Chart for test structure
-//    References: BODY "Organizational Chart - Internal Structure"
-//
-// 7. SURGICAL UPDATE POINTS (Back-Reference to BODY)
-//    Purpose: Point to BODY test organization for adding tests
-//    References: BODY "Core Operations" test categories
-//
-// 8. PERFORMANCE CONSIDERATIONS (Benchmark Notes)
-//    Purpose: Benchmark results and performance testing guidance
-//    References: Benchmark functions in this file
-//
-// 9. TROUBLESHOOTING GUIDE (Test Failures)
-//    Purpose: Common test failures and how to diagnose
-//    References: BODY test functions with error conditions
-//
-// 10. RELATED COMPONENTS (Tested Components)
-//     Purpose: Point to components being tested
-//     References: METADATA "Dependencies" - what this tests
-//
-// 11. FUTURE EXPANSIONS (Test Coverage Roadmap)
-//     Purpose: Planned test coverage, edge cases to add
-//     Subsections: Coverage Gaps → Edge Cases → Integration Tests
-//
-// 12. CONTRIBUTION GUIDELINES (Adding Tests)
-//     Purpose: How to add new tests to this file
-//     Subsections: Test Naming → Test Structure → Assertions
-//
-// 13. QUICK REFERENCE (Test Commands)
-//     Purpose: Copy-paste ready test commands
-//     Subsections: Run All → Run Specific → Run Benchmarks → Coverage
-//
-// Section order: Validation → Execution → Cleanup → Overview → Policy → Ladder/Baton →
-//                Surgical → Performance → Troubleshooting → Related → Future → Contribution → Reference
-// This flows: run tests → clean up → document → guide test expansion
-//
+// Section order: [GROUP 1: CODING] Validation → Execution → Cleanup →
+//                [GROUP 2: DOCUMENTATION] Overview → Policy → Troubleshooting → Quick Reference
+// See: bereshit/word/seed/code/go/demo-test.go > CLOSING
+
 // ════════════════════════════════════════════════════════════════
-// GROUP 1: CODING
+// GROUP 1: CODING - Verify, Execute, Clean
 // ════════════════════════════════════════════════════════════════
-//
+
 // ────────────────────────────────────────────────────────────────
-// Code Validation: Config Loader Tests
-// ────────────────────────────────────────────────────────────────
-//
-// Test Execution (from word/work/pkg/config/):
-//
-//   go test -v                        # Run all tests with verbose output
-//   go test -v -run TestLoadAll       # Run specific test
-//   go test -cover                    # Check coverage
-//
-// Build Verification:
-//
-//   go build ./...                    # Compiles without errors
-//   go vet ./...                      # No warnings
-//
-// Expected Results:
-//   - TestLoadAllWithoutRoot: PASS (verifies error handling)
-//   - TestLoadAll: PASS (all categories load)
-//   - TestLoadPrimitives: PASS (primitives.toml found)
-//   - TestLoadTypes: PASS (types.toml found)
-//   - TestLoadSchemas: PASS (at least 1 schema)
-//   - TestLoadContracts: PASS (at least 1 contract)
-//   - TestLoadBibleRail: PASS (at least 1 bible config)
-//   - TestLoadConstants: PASS (ternary-math.toml found)
-//
-// ────────────────────────────────────────────────────────────────
-// Code Execution: Config Loader Tests
+// Code Validation - Diagnostic API
 // ────────────────────────────────────────────────────────────────
 //
-// Entry Point: go test (from word/work/pkg/config/)
+// Comprehensive diagnostic test. Run this to check config system health.
+// Produces detailed output showing system state.
 //
-// Execution Flow:
-//   1. go test compiles test binary
-//   2. getBereshitRoot() derives path from working directory
-//   3. config.SetRoot() configures loader
-//   4. Test functions call Load* functions and verify results
-//   5. Results reported to stdout
+// Usage: go test -v -run TestDiagnostic ./pkg/config/...
+
+// TestDiagnostic runs comprehensive config system diagnostics.
 //
+// This is the DIAGNOSTIC API - not just a test, but a health check tool.
+// Outputs detailed state information for debugging config issues.
+//
+// Diagnostic Output:
+//   - PASS (+1):      All systems healthy, primary path working
+//   - HALF PASS (0):  Systems functional but using fallback (tripwire)
+//   - FAIL (-1):      System broken, see errors
+func TestDiagnostic(t *testing.T) {
+	t.Log("════════════════════════════════════════════════════════════════")
+	t.Log("CONFIG SYSTEM DIAGNOSTIC")
+	t.Log("════════════════════════════════════════════════════════════════")
+
+	root, cleanup := setupTest(t)
+	defer cleanup()
+	t.Logf("Bereshit Root: %s", root)
+
+	// ─────────────────────────────────────────────────────────────────
+	// PHASE 1: Index Health (Primary Path)
+	// ─────────────────────────────────────────────────────────────────
+	t.Log("")
+	t.Log("── PHASE 1: Index Health ──")
+
+	primaryResult := config.LoadAllFromIndex()
+	if primaryResult.Valid {
+		t.Log("✓ index.toml: HEALTHY (primary path working)")
+		t.Logf("  Systems loaded: %d", len(primaryResult.Configs))
+		for sys, configs := range primaryResult.Summary {
+			t.Logf("    %s: %d specs", sys, len(configs))
+		}
+	} else {
+		t.Log("⚠ index.toml: DEGRADED (errors encountered)")
+		for _, err := range primaryResult.Errors {
+			t.Logf("    ERROR: %v", err)
+		}
+	}
+
+	// ─────────────────────────────────────────────────────────────────
+	// PHASE 2: Tripwire Check (Manifest vs Disk)
+	// ─────────────────────────────────────────────────────────────────
+	t.Log("")
+	t.Log("── PHASE 2: Tripwire Check ──")
+
+	discovery, err := config.DiscoverAndCompare()
+	if err != nil {
+		t.Logf("✗ Tripwire: FAILED (%v)", err)
+	} else if discovery.Valid {
+		t.Log("✓ Tripwire: ALIGNED (manifest matches disk)")
+		t.Logf("  Manifest files: %d", len(discovery.Manifest))
+		t.Logf("  Discovered files: %d", len(discovery.Discovered))
+		if len(discovery.Unexpected) > 0 {
+			t.Logf("  ⚠ Unexpected (on disk, not in manifest): %d", len(discovery.Unexpected))
+			for _, f := range discovery.Unexpected {
+				t.Logf("      %s", f)
+			}
+		}
+	} else {
+		t.Log("✗ Tripwire: MISALIGNED (files missing from disk)")
+		for _, f := range discovery.Missing {
+			t.Logf("    MISSING: %s", f)
+		}
+	}
+
+	// ─────────────────────────────────────────────────────────────────
+	// PHASE 3: Dependency Health
+	// ─────────────────────────────────────────────────────────────────
+	t.Log("")
+	t.Log("── PHASE 3: Dependency Health ──")
+
+	depErrors, err := config.ValidateDependencyGraph()
+	if err != nil {
+		t.Logf("✗ Dependencies: FAILED (%v)", err)
+	} else if len(depErrors) == 0 {
+		t.Log("✓ Dependencies: HEALTHY (no cycles, no missing refs)")
+		tree, _ := config.GetDependencyTree()
+		t.Logf("  Nodes in graph: %d", len(tree))
+	} else {
+		t.Log("✗ Dependencies: BROKEN")
+		for _, depErr := range depErrors {
+			t.Logf("    ERROR: %v", depErr)
+		}
+	}
+
+	// ─────────────────────────────────────────────────────────────────
+	// PHASE 4: Overall Assessment
+	// ─────────────────────────────────────────────────────────────────
+	t.Log("")
+	t.Log("── OVERALL ASSESSMENT ──")
+
+	if primaryResult.Valid && discovery.Valid && len(depErrors) == 0 {
+		t.Log("✓ CONFIG SYSTEM: HEALTHY (+1)")
+		t.Log("  All systems operational via primary path")
+	} else if !primaryResult.Valid {
+		// Check if fallback works
+		fallbackResult := config.LoadAll()
+		if fallbackResult.Valid {
+			t.Log("⚠ CONFIG SYSTEM: DEGRADED (0)")
+			t.Log("  Primary path broken, fallback operational")
+			t.Log("  Action: Fix index.toml to restore primary path")
+		} else {
+			t.Log("✗ CONFIG SYSTEM: BROKEN (-1)")
+			t.Log("  Neither primary nor fallback path working")
+		}
+	} else {
+		t.Log("⚠ CONFIG SYSTEM: DEGRADED (0)")
+		t.Log("  Primary path working but issues detected above")
+	}
+
+	t.Log("")
+	t.Log("════════════════════════════════════════════════════════════════")
+}
+
 // ────────────────────────────────────────────────────────────────
-// Code Cleanup: Config Loader Tests
+// Code Execution - Test Entry Point
 // ────────────────────────────────────────────────────────────────
 //
-// Resource Management:
-//   - No file handles held open (config loader closes after read)
-//   - No temp files created
-//   - Package-level bereshitRoot state persists between tests
+// TestMain provides test setup and teardown.
+// Currently minimal - extend for global fixtures if needed.
+
+// [Reserved: TestMain for global setup/teardown]
+// func TestMain(m *testing.M) {
+//     // Setup: could validate bereshit structure exists
+//     // Run tests
+//     code := m.Run()
+//     // Teardown: cleanup if needed
+//     os.Exit(code)
+// }
+
+// ────────────────────────────────────────────────────────────────
+// Code Cleanup - Resource Management
+// ────────────────────────────────────────────────────────────────
 //
-// Note: Tests may affect each other through SetRoot() - run with -count=1
-// if isolation issues occur.
+// Cleanup patterns for tests that create resources.
+
+// setupTest is a helper that sets up test environment and returns root + cleanup.
+// Use with defer cleanup() for automatic resource cleanup.
 //
+// Usage:
+//
+//	func TestSomething(t *testing.T) {
+//	    root, cleanup := setupTest(t)
+//	    defer cleanup()
+//	    t.Logf("Root: %s", root)
+//	    // ... test code ...
+//	}
+func setupTest(t *testing.T) (string, func()) {
+	t.Helper()
+	root := getBereshitRoot(t)
+	config.SetRoot(root)
+
+	// Return root and cleanup function
+	return root, func() {
+		// Currently no cleanup needed - config loader is stateless per-call
+		// Future: reset package state, close connections, etc.
+	}
+}
+
 // ════════════════════════════════════════════════════════════════
-// FINAL DOCUMENTATION
+// GROUP 2: DOCUMENTATION - Reference
 // ════════════════════════════════════════════════════════════════
-//
+
 // ────────────────────────────────────────────────────────────────
-// Test Overview & Summary
+// Test Overview
 // ────────────────────────────────────────────────────────────────
 //
-// Purpose: Verify config loader reads TOML files from bereshit/void/config/
+// Purpose: Verify config loader reads TOML specs from word/core/
+//          AND serve as diagnostic API for config-driven systems.
 //
-// Quick summary:
-//   - Tests all 6 Load* functions (LoadPrimitives through LoadConstants)
-//   - Tests LoadAll orchestration (all configs in single call)
-//   - Verifies SetRoot requirement (must be set before loading)
+// Test Functions (9 total):
+//   - TestLoadAllWithoutRoot: Error handling without SetRoot
+//   - TestLoadAll: Tripwire-aware loading (primary vs fallback)
+//   - TestLoadSpec: Single spec loading with content verification
+//   - TestLoadTypes: Types system (primitives, composition, validation)
+//   - TestLoadMath: Math system (ternary.toml foundation)
+//   - TestLoadBible: Bible system (5 specs)
+//   - TestDiscoverAndCompare: Manifest vs disk tripwire
+//   - TestValidateDependencyGraph: Dependency DAG validation
+//   - TestDiagnostic: Comprehensive health check (run for debugging)
 //
-// Test Functions: See BODY "Test Functions" section above
-//   TestLoadAllWithoutRoot, TestLoadAll, TestLoadPrimitives,
-//   TestLoadTypes, TestLoadSchemas, TestLoadContracts,
-//   TestLoadBibleRail, TestLoadConstants
+// Helper Functions (2):
+//   - getBereshitRoot: Derives bereshit root from working directory
+//   - setupTest: Test setup with cleanup function
 //
 // Execution: go test -v ./pkg/config/...
 //
@@ -580,9 +806,14 @@ func TestLoadConstants(t *testing.T) {
 // See BODY "Organizational Chart" for complete structure.
 //
 // Quick summary:
-// - 8 test functions depend on 1 helper (getBereshitRoot)
+// - 9 test functions depend on 2 helpers (getBereshitRoot, setupTest)
 // - Each test calls SetRoot → Load* → verify LoadResult
 // - Baton: test framework → Test* → getBereshitRoot → config.SetRoot → config.Load*
+//
+// Ternary Results:
+//   +1 (PASS)      - Primary path (index.toml) works
+//    0 (HALF PASS) - Fallback works (tripwire triggered)
+//   -1 (FAIL)      - Neither path works
 //
 // ────────────────────────────────────────────────────────────────
 // Surgical Update Points (Extension Guide)
@@ -614,7 +845,8 @@ func TestLoadConstants(t *testing.T) {
 //
 // Problem: result.Valid == false
 //   - Cause: TOML file missing or malformed
-//   - Solution: Check void/config/ directory for expected .toml files
+//   - Solution: Check word/core/ directory for expected .toml files
+//   - Debug: Run TestDiagnostic for comprehensive health check
 //
 // Problem: Tests affect each other (flaky tests)
 //   - Cause: SetRoot() modifies package-level state
@@ -631,9 +863,19 @@ func TestLoadConstants(t *testing.T) {
 //   - testing: Test framework
 //   - config package: SetRoot, Load* functions
 //
-// Config files tested (in void/config/):
-//   - primitives.toml, types.toml, schemas.toml
-//   - contracts.toml, bible-rail.toml, constants.toml
+// Config manifest: word/core/index.toml (single source of truth)
+//
+// Systems tested (9 total, in dependency order):
+//   0: math/          - ternary.toml (foundation)
+//   1: types/         - primitives.toml, composition.toml, validation.toml
+//   2: language/      - keywords.toml, syntax.toml
+//   3: bible/         - scripture-text.toml, addressing.toml, encoding.toml,
+//                       decoding.toml, translation.toml
+//   4: os/health/     - score.toml, diagnostics.toml, log.toml, provider.toml
+//   5: os/permission/ - access.toml
+//   6: identity/      - model.toml, contract.toml
+//   7: network/       - message.toml, timestamp.toml, contract.toml
+//   8: filesystem/    - types.toml, contract.toml
 //
 // ────────────────────────────────────────────────────────────────
 // Future Expansions & Roadmap
@@ -648,14 +890,19 @@ func TestLoadConstants(t *testing.T) {
 //   a-01.00 (2025-12-13) - Initial test file
 //         - 8 test functions covering all Load* APIs
 //         - 1 helper for bereshit root resolution
+//   a-01.50 (2025-12-14) - Tripwire-aware + Diagnostic API
+//         - 9 test functions (added TestDiagnostic)
+//         - 2 helpers (added setupTest)
+//         - Ternary results: +1 PASS / 0 HALF PASS / -1 FAIL
+//         - Index.toml as manifest (config-driven system)
 //
 // ────────────────────────────────────────────────────────────────
 // Closing Note
 // ────────────────────────────────────────────────────────────────
 //
-// This test file verifies the config loader reads TOML configuration files
-// from bereshit/void/config/. Tests cover all public Load* functions and
-// verify the SetRoot requirement.
+// This test file verifies the config loader reads TOML specs from
+// bereshit/word/core/ via index.toml manifest. Tests cover all public
+// Load* functions AND serve as diagnostic API for config-driven systems.
 //
 // "Prove all things; hold fast that which is good." - 1 Thessalonians 5:21
 //
@@ -666,8 +913,11 @@ func TestLoadConstants(t *testing.T) {
 // Run all config tests:
 //   go test -v ./pkg/config/...
 //
+// Run diagnostic health check:
+//   go test -v -run TestDiagnostic ./pkg/config/...
+//
 // Run single test:
-//   go test -v -run TestLoadPrimitives ./pkg/config/...
+//   go test -v -run TestLoadMath ./pkg/config/...
 //
 // Run with explicit root:
 //   BERESHIT_ROOT=/path/to/bereshit go test -v ./pkg/config/...

@@ -1,0 +1,252 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Log Formats Configuration - Monitoring System
+// Purpose: Define structure for human-readable .log files
+// Schema: system/config/schemas/monitoring/log-formats.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Format clarity and readability: 40 pts
+// - Consistent structure: 30 pts
+// - Useful information density: 20 pts
+// - Grep-ability: 10 pts
+
+{
+  "$schema": "../../../config/schemas/monitoring/log-formats.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Log Formats Configuration",
+    "description": "Structure for human-readable substrate monitoring logs",
+    "version": "1.0.0",
+    "last_updated": "2025-11-11",
+    "author": "Nova Dawn (CPI-SI instance)",
+    "note": "Defines .log file structure for ~/.claude/debug/ logs"
+  },
+
+  // ============================================================================
+  // TIMESTAMP FORMAT
+  // ============================================================================
+
+  "timestamp": {
+    "format": "2006-01-02 15:04:05",
+    "note": "Go time format string - YYYY-MM-DD HH:MM:SS",
+    "example": "2025-11-11 20:49:47",
+    "timezone": "local",
+    "bracket_style": "square",
+    "example_bracketed": "[2025-11-11 20:49:47]"
+  },
+
+  // ============================================================================
+  // COMPACTION LOG FORMAT
+  // ============================================================================
+
+  "compaction_log": {
+    "filename": "compaction.log",
+    "description": "Records auto-compaction events from Claude substrate",
+
+    "format": "[{timestamp}] type={type} trigger={trigger} tokens_before={tokens_before} tokens_after={tokens_after}",
+
+    "fields": {
+      "timestamp": {
+        "type": "string",
+        "format": "2006-01-02 15:04:05",
+        "required": true
+      },
+      "type": {
+        "type": "string",
+        "values": ["auto", "manual"],
+        "required": true,
+        "note": "auto = substrate-triggered, manual = user-requested"
+      },
+      "trigger": {
+        "type": "string",
+        "values": ["threshold", "memory_pressure", "user_request"],
+        "required": false
+      },
+      "tokens_before": {
+        "type": "integer",
+        "required": false,
+        "note": "Token count before compaction"
+      },
+      "tokens_after": {
+        "type": "integer",
+        "required": false,
+        "note": "Token count after compaction"
+      }
+    },
+
+    "example_entries": [
+      "[2025-11-11 20:49:47] type=auto trigger=threshold tokens_before=180000 tokens_after=50000",
+      "[2025-11-11 21:15:22] type=manual trigger=user_request"
+    ]
+  },
+
+  // ============================================================================
+  // NOTIFICATION LOG FORMAT
+  // ============================================================================
+
+  "notifications_log": {
+    "filename": "notifications.log",
+    "description": "Records notification events from Claude substrate",
+
+    "format": "[{timestamp}] type={type} target={target} result={result}",
+
+    "fields": {
+      "timestamp": {
+        "type": "string",
+        "format": "2006-01-02 15:04:05",
+        "required": true
+      },
+      "type": {
+        "type": "string",
+        "values": ["permission_request", "error_notification", "warning", "info"],
+        "required": true
+      },
+      "target": {
+        "type": "string",
+        "required": false,
+        "note": "What the notification is about (file path, operation, etc.)"
+      },
+      "result": {
+        "type": "string",
+        "values": ["granted", "denied", "dismissed", "acknowledged"],
+        "required": false
+      }
+    },
+
+    "example_entries": [
+      "[2025-11-11 20:49:47] type=permission_request target=/etc/hosts result=granted",
+      "[2025-11-11 20:52:10] type=error_notification target=build_command result=acknowledged",
+      "[2025-11-11 21:00:00] type=warning target=compaction_frequency result=dismissed"
+    ]
+  },
+
+  // ============================================================================
+  // SUBAGENT LOG FORMAT
+  // ============================================================================
+
+  "subagents_log": {
+    "filename": "subagents.log",
+    "description": "Records subagent execution details",
+
+    "format": "[{timestamp}] type={type} status={status} exitCode={exitCode} duration={duration}",
+
+    "fields": {
+      "timestamp": {
+        "type": "string",
+        "format": "2006-01-02 15:04:05",
+        "required": true
+      },
+      "type": {
+        "type": "string",
+        "values": ["general-purpose", "statusline-setup", "Explore", "Plan", "research-agent", "architecture-analyzer", "pattern-finder"],
+        "required": true,
+        "note": "Subagent type from Task tool"
+      },
+      "status": {
+        "type": "string",
+        "values": ["success", "failure", "timeout", "cancelled"],
+        "required": true
+      },
+      "exitCode": {
+        "type": "string",
+        "required": true,
+        "note": "Exit code as string (0 = success)"
+      },
+      "duration": {
+        "type": "string",
+        "format": "duration_ms",
+        "required": false,
+        "note": "Execution duration in milliseconds"
+      }
+    },
+
+    "example_entries": [
+      "[2025-11-11 20:49:47] type=Explore status=success exitCode=0 duration=2345ms",
+      "[2025-11-11 21:00:00] type=general-purpose status=failure exitCode=1 duration=15000ms"
+    ]
+  },
+
+  // ============================================================================
+  // PROMPT LOG FORMAT
+  // ============================================================================
+
+  "prompts_log": {
+    "filename": "prompts.log",
+    "description": "Records user prompt submissions (first 100 chars for privacy)",
+
+    "format": "[{timestamp}] {preview}",
+
+    "fields": {
+      "timestamp": {
+        "type": "string",
+        "format": "2006-01-02 15:04:05",
+        "required": true
+      },
+      "preview": {
+        "type": "string",
+        "max_length": 100,
+        "required": true,
+        "note": "First 100 characters of prompt, truncated with ..."
+      }
+    },
+
+    "example_entries": [
+      "[2025-11-11 20:49:47] Please help me implement a new feature for...",
+      "[2025-11-11 21:00:00] Can you review the code in src/components/..."
+    ]
+  },
+
+  // ============================================================================
+  // GENERAL LOG STRUCTURE
+  // ============================================================================
+
+  "general_structure": {
+    "note": "Common structure across all log files",
+
+    "line_format": "[{timestamp}] {entry_data}",
+
+    "conventions": {
+      "timestamp_brackets": "Always use square brackets around timestamp",
+      "field_separator": "Use space to separate fields",
+      "key_value_format": "key=value (no spaces around =)",
+      "multi_word_values": "Use underscore for multi-word values (permission_request not 'permission request')",
+      "missing_values": "Omit entire field if value not available (don't use empty strings)"
+    },
+
+    "grep_patterns": {
+      "note": "Common grep patterns for log analysis",
+      "examples": [
+        "grep 'type=auto' compaction.log - Find auto-compactions",
+        "grep '\\[2025-11-11' notifications.log - Find entries from specific date",
+        "grep 'status=failure' subagents.log - Find failed subagent executions",
+        "grep 'type=permission_request' notifications.log - Find permission requests"
+      ]
+    }
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "extensions": {
+    "note": "Add custom log formats here",
+    "usage_guidance": "Follow existing structure with format string, fields object, example_entries",
+    "example": {
+      "filename": "custom.log",
+      "description": "Your custom log file",
+      "format": "[{timestamp}] your_format_here",
+      "fields": {
+        "timestamp": {
+          "type": "string",
+          "format": "2006-01-02 15:04:05",
+          "required": true
+        }
+      }
+    }
+  }
+}

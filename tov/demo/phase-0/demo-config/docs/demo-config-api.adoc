@@ -1,0 +1,837 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY — What IS this document?
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-tov-demo-phase0-demo-config-api
+:title: demo-config API Reference
+:subtitle: Portable Validation API for Phase 0 Specifications
+:type: Reference
+:doctype: article
+:lang: en
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE — Lifecycle tracking (includes TEMPORAL)
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: a-01.50
+:revnumber: {version}
+:created: 2025-12-13
+:revdate: 2025-12-15
+:revremark: Enhanced with full AsciiDoc features for PhD rigor + accessibility
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION — Who created and owns this?
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Author)
+:author: Seanje Lenox-Wise
+:author_2: Nova Dawn
+:email: seanje.lenox@creativeworkzstudio.com
+:email_2: nova@creativeworkzstudio.com
+:organization: CreativeWorkzStudio LLC
+:copyright: © 2025 CreativeWorkzStudio LLC. All rights reserved.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION — Where does this document live?
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/tov/demo/phase-0/demo-config/docs/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION — What template/parent does this come from?
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/work/pkg/config/loader-api.adoc
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION — How is this categorized?
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: api, demo, phase-0, config, toml, specifications
+:keywords: demo-config, Phase 0, API reference, config loader, TOML validation
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT — Why does this document exist?
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Defines the public API for demo-config validation program
+:description: Technical reference for demo-config - functions for validating TOML specifications, inspecting results, and proving Phase 0 foundation
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING — Biblical anchor
+// ─────────────────────────────────────────────────────────────────────────────
+:verse-ref: 1 Thessalonians 5:21
+:verse-kjv-text: Prove all things; hold fast that which is good.
+:verse-kjv-path: {kjv}1_Thessalonians/Chapter_5/Verse_21.txt
+:verse-web-text: Test all things, and hold firmly that which is good.
+:verse-web-path: {scripture}WEB/1_Thessalonians/Chapter_5/Verse_21.txt
+:biblical_foundation: {verse-kjv-text}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS — How strictly should this be interpreted?
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: G
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS — Rendering configuration
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+:pdf-theme: default
+:media: prepress
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVIGATION — Path attributes for linking (DRY principle)
+// ─────────────────────────────────────────────────────────────────────────────
+// From docs/ to Bereshit root requires 5 levels up
+:root: ../../../../../
+// Primary divisions
+:word: {root}word/
+:void: {root}void/
+:tov: {root}tov/
+// Common destinations in word/
+:core: {word}core/
+:work: {word}work/
+:scripture: {word}scripture/
+:kjv: {scripture}KJV/
+// Package paths
+:config-pkg: {work}pkg/config/
+:loader-api: {config-pkg}loader-api.adoc
+:loader-go: {config-pkg}loader.go
+:loader-test: {config-pkg}loader_test.go
+// Planning paths
+:plans: {void}planning/development/plans/
+:phase-0-plan: {plans}phase-0-implementation-plan.adoc
+// System directories (9 systems)
+:sys-math: {core}math/
+:sys-types: {core}types/
+:sys-language: {core}language/
+:sys-bible: {core}bible/
+:sys-health: {core}health/
+:sys-permission: {core}permission/
+:sys-identity: {core}identity/
+:sys-network: {core}network/
+:sys-filesystem: {core}filesystem/
+:core-index: {core}index.toml
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT ATTRIBUTES — Reusable narrative/data elements
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase and scope
+:phase: Phase 0
+:system-count: 9
+:spec-count: 23
+// API counts (main.go) — verified 2025-12-15
+:function-count: 10
+// Narrative attributes
+:the-purpose: Pre-flight check for the generator — prove the TOML specs are valid BEFORE the generator runs
+:the-pattern: The diagnostic APIs are building blocks that return data AND can print — used by validation logic itself
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}: {subtitle}
+{authors}
+v{version}, {revdate}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EPIGRAPH — Scripture grounding
+// ─────────────────────────────────────────────────────────────────────────────
+
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+
+_{verse-web-text}_ — link:{verse-web-path}[WEB]
+____
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEAD — The hook / purpose
+// ─────────────────────────────────────────────────────────────────────────────
+
+[.lead.text-center]
+*{the-purpose}*
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ABSTRACT — Key facts at a glance
+// ─────────────────────────────────────────────────────────────────────────────
+
+[abstract]
+--
+icon:cog[] *The Pattern:* {the-pattern}
+
+icon:check-circle[] *What it validates:* {system-count} systems, {spec-count} TOML specs
+
+icon:code[] *Functions provided:* {function-count} exported Go functions
+--
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATUS — Document data table
+// ─────────────────────────────────────────────────────────────────────────────
+
+.Document Status
+[cols="^1,^1,^1,^1,^1",options="header,autowidth",frame="topbot"]
+|===
+| Status | Version | Type | Systems | Functions
+
+| {status}
+| {version}
+| {type}
+| {system-count}
+| {function-count}
+|===
+
+'''
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVIGATION — Quick links to major sections
+// ─────────────────────────────────────────────────────────────────────────────
+
+*<<overview,Overview>>* • *<<functions,Functions>>* • *<<usage,Usage>>* • *<<references,References>>*
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END HEADER
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW — What is this and why it matters
+// ─────────────────────────────────────────────────────────────────────────────
+
+[[overview]]
+== Overview
+
+[.lead]
+The `demo-config` programfootnote:[Binary path: `tov/demo/phase-0/demo-config/bin/demo-config`] validates the {phase} TOML specifications by loading and displaying all {system-count} system categories. It provides a **portable public API** in Go that can be called by other programs.
+
+[IMPORTANT]
+====
+*{the-purpose}* {the-pattern}
+====
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIENCE — Who is this document for (RESERVED - implicit: Go developers)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCOPE — What this API provides
+// ─────────────────────────────────────────────────────────────────────────────
+
+****
+[.lead]
+*What this API provides:*
+
+[horizontal]
+icon:check-circle[] *Validation*:: Validate all {system-count} systems via `DemoConfigRunAll()`
+icon:crosshairs[] *Tripwire*:: Manifest vs filesystem verification
+icon:sitemap[] *Dependencies*:: Dependency graph validation (no cycles)
+icon:balance-scale[] *Ternary Status*:: PASS (+1), HALF PASS (0), FAIL (-1)
+icon:stethoscope[] *Diagnostics*:: Building block APIs for debugging
+icon:link[] *Chain*:: link:{loader-go}[loader.go] → link:{loader-test}[loader_test.go] → link:../main.go[main.go]
+****
+
+=== The Chain Pattern
+
+****
+[.lead]
+*How the diagnostic APIs work:*
+
+The diagnostic APIs aren't standalone — they're building blocks used by the validation logic:
+
+[source]
+----
+loader.go (exports APIs)
+    ↓ config.DiscoverAndCompare(), config.ValidateDependencyGraph(), etc.
+loader_test.go (TestDiagnostic uses same APIs)
+    ↓ returns test results
+demo_config.go (Diagnostic APIs as building blocks)
+    ├── DemoConfigDiagnosticTripwire(verbose) → returns DiscoveryResult
+    ├── DemoConfigDiagnosticDeps(verbose) → returns []error
+    └── DemoConfigDiagnosticLoad(verbose) → returns LoadResult
+        ↓
+    demoValidatePrerequisites() → USES those APIs (no duplicate calls)
+----
+
+[NOTE]
+====
+*Why this matters (Bootstrapping):* We're building validation/debugging infrastructure NOW (while still Go/C/TOML) so the patterns become native to OmniCode. The diagnostic infrastructure grows WITH the system, not bolted on after.
+====
+****
+
+'''
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PREREQUISITES — What you need (RESERVED - implicit: Go 1.23+, Bereshit repo)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KEY TERMS — Terminology reference (RESERVED - see Functions section)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUICK START — Fast path for doers
+// ─────────────────────────────────────────────────────────────────────────────
+
+[[quick-start]]
+=== Quick Start
+
+****
+[.lead]
+*Get started in 10 lines:*
+
+[source,go]
+----
+import demo "creativeworkzstudio.com/bereshit/tov/demo/phase-0/demo-config"
+
+func main() {
+    // Run all system validations
+    failures := demo.DemoConfigRunAll()
+
+    if failures == 0 {
+        fmt.Println("All 9 systems validated!")
+    }
+
+    // Check ternary status
+    status := demo.DemoConfigGetStatus()
+    switch status {
+    case 1:  fmt.Println("PASS (+1): Primary path works")
+    case 0:  fmt.Println("HALF PASS (0): Fallback works")
+    case -1: fmt.Println("FAIL (-1): System broken")
+    }
+
+    // If something fails, run diagnostic
+    if status < 1 {
+        demo.DemoConfigDiagnostic() // Full debug output
+    }
+
+    // Reset for another run
+    demo.DemoConfigReset()
+}
+----
+****
+
+'''
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WHAT THIS PROVIDES — Document contents table
+// ─────────────────────────────────────────────────────────────────────────────
+
+[[what-this-provides]]
+=== What This Document Provides
+
+****
+[.lead]
+*Who is this document for?*
+
+.Document Contents
+[cols="^1,3,4,3",options="header,autowidth",frame="topbot"]
+|===
+| | Category | What You'll Find | Who It Serves
+
+| icon:cog[]
+| *Functions*
+| Validation runner, result inspectors, reset
+| Developers integrating demo into apps
+
+| icon:book[]
+| *Usage Patterns*
+| CI/CD integration, spec verification
+| Build engineers, SDK developers
+
+| icon:terminal[]
+| *Live Output*
+| Actual demonstration output
+| Anyone verifying specs are valid
+|===
+****
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RETURN — Back to top navigation
+// ─────────────────────────────────────────────────────────────────────────────
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END CONTEXT
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[systems-validated]]
+== Systems Validated
+
+[.lead]
+demo-config validates {system-count} systems in dependency order (0 = foundation, higher builds on lower).
+
+****
+[.lead]
+*The {system-count} systems:*
+
+.Systems in Dependency Order
+[cols="^1,2,4",options="header,autowidth",frame="topbot"]
+|===
+| Order | System | What's Validated
+
+| 0
+| *link:{sys-math}[math]*
+| Ternary mathematics — foundation all types build on
+
+| 1
+| *link:{sys-types}[types]*
+| Type system — primitives, composition, validation
+
+| 2
+| *link:{sys-language}[language]*
+| OmniCode language — keywords and syntax
+
+| 3
+| *link:{sys-bible}[bible]*
+| Scripture systems — encoding, addressing, translation
+
+| 4
+| *link:{sys-health}[health]*
+| Health monitoring — scores, diagnostics, logging
+
+| 5
+| *link:{sys-permission}[permission]*
+| Permission system — access control
+
+| 6
+| *link:{sys-identity}[identity]*
+| Identity system — CPI-SI identity model
+
+| 7
+| *link:{sys-network}[network]*
+| Network systems — FaithNet messaging
+
+| 8
+| *link:{sys-filesystem}[filesystem]*
+| Filesystem types — OmniFS structures
+|===
+
+All systems defined in link:{core-index}[`word/core/index.toml`] manifest.
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[functions]]
+== Functions
+
+[.lead]
+All functions are exported from `main.go` (Go exports start with capital letters). {function-count} functions total.
+
+[[validation-runner]]
+=== Validation Runner
+
+****
+[.lead]
+*The main entry point:*
+
+[source,go]
+----
+func DemoConfigRunAll() int  // Run all 9 systems, return failure count
+----
+
+[horizontal]
+icon:list-ol[] *Validates in order:*::
+  1. Tripwire (manifest vs filesystem)
+  2. Dependency graph (no cycles)
+  3. Config loading (all specs parse)
+  4. Display systems with sample values
+****
+
+'''
+
+[[result-inspection]]
+=== Result Inspection
+
+****
+[.lead]
+*Check what happened:*
+
+[source,go]
+----
+func DemoConfigGetPassed() int   // Get count of passed validations
+func DemoConfigGetFailed() int   // Get count of failed validations
+func DemoConfigGetStatus() int   // Get ternary status (+1, 0, -1)
+func DemoConfigReset()           // Reset counters for fresh run
+----
+
+.Ternary Status Values
+[cols="^1,^1,3",options="header,autowidth",frame="topbot"]
+|===
+| Status | Value | Meaning
+
+| icon:check-circle[] PASS
+| `+1`
+| Primary path works (index.toml)
+
+| icon:exclamation-circle[] HALF PASS
+| `0`
+| Fallback works (tripwire triggered)
+
+| icon:times-circle[] FAIL
+| `-1`
+| System broken
+|===
+****
+
+'''
+
+[[diagnostic-apis]]
+=== Diagnostic APIs (Building Blocks)
+
+****
+[.lead]
+*Deep debugging tools:*
+
+These functions return data AND can print. They're building blocks used by the validation logic.
+
+[source,go]
+----
+func DemoConfigDiagnostic() int                                    // Run all phases, return status
+func DemoConfigDiagnosticIndex(verbose bool) config.LoadResult     // Phase 1: index health
+func DemoConfigDiagnosticTripwire(verbose bool) (config.DiscoveryResult, error)  // Phase 2: tripwire
+func DemoConfigDiagnosticDeps(verbose bool) ([]error, error)       // Phase 3: dependency graph
+func DemoConfigDiagnosticLoad(verbose bool) config.LoadResult      // Phase 4: config loading
+----
+
+[horizontal]
+icon:toggle-on[] *verbose=true*:: Print diagnostic output AND return data
+icon:toggle-off[] *verbose=false*:: Just return data (silent mode)
+
+[NOTE]
+====
+*Usage:* When `demoValidatePrerequisites()` runs, it calls these with `verbose=false` to get data, then formats its own output. For debugging, call `DemoConfigDiagnostic()` directly to see all phases.
+====
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[usage]]
+== Usage Patterns
+
+[.lead]
+Common patterns for integrating demo-config into your workflow.
+
+[[spec-verification]]
+=== Specification Verification
+
+****
+[.lead]
+*Verify {phase} specs before building Phase 1:*
+
+[source,go]
+----
+import "creativeworkzstudio.com/bereshit/tov/demo/phase-0/demo-config"
+
+func VerifyFoundation() error {
+    failures := DemoConfigRunAll()
+
+    if failures > 0 {
+        return fmt.Errorf("Phase 0 verification failed: %d errors", failures)
+    }
+
+    fmt.Printf("Phase 0 verified: %d categories loaded\n", DemoConfigGetPassed())
+    return nil
+}
+----
+****
+
+'''
+
+[[continuous-integration]]
+=== CI/CD Integration
+
+****
+[.lead]
+*Use as a validation step in build pipelines:*
+
+[source,go]
+----
+func main() {
+    failures := DemoConfigRunAll()
+
+    if failures > 0 {
+        fmt.Fprintf(os.Stderr, "FAILED: %d categories\n", failures)
+        os.Exit(1)  // Non-zero exit = CI failure
+    }
+
+    fmt.Printf("PASSED: %d categories\n", DemoConfigGetPassed())
+    os.Exit(0)  // Zero exit = CI success
+}
+----
+****
+
+'''
+
+[[build-prereq]]
+=== Build Prerequisite Check
+
+****
+[.lead]
+*Ensure specs exist before compiling dependent code:*
+
+[source,bash]
+----
+# In Makefile or build script
+prereq:
+    @cd $(BERESHIT_ROOT) && go run tov/demo/phase-0/demo-config/main.go
+    @echo "Phase 0 specifications validated"
+
+build: prereq
+    # ... rest of build
+----
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[quick-reference]]
+== Quick Reference
+
+[.lead]
+Everything at a glance.
+
+****
+[.lead]
+*All Functions ({function-count} total):*
+
+.Function Reference
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Function | Purpose
+
+| `DemoConfigRunAll()`
+| Run all {system-count} systems, return failure count
+
+| `DemoConfigGetPassed()`
+| Get passed validation count
+
+| `DemoConfigGetFailed()`
+| Get failed validation count
+
+| `DemoConfigGetStatus()`
+| Get ternary status (+1, 0, -1)
+
+| `DemoConfigReset()`
+| Reset counters for fresh run
+
+| `DemoConfigDiagnostic()`
+| Run all diagnostic phases (debug)
+
+| `DemoConfigDiagnosticIndex(verbose)`
+| Phase 1: index health
+
+| `DemoConfigDiagnosticTripwire(verbose)`
+| Phase 2: tripwire check
+
+| `DemoConfigDiagnosticDeps(verbose)`
+| Phase 3: dependency graph
+
+| `DemoConfigDiagnosticLoad(verbose)`
+| Phase 4: config loading
+|===
+****
+
+****
+[.lead]
+*Build & Run (Makefile):*
+
+[source,bash]
+----
+cd tov/demo/phase-0/demo-config
+
+make build      # Build to bin/demo-config
+make run        # Build and run
+make test       # Run and verify exit code
+make diagnostic # Run comprehensive loader diagnostic
+make status     # Show current state
+make clean      # Remove bin/ directory
+----
+****
+
+****
+[.lead]
+*Sample Output:*
+
+[source]
+----
+════════════════════════════════════════════════════════════════
+Phase 0 Demo: Config System Demonstration
+════════════════════════════════════════════════════════════════
+
+  ┌─ Tripwire: Manifest vs Filesystem ─────────────────────────┐
+  │ Manifest files:   23                                       │
+  │ Discovered files: 23                                       │
+  │ ✓ Tripwire PASSED - manifest matches filesystem            │
+  └────────────────────────────────────────────────────────────┘
+
+  ┌─ Dependency Graph Validation ──────────────────────────────┐
+  │ ✓ No circular dependencies                                 │
+  │ ✓ Dependency graph VALID                                   │
+  └────────────────────────────────────────────────────────────┘
+
+  Systems demonstrated: 9 (math → filesystem)
+
+  Status: ✓ PASS (+1)
+
+════════════════════════════════════════════════════════════════
+----
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+****
+[.lead]
+*Why "{verse-ref}"?*
+
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+____
+
+[horizontal]
+icon:book[] *The Principle*:: We don't assume specs are correct — we prove they exist and parse successfully. Only after validation does implementation proceed.
+icon:flask[] *Applied*:: This demo program embodies verification: {system-count} systems validated (math → filesystem), tripwire checks, dependency graph verified, foundation established — Phase 1 can build with confidence.
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+****
+[.lead]
+*Where to go from here:*
+
+.Related Documents
+[cols="^1,3,4",options="header,autowidth",frame="topbot"]
+|===
+| | Document | Purpose
+
+| icon:code[]
+| *link:../main.go[main.go]*
+| Demo source (4-block Go file with public API)
+
+| icon:cog[]
+| *link:../Makefile[Makefile]*
+| Build targets (build, run, test, diagnostic, status)
+
+| icon:book[]
+| *link:README.adoc[README.adoc]*
+| Demo overview — what {phase} proves
+
+| icon:book[]
+| *link:{loader-api}[Config Loader API Reference]*
+| The config loader package this demo uses
+
+| icon:code[]
+| *link:{loader-go}[loader.go]*
+| Config loader implementation source
+
+| icon:code[]
+| *link:{loader-test}[loader_test.go]*
+| Test patterns showing correct API usage
+
+| icon:file-text[]
+| *link:{phase-0-plan}[{phase} Implementation Plan]*
+| Planning document with full context
+|===
+
+.Additional Resources
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Resource | Purpose
+
+| link:{core}[word/core/]
+| TOML specifications directory
+
+| link:{config-pkg}[config package]
+| Go config loader source
+
+| link:README.adoc[README.adoc]
+| Demo overview
+
+| link:{loader-api}[loader-api.adoc]
+| Config loader API this demo uses
+|===
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[.text-center]
+--
+*<<_top,icon:arrow-up[] Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {revdate}
+
+'''
+
+_"{verse-kjv-text}"_ — *{verse-ref}*
+
+*The foundation is proven. Now we build.*
+
+--
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

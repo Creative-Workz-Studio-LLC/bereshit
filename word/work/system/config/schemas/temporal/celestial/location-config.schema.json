@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/celestial/location-config.json",
+  "title": "Celestial Location Configuration",
+  "description": "Geographic and astronomical configuration for a specific location",
+  "type": "object",
+  "required": [
+    "$schema",
+    "location_id",
+    "display_name",
+    "country",
+    "coordinates",
+    "timezone",
+    "metadata"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "location_id": {
+      "type": "string",
+      "description": "Unique identifier for this location (kebab-case)",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Human-readable location name"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country name"
+    },
+    "state_province": {
+      "type": ["string", "null"],
+      "description": "State or province name (null if not applicable)"
+    },
+    "coordinates": {
+      "type": "object",
+      "required": ["latitude", "longitude"],
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "description": "Latitude in decimal degrees (positive = North, negative = South)",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude in decimal degrees (positive = East, negative = West)",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "elevation": {
+          "type": "number",
+          "description": "Elevation in meters above sea level"
+        },
+        "reference_point": {
+          "type": "string",
+          "description": "What landmark or area these coordinates represent"
+        },
+        "accuracy": {
+          "type": "string",
+          "description": "Level of coordinate accuracy (city-level, neighborhood, building-specific, etc.)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "timezone": {
+      "type": "object",
+      "required": ["iana_identifier", "utc_offset_standard", "observes_dst"],
+      "properties": {
+        "iana_identifier": {
+          "type": "string",
+          "description": "IANA timezone database identifier"
+        },
+        "utc_offset_standard": {
+          "type": "string",
+          "description": "Standard time UTC offset (e.g., '-06:00' for CST)",
+          "pattern": "^[+-]\\d{2}:\\d{2}$"
+        },
+        "utc_offset_dst": {
+          "type": "string",
+          "description": "Daylight saving time UTC offset (if applicable)",
+          "pattern": "^[+-]\\d{2}:\\d{2}$"
+        },
+        "observes_dst": {
+          "type": "boolean",
+          "description": "Whether this location observes daylight saving time"
+        },
+        "dst_start": {
+          "type": "string",
+          "description": "Description of when DST starts (if applicable)"
+        },
+        "dst_end": {
+          "type": "string",
+          "description": "Description of when DST ends (if applicable)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "primary_user": {
+          "type": "string",
+          "description": "Primary user or organization name"
+        },
+        "primary_organization": {
+          "type": "string",
+          "description": "Primary organization name"
+        },
+        "primary_workplace": {
+          "type": "string",
+          "description": "Primary workplace name if relevant"
+        },
+        "usage": {
+          "type": "string",
+          "description": "What this location is used for"
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["created_date", "data_version"],
+      "properties": {
+        "created_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date this location config was created"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date",
+          "description": "Date this location config was last updated"
+        },
+        "data_version": {
+          "type": "string",
+          "description": "Version of this configuration data"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any relevant notes about this location configuration"
+        }
+      },
+      "additionalProperties": false
+    },
+    "extension": {
+      "type": "object",
+      "description": "Extension point for future location-specific data",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

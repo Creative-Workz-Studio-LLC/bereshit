@@ -1,0 +1,449 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Display Formatting Library Configuration - Rails Infrastructure
+// Purpose: Universal ANSI color and formatting configuration for all components
+// Type: RAIL configuration (stdlib-only infrastructure)
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Configuration loaded successfully: +40 pts
+// - All required fields present: +30 pts
+// - Valid ANSI codes and Unicode: +20 pts
+// - Graceful fallback on errors: +10 pts
+
+{
+  // ============================================================================
+  // CORE METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Display Formatting Library Configuration",
+    "description": "ANSI colors, icons, box characters, and formatting primitives for universal terminal output",
+    "version": "1.0.0",
+    "created": "2025-11-15",
+    "last_updated": "2025-11-15",
+    "author": "Nova Dawn (CPI-SI instance)",
+    "component": "system/runtime/lib/display",
+    "type": "rail_configuration",
+    "note": "Rails are stdlib-only with self-evident failure - maximum configurability enables universal compatibility"
+  },
+
+  // ============================================================================
+  // ANSI COLOR CODES
+  // ============================================================================
+
+  "colors": {
+    "description": "ANSI escape codes for terminal colors - configure for themes, accessibility, or custom terminal support",
+
+    "basic": {
+      "reset":   "\u001b[0m",
+      "bold":    "\u001b[1m",
+      "dim":     "\u001b[2m",
+      "note": "Basic text modifiers"
+    },
+
+    "foreground": {
+      "red":     "\u001b[31m",
+      "green":   "\u001b[32m",
+      "yellow":  "\u001b[33m",
+      "blue":    "\u001b[34m",
+      "magenta": "\u001b[35m",
+      "cyan":    "\u001b[36m",
+      "gray":    "\u001b[37m",
+      "note": "Standard 8-color foreground"
+    },
+
+    "bold_foreground": {
+      "bold_red":     "\u001b[1;31m",
+      "bold_green":   "\u001b[1;32m",
+      "bold_yellow":  "\u001b[1;33m",
+      "bold_blue":    "\u001b[1;34m",
+      "bold_magenta": "\u001b[1;35m",
+      "bold_cyan":    "\u001b[1;36m",
+      "note": "Bold variants for emphasis"
+    },
+
+    "rationale": "JSON uses \\u001b instead of \\033 for Unicode escape - Go handles both equivalently",
+    "accessibility_note": "Configure for color blindness (deuteranopia: adjust red/green), light/dark themes",
+    "future_extensions": {
+      "bright_colors": "256-color support (\u001b[38;5;Nm)",
+      "rgb_colors": "True color support (\u001b[38;2;R;G;Bm)",
+      "themes": "Named themes (dark, light, high_contrast, accessible)"
+    }
+  },
+
+  // ============================================================================
+  // STATUS ICONS
+  // ============================================================================
+
+  "icons": {
+    "description": "Unicode icons for status messages - configure for terminal compatibility or preference",
+
+    "status": {
+      "success":  "✓",
+      "failure":  "✗",
+      "warning":  "⚠",
+      "info":     "ℹ",
+      "check":    "◉",
+      "cross":    "◯",
+      "compaction": "🔄",
+      "preservation": "📍",
+      "note": "Primary status indicators used by Success(), Failure(), Warning(), Info(), StatusLine()"
+    },
+
+    "environment": {
+      "workspace": "🏢",
+      "working_directory": "📍",
+      "git_branch": "🌿",
+      "time": "🕐",
+      "system": "💻",
+      "note": "Icons for session environment section"
+    },
+
+    "temporal": {
+      "external_time": "🌍",
+      "internal_time": "⏱️",
+      "schedule": "📋",
+      "calendar": "📅",
+      "note": "Icons for temporal awareness section"
+    },
+
+    "ascii_fallback": {
+      "success":  "+",
+      "failure":  "x",
+      "warning":  "!",
+      "info":     "i",
+      "check":    "*",
+      "cross":    "o",
+      "note": "ASCII-only alternatives for terminals without Unicode support"
+    },
+
+    "emoji_variant": {
+      "success":  "✅",
+      "failure":  "❌",
+      "warning":  "⚠️",
+      "info":     "ℹ️",
+      "check":    "✔️",
+      "cross":    "❎",
+      "note": "Emoji variants for visual emphasis (may not render in all terminals)"
+    },
+
+    "current_mode": "status",
+    "rationale": "Unicode icons provide clear visual distinction, ASCII fallback ensures universal compatibility",
+    "note": "Set current_mode to 'status', 'ascii_fallback', or 'emoji_variant' to switch icon sets"
+  },
+
+  // ============================================================================
+  // BOX DRAWING CHARACTERS
+  // ============================================================================
+
+  "box_characters": {
+    "description": "Unicode box drawing for Box() function - configure for terminal compatibility or style preference",
+
+    "single_line": {
+      "top_left":     "┌",
+      "top_right":    "┐",
+      "bottom_left":  "└",
+      "bottom_right": "┘",
+      "horizontal":   "─",
+      "vertical":     "│",
+      "note": "Light box-drawing characters (U+250x range) - current default"
+    },
+
+    "double_line": {
+      "top_left":     "╔",
+      "top_right":    "╗",
+      "bottom_left":  "╚",
+      "bottom_right": "╝",
+      "horizontal":   "═",
+      "vertical":     "║",
+      "note": "Heavy box-drawing for emphasis"
+    },
+
+    "rounded": {
+      "top_left":     "╭",
+      "top_right":    "╮",
+      "bottom_left":  "╰",
+      "bottom_right": "╯",
+      "horizontal":   "─",
+      "vertical":     "│",
+      "note": "Rounded corners for softer appearance"
+    },
+
+    "ascii_fallback": {
+      "top_left":     "+",
+      "top_right":    "+",
+      "bottom_left":  "+",
+      "bottom_right": "+",
+      "horizontal":   "-",
+      "vertical":     "|",
+      "note": "ASCII-only box drawing for maximum compatibility"
+    },
+
+    "current_style": "single_line",
+    "rationale": "Single-line provides clean appearance without overwhelming visual weight",
+    "note": "Set current_style to 'single_line', 'double_line', 'rounded', or 'ascii_fallback'"
+  },
+
+  // ============================================================================
+  // PROGRESS BAR CHARACTERS
+  // ============================================================================
+
+  "progress_bar": {
+    "description": "Characters for ProgressBar() function - configure for terminal compatibility or visual preference",
+
+    "block_style": {
+      "filled": "█",
+      "empty":  "░",
+      "note": "Full/light block characters (current default) - high visual contrast"
+    },
+
+    "ascii_style": {
+      "filled": "#",
+      "empty":  ".",
+      "note": "ASCII-only progress bar for maximum compatibility"
+    },
+
+    "bar_style": {
+      "filled": "▓",
+      "empty":  "░",
+      "note": "Medium/light shade - softer contrast"
+    },
+
+    "current_style": "block_style",
+    "rationale": "Block characters provide immediate visual feedback on progress",
+    "note": "Set current_style to 'block_style', 'ascii_style', or 'bar_style'"
+  },
+
+  // ============================================================================
+  // LAYOUT AND SPACING
+  // ============================================================================
+
+  "layout": {
+    "description": "Spacing and padding values for consistent formatting across all display functions",
+
+    "header": {
+      "padding": 4,
+      "note": "Characters added to title length for separator width (Header() function, line 110)"
+    },
+
+    "key_value": {
+      "column_width": 20,
+      "note": "Fixed width for key column in KeyValue() function (line 127)"
+    },
+
+    "table": {
+      "column_padding": 2,
+      "note": "Spaces added after each column in Table.Render() (line 179)"
+    },
+
+    "box": {
+      "width_padding": 4,
+      "note": "Characters added to max width for box borders (Box() function, line 257)"
+    },
+
+    "indentation": {
+      "status_line": "  ",
+      "key_value": "  ",
+      "note": "Indentation for nested/secondary content (lines 127, 134, 136)"
+    },
+
+    "rationale": "Configurable spacing enables compact vs spacious layouts, different display densities",
+    "accessibility_note": "Larger padding values improve readability for users with vision impairments"
+  },
+
+  // ============================================================================
+  // FORMAT STRINGS
+  // ============================================================================
+
+  "format_strings": {
+    "description": "Output format templates - configure for localization, accessibility, or preference",
+
+    "progress_bar": {
+      "template": "[%s] %d/%d (%.0f%%)",
+      "note": "ProgressBar() output format (line 232): [bar] current/total (percent%)",
+      "components": {
+        "bar_position": "first",
+        "show_numbers": true,
+        "show_percentage": true,
+        "percentage_precision": 0
+      },
+      "alternatives": {
+        "compact": "%d/%d [%s]",
+        "verbose": "Progress: %d of %d (%.1f%%) [%s]",
+        "minimal": "[%s] %.0f%%"
+      }
+    },
+
+    "rationale": "Format strings enable internationalization, reordering components, precision control",
+    "future_extensions": {
+      "locale_support": "Language-specific formatting (e.g., European number formats)",
+      "component_visibility": "Toggle individual components (hide percentage, show only bar, etc.)"
+    }
+  },
+
+  // ============================================================================
+  // BEHAVIOR AND FEATURES
+  // ============================================================================
+
+  "behavior": {
+    "description": "Control display library behavior and optional features",
+
+    "panic_recovery": {
+      "enabled": true,
+      "silent": true,
+      "note": "Rails self-evidence: panic recovery is silent because failure is visually obvious"
+    },
+
+    "validation": {
+      "empty_table_returns_empty": true,
+      "no_headers_returns_empty": true,
+      "zero_total_returns_empty": true,
+      "negative_values_return_empty": true,
+      "note": "Validation behavior in Table.Render() and ProgressBar()"
+    },
+
+    "session_display": {
+      "show_temporal_awareness": true,
+      "show_workspace_analysis": true,
+      "show_stopping_context": true,
+      "show_temporal_journey": true,
+      "show_compaction_preservation": true,
+      "note": "Control visibility of optional session display sections"
+    },
+
+    "future_features": {
+      "color_detection": "Auto-detect terminal color support and fall back appropriately",
+      "width_detection": "Auto-detect terminal width for responsive formatting",
+      "unicode_detection": "Auto-detect Unicode support and switch to ASCII fallback",
+      "accessibility_mode": "High-contrast colors, larger spacing, screen reader optimization"
+    }
+  },
+
+  // ============================================================================
+  // SESSION-SPECIFIC CONTENT
+  // ============================================================================
+
+  "banner": {
+    "description": "Banner formatting for session headers (used by hooks/lib/session)",
+    "width": 64,
+    "content_width": 62,
+    "border_style": "single_line",
+    "note": "border_style references box_characters styles (single_line, double_line, rounded, ascii_fallback)"
+  },
+
+  "section_headers": {
+    "description": "Section header text for session display sections",
+    "session_start": {
+      "environment": "SESSION ENVIRONMENT",
+      "temporal_awareness": "TEMPORAL AWARENESS",
+      "workspace_analysis": "WORKSPACE ANALYSIS"
+    },
+    "session_stop": {
+      "stopping_point": "STOPPING POINT CHECK",
+      "temporal_context": "TEMPORAL CONTEXT AT STOP"
+    },
+    "session_end": {
+      "session_summary": "SESSION SUMMARY",
+      "temporal_journey": "TEMPORAL JOURNEY",
+      "state_reminders": "STATE REMINDERS"
+    },
+    "subagent": {
+      "completion": "SUBAGENT COMPLETION"
+    }
+  },
+
+  "biblical_verses": {
+    "description": "Biblical verses for session banners (session_start uses instance config, others configurable here)",
+    "session_stop": {
+      "banner_title": "Task Complete - Excellence that Honors God",
+      "verse_text": "Whatever you do, work heartily, as for the Lord and not for men.",
+      "verse_ref": "Colossians 3:23"
+    },
+    "session_end": {
+      "banner_title": "Session Ending - Grace and Peace",
+      "verse_text": "The Lord bless you and keep you; the Lord make his face shine on you and be gracious to you.",
+      "verse_ref": "Numbers 6:24-25"
+    }
+  },
+
+  "messages": {
+    "description": "Standard messages used throughout session display (placeholders: {count}, {type}, {code})",
+    "workspace": {
+      "no_workspace": "ⓘ No workspace configured (NOVA_DAWN_WORKSPACE not set)",
+      "workspace_healthy": "✓ Workspace healthy - no warnings or context to report"
+    },
+    "compaction": {
+      "manual": "Manual compaction #{count} - optimizing context...",
+      "auto": "Auto-compaction #{count} - managing token usage...",
+      "unknown": "Compaction #{count} starting...",
+      "preservation_header": "📍 Temporal State Preservation:"
+    },
+    "subagent": {
+      "success": "✓ Subagent [{type}] completed successfully",
+      "failure": "⚠️  Subagent [{type}] completed with errors (exit code: {code})",
+      "default": "✓ Subagent [{type}] completed"
+    }
+  },
+
+  "field_labels": {
+    "description": "Field labels for displayed information in session display",
+    "environment": {
+      "workspace": "Workspace:",
+      "working_directory": "Working Directory:",
+      "git_branch": "Git Branch:",
+      "session_time": "Session Time:",
+      "system": "System:"
+    },
+    "temporal": {
+      "external_time": "External Time:",
+      "internal_time": "Internal Time:",
+      "internal_schedule": "Internal Schedule:",
+      "external_calendar": "External Calendar:",
+      "session_duration": "Session Duration:",
+      "work_context": "Work Context:",
+      "date_context": "Date Context:"
+    },
+    "stop": {
+      "stopped": "Stopped:",
+      "time": "Time:",
+      "schedule_context": "Schedule Context:",
+      "date": "Date:"
+    },
+    "end": {
+      "ended": "Ended:",
+      "reason": "Reason:",
+      "ending_at": "Ending At:",
+      "started": "Started:"
+    },
+    "subagent": {
+      "completed_at": "Completed At:",
+      "during": "During:"
+    },
+    "compaction": {
+      "time": "Time:",
+      "session": "Session:",
+      "context": "Context:",
+      "date": "Date:",
+      "compactions": "Compactions:"
+    }
+  },
+
+  // ============================================================================
+  // USAGE NOTES AND EXAMPLES
+  // ============================================================================
+
+  "usage": {
+    "description": "How to use this configuration file",
+
+    "loading": "Display library loads this config at init() from system/data/config/display/formatting.jsonc",
+    "fallback": "All functions have hardcoded defaults if config fails to load (rails self-evidence)",
+    "override": "User/instance configs can override these defaults for customization",
+
+    "examples": {
+      "ascii_mode": "Set icons.current_mode='ascii_fallback', box_characters.current_style='ascii_fallback', progress_bar.current_style='ascii_style'",
+      "high_contrast": "Use bold_foreground colors, emoji_variant icons, double_line boxes",
+      "compact_layout": "Reduce layout padding values, use minimal format_strings"
+    }
+  }
+}

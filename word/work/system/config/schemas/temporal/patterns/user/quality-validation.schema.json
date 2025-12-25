@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/user/quality-validation.schema.json",
+  "title": "User Quality Validation Schema",
+  "description": "Schema for validating stated quality preferences against actual quality patterns",
+  "type": "object",
+  "required": ["metadata", "stated_preferences", "actual_quality_patterns", "validation_result", "insights", "recommendations", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["user", "pattern_type", "description", "last_updated", "version"],
+      "properties": {
+        "user": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["quality_validation"] },
+        "description": { "type": "string" },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "stated_preferences": {
+      "type": "object",
+      "required": ["source", "extracted_date", "quality_preferences"],
+      "properties": {
+        "source": { "type": "string" },
+        "extracted_date": { "type": "string", "format": "date" },
+        "quality_preferences": {
+          "type": "object",
+          "properties": {
+            "best_work_time": { "type": "string" },
+            "optimal_environment": { "type": "string" },
+            "productivity_factors": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "actual_quality_patterns": {
+      "type": "object",
+      "required": ["source"],
+      "properties": {
+        "source": { "type": "string" },
+        "peak_quality_time": { "type": "string" },
+        "avg_quality_score_by_time": { "type": "object" },
+        "celestial_alignment": { "type": "string" },
+        "data_period": { "type": "string" }
+      }
+    },
+    "validation_result": {
+      "type": "object",
+      "required": ["alignment_status"],
+      "properties": {
+        "alignment_status": { "type": "string" },
+        "time_preference_validated": { "type": "boolean" },
+        "celestial_alignment_validated": { "type": "boolean" },
+        "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
+        "note": { "type": "string" }
+      }
+    },
+    "insights": {
+      "type": "object",
+      "properties": {
+        "validated_preferences": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "misalignments": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "discoveries": {
+          "type": "object",
+          "properties": {
+            "note": { "type": "string" },
+            "items": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "object",
+      "properties": {
+        "schedule_adjustments": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "config_updates": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "environmental_changes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

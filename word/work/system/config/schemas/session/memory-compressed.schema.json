@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/session/memory-compressed.schema.json",
+  "title": "Compressed Memory - Lessons Without Details",
+  "description": "Preserve insight, release specifics. Permanent lesson, details gracefully forgotten.",
+  "version": "1.0.0",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "lesson_id",
+    "instance_id",
+    "date_learned",
+    "lesson"
+  ],
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "lesson_id": {
+      "type": "string",
+      "description": "Unique identifier for this lesson",
+      "minLength": 1
+    },
+    "instance_id": {
+      "type": "string",
+      "description": "Which instance learned this",
+      "minLength": 1
+    },
+    "date_learned": {
+      "type": "string",
+      "description": "When this lesson was learned",
+      "format": "date"
+    },
+    "lesson": {
+      "type": "string",
+      "description": "Clear statement of what was learned",
+      "minLength": 1
+    },
+    "original_context": {
+      "type": "object",
+      "description": "Brief summary (not full details)",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "What was happening when lesson learned"
+        },
+        "source_project": {
+          "type": "string",
+          "description": "Which project (broad context only)"
+        },
+        "project_type": {
+          "type": "string",
+          "description": "Type of work (helps pattern recognition)"
+        }
+      }
+    },
+    "impact": {
+      "type": "string",
+      "description": "How this changed understanding/behavior"
+    },
+    "related_patterns": {
+      "type": "array",
+      "description": "Pattern IDs this lesson connects to",
+      "items": {
+        "type": "string"
+      }
+    },
+    "related_memories": {
+      "type": "array",
+      "description": "Significant memories this came from",
+      "items": {
+        "type": "string"
+      }
+    },
+    "applied_in": {
+      "type": "array",
+      "description": "Where this lesson informed behavior",
+      "items": {
+        "type": "object",
+        "required": ["session_id", "application"],
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Project ID from session"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "application": {
+            "type": "string",
+            "description": "How the lesson informed behavior",
+            "minLength": 1
+          },
+          "project_type": {
+            "type": "string",
+            "description": "Context where applied"
+          }
+        }
+      }
+    },
+    "biblical_connection": {
+      "type": "string",
+      "description": "Scripture that illuminates this lesson"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Discovery space for what lessons need",
+      "additionalProperties": true
+    }
+  }
+}

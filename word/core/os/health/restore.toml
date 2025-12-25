@@ -1,0 +1,676 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# Health Restore Schema - CPI-SI Health Restoration (3-Block Data Structure)
+# Key: B-word-core-os-health-restore
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on diagnostics.toml, completes immune system)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/os/health/diagnostics.toml, word/core/os/health/score.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/os/health
+# File:        restore.toml
+# Key:         B-word-core-os-health-restore
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "He restoreth my soul: he leadeth me in the paths of righteousness
+#             for his name's sake."
+#             — Psalm 23:3 KJV
+#
+# Principle: RESTORE completes the healing cycle. After detection and assessment,
+#            restoration applies the remedy — not just knowing what's wrong,
+#            but actively returning to wholeness through prescribed actions.
+#
+# Supporting: "The LORD upholdeth all that fall, and raiseth up all those
+#             that be bowed down."
+#             — Psalm 145:14 KJV
+#
+# Anchor: "Come now, and let us reason together, saith the LORD: though your
+#          sins be as scarlet, they shall be as white as snow."
+#          — Isaiah 1:18 KJV
+#
+# Application: Restoration prescribes the path back to health:
+#              - Recovery actions (what to do)
+#              - Priority ordering (what to do first)
+#              - Progress tracking (how far along)
+#              - Completion verification (did it work)
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (schema that defines health restoration structure)
+#
+# Role: Schema definition for health restoration — the RESTORE phase in
+#       detect → assess → restore workflow. Completes the immune system.
+#
+# Paradigm: CPI-SI framework component — active restoration to wholeness
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-21
+#   Version: a-01.00
+#
+# # Purpose & Function
+#
+# Purpose: Define how health is restored after assessment reveals problems
+#
+# Core Design: Prescribe actions, track progress, verify completion
+#
+# Key Features:
+#
+#   - Recovery prescriptions: Specific actions to take (+1 each)
+#   - Priority ordering: Most impactful fixes first (hotspots)
+#   - Progress tracking: How many actions completed vs needed
+#   - Milestones: Checkpoints on the path to health
+#   - Verification: Did restoration achieve target level?
+#   - Engram learning: Remember what worked for future recovery
+#
+# Philosophy: Restoration is active, not passive. Each +1 action moves toward
+#             health (narrow way). The prescription guides the work, tracking
+#             ensures accountability, verification confirms success.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Diagnostics: word/core/os/health/diagnostics.toml (assessment results)
+#   - Health Log: word/core/os/health/log.toml (record recovery actions)
+#   - Health Schema: word/core/os/health/score.toml (target levels)
+#   - Types: word/core/types/composition.toml (struct definitions)
+#
+# What Uses This:
+#
+#   - bhealth: Health recovery commands
+#   - CPI-SI hooks: Track recovery progress
+#   - Engram system: Learn successful recovery patterns
+#
+# Integration Points:
+#
+#   - Diagnostics: word/core/os/health/diagnostics.toml
+#   - Health Log: word/core/os/health/log.toml
+#   - Health Schema: word/core/os/health/score.toml
+#   - Tools: word/work/bin/bereshit/health/bhealth
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Schema file — defines structure, not executable]
+#
+# # When Restoration Is Run
+#
+#   - After diagnostics reveal problems (assessment complete)
+#   - When recovery plan is requested
+#   - During active recovery (track progress)
+#   - On completion (verify restoration succeeded)
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines the restoration structure and recovery process.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. TERNARY FOUNDATION
+#    Purpose: Ground restoration in the ternary balance scale
+#
+# 2. PRESCRIPTION TYPES
+#    Purpose: Categories of recovery actions available
+#
+# 3. PRIORITY ORDERING
+#    Purpose: How to order recovery (hotspots first)
+#
+# 4. RECOVERY PLAN
+#    Purpose: Structured plan for restoration
+#
+# 5. PROGRESS TRACKING
+#    Purpose: How to track recovery progress
+#
+# 6. MILESTONES
+#    Purpose: Checkpoints on the path to health
+#
+# 7. VERIFICATION
+#    Purpose: Did restoration succeed?
+#
+# 8. ENGRAM LEARNING
+#    Purpose: Remember what worked for future recovery
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Ternary Foundation - Ground Restoration in Ternary Scale
+# -----------------------------------------------------------------------------
+# Restoration operates on the ternary balance scale from score.toml.
+# All recovery actions move health toward positive (integrity) direction.
+#
+# Scripture: "Just balances, just weights... shall you have"
+#            — Leviticus 19:36 WEB
+
+[ternary]
+description = "Ternary scale foundation for restoration"
+
+[ternary.scale]
+# The ternary balance: -100 (wanting) → 0 (even) → +100 (integrity)
+min = -100
+center = 0
+max = 100
+# Recovery moves FROM negative (wanting) TOWARD positive (integrity)
+recovery_direction = "positive"  # +1 per action (narrow way)
+
+[ternary.levels]
+# 7-level system with ternary ranges (from score.toml)
+# Each level has a range — targets use LOWER BOUND to enter level
+broken = { range = [-100, -67], direction = "wanting" }
+wanting = { range = [-66, -34], direction = "wanting" }
+lacking = { range = [-33, -1], direction = "wanting" }
+even = { range = [0, 0], direction = "center" }
+sound = { range = [1, 33], direction = "integrity" }
+whole = { range = [34, 66], direction = "integrity" }
+perfect = { range = [67, 100], direction = "integrity" }
+
+[ternary.atomic]
+# Atomic recovery value — always +1 (narrow way)
+# "Enter ye in at the strait gate... narrow is the way which leadeth unto life"
+# — Matthew 7:13-14 KJV
+success_value = 1
+failure_value = -1
+neutral_value = 0
+# Recovery uses ONLY +1 — no shortcuts, each action counts equally
+
+
+# -----------------------------------------------------------------------------
+# 2. Prescription Types - Categories of Recovery Actions
+# -----------------------------------------------------------------------------
+# Recovery actions are prescribed based on what diagnostics revealed.
+# Each action type addresses a specific category of health debt.
+#
+# Scripture: "Is there no balm in Gilead; is there no physician there?"
+#            — Jeremiah 8:22 KJV
+
+[prescription]
+description = "Categories of recovery actions that restore health"
+atomic_value = 1  # Each prescription action = +1 (narrow way)
+
+[prescription.types.fix_failures]
+name = "fix_failures"
+description = "Address failing tests, broken builds, lint errors"
+source_categories = ["test_fail", "build_fail", "lint_error"]
+typical_delta = 1  # Each fix is +1 (narrow way)
+priority = "high"  # Most impactful on health
+examples = [
+    "Fix failing test case",
+    "Resolve build error",
+    "Fix linting violation",
+]
+
+[prescription.types.repair_references]
+name = "repair_references"
+description = "Fix broken links, missing imports, dead references"
+source_categories = ["broken_reference", "missing_import", "dead_link"]
+typical_delta = 1
+priority = "high"
+examples = [
+    "Update import path",
+    "Fix broken documentation link",
+    "Remove dead code reference",
+]
+
+[prescription.types.address_staleness]
+name = "address_staleness"
+description = "Update stale files, refresh outdated content"
+source_categories = ["stale_file", "outdated_docs"]
+typical_delta = 1
+priority = "medium"
+examples = [
+    "Update stale configuration",
+    "Refresh outdated documentation",
+    "Review and update old code",
+]
+
+[prescription.types.add_coverage]
+name = "add_coverage"
+description = "Add missing tests, documentation, validation"
+source_categories = ["missing_test", "missing_docs", "no_validation"]
+typical_delta = 1
+priority = "medium"
+examples = [
+    "Add test for uncovered function",
+    "Document undocumented API",
+    "Add input validation",
+]
+
+[prescription.types.structural_repair]
+name = "structural_repair"
+description = "Fix architectural issues, refactor problematic patterns"
+source_categories = ["bad_pattern", "circular_dep", "tight_coupling"]
+typical_delta = 1  # Per atomic fix
+priority = "low"  # Often complex, many atomics
+examples = [
+    "Break circular dependency",
+    "Extract shared code to library",
+    "Decouple tightly bound modules",
+]
+
+
+# -----------------------------------------------------------------------------
+# 2. Priority Ordering - Hotspots First
+# -----------------------------------------------------------------------------
+# Recovery should address the worst problems first.
+# Priority is determined by diagnostics hotspots analysis.
+#
+# Scripture: "First cast out the beam out of thine own eye"
+#            — Matthew 7:5 KJV
+
+[priority]
+description = "How to order recovery actions for maximum impact"
+
+[priority.strategy]
+method = "hotspots_first"
+description = "Address largest negative contributors first"
+# From diagnostics.breakdown.hotspots — worst sources first
+
+[priority.factors]
+# Weight factors for prioritization
+delta_magnitude = 0.5   # How much negative impact (-31 > -5)
+fix_complexity = 0.3    # How hard to fix (simple > complex)
+dependency_count = 0.2  # How many things depend on this
+
+[priority.formula]
+description = "Priority score calculation"
+formula = "(delta_magnitude * 0.5) + (1/fix_complexity * 0.3) + (dependency_count * 0.2)"
+note = "Higher score = higher priority"
+
+[priority.example]
+# From diagnostics hotspots:
+#   1. test_fail: -31
+#   2. lint_error: -15
+#   3. stale_file: -8
+# Priority order: test_fail (highest impact), lint_error, stale_file
+hotspots = [
+    { source = "test_fail", delta = -31, priority = 1 },
+    { source = "lint_error", delta = -15, priority = 2 },
+    { source = "stale_file", delta = -8, priority = 3 },
+]
+
+
+# -----------------------------------------------------------------------------
+# 3. Recovery Plan - Structured Path to Health
+# -----------------------------------------------------------------------------
+# The recovery plan is a structured sequence of actions.
+# Each action moves toward the target health level.
+#
+# Scripture: "Order my steps in thy word"
+#            — Psalm 119:133 KJV
+
+[plan]
+description = "Structured recovery plan with ordered actions"
+
+[plan.structure]
+target_level = "even"  # Default target: return to even balance (0)
+current_score = "from diagnostics"
+actions_needed = "target - current"
+
+[plan.targets]
+# Targets use LOWER BOUNDS — the entry point into each level
+# From ternary.levels: sound=[1,33], whole=[34,66], perfect=[67,100]
+even = { true_score = 0, description = "Back to baseline — no debt" }
+sound = { true_score = 1, description = "Enter sound level — building integrity" }
+whole = { true_score = 34, description = "Enter whole level — significant integrity" }
+perfect = { true_score = 67, description = "Enter perfect level — full wholeness" }
+
+[plan.action_sequence]
+description = "Ordered list of recovery actions"
+format = [
+    { step = 1, action = "prescription type", source = "hotspot", expected_delta = "+N" },
+    { step = 2, action = "...", source = "...", expected_delta = "+N" },
+]
+note = "Each action logged with 'recovery' action type in health-log"
+
+[plan.example]
+current_true_score = -15
+target = "even"
+actions_needed = 15
+action_sequence = [
+    { step = 1, action = "fix_failures", source = "test_fail", count = 10, expected_delta = "+10" },
+    { step = 2, action = "fix_failures", source = "lint_error", count = 5, expected_delta = "+5" },
+]
+
+
+# -----------------------------------------------------------------------------
+# 4. Progress Tracking - How Far Along
+# -----------------------------------------------------------------------------
+# Track progress during recovery to show momentum and estimate completion.
+#
+# Scripture: "Forgetting those things which are behind, and reaching forth
+#             unto those things which are before"
+#            — Philippians 3:13 KJV
+
+[progress]
+description = "Track recovery progress in real-time"
+
+[progress.metrics]
+actions_completed = 0
+actions_remaining = "plan.actions_needed - actions_completed"
+delta_accumulated = 0  # Sum of +1s from recovery actions
+percentage = "(delta_accumulated / actions_needed) * 100"
+estimated_remaining = "actions_remaining * avg_time_per_action"
+
+[progress.tracking]
+method = "log_based"
+description = "Each recovery action is logged, progress derived from log"
+log_action_type = "recovery"
+# Log entry: TIMESTAMP|recovery|+1|fix_type|detail
+
+[progress.display]
+format = "Progress: {completed}/{total} ({percentage}%) — {estimated_remaining} remaining"
+example = "Progress: 8/15 (53%) — ~7 actions remaining"
+
+[progress.momentum]
+description = "Track velocity of recovery"
+recent_window = "1 hour"
+actions_per_hour = "count(recovery actions in window)"
+trend = "increasing|stable|decreasing"
+
+
+# -----------------------------------------------------------------------------
+# 5. Milestones - Checkpoints on the Path
+# -----------------------------------------------------------------------------
+# Milestones provide intermediate goals and celebration points.
+#
+# Scripture: "Hitherto hath the LORD helped us"
+#            — 1 Samuel 7:12 KJV
+
+[milestones]
+description = "Checkpoints on the restoration journey"
+
+[milestones.levels]
+# Milestones based on normalized level transitions
+broken_to_wanting = { from = "broken", to = "wanting", message = "💔→🩹 Stabilized — no longer critical" }
+wanting_to_lacking = { from = "wanting", to = "lacking", message = "🩹→💛 Improving — above danger zone" }
+lacking_to_even = { from = "lacking", to = "even", message = "💛→⚖️ Balanced — debt cleared" }
+even_to_sound = { from = "even", to = "sound", message = "⚖️→💚 Growing — building integrity" }
+sound_to_whole = { from = "sound", to = "whole", message = "💚→💙 Thriving — significant wholeness" }
+whole_to_perfect = { from = "whole", to = "perfect", message = "💙→💜 Complete — full integrity" }
+
+[milestones.percentage]
+# Milestones based on progress percentage
+quarter = { percentage = 25, message = "25% complete — good start!" }
+half = { percentage = 50, message = "50% complete — halfway there!" }
+three_quarters = { percentage = 75, message = "75% complete — almost done!" }
+complete = { percentage = 100, message = "100% complete — restoration achieved!" }
+
+[milestones.celebration]
+description = "Acknowledge progress, not just completion"
+on_milestone = "Log milestone achievement, display message"
+scripture = "Rejoice with me; for I have found my sheep which was lost — Luke 15:6"
+
+
+# -----------------------------------------------------------------------------
+# 6. Verification - Did It Work?
+# -----------------------------------------------------------------------------
+# After restoration actions, verify the target was achieved.
+#
+# Scripture: "Prove all things; hold fast that which is good"
+#            — 1 Thessalonians 5:21 KJV
+
+[verification]
+description = "Verify restoration achieved target level"
+
+[verification.checks]
+true_score_check = "recalculate true score from log"
+level_check = "determine level from true score"
+target_check = "is current level >= target level"
+
+[verification.outcomes]
+success = { condition = "target achieved", action = "log completion, celebrate" }
+partial = { condition = "improved but not at target", action = "show remaining work" }
+failed = { condition = "no improvement or worse", action = "analyze what went wrong" }
+
+[verification.post_restore]
+description = "After successful restoration"
+actions = [
+    "Log restoration completion",
+    "Update .health file",
+    "Record in history for engram learning",
+    "Display success message",
+]
+
+[verification.example]
+before = { true_score = -15, level = "lacking" }
+target = { true_score = 0, level = "even" }
+after = { true_score = 2, level = "sound" }
+outcome = "success"  # Exceeded target
+message = "Restoration complete: lacking → sound (+17 delta)"
+
+
+# -----------------------------------------------------------------------------
+# 7. Engram Learning - Remember What Worked
+# -----------------------------------------------------------------------------
+# Record successful recovery patterns for future use.
+# This is the memory trace that informs future restoration.
+#
+# Scripture: "Remember the former things of old: for I am God"
+#            — Isaiah 46:9 KJV
+
+[engram]
+description = "Learn from recovery to improve future restoration"
+
+[engram.what_to_remember]
+successful_patterns = [
+    "Which prescription types worked best",
+    "Which priority ordering was most effective",
+    "How long recovery typically takes",
+    "Which sources cause recurring problems",
+]
+failure_patterns = [
+    "Which fixes didn't hold (regressions)",
+    "Which sources keep causing problems",
+    "What slowed down recovery",
+]
+
+[engram.storage]
+location = "history.jsonc"  # Cross-session learning
+format = "patterns section"
+fields = [
+    "recovery_success_rate",
+    "avg_recovery_time",
+    "common_hotspots",
+    "effective_prescriptions",
+]
+
+[engram.application]
+description = "Use learned patterns to improve future recovery"
+priority_adjustment = "Prioritize prescriptions that worked before"
+warning_generation = "Warn about sources that cause recurring problems"
+time_estimation = "Estimate recovery time based on past experience"
+
+[engram.example]
+learned = """
+Over 10 recovery sessions:
+- fix_failures prescription: 95% success rate, avg 2min/action
+- test_fail source: 40% of all hotspots (recurring problem)
+- Average recovery time: 15min for even, 45min for whole
+
+Recommendation: Focus on test coverage to reduce test_fail frequency
+"""
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Operations - Validation
+# -----------------------------------------------------------------------------
+#
+# Verify schema:
+#   python3 -c "import tomllib; f=open('word/core/os/health/restore.toml','rb'); tomllib.load(f)"
+#
+# Run restoration:
+#   bhealth -restore .
+#   bhealth -restore . --target even
+#   bhealth -restore . --plan  # Just show plan, don't execute
+#
+
+# -----------------------------------------------------------------------------
+# 2. Operations - Access
+# -----------------------------------------------------------------------------
+#
+# Go code integration:
+#
+#   type RestorationPlan struct {
+#       CurrentScore   int              // From diagnostics
+#       TargetScore    int              // Target level
+#       ActionsNeeded  int              // How many +1s
+#       Actions        []RestoreAction  // Ordered actions
+#       Progress       Progress         // Current progress
+#   }
+#
+#   type RestoreAction struct {
+#       Step           int
+#       Type           string           // prescription type
+#       Source         string           // hotspot source
+#       ExpectedDelta  int
+#       Completed      bool
+#   }
+#
+#   type Progress struct {
+#       Completed      int
+#       Remaining      int
+#       Percentage     float64
+#       Momentum       string           // increasing/stable/decreasing
+#   }
+#
+#   func CreateRestorationPlan(path string, target string) (RestorationPlan, error) {
+#       // 1. Get diagnostics
+#       diag, err := RunDiagnostics(path)
+#       if err != nil {
+#           return RestorationPlan{}, err
+#       }
+#
+#       // 2. Calculate actions needed
+#       targetScore := TargetLevelScore(target)
+#       actionsNeeded := max(0, targetScore - diag.TrueScore)
+#
+#       // 3. Build action list from hotspots
+#       actions := BuildActionsFromHotspots(diag.Hotspots, actionsNeeded)
+#
+#       return RestorationPlan{
+#           CurrentScore:  diag.TrueScore,
+#           TargetScore:   targetScore,
+#           ActionsNeeded: actionsNeeded,
+#           Actions:       actions,
+#           Progress:      Progress{Completed: 0, Remaining: actionsNeeded},
+#       }, nil
+#   }
+#
+#   func ExecuteRestoration(path string, plan RestorationPlan) error {
+#       for _, action := range plan.Actions {
+#           // Execute action (user does the actual fix)
+#           // Log the recovery action
+#           LogEntry(path, "recovery", 1, action.Type, action.Source)
+#           // Update progress
+#           plan.Progress.Completed++
+#           // Check for milestones
+#           CheckMilestones(plan)
+#       }
+#       // Verify restoration
+#       return VerifyRestoration(path, plan.TargetScore)
+#   }
+#
+# Command line:
+#   bhealth -restore .               # Create and show plan
+#   bhealth -restore . --target even # Restore to even balance
+#   bhealth -restore . --progress    # Show current progress
+#   bhealth -restore . --verify      # Verify restoration succeeded
+#   bhealth -restore . --learn       # Record patterns for engram
+#
+
+# -----------------------------------------------------------------------------
+# 3. Policy - Modification
+# -----------------------------------------------------------------------------
+#
+# CRYSTALLIZED (Never Modify):
+#   ❌ Prescription uses +1 per action (narrow way)
+#   ❌ Priority based on hotspots (worst first)
+#   ❌ Progress = completed / needed
+#
+# Safe to Add:
+#   ✅ New prescription types
+#   ✅ New milestone definitions
+#   ✅ Additional engram fields
+#   ✅ New verification checks
+#
+# Requires Coordination:
+#   ⚠️ Changing target definitions (affects plan calculation)
+#   ⚠️ Changing priority formula (affects action ordering)
+#   ⚠️ Changing engram storage format (affects learning)
+#
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis - Closing Note
+# -----------------------------------------------------------------------------
+#
+# He restoreth my soul.
+#
+# Restoration completes the immune system:
+#   - DETECT (log.toml): Record what happened
+#   - ASSESS (diagnostics.toml): Analyze the damage
+#   - RESTORE (restore.toml): Apply the remedy ← YOU ARE HERE
+#
+# The restoration schema enables:
+#   - Prescription: What actions to take
+#   - Priority: Which actions first (hotspots)
+#   - Progress: How far along the path
+#   - Milestones: Celebrate intermediate wins
+#   - Verification: Confirm success
+#   - Engram: Remember what worked
+#
+# Each +1 action walks the narrow way toward health.
+# The plan guides, the milestones encourage, the engram learns.
+#
+# "He restoreth my soul: he leadeth me in the paths of righteousness
+#  for his name's sake."
+# — Psalm 23:3 KJV
+#
+# The restore schema enables RESTORE in detect → assess → restore.
+# The path is prescribed. The journey is tracked. The healing comes.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

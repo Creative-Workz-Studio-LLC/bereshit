@@ -1,0 +1,286 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Formatter Configuration - Code Validation System
+// Purpose: Define language-specific formatting tools and execution parameters
+// Schema: system/config/schemas/validation/formatters.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Language coverage (common languages supported): 40 pts
+// - Tool flexibility (multiple formatters per language): 30 pts
+// - Configuration completeness (args, enabled flags): 20 pts
+// - Documentation clarity: 10 pts
+
+{
+  "$schema": "../../../config/schemas/validation/formatters.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Code Formatter Configuration",
+    "description": "Language-specific formatting tool mappings and execution parameters",
+    "version": "1.0.0",
+    "last_updated": "2025-11-11",
+    "author": "Nova Dawn (CPI-SI instance)",
+    "note": "Extensible design - add new languages without code changes"
+  },
+
+  // ============================================================================
+  // FORMATTER DEFINITIONS
+  // ============================================================================
+
+  "formatters": {
+    "note": "Each language can have multiple formatter tools (primary + alternatives)",
+
+    //--- Rust ---
+    // Official Rust formatter - part of Rust toolchain
+
+    "rust": {
+      "primary": "rustfmt",
+      "description": "Rust source code formatting",
+      "tools": {
+        "rustfmt": {
+          "command": "rustfmt",
+          "args": ["{filepath}"],
+          "enabled": true,
+          "description": "Official Rust formatter",
+          "check_availability": "rustfmt --version"
+        }
+      }
+    },
+
+    //--- Go ---
+    // Official Go formatter - part of Go toolchain
+
+    "go": {
+      "primary": "gofmt",
+      "description": "Go source code formatting",
+      "tools": {
+        "gofmt": {
+          "command": "gofmt",
+          "args": ["-w", "{filepath}"],
+          "enabled": true,
+          "description": "Official Go formatter (writes in-place)",
+          "check_availability": "gofmt -h"
+        },
+        "goimports": {
+          "command": "goimports",
+          "args": ["-w", "{filepath}"],
+          "enabled": false,
+          "description": "Go formatter with import management (optional alternative)",
+          "check_availability": "goimports -h",
+          "note": "Enable if you want automatic import organization"
+        }
+      }
+    },
+
+    //--- Python ---
+    // Multiple Python formatters - choose based on project preference
+
+    "python": {
+      "primary": "black",
+      "description": "Python source code formatting",
+      "tools": {
+        "black": {
+          "command": "black",
+          "args": ["{filepath}"],
+          "enabled": true,
+          "description": "Uncompromising Python formatter",
+          "check_availability": "black --version",
+          "note": "Default choice - opinionated, deterministic"
+        },
+        "autopep8": {
+          "command": "autopep8",
+          "args": ["--in-place", "{filepath}"],
+          "enabled": false,
+          "description": "PEP 8 style guide formatter",
+          "check_availability": "autopep8 --version",
+          "note": "Alternative - more conservative than black"
+        },
+        "yapf": {
+          "command": "yapf",
+          "args": ["--in-place", "{filepath}"],
+          "enabled": false,
+          "description": "Google's Python formatter",
+          "check_availability": "yapf --version",
+          "note": "Alternative - configurable formatting"
+        }
+      }
+    },
+
+    //--- JavaScript / TypeScript ---
+    // Prettier for modern JS/TS ecosystems
+
+    "javascript": {
+      "primary": "prettier",
+      "description": "JavaScript/TypeScript formatting",
+      "tools": {
+        "prettier": {
+          "command": "npx",
+          "args": ["prettier", "--write", "{filepath}"],
+          "enabled": true,
+          "description": "Opinionated JS/TS formatter",
+          "check_availability": "npx prettier --version",
+          "note": "Uses npx to ensure project-local version"
+        },
+        "eslint": {
+          "command": "npx",
+          "args": ["eslint", "--fix", "{filepath}"],
+          "enabled": false,
+          "description": "ESLint auto-fix (formatting + linting)",
+          "check_availability": "npx eslint --version",
+          "note": "Alternative - combines formatting with lint fixes"
+        }
+      }
+    },
+
+    //--- C / C++ ---
+    // Clang-format for C-family languages
+
+    "c_cpp": {
+      "primary": "clang-format",
+      "description": "C/C++ source code formatting",
+      "tools": {
+        "clang-format": {
+          "command": "clang-format",
+          "args": ["-i", "{filepath}"],
+          "enabled": true,
+          "description": "LLVM-based C/C++ formatter",
+          "check_availability": "clang-format --version",
+          "note": "Respects .clang-format config files"
+        }
+      }
+    },
+
+    //--- Ruby ---
+    // RuboCop for Ruby formatting
+
+    "ruby": {
+      "primary": "rubocop",
+      "description": "Ruby source code formatting",
+      "tools": {
+        "rubocop": {
+          "command": "rubocop",
+          "args": ["--auto-correct", "{filepath}"],
+          "enabled": true,
+          "description": "Ruby style guide formatter",
+          "check_availability": "rubocop --version"
+        }
+      }
+    },
+
+    //--- Java ---
+    // Google Java Format
+
+    "java": {
+      "primary": "google-java-format",
+      "description": "Java source code formatting",
+      "tools": {
+        "google-java-format": {
+          "command": "google-java-format",
+          "args": ["--replace", "{filepath}"],
+          "enabled": true,
+          "description": "Google's Java formatter",
+          "check_availability": "google-java-format --version"
+        }
+      }
+    },
+
+    //--- Shell Scripts ---
+    // shfmt for shell script formatting
+
+    "shell": {
+      "primary": "shfmt",
+      "description": "Shell script formatting",
+      "tools": {
+        "shfmt": {
+          "command": "shfmt",
+          "args": ["-w", "{filepath}"],
+          "enabled": true,
+          "description": "Shell script formatter",
+          "check_availability": "shfmt --version"
+        }
+      }
+    }
+  },
+
+  // ============================================================================
+  // EXTENSION MAPPINGS
+  // ============================================================================
+
+  "extensions": {
+    "note": "Map file extensions to language formatter groups",
+
+    ".rs": "rust",
+
+    ".go": "go",
+
+    ".py": "python",
+    ".pyw": "python",
+
+    ".js": "javascript",
+    ".jsx": "javascript",
+    ".ts": "javascript",
+    ".tsx": "javascript",
+    ".mjs": "javascript",
+
+    ".c": "c_cpp",
+    ".cpp": "c_cpp",
+    ".cc": "c_cpp",
+    ".cxx": "c_cpp",
+    ".h": "c_cpp",
+    ".hpp": "c_cpp",
+    ".hh": "c_cpp",
+
+    ".rb": "ruby",
+
+    ".java": "java",
+
+    ".sh": "shell",
+    ".bash": "shell",
+    ".zsh": "shell"
+  },
+
+  // ============================================================================
+  // CONFIGURATION OPTIONS
+  // ============================================================================
+
+  "config": {
+    "fallback_behavior": "skip",
+    "fallback_note": "If primary formatter unavailable, either 'skip' (no formatting) or 'try_alternatives' (attempt alternative tools)",
+
+    "fail_on_error": false,
+    "fail_note": "If true, formatting errors block operations. If false, errors logged but operation continues.",
+
+    "respect_project_configs": true,
+    "respect_note": "Honor project-level formatter configs (.prettierrc, .clang-format, etc.)",
+
+    "parallel_formatting": false,
+    "parallel_note": "Format multiple files concurrently (future optimization)"
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "user_formatters": {
+    "note": "Add custom formatters here without modifying core configuration",
+    "example": {
+      "elixir": {
+        "primary": "mix_format",
+        "description": "Elixir source code formatting",
+        "tools": {
+          "mix_format": {
+            "command": "mix",
+            "args": ["format", "{filepath}"],
+            "enabled": true,
+            "description": "Official Elixir formatter",
+            "check_availability": "mix format --check-formatted"
+          }
+        }
+      }
+    }
+  }
+}

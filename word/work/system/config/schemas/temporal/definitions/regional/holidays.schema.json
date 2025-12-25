@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/definitions/regional/holidays.schema.json",
+  "title": "Holidays Schema",
+  "description": "Schema for regional holiday definitions",
+  "type": "object",
+  "required": ["metadata", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "created", "last_updated", "purpose", "scope"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "created": { "type": "string", "format": "date" },
+        "last_updated": { "type": "string", "format": "date" },
+        "purpose": { "type": "string" },
+        "scope": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "federal_holidays_fixed": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["name", "date", "type", "significance", "observance"],
+          "properties": {
+            "name": { "type": "string" },
+            "date": { "type": "string" },
+            "date_pattern": { "type": "string" },
+            "fixed_value": {
+              "type": "string",
+              "pattern": "^[0-1][0-9]-[0-3][0-9]$"
+            },
+            "type": {
+              "type": "string",
+              "enum": ["federal", "national", "regional", "cultural", "religious", "religious/cultural"]
+            },
+            "significance": { "type": "string" },
+            "observance": { "type": "string" },
+            "observed_rule": { "type": "string" },
+            "cultural_note": { "type": "string" },
+            "established": { "type": "string" }
+          }
+        }
+      }
+    },
+    "federal_holidays_calculated": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["name", "calculation", "type", "significance", "observance"],
+          "properties": {
+            "name": { "type": "string" },
+            "official_name": { "type": "string" },
+            "also_known_as": { "type": "string" },
+            "calculation": { "type": "string" },
+            "month": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "week": { "type": "string" },
+            "day_of_week": { "type": "string" },
+            "type": { "type": "string" },
+            "significance": { "type": "string" },
+            "observance": { "type": "string" },
+            "established": { "type": "string" },
+            "note": { "type": "string" },
+            "cultural_note": { "type": "string" },
+            "observed_rule": { "type": "string" }
+          }
+        }
+      }
+    },
+    "cultural_holidays": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "date": { "type": "string" },
+            "date_pattern": { "type": "string" },
+            "fixed_value": { "type": "string" },
+            "calculation": { "type": "string" },
+            "month": { "type": "integer" },
+            "week": { "type": "string" },
+            "day_of_week": { "type": "string" },
+            "type": { "type": "string" },
+            "significance": { "type": "string" },
+            "observance": { "type": "string" },
+            "cultural_note": { "type": "string" },
+            "note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "religious_holidays": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" }
+      },
+      "patternProperties": {
+        "^(?!note$)[a-z_]+$": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "holiday_seasons": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "approximate_start": { "type": "string" },
+            "approximate_end": { "type": "string" },
+            "approximate_period": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "work_impact": { "type": "string" }
+          }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

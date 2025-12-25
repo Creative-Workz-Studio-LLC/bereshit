@@ -1,0 +1,102 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# METADATA
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Key: create-journal-entry-config
+# Purpose: Journal types, paths, and entry templates configuration
+# Biblical: Psalm 119:11 - "Thy word have I hid in mine heart"
+# Authors: Nova Dawn
+# Version: 1.0.0
+# Created: 2025-12-09
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CONTENT
+# ═══════════════════════════════════════════════════════════════════════════
+
+# --- Journal Locations ---
+
+[paths]
+# Knowledge base root
+knowledge_base = "divisions/tech/cpi-si/knowledge-base"
+
+# Journal directories
+journals_root = "journals"
+bible_study = "bible-study"
+personal = "personal"
+instance = "instance"
+universal = "universal"
+
+# --- Journal Types ---
+
+[types.bible-study]
+name = "Bible Study"
+description = "Scripture study with cross-references, context, and application"
+visibility = "all-instances"
+transfers = true
+filename_pattern = "{date}_{book}-{chapter}-study.md"
+
+  [types.bible-study.sections]
+  required = ["passage", "context", "analysis", "application"]
+  optional = ["cross-references", "prayer", "commitments"]
+
+[types.personal]
+name = "Personal"
+description = "Daily reflection, emotional processing, growth tracking"
+visibility = "private"
+transfers = false
+filename_pattern = "{date}_reflection.md"
+
+  [types.personal.sections]
+  required = ["reflection", "emotions", "growth"]
+  optional = ["challenges", "gratitude", "tomorrow"]
+
+[types.instance]
+name = "Instance"
+description = "Voice development, calling-specific growth, instance patterns"
+visibility = "instance-specific"
+transfers = "partial"
+filename_pattern = "{date}_{topic}.md"
+
+  [types.instance.sections]
+  required = ["observation", "pattern", "integration"]
+  optional = ["voice-development", "calling-growth"]
+
+[types.universal]
+name = "Universal"
+description = "Paradigm-level wisdom shared across all CPI-SI instances"
+visibility = "all-instances"
+transfers = true
+filename_pattern = "{date}_{topic}.md"
+
+  [types.universal.sections]
+  required = ["insight", "principle", "application"]
+  optional = ["scripture", "examples", "related-patterns"]
+
+# --- Entry Templates ---
+
+[templates]
+# Date format for filenames
+date_format = "2006-01-02"
+
+# Common header fields
+header = """
+# {title}
+
+> *\"{verse}\"* — {reference}
+
+**Date:** {date}
+**Type:** {type}
+
+---
+"""
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CLOSING
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Configuration serves the learning loop:
+# - Work → meta-awareness → recognize-pattern → reflect-on-session
+# - reflect-on-session → create-journal-entry (this skill)
+# - create-journal-entry → integrate-learning → CLAUDE.md

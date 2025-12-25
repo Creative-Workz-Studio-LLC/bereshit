@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/session/archive.schema.json",
+  "title": "Session Archive - Processed and Released",
+  "description": "Searchable history without active memory load. Permanent but dormant.",
+  "version": "1.0.0",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "archive_id",
+    "instance_id",
+    "user_id",
+    "date",
+    "archived_at"
+  ],
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "archive_id": {
+      "type": "string",
+      "description": "Original session identifier",
+      "minLength": 1
+    },
+    "instance_id": {
+      "type": "string",
+      "description": "Which instance this session belonged to",
+      "minLength": 1
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Which user was present",
+      "minLength": 1
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Which project (from session)",
+      "minLength": 1
+    },
+    "date": {
+      "type": "string",
+      "description": "When this session happened",
+      "format": "date"
+    },
+    "archived_at": {
+      "type": "string",
+      "description": "When this was archived (ISO-8601)",
+      "format": "date-time"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Session length",
+      "minimum": 0
+    },
+    "context": {
+      "type": "string",
+      "description": "Brief summary"
+    },
+    "work_context": {
+      "type": "string",
+      "description": "Workspace path or project context"
+    },
+    "session_metadata": {
+      "type": "object",
+      "description": "Key context from session (for searchability)",
+      "properties": {
+        "workflow_used": {
+          "type": "string",
+          "description": "Workflow from session → project → instance"
+        },
+        "project_type": {
+          "type": "string",
+          "description": "Type of project from session → project"
+        },
+        "circadian_phase": {
+          "type": "string",
+          "description": "Time of day from session → user schedule"
+        },
+        "quality_indicators": {
+          "type": "object",
+          "properties": {
+            "tasks_completed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "breakthroughs": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "struggles": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "processed_into": {
+      "type": "object",
+      "description": "What memories/patterns/lessons came from this session",
+      "properties": {
+        "significant_memories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "patterns_contributed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lessons_extracted": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "searchable_summary": {
+      "type": "string",
+      "description": "High-level description for retrieval if needed"
+    },
+    "tags": {
+      "type": "array",
+      "description": "For searchability",
+      "items": {
+        "type": "string"
+      }
+    },
+    "retrieval_metadata": {
+      "type": "object",
+      "description": "Information for finding this archive later",
+      "properties": {
+        "project_name": {
+          "type": "string",
+          "description": "Human-readable project name"
+        },
+        "project_phase": {
+          "type": "string",
+          "description": "Which development phase"
+        },
+        "significance_level": {
+          "type": "string",
+          "description": "How significant was this session",
+          "enum": ["routine", "notable", "formative"]
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Discovery space for archival retrieval needs",
+      "additionalProperties": true
+    }
+  }
+}

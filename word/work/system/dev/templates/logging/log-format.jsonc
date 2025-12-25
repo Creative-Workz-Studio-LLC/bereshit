@@ -1,0 +1,175 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// CPI-SI System - Structured Logging Template
+// Purpose: Define structured log format to avoid hardcoding in runtime
+// Schema: Defines how log entries should be formatted across all components
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Clear, parseable format: 40 pts
+// - Complete context capture: 35 pts
+// - Human and machine readable: 25 pts
+
+{
+  "$schema": "../../../config/schemas/dev/log-format.schema.json",
+  "version": "1.0.0",
+  "description": "Structured logging format template for CPI-SI system",
+
+  // ============================================================================
+  // LOG ENTRY FORMAT
+  // ============================================================================
+
+  "entry_format": {
+    "structure": "[{timestamp}] {level} | {component} | {identity} | {context_id} | {health} | {content}",
+    "description": "Main log entry format with all required fields"
+  },
+
+  // ============================================================================
+  // FIELD DEFINITIONS
+  // ============================================================================
+
+  "fields": {
+    "timestamp": {
+      "format": "YYYY-MM-DD HH:MM:SS.mmm",
+      "example": "2025-11-09 06:40:21.123",
+      "description": "ISO-like format with millisecond precision"
+    },
+
+    "level": {
+      "values": [
+        "CHECK",      // Validation/verification operations
+        "OPERATION",  // Action being performed
+        "CONTEXT",    // Context establishment
+        "EVENT",      // Significant event occurred
+        "ERROR",      // Error condition
+        "WARNING",    // Warning condition
+        "INFO",       // Informational message
+        "DEBUG"       // Debug-level detail
+      ],
+      "description": "Log severity/type classification"
+    },
+
+    "component": {
+      "format": "string",
+      "example": "status",
+      "description": "Component name generating the log entry"
+    },
+
+    "identity": {
+      "format": "{user}@{host}:{pid}",
+      "example": "seanje-lenox-wise@creativeworkz-nova-dawn:6573",
+      "description": "Execution identity (user, host, process ID)"
+    },
+
+    "context_id": {
+      "format": "{component}-{pid}-{nanosecond-timestamp}",
+      "example": "status-6573-1761710846178910692",
+      "description": "Unique context identifier for this execution"
+    },
+
+    "health": {
+      "format": "HEALTH: {percentage}% (raw: {score}, Δ{delta}) {emoji} [{bar}]",
+      "example": "HEALTH: 5% (raw: 10, Δ+10) ☠️ [██████████░░░░░░░░░░]",
+      "description": "Health scoring with delta and visual representation",
+      "components": {
+        "percentage": "Health as percentage (0-100%)",
+        "score": "Raw health score value",
+        "delta": "Change from previous score (Δ+10, Δ-5, etc.)",
+        "emoji": "Visual health indicator",
+        "bar": "20-character progress bar (█ = filled, ░ = empty)"
+      },
+      "emoji_mapping": {
+        "90-100": "💚",   // Excellent
+        "70-89": "💛",    // Good
+        "50-69": "🧡",    // Moderate
+        "30-49": "❤️",    // Poor
+        "10-29": "🩸",    // Critical
+        "0-9": "☠️"       // Failed
+      }
+    },
+
+    "content": {
+      "format": "EVENT: {event_name}\\n  DETAILS:\\n    {key}: {value}",
+      "description": "Structured content section with event and details",
+      "structure": {
+        "event": "Single line event description",
+        "details": "Indented key-value pairs (2 spaces + key: value)"
+      }
+    }
+  },
+
+  // ============================================================================
+  // FORMATTING RULES
+  // ============================================================================
+
+  "formatting_rules": {
+    "indentation": {
+      "event": "No indentation (starts at column 1)",
+      "details_header": "2 spaces",
+      "details_content": "4 spaces"
+    },
+
+    "multiline": {
+      "event": "Single line only",
+      "details": "One key-value pair per line",
+      "values": "Complex values use YAML-style multiline"
+    },
+
+    "escaping": {
+      "newlines": "Preserve with proper indentation",
+      "quotes": "Use single quotes for strings with spaces",
+      "special_chars": "Preserve literally"
+    }
+  },
+
+  // ============================================================================
+  // EXAMPLE ENTRIES
+  // ============================================================================
+
+  "examples": {
+    "check_operation": {
+      "raw": "[2025-11-09 06:40:21.190] CHECK | status | seanje-lenox-wise@creativeworkz-nova-dawn:6573 | status-6573-1761710846178910692 | HEALTH: 5% (raw: 10, Δ+10) ☠️ [██████████░░░░░░░░░░]\n  EVENT: Checking: logger-initialized\n  DETAILS:\n    component: status\n    result: true",
+      "parsed": {
+        "timestamp": "2025-11-09 06:40:21.190",
+        "level": "CHECK",
+        "component": "status",
+        "identity": {
+          "user": "seanje-lenox-wise",
+          "host": "creativeworkz-nova-dawn",
+          "pid": 6573
+        },
+        "context_id": "status-6573-1761710846178910692",
+        "health": {
+          "percentage": 5,
+          "raw_score": 10,
+          "delta": "+10",
+          "emoji": "☠️",
+          "bar": "██████████░░░░░░░░░░"
+        },
+        "content": {
+          "event": "Checking: logger-initialized",
+          "details": {
+            "component": "status",
+            "result": true
+          }
+        }
+      }
+    },
+
+    "operation_with_complex_details": {
+      "raw": "[2025-11-09 06:42:15.456] OPERATION | validate | seanje-lenox-wise@creativeworkz-nova-dawn:7821 | validate-7821-1761710935456123789 | HEALTH: 85% (raw: 85, Δ+25) 💛 [█████████████████░░░]\n  EVENT: Validating: sudoers-configuration\n  DETAILS:\n    file: /etc/sudoers.d/90-cpi-si-safe-operations\n    checks: 5\n    passed: 4\n    failed: 1\n    error: 'Invalid command alias: APT_GET'",
+      "description": "Operation log with complex details including error message"
+    }
+  },
+
+  // ============================================================================
+  // USAGE NOTES
+  // ============================================================================
+
+  "usage": {
+    "runtime_integration": "Runtime reads this template and formats log entries accordingly",
+    "parser_integration": "Log parsers use this template to understand structure",
+    "extension": "Add new levels or fields by updating this template only",
+    "backward_compatibility": "Version field enables format evolution"
+  }
+}

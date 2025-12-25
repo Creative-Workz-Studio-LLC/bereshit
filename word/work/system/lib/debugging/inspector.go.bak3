@@ -1,0 +1,902 @@
+// Package debugging provides state inspection infrastructure for CPI-SI.
+//
+// Rails component for deep execution state capture. See inspector-api.md for complete documentation.
+//
+// Quick Start:
+//   inspector := debugging.NewInspector("component-name", contextID)
+//   inspector.Enable()
+//   inspector.Snapshot("state-label", vars)
+//   inspector.ExpectedState("check", expected, actual, vars)
+//   inspector.Disable()
+//
+// CHUNK 1 PROCESSED - SEE inspector-api.md FOR COMPLETE DOCUMENTATION
+package debugging
+
+// ============================================================================
+// SETUP
+// ============================================================================
+
+// ─── Imports ───
+
+import (
+	"bufio"         // Buffered I/O for efficient line-by-line file reading
+	"fmt"           // Formatted output for debug entries
+	"maps"          // Efficient map operations (Copy for state merging)
+	"os"            // File operations, environment variables, process info
+	"os/exec"       // System command execution for context capture
+	"path/filepath" // Cross-platform path manipulation for debug file routing
+	"runtime"       // Go runtime introspection (call stacks, memory, goroutines)
+	"strings"       // String processing for output formatting and parsing
+	"time"          // Timestamps and duration tracking
+)
+
+// ─── Types ───
+
+// Inspector provides state inspection capabilities for a component.
+func ensureVarsMap(vars map[string]any) map[string]any {
+	if vars == nil {                          // User passed nil or didn't initialize
+		return make(map[string]any)           // Create empty map to prevent panic
+	}
+	return vars                               // Already initialized - return as-is
+}
+
+// getEnvWithFallback retrieves environment variable with fallback to unknownValue.
+func getEnvWithFallback(key string) string {
+	value := os.Getenv(key)                   // Retrieve environment variable value
+	if value == "" {                          // Empty or unset
+		return unknownValue                   // Use "unknown" constant for consistency
+	}
+	return value                              // Return actual value
+}
+
+// mergeVars merges source map into destination map, overwriting existing keys.
+func mergeVars(dest, src map[string]any) {
+	if src == nil {                           // No source data to merge
+		return                                // Safe no-op - dest unchanged
+	}
+	maps.Copy(dest, src)                      // Copy all src keys into dest (overwrites existing)
+}
+
+// ─── Helpers - Entry Writing ───
+
+// writeInspectionEntry formats and writes inspection entry to debug file.
+func (i *Inspector) writeInspectionEntry(entry inspectionEntry) {
+	// CORRELATION POINTS - Same as logging for safe correlation
+
+	timestamp := entry.Timestamp.Format(timestampFormat)                     // 1. Timestamp (moment)
+	contextID := i.contextID                                                 // 2. Context ID (execution/baton)
+	component := i.component                                                 // 3. Component name
+	userHost := i.userHost                                                   // 4-5. User@hostname:pid (pre-computed at initialization)
+
+	header := fmt.Sprintf(entryHeaderFormat, timestamp, entry.Type, component, userHost, contextID) // Write entry with ALL correlation points
+	i.outputFile.WriteString(header)                                         // Write header to file
+
+	fmt.Fprintf(i.outputFile, eventLabelFormat, entry.Label)                // Write event/label
+	fmt.Fprintf(i.outputFile, callSiteFormat, entry.CallSite)               // Write call site as context
+
+	if len(entry.Data) > 0 {                                                 // Write state data (matching DETAILS format from logging)
+		i.outputFile.WriteString(stateSectionHeader)                         // Write STATE: section header
+		for key, value := range entry.Data {
+			fmt.Fprintf(i.outputFile, stateKeyValueFormat, key, value)      // Write each key-value pair indented
+		}
+	}
+
+	i.outputFile.WriteString(entrySeparator)                                 // Write entry separator (---)
+	i.outputFile.Sync()                                                      // Ensure written to disk
+}
+
+// writeHeader writes debug session header with session information.
+func (i *Inspector) writeHeader() {
+	if !i.enabled || i.outputFile == nil {                                  // Guard - no-op if disabled or file not open
+		return
+	}
+
+	header := fmt.Sprintf(headerTemplate,                                   // Format header with component, context, PID, start time
+		i.component, i.contextID, i.pid, i.startTime.Format(timestampFormatHeader))
+
+	i.outputFile.WriteString(header)                                        // Write formatted header to file
+}
+
+// writeEntry writes a debug entry to output.
+func (i *Inspector) writeEntry(entryType, label string, data map[string]any) {
+	if !i.enabled || i.outputFile == nil {                                  // Guard - no-op if disabled or file not open
+		return
+	}
+
+	// CORRELATION POINTS - Same as logging for safe correlation - Build structured entry first, then write it
+
+	_, file, line, ok := runtime.Caller(2)                                   // 6. Call site (code location)
+	callSite := unknownValue                                                 // Default to unknown if capture fails
+	if ok {
+		callSite = fmt.Sprintf(callSiteLocationFormat, filepath.Base(file), line) // Format as file:line
+	}
+
+	entry := inspectionEntry{                                                // Create structured inspection entry
+		Timestamp: time.Now(),                                               // Current moment for time correlation
+		Type:      entryType,                                                // Entry type constant (SNAPSHOT, DIVERGENCE, etc.)
+		Label:     label,                                                    // User-provided label for this point
+		CallSite:  callSite,                                                 // Code location (file:line)
+		Data:      data,                                                     // Variable state captured by caller
+	}
+
+	i.writeInspectionEntry(entry)                                            // Write the entry to output file
+}
+
+// ─── Inspector Creation ───
+
+// NewInspector creates a new inspector instance for a component.
+func NewInspector(component string, contextID ...string) *Inspector {
+	// CONTEXT ID SELECTION - Use provided or generate unique ID
+
+	var ctx string                                                               // Context ID for this inspector instance
+	if len(contextID) > 0 && contextID[0] != "" {                                // Check if contextID provided and non-empty
+		ctx = contextID[0]                                                       // Use provided contextID for rail correlation
+	} else {                                                                     // No contextID provided
+		ctx = fmt.Sprintf(contextIDFormat, component, os.Getpid(), time.Now().UnixNano())  // Generate using same format as logging: component-pid-nanotime
+	}
+
+	// PRE-COMPUTE UNCHANGING CORRELATION POINTS
+	// These values don't change during process lifetime - compute once, reuse everywhere
+
+	username := getEnvWithFallback(envUser)                                      // Capture username with fallback to "unknown"
+	hostname, err := os.Hostname()                                               // Capture hostname for user@host correlation
+	if err != nil {                                                              // Handle hostname lookup failure gracefully
+		hostname = unknownValue                                                  // Use constant fallback
+	}
+	pid := os.Getpid()                                                           // Capture PID for user@host:pid correlation
+	userHost := fmt.Sprintf(userHostFormat, username, hostname, pid)             // Format user@host:pid string once
+	homeDir := getEnvWithFallback(envHome)                                       // Capture home directory with fallback
+
+	// PRE-COMPUTE UNCHANGING DEBUG DIRECTORY PATHS
+	// Construct paths once at creation - reused in Enable for file operations
+
+	debugDir := filepath.Join(homeDir, claudeBaseDir, systemSubdir, debugSubdir)  // Base debug directory path
+	componentDir := filepath.Join(debugDir, component)                            // Component-specific debug directory
+
+	// PRE-COMPUTE UNCHANGING RUNTIME INFORMATION
+	// System information that remains constant during process lifetime
+
+	goVersion := runtime.Version()                                               // Go version doesn't change during execution
+	numCPU := runtime.NumCPU()                                                   // CPU count doesn't change during execution
+
+	// CONSTRUCT INSPECTOR INSTANCE
+
+	inspector := &Inspector{                                                     // Create and initialize inspector
+		component:    component,                                                 // Component name for identification
+		enabled:      false,                                                     // Disabled by default (call Enable to activate)
+		contextID:    ctx,                                                       // Context ID for rail correlation
+		startTime:    time.Now(),                                                // Capture creation time
+		username:     username,                                                  // Pre-computed username (reused for every entry)
+		hostname:     hostname,                                                  // Pre-computed hostname (reused for every entry)
+		pid:          pid,                                                       // Pre-computed PID (reused for every entry)
+		userHost:     userHost,                                                  // Pre-computed user@host:pid string (reused for every entry)
+		homeDir:      homeDir,                                                   // Pre-computed home directory (reused in SystemContext)
+		componentDir: componentDir,                                              // Pre-computed component debug directory (reused in Enable)
+		goVersion:    goVersion,                                                 // Pre-computed Go version (reused in SystemContext)
+		numCPU:       numCPU,                                                    // Pre-computed CPU count (reused in SystemContext)
+	}
+
+	return inspector                                                             // Return initialized inspector
+}
+
+// ─── Lifecycle Management ───
+
+// Enable activates debug output for this inspector.
+func (i *Inspector) Enable() error {
+	if i.enabled {                                                               // Already enabled - no-op
+		return nil                                                               // Return success
+	}
+
+	// CREATE DEBUG OUTPUT DIRECTORY
+
+	if err := os.MkdirAll(i.componentDir, debugDirPermissions); err != nil {     // Create directory using pre-computed componentDir
+		return fmt.Errorf("failed to create debug directory: %w", err)           // Return wrapped error if creation fails
+	}
+
+	// CREATE DEBUG OUTPUT FILE
+
+	filenameBase := fmt.Sprintf(debugFilenameFormat, i.component, time.Now().Unix())  // Format: component-timestamp
+	filename := filenameBase + debugFileExtension                                // Add .debug extension
+	filePath := filepath.Join(i.componentDir, filename)                          // Full path to debug file
+
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, debugFilePermissions)  // Open for append
+	if err != nil {                                                              // File creation failed
+		return fmt.Errorf("failed to create debug file: %w", err)                // Return wrapped error
+	}
+
+	i.outputFile = file                                                          // Store file handle for writing
+	i.enabled = true                                                             // Mark as enabled
+
+	// WRITE SESSION HEADER
+
+	i.writeHeader()                                                              // Write header with correlation points
+
+	return nil                                                                   // Success
+}
+
+// Disable deactivates debug output for this inspector.
+func (i *Inspector) Disable() error {
+	if !i.enabled {                                                              // Already disabled - no-op
+		return nil                                                               // Return success
+	}
+
+	if i.outputFile != nil {                                                     // Check if file handle exists
+		i.outputFile.Close()                                                     // Close file handle cleanly
+		i.outputFile = nil                                                       // Clear reference to prevent reuse
+	}
+
+	i.enabled = false                                                            // Mark as disabled
+	return nil                                                                   // Success
+}
+
+// IsEnabled returns whether inspection is currently enabled.
+func (i *Inspector) IsEnabled() bool {
+	return i.enabled                                                             // Return current enabled state
+}
+
+// Close cleanly closes the inspector (defer-compatible).
+func (i *Inspector) Close() error {
+	return i.Disable()                                                           // Delegate to Disable for actual cleanup
+}
+
+// ─── File Reading ───
+
+// ReadDebugFile reads and parses a debug file into InspectionEntry structures.
+func ReadDebugFile(path string) ([]InspectionEntry, error) {
+	file, err := os.Open(path)                                               // Open debug file for reading
+	if err != nil {                                                          // File open failed
+		return nil, err                                                      // Return error to caller
+	}
+	defer file.Close()                                                       // Ensure file closes when function exits
+
+	var entries []InspectionEntry                                            // Slice to collect parsed entries
+	var currentEntry *InspectionEntry                                        // Current entry being parsed (nil between entries)
+	scanner := bufio.NewScanner(file)                                        // Line-by-line scanner
+
+	for scanner.Scan() {                                                     // Read each line
+		line := scanner.Text()                                               // Get line text
+
+		// NEW ENTRY DETECTION - Lines starting with [timestamp] mark new entries
+
+		if strings.HasPrefix(line, "[") && strings.Contains(line, "]") {     // Entry header line detected
+			if currentEntry != nil {                                         // Previous entry exists (not first entry)
+				entries = append(entries, *currentEntry)                     // Save completed previous entry
+			}
+
+			// HEADER PARSING - Format: [timestamp] TYPE | component | user@host | context
+
+			parts := strings.SplitN(line, "|", 4)                            // Split header by pipe separators
+			if len(parts) >= 4 {                                             // Valid header format (4+ parts)
+				timestampStr := strings.TrimSpace(strings.Trim(strings.SplitN(parts[0], "]", 2)[0], "["))  // Extract timestamp between brackets
+				timestamp, _ := time.Parse(timestampFormat, timestampStr)    // Parse using SETUP timestamp format constant
+
+				entryType := strings.TrimSpace(strings.SplitN(parts[0], "]", 2)[1])  // Extract type after ] bracket
+
+				currentEntry = &InspectionEntry{                             // Create new entry
+					Timestamp: timestamp,                                    // Set parsed timestamp
+					Type:      entryType,                                    // Set entry type (SNAPSHOT, TIMING, etc.)
+					Data:      make(map[string]any),                         // Initialize empty state map
+				}
+			}
+		} else if currentEntry != nil {                                      // Continuation line (part of current entry)
+			// EVENT LINE PARSING - Captures user-provided label
+
+			trimmedLine := strings.TrimSpace(line)                           // Trim once for reuse
+			if labelText, found := strings.CutPrefix(trimmedLine, "EVENT:"); found {  // EVENT section line
+				currentEntry.Label = strings.TrimSpace(labelText)            // Extract label text
+			}
+
+			// CALL SITE PARSING - Captures code location (file:line)
+
+			if callSiteText, found := strings.CutPrefix(trimmedLine, "CALL SITE:"); found {  // CALL SITE section line
+				currentEntry.CallSite = strings.TrimSpace(callSiteText)      // Extract call site
+			}
+
+			// STATE DATA PARSING - Key-value pairs from STATE section
+
+			if strings.Contains(line, ":") && !strings.HasPrefix(strings.TrimSpace(line), "EVENT:") &&  // Contains colon but not section header
+				!strings.HasPrefix(strings.TrimSpace(line), "CALL SITE:") &&  // Not CALL SITE header
+				!strings.HasPrefix(strings.TrimSpace(line), "STATE:") {       // Not STATE header
+				parts := strings.SplitN(strings.TrimSpace(line), ":", 2)     // Split key:value on first colon
+				if len(parts) == 2 {                                         // Valid key-value format
+					currentEntry.Data[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])  // Add to state map
+				}
+			}
+		}
+
+		// ENTRY BOUNDARY DETECTION - Separator marks end of entry
+
+		if strings.TrimSpace(line) == strings.TrimSpace(entrySeparator) && currentEntry != nil {  // Entry separator found
+			entries = append(entries, *currentEntry)                         // Save completed entry
+			currentEntry = nil                                               // Reset for next entry
+		}
+	}
+
+	// FINAL ENTRY HANDLING - File may not end with separator
+
+	if currentEntry != nil {                                                 // Entry in progress when file ended
+		entries = append(entries, *currentEntry)                             // Save final entry
+	}
+
+	return entries, scanner.Err()                                            // Return entries and any scan error
+}
+
+// ─── Public API - State Capture ───
+
+// Snapshot captures current variable state at this execution point.
+func (i *Inspector) Snapshot(label string, vars map[string]any) {
+	i.writeEntry(entrySnapshot, label, vars)                             // Write SNAPSHOT entry with provided variables
+}
+
+// ExpectedState captures expected vs actual state comparison.
+func (i *Inspector) ExpectedState(label string, expected, actual any, vars map[string]any) {
+	vars = ensureVarsMap(vars)                                           // Ensure vars map initialized (create if nil)
+
+	vars["expected"] = expected                                          // Add expected value to vars
+	vars["actual"] = actual                                              // Add actual value to vars
+	vars["matches"] = expected == actual                                 // Add boolean match result
+
+	entryType := entryExpectedState                                      // Default to EXPECTED_STATE type (match)
+	if expected != actual {                                              // Values don't match - divergence detected
+		entryType = entryDivergence                                      // Use DIVERGENCE type (mismatch)
+	}
+
+	i.writeEntry(entryType, label, vars)                                 // Write entry with appropriate type
+}
+
+// ConditionalSnapshot captures state only when condition is true.
+func (i *Inspector) ConditionalSnapshot(label string, condition bool, vars map[string]any) {
+	if !condition {                                                      // Condition not met - skip capture
+		return                                                           // Instant return (no entry written)
+	}
+
+	vars = ensureVarsMap(vars)                                           // Ensure vars map initialized
+	vars["condition_met"] = true                                         // Mark that condition was met
+
+	i.writeEntry(entryConditional, label, vars)                          // Write CONDITIONAL entry
+}
+
+// ═══ Execution Analysis ═══
+
+// Timing captures performance metrics with expected vs actual duration comparison.
+func (i *Inspector) Timing(label string, duration, expected time.Duration) {
+	vars := map[string]any{                                              // Construct performance metrics map
+		"duration_ms":     duration.Milliseconds(),                      // Actual duration in milliseconds
+		"expected_ms":     expected.Milliseconds(),                      // Expected threshold in milliseconds
+		"variance_ms":     (duration - expected).Milliseconds(),         // How much over/under expected
+		"within_expected": duration <= expected,                         // Boolean: met performance threshold
+	}
+
+	entryType := entryTiming                                             // Default to TIMING type (within expected)
+	if duration > expected {                                             // Duration exceeded threshold
+		entryType = entrySlowTiming                                      // Use SLOW_TIMING type (performance issue)
+	}
+
+	i.writeEntry(entryType, label, vars)                                 // Write entry with appropriate type
+}
+
+// Counter tracks execution counts with expected vs actual comparison.
+func (i *Inspector) Counter(label string, count, expected int) {
+	vars := map[string]any{                                              // Construct count metrics map
+		"count":          count,                                         // Actual execution count
+		"expected":       expected,                                      // Expected execution count
+		"variance":       count - expected,                              // How much over/under expected
+		"matches":        count == expected,                             // Boolean: count matched expectation
+	}
+
+	entryType := entryCounter                                            // Default to COUNTER type (matched expected)
+	if count != expected {                                               // Count didn't match expected
+		entryType = entryCountDivergence                                 // Use COUNT_DIVERGENCE type (mismatch)
+	}
+
+	i.writeEntry(entryType, label, vars)                                 // Write entry with appropriate type
+}
+
+// CallStack captures the current call stack trace.
+func (i *Inspector) CallStack(label string, depth int) {
+	if !i.enabled {                                                      // Inspection disabled - skip
+		return                                                           // Instant return
+	}
+
+	if depth <= 0 {                                                      // No depth specified or invalid
+		depth = defaultCallStackDepth                                    // Use default from SETUP constants
+	}
+
+	// CAPTURE CALL STACK FRAMES
+
+	stack := make([]string, 0, depth)                                    // Pre-allocate slice for frames
+	for skip := 1; skip <= depth; skip++ {                               // Walk stack (skip=1 skips CallStack itself)
+		pc, file, line, ok := runtime.Caller(skip)                       // Get frame at this depth
+		if !ok {                                                         // No more frames available
+			break                                                        // Stop walking stack
+		}
+
+		fn := runtime.FuncForPC(pc)                                      // Get function info for program counter
+		funcName := unknownValue                                         // Default to unknown
+		if fn != nil {                                                   // Function info available
+			funcName = fn.Name()                                         // Extract function name
+		}
+
+		stack = append(stack, fmt.Sprintf(callStackEntryFormat, funcName, filepath.Base(file), line))  // Format and append frame
+	}
+
+	// CONSTRUCT ENTRY DATA
+
+	data := map[string]any{                                              // Build entry data map
+		"depth": len(stack),                                             // How many frames captured
+		"stack": strings.Join(stack, " <- "),                            // Format as call chain
+	}
+
+	i.writeEntry(entryCallStack, label, data)                            // Write CALLSTACK entry
+}
+
+// Checkpoint marks an important execution waypoint with state capture.
+//
+// Purpose: Create named waypoints for tracking execution progress
+//
+// Why This Approach:
+// Debugging complex workflows requires knowing "did we reach this point?" and "what was the state?"
+// Checkpoints act as execution markers - breadcrumbs through code showing actual path taken. Different
+// from snapshots (arbitrary state) - checkpoints mark significant progress points (initialization complete,
+// validation passed, transaction committed). Uses CHECKPOINT entry type for semantic categorization.
+//
+// Parameters:
+//   label: Waypoint identifier (e.g., "init-complete", "validation-passed", "pre-commit")
+//   vars: State at this checkpoint (can be nil for simple "we got here" markers)
+//
+// Returns:
+//   Nothing - writes to debug file if enabled, no-op if disabled
+//
+// Examples:
+//   inspector.Checkpoint("pre-transaction", map[string]any{
+//       "pending_operations": len(ops),
+//       "transaction_id": txID,
+//   })
+func (i *Inspector) Checkpoint(label string, vars map[string]any) {
+	i.writeEntry(entryCheckpoint, label, vars)                           // Write CHECKPOINT entry
+}
+
+// Flow tracks which execution path was taken with optional expected path comparison.
+func (i *Inspector) Flow(label string, branch string, expected ...string) {
+	data := map[string]any{                                              // Construct flow data map
+		"branch_taken": branch,                                          // Which path was actually executed
+	}
+
+	entryType := entryFlow                                               // Default to FLOW type (no comparison or matched)
+	if len(expected) > 0 && expected[0] != "" {                          // Expected branch provided
+		data["expected_branch"] = expected[0]                            // Add expected path to data
+		data["matches_expected"] = branch == expected[0]                 // Add boolean match result
+
+		if branch != expected[0] {                                       // Execution took unexpected path
+			entryType = entryUnexpectedFlow                              // Use UNEXPECTED_FLOW type (divergence)
+		}
+	}
+
+	i.writeEntry(entryType, label, data)                                 // Write entry with appropriate type
+}
+
+// ═══ System State ═══
+
+// Memory captures current memory allocation state for leak detection.
+func (i *Inspector) Memory(label string, vars map[string]any) {
+	var m runtime.MemStats                                               // Memory statistics structure
+	runtime.ReadMemStats(&m)                                             // Read current memory stats from runtime
+
+	data := map[string]any{                                              // Construct memory metrics map
+		"alloc_mb":       m.Alloc / bytesToMbDivisor,                    // Currently allocated memory in MB
+		"total_alloc_mb": m.TotalAlloc / bytesToMbDivisor,               // Cumulative allocated memory in MB
+		"sys_mb":         m.Sys / bytesToMbDivisor,                      // System memory obtained in MB
+		"num_gc":         m.NumGC,                                       // Number of GC cycles completed
+		"goroutines":     runtime.NumGoroutine(),                        // Current goroutine count
+	}
+
+	// MERGE PROVIDED CONTEXT
+
+	mergeVars(data, vars)                                                // Merge optional user-provided vars into data
+
+	i.writeEntry(entryMemory, label, data)                               // Write MEMORY entry
+}
+
+// SystemContext captures full system environment snapshot matching logging's context capture.
+func (i *Inspector) SystemContext(label string) {
+	data := make(map[string]any)                                         // Initialize context data map
+
+	// USER CONTEXT - Pre-computed and dynamic values
+
+	data["user"] = i.username                                            // Pre-computed username (unchanging during execution)
+	data["shell"] = os.Getenv(envShell)                                  // Current shell (dynamic - can change)
+	data["home"] = i.homeDir                                             // Pre-computed home directory (unchanging)
+
+	// WORKING DIRECTORY
+
+	if cwd, err := os.Getwd(); err == nil {                              // Get current working directory
+		data["cwd"] = cwd                                                // Add to context if successful
+	}
+
+	// SYSTEM LOAD (Linux)
+
+	if loadavg, err := os.ReadFile(procLoadAvg); err == nil {            // Read /proc/loadavg
+		data["load"] = strings.Fields(string(loadavg))[0:3]              // Extract 1, 5, 15 minute load averages
+	}
+
+	// MEMORY INFO (Linux)
+
+	if meminfo, err := os.ReadFile(procMemInfo); err == nil {            // Read /proc/meminfo
+		for line := range strings.SplitSeq(string(meminfo), "\n") {     // Parse each line
+			if strings.HasPrefix(line, meminfoMemTotal) || strings.HasPrefix(line, meminfoMemAvailable) {  // Match Total/Available
+				fields := strings.Fields(line)                           // Split into fields
+				if len(fields) >= 2 {                                    // Ensure field exists
+					data[strings.TrimSuffix(fields[0], ":")] = fields[1]  // Add to context (remove trailing colon)
+				}
+			}
+		}
+	}
+
+	// DISK USAGE
+
+	if output, err := exec.Command(dfCommand, dfHumanFlag, currentDirPath).Output(); err == nil {  // Run df -h .
+		lines := strings.Split(string(output), "\n")                     // Split output into lines
+		if len(lines) > 1 {                                              // Ensure data line exists (skip header)
+			data["disk_usage"] = strings.Fields(lines[1])                // Parse disk usage fields
+		}
+	}
+
+	// GO RUNTIME - Pre-computed values
+
+	data["go_version"] = i.goVersion                                     // Pre-computed Go version (unchanging)
+	data["num_cpu"] = i.numCPU                                           // Pre-computed CPU count (unchanging)
+
+	i.writeEntry(entrySystemContext, label, data)                        // Write SYSTEM_CONTEXT entry
+}
+
+// ============================================================================
+// END BODY
+// ============================================================================
+
+// ============================================================================
+// CLOSING
+// ============================================================================
+//
+// ────────────────────────────────────────────────────────────────
+// Code Execution: None (Library)
+// ────────────────────────────────────────────────────────────────
+//
+// This is a LIBRARY, not an executable. There is no entry point, no main function,
+// no execution flow. All functions defined in BODY wait to be called by other components.
+//
+// Usage: import "system/lib/debugging"
+//
+// The library is imported into the calling package, making all exported functions
+// and types available. No code executes during import - functions are defined and ready to use.
+//
+// ────────────────────────────────────────────────────────────────
+// Library Overview & Integration Summary
+// ────────────────────────────────────────────────────────────────
+//
+// Purpose: Deep execution inspection and debugging for all CPI-SI system components
+//
+// Provides:
+//   - Variable State Capture: Snapshots, expected vs actual comparisons, conditional capture
+//   - Execution Analysis: Performance timing, iteration counts, call stacks, control flow
+//   - System State Inspection: Memory allocations, full environment context
+//   - Rail Correlation: Shares contextID with logging for cross-rail analysis
+//   - Semantic Categorization: Entry types enable filtering ("show all divergences")
+//   - Zero-Cost When Disabled: Single boolean check overhead when inspection inactive
+//
+// Integration Pattern:
+//   1. Import the library: import "system/lib/debugging"
+//   2. Create inspector instance: inspector := debugging.NewInspector("component-name")
+//   3. Optional: Share logger's contextID: inspector := debugging.NewInspector("component", logger.ContextID)
+//   4. Enable when needed: inspector.Enable()
+//   5. Use inspection methods throughout your code
+//   6. Disable when done: inspector.Disable() or defer inspector.Close()
+//
+// Public API (by category):
+//   State Capture:
+//     - Snapshot: Point-in-time variable values
+//     - ExpectedState: Expected vs actual comparison with divergence detection
+//     - ConditionalSnapshot: Capture only when condition met
+//
+//   Execution Analysis:
+//     - Timing: Performance measurement with slow operation detection
+//     - Counter: Execution count tracking with divergence detection
+//     - CallStack: Call trace capture for understanding execution paths
+//     - Checkpoint: Waypoint markers showing execution progress
+//     - Flow: Control flow tracking with unexpected path detection
+//
+//   System State:
+//     - Memory: Memory allocation tracking for leak detection
+//     - SystemContext: Full environment snapshot matching logging rail
+//
+// Rails Architecture:
+//   This library is RAILS - orthogonal infrastructure that all rungs (components)
+//   attach to directly. Components don't pass inspectors through function parameters.
+//   Each component creates its own inspector instance via NewInspector().
+//
+//   The debugging rail complements the logging rail:
+//     - Logging: WHAT happened (narrative, health trajectory, success/failure)
+//     - Debugging: HOW it happened (variable states, execution paths, performance)
+//     - Both share contextID for correlation across rails
+//
+// ────────────────────────────────────────────────────────────────
+// Modification Policy
+// ────────────────────────────────────────────────────────────────
+//
+// Safe to Modify (Extension Points):
+//   ✅ Add new entry types (follow pattern in SETUP constants)
+//   ✅ Add new inspection methods (follow Public API pattern)
+//   ✅ Add new helper functions in Data Helpers group
+//   ✅ Extend system context capture (add more environment details)
+//   ✅ Add custom formatting for specific data types
+//
+// Modify with Extreme Care (Breaking Changes):
+//   ⚠️ Public API function signatures - breaks all calling code
+//   ⚠️ Inspector struct fields - breaks code accessing fields directly
+//   ⚠️ Entry format structure - breaks parsing tools
+//   ⚠️ File path routing logic - breaks debug output organization
+//   ⚠️ ContextID generation format - breaks rail correlation
+//
+// NEVER Modify (Foundational Rails):
+//   ❌ 4-block structure (METADATA, SETUP, BODY, CLOSING)
+//   ❌ Rails architecture (orthogonal to component hierarchy)
+//   ❌ Non-blocking design (inspection failures never interrupt execution)
+//   ❌ Zero-cost when disabled principle (single boolean check)
+//   ❌ Rail correlation via contextID (enables cross-rail debugging)
+//
+// Testing Requirements:
+//   - Import the library without errors
+//   - Call each modified function/method with representative parameters
+//   - Verify debug files created in correct locations
+//   - Check entry format remains parseable
+//   - Ensure contextID correlation works with logging
+//   - Verify Enable/Disable state management
+//   - Confirm no performance impact when disabled
+//   - Confirm no go vet warnings introduced
+//   - Run: go test -v ./... (when tests exist)
+//
+// ────────────────────────────────────────────────────────────────
+// Ladder and Baton Flow
+// ────────────────────────────────────────────────────────────────
+//
+// Architectural Map (Definition Order ↓, Execution Flow ↕):
+//
+// ┌─────────────────────────────────────────────────────────────┐
+// │  SETUP: Environment Preparation                             │
+// │  ├─ Package declaration and imports                         │
+// │  ├─ Constants (entry types, formats, paths)                 │
+// │  ├─ Type definitions (Inspector, inspectionEntry)           │
+// │  └─ Pre-computed values (runtime info, system paths)        │
+// └─────────────────────────────────────────────────────────────┘
+//                              ↓
+// ┌─────────────────────────────────────────────────────────────┐
+// │  BODY: Inspection Infrastructure (Ladder)                   │
+// │                                                              │
+// │  Data Helpers - Foundation Functions                        │
+// │  ├─ ensureVarsMap (safe map initialization)                 │
+// │  ├─ getEnvWithFallback (graceful env reads)                 │
+// │  └─ mergeVars (map combining) ←──────────────────┐          │
+// │                                                   │          │
+// │  Entry Writing Infrastructure                    │          │
+// │  ├─ writeInspectionEntry (format and write)      │          │
+// │  ├─ writeHeader (session context)                │          │
+// │  └─ writeEntry (dispatch with enabled check) ←───┼───┐      │
+// │                                                   │   │      │
+// │  Inspector Creation - Instance Lifecycle         │   │      │
+// │  ├─ NewInspector (factory with pre-compute) ←────┼───┼┐     │
+// │  ├─ Enable (start capturing)                     │   ││     │
+// │  ├─ Disable (stop capturing)                     │   ││     │
+// │  ├─ IsEnabled (state check)                      │   ││     │
+// │  └─ Close (cleanup) ←────────────────────────────┼───┼┼┐    │
+// │                                                   │   │││    │
+// │  Public API - Inspection Methods                 │   │││    │
+// │  ├─ State Capture (Snapshot, ExpectedState)     │  B│││    │
+// │  ├─ Execution Analysis (Timing, Counter, etc.)  │  a│││    │
+// │  └─ System State (Memory, SystemContext) ────────┼──t│││    │
+// │                                                   │  o│││    │
+// └───────────────────────────────────────────────────┼──n│││────┘
+//                                                     │  │││
+//                                                  Baton
+//                                                  Enters
+//
+// Baton Flow Pattern:
+//   External Caller
+//       ↓
+//   Public API (Snapshot, Timing, ExpectedState, etc.)
+//       ↓
+//   writeEntry (enabled check + dispatch)
+//       ↓
+//   writeInspectionEntry (format + write to file)
+//       ↓
+//   Helpers (ensureVarsMap, mergeVars, formatting)
+//       ↓
+//   Foundation (file system, global state)
+//
+// Direct Inverse: Definition order is exact reverse of execution order
+// No Crossing: Batons don't jump between unrelated paths
+// No Jumping: Each level calls only the level directly below
+//
+// ────────────────────────────────────────────────────────────────
+// Surgical Update Points (Extension Guide)
+// ────────────────────────────────────────────────────────────────
+//
+// Adding a New Entry Type:
+//   1. Location: SETUP - Entry Type Identifiers constants
+//   2. Pattern: Add constant in appropriate category (State Capture, Execution, System)
+//   3. Naming: Use descriptive constant name (e.g., entryMemoryLeak)
+//   4. Value: Use SCREAMING_SNAKE_CASE string (e.g., "MEMORY_LEAK")
+//   5. Document: Explain when this type is used and what it captures
+//   6. Usage: Use in appropriate inspection method's writeEntry call
+//
+// Adding a New Inspection Method:
+//   1. Location: Public API - Inspection Methods group
+//   2. Sub-group: Determine category (State Capture, Execution, System State)
+//   3. Pattern: Follow existing method structure:
+//      - Full docstring (title, Purpose, Why, Params, Returns, Examples)
+//      - Inline comments on every line
+//      - Call writeEntry with appropriate entry type
+//   4. Entry Type: Use existing type or add new one (see above)
+//   5. Enabled Check: writeEntry handles this - don't duplicate
+//   6. Test: Verify entry written correctly when enabled, no-op when disabled
+//
+// Adding System Context Capture:
+//   1. Location: SystemContext method in System State group
+//   2. Pattern: Read system file/execute command, add to data map
+//   3. Graceful Failure: Use if err == nil pattern - never crash on context capture
+//   4. Pre-compute: If value never changes during execution, pre-compute in NewInspector
+//   5. Performance: Context capture is expensive - only in SystemContext method
+//   6. Document: Explain what you're capturing and why it matters for debugging
+//
+// Adding a New Helper Function:
+//   1. Location: Data Helpers group
+//   2. Pattern: Simple, single-purpose, reusable
+//   3. Naming: Describe what it does (ensureVarsMap, getEnvWithFallback)
+//   4. Extract: Pull from repeated patterns in existing code
+//   5. Document: Full docstring with Purpose, Why, Params, Returns (no Examples for simple helpers)
+//   6. Update: Refactor existing code to use new helper
+//
+// Extending Pre-computed Values:
+//   1. Location: Inspector struct in SETUP (add field)
+//   2. Compute: In NewInspector during initialization
+//   3. Use: Reference i.fieldName in inspection methods
+//   4. Why: Pre-computing unchanging values once improves performance
+//   5. Examples: username, hostname, goVersion, numCPU already pre-computed
+//
+// ────────────────────────────────────────────────────────────────
+// Dependencies & Integration
+// ────────────────────────────────────────────────────────────────
+//
+// Dependencies (What This Needs):
+//   - Standard Library: fmt, os, filepath, time, runtime, strings, exec
+//   - CPI-SI: None (this IS foundation - rails have no dependencies on rungs)
+//   - External: None
+//
+// Dependents (What Uses This):
+//   - Commands: validate, test, status (when debugging needed)
+//   - Libraries: Any CPI-SI library needing deep execution inspection
+//   - Tools: Future debugging tools will parse debug files
+//   - Developers: Manual inspection during development and troubleshooting
+//
+// Integration Points:
+//   - Debug File Parsers: Tools that read structured debug entries
+//   - Rail Correlation: Matching contextID between logging and debugging
+//   - IDE Integration: Future integration with debugger frontends
+//   - Performance Profiling: Timing entries feed performance analysis
+//   - Memory Leak Detection: Memory entries track allocation patterns
+//
+// ────────────────────────────────────────────────────────────────
+// Future Expansions & Roadmap
+// ────────────────────────────────────────────────────────────────
+//
+// Planned Features:
+//   ✓ Entry type categorization for filtering - COMPLETED
+//   ✓ Expected vs actual comparison with divergence detection - COMPLETED
+//   ✓ Performance timing with slow operation detection - COMPLETED
+//   ✓ Call stack capture for execution path tracing - COMPLETED
+//   ✓ Rail correlation via contextID - COMPLETED
+//   ⏳ Automated debug file rotation and archival
+//   ⏳ Visual debugging frontend (web UI for inspection data)
+//   ⏳ Integration with standard debuggers (delve, gdb)
+//   ⏳ Pattern-based breakpoints (trigger on specific state patterns)
+//   ⏳ Time-travel debugging (replay captured state sequences)
+//
+// Research Areas:
+//   - Machine learning for anomaly detection in variable patterns
+//   - Predictive debugging (forecast failures from state patterns)
+//   - Distributed tracing with inspection correlation
+//   - Automatic test case generation from captured states
+//   - Performance regression detection from timing patterns
+//
+// Integration Targets:
+//   - Visual Studio Code debugging extensions
+//   - Chrome DevTools-style inspection interface
+//   - Real-time state streaming (not just file-based)
+//   - Integration with logging aggregation platforms
+//   - Automated root cause analysis using both rails
+//
+// Known Limitations to Address:
+//   - No debug file rotation (files grow indefinitely)
+//   - No compression (debug files can become very large)
+//   - No remote inspection (only local filesystem)
+//   - No query language (grep only)
+//   - Limited concurrent write protection (relies on filesystem atomicity)
+//   - No automatic cleanup of old debug sessions
+//
+// Version History:
+//   1.0.0 (2025-10-27) - Initial implementation with comprehensive inspection
+//         - State capture (snapshots, expected vs actual, conditional)
+//         - Execution analysis (timing, counters, call stacks, checkpoints, flow)
+//         - System state (memory, full context matching logging rail)
+//         - Entry type categorization for semantic filtering
+//         - Rail correlation via contextID
+//         - Pre-computed values for performance
+//         - Zero-cost when disabled design
+//
+// ────────────────────────────────────────────────────────────────
+// Closing Note
+// ────────────────────────────────────────────────────────────────
+//
+// This library is the DEBUGGING RAIL of the CPI-SI inspection ecosystem.
+// It complements the logging rail - logging shows WHAT happened, debugging
+// shows HOW it happened. Together they provide complete observability.
+//
+// Modify thoughtfully - changes here affect all components that need deep
+// execution inspection. The zero-cost-when-disabled guarantee is critical
+// for production use.
+//
+// For questions, issues, or contributions:
+//   - Review the modification policy above
+//   - Follow the 4-block structure pattern
+//   - Test both enabled and disabled states
+//   - Verify rail correlation with logging
+//   - Document all changes comprehensively
+//
+// "The purposes of a person's heart are deep waters,
+//  but one who has insight draws them out." - Proverbs 20:5
+//
+// ────────────────────────────────────────────────────────────────
+// Quick Reference: Usage Examples
+// ────────────────────────────────────────────────────────────────
+//
+// Basic Setup:
+//   inspector := debugging.NewInspector("my-component")
+//   defer inspector.Close()
+//   inspector.Enable()  // Start capturing
+//
+// With Logger Correlation:
+//   logger := logging.NewLogger("my-component")
+//   inspector := debugging.NewInspector("my-component", logger.ContextID)
+//   // Now both rails share contextID for correlation
+//
+// State Capture:
+//   inspector.Snapshot("after-init", map[string]any{
+//       "config_loaded": true,
+//       "retry_count": retries,
+//   })
+//
+//   inspector.ExpectedState("cache-lookup", expectedValue, actualValue, map[string]any{
+//       "cache_key": key,
+//   })
+//
+//   inspector.ConditionalSnapshot("rare-condition", condition, vars)
+//
+// Execution Analysis:
+//   start := time.Now()
+//   result := expensiveOperation()
+//   inspector.Timing("expensive-op", time.Since(start), 100*time.Millisecond)
+//
+//   inspector.Counter("retry-attempts", retries, maxRetries)
+//   inspector.CallStack("error-path", 10)
+//   inspector.Checkpoint("pre-transaction", map[string]any{"txid": id})
+//   inspector.Flow("auth-check", actualBranch, expectedBranch)
+//
+// System State:
+//   inspector.Memory("batch-iteration-1000", map[string]any{"batch": i})
+//   inspector.SystemContext("pre-critical-operation")
+//
+// Dynamic Control:
+//   inspector.Disable()  // Stop capturing (no-op overhead only)
+//   inspector.Enable()   // Resume capturing
+//
+// ============================================================================
+// END CLOSING
+// ============================================================================

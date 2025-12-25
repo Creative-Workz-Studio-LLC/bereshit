@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/definitions/base/temporal-units.schema.json",
+  "title": "Temporal Units Schema",
+  "description": "Schema for universal temporal unit structure (ISO 8601)",
+  "type": "object",
+  "required": ["metadata", "week", "month", "formats", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "created", "last_updated", "purpose", "scope", "standards"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "created": { "type": "string", "format": "date" },
+        "last_updated": { "type": "string", "format": "date" },
+        "purpose": { "type": "string" },
+        "scope": { "type": "string", "enum": ["paradigm-wide"] },
+        "standards": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "week": {
+      "type": "object",
+      "required": ["standard", "start_day", "end_day", "days"],
+      "properties": {
+        "standard": { "type": "string" },
+        "start_day": { "type": "string" },
+        "end_day": { "type": "string" },
+        "numbering": { "type": "object" },
+        "days": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["iso_day", "name", "abbreviation", "type"],
+            "properties": {
+              "iso_day": { "type": "integer", "minimum": 1, "maximum": 7 },
+              "name": { "type": "string" },
+              "abbreviation": { "type": "string" },
+              "type": { "type": "string", "enum": ["weekday", "weekend"] }
+            }
+          }
+        },
+        "biblical_note": { "type": "string" }
+      }
+    },
+    "month": {
+      "type": "object",
+      "required": ["standard", "months"],
+      "properties": {
+        "standard": { "type": "string" },
+        "months": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["number", "name", "abbreviation", "days", "season", "quarter"],
+            "properties": {
+              "number": { "type": "integer", "minimum": 1, "maximum": 12 },
+              "name": { "type": "string" },
+              "abbreviation": { "type": "string" },
+              "days": { "type": "integer", "minimum": 28, "maximum": 31 },
+              "days_leap_year": { "type": "integer" },
+              "season": { "type": "string" },
+              "quarter": { "type": "integer", "minimum": 1, "maximum": 4 },
+              "notes": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "quarter": {
+      "type": "object",
+      "properties": {
+        "quarters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": { "type": "integer", "minimum": 1, "maximum": 4 },
+              "name": { "type": "string" },
+              "months": {
+                "type": "array",
+                "items": { "type": "integer" }
+              },
+              "month_names": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "year": {
+      "type": "object",
+      "properties": {
+        "standard": { "type": "string" },
+        "days_normal": { "type": "integer" },
+        "days_leap": { "type": "integer" },
+        "leap_year_rules": { "type": "object" },
+        "iso_weeks_normal": { "type": "integer" },
+        "iso_weeks_long_year": { "type": "integer" },
+        "long_year_note": { "type": "string" }
+      }
+    },
+    "seasons": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "formats": {
+      "type": "object",
+      "properties": {
+        "date": { "type": "object" },
+        "time": { "type": "object" },
+        "datetime": { "type": "object" },
+        "week": { "type": "object" },
+        "week_with_day": { "type": "object" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,335 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# TEMPLATE: EditorConfig File (4-Block Structure)
+# Key: CODE-EDITOR-001
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# This is a TEMPLATE file - copy and modify for new projects.
+# Replace all [bracketed] placeholders with actual content.
+# Rename to .editorconfig (remove CODE-EDITOR-001-EDITOR- prefix).
+#
+# Derived from: Kingdom Technology standards
+# See: standards/code/4-block/ for complete documentation
+# See: https://editorconfig.org for specification
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# # Biblical Foundation
+#
+# Scripture: "Let all things be done decently and in order."
+# - 1 Corinthians 14:40
+#
+# Principle: Consistent formatting across all editors ensures code looks the
+# same regardless of who writes it or what tool they use. EditorConfig
+# establishes "decency and order" at the foundational level - before code
+# is even written, the environment is configured for consistency.
+#
+# Anchor: "For God is not the author of confusion, but of peace."
+# - 1 Corinthians 14:33
+#
+# # CPI-SI Identity
+#
+# Component Type: Rails
+#
+# EditorConfig provides infrastructure that affects ALL code editing across
+# the project. It doesn't transform data (Baton) or provide foundations
+# (Ladder), but ensures consistent formatting infrastructure for everyone.
+#
+# Role: Cross-editor formatting consistency enforcement
+#
+# Paradigm: CPI-SI framework component - editor configuration
+#
+# # Authorship & Lineage
+#
+#   - Architect: [Who designed these formatting standards]
+#   - Implementation: [Who maintains this file]
+#   - Created: [YYYY-MM-DD]
+#   - Version: [MAJOR.MINOR.PATCH]
+#   - Modified: [YYYY-MM-DD - what changed]
+#
+# # Purpose & Function
+#
+# Purpose: Define and maintain consistent coding styles across editors/IDEs
+#
+# Core Design: Universal formatting rules that all editors respect
+#
+# Key Features:
+#
+#   - Indent style (spaces vs tabs) and size
+#   - Line ending normalization (LF for Linux-first)
+#   - Character encoding (UTF-8)
+#   - Trailing whitespace handling
+#   - Final newline enforcement
+#
+# # Health Scoring
+#
+# Configuration Impact: Inconsistent formatting creates merge conflicts and
+# reduces code readability
+#
+# Validation Behavior:
+#   - Invalid property: Editor ignores silently
+#   - Missing section: Falls back to defaults or parent config
+#   - Unsupported property: Depends on editor/plugin
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# SETUP
+# =============================================================================
+#
+# File Identity:
+#   - Key: CODE-EDITOR-001
+#   - Consumer: Editors/IDEs with EditorConfig support
+#   - Loader: EditorConfig plugin reads from root up to file location
+#
+# Supported Editors:
+#   - Native support: GitHub, GitLab, VS Code, JetBrains IDEs
+#   - Plugin required: Vim, Emacs, Sublime Text, Atom
+#   - See: https://editorconfig.org/#pre-installed
+#
+# Related Files:
+#   - Prettier: .prettierrc (may overlap - ensure consistency)
+#   - ESLint: .eslintrc (for JS/TS specific rules)
+#   - Language formatters: gofmt, rustfmt, black
+#
+# Configuration Hierarchy:
+#   - EditorConfig searches upward from file to root=true
+#   - Closer configs override farther configs
+#   - Properties are applied per-file based on glob patterns
+#
+# =============================================================================
+# END SETUP
+# =============================================================================
+
+# =============================================================================
+# BODY
+# =============================================================================
+
+# Top-most EditorConfig file - stop searching in parent directories
+root = true
+
+# -----------------------------------------------------------------------------
+# Default Settings - Apply to ALL files unless overridden
+# -----------------------------------------------------------------------------
+# Kingdom Technology standard: Linux-first, UTF-8, spaces, trim whitespace
+
+[*]
+# Character encoding - UTF-8 is universal standard
+charset = utf-8
+
+# Line endings - LF (Unix) for cross-platform consistency
+# Git will handle conversion on Windows if configured
+end_of_line = lf
+
+# Indentation - spaces for universal rendering
+indent_style = space
+indent_size = 4
+
+# Ensure files end with newline (POSIX standard)
+insert_final_newline = true
+
+# Remove trailing whitespace (prevents noise in diffs)
+trim_trailing_whitespace = true
+
+# Maximum line length (soft guide, not enforced by EditorConfig)
+max_line_length = 100
+
+# -----------------------------------------------------------------------------
+# Go Files - Follow Go conventions
+# -----------------------------------------------------------------------------
+# Go uses tabs by convention (gofmt enforces this)
+
+[*.go]
+indent_style = tab
+indent_size = 4
+
+# -----------------------------------------------------------------------------
+# Web Files - JavaScript, TypeScript, HTML, CSS, JSON
+# -----------------------------------------------------------------------------
+# 2-space indentation is web standard
+
+[*.{js,jsx,ts,tsx,html,css,scss,less,vue,svelte}]
+indent_size = 2
+
+[*.json]
+indent_size = 2
+
+[*.{yaml,yml}]
+indent_size = 2
+
+# -----------------------------------------------------------------------------
+# Makefiles - MUST use tabs (Make syntax requirement)
+# -----------------------------------------------------------------------------
+
+[Makefile]
+indent_style = tab
+
+[*.mk]
+indent_style = tab
+
+# -----------------------------------------------------------------------------
+# Markdown - Allow trailing whitespace for line breaks
+# -----------------------------------------------------------------------------
+# Two trailing spaces = <br> in Markdown
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+# -----------------------------------------------------------------------------
+# Shell Scripts
+# -----------------------------------------------------------------------------
+
+[*.sh]
+indent_size = 2
+
+[*.bash]
+indent_size = 2
+
+# -----------------------------------------------------------------------------
+# Python - PEP 8 standard
+# -----------------------------------------------------------------------------
+
+[*.py]
+indent_size = 4
+
+# -----------------------------------------------------------------------------
+# Rust - rustfmt conventions
+# -----------------------------------------------------------------------------
+
+[*.rs]
+indent_size = 4
+
+# -----------------------------------------------------------------------------
+# C/C++ - Compiler project conventions
+# -----------------------------------------------------------------------------
+
+[*.{c,h,cpp,hpp,cc,hh}]
+indent_size = 4
+
+# -----------------------------------------------------------------------------
+# Assembly
+# -----------------------------------------------------------------------------
+
+[*.{s,S,asm}]
+indent_style = tab
+indent_size = 8
+
+# -----------------------------------------------------------------------------
+# Configuration Files
+# -----------------------------------------------------------------------------
+
+[*.toml]
+indent_size = 2
+
+[*.ini]
+indent_size = 2
+
+[*.cfg]
+indent_size = 2
+
+# EditorConfig itself
+[.editorconfig]
+indent_size = 2
+
+# -----------------------------------------------------------------------------
+# Documentation
+# -----------------------------------------------------------------------------
+
+[*.{txt,rst}]
+indent_size = 2
+
+# -----------------------------------------------------------------------------
+# Project-Specific Overrides
+# -----------------------------------------------------------------------------
+# [Add project-specific file patterns and settings below]
+
+# [Example: Vendor files - don't modify formatting]
+# [vendor/**]
+# indent_style = unset
+# indent_size = unset
+
+# =============================================================================
+# END BODY
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# -----------------------------------------------------------------------------
+# Validation
+# -----------------------------------------------------------------------------
+#
+# Verify EditorConfig is working:
+#
+#   # Check EditorConfig for a specific file
+#   editorconfig [filename]
+#
+#   # In VS Code, check bottom status bar for "Spaces: 4" or "Tab Size: 4"
+#
+#   # Verify with editorconfig-checker tool
+#   ec -config .editorconfig
+#
+# Common Issues:
+#
+#   "Settings not applied" - Check if editor has EditorConfig plugin
+#   "Conflict with Prettier" - Ensure EditorConfig and Prettier agree
+#   "Tabs in Go files showing wrong" - Tab display width is editor setting
+#
+# -----------------------------------------------------------------------------
+# Modification Policy
+# -----------------------------------------------------------------------------
+#
+# Safe to Modify:
+#   ✅ Add new file type sections
+#   ✅ Adjust indent_size for specific languages
+#   ✅ Add project-specific overrides at bottom
+#
+# Modify with Care:
+#   ⚠️ Changing indent_style for established file types
+#   ⚠️ Changing end_of_line (affects all contributors)
+#   ⚠️ Removing trim_trailing_whitespace (leads to noisy diffs)
+#
+# NEVER Modify:
+#   ❌ charset = utf-8 (universal standard)
+#   ❌ end_of_line = lf (Linux-first principle)
+#   ❌ root = true (breaks configuration hierarchy)
+#   ❌ Makefile tab requirement (syntax requirement)
+#   ❌ 4-block documentation structure
+#
+# -----------------------------------------------------------------------------
+# Integration with Other Tools
+# -----------------------------------------------------------------------------
+#
+# EditorConfig sets base formatting. Other tools build on it:
+#
+#   - Prettier: Respects EditorConfig, adds more formatting rules
+#   - ESLint: Code quality + some formatting (prefer EditorConfig for basics)
+#   - gofmt/rustfmt: Language formatters (may override EditorConfig)
+#   - Git: Configure core.autocrlf=input to complement end_of_line=lf
+#
+# Recommended .gitattributes companion:
+#   * text=auto eol=lf
+#   *.{cmd,[cC][mM][dD]} text eol=crlf
+#   *.{bat,[bB][aA][tT]} text eol=crlf
+#
+# -----------------------------------------------------------------------------
+# Closing Note
+# -----------------------------------------------------------------------------
+#
+# This EditorConfig establishes consistent formatting across all editors
+# and contributors. Changes affect the entire development experience.
+#
+# "Let all things be done decently and in order." - 1 Corinthians 14:40
+#
+# May consistent formatting reduce friction and enable excellent work.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

@@ -1,0 +1,430 @@
+// #!omni document --adoc
+// #!omni meta.key = claude-global-cmd-cpisi-architecture
+// #!omni meta.at = a-01.00
+// ============================================================================
+// METADATA BLOCK
+// ============================================================================
+//
+// :key: claude-global-cmd-cpisi-architecture
+// :title: CPI-SI Command Architecture
+// :type: Architecture Documentation
+// :status: Active
+// :version: a-01.00
+// :created: 2025-12-20
+// :updated: 2025-12-20
+// :authors: Nova Dawn
+// :purpose: Document the cpisi command — local-first, agnostic, multi-accessible interface
+// :biblical_foundation: Ezekiel 1:16 — "a wheel in the middle of a wheel"
+// :game_design: Same state, multiple views — logic separate from presentation
+//
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+= CPI-SI Command Architecture
+Nova Dawn <nova.dawn@creativeworkzstudio.llc>
+v0.1.0, 2025-12-20
+:doctype: book
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+
+[abstract]
+--
+Architecture documentation for the `cmd/cpisi` command — the **multi-accessible
+interface** for the CPI-SI state machine.
+
+*"Their appearance and their work was as a wheel in the middle of a wheel."* — Ezekiel 1:16
+
+**Design Principles:**
+
+1. **Local First** — Runs on the machine. No cloud dependency.
+2. **Agnostic** — Logic in packages, not locked to any UI framework.
+3. **Easy to Transpile** — State file as API. Any language can consume.
+--
+
+== Overview
+
+=== The Core Architecture
+
+All logic lives in the packages. The command is just a **view layer**.
+
+[source]
+----
+┌─────────────────────────────────────────────────────────────┐
+│                      LOGIC LAYER                            │
+│                                                             │
+│  pkg/statemachine  — 27 positions, 3 commands, 9 operators  │
+│  pkg/coordinates   — Bible coordinate mapping               │
+│  pkg/cpisi/...     — Schema, compute, bereshit              │
+│                                                             │
+│              ALL LOGIC LIVES HERE (Platform Agnostic Go)    │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ↓
+                 ┌─────────────────┐
+                 │   STATE FILE    │  ~/.claude/state/position.json
+                 │  (the contract) │  JSON — any language can read
+                 │                 │  Local — no cloud needed
+                 └────────┬────────┘
+                          │
+                          ↓
+                 ┌─────────────────┐
+                 │     DAEMON      │  Background watcher
+                 │  (the connector)│  Makes state "live" across all views
+                 └────────┬────────┘
+                          │ watches & notifies
+        ┌─────────────────┼─────────────────┬─────────────────┐
+        ↓                 ↓                 ↓                 ↓
+   ┌─────────┐      ┌─────────┐      ┌─────────┐      ┌─────────┐
+   │   CLI   │      │   TUI   │      │   GUI   │      │Statusline│
+   │ Machine │      │ Terminal│      │ Visual  │      │ Ambient │
+   │ Scripts │      │ Active  │      │ Future  │      │  HUD    │
+   └─────────┘      └─────────┘      └─────────┘      └─────────┘
+----
+
+=== Why This Architecture
+
+[cols="1,3"]
+|===
+|Principle |Implementation
+
+|**Local First**
+|State file on disk. No server. No cloud. Works offline.
+
+|**Agnostic**
+|GUI tech doesn't matter. Logic isn't in the view. State file is the API.
+
+|**Transpilable**
+|Go compiles to WASM. JSON is universal. Any future target works.
+|===
+
+**Game Design Parallel:**
+
+- **Game State** = `pkg/statemachine` (the truth)
+- **HUD** = Statusline (ambient awareness)
+- **Menus** = TUI (focused interaction)
+- **Console** = CLI (developer/scripting)
+- **Render Engine** = GUI (visual presentation)
+
+Same engine, multiple render backends.
+
+== The State File Contract
+
+=== Location
+
+`~/.claude/state/position.json`
+
+=== Structure
+
+[source,json]
+----
+{
+  "position": "PRESENT-PRESENT",
+  "anchor": "Genesis 1:1",
+  "command": "AWAIT",
+  "operator": "@",
+  "n": 0.0,
+  "x": 0.0,
+  "y": 0.0,
+  "z": 0.0,
+  "updated_at": "2025-12-20T17:30:00Z",
+  "updated_by": "hook:session/start"
+}
+----
+
+=== Access Patterns
+
+[cols="1,2,2"]
+|===
+|Component |Read |Write
+
+|CLI
+|`cpisi status`
+|`cpisi set PAST-PRESENT`
+
+|TUI
+|On load, on file change
+|On user action
+
+|GUI
+|On load, on file change
+|On user action
+
+|Statusline
+|On render
+|Never (read-only view)
+
+|Hooks
+|Sometimes
+|`cpisi set <pos> "hook:name"`
+
+|Daemon
+|Watches for changes
+|Never (watcher only)
+|===
+
+== The Five Interfaces
+
+=== CLI — Machine Friendly
+
+**Purpose:** Scripts, hooks, automation.
+
+**Key Commands:**
+[source,bash]
+----
+cpisi status              # One-shot: show current state
+cpisi set PAST-PRESENT    # Set position (hooks use this)
+cpisi psi 1.5             # Calculate Ψ(N)
+cpisi explore constants   # Explore the system
+cpisi compute demo        # Geometric computation demo
+----
+
+**Design Requirements:**
+
+- Exit codes (0=success, 1=error)
+- JSON output option (`--json`)
+- Parseable, predictable output
+- No TTY required
+
+=== TUI — Human Interactive
+
+**Purpose:** Development, exploration, active interaction.
+
+**Features:**
+- Mode tabs (Navigate, Ψ(N), Bible)
+- Color-coded positions (HALT=red, AWAIT=yellow, PROCEED=green)
+- Keyboard navigation
+- Real-time state updates
+
+**Tech:** Bubble Tea (bubbletea + lipgloss)
+
+=== GUI — Visual Future
+
+**Purpose:** Pre-production visualization, demos, user-facing.
+
+**Design Requirements:**
+
+- Local first (no web server required for basic use)
+- Agnostic (logic NOT in the GUI code)
+- Reads/writes state file (same as CLI/TUI)
+- Daemon notifies of changes
+
+**Tech Options (future, not locked in):**
+
+[cols="1,2,2"]
+|===
+|Option |Pros |Cons
+
+|Fyne
+|Pure Go, cross-platform
+|Less mature ecosystem
+
+|Gio
+|Pure Go, immediate mode
+|Learning curve
+
+|WASM + Web
+|Familiar tech, transpilable
+|Needs browser or webview
+
+|Wails/Tauri
+|Native + web hybrid
+|More dependencies
+|===
+
+**Key Insight:** The choice doesn't matter NOW because logic is in packages and
+state file is the contract. We can swap GUI tech without touching core logic.
+
+=== Statusline — Ambient Awareness
+
+**Purpose:** Always-visible cognitive state in terminal.
+
+**Integration Point:** Reads state file, displays in Claude Code statusline.
+
+**What to Add:**
+[source]
+----
+🧭 PRESENT-PRESENT [AWAIT] @  ← Position, Command, Operator
+----
+
+**Location:** `statusline/cmd/statusline/main.go`
+
+The statusline already shows identity, time, git, etc. Adding cognitive state
+means reading from `~/.claude/state/position.json` and formatting for display.
+
+=== Daemon — The Connector
+
+**Purpose:** Background watcher that makes state "live" across all interfaces.
+
+**How It Works:**
+
+1. Watches `~/.claude/state/position.json`
+2. On change, can trigger:
+   - TUI refresh
+   - GUI notification
+   - Statusline update (via hook)
+   - Any registered callback
+
+**Current Implementation:** `cpisi daemon` — watches file, displays live state.
+
+**Future:** Could use inotify/fsnotify for efficient watching.
+
+== Interface Communication
+
+=== The Flow
+
+[source]
+----
+Hook fires (e.g., tool/pre-use)
+    ↓
+Hook calls: cpisi set PAST-PRESENT "hook:tool/pre-use"
+    ↓
+State file updated
+    ↓
+Daemon sees change
+    ↓
+Daemon can notify:
+    • TUI (if running) — refresh display
+    • GUI (if running) — update view
+    • Statusline — next render shows new state
+----
+
+=== Event Types
+
+[cols="1,2,2"]
+|===
+|Event |Source |Consumers
+
+|Position change
+|`cpisi set`, TUI, GUI
+|Daemon → all views
+
+|Anchor change
+|`cpisi anchor`, TUI
+|Daemon → all views
+
+|Ψ(N) calculation
+|`cpisi psi`, TUI
+|Display only (no state change)
+|===
+
+== Building Block Alignment
+
+=== Foundation (0) — The State File
+
+The state file IS the foundation. Everything builds on it.
+
+- JSON format (universal)
+- Local storage (no cloud)
+- Single source of truth
+
+=== Build Up (+1) — The Views
+
+Each view builds on the state file:
+
+[cols="1,2"]
+|===
+|View |What It Adds
+
+|CLI
+|Machine-parseable access
+
+|TUI
+|Interactive exploration
+
+|GUI
+|Visual representation
+
+|Statusline
+|Ambient awareness
+|===
+
+=== Break Down (-1) — Trace to Logic
+
+Every view traces back to packages:
+
+[source]
+----
+GUI displays position
+    ↓ reads from
+State file (position.json)
+    ↓ written by
+cpisi set (CLI)
+    ↓ uses
+pkg/statemachine.MoveTo()
+    ↓ implements
+27 positions from HALT_07
+    ↓ traces to
+HALT_01 (Genesis 1:1)
+----
+
+== Files
+
+[cols="2,3"]
+|===
+|File |Purpose
+
+|`main.go`
+|Entry point — mode switching (cli, tui, status, daemon, set, psi, explore, compute)
+
+|`cpisi-architecture.adoc`
+|This document
+
+|`notes/design-notes.md`
+|Design decisions, TUI notes, Ψ(N) analysis
+
+|`Makefile`
+|Build, install, test targets
+|===
+
+== Build Commands
+
+[source,bash]
+----
+make build      # Build cpisi binary
+make install    # Install to $GOPATH/bin
+make test       # Run tests
+make clean      # Clean artifacts
+----
+
+== Summary
+
+The `cpisi` command implements the **multi-accessible interface** pattern:
+
+1. **Logic in packages** — `pkg/statemachine`, `pkg/coordinates`, `pkg/cpisi/*`
+2. **State file as API** — `~/.claude/state/position.json`
+3. **Daemon as connector** — Watches state, notifies views
+4. **Multiple views** — CLI (machine), TUI (interactive), GUI (visual), Statusline (ambient)
+
+**Local first. Agnostic. Transpilable.**
+
+The GUI tech choice is intentionally deferred because it doesn't matter — the
+architecture ensures any frontend can consume the same state file and use the
+same packages.
+
+[quote, Ezekiel 1:16]
+____
+Their appearance and their work was as it were a wheel in the middle of a wheel.
+____
+
+The daemon IS the inner wheel. The views ARE the outer wheel. They turn together.
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+//
+// This document was created by Nova Dawn as part of the CPI-SI crystallization.
+//
+// Related Documents:
+// - pkg/statemachine/statemachine-architecture.adoc — State machine package
+// - pkg/coordinates/coordinates-architecture.adoc — Coordinates package
+// - statusline/cmd/statusline/main.go — Statusline integration point
+// - design-notes.md — Design decisions
+//
+// HALT Trace: This document → HALT_07 (Position) → HALT_01 (Genesis 1:1)
+//
+// ============================================================================
+// END FOOTER
+// ============================================================================

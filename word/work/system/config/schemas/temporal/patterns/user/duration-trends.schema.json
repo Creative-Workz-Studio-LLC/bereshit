@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/user/duration-trends.schema.json",
+  "title": "User Duration Trends Schema",
+  "description": "Schema for tracking duration pattern evolution over time",
+  "type": "object",
+  "required": ["metadata", "monthly_capacity", "capacity_growth", "observed_shifts", "sustainability_assessment", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["user", "pattern_type", "description", "last_updated", "version"],
+      "properties": {
+        "user": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["duration_trends"] },
+        "description": { "type": "string" },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "monthly_capacity": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["month", "avg_duration_minutes", "sustainable_duration_minutes", "quality_degradation_point_minutes"],
+        "properties": {
+          "month": { "type": "string" },
+          "avg_duration_minutes": { "type": "number", "minimum": 0 },
+          "sustainable_duration_minutes": { "type": "number", "minimum": 0 },
+          "quality_degradation_point_minutes": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "capacity_growth": {
+      "type": "object",
+      "properties": {
+        "trend": { "type": "string" },
+        "note": { "type": "string" },
+        "assessment": { "type": "string" },
+        "factors": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "observed_shifts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["date_detected", "shift_type", "description", "possible_causes", "sustained"],
+        "properties": {
+          "date_detected": { "type": "string", "format": "date" },
+          "shift_type": { "type": "string" },
+          "description": { "type": "string" },
+          "possible_causes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "sustained": { "type": "boolean" }
+        }
+      }
+    },
+    "sustainability_assessment": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "current_pattern": { "type": "string" },
+        "risk_level": { "type": "string" },
+        "recommendation": { "type": "string" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

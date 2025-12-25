@@ -1,0 +1,129 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Required Sections by Block
+# Source: bereshit/word/seed/
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Defines required sections for each block across file types.
+# Used by validate-omni to check file structure.
+#
+# Biblical: 1 Thessalonians 5:21 - "Prove all things; hold fast that which is good"
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# UNIVERSAL METADATA SECTIONS (ALL FILES)
+# ═══════════════════════════════════════════════════════════════════════════
+
+[metadata.biblical_foundation]
+name = "Biblical Foundation"
+markers = ["grounded in:", "Biblical:"]
+description = "Scripture reference grounding the file's purpose"
+example = "grounded in: scripture Genesis 1:1"
+required = true
+
+[metadata.identity]
+name = "CPI-SI Identity"
+markers = ["Key:", "keyed as", "classifies as"]
+description = "Unique identifier for the file"
+example = "Key: PKG-HEALTH-001"
+required = true
+
+[metadata.authorship]
+name = "Authorship & Lineage"
+markers = ["authored by:", "Authors:", "author:"]
+description = "Who created/maintains this file"
+example = "Authors: Nova Dawn"
+required = true
+
+[metadata.purpose]
+name = "Purpose & Function"
+markers = ["exists to:", "purpose:", "Purpose:"]
+description = "Why this file exists"
+example = "Purpose: Health scoring for code files"
+required = true
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CODE BLOCK SECTIONS (4-BLOCK)
+# ═══════════════════════════════════════════════════════════════════════════
+
+[code.setup]
+name = "SETUP Block Sections"
+order = ["Imports", "Constants", "Variables", "Types", "Type Methods", "Package-Level State"]
+description = "Declares dependencies and definitions before operations"
+required = ["Imports"]  # Imports is the only required section
+
+[code.setup.imports]
+name = "Imports"
+markers = ["import", "#include", "use ", "from "]
+description = "External dependencies"
+subsections = ["stdlib", "internal", "external"]
+priority_order = [1, 0, -1]  # stdlib first, internal second, external last
+
+[code.body]
+name = "BODY Block Sections"
+order = ["Org Chart", "Helpers", "Core Ops", "Error Handling", "Public APIs"]
+description = "Implementation flows from private to public"
+required = []  # All optional based on file needs
+
+[code.closing]
+name = "CLOSING Block Sections"
+order = ["Validation", "Execution", "Cleanup", "Documentation"]
+description = "Runtime and cleanup operations"
+required = []  # main() in Execution only required for executables
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DOCUMENTATION BLOCK SECTIONS (5-BLOCK)
+# ═══════════════════════════════════════════════════════════════════════════
+
+[documentation.header]
+name = "HEADER Block Sections"
+order = ["title", "tagline", "navigation", "status_badges"]
+description = "Human-readable identity for quick orientation"
+required = ["title"]
+
+[documentation.context]
+name = "CONTEXT Block Sections"
+order = ["scope", "prerequisites", "key_terms"]
+description = "What reader needs before content"
+required = []  # All optional
+
+[documentation.content]
+name = "CONTENT Block"
+order = []  # Flexible - varies by document
+description = "Main body content"
+required = []
+
+[documentation.footer]
+name = "FOOTER Block Sections"
+order = ["related_documents", "biblical_closing", "closing_note"]
+description = "References and grounding"
+required = []  # Recommended but not required
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DATA BLOCK SECTIONS (3-BLOCK)
+# ═══════════════════════════════════════════════════════════════════════════
+
+[data.content]
+name = "CONTENT Block"
+order = []  # Schema-dependent
+description = "Data values and structure"
+required = []
+
+[data.closing]
+name = "CLOSING Block Sections"
+order = ["validation", "policy"]
+description = "Optional validation and policy rules"
+required = []
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SUMMARY
+# ═══════════════════════════════════════════════════════════════════════════
+
+[summary]
+total_metadata_required = 4
+metadata_markers = [
+    "grounded in:", "Biblical:",
+    "Key:", "keyed as", "classifies as",
+    "authored by:", "Authors:", "author:",
+    "exists to:", "purpose:", "Purpose:"
+]

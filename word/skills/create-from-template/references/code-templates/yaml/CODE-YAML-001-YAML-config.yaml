@@ -1,0 +1,295 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# TEMPLATE: YAML Configuration File (4-Block Structure)
+# Key: CODE-YAML-001
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# This is a TEMPLATE file - copy and modify for new YAML configurations.
+# Replace all [bracketed] placeholders with actual content.
+# Rename to appropriate config name (e.g., config.yaml, settings.yml).
+#
+# Derived from: templates/code/config/CODE-CONFIG-001-CONFIG-toml.toml
+# See: standards/code/4-block/ for complete documentation
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# # Biblical Foundation
+#
+# Scripture: [Relevant verse grounding this configuration's purpose]
+#
+# Principle: [Kingdom principle this configuration demonstrates]
+#
+# Anchor: [Supporting verse reinforcing the principle]
+#
+# # CPI-SI Identity
+#
+# Component Type: [Ladder/Baton/Rails]
+#
+#   - Ladder: Foundation config others depend on (shared settings, base config)
+#   - Baton: Workflow config affecting data flow (processing settings)
+#   - Rails: Infrastructure config for cross-cutting concerns (logging, CI/CD)
+#
+# Role: [Specific responsibility in system architecture]
+#
+# Paradigm: CPI-SI framework component - YAML configuration
+#
+# # Authorship & Lineage
+#
+#   - Architect: [Who designed the configuration structure]
+#   - Implementation: [Who created and maintains this config]
+#   - Created: [YYYY-MM-DD]
+#   - Version: [MAJOR.MINOR.PATCH]
+#   - Modified: [YYYY-MM-DD - what changed]
+#
+# # Purpose & Function
+#
+# Purpose: [What behavior does this configuration control?]
+#
+# Core Design: [Architectural pattern - behavioral tuning, feature flags, etc.]
+#
+# Key Features:
+#
+#   - [Major capability 1 this config enables]
+#   - [Major capability 2 this config enables]
+#   - [Major capability 3 this config enables]
+#
+# # Health Scoring
+#
+# Configuration Impact: [How misconfigurations affect system health]
+#
+# Validation Behavior:
+#   - Invalid value: [What happens - error? fallback to default?]
+#   - Missing section: [What happens - error? use defaults?]
+#   - Type mismatch: [What happens - parse error? coercion?]
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# SETUP
+# =============================================================================
+#
+# Configuration file identity and system linkage.
+# Establishes what system reads this file and how it's loaded.
+#
+# File Identity:
+#   - Key: [CONFIG-KEY-###]
+#   - Consumer: [system that reads this - e.g., GitHub Actions, Docker, K8s]
+#   - Loader: [how it's loaded - e.g., yaml.Unmarshal, built-in parser]
+#
+# Related Files:
+#   - Code: [path/to/handler - code that processes this]
+#   - Docs: [path/to/documentation]
+#   - Schema: [path/to/schema.json if applicable]
+#
+# Loading Behavior:
+#   - [When loaded - startup? on-trigger? hot-reload?]
+#   - [What happens if file missing]
+#   - [Environment variable overrides if applicable]
+#
+# =============================================================================
+# END SETUP
+# =============================================================================
+
+# =============================================================================
+# BODY
+# =============================================================================
+#
+# Configuration sections organized by concern.
+# YAML uses indentation for hierarchy (2 spaces recommended).
+#
+# Organization Pattern:
+#   - Core settings first (most commonly modified)
+#   - Feature settings second (optional capabilities)
+#   - Advanced settings last (rarely modified)
+#
+# YAML Features Used:
+#   - Key-value pairs: key: value
+#   - Nested objects: indent with 2 spaces
+#   - Arrays: - item (with dash prefix)
+#   - Multi-line strings: | for literal, > for folded
+#   - Anchors: &name to define, *name to reference
+#
+# -----------------------------------------------------------------------------
+# [Section 1 Name] - [Brief Description]
+# -----------------------------------------------------------------------------
+# [Detailed explanation of what this section controls]
+
+# [Setting description - what it controls, valid values]
+# Type: [string/number/boolean/array/object]
+# Default: [default value if not specified]
+section_name:
+  setting_name: "[value]"
+
+  # [Another setting description]
+  another_setting: "[value]"
+
+  # Nested configuration
+  nested:
+    inner_key: "[inner_value]"
+
+# -----------------------------------------------------------------------------
+# [Section 2 Name] - [Brief Description]
+# -----------------------------------------------------------------------------
+
+another_section:
+  key: "[value]"
+
+  # Array example
+  items:
+    - "[item1]"
+    - "[item2]"
+    - "[item3]"
+
+# -----------------------------------------------------------------------------
+# Complex Configuration Example
+# -----------------------------------------------------------------------------
+# Demonstrates YAML-specific features.
+
+complex_section:
+  # Multi-line string (literal - preserves newlines)
+  multi_line_literal: |
+    Line 1
+    Line 2
+    Line 3
+
+  # Multi-line string (folded - joins lines)
+  multi_line_folded: >
+    This will be
+    joined into
+    a single line.
+
+  # Array of objects
+  object_array:
+    - name: "[name1]"
+      value: "[value1]"
+    - name: "[name2]"
+      value: "[value2]"
+
+# -----------------------------------------------------------------------------
+# Anchors and Aliases Example
+# -----------------------------------------------------------------------------
+# Use anchors (&) to define reusable values, aliases (*) to reference them.
+
+defaults: &defaults
+  timeout: 30
+  retries: 3
+
+production:
+  <<: *defaults  # Merge defaults
+  timeout: 60    # Override specific value
+
+# =============================================================================
+# END BODY
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# -----------------------------------------------------------------------------
+# Configuration Validation
+# -----------------------------------------------------------------------------
+#
+# Verify configuration is correctly formatted and valid:
+#
+#   # Syntax check (YAML parser)
+#   python -c "import yaml; yaml.safe_load(open('[filename].yaml'))"
+#   yamllint [filename].yaml
+#
+#   # Schema validation (if schema exists)
+#   yq eval '.' [filename].yaml
+#
+# Common Issues:
+#
+#   "mapping values not allowed" - Check indentation (must be consistent)
+#   "found character that cannot start" - Check for tabs (use spaces only)
+#   "expected <block end>" - Check bracket/quote matching
+#   "duplicate key" - Keys must be unique within same level
+#
+# -----------------------------------------------------------------------------
+# Modification Policy
+# -----------------------------------------------------------------------------
+#
+# Safe to Modify:
+#   ✅ Change values within documented valid ranges
+#   ✅ Add new keys (if schema/code supports them)
+#   ✅ Add comments for clarity
+#   ✅ Reorder keys (YAML is generally order-independent)
+#
+# Modify with Care:
+#   ⚠️ Changing key names (breaks code references)
+#   ⚠️ Changing indentation (affects hierarchy)
+#   ⚠️ Removing keys (may cause null/missing errors)
+#   ⚠️ Changing anchors (affects all aliases)
+#
+# NEVER Modify:
+#   ❌ 4-block documentation structure
+#   ❌ Required keys without updating consumer code
+#   ❌ Mix tabs and spaces (YAML requires consistent spacing)
+#
+# -----------------------------------------------------------------------------
+# Default Values
+# -----------------------------------------------------------------------------
+#
+# The code that loads this configuration should define sensible defaults.
+# This file documents what those defaults are for reference.
+#
+# Pattern: Code defines defaults, config overrides them.
+#
+# Current defaults (if section/key missing):
+#   section_name:
+#     setting_name: "[default_value]"
+#
+# -----------------------------------------------------------------------------
+# Environment Integration
+# -----------------------------------------------------------------------------
+#
+# Configuration can be overridden by environment variables:
+#
+#   Pattern: [PREFIX]_[SECTION]_[KEY]
+#   Priority: env var > config file > code default
+#
+# Examples:
+#   APP_SECTION_NAME_SETTING_NAME=value
+#
+# Note: Environment variable parsing depends on consumer implementation.
+#
+# -----------------------------------------------------------------------------
+# Integration Notes
+# -----------------------------------------------------------------------------
+#
+# This configuration file:
+#   - Uses YAML 1.1/1.2 syntax
+#   - Comments use # (to end of line)
+#   - Indentation: 2 spaces (no tabs)
+#   - Processed by [consumer - e.g., GitHub Actions, Docker Compose, K8s]
+#
+# Code Integration Pattern:
+#
+#   // In Go
+#   import "gopkg.in/yaml.v3"
+#   var cfg Config
+#   yaml.Unmarshal(data, &cfg)
+#
+#   # In Python
+#   import yaml
+#   with open('config.yaml') as f:
+#       cfg = yaml.safe_load(f)
+#
+# -----------------------------------------------------------------------------
+# Closing Note
+# -----------------------------------------------------------------------------
+#
+# This configuration controls [describe scope].
+# Changes affect [describe impact].
+#
+# "[Relevant Scripture verse]" - [Reference]
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

@@ -1,0 +1,112 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Process Monitoring Configuration
+// Controls dev server port detection and reporting at session start/end
+//
+// HEALTH SCORING MAP (Total = 100 points):
+// This configuration file enables flexible process monitoring:
+//   Config Load Success: +40 points (file readable, valid JSON)
+//   Port Check Execution: +40 points (lsof commands execute without error)
+//   Display Formatting: +20 points (output renders correctly)
+//
+// Scoring reflects: Config quality (40) + Detection capability (40) + Display (20) = 100
+// ============================================================================
+
+{
+  "metadata": {
+    "name": "Process Monitoring Configuration",
+    "description": "Controls dev server port detection and process reporting",
+    "version": "1.0.0",
+    "author": "Seanje Lenox-Wise",
+    "created": "2025-11-12",
+    "last_updated": "2025-11-12"
+  },
+
+  // ============================================================================
+  // Monitored Ports Configuration
+  // ============================================================================
+  // Ports to check for running development servers
+
+  "ports": {
+    "enabled": true,                     // Master switch for port monitoring
+    "monitored_ports": [
+      {
+        "number": "3000",
+        "description": "React/Next.js default dev server",
+        "enabled": true
+      },
+      {
+        "number": "8000",
+        "description": "Django/Python HTTP server",
+        "enabled": true
+      },
+      {
+        "number": "8080",
+        "description": "Generic HTTP server (often Spring Boot, Tomcat)",
+        "enabled": true
+      },
+      {
+        "number": "5173",
+        "description": "Vite dev server",
+        "enabled": true
+      },
+      {
+        "number": "4200",
+        "description": "Angular CLI dev server",
+        "enabled": true
+      }
+    ],
+    "custom_ports": []                   // Additional ports to monitor (just port numbers)
+  },
+
+  // ============================================================================
+  // Display Configuration
+  // ============================================================================
+  // Output formatting for process detection
+
+  "display": {
+    "show_at_start": true,               // Show running processes at session start
+    "show_at_end": true,                 // Show running processes at session end (reminder)
+    "icon": "🔌",                        // Icon for process notification
+    "start_message": "Active dev servers on ports:",
+    "end_message": "Dev servers still running on ports:",
+    "separator": ", ",                   // Separator between port numbers in output
+    "show_descriptions": false           // Include port descriptions in output (verbose mode)
+  },
+
+  // ============================================================================
+  // Behavior Configuration
+  // ============================================================================
+  // Error handling and execution preferences
+
+  "behavior": {
+    "silent_failures": true,             // true = continue silently if lsof fails, false = log errors
+    "timeout_seconds": 2,                // Maximum time to wait for each port check
+    "check_command": "lsof",             // Command to use for port checking (lsof or ss)
+    "require_lsof": false                // true = fail if lsof not available, false = skip silently
+  },
+
+  // ============================================================================
+  // Advanced Configuration
+  // ============================================================================
+  // Advanced options for custom setups
+
+  "advanced": {
+    "use_tcp_only": true,                // true = check TCP only, false = check all protocols
+    "listen_state_only": true,           // true = LISTEN state only, false = all connection states
+    "parallel_checks": true,             // true = check ports concurrently, false = sequential
+    "cache_results": false               // true = cache results for session, false = always fresh
+  },
+
+  // ============================================================================
+  // Extensions
+  // ============================================================================
+  // Reserved for future functionality
+
+  "extensions": {
+    "custom_commands": [],               // Future: Custom commands to detect processes
+    "process_filters": [],               // Future: Filter processes by name/user
+    "notification_hooks": []             // Future: Webhooks for process detection
+  }
+}

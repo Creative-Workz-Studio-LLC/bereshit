@@ -114,6 +114,7 @@
 
 //--- Project Headers ---
 #include "math.h"  // Function prototypes (includes trit.h)
+#include "generated/ternary_math.gen.h"  // Generated arithmetic tables
 
 //--- Standard Library ---
 // math.h includes: <stdbool.h>, <stdint.h> via trit.h
@@ -132,75 +133,10 @@
 // ────────────────────────────────────────────────────────────────
 
 //--- Arithmetic Tables ---
-// From ternary-math.toml [operations] section.
-// Tables indexed by trit value + 1 (so -1→0, 0→1, +1→2).
-
-// Half Adder Sum Table: sum = HALF_SUM[a + 1][b + 1]
-// From ternary-math.toml [operations.half_adder.sum]
-// Row -1: (-1)+(-1)=+1, (-1)+0=-1, (-1)+1=0
-// Row  0: 0+(-1)=-1, 0+0=0, 0+1=+1
-// Row +1: (+1)+(-1)=0, (+1)+0=+1, (+1)+(+1)=-1
-static const trit_t HALF_SUM[3][3] = {
-    { TRIT_POS, TRIT_NEG, TRIT_ZERO },  // a=-1
-    { TRIT_NEG, TRIT_ZERO, TRIT_POS },  // a=0
-    { TRIT_ZERO, TRIT_POS, TRIT_NEG }   // a=+1
-};
-
-// Half Adder Carry Table: carry = HALF_CARRY[a + 1][b + 1]
-// From ternary-math.toml [operations.half_adder.carry]
-// Only (-1)+(-1) generates carry=-1, only (+1)+(+1) generates carry=+1
-static const trit_t HALF_CARRY[3][3] = {
-    { TRIT_NEG, TRIT_ZERO, TRIT_ZERO },  // a=-1: only -1+-1 carries
-    { TRIT_ZERO, TRIT_ZERO, TRIT_ZERO }, // a=0: never carries
-    { TRIT_ZERO, TRIT_ZERO, TRIT_POS }   // a=+1: only +1++1 carries
-};
-
-// Full Adder Sum Table: sum = FULL_SUM[a + 1][b + 1][c_in + 1]
-// From ternary-math.toml [operations.full_adder.sum]
-// 27 combinations (3³)
-static const trit_t FULL_SUM[3][3][3] = {
-    // a = -1
-    {
-        { TRIT_ZERO, TRIT_POS, TRIT_NEG },  // b=-1: c_in={-1,0,+1}
-        { TRIT_POS, TRIT_NEG, TRIT_ZERO },  // b=0:  c_in={-1,0,+1}
-        { TRIT_NEG, TRIT_ZERO, TRIT_POS }   // b=+1: c_in={-1,0,+1}
-    },
-    // a = 0
-    {
-        { TRIT_POS, TRIT_NEG, TRIT_ZERO },  // b=-1: c_in={-1,0,+1}
-        { TRIT_NEG, TRIT_ZERO, TRIT_POS },  // b=0:  c_in={-1,0,+1}
-        { TRIT_ZERO, TRIT_POS, TRIT_NEG }   // b=+1: c_in={-1,0,+1}
-    },
-    // a = +1
-    {
-        { TRIT_NEG, TRIT_ZERO, TRIT_POS },  // b=-1: c_in={-1,0,+1}
-        { TRIT_ZERO, TRIT_POS, TRIT_NEG },  // b=0:  c_in={-1,0,+1}
-        { TRIT_POS, TRIT_NEG, TRIT_ZERO }   // b=+1: c_in={-1,0,+1}
-    }
-};
-
-// Full Adder Carry Out Table: carry_out = FULL_CARRY[a + 1][b + 1][c_in + 1]
-// From ternary-math.toml [operations.full_adder.carry_out]
-static const trit_t FULL_CARRY[3][3][3] = {
-    // a = -1
-    {
-        { TRIT_NEG, TRIT_NEG, TRIT_ZERO },  // b=-1: c_in={-1,0,+1}
-        { TRIT_NEG, TRIT_ZERO, TRIT_ZERO }, // b=0:  c_in={-1,0,+1}
-        { TRIT_ZERO, TRIT_ZERO, TRIT_ZERO } // b=+1: c_in={-1,0,+1}
-    },
-    // a = 0
-    {
-        { TRIT_NEG, TRIT_ZERO, TRIT_ZERO }, // b=-1: c_in={-1,0,+1}
-        { TRIT_ZERO, TRIT_ZERO, TRIT_ZERO }, // b=0:  c_in={-1,0,+1}
-        { TRIT_ZERO, TRIT_ZERO, TRIT_POS }  // b=+1: c_in={-1,0,+1}
-    },
-    // a = +1
-    {
-        { TRIT_ZERO, TRIT_ZERO, TRIT_ZERO }, // b=-1: c_in={-1,0,+1}
-        { TRIT_ZERO, TRIT_ZERO, TRIT_POS },  // b=0:  c_in={-1,0,+1}
-        { TRIT_ZERO, TRIT_POS, TRIT_POS }    // b=+1: c_in={-1,0,+1}
-    }
-};
+// NOW GENERATED from ternary-math.toml via generate-config
+// See: generated/ternary_math.gen.h
+// Tables: HALF_ADDER_SUM, HALF_ADDER_CARRY, FULL_ADDER_SUM, FULL_ADDER_CARRY_OUT
+// Indexed by trit value + 1 (so -1→0, 0→1, +1→2)
 
 // Health Level Name Tables
 // From health.toml [classification.levels]
@@ -324,8 +260,8 @@ trit_result_t trit_hadd(trit_t a, trit_t b) {
     trit_result_t result;
     int ai = TRIT_TO_UNSIGNED(a);
     int bi = TRIT_TO_UNSIGNED(b);
-    result.value = HALF_SUM[ai][bi];
-    result.carry = HALF_CARRY[ai][bi];
+    result.value = HALF_ADDER_SUM[ai][bi];
+    result.carry = HALF_ADDER_CARRY[ai][bi];
     return result;
 }
 
@@ -342,8 +278,8 @@ trit_result_t trit_fadd(trit_t a, trit_t b, trit_t c_in) {
     int ai = TRIT_TO_UNSIGNED(a);
     int bi = TRIT_TO_UNSIGNED(b);
     int ci = TRIT_TO_UNSIGNED(c_in);
-    result.value = FULL_SUM[ai][bi][ci];
-    result.carry = FULL_CARRY[ai][bi][ci];
+    result.value = FULL_ADDER_SUM[ai][bi][ci];
+    result.carry = FULL_ADDER_CARRY_OUT[ai][bi][ci];
     return result;
 }
 

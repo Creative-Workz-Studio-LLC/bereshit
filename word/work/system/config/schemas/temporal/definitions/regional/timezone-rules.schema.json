@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/definitions/regional/timezone-rules.schema.json",
+  "title": "Timezone Rules Schema",
+  "description": "Schema for regional timezone definitions and DST rules",
+  "type": "object",
+  "required": ["metadata", "timezone", "daylight_saving_time", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "created", "last_updated", "purpose", "scope", "region"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "created": { "type": "string", "format": "date" },
+        "last_updated": { "type": "string", "format": "date" },
+        "purpose": { "type": "string" },
+        "scope": { "type": "string", "enum": ["regional"] },
+        "region": { "type": "string" },
+        "applies_to": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "timezone": {
+      "type": "object",
+      "required": [
+        "iana_name",
+        "standard_abbreviation",
+        "standard_name",
+        "utc_offset_standard"
+      ],
+      "properties": {
+        "iana_name": {
+          "type": "string",
+          "description": "IANA timezone identifier (e.g., America/Chicago)"
+        },
+        "standard_abbreviation": { "type": "string" },
+        "standard_name": { "type": "string" },
+        "daylight_abbreviation": { "type": "string" },
+        "daylight_name": { "type": "string" },
+        "utc_offset_standard": {
+          "type": "string",
+          "pattern": "^[+-][0-9]{2}:[0-9]{2}$"
+        },
+        "utc_offset_daylight": {
+          "type": "string",
+          "pattern": "^[+-][0-9]{2}:[0-9]{2}$"
+        }
+      }
+    },
+    "daylight_saving_time": {
+      "type": "object",
+      "required": ["observes_dst"],
+      "properties": {
+        "observes_dst": { "type": "boolean" },
+        "start_rule": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "month": { "type": "integer", "minimum": 1, "maximum": 12 },
+            "week": { "type": "string" },
+            "day_of_week": { "type": "string" },
+            "time": { "type": "string" },
+            "offset_change": { "type": "string" },
+            "utc_offset_before": { "type": "string" },
+            "utc_offset_after": { "type": "string" }
+          }
+        },
+        "end_rule": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "month": { "type": "integer", "minimum": 1, "maximum": 12 },
+            "week": { "type": "string" },
+            "day_of_week": { "type": "string" },
+            "time": { "type": "string" },
+            "offset_change": { "type": "string" },
+            "utc_offset_before": { "type": "string" },
+            "utc_offset_after": { "type": "string" },
+            "note": { "type": "string" }
+          }
+        },
+        "historical_note": { "type": "string" },
+        "future_uncertainty": { "type": "string" }
+      }
+    },
+    "dst_transitions": {
+      "type": "object",
+      "patternProperties": {
+        "^[0-9]{4}$": {
+          "type": "object",
+          "properties": {
+            "spring_forward": { "type": "string" },
+            "fall_back": { "type": "string" }
+          }
+        }
+      }
+    },
+    "timestamp_handling": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "relative_to_other_zones": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

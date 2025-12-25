@@ -1,0 +1,324 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// CPI-SI System - Structured Debugging Template
+// Purpose: Define structured debug output format to avoid hardcoding in runtime
+// Schema: Defines how debug sessions should be structured across all components
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Complete context capture: 40 pts
+// - Actionable debug information: 35 pts
+// - Clear problem identification: 25 pts
+
+{
+  "$schema": "../../../config/schemas/dev/debug-format.schema.json",
+  "version": "1.0.0",
+  "description": "Structured debugging output template for CPI-SI system",
+
+  // ============================================================================
+  // DEBUG SESSION STRUCTURE
+  // ============================================================================
+
+  "session_structure": {
+    "sections": [
+      "header",           // Session identification
+      "context",          // Execution context
+      "initial_state",    // State at debug session start
+      "events",           // Debug events during execution
+      "final_state",      // State at debug session end
+      "analysis",         // Automated analysis (optional)
+      "footer"            // Session closure
+    ],
+    "description": "Standard sections in every debug output file"
+  },
+
+  // ============================================================================
+  // SECTION FORMATS
+  // ============================================================================
+
+  "sections": {
+    "header": {
+      "format": "box",
+      "template": [
+        "╔════════════════════════════════════════════════════════════════╗",
+        "║ CPI-SI Debug Session - {component}",
+        "║ Context ID: {context_id}",
+        "║ PID: {pid}",
+        "║ Started: {timestamp}",
+        "║ Debug Level: {level}",
+        "╚════════════════════════════════════════════════════════════════╝"
+      ],
+      "fields": {
+        "component": "Component name being debugged",
+        "context_id": "Unique context identifier",
+        "pid": "Process ID",
+        "timestamp": "Start timestamp (YYYY-MM-DD HH:MM:SS)",
+        "level": "Debug verbosity (BASIC, DETAILED, VERBOSE)"
+      }
+    },
+
+    "context": {
+      "format": "structured",
+      "template": [
+        "",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "EXECUTION CONTEXT",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "Identity:",
+        "  User: {user}",
+        "  Host: {host}",
+        "  Shell: {shell}",
+        "  PID: {pid}",
+        "",
+        "Environment:",
+        "  CWD: {cwd}",
+        "  PATH: {path}",
+        "  GOPATH: {gopath}",
+        "  Environment State: {env_state}",
+        "",
+        "System:",
+        "  Kernel: {kernel}",
+        "  Distribution: {distro}",
+        "  Architecture: {arch}",
+        ""
+      ],
+      "description": "Capture complete execution context for reproducibility"
+    },
+
+    "initial_state": {
+      "format": "structured",
+      "template": [
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "INITIAL STATE",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "Component State:",
+        "{component_state}",
+        "",
+        "Input Parameters:",
+        "{input_parameters}",
+        "",
+        "Relevant Configuration:",
+        "{configuration}",
+        ""
+      ],
+      "description": "Document state before execution begins"
+    },
+
+    "events": {
+      "format": "timeline",
+      "entry_template": [
+        "[{timestamp}] {severity} | {event_type}",
+        "  Description: {description}",
+        "  State Change: {state_change}",
+        "  Health Impact: {health_impact}",
+        "  Details:",
+        "{details}"
+      ],
+      "event_types": [
+        "INITIALIZATION",   // Component initialization
+        "VALIDATION",       // Validation operation
+        "OPERATION",        // Main operation
+        "ERROR",           // Error occurred
+        "WARNING",         // Warning condition
+        "STATE_CHANGE",    // Significant state change
+        "DECISION_POINT",  // Decision/branch taken
+        "CHECKPOINT"       // Execution checkpoint
+      ],
+      "description": "Chronological event log during execution"
+    },
+
+    "final_state": {
+      "format": "structured",
+      "template": [
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "FINAL STATE",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "Execution Result: {result}",
+        "Exit Code: {exit_code}",
+        "Total Duration: {duration}",
+        "",
+        "Component State:",
+        "{component_state}",
+        "",
+        "Health Score:",
+        "  Initial: {initial_health}",
+        "  Final: {final_health}",
+        "  Delta: {health_delta}",
+        "  Status: {health_status}",
+        ""
+      ],
+      "description": "Document state after execution completes"
+    },
+
+    "analysis": {
+      "format": "structured",
+      "template": [
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "AUTOMATED ANALYSIS",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "",
+        "Problem Indicators:",
+        "{problem_indicators}",
+        "",
+        "Performance Metrics:",
+        "{performance_metrics}",
+        "",
+        "Recommendations:",
+        "{recommendations}",
+        ""
+      ],
+      "optional": true,
+      "description": "Automated analysis of debug session (future capability)"
+    },
+
+    "footer": {
+      "format": "box",
+      "template": [
+        "╔════════════════════════════════════════════════════════════════╗",
+        "║ Debug Session Complete",
+        "║ Context ID: {context_id}",
+        "║ Duration: {duration}",
+        "║ Final Health: {final_health}",
+        "║ Ended: {timestamp}",
+        "╚════════════════════════════════════════════════════════════════╝"
+      ]
+    }
+  },
+
+  // ============================================================================
+  // DEBUG LEVELS
+  // ============================================================================
+
+  "debug_levels": {
+    "BASIC": {
+      "sections": ["header", "context", "initial_state", "final_state", "footer"],
+      "description": "Minimal debug output - just state snapshots"
+    },
+    "DETAILED": {
+      "sections": ["header", "context", "initial_state", "events", "final_state", "footer"],
+      "description": "Standard debug output - includes event timeline"
+    },
+    "VERBOSE": {
+      "sections": ["header", "context", "initial_state", "events", "final_state", "analysis", "footer"],
+      "description": "Full debug output - includes automated analysis"
+    }
+  },
+
+  // ============================================================================
+  // FILE NAMING CONVENTION
+  // ============================================================================
+
+  "file_naming": {
+    "format": "{component}-{context_id}.debug",
+    "example": "status-6573-1761710846178910692.debug",
+    "location": "system/dev/debug/{component}/",
+    "description": "Debug files organized by component in dedicated directories"
+  },
+
+  // ============================================================================
+  // EXAMPLE DEBUG SESSION
+  // ============================================================================
+
+  "example": {
+    "component": "validate",
+    "level": "DETAILED",
+    "output": [
+      "╔════════════════════════════════════════════════════════════════╗",
+      "║ CPI-SI Debug Session - validate",
+      "║ Context ID: validate-7821-1761710935456123789",
+      "║ PID: 7821",
+      "║ Started: 2025-11-09 06:42:15",
+      "║ Debug Level: DETAILED",
+      "╚════════════════════════════════════════════════════════════════╝",
+      "",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "EXECUTION CONTEXT",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "",
+      "Identity:",
+      "  User: seanje-lenox-wise",
+      "  Host: creativeworkz-nova-dawn",
+      "  Shell: /bin/bash",
+      "  PID: 7821",
+      "",
+      "Environment:",
+      "  CWD: /home/seanje-lenox-wise",
+      "  PATH: /usr/local/bin:/usr/bin:/bin",
+      "  GOPATH: /home/seanje-lenox-wise/go",
+      "  Environment State: CLEAN",
+      "",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "INITIAL STATE",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "",
+      "Component State:",
+      "  Health: 0 (not yet initialized)",
+      "  Checks: 0 completed",
+      "",
+      "Input Parameters:",
+      "  Validation Mode: FULL",
+      "  Components: [environment, sudoers, permissions]",
+      "",
+      "[2025-11-09 06:42:15.123] INFO | INITIALIZATION",
+      "  Description: Validator initialized",
+      "  State Change: health: 0 → 10",
+      "  Health Impact: +10",
+      "",
+      "[2025-11-09 06:42:15.234] INFO | VALIDATION",
+      "  Description: Checking environment variables",
+      "  State Change: checks: 0 → 3",
+      "  Health Impact: +15",
+      "",
+      "[2025-11-09 06:42:15.345] ERROR | VALIDATION",
+      "  Description: Sudoers file validation failed",
+      "  State Change: failed_checks: 0 → 1",
+      "  Health Impact: -20",
+      "  Details:",
+      "    file: /etc/sudoers.d/90-cpi-si-safe-operations",
+      "    error: Invalid command alias: APT_GET",
+      "    line: 15",
+      "",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "FINAL STATE",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "",
+      "Execution Result: FAILED",
+      "Exit Code: 1",
+      "Total Duration: 0.456s",
+      "",
+      "Component State:",
+      "  Health: 5",
+      "  Checks: 4 completed, 1 failed",
+      "",
+      "Health Score:",
+      "  Initial: 0",
+      "  Final: 5",
+      "  Delta: +5",
+      "  Status: ☠️ FAILED",
+      "",
+      "╔════════════════════════════════════════════════════════════════╗",
+      "║ Debug Session Complete",
+      "║ Context ID: validate-7821-1761710935456123789",
+      "║ Duration: 0.456s",
+      "║ Final Health: 5 (☠️ FAILED)",
+      "║ Ended: 2025-11-09 06:42:15",
+      "╚════════════════════════════════════════════════════════════════╝"
+    ]
+  },
+
+  // ============================================================================
+  // USAGE NOTES
+  // ============================================================================
+
+  "usage": {
+    "runtime_integration": "Runtime reads this template and generates debug output accordingly",
+    "debug_levels": "Components can specify debug level (BASIC, DETAILED, VERBOSE)",
+    "state_snapshots": "Capture state at beginning and end for comparison",
+    "event_tracking": "Log significant events during execution for timeline analysis",
+    "automated_analysis": "Future capability - automated pattern recognition in debug output",
+    "troubleshooting": "Structured format enables both human and machine analysis"
+  }
+}

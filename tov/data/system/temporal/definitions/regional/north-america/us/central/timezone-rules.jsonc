@@ -1,0 +1,205 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Regional Definitions - US Central Timezone Rules
+// Purpose: Define timezone behavior for Central Time Zone (CST/CDT)
+// Scope: US Central timezone region
+// Schema: system/config/schemas/temporal/definitions/regional/timezone-rules.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Accurate timezone rules: 40 pts
+// - DST handling correctness: 30 pts
+// - Useful for timestamp interpretation: 30 pts
+
+{
+  "$schema": "../../../../../../../config/schemas/temporal/definitions/regional/timezone-rules.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "US Central Timezone Rules",
+    "version": "1.0.0",
+    "created": "2025-11-08",
+    "last_updated": "2025-11-08",
+    "purpose": "Define timezone rules for US Central Time Zone",
+    "scope": "regional",
+    "region": "North America - United States - Central",
+    "applies_to": [
+      "St Louis, MO",
+      "Chicago, IL",
+      "Dallas, TX",
+      "Central US states"
+    ]
+  },
+
+  // ============================================================================
+  // TIMEZONE INFORMATION
+  // ============================================================================
+
+  "timezone": {
+    "iana_name": "America/Chicago",
+    "standard_abbreviation": "CST",
+    "standard_name": "Central Standard Time",
+    "daylight_abbreviation": "CDT",
+    "daylight_name": "Central Daylight Time",
+    "utc_offset_standard": "-06:00",
+    "utc_offset_daylight": "-05:00"
+  },
+
+  // ============================================================================
+  // DAYLIGHT SAVING TIME RULES
+  // ============================================================================
+  // US DST: Second Sunday in March to First Sunday in November
+
+  "daylight_saving_time": {
+    "observes_dst": true,
+    "start_rule": {
+      "description": "Second Sunday in March at 2:00 AM local time",
+      "month": 3,
+      "week": "second",
+      "day_of_week": "Sunday",
+      "time": "02:00",
+      "offset_change": "Spring forward 1 hour (clock jumps from 02:00 to 03:00)",
+      "utc_offset_before": "-06:00",
+      "utc_offset_after": "-05:00"
+    },
+    "end_rule": {
+      "description": "First Sunday in November at 2:00 AM local time",
+      "month": 11,
+      "week": "first",
+      "day_of_week": "Sunday",
+      "time": "02:00",
+      "offset_change": "Fall back 1 hour (clock falls back from 02:00 to 01:00)",
+      "utc_offset_before": "-05:00",
+      "utc_offset_after": "-06:00",
+      "note": "The hour from 01:00-02:00 occurs twice"
+    },
+    "historical_note": "DST rules changed in 2007 (Energy Policy Act of 2005). Prior: First Sunday in April to last Sunday in October.",
+    "future_uncertainty": "DST legislation may change. Some US states/regions considering permanent standard or daylight time."
+  },
+
+  // ============================================================================
+  // DST TRANSITION DATES (2025-2030)
+  // ============================================================================
+  // Specific dates for upcoming years
+
+  "dst_transitions": {
+    "2025": {
+      "spring_forward": "2025-03-09T02:00:00-06:00",
+      "fall_back": "2025-11-02T02:00:00-05:00"
+    },
+    "2026": {
+      "spring_forward": "2026-03-08T02:00:00-06:00",
+      "fall_back": "2026-11-01T02:00:00-05:00"
+    },
+    "2027": {
+      "spring_forward": "2027-03-14T02:00:00-06:00",
+      "fall_back": "2027-11-07T02:00:00-05:00"
+    },
+    "2028": {
+      "spring_forward": "2028-03-12T02:00:00-06:00",
+      "fall_back": "2028-11-05T02:00:00-05:00"
+    },
+    "2029": {
+      "spring_forward": "2029-03-11T02:00:00-06:00",
+      "fall_back": "2029-11-04T02:00:00-05:00"
+    },
+    "2030": {
+      "spring_forward": "2030-03-10T02:00:00-06:00",
+      "fall_back": "2030-11-03T02:00:00-05:00"
+    }
+  },
+
+  // ============================================================================
+  // TIMESTAMP INTERPRETATION
+  // ============================================================================
+  // How to interpret and display timestamps
+
+  "timestamp_handling": {
+    "storage_format": {
+      "recommendation": "Store in UTC, display in local timezone",
+      "rationale": "Avoids DST ambiguity, enables accurate time calculations"
+    },
+    "display_format": {
+      "iso_8601": "YYYY-MM-DDTHH:MM:SS±HH:MM",
+      "example_standard": "2025-11-08T15:30:16-06:00",
+      "example_daylight": "2025-07-15T15:30:16-05:00",
+      "include_offset": true,
+      "include_timezone_name": "optional but helpful"
+    },
+    "ambiguous_times": {
+      "fall_back_hour": {
+        "problem": "The hour from 01:00-02:00 occurs twice when falling back",
+        "solution": "Use UTC offset to disambiguate (first occurrence: -05:00, second: -06:00)",
+        "example_first": "2025-11-02T01:30:00-05:00 (still in CDT)",
+        "example_second": "2025-11-02T01:30:00-06:00 (now in CST)"
+      },
+      "spring_forward_gap": {
+        "problem": "The hour from 02:00-03:00 doesn't exist when springing forward",
+        "solution": "Times in this range are invalid - should not occur",
+        "handling": "If encountered, assume intended time is 03:00+ in CDT"
+      }
+    }
+  },
+
+  // ============================================================================
+  // RELATIONSHIP TO OTHER TIMEZONES
+  // ============================================================================
+
+  "relative_to_other_zones": {
+    "eastern": {
+      "name": "Eastern Time (America/New_York)",
+      "offset_difference": "+1 hour (Central is 1 hour behind Eastern)",
+      "example": "When it's 3:00 PM CST, it's 4:00 PM EST"
+    },
+    "mountain": {
+      "name": "Mountain Time (America/Denver)",
+      "offset_difference": "-1 hour (Central is 1 hour ahead of Mountain)",
+      "example": "When it's 3:00 PM CST, it's 2:00 PM MST"
+    },
+    "pacific": {
+      "name": "Pacific Time (America/Los_Angeles)",
+      "offset_difference": "-2 hours (Central is 2 hours ahead of Pacific)",
+      "example": "When it's 3:00 PM CST, it's 1:00 PM PST"
+    },
+    "utc": {
+      "name": "Coordinated Universal Time",
+      "offset_standard": "-6 hours",
+      "offset_daylight": "-5 hours",
+      "example_standard": "When it's 3:00 PM CST (winter), it's 9:00 PM UTC",
+      "example_daylight": "When it's 3:00 PM CDT (summer), it's 8:00 PM UTC"
+    }
+  },
+
+  // ============================================================================
+  // USAGE NOTES
+  // ============================================================================
+
+  "usage": {
+    "purpose": "Provide accurate timezone rules for Central Time Zone temporal calculations",
+    "dst_complexity": "DST transitions create ambiguous and non-existent times - handle carefully",
+    "library_recommendation": "Use robust timezone libraries (Go: time.LoadLocation, Python: pytz, etc.) rather than manual offset calculations",
+    "testing_importance": "Test code behavior around DST transition dates",
+    "future_proofing": "DST rules may change legislatively - design systems to update definitions without code changes"
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+  // Purpose: Discovery staging for experimental patterns not yet formalized
+  // Schema: Permissive (additionalProperties: true) - allows flexible exploration
+  // Lifecycle: Add discoveries here → Gather evidence → Promote to formal sections or remove
+  //
+  // Guidelines:
+  // - Each extension should have: description, added (date), status (experimental/testing/proven)
+  // - Promote to formal section when: Pattern observed consistently across multiple instances/users
+  // - Remove when: Pattern not observed, or proven not useful
+  // - Document rationale: Why this might be valuable, what evidence would prove it
+
+  "extensions": {
+    "note": "Experimental patterns and discoveries - may be promoted to formal definitions or removed",
+    "usage_guidance": "Add timezone-specific discoveries, DST edge cases, or temporal calculation patterns here during discovery phase"
+  }
+}

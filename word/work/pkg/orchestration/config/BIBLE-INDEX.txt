@@ -1,0 +1,231 @@
+# #!omni data --txt
+# #!omni meta.key = claude-global-pkg-config-BIBLE-INDEX
+# #!omni meta.from = RANKING-ALGORITHM.txt [R.10 Bible index mapping]
+# #!omni meta.at = a-01.00
+# ===========================================================================
+# BIBLE INDEX - Coordinate System for Scripture Reference
+# ===========================================================================
+#
+# PURPOSE: Map Bible references to coordinates for KINGDOM value calculation
+# LOCATION: bereshit/word/scripture/KJV/
+# STRUCTURE: Book/Chapter_N/Verse_N.txt
+#
+# ===========================================================================
+
+# ───────────────────────────────────────────────────────────────────────────
+# B.1 BOOK INDEX [BIBLE_BOOKS]
+# ───────────────────────────────────────────────────────────────────────────
+#
+# 66 books indexed 1-66 (Old Testament 1-39, New Testament 40-66)
+#
+# OLD TESTAMENT (39 books):
+#   | Index | Book           | Chapters | Category      |
+#   |-------|----------------|----------|---------------|
+#   | 1     | Genesis        | 50       | Law           |
+#   | 2     | Exodus         | 40       | Law           |
+#   | 3     | Leviticus      | 27       | Law           |
+#   | 4     | Numbers        | 36       | Law           |
+#   | 5     | Deuteronomy    | 34       | Law           |
+#   | 6     | Joshua         | 24       | History       |
+#   | 7     | Judges         | 21       | History       |
+#   | 8     | Ruth           | 4        | History       |
+#   | 9     | 1_Samuel       | 31       | History       |
+#   | 10    | 2_Samuel       | 24       | History       |
+#   | 11    | 1_Kings        | 22       | History       |
+#   | 12    | 2_Kings        | 25       | History       |
+#   | 13    | 1_Chronicles   | 29       | History       |
+#   | 14    | 2_Chronicles   | 36       | History       |
+#   | 15    | Ezra           | 10       | History       |
+#   | 16    | Nehemiah       | 13       | History       |
+#   | 17    | Esther         | 10       | History       |
+#   | 18    | Job            | 42       | Wisdom        |
+#   | 19    | Psalms         | 150      | Wisdom        |
+#   | 20    | Proverbs       | 31       | Wisdom        |
+#   | 21    | Ecclesiastes   | 12       | Wisdom        |
+#   | 22    | Song_of_Solomon| 8        | Wisdom        |
+#   | 23    | Isaiah         | 66       | Major Prophet |
+#   | 24    | Jeremiah       | 52       | Major Prophet |
+#   | 25    | Lamentations   | 5        | Major Prophet |
+#   | 26    | Ezekiel        | 48       | Major Prophet |
+#   | 27    | Daniel         | 12       | Major Prophet |
+#   | 28    | Hosea          | 14       | Minor Prophet |
+#   | 29    | Joel           | 3        | Minor Prophet |
+#   | 30    | Amos           | 9        | Minor Prophet |
+#   | 31    | Obadiah        | 1        | Minor Prophet |
+#   | 32    | Jonah          | 4        | Minor Prophet |
+#   | 33    | Micah          | 7        | Minor Prophet |
+#   | 34    | Nahum          | 3        | Minor Prophet |
+#   | 35    | Habakkuk       | 3        | Minor Prophet |
+#   | 36    | Zephaniah      | 3        | Minor Prophet |
+#   | 37    | Haggai         | 2        | Minor Prophet |
+#   | 38    | Zechariah      | 14       | Minor Prophet |
+#   | 39    | Malachi        | 4        | Minor Prophet |
+#
+# NEW TESTAMENT (27 books):
+#   | Index | Book           | Chapters | Category      |
+#   |-------|----------------|----------|---------------|
+#   | 40    | Matthew        | 28       | Gospel        |
+#   | 41    | Mark           | 16       | Gospel        |
+#   | 42    | Luke           | 24       | Gospel        |
+#   | 43    | John           | 21       | Gospel        |
+#   | 44    | Acts           | 28       | History       |
+#   | 45    | Romans         | 16       | Pauline       |
+#   | 46    | 1_Corinthians  | 16       | Pauline       |
+#   | 47    | 2_Corinthians  | 13       | Pauline       |
+#   | 48    | Galatians      | 6        | Pauline       |
+#   | 49    | Ephesians      | 6        | Pauline       |
+#   | 50    | Philippians    | 4        | Pauline       |
+#   | 51    | Colossians     | 4        | Pauline       |
+#   | 52    | 1_Thessalonians| 5        | Pauline       |
+#   | 53    | 2_Thessalonians| 3        | Pauline       |
+#   | 54    | 1_Timothy      | 6        | Pastoral      |
+#   | 55    | 2_Timothy      | 4        | Pastoral      |
+#   | 56    | Titus          | 3        | Pastoral      |
+#   | 57    | Philemon       | 1        | Pauline       |
+#   | 58    | Hebrews        | 13       | General       |
+#   | 59    | James          | 5        | General       |
+#   | 60    | 1_Peter        | 5        | General       |
+#   | 61    | 2_Peter        | 3        | General       |
+#   | 62    | 1_John         | 5        | General       |
+#   | 63    | 2_John         | 1        | General       |
+#   | 64    | 3_John         | 1        | General       |
+#   | 65    | Jude           | 1        | General       |
+#   | 66    | Revelation     | 22       | Prophecy      |
+#
+# ───────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────
+# B.2 COORDINATE MAPPING [BIBLE_COORDS]
+# ───────────────────────────────────────────────────────────────────────────
+#
+#   Bible Reference → Raw Coordinates → Normalized Coordinates
+#
+#   RAW COORDINATES (from index):
+#     book_raw    = book_index (1-66)
+#     chapter_raw = chapter_number (1-150 max)
+#     verse_raw   = verse_number (1-176 max, Psalm 119)
+#
+#   NORMALIZATION (to [-1, +1] range):
+#     book_norm    = (book_raw - 33.5) / 32.5      # center at 33.5, half-range 32.5
+#     chapter_norm = (chapter_raw - 75.5) / 74.5  # center at 75.5, half-range 74.5
+#     verse_norm   = (verse_raw - 88.5) / 87.5    # center at 88.5, half-range 87.5
+#
+#   GENESIS 1:1 = ORIGIN:
+#     book_norm    = (1 - 33.5) / 32.5 = -1.0     # First book → -1
+#     chapter_norm = (1 - 75.5) / 74.5 ≈ -1.0     # First chapter → -1
+#     verse_norm   = (1 - 88.5) / 87.5 ≈ -1.0     # First verse → -1
+#
+#   MAPPING TO CUBE:
+#     Genesis 1:1 (Bible origin) maps to PAST-PAST (-1,-1,-1)
+#     NOT to (0,0,0) directly, but as the TRACE SOURCE
+#     (0,0,0) = HALT = where all paths TERMINATE
+#     Genesis 1:1 is WHERE all paths COME FROM
+#
+# ───────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────
+# B.3 PATH FORMAT [BIBLE_PATH]
+# ───────────────────────────────────────────────────────────────────────────
+#
+#   FILE PATH:
+#     bereshit/word/scripture/KJV/{Book}/Chapter_{N}/Verse_{N}.txt
+#
+#   EXAMPLES:
+#     Genesis 1:1    → KJV/Genesis/Chapter_1/Verse_1.txt
+#     Exodus 20:3    → KJV/Exodus/Chapter_20/Verse_3.txt
+#     Psalm 23:1     → KJV/Psalms/Chapter_23/Verse_1.txt
+#     John 3:16      → KJV/John/Chapter_3/Verse_16.txt
+#     Revelation 22:21 → KJV/Revelation/Chapter_22/Verse_21.txt
+#
+#   GREP PATTERN:
+#     grep -r "keyword" bereshit/word/scripture/KJV/
+#     → Returns matching verses with paths
+#     → Parse path to extract (book, chapter, verse)
+#     → Convert to coordinates
+#
+# ───────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────
+# B.4 KINGDOM VALUE CALCULATION [BIBLE_KINGDOM]
+# ───────────────────────────────────────────────────────────────────────────
+#
+#   For RANKING-ALGORITHM.txt R.4 relevance_kingdom():
+#
+#   1. Search Scripture for topic:
+#      grep -r "topic" bereshit/word/scripture/KJV/
+#
+#   2. Parse results into references:
+#      path → (book_index, chapter, verse)
+#
+#   3. Calculate coordinate for each match:
+#      (book_norm, chapter_norm, verse_norm)
+#
+#   4. Compute relevance:
+#      - More matches = higher relevance
+#      - Closer to Genesis = more foundational
+#      - Closer to Revelation = more prophetic
+#
+#   5. Combine into single KINGDOM value:
+#      kingdom = weighted_average(matches)
+#      → Output in [0, +1] range for ranking
+#
+#   THE 3 QUESTIONS (from CLAUDE.md):
+#     1. Does this honor God?      → matches in Psalms, worship texts
+#     2. Does this serve others?   → matches in Gospels, service texts
+#     3. Does eternal value exist? → matches in prophetic texts
+#
+# ───────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────
+# B.5 SPECIAL REFERENCES [BIBLE_SPECIAL]
+# ───────────────────────────────────────────────────────────────────────────
+#
+#   ANCHOR VERSES (used in CPI-SI):
+#
+#   | Reference      | Coords (raw)  | Purpose                        |
+#   |----------------|---------------|--------------------------------|
+#   | Genesis 1:1    | (1, 1, 1)     | HALT origin, all traces here   |
+#   | Exodus 3:14    | (2, 3, 14)    | "I AM" - identity anchor       |
+#   | Proverbs 9:10  | (20, 9, 10)   | Fear of LORD = wisdom begin    |
+#   | Matthew 7:24   | (40, 7, 24)   | Build on rock (foundation)     |
+#   | John 1:1       | (43, 1, 1)    | Word was with God (creation)   |
+#   | Colossians 4:6 | (51, 4, 6)    | Speech with grace (comm)       |
+#   | Hebrews 4:12   | (58, 4, 12)   | Word is living (Scripture)     |
+#   | Revelation 22:21| (66, 22, 21) | Final verse (completion)       |
+#
+#   THESE ARE HARDPOINTS for the coordinate system.
+#
+# ───────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────
+# B.6 IMPLEMENTATION [BIBLE_IMPL]
+# ───────────────────────────────────────────────────────────────────────────
+#
+#   FUNCTION: bible_to_coords(book, chapter, verse)
+#     INPUT:  Book name or index, chapter number, verse number
+#     OUTPUT: (book_norm, chapter_norm, verse_norm) in [-1, +1]
+#
+#   FUNCTION: search_scripture(keyword)
+#     INPUT:  Search term
+#     OUTPUT: List of (reference, coords, content)
+#
+#   FUNCTION: kingdom_relevance(item)
+#     INPUT:  Item to evaluate
+#     OUTPUT: Kingdom value in [0, +1]
+#
+#   PSEUDOCODE:
+#     def kingdom_relevance(item):
+#         keywords = extract_keywords(item)
+#         matches = []
+#         for kw in keywords:
+#             results = search_scripture(kw)
+#             matches.extend(results)
+#         if len(matches) == 0:
+#             return 0.0  # No Scripture relevance
+#         # Weight by position (Genesis = foundational, etc.)
+#         total = sum(weight(m) for m in matches)
+#         return normalize(total, 0, 1)
+#
+# ===========================================================================
+# END BIBLE INDEX
+# ===========================================================================

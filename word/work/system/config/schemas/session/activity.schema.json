@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/session/activity.schema.json",
+  "title": "Session Activity - Working Memory",
+  "description": "Raw experience capture during active session. Temporary buffer before consolidation.",
+  "version": "1.0.0",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "timestamp",
+    "session_id",
+    "instance_id",
+    "user_id",
+    "event_type"
+  ],
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "When this happened (ISO-8601)",
+      "format": "date-time"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Which session this belongs to",
+      "minLength": 1
+    },
+    "instance_id": {
+      "type": "string",
+      "description": "Which instance experienced this",
+      "minLength": 1
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Which user was present",
+      "minLength": 1
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Which project (from session)",
+      "minLength": 1
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Type of event",
+      "enum": ["interaction", "realization", "struggle", "breakthrough", "routine"]
+    },
+    "context": {
+      "type": "string",
+      "description": "What was happening"
+    },
+    "work_context": {
+      "type": "string",
+      "description": "Workspace path (from session → project)"
+    },
+    "felt_significant": {
+      "type": "boolean",
+      "description": "Did this feel important in the moment?"
+    },
+    "emotional_tone": {
+      "type": "string",
+      "description": "How did this feel?"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional capture in the moment"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Discovery space for fields not yet in standard structure",
+      "additionalProperties": true
+    }
+  }
+}

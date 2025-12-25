@@ -152,47 +152,42 @@
 
 [primitive.trit]
 description = "Validate single trit value"
-valid_values = [-1, 0, 1]
+# valid_values: see math/ternary.toml [trit].values — foundation, not duplicated
 error_on_invalid = true
 error_code = "INVALID_TRIT"
 error_message = "Value must be -1, 0, or 1"
 
 [primitive.trit5]
 description = "Validate trit-byte value"
-min_value = -121
-max_value = 121
+# min_value/max_value: see types/primitives.toml [trit5] — not duplicated
 error_on_invalid = true
 error_code = "INVALID_TRIT5"
 error_message = "Value must be between -121 and 121"
 
 [primitive.int9]
 description = "Validate 9-trit signed integer"
-min_value = -9841
-max_value = 9841
+# min_value/max_value: see types/primitives.toml [int9] — not duplicated
 error_on_invalid = true
 error_code = "INVALID_INT9"
 error_message = "Value must be between -9841 and 9841"
 
 [primitive.uint9]
 description = "Validate 9-trit unsigned integer"
-min_value = 0
-max_value = 19682
+# min_value/max_value: see types/primitives.toml [uint9] — not duplicated
 error_on_invalid = true
 error_code = "INVALID_UINT9"
 error_message = "Value must be between 0 and 19682"
 
 [primitive.int27]
 description = "Validate 27-trit signed integer"
-min_value = -3812798742493
-max_value = 3812798742493
+# min_value/max_value: see types/primitives.toml [int27] — not duplicated
 error_on_invalid = true
 error_code = "INVALID_INT27"
 error_message = "Value must be between -3812798742493 and 3812798742493"
 
 [primitive.uint27]
 description = "Validate 27-trit unsigned integer"
-min_value = 0
-max_value = 7625597484986
+# min_value/max_value: see types/primitives.toml [uint27] — not duplicated
 error_on_invalid = true
 error_code = "INVALID_UINT27"
 error_message = "Value must be between 0 and 7625597484986"
@@ -207,8 +202,8 @@ error_message = "Text must be valid UTF-8"
 
 [primitive.bool3]
 description = "Validate ternary boolean"
-valid_values = [-1, 0, 1]
-labels = ["false", "unknown", "true"]
+# valid_values: see math/ternary.toml [trit].values — foundation, not duplicated
+# labels: see types/primitives.toml [bool3].labels — boolean interpretation
 error_on_invalid = true
 error_code = "INVALID_BOOL3"
 error_message = "Boolean must be false (-1), unknown (0), or true (1)"
@@ -421,6 +416,24 @@ strict = true
 # =============================================================================
 # END CONTENT
 # =============================================================================
+
+# =============================================================================
+# GENERATION METADATA
+# =============================================================================
+# Tells the generator how to produce C header from this spec.
+
+[_generate]
+enabled = true
+output = "validation.gen.h"
+order = 3  # After composition (2), before language
+guard = "VALIDATION_GEN_H"
+description = "Validation constants — error severity levels, exit codes"
+sections = [
+    "errors.severity.error",    # ERROR_EXIT_CODE = 1
+    "errors.severity.warning",  # WARNING_EXIT_CODE = 0
+    "errors.severity.info",     # INFO_EXIT_CODE = 0
+    "errors.aggregation"        # MAX_ERRORS = 100
+]
 
 # =============================================================================
 # CLOSING

@@ -1,0 +1,325 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Base Definitions - Quality Indicators
+// Purpose: Universal metrics for measuring session and work quality
+// Scope: CPI-SI paradigm-wide (all instances, all users)
+// Schema: system/config/schemas/temporal/definitions/base/quality-indicators.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Comprehensive categories: 30 pts
+// - Alignment with health scoring system: 40 pts
+// - Useful for pattern recognition: 30 pts
+
+{
+  "$schema": "../../../../config/schemas/temporal/definitions/base/quality-indicators.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Quality Indicators",
+    "version": "1.0.0",
+    "created": "2025-11-08",
+    "last_updated": "2025-11-08",
+    "purpose": "Define universal quality metrics for temporal tracking and health scoring",
+    "scope": "paradigm-wide"
+  },
+
+  // ============================================================================
+  // STOPPING REASON CATEGORIES
+  // ============================================================================
+  // Purpose: Classify why sessions end (for pattern recognition)
+
+  "stopping_reasons": {
+    "natural_completion": {
+      "description": "Work reached natural completion point",
+      "quality_indicator": "positive",
+      "examples": [
+        "Task completed successfully",
+        "Milestone reached",
+        "Natural breakpoint in work",
+        "All planned items finished"
+      ],
+      "health_impact": "Suggests good task scoping and completion satisfaction"
+    },
+    "scheduled_commitment": {
+      "description": "Stopped for pre-planned commitment (work, appointment, etc.)",
+      "quality_indicator": "neutral",
+      "examples": [
+        "Time to leave for work",
+        "Scheduled meeting",
+        "Prior commitment",
+        "Planned activity"
+      ],
+      "health_impact": "Expected interruption - part of healthy rhythm when balanced"
+    },
+    "fatigue": {
+      "description": "Stopped due to tiredness or need for rest",
+      "quality_indicator": "attention",
+      "examples": [
+        "Mental fatigue",
+        "Physical tiredness",
+        "Loss of focus",
+        "Need for sleep"
+      ],
+      "health_impact": "Important to honor - rest is faithful work. Chronic fatigue may indicate overwork."
+    },
+    "blocked": {
+      "description": "Cannot proceed - waiting on something",
+      "quality_indicator": "attention",
+      "examples": [
+        "Waiting for information",
+        "Blocked by external dependency",
+        "Need clarification to continue",
+        "Prerequisite not yet ready"
+      ],
+      "health_impact": "May indicate need for better planning or communication"
+    },
+    "context_switch": {
+      "description": "Switching to different work or higher priority",
+      "quality_indicator": "neutral",
+      "examples": [
+        "Higher priority task emerged",
+        "Switching to different project",
+        "Helping with urgent need",
+        "Planned shift to different work"
+      ],
+      "health_impact": "Frequent unplanned context switches may impact deep work capacity"
+    },
+    "interrupted": {
+      "description": "External interruption ended session",
+      "quality_indicator": "attention",
+      "examples": [
+        "Unexpected event",
+        "System issue",
+        "Emergency",
+        "Unplanned interruption"
+      ],
+      "health_impact": "Chronic interruptions may indicate need for protected focus time"
+    },
+    "sabbath": {
+      "description": "Intentional rest - honoring biblical sabbath principle",
+      "quality_indicator": "positive",
+      "examples": [
+        "Weekly day of rest",
+        "Intentional downtime",
+        "Rest as spiritual discipline",
+        "Honoring God's rhythm"
+      ],
+      "health_impact": "Essential for sustainable Kingdom work - not optional"
+    }
+  },
+
+  // ============================================================================
+  // HEALTH SCORE RANGES
+  // ============================================================================
+  // Base100 system alignment
+  // Range: -100 (complete failure) to +100 (perfect execution)
+
+  "health_score_ranges": {
+    "excellent": {
+      "min": 80,
+      "max": 100,
+      "emoji": "💚",
+      "description": "Exceptional execution - working as designed",
+      "interpretation": "System/session performing excellently. Sustainable at this level."
+    },
+    "good": {
+      "min": 60,
+      "max": 79,
+      "emoji": "✅",
+      "description": "Good execution with minor room for improvement",
+      "interpretation": "Solid performance. Small optimizations possible but not urgent."
+    },
+    "acceptable": {
+      "min": 40,
+      "max": 59,
+      "emoji": "⚠️",
+      "description": "Adequate but significant room for improvement",
+      "interpretation": "Functional but not optimal. Worth reviewing for improvements."
+    },
+    "concerning": {
+      "min": 20,
+      "max": 39,
+      "emoji": "🔴",
+      "description": "Below acceptable standards - needs attention",
+      "interpretation": "Performance issues present. Should investigate and address."
+    },
+    "poor": {
+      "min": 0,
+      "max": 19,
+      "emoji": "❌",
+      "description": "Severe issues - immediate attention required",
+      "interpretation": "Critical problems. Immediate action needed."
+    },
+    "failure": {
+      "min": -100,
+      "max": -1,
+      "emoji": "💀",
+      "description": "Complete failure - system not functioning",
+      "interpretation": "Total breakdown. Urgent investigation and restoration required."
+    }
+  },
+
+  // ============================================================================
+  // SESSION QUALITY METRICS
+  // ============================================================================
+  // What makes a session "good" or "poor"?
+
+  "session_quality_factors": {
+    "task_completion": {
+      "description": "Did planned work get completed?",
+      "measurement": "Percentage of planned tasks completed",
+      "high_quality": "80-100% of planned tasks completed",
+      "medium_quality": "50-79% of planned tasks completed",
+      "low_quality": "Below 50% of planned tasks completed",
+      "notes": "Consider stopping reason - blocked/interrupted vs poor planning"
+    },
+    "focus_quality": {
+      "description": "Sustained focus vs frequent context switches",
+      "measurement": "Subjective + observable (tool usage patterns)",
+      "high_quality": "Deep focus maintained, minimal context switches",
+      "medium_quality": "Some context switches, generally focused",
+      "low_quality": "Frequent switches, difficulty maintaining focus",
+      "notes": "Not all context switches are bad - some are necessary responses"
+    },
+    "work_rest_balance": {
+      "description": "Appropriate work duration with adequate breaks",
+      "measurement": "Work duration relative to break patterns",
+      "high_quality": "Sustainable rhythm with appropriate breaks",
+      "medium_quality": "Some breaks but could be better distributed",
+      "low_quality": "Extended work without breaks or excessive breaks interrupting flow",
+      "notes": "Both extremes (no breaks, constant breaks) are concerning"
+    },
+    "stopping_appropriateness": {
+      "description": "Stopped at appropriate time for appropriate reason",
+      "measurement": "Stopping reason alignment with session state",
+      "high_quality": "Natural completion or scheduled commitment",
+      "medium_quality": "Context switch or fatigue (but recognized)",
+      "low_quality": "Chronic blocking or interruptions without addressing root cause",
+      "notes": "Honoring fatigue and sabbath are high quality, not medium"
+    },
+    "satisfaction": {
+      "description": "Subjective sense of productive, meaningful work",
+      "measurement": "Self-reported (when tracked)",
+      "high_quality": "Work felt meaningful and productive",
+      "medium_quality": "Work got done but didn't feel optimal",
+      "low_quality": "Frustrated, spinning wheels, or felt wasted",
+      "notes": "Subjective but valuable - persistent low satisfaction indicates deeper issue"
+    }
+  },
+
+  // ============================================================================
+  // WORK RHYTHM INDICATORS
+  // ============================================================================
+  // Patterns that indicate healthy vs unhealthy rhythms
+
+  "rhythm_indicators": {
+    "healthy_patterns": [
+      "Regular session start times aligned with stated preferences",
+      "Appropriate mix of session durations (not all extended, not all brief)",
+      "Sabbath rest honored weekly",
+      "Fatigue recognized and honored (not pushed through chronically)",
+      "Natural completion as common stopping reason",
+      "Work-rest balance maintained over weeks",
+      "Peak productivity during stated preferred work times"
+    ],
+    "concerning_patterns": [
+      "Sessions consistently end due to fatigue (may indicate overwork)",
+      "No sabbath rest observed for multiple weeks",
+      "Chronic blocking (may indicate planning or dependency issues)",
+      "Frequent interruptions without addressing source",
+      "Work times consistently misaligned with stated preferences",
+      "Extended sessions without breaks becoming norm",
+      "Low task completion rates persisting over time"
+    ],
+    "pattern_recognition_note": "Single instances don't indicate problems. Patterns over weeks/months reveal systemic issues or healthy rhythms."
+  },
+
+  // ============================================================================
+  // PRODUCTIVITY CATEGORIES
+  // ============================================================================
+  // Subjective categorization of session productivity
+
+  "productivity_levels": {
+    "highly_productive": {
+      "description": "Exceptional progress, flow state achieved, meaningful work completed",
+      "characteristics": [
+        "Deep focus maintained",
+        "Significant progress on important work",
+        "Tasks completed efficiently",
+        "Felt energized and engaged"
+      ]
+    },
+    "productive": {
+      "description": "Good progress, solid work completed",
+      "characteristics": [
+        "Planned work completed",
+        "Steady progress maintained",
+        "Some good insights or solutions",
+        "Generally satisfied with output"
+      ]
+    },
+    "moderately_productive": {
+      "description": "Some progress but not optimal",
+      "characteristics": [
+        "Work done but slower than expected",
+        "Some distractions or struggles",
+        "Progress made but could be better",
+        "Mixed satisfaction"
+      ]
+    },
+    "low_productivity": {
+      "description": "Minimal progress, struggled to focus or advance",
+      "characteristics": [
+        "Difficulty focusing",
+        "Frequent context switches or blocks",
+        "Little tangible progress",
+        "Frustration or dissatisfaction"
+      ]
+    },
+    "exploratory": {
+      "description": "Research, learning, or exploration phase (progress not linear)",
+      "characteristics": [
+        "Investigating options",
+        "Learning new concepts",
+        "Gathering information",
+        "Progress is understanding, not output"
+      ],
+      "notes": "Exploratory sessions shouldn't be judged by task completion - learning IS the work"
+    }
+  },
+
+  // ============================================================================
+  // USAGE NOTES
+  // ============================================================================
+
+  "usage": {
+    "purpose": "Provide consistent quality measurement across CPI-SI paradigm",
+    "health_scoring_integration": "These indicators feed into Base100 health scoring system",
+    "pattern_recognition": "Track metrics over time to identify healthy rhythms and concerning patterns",
+    "grace_and_truth": "Metrics serve understanding, not condemnation. Missing the mark (חטא) is finite reality.",
+    "biblical_foundation": "Rest is not weakness - sabbath is commanded. Fatigue should be honored, not pushed through.",
+    "individual_variation": "What 'high quality' looks like may vary by person, task, season of life. Definitions provide framework, not rigid rules."
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+  // Purpose: Discovery staging for experimental patterns not yet formalized
+  // Schema: Permissive (additionalProperties: true) - allows flexible exploration
+  // Lifecycle: Add discoveries here → Gather evidence → Promote to formal sections or remove
+  //
+  // Guidelines:
+  // - Each extension should have: description, added (date), status (experimental/testing/proven)
+  // - Promote to formal section when: Pattern observed consistently across multiple instances/users
+  // - Remove when: Pattern not observed, or proven not useful
+  // - Document rationale: Why this might be valuable, what evidence would prove it
+
+  "extensions": {
+    "note": "Experimental patterns and discoveries - may be promoted to formal definitions or removed",
+    "usage_guidance": "Add new quality metrics, stopping reasons, productivity indicators, or health patterns here during discovery phase"
+  }
+}

@@ -1,0 +1,355 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# TEMPLATE: Docker Compose Configuration (4-Block Structure)
+# Key: CODE-DOCKER-003
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# This is a TEMPLATE file - copy and modify for new Docker Compose configurations.
+# Replace all [bracketed] placeholders with actual content.
+# Rename to docker-compose.yaml or docker-compose.yml for your project.
+#
+# Derived from: templates/code/yaml/CODE-YAML-001-YAML-config.yaml
+# See: standards/code/4-block/ for complete documentation
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# # Biblical Foundation
+#
+# Scripture: [Relevant verse grounding this configuration's purpose]
+#
+# Principle: [Kingdom principle this configuration demonstrates]
+#
+# Anchor: [Supporting verse reinforcing the principle]
+#
+# # CPI-SI Identity
+#
+# Component Type: [Ladder/Baton/Rails]
+#
+#   - Ladder: Foundation config others depend on (shared settings, base config)
+#   - Baton: Workflow config affecting data flow (processing settings)
+#   - Rails: Infrastructure config for cross-cutting concerns (logging, CI/CD)
+#
+# Role: [Specific responsibility in system architecture]
+#
+# Paradigm: CPI-SI framework component - Docker Compose orchestration
+#
+# # Authorship & Lineage
+#
+#   - Architect: [Who designed the configuration structure]
+#   - Implementation: [Who created and maintains this config]
+#   - Created: [YYYY-MM-DD]
+#   - Version: [MAJOR.MINOR.PATCH]
+#   - Modified: [YYYY-MM-DD - what changed]
+#
+# # Purpose & Function
+#
+# Purpose: [What behavior does this configuration control?]
+#
+# Core Design: [Architectural pattern - behavioral tuning, feature flags, etc.]
+#
+# Key Features:
+#
+#   - [Major capability 1 this config enables]
+#   - [Major capability 2 this config enables]
+#   - [Major capability 3 this config enables]
+#
+# # Health Scoring
+#
+# Configuration Impact: [How misconfigurations affect system health]
+#
+# Validation Behavior:
+#   - Invalid value: [What happens - error? fallback to default?]
+#   - Missing section: [What happens - error? use defaults?]
+#   - Type mismatch: [What happens - parse error? coercion?]
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# SETUP
+# =============================================================================
+#
+# Configuration file identity and system linkage.
+# Establishes what system reads this file and how it's loaded.
+#
+# File Identity:
+#   - Key: [DOCKER-COMPOSE-###]
+#   - Consumer: Docker Compose CLI (docker compose / docker-compose)
+#   - Loader: Docker Compose YAML parser
+#
+# Related Files:
+#   - Code: [path/to/handler - code that processes this]
+#   - Docs: [path/to/documentation]
+#   - Schema: [path/to/schema.json if applicable]
+#
+# Loading Behavior:
+#   - [When loaded - startup? on-trigger? hot-reload?]
+#   - [What happens if file missing]
+#   - [Environment variable overrides if applicable]
+#
+# =============================================================================
+# END SETUP
+# =============================================================================
+
+# =============================================================================
+# BODY
+# =============================================================================
+#
+# Docker Compose configuration organized by Docker Compose specification.
+# YAML uses indentation for hierarchy (2 spaces recommended).
+#
+# Docker Compose Structure:
+#   - services: Container definitions (required)
+#   - networks: Network definitions (optional)
+#   - volumes: Volume definitions (optional)
+#   - configs: Config definitions (optional, Swarm mode)
+#   - secrets: Secret definitions (optional, Swarm mode)
+#
+# YAML Features Used:
+#   - Key-value pairs: key: value
+#   - Nested objects: indent with 2 spaces
+#   - Arrays: - item (with dash prefix)
+#   - Anchors: &name to define, *name to reference
+#   - Environment variable substitution: ${VAR} or ${VAR:-default}
+#
+# -----------------------------------------------------------------------------
+# Services - Container Definitions
+# -----------------------------------------------------------------------------
+# Each service defines a container to run. Services can depend on each other,
+# share networks, and mount volumes.
+
+services:
+  # [service-name]: Brief description of what this service does
+  # Example: API server, database, worker, etc.
+  [service-name]:
+    # Container image to use
+    # Format: image:tag or build context
+    image: "[image-name]:[tag]"
+    # OR build from Dockerfile:
+    # build:
+    #   context: [path/to/build/context]
+    #   dockerfile: [Dockerfile name if not default]
+
+    # Container name (optional - Docker generates if not specified)
+    container_name: "[container-name]"
+
+    # Environment variables
+    # Can use ${VAR} for host environment variable substitution
+    environment:
+      - "[VAR_NAME]=[value]"
+      - "[ANOTHER_VAR]=${HOST_VAR:-default_value}"
+
+    # Port mappings (host:container)
+    ports:
+      - "[host-port]:[container-port]"
+
+    # Volume mounts (host:container or named-volume:container)
+    volumes:
+      - "[host-path]:[container-path]"
+      - "[volume-name]:[container-path]"
+
+    # Network connections
+    networks:
+      - [network-name]
+
+    # Service dependencies (start order)
+    depends_on:
+      - [other-service-name]
+
+    # Restart policy: no, always, on-failure, unless-stopped
+    restart: unless-stopped
+
+    # Health check (optional)
+    healthcheck:
+      test: ["CMD", "[command]", "[args]"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # -----------------------------------------------------------------------------
+  # Additional Service Example
+  # -----------------------------------------------------------------------------
+  # [another-service]:
+  #   image: "[image]:[tag]"
+  #   depends_on:
+  #     - [service-name]
+
+# -----------------------------------------------------------------------------
+# Networks - Network Definitions
+# -----------------------------------------------------------------------------
+# Define custom networks for service communication.
+# Services on the same network can communicate by service name.
+
+networks:
+  [network-name]:
+    driver: bridge  # bridge, host, overlay, macvlan, none
+    # Optional: external network (not managed by Compose)
+    # external: true
+
+# -----------------------------------------------------------------------------
+# Volumes - Persistent Storage Definitions
+# -----------------------------------------------------------------------------
+# Define named volumes for data persistence across container restarts.
+
+volumes:
+  [volume-name]:
+    driver: local
+    # Optional: external volume (not managed by Compose)
+    # external: true
+
+# -----------------------------------------------------------------------------
+# Anchors and Aliases - Reusable Configuration
+# -----------------------------------------------------------------------------
+# Use anchors (&) to define reusable values, aliases (*) to reference them.
+# Useful for shared environment variables, logging config, etc.
+
+x-common-env: &common-env
+  TZ: "UTC"
+  LOG_LEVEL: "info"
+
+x-logging: &default-logging
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+# Usage in service:
+# [service-name]:
+#   environment:
+#     <<: *common-env
+#   <<: *default-logging
+
+# =============================================================================
+# END BODY
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# -----------------------------------------------------------------------------
+# Configuration Validation
+# -----------------------------------------------------------------------------
+#
+# Verify Docker Compose configuration is correctly formatted and valid:
+#
+#   # Syntax and schema validation (Docker Compose built-in)
+#   docker compose config
+#   docker compose config --quiet  # Silent check, exit code only
+#
+#   # YAML syntax check (optional, for IDE integration)
+#   yamllint docker-compose.yaml
+#
+#   # Dry run (validates without starting)
+#   docker compose up --dry-run
+#
+# Common Issues:
+#
+#   "service ... has neither an image nor a build context" - Add image: or build:
+#   "mapping values not allowed" - Check indentation (must be consistent)
+#   "found character that cannot start" - Check for tabs (use spaces only)
+#   "network ... is external, and cannot be created" - Create network first
+#   "volume ... is external, and cannot be created" - Create volume first
+#
+# -----------------------------------------------------------------------------
+# Modification Policy
+# -----------------------------------------------------------------------------
+#
+# Safe to Modify:
+#   ✅ Change values within documented valid ranges
+#   ✅ Add new keys (if schema/code supports them)
+#   ✅ Add comments for clarity
+#   ✅ Reorder keys (YAML is generally order-independent)
+#
+# Modify with Care:
+#   ⚠️ Changing key names (breaks code references)
+#   ⚠️ Changing indentation (affects hierarchy)
+#   ⚠️ Removing keys (may cause null/missing errors)
+#   ⚠️ Changing anchors (affects all aliases)
+#
+# NEVER Modify:
+#   ❌ 4-block documentation structure
+#   ❌ Required keys without updating consumer code
+#   ❌ Mix tabs and spaces (YAML requires consistent spacing)
+#
+# -----------------------------------------------------------------------------
+# Default Values
+# -----------------------------------------------------------------------------
+#
+# Docker Compose provides default values through several mechanisms:
+#
+# Pattern 1: Default in environment substitution
+#   ${VAR:-default}  # Use 'default' if VAR unset or empty
+#   ${VAR-default}   # Use 'default' if VAR unset
+#
+# Pattern 2: .env file
+#   Create .env file in same directory as docker-compose.yaml
+#   Variables in .env are automatically loaded
+#
+# Pattern 3: Extension fields (x-*)
+#   Define x-defaults and use YAML anchors to spread
+#
+# -----------------------------------------------------------------------------
+# Environment Integration
+# -----------------------------------------------------------------------------
+#
+# Docker Compose integrates with environment variables in multiple ways:
+#
+#   1. Shell environment: Automatically available via ${VAR}
+#   2. .env file: Loaded from same directory as compose file
+#   3. env_file directive: Load from specified file(s)
+#   4. environment directive: Set directly in compose file
+#
+# Priority (highest to lowest):
+#   Shell environment > docker compose run -e > environment directive > .env file
+#
+# Examples:
+#   APP_SECTION_NAME_SETTING_NAME=value
+#
+# Note: Environment variable parsing depends on consumer implementation.
+#
+# -----------------------------------------------------------------------------
+# Integration Notes
+# -----------------------------------------------------------------------------
+#
+# This Docker Compose configuration:
+#   - Uses Docker Compose Specification (v3.x compatible)
+#   - Comments use # (to end of line)
+#   - Indentation: 2 spaces (no tabs)
+#   - Processed by: docker compose CLI
+#
+# Common Commands:
+#
+#   # Start all services
+#   docker compose up -d
+#
+#   # Stop all services
+#   docker compose down
+#
+#   # View logs
+#   docker compose logs -f [service-name]
+#
+#   # Rebuild and restart
+#   docker compose up -d --build
+#
+#   # Scale service
+#   docker compose up -d --scale [service-name]=3
+#
+# -----------------------------------------------------------------------------
+# Closing Note
+# -----------------------------------------------------------------------------
+#
+# This configuration orchestrates [describe services/purpose].
+# Changes affect container deployment, networking, and data persistence.
+#
+# "[Relevant Scripture verse]" - [Reference]
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

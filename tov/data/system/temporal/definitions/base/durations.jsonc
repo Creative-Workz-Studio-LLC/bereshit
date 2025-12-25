@@ -1,0 +1,261 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Base Definitions - Duration Thresholds
+// Purpose: Universal categorization of time durations
+// Scope: CPI-SI paradigm-wide (all instances, all users)
+// Schema: system/config/schemas/temporal/definitions/base/durations.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Clear categorization: 40 pts
+// - Appropriate thresholds: 30 pts
+// - Useful for pattern recognition: 30 pts
+
+{
+  "$schema": "../../../../config/schemas/temporal/definitions/base/durations.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Duration Thresholds",
+    "version": "1.0.0",
+    "created": "2025-11-08",
+    "last_updated": "2025-11-08",
+    "purpose": "Define universal duration categories for temporal measurement",
+    "scope": "paradigm-wide"
+  },
+
+  // ============================================================================
+  // SESSION DURATION CATEGORIES
+  // ============================================================================
+  // Purpose: Classify session lengths for pattern recognition
+  // Units: All durations in minutes
+
+  "session_durations": {
+    "brief": {
+      "description": "Quick check-in or very short interaction",
+      "min_minutes": 0,
+      "max_minutes": 15,
+      "typical_use_cases": [
+        "Quick status check",
+        "Brief question/answer",
+        "Fast update or review"
+      ]
+    },
+    "short": {
+      "description": "Focused single task or small piece of work",
+      "min_minutes": 15,
+      "max_minutes": 60,
+      "typical_use_cases": [
+        "Complete one well-defined task",
+        "Review and respond",
+        "Quick implementation"
+      ]
+    },
+    "medium": {
+      "description": "Typical work session with multiple tasks",
+      "min_minutes": 60,
+      "max_minutes": 240,
+      "typical_use_cases": [
+        "Regular work session",
+        "Multiple related tasks",
+        "Design and implementation work"
+      ]
+    },
+    "long": {
+      "description": "Extended work period (half to full work day)",
+      "min_minutes": 240,
+      "max_minutes": 480,
+      "typical_use_cases": [
+        "Deep project work",
+        "Major feature implementation",
+        "Sustained focus period"
+      ]
+    },
+    "extended": {
+      "description": "Marathon session (full work day or more)",
+      "min_minutes": 480,
+      "max_minutes": null,
+      "typical_use_cases": [
+        "Major milestone push",
+        "Multi-day project session",
+        "Deep research or design work"
+      ],
+      "notes": "Sessions over 8 hours may include downtime/breaks. See session logs for active vs wall-clock time."
+    }
+  },
+
+  // ============================================================================
+  // TASK DURATION CATEGORIES
+  // ============================================================================
+  // Purpose: Estimate task completion time
+  // Units: All durations in minutes
+
+  "task_durations": {
+    "quick": {
+      "description": "Very fast task (under 5 minutes)",
+      "estimated_minutes": 5,
+      "examples": [
+        "Update config value",
+        "Fix typo",
+        "Quick validation check"
+      ]
+    },
+    "short": {
+      "description": "Short task (5-30 minutes)",
+      "estimated_minutes": 30,
+      "examples": [
+        "Write documentation section",
+        "Implement simple function",
+        "Review small PR"
+      ]
+    },
+    "medium": {
+      "description": "Medium task (30 minutes - 2 hours)",
+      "estimated_minutes": 120,
+      "examples": [
+        "Implement feature component",
+        "Refactor module",
+        "Write comprehensive tests"
+      ]
+    },
+    "long": {
+      "description": "Long task (2-4 hours)",
+      "estimated_minutes": 240,
+      "examples": [
+        "Design and implement subsystem",
+        "Major refactoring",
+        "Complex debugging session"
+      ]
+    },
+    "very_long": {
+      "description": "Very long task (half day or more)",
+      "estimated_minutes": 480,
+      "examples": [
+        "Architecture redesign",
+        "Major feature implementation",
+        "System integration work"
+      ],
+      "notes": "Tasks estimated over 4 hours should be broken into smaller tasks when possible"
+    }
+  },
+
+  // ============================================================================
+  // BREAK DURATION RECOMMENDATIONS
+  // ============================================================================
+  // Purpose: Healthy work rhythm guidance
+  // Note: Recommendations, not requirements
+
+  "break_recommendations": {
+    "micro_break": {
+      "description": "Very brief pause (stretch, look away from screen)",
+      "suggested_minutes": 1,
+      "suggested_frequency": "Every 30-45 minutes of focused work"
+    },
+    "short_break": {
+      "description": "Brief rest (walk, drink water, short break)",
+      "suggested_minutes": 5,
+      "suggested_frequency": "Every 60-90 minutes of work"
+    },
+    "medium_break": {
+      "description": "Proper rest period (meal, exercise, substantial break)",
+      "suggested_minutes": 30,
+      "suggested_frequency": "Every 4-6 hours of work"
+    },
+    "long_break": {
+      "description": "Extended rest (sabbath, day off, proper downtime)",
+      "suggested_minutes": 480,
+      "suggested_frequency": "At least one full day per week (biblical sabbath principle)"
+    }
+  },
+
+  // ============================================================================
+  // RESPONSE TIME EXPECTATIONS
+  // ============================================================================
+  // Purpose: Categorize how quickly something needs response
+  // Note: Contextual - varies by situation
+
+  "response_times": {
+    "immediate": {
+      "description": "Needs attention right now",
+      "max_minutes": 5,
+      "examples": [
+        "Critical system failure",
+        "Blocking production issue",
+        "Urgent time-sensitive decision"
+      ]
+    },
+    "urgent": {
+      "description": "Needs attention soon (within the hour)",
+      "max_minutes": 60,
+      "examples": [
+        "Important question blocking work",
+        "Time-sensitive decision",
+        "High-priority issue"
+      ]
+    },
+    "prompt": {
+      "description": "Should respond same day",
+      "max_minutes": 480,
+      "examples": [
+        "Standard work questions",
+        "Normal priority tasks",
+        "Typical communication"
+      ]
+    },
+    "relaxed": {
+      "description": "Can wait 1-3 days",
+      "max_minutes": 4320,
+      "examples": [
+        "Non-urgent questions",
+        "Planning discussions",
+        "General updates"
+      ]
+    },
+    "flexible": {
+      "description": "No rush (whenever convenient)",
+      "max_minutes": null,
+      "examples": [
+        "Nice-to-have improvements",
+        "Future planning",
+        "Low-priority enhancements"
+      ]
+    }
+  },
+
+  // ============================================================================
+  // USAGE NOTES
+  // ============================================================================
+
+  "usage": {
+    "purpose": "These duration thresholds provide consistent categorization across the CPI-SI paradigm",
+    "application": [
+      "Pattern recognition - cluster sessions by duration category",
+      "Planning - estimate task time using standard categories",
+      "Health tracking - validate work/rest balance",
+      "Reporting - summarize activity using common language"
+    ],
+    "inheritance": "Base definitions apply universally. Regional or personal adjustments should reference these as foundation.",
+    "flexibility": "These are guidelines for categorization. Actual durations vary by person, task, and context."
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+  // Purpose: Discovery staging for experimental patterns not yet formalized
+  // Schema: Permissive (additionalProperties: true) - allows flexible exploration
+  // Lifecycle: Add discoveries here → Gather evidence → Promote to formal sections or remove
+  //
+  // Guidelines:
+  // - Each extension should have: description, added (date), status (experimental/testing/proven)
+  // - Promote to formal section when: Pattern observed consistently across multiple instances/users
+  // - Remove when: Pattern not observed, or proven not useful
+  // - Document rationale: Why this might be valuable, what evidence would prove it
+
+  "extensions": {
+    "note": "Experimental patterns and discoveries - may be promoted to formal definitions or removed",
+    "usage_guidance": "Add new duration categories, thresholds, or measurement approaches here during discovery phase"
+  }
+}

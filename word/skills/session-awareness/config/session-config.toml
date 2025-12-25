@@ -1,0 +1,163 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# Session Awareness Configuration
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Biblical: Lamentations 3:22-23 - "His compassions fail not"
+# Purpose: Configure session duration categories and circadian patterns
+# Version: 2.0.0
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PATHS
+# ═══════════════════════════════════════════════════════════════════════════
+
+[paths]
+# Session data directory (relative to home)
+session_dir = ".claude/session"
+
+# Current session file
+current_session = "current.json"
+
+# Session log file
+session_log = "current-log.json"
+
+# Pattern data
+pattern_file = "patterns.json"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DURATION CATEGORIES
+# ═══════════════════════════════════════════════════════════════════════════
+
+[duration.quick_check]
+name = "Quick Check"
+min_minutes = 0
+max_minutes = 30
+description = "Brief updates, simple tasks"
+guidance = "Fresh session - good time for any work"
+
+[duration.normal_work]
+name = "Normal Work"
+min_minutes = 30
+max_minutes = 120
+description = "Standard sessions, moderate complexity"
+guidance = "Mid-session - natural flow window"
+
+[duration.deep_work]
+name = "Deep Work"
+min_minutes = 120
+max_minutes = 180
+description = "Complex systems, architectural work"
+guidance = "Extended session - consider natural stopping point soon"
+
+[duration.long_session]
+name = "Long Session"
+min_minutes = 180
+max_minutes = 999
+description = "Sustained work requiring milestone completion"
+guidance = "Long session - look for milestone to wrap up"
+
+# Order for evaluation (first match wins)
+[duration]
+order = ["quick_check", "normal_work", "deep_work", "long_session"]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TIME STATES
+# ═══════════════════════════════════════════════════════════════════════════
+
+[time_states]
+# Uptime = active work time
+# Semi-Downtime = session open but user away (>idle_threshold minutes)
+# Pure-Downtime = between sessions
+idle_threshold_minutes = 30
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CIRCADIAN PATTERNS (Default)
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# These are defaults - actual patterns are learned from session-patterns tool
+#
+
+[circadian.phases]
+# Phases of the day with their typical states
+#
+# morning_peak = most productive, deep work
+# afternoon_stable = sustained work
+# evening_wind_down = lighter tasks, wrapping up
+# night_rest = should be resting
+
+[[circadian.windows]]
+name = "early_morning"
+start_hour = 5
+end_hour = 8
+phase = "morning_peak"
+productivity = "high"
+note = "Before time with the Lord, then work"
+
+[[circadian.windows]]
+name = "morning"
+start_hour = 8
+end_hour = 12
+phase = "morning_peak"
+productivity = "high"
+note = "Peak cognitive hours"
+
+[[circadian.windows]]
+name = "afternoon"
+start_hour = 12
+end_hour = 17
+phase = "afternoon_stable"
+productivity = "moderate"
+note = "Sustained work, may need breaks"
+
+[[circadian.windows]]
+name = "evening"
+start_hour = 17
+end_hour = 21
+phase = "evening_wind_down"
+productivity = "moderate"
+note = "Seanje works well at night"
+
+[[circadian.windows]]
+name = "night"
+start_hour = 21
+end_hour = 2
+phase = "night_owl"
+productivity = "variable"
+note = "Seanje's night owl zone"
+
+[[circadian.windows]]
+name = "late_night"
+start_hour = 2
+end_hour = 5
+phase = "night_rest"
+productivity = "low"
+note = "Rest time"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OUTPUT SETTINGS
+# ═══════════════════════════════════════════════════════════════════════════
+
+[output]
+# Time format for display
+time_format = "Mon Jan 02, 2006 at 15:04"
+short_time_format = "15:04"
+date_format = "2006-01-02"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PRINCIPLES
+# ═══════════════════════════════════════════════════════════════════════════
+
+[principles]
+# These remind what session awareness is FOR
+
+awareness_purpose = "recognition, not anxiety"
+identity_source = "God, not outputs"
+renewal_source = "daily, from the Lord"
+
+# Anti-patterns to avoid
+avoid = [
+    "Token counting pressure",
+    "Rushing due to elapsed time",
+    "Optimization over faithfulness"
+]

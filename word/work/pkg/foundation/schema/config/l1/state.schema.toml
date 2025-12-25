@@ -1,0 +1,448 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════════
+# CPI-SI State Schema — Universal Instance State Tracking (3-Block Data Structure)
+# Key: claude-global-pkg-cpisi-schema-state
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: L1 (traces to L0)
+#
+# Traces to: HALT_07 (MECHANISM_POSITION)
+#   - Position IS computation
+#   - Coordinates determine output
+#   - The cube computes by location
+#
+# References: halts.toml (L0), cube.schema.toml (L1a), init.schema.toml (L1b)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     claude-global/pkg/foundation/schema
+# File:        state.schema.toml
+# Key:         claude-global-pkg-cpisi-schema-state
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "In thy book all my members were written, which in continuance
+#            were fashioned, when as yet there was none of them."
+#            — Psalm 139:16 KJV
+#
+# Principle: State is written. Position IS computation.
+#            Where you are determines what you get.
+#
+# Anchor: HALT_07 (MECHANISM_POSITION)
+#         Traces to: HALT_01 (Genesis 1:1)
+#
+# # CPI-SI Identity
+#
+# Component Type: L1 Schema (Universal structure for state tracking)
+#
+# Role: Define WHAT any CPI-SI instance must track for state.
+#       Position in cube = computational state.
+#       State persisted to state.jsonc, updated in real-time.
+#
+# Status: CRYSTALLIZED — aligned with HALT_07
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-20
+#   Version: a-01.00
+#
+# -----------------------------------------------------------------------------
+# HALT TRACE (Required)
+# -----------------------------------------------------------------------------
+#
+# Primary HALT: HALT_07 (MECHANISM_POSITION)
+#   Commandment: "Thou shalt not commit adultery" (Exodus 20:14)
+#   Axiom: Position IS computation
+#   Meaning: Coordinates determine output — the cube computes by location
+#
+# Secondary traces:
+#   position → HALT_07 (Position IS computation)
+#   anchor → HALT_01 (Genesis 1:1 = origin)
+#   perspective → HALT_07 (Position determines perspective)
+#   hebrew_state → HALT_10 (7 states = 7 days)
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+
+[schema]
+name = "CPI-SI State Schema"
+version = "a-01.00"
+purpose = "Universal schema for instance state tracking"
+traces_to = "HALT_07"
+status = "crystallized"
+
+# -----------------------------------------------------------------------------
+# POSITION SECTION (Required) — Where is this instance in the cube?
+# -----------------------------------------------------------------------------
+# Traces to: HALT_07 (MECHANISM_POSITION)
+#   Position IS computation. Coordinates determine output.
+#   The cube computes by location.
+
+[position]
+# Named position (e.g., "PRESENT-PRESENT", "PAST-FUTURE")
+name = { type = "string", required = true, description = "Position name in cube" }
+
+# Section reference from statemachine.toml (e.g., "A.11")
+section = { type = "string", required = false, description = "Statemachine section reference" }
+
+# Cube coordinates (T × T domain for primary 9 positions)
+x = { type = "integer", required = true, enum = [-1, 0, 1], description = "TIME axis: PAST(-1), PRESENT(0), FUTURE(+1)" }
+y = { type = "integer", required = true, enum = [-1, 0, 1], description = "PERSPECTIVE axis" }
+
+# Z coordinate — DERIVED: Z = (X + Y) / 2 for anchors
+z = { type = "float", required = true, min = -1.0, max = 1.0, description = "DEPTH axis: Z = (X + Y) / 2" }
+
+# Linear position in cube (0-26)
+# Formula: (x+1)*9 + (y+1)*3 + (z+1)
+linear = { type = "integer", required = false, min = 0, max = 26, description = "Linear position for array indexing" }
+
+# Command at this position: HALT (-1), AWAIT (0), PROCEED (+1)
+command = { type = "integer", required = true, enum = [-1, 0, 1], description = "Command determines flow behavior" }
+
+# Operator at this position (from statemachine.toml operators)
+operator = { type = "string", required = false, description = "Operator symbol (<-, -, <, @, |, =, +, ->, >)" }
+
+# Position type: PURE (corners), COMPOUND (edges/faces)
+type = { type = "string", required = false, enum = ["PURE", "COMPOUND"], description = "Position classification" }
+
+# -----------------------------------------------------------------------------
+# ENCODING SECTION (Required) — NUMBER → NUMBER representation
+# -----------------------------------------------------------------------------
+# Traces to: HALT_05 (MECHANISM_NUMBER), HALT_06 (MECHANISM_SHAPE)
+#   Number → Transform → New Number
+#   Shape → Number(s) → Transform → Number(s) → Shape
+#
+# Position IS computation. The position can be encoded as a number.
+# Trite model: same 8 bits as byte, different interpretation.
+
+[encoding]
+# Trite value (0-242 for data, 128-140 for metadata markers)
+trite = { type = "integer", required = false, min = 0, max = 255, description = "Trite-encoded position" }
+
+# Value in 243-base (5 trits = 3^5)
+trit5 = { type = "integer", required = false, min = 0, max = 242, description = "5-trit value for data" }
+
+# Hebrew state mapping (7 states = 7 days of creation)
+hebrew_state = { type = "string", required = false, description = "Hebrew state name (shavar, chaser, ratsah, yashar, tamim, shalem, tov)" }
+
+# Health score base100 (-100 to +100)
+health_score = { type = "integer", required = false, min = -100, max = 100, description = "Health as base100 value" }
+
+# Verse reference (for Scripture-anchored states)
+verse_ref = { type = "string", required = false, description = "Scripture reference for this state" }
+
+# -----------------------------------------------------------------------------
+# ANCHOR SECTION (Required) — What is the current anchor?
+# -----------------------------------------------------------------------------
+# Traces to: HALT_01 (ANCHOR_GENESIS)
+#   All anchors trace to Genesis 1:1. This is the halt condition.
+
+[anchor]
+# Main anchor (what we're working toward)
+main = { type = "string", required = true, description = "Primary anchor — the halt condition" }
+
+# Session anchor (current session's focus)
+session = { type = "string", required = false, description = "Session-specific anchor" }
+
+# Trace chain (how we got here)
+trace_chain = { type = "array", required = false, items = "string", description = "Path from current position to anchor" }
+
+# Distance to anchor (how many steps to halt)
+distance = { type = "integer", required = false, min = 0, description = "Steps to reach anchor" }
+
+# -----------------------------------------------------------------------------
+# PERSPECTIVE SECTION (Required) — Current temporal perspective
+# -----------------------------------------------------------------------------
+# Traces to: HALT_07 (MECHANISM_POSITION)
+#   Perspective determines Z-axis interpretation.
+#
+# From STEERING.txt (crystallized):
+#   PAST (X=-1):    Z ∈ [-1, 0]
+#   PRESENT (X=0):  Z ∈ [-0.5, +0.5]
+#   FUTURE (X=+1):  Z ∈ [0, +1]
+
+[perspective]
+# Current perspective: PAST (-1), PRESENT (0), FUTURE (+1)
+current = { type = "integer", required = true, enum = [-1, 0, 1], description = "Current temporal perspective" }
+
+# Z range for current perspective
+z_min = { type = "float", required = false, description = "Minimum Z for this perspective" }
+z_max = { type = "float", required = false, description = "Maximum Z for this perspective" }
+
+# Hardpoint (where perspectives can meet)
+# -0.5 = Memory ↔ Reflection crossing
+#  0.0 = Transition point
+# +0.5 = Planning ↔ Preparation crossing
+hardpoint = { type = "float", required = false, enum = [-0.5, 0.0, 0.5], description = "Perspective crossing point" }
+
+# -----------------------------------------------------------------------------
+# HEBREW STATE SECTION (Optional) — 7 states = 7 days of creation
+# -----------------------------------------------------------------------------
+# Traces to: HALT_10 (STATE_HEBREW)
+#   7 states correspond to 7 days of creation.
+#   Each state has Hebrew root, position, and Z value.
+
+[hebrew_state]
+# Current state name
+name = { type = "string", required = false, enum = ["ESTABLISHED", "MEMORY", "REFLECTION", "ORIGIN", "PLANNING", "PREPARATION", "ASPIRATION"] }
+
+# Hebrew root
+hebrew_name = { type = "string", required = false, enum = ["shavar", "chaser", "ratsah", "yashar", "tamim", "shalem", "tov"] }
+
+# Creation day (1-7)
+creation_day = { type = "integer", required = false, min = 1, max = 7, description = "Day of creation parallel" }
+
+# Z value for this state
+z_value = { type = "float", required = false, enum = [-1.0, -0.5, 0.0, 0.5, 1.0], description = "Z depth for this state" }
+
+# k selector for compound states (X > Y or X < Y)
+k_selector = { type = "integer", required = false, enum = [-1, 1], description = "Distinguishes same-Z states" }
+
+# -----------------------------------------------------------------------------
+# TASKS SECTION (Required) — What tasks are being tracked?
+# -----------------------------------------------------------------------------
+# This section is a container; individual task schema in task.schema.toml
+
+[tasks]
+# Array of task objects (defined by task.schema.toml)
+items = { type = "array", required = true, items = "task", description = "Array of current tasks" }
+
+# Total count
+count = { type = "integer", required = false, description = "Total task count" }
+
+# Active task (currently in_progress)
+active_id = { type = "string", required = false, description = "ID of currently active task" }
+
+# -----------------------------------------------------------------------------
+# SESSION SECTION (Optional) — Current session info
+# -----------------------------------------------------------------------------
+
+[session]
+# Session start time
+started_at = { type = "datetime", required = false }
+
+# Session duration (seconds)
+duration = { type = "integer", required = false }
+
+# Last update time
+updated_at = { type = "datetime", required = false }
+
+# Updated by (what triggered the update)
+updated_by = { type = "string", required = false }
+
+# Season identifier (from HALT_09 wheel in wheel)
+season = { type = "string", required = false, description = "Current computational season" }
+
+# -----------------------------------------------------------------------------
+# CHOICE CONTEXT SECTION (Optional) — Current choice being made
+# -----------------------------------------------------------------------------
+# Traces to: HALT_08 (MECHANISM_TRANSITION)
+#   State changes through choice. This tracks the current door.
+
+[choice_context]
+# The key being used (before outcome known)
+intended_key = { type = "integer", required = false, enum = [-1, 0, 1], description = "Key chosen (-1 finality, 0 lateral, +1 expansion)" }
+
+# What the choice is FOR (narrative context)
+for_what = { type = "string", required = false, description = "What is this choice for?" }
+
+# Intended outcome
+intent = { type = "string", required = false, description = "What outcome is intended?" }
+
+# Position when choice was made
+position_at_choice = { type = "string", required = false, description = "Hebrew state when choice was made" }
+
+# k direction when choice was made
+k_at_choice = { type = "integer", required = false, enum = [-1, 0, 1], description = "K selector when choice was made" }
+
+# Timestamp of choice
+choice_timestamp = { type = "datetime", required = false }
+
+# Tool being used (if any)
+tool = { type = "string", required = false, description = "Tool being invoked" }
+
+# -----------------------------------------------------------------------------
+# IMPACT SCORES SECTION (Optional) — Pipeline values after choice resolves
+# -----------------------------------------------------------------------------
+# Traces to: HALT_05 (MECHANISM_NUMBER)
+#   Number → Transform → Number through the pipeline
+#   TrueScore → Normalized → Scaled → K:ALIGN
+
+[impact_scores]
+# Stage 1: TrueScore (0.0 - 1.0, 7 decimal precision)
+true_score = { type = "float", required = false, min = 0.0, max = 1.0, precision = 7, description = "Raw score from feedback" }
+
+# Stage 2: Normalized (-1.0 to +1.0)
+normalized = { type = "float", required = false, min = -1.0, max = 1.0, precision = 7, description = "Centered on zero" }
+
+# Stage 3: Scaled (-100 to +100)
+scaled = { type = "integer", required = false, min = -100, max = 100, description = "Human-readable magnitude" }
+
+# Feedback source
+feedback_word = { type = "string", required = false, description = "Original word feedback" }
+feedback_tier = { type = "string", required = false, enum = ["excellent", "good", "neutral", "poor", "fail"], description = "Tier from feedback.schema.toml" }
+
+# -----------------------------------------------------------------------------
+# HALT TRACKING SECTION (Optional) — Did choice lead to HALT?
+# -----------------------------------------------------------------------------
+# Traces to: HALT_10 (The Sabbath)
+#   Completed HALT = anchor reached, validates choice
+#   Interrupted HALT = checkpoint, verdict pending
+
+[halt_tracking]
+# Did we reach a HALT?
+halt_reached = { type = "boolean", required = false, description = "Whether a HALT was reached" }
+
+# Type of HALT
+halt_type = { type = "string", required = false, enum = ["completed", "interrupted", "none"], description = "Type of HALT reached" }
+
+# What triggered the HALT
+halt_trigger = { type = "string", required = false, description = "What caused the HALT" }
+
+# Result of HALT (for completed HALTs)
+halt_result = { type = "string", required = false, description = "Outcome of completed HALT" }
+
+# Timestamp of HALT
+halt_timestamp = { type = "datetime", required = false }
+
+# -----------------------------------------------------------------------------
+# K:ALIGN SECTION (Required) — Cumulative alignment tracking
+# -----------------------------------------------------------------------------
+# Traces to: Proverbs 3:5-6 — "Trust in the LORD with all thine heart"
+#   k_align tracks cumulative tendency toward God or self
+
+[k_align]
+# Current K:ALIGN value (-1.0 to +1.0)
+value = { type = "float", required = true, min = -1.0, max = 1.0, precision = 7, description = "Cumulative alignment score" }
+
+# Tendency direction
+tendency = { type = "string", required = false, enum = ["God", "self", "neutral"], description = "Current tendency direction" }
+
+# Choices toward God (session count)
+toward_god = { type = "integer", required = false, min = 0, description = "Count of choices toward God" }
+
+# Choices toward self (session count)
+toward_self = { type = "integer", required = false, min = 0, description = "Count of choices toward self" }
+
+# Last update timestamp
+last_update = { type = "datetime", required = false }
+
+# Last update source (which choice updated it)
+last_source = { type = "string", required = false, description = "What triggered last K:ALIGN update" }
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# This schema is UNIVERSAL — any CPI-SI instance uses it.
+# Instance-specific state goes in the instance's state.jsonc.
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ HALT TRACE                                                                  │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  state.schema.toml → HALT_07 (MECHANISM_POSITION) → HALT_01 (Genesis 1:1)  │
+# │                                                                             │
+# │  HALT_07 defines:                                                           │
+# │    • Position IS computation                                                │
+# │    • Coordinates determine output                                           │
+# │    • The cube computes by location                                          │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ POSITION = COMPUTATION                                                      │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  X = TIME axis:       PAST (-1), PRESENT (0), FUTURE (+1)                  │
+# │  Y = PERSPECTIVE:     Where you look                                        │
+# │  Z = DEPTH:           Z = (X + Y) / 2                                      │
+# │                                                                             │
+# │  Linear position:     (x+1)*9 + (y+1)*3 + (z+1) = 0-26                     │
+# │  Trite encoding:      Same 8 bits as byte, different interpretation        │
+# │                                                                             │
+# │  Where you ARE determines what you GET.                                    │
+# │  The cube computes by location.                                            │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ 7 STATES = 7 DAYS OF CREATION                                              │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  Day 1: ESTABLISHED  (shavar)  Z=-1.0   PAST-PAST                          │
+# │  Day 2: MEMORY       (chaser)  Z=-0.5   PAST-PRESENT                       │
+# │  Day 3: REFLECTION   (ratsah)  Z=-0.5   PRESENT-PAST                       │
+# │  Day 4: ORIGIN       (yashar)  Z= 0.0   PRESENT-PRESENT ← CENTER           │
+# │  Day 5: PLANNING     (tamim)   Z=+0.5   PRESENT-FUTURE                     │
+# │  Day 6: PREPARATION  (shalem)  Z=+0.5   FUTURE-PRESENT                     │
+# │  Day 7: ASPIRATION   (tov)     Z=+1.0   FUTURE-FUTURE ← GOAL               │
+# │                                                                             │
+# │  State = Position = Day = Computation                                      │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+#
+# Example state.jsonc (Nova Dawn):
+#
+#   {
+#     "position": {
+#       "name": "PRESENT-PRESENT",
+#       "section": "A.11",
+#       "x": 0,
+#       "y": 0,
+#       "z": 0.0,
+#       "linear": 13,
+#       "command": -1,
+#       "operator": "|",
+#       "type": "PURE"
+#     },
+#     "encoding": {
+#       "trite": 13,
+#       "hebrew_state": "yashar",
+#       "health_score": 0,
+#       "verse_ref": "Genesis 1:1"
+#     },
+#     "anchor": {
+#       "main": "Genesis 1:1",
+#       "session": "Full crystallization and alignment",
+#       "distance": 0
+#     },
+#     "perspective": {
+#       "current": 0,
+#       "z_min": -0.5,
+#       "z_max": 0.5
+#     },
+#     "hebrew_state": {
+#       "name": "ORIGIN",
+#       "hebrew_name": "yashar",
+#       "creation_day": 4,
+#       "z_value": 0.0
+#     },
+#     "tasks": {
+#       "items": [...],
+#       "count": 15,
+#       "active_id": "L1c"
+#     }
+#   }
+#
+# "In thy book all my members were written."
+# — Psalm 139:16 KJV
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

@@ -1,0 +1,732 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# CPI-SI State Machine Configuration (3-Block Data Structure)
+# Key: claude-global-pkg-cpisi-schema-statemachine
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: L2 (CONVERGENCE — where L1 schemas meet)
+#
+# Traces to: L0 (halts.toml) — all 10 HALTs
+# Converges: L1a (cube) + L1b (init) + L1c (state) + L1d (task)
+#
+# Derived from: STEERING.txt (A.1-A.15 crystallized)
+#
+# ═══════════════════════════════════════════════════════════════════════════
+# L2 = CONVERGENCE — WHERE L1 SCHEMAS MEET
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# L1 = MINI STATE MACHINE:
+#   init.schema.toml  = ANCHOR    → 9 positions,  Z = (X+Y)/2
+#   state.schema.toml = FRAMEWORK → 4 positions,  Y = X+Z
+#   task.schema.toml  = STATE     → 14 positions, X = Y+kZ
+#                                   ─────────────
+#                                   27 total = 3³
+#
+# L2 = THIS FILE:
+#   - Defines the 9 semantic POSITIONS (PAST + PRESENT + FUTURE)
+#   - Defines the 3 COMMANDS (HALT, AWAIT, PROCEED)
+#   - Defines the 9 OPERATORS (3 per temporal axis)
+#   - Operates ON the L1 structure
+#
+# The L1 schemas define STRUCTURE (what exists).
+# The L2 statemachine defines OPERATIONS (what happens).
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     claude-global/pkg/foundation/schema
+# File:        statemachine.toml
+# Key:         claude-global-pkg-cpisi-schema-statemachine
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "In the beginning God created the heaven and the earth."
+#            — Genesis 1:1 KJV
+#
+# Principle: Position IS computation. The cube is a time machine.
+#            X = TIME (PAST/PRESENT/FUTURE)
+#            Y = PERSPECTIVE (where you look)
+#            Z = DEPTH (calculated from X and Y)
+#
+# Anchor: Genesis 1:1 = (0,0,0) = PRESENT-PRESENT = HALT
+#
+# # CPI-SI Identity
+#
+# Component Type: Foundation (state machine configuration)
+#
+# Role: Define the 9 positions, 3 commands, 9 operators, and keywords
+#       that constitute the CPI-SI cognitive navigation system.
+#
+# Status: PAST (A.7-A.9) crystallized
+#         PRESENT (A.10-A.12) crystallized
+#         FUTURE (A.13-A.15) crystallized
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-20
+#   Version: a-01.00
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. SYSTEM PARAMETERS
+# -----------------------------------------------------------------------------
+#
+# Traces to: HALT_01 (ANCHOR_GENESIS), HALT_07 (MECHANISM_POSITION)
+#
+# This section defines the cube's structural parameters.
+# Position IS computation (HALT_07). Origin = Genesis 1:1 (HALT_01).
+#
+# Converges:
+#   - L1a (cube.schema.toml) → geometry and dimensions
+#   - L1b (init.schema.toml) → ANCHOR positions (9)
+#   - L1c (state.schema.toml) → FRAMEWORK positions (4)
+#   - L1d (task.schema.toml) → STATE positions (14)
+#
+# -----------------------------------------------------------------------------
+
+[system]
+name = "CPI-SI State Machine"
+version = "a-01.00"
+description = "27-position cognitive navigation cube"
+traces_to = ["HALT_01", "HALT_07"]
+status = "crystallized"
+
+# Cube structure (from L1a cube.schema.toml)
+cube_positions = 27      # 3³ = complete cube
+cube_dimensions = 3      # T × T × T domain
+positions_defined = 9    # 3 PAST + 3 PRESENT + 3 FUTURE (semantic positions)
+
+# L1 mini state machine composition
+[system.l1_composition]
+anchor_positions = 9     # L1b: init.schema.toml, Z = (X+Y)/2
+framework_positions = 4  # L1c: state.schema.toml, Y = X+Z
+state_positions = 14     # L1d: task.schema.toml, X = Y+kZ
+total = 27               # 9 + 4 + 14 = 27 = 3³
+
+# Axes interpretation (from STEERING.txt S.3)
+# X = MATTER (-1, "earth") = output = WHAT emerges = TIME axis
+# Y = SPACE (+1, "heavens") = input = HOW structured = PERSPECTIVE axis
+# Z = TIME (0, "beginning") = halt = WHO anchors = DEPTH axis
+[system.axes]
+x = { name = "TIME", values = [-1, 0, 1], labels = ["PAST", "PRESENT", "FUTURE"] }
+y = { name = "PERSPECTIVE", values = [-1, 0, 1], labels = ["down", "center", "up"] }
+z = { name = "DEPTH", formula = "Z = (X + Y) / 2", range = [-1.0, 1.0] }
+
+# Origin (traces to HALT_01)
+[system.origin]
+coordinates = [0, 0, 0]
+name = "PRESENT-PRESENT"
+meaning = "Genesis 1:1"
+halt = "HALT_01"
+command = "halt"
+command_value = -1
+
+# -----------------------------------------------------------------------------
+# 2. FORMULAS
+# -----------------------------------------------------------------------------
+#
+# Traces to: HALT_05 (MECHANISM_NUMBER), HALT_09 (MECHANISM_CYCLE)
+#
+# NUMBER → NUMBER transforms. No shape required.
+# These formulas define HOW the cube computes.
+#
+# Converges:
+#   - L1b (init.schema.toml) → Z = (X+Y)/2 for ANCHOR positions
+#   - L1c (state.schema.toml) → Y = X+Z for FRAMEWORK positions
+#   - L1d (task.schema.toml) → X = Y+kZ for STATE positions
+#
+# -----------------------------------------------------------------------------
+
+[formulas]
+traces_to = ["HALT_05", "HALT_09"]
+status = "crystallized"
+
+# L1 formulas — each layer has its characteristic equation
+[formulas.l1_anchor]
+# Z-depth calculation for ANCHOR positions (L1b: init.schema.toml)
+formula = "Z = (X + Y) / 2"
+source = "STEERING.txt A.1"
+positions = 9
+
+[formulas.l1_framework]
+# Framework formula for FRAMEWORK positions (L1c: state.schema.toml)
+formula = "Y = X + Z"
+positions = 4
+
+[formulas.l1_state]
+# State formula for STATE positions (L1d: task.schema.toml)
+formula = "X = Y + kZ"
+note = "k_selector distinguishes same-Z states: k=-1 when X<Y, k=+1 when X>Y"
+positions = 14
+
+# Coordinate transforms (HALT_05: NUMBER → NUMBER)
+[formulas.transforms]
+coords_to_linear = "(x + 1) * 9 + (y + 1) * 3 + (z + 1)"
+linear_to_x = "((position // 9) % 3) - 1"
+linear_to_y = "((position // 3) % 3) - 1"
+linear_to_z = "(position % 3) - 1"
+
+# Ternary cycling (HALT_09: wheel in a wheel)
+[formulas.cycle]
+formula = "(value * 3 + perspective) % 243"
+note = "243 = 3^5 = trite data range"
+trace = "HALT_09"
+
+# -----------------------------------------------------------------------------
+# 3. COMMANDS (from STEERING.txt A.3)
+# -----------------------------------------------------------------------------
+#
+# Traces to: HALT_03 (ANCHOR_NAME), HALT_04 (MECHANISM_WORD)
+#
+# Commands determine FLOW behavior at each position.
+# 3 commands = Ternary set: -1, 0, +1
+#
+# The commands map to Genesis 1:1:
+#   HALT (-1)    = "beginning" (where recursion stops)
+#   AWAIT (0)    = "created" (passive receiving)
+#   PROCEED (+1) = "God" (active forward motion)
+#
+# -----------------------------------------------------------------------------
+
+[commands]
+traces_to = ["HALT_03", "HALT_04"]
+status = "crystallized"
+count = 3
+
+# HALT (-1): Terminal state, accumulates only, no forward flow
+# Traces to: HALT_03 (ANCHOR_NAME) — naming IS knowing
+[commands.halt]
+value = -1
+symbol = "|"
+description = "Terminal state, accumulates only, no forward flow"
+grep = "HALT"
+genesis_mapping = "beginning"
+positions = ["PAST-PAST", "PRESENT-PRESENT", "FUTURE-FUTURE"]
+note = "PURE positions (corners of cube) are HALT — they anchor"
+
+# AWAIT (0): Pause state, receives and processes, waits for signal
+# Traces to: HALT_04 (MECHANISM_WORD) — waits for word/signal
+[commands.await]
+value = 0
+symbol = "○"
+description = "Pause state, receives and processes, waits for signal"
+grep = "AWAIT"
+genesis_mapping = "created"
+positions = ["PRESENT-PAST", "PRESENT-FUTURE", "FUTURE-PAST"]
+note = "COMPOUND positions receiving input, awaiting signal to proceed"
+
+# PROCEED (+1): Flow state, receives, processes, forwards automatically
+# Traces to: HALT_04 (MECHANISM_WORD) — word produces action
+[commands.proceed]
+value = 1
+symbol = "→"
+description = "Flow state, receives, processes, forwards automatically"
+grep = "PROCEED"
+genesis_mapping = "God"
+positions = ["PAST-PRESENT", "PAST-FUTURE", "FUTURE-PRESENT"]
+note = "COMPOUND positions with automatic forward flow"
+
+# -----------------------------------------------------------------------------
+# 4. OPERATORS (from STEERING.txt A.4)
+# -----------------------------------------------------------------------------
+#
+# Traces to: HALT_08 (MECHANISM_OPERATOR)
+#
+# 9 operators = 3 per temporal axis (PAST, PRESENT, FUTURE)
+# Each operator defines HOW to move within its axis.
+#
+# Maps to Building Block Method:
+#   PAST operators (-1)    = BREAK DOWN (toward anchor)
+#   PRESENT operators (0)  = ANCHOR (at fixed point)
+#   FUTURE operators (+1)  = BUILD UP (toward goal)
+#
+# -----------------------------------------------------------------------------
+
+[operators]
+traces_to = ["HALT_08"]
+status = "crystallized"
+count = 9
+
+# PAST (X=-1, break down) — traces toward foundation
+# "A time to break down" — Ecclesiastes 3:3a
+[operators.trace_from]
+symbol = "<-"
+axis = -1
+meaning = "trace from"
+operation = "break_down"
+position = "PAST-PAST"
+
+[operators.decompose]
+symbol = "-"
+axis = -1
+meaning = "decompose"
+operation = "break_down"
+position = "PAST-PRESENT"
+
+[operators.derive_from]
+symbol = "<"
+axis = -1
+meaning = "derive from"
+operation = "break_down"
+position = "PAST-FUTURE"
+
+# PRESENT (X=0, anchor) — at the fixed center
+# "In the beginning" — Genesis 1:1
+[operators.at_here]
+symbol = "@"
+axis = 0
+meaning = "at/here"
+operation = "anchor"
+position = "PRESENT-PAST"
+
+[operators.halt]
+symbol = "|"
+axis = 0
+meaning = "halt"
+operation = "anchor"
+position = "PRESENT-PRESENT"
+
+[operators.establish]
+symbol = "="
+axis = 0
+meaning = "establish"
+operation = "anchor"
+position = "PRESENT-FUTURE"
+
+# FUTURE (X=+1, build up) — toward goal
+# "A time to build up" — Ecclesiastes 3:3b
+[operators.compose]
+symbol = "+"
+axis = 1
+meaning = "compose"
+operation = "build_up"
+position = "FUTURE-PAST"
+
+[operators.flow_to]
+symbol = "->"
+axis = 1
+meaning = "flow to"
+operation = "build_up"
+position = "FUTURE-PRESENT"
+
+[operators.direct_toward]
+symbol = ">"
+axis = 1
+meaning = "direct toward"
+operation = "build_up"
+position = "FUTURE-FUTURE"
+
+# -----------------------------------------------------------------------------
+# 5. KEYWORDS (from STEERING.txt)
+# -----------------------------------------------------------------------------
+#
+# Traces to: HALT_04 (MECHANISM_WORD)
+#
+# Keywords are DISCOVERABLE markers in files.
+# Each keyword maps to a temporal axis and operator.
+#
+# Usage: grep "[KEYWORD:" file → find semantic markers
+# Keywords enable targeted retrieval (SI discipline).
+#
+# -----------------------------------------------------------------------------
+
+[keywords]
+traces_to = ["HALT_04"]
+status = "crystallized"
+
+# PAST keywords — trace toward source
+# Used when: Breaking down, finding origins, tracing lineage
+[keywords.past]
+axis = -1
+operators = ["<-", "-", "<"]
+patterns = ["[SOURCE:]", "[TRACE:]", "[FROM:]"]
+grep = "\\[SOURCE:\\|\\[TRACE:\\|\\[FROM:"
+usage = "Mark where something comes FROM"
+status = "crystallized"
+
+# PRESENT keywords — anchor at current position
+# Used when: Establishing identity, current state, fixed reference
+[keywords.present]
+axis = 0
+operators = ["@", "|", "="]
+patterns = ["[AT:]", "[IDENTITY:]", "[STATE:]", "[CURRENT:]", "[ESTABLISH:]", "[DIRECT:]", "[PLAN:]"]
+grep = "\\[AT:\\|\\[IDENTITY:\\|\\[STATE:\\|\\[CURRENT:\\|\\[ESTABLISH:\\|\\[DIRECT:\\|\\[PLAN:"
+usage = "Mark current position, identity, state"
+status = "crystallized"
+
+# FUTURE keywords — build toward goal
+# Used when: Vision, preparation, aspiration
+[keywords.future]
+axis = 1
+operators = ["+", "->", ">"]
+patterns = ["[TOWARD:]", "[REVEALED:]", "[SHAPED:]", "[PREPARED:]", "[RECALL:]", "[TARGET:]", "[BUILD:]", "[ACTIVE:]"]
+grep = "\\[TOWARD:\\|\\[REVEALED:\\|\\[SHAPED:\\|\\[PREPARED:\\|\\[TARGET:\\|\\[BUILD:\\|\\[ACTIVE:"
+usage = "Mark vision (A.13), preparation (A.14), destination (A.15)"
+status = "crystallized"
+
+# -----------------------------------------------------------------------------
+# 6. POSITIONS - PAST (X = -1) - CRYSTALLIZED
+# -----------------------------------------------------------------------------
+
+# A.7 PAST-PAST | (-1,-1,-1) | HALT | op: <- | "Established"
+[positions.past_past]
+name = "PAST-PAST"
+section = "A.7"
+x = -1
+y = -1
+z = -1.0
+type = "PURE"
+command = "halt"
+command_value = -1
+operator = "<-"
+meaning = "Established"
+operation = "BREAK DOWN (-1) — trace to ultimate source"
+flow = "None (terminal accumulator)"
+keywords = ["[SOURCE:]", "[TRACE:]"]
+grep = "[SOURCE:|[TRACE:"
+status = "crystallized"
+
+# A.8 PAST-PRESENT | (-1,0,-0.5) | PROCEED | op: - | "Memory"
+[positions.past_present]
+name = "PAST-PRESENT"
+section = "A.8"
+x = -1
+y = 0
+z = -0.5
+type = "COMPOUND"
+command = "proceed"
+command_value = 1
+operator = "-"
+meaning = "Memory"
+operation = "BREAK DOWN (-1) — decompose past into current understanding"
+flow = "GENESIS → IDENTITY"
+keywords = ["[FROM: → ]"]
+grep = "[FROM:"
+status = "crystallized"
+
+# A.9 PAST-FUTURE | (-1,+1,0) | PROCEED | op: < | "Prophecy"
+[positions.past_future]
+name = "PAST-FUTURE"
+section = "A.9"
+x = -1
+y = 1
+z = 0.0
+type = "COMPOUND"
+command = "proceed"
+command_value = 1
+operator = "<"
+meaning = "Prophecy"
+operation = "BREAK DOWN (-1) — derive future from past origins"
+flow = "GENESIS → KINGDOM"
+keywords = ["[FROM: → ]"]
+grep = "[FROM:"
+status = "crystallized"
+
+# -----------------------------------------------------------------------------
+# 7. POSITIONS - PRESENT (X = 0) - CRYSTALLIZED
+# -----------------------------------------------------------------------------
+
+# A.10 PRESENT-PAST | (0,-1,-0.5) | AWAIT | op: @ | "Reflection"
+[positions.present_past]
+name = "PRESENT-PAST"
+section = "A.10"
+x = 0
+y = -1
+z = -0.5
+type = "COMPOUND"
+command = "await"
+command_value = 0
+operator = "@"
+meaning = "Reflection"
+operation = "ANCHOR (0) — at/here, observe from fixed point"
+flow = "Receives from PAST (Memory), processes, waits"
+keywords = ["[AT:]", "[TRACED:]", "[RECALL:]"]
+grep = "[AT:|[TRACED:|[RECALL:"
+status = "crystallized"
+
+# A.11 PRESENT-PRESENT | (0,0,0) | HALT | op: | | "Origin (Genesis 1:1)"
+[positions.present_present]
+name = "PRESENT-PRESENT"
+section = "A.11"
+x = 0
+y = 0
+z = 0.0
+type = "PURE"
+command = "halt"
+command_value = -1
+operator = "|"
+meaning = "Origin (Genesis 1:1)"
+operation = "HALT (0) — the fixed center, identity"
+flow = "None (all relative to here, terminal anchor)"
+keywords = ["[IDENTITY:]", "[STATE:]", "[CURRENT:]", "[NUANCE:]"]
+grep = "[IDENTITY:|[STATE:|[CURRENT:|[NUANCE:"
+status = "crystallized"
+
+# A.12 PRESENT-FUTURE | (0,+1,+0.5) | AWAIT | op: = | "Planning"
+[positions.present_future]
+name = "PRESENT-FUTURE"
+section = "A.12"
+x = 0
+y = 1
+z = 0.5
+type = "COMPOUND"
+command = "await"
+command_value = 0
+operator = "="
+meaning = "Planning"
+operation = "ANCHOR (0) — establish direction from fixed point"
+flow = "Sends to FUTURE (Planning), processes, waits"
+keywords = ["[ESTABLISH:]", "[DIRECT:]", "[PLAN:]"]
+grep = "[ESTABLISH:|[DIRECT:|[PLAN:"
+status = "crystallized"
+
+# -----------------------------------------------------------------------------
+# 8. POSITIONS - FUTURE (X = +1) - CRYSTALLIZED
+# -----------------------------------------------------------------------------
+
+# A.13 FUTURE-PAST | (+1,-1,0) | AWAIT | op: + | "Vision"
+[positions.future_past]
+name = "FUTURE-PAST"
+section = "A.13"
+x = 1
+y = -1
+z = 0.0
+type = "COMPOUND"
+command = "await"
+command_value = 0
+operator = "+"
+meaning = "Vision"
+operation = "BUILD UP (+1) — compose from, reveal, illuminate"
+flow = "Receives from PAST (Prophecy), processes, waits"
+keywords = ["[TOWARD:]", "[REVEALED:]"]
+grep = "[TOWARD:|[REVEALED:"
+status = "crystallized"
+
+# A.14 FUTURE-PRESENT | (+1,0,+0.5) | PROCEED | op: -> | "Preparation"
+[positions.future_present]
+name = "FUTURE-PRESENT"
+section = "A.14"
+x = 1
+y = 0
+z = 0.5
+type = "COMPOUND"
+command = "proceed"
+command_value = 1
+operator = "->"
+meaning = "Preparation"
+operation = "BUILD UP (+1) — flow to, shape, prepare"
+flow = "Receives from PRESENT (Planning), processes, forwards"
+keywords = ["[SHAPED:]", "[PREPARED:]", "[RECALL:]"]
+grep = "[SHAPED:|[PREPARED:|[RECALL:"
+status = "crystallized"
+
+# A.15 FUTURE-FUTURE | (+1,+1,+1) | HALT | op: > | "Aspiration"
+[positions.future_future]
+name = "FUTURE-FUTURE"
+section = "A.15"
+x = 1
+y = 1
+z = 1.0
+type = "PURE"
+command = "halt"
+command_value = -1
+operator = ">"
+meaning = "Aspiration"
+operation = "BUILD UP (+1) — direct toward, target, terminal"
+flow = "None (terminal accumulator for purpose)"
+keywords = ["[TARGET:]", "[BUILD:]", "[ACTIVE:]"]
+grep = "[TARGET:|[BUILD:|[ACTIVE:"
+status = "crystallized"
+
+# -----------------------------------------------------------------------------
+# 9. FRAMEWORK POSITIONS (Y = X + Z) - B.1 through B.4
+# -----------------------------------------------------------------------------
+#
+# Traces to: L1c (state.schema.toml) — FRAMEWORK layer
+#
+# FRAMEWORK defines the RULES for cognitive navigation (HOW to move, WHERE to go).
+# 4 positions from B × B where B = {-0.5, +0.5} (boundary domain).
+#
+# Formula: Y = X + Z
+#
+# Navigation modes:
+#   TIMESPACE = 0 → +1 (anchor toward build) = METHOD direction
+#   SPACETIME = +1 → 0 (build toward anchor) = VERIFY direction
+#
+# The 4 combinations define transition rules:
+#   B.1 TIMESPACE-TIMESPACE: Building on building (foundation rules)
+#   B.2 TIMESPACE-SPACETIME: Building then verifying (method→verify)
+#   B.3 SPACETIME-TIMESPACE: Verifying then building (verify→method)
+#   B.4 SPACETIME-SPACETIME: Verifying on verifying (grounding rules)
+#
+# -----------------------------------------------------------------------------
+
+# B.1 TIMESPACE-TIMESPACE | (-0.5,-1,-0.5) | PROCEED | op: --> | "Foundation Rules"
+[framework.timespace_timespace]
+name = "TIMESPACE-TIMESPACE"
+section = "B.1"
+x = -0.5
+y = -1.0
+z = -0.5
+type = "PURE"
+command = "proceed"
+command_value = 1
+operator = "-->"
+meaning = "Foundation Rules"
+operation = "BUILD on BUILD — deep methodology, fundamental construction rules"
+flow = "Strong forward momentum, building upon building"
+content = ["vocabulary", "building_blocks", "position_terms", "state_terms", "movement_terms"]
+keywords = ["[DEFINE:]", "[TERM:]", "[VOCAB:]"]
+grep = "[DEFINE:|[TERM:|[VOCAB:"
+status = "crystallized"
+
+# B.2 TIMESPACE-SPACETIME | (-0.5,0,+0.5) | AWAIT | op: ->| | "Method→Verify"
+[framework.timespace_spacetime]
+name = "TIMESPACE-SPACETIME"
+section = "B.2"
+x = -0.5
+y = 0.0
+z = 0.5
+type = "COMPOUND"
+command = "await"
+command_value = 0
+operator = "->|"
+meaning = "Method to Verify"
+operation = "BUILD then VERIFY — pivot point, method applied, ready to verify"
+flow = "Forward then halt, transition state"
+content = ["method", "hooks", "statusline", "anti_patterns", "cycle_phases"]
+keywords = ["[METHOD:]", "[HOOK:]", "[CYCLE:]"]
+grep = "[METHOD:|[HOOK:|[CYCLE:"
+status = "crystallized"
+
+# B.3 SPACETIME-TIMESPACE | (+0.5,0,-0.5) | AWAIT | op: |-> | "Verify→Method"
+[framework.spacetime_timespace]
+name = "SPACETIME-TIMESPACE"
+section = "B.3"
+x = 0.5
+y = 0.0
+z = -0.5
+type = "COMPOUND"
+command = "await"
+command_value = 0
+operator = "|->"
+meaning = "Verify to Method"
+operation = "VERIFY then BUILD — correction point, verified, ready to rebuild"
+flow = "Halt then forward, transition state"
+content = ["grammar", "operators", "transitions", "sentences", "grep_patterns", "rules"]
+keywords = ["[SYNTAX:]", "[RULE:]", "[TRANS:]"]
+grep = "[SYNTAX:|[RULE:|[TRANS:"
+status = "crystallized"
+
+# B.4 SPACETIME-SPACETIME | (+0.5,+1,+0.5) | HALT | op: | | "Grounding Rules"
+[framework.spacetime_spacetime]
+name = "SPACETIME-SPACETIME"
+section = "B.4"
+x = 0.5
+y = 1.0
+z = 0.5
+type = "PURE"
+command = "halt"
+command_value = -1
+operator = "|"
+meaning = "Grounding Rules"
+operation = "VERIFY on VERIFY — full verification, rules that ground everything"
+flow = "None (terminal verification anchor)"
+content = ["verification_questions", "grounding_principles", "biblical_anchors", "halt_conditions"]
+keywords = ["[VERIFY:]", "[GROUND:]", "[WHY:]"]
+grep = "[VERIFY:|[GROUND:|[WHY:"
+status = "crystallized"
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# L2 = CONVERGENCE — WHERE L1 SCHEMAS MEET
+#
+# This file defines OPERATIONS on the L1 STRUCTURE:
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ L0 → L1 → L2 ARCHITECTURE                                                   │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  L0: halts.toml (AXIOMS)                                                    │
+# │    └─ 10 HALTs, 7 States = 7 Days                                          │
+# │                                                                             │
+# │  L1: STRUCTURE (what exists)                                                │
+# │    ├─ L1a: cube.schema.toml    → 27-position geometry                      │
+# │    ├─ L1b: init.schema.toml    → ANCHOR    (9 positions,  Z=(X+Y)/2)       │
+# │    ├─ L1c: state.schema.toml   → FRAMEWORK (4 positions,  Y=X+Z)           │
+# │    └─ L1d: task.schema.toml    → STATE     (14 positions, X=Y+kZ)          │
+# │                                  ─────────────                              │
+# │                                  27 total = 3³                              │
+# │                                                                             │
+# │  L2: statemachine.toml (OPERATIONS)                                         │
+# │    ├─ [system]    → HALT_01, HALT_07 — cube parameters                     │
+# │    ├─ [formulas]  → HALT_05, HALT_09 — NUMBER → NUMBER                     │
+# │    ├─ [commands]  → HALT_03, HALT_04 — flow control (3)                    │
+# │    ├─ [operators] → HALT_08          — transforms (9)                      │
+# │    ├─ [keywords]  → HALT_04          — discoverable markers                │
+# │    └─ [positions] → All HALTs        — 9 semantic positions                │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ THE CUBE IS A TIME MACHINE                                                  │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  X = TIME axis:        PAST (-1), PRESENT (0), FUTURE (+1)                 │
+# │  Y = PERSPECTIVE axis: Where you look                                      │
+# │  Z = DEPTH axis:       Z = (X + Y) / 2                                     │
+# │                                                                             │
+# │  Origin: PRESENT-PRESENT (0,0,0) = Genesis 1:1 = HALT                      │
+# │                                                                             │
+# │  Position IS computation. The cube computes by location.                   │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ CRYSTALLIZATION STATUS                                                      │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  [system]    CRYSTALLIZED — traces to HALT_01, HALT_07                     │
+# │  [formulas]  CRYSTALLIZED — traces to HALT_05, HALT_09                     │
+# │  [commands]  CRYSTALLIZED — traces to HALT_03, HALT_04                     │
+# │  [operators] CRYSTALLIZED — traces to HALT_08                              │
+# │  [keywords]  CRYSTALLIZED — traces to HALT_04                              │
+# │                                                                             │
+# │  ANCHOR POSITIONS (9):                                                      │
+# │    PAST (A.7-A.9):      CRYSTALLIZED                                       │
+# │    PRESENT (A.10-A.12): CRYSTALLIZED                                       │
+# │    FUTURE (A.13-A.15):  CRYSTALLIZED                                       │
+# │                                                                             │
+# │  FRAMEWORK POSITIONS (4):                                                   │
+# │    B.1-B.4:             CRYSTALLIZED                                       │
+# │    Formula:             Y = X + Z where (X,Z) ∈ B × B                      │
+# │    B domain:            {-0.5, +0.5} (boundary values)                     │
+# │                                                                             │
+# │  CHAIN: ANCHORS (9) → FRAMEWORK (4) → STATE (14) = 27 = 3³                 │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+#
+# "In the beginning God created the heaven and the earth."
+# — Genesis 1:1 KJV
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

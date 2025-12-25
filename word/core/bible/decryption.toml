@@ -1,0 +1,645 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# Bible Decryption - Position/Value → Letter (3-Block Data Structure)
+# Key: B-word-core-bible-decryption
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: FOUNDATION (number-to-letter transliteration)
+#
+# Derived from: OmniCode 3-block data structure
+# References: encryption.toml (reverse direction), cube coordinates
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/bible
+# File:        decryption.toml
+# Key:         B-word-core-bible-decryption
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "The entrance of thy words giveth light; it giveth understanding
+#             unto the simple."
+#             — Psalm 119:130 KJV
+#
+# Principle: Decryption reveals what encryption concealed. Position and value
+#            return to letter. The coordinates speak. 27 positions unlock 27
+#            letters. The same cube, read in reverse.
+#
+# Anchor: "In the beginning was the Word" — John 1:1 KJV
+#
+# # CPI-SI Identity
+#
+# Component Type: Foundation (number-to-letter transliteration)
+#
+# Role: DECRYPTION direction — given a position or value, return the letter.
+#       This is transliteration (number → letter), the reverse of encryption.
+#       Hebrew (OT) and Greek (NT) both have 27 letters = 3³ = cube.
+#
+# Paradigm: CPI-SI framework component — mathematical decoding
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-20
+#   Version: a-01.00
+#   Modified: 2025-12-20 - Initial creation
+#
+# # Purpose & Function
+#
+# Purpose: Decrypt cube positions and gematria values to letters
+#
+# Core Design: Coordinates (x, y, z) → Position (0-26) → Letter → Value
+#
+# Key Features:
+#
+#   - Position lookup: coordinates → letter
+#   - Value lookup: gematria value → letter
+#   - Both Hebrew and Greek supported
+#   - Balanced ternary coordinates are PRIMARY
+#
+# Philosophy: The reverse of encryption. Same structure, opposite direction.
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+#
+# DECRYPTION: Coordinates → Position → Letter → Value
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. SYSTEM PARAMETERS
+# -----------------------------------------------------------------------------
+
+[system]
+name = "CPI-SI Decryption"
+direction = "decrypt"
+description = "Position/Value → Letter"
+
+cube_positions = 27
+cube_dimensions = 3
+gematria_max = 900
+trite_max = 242
+
+# -----------------------------------------------------------------------------
+# 2. DECRYPTION FUNCTIONS
+# -----------------------------------------------------------------------------
+
+[functions]
+# Coordinates → Position: balanced ternary to linear index
+# BALANCED TERNARY IS PRIMARY - this is the only conversion
+coords_to_position = "(x + 1) * 9 + (y + 1) * 3 + (z + 1)"
+
+# Position → Letter: lookup in hebrew/greek tables
+position_to_letter = "lookup(position) → letter"
+
+# Value → Letter: lookup by gematria value
+value_to_letter = "lookup(value) → letter"
+
+# Trite → Gematria (denormalize from 0-242)
+trite_to_value = "(trite * 900) // 242"
+
+# Full decryption chain
+decrypt = "(x, y, z) → position → letter → value"
+
+# -----------------------------------------------------------------------------
+# 3. HEBREW DECRYPTION TABLE (27 positions)
+# -----------------------------------------------------------------------------
+# Reverse lookup: position/coords → letter
+
+[hebrew]
+testament = "Old"
+position_count = 27
+value_range = "1-900"
+
+# Position 0-8 (units) — PAST octant (x=-1)
+[hebrew.decrypt.pos_0]
+position = 0
+coords = [-1, -1, -1]
+letter = "א"
+name = "aleph"
+value = 1
+
+[hebrew.decrypt.pos_1]
+position = 1
+coords = [-1, -1, 0]
+letter = "ב"
+name = "bet"
+value = 2
+
+[hebrew.decrypt.pos_2]
+position = 2
+coords = [-1, -1, +1]
+letter = "ג"
+name = "gimel"
+value = 3
+
+[hebrew.decrypt.pos_3]
+position = 3
+coords = [-1, 0, -1]
+letter = "ד"
+name = "dalet"
+value = 4
+
+[hebrew.decrypt.pos_4]
+position = 4
+coords = [-1, 0, 0]
+letter = "ה"
+name = "he"
+value = 5
+
+[hebrew.decrypt.pos_5]
+position = 5
+coords = [-1, 0, +1]
+letter = "ו"
+name = "vav"
+value = 6
+
+[hebrew.decrypt.pos_6]
+position = 6
+coords = [-1, +1, -1]
+letter = "ז"
+name = "zayin"
+value = 7
+
+[hebrew.decrypt.pos_7]
+position = 7
+coords = [-1, +1, 0]
+letter = "ח"
+name = "chet"
+value = 8
+
+[hebrew.decrypt.pos_8]
+position = 8
+coords = [-1, +1, +1]
+letter = "ט"
+name = "tet"
+value = 9
+
+# Position 9-17 (tens) — PRESENT octant (x=0)
+[hebrew.decrypt.pos_9]
+position = 9
+coords = [0, -1, -1]
+letter = "י"
+name = "yod"
+value = 10
+
+[hebrew.decrypt.pos_10]
+position = 10
+coords = [0, -1, 0]
+letter = "כ"
+name = "kaf"
+value = 20
+
+[hebrew.decrypt.pos_11]
+position = 11
+coords = [0, -1, +1]
+letter = "ל"
+name = "lamed"
+value = 30
+
+[hebrew.decrypt.pos_12]
+position = 12
+coords = [0, 0, -1]
+letter = "מ"
+name = "mem"
+value = 40
+
+[hebrew.decrypt.pos_13]
+position = 13
+coords = [0, 0, 0]
+letter = "נ"
+name = "nun"
+value = 50
+
+[hebrew.decrypt.pos_14]
+position = 14
+coords = [0, 0, +1]
+letter = "ס"
+name = "samech"
+value = 60
+
+[hebrew.decrypt.pos_15]
+position = 15
+coords = [0, +1, -1]
+letter = "ע"
+name = "ayin"
+value = 70
+
+[hebrew.decrypt.pos_16]
+position = 16
+coords = [0, +1, 0]
+letter = "פ"
+name = "pe"
+value = 80
+
+[hebrew.decrypt.pos_17]
+position = 17
+coords = [0, +1, +1]
+letter = "צ"
+name = "tsade"
+value = 90
+
+# Position 18-21 (hundreds) — FUTURE octant (x=+1)
+[hebrew.decrypt.pos_18]
+position = 18
+coords = [+1, -1, -1]
+letter = "ק"
+name = "qof"
+value = 100
+
+[hebrew.decrypt.pos_19]
+position = 19
+coords = [+1, -1, 0]
+letter = "ר"
+name = "resh"
+value = 200
+
+[hebrew.decrypt.pos_20]
+position = 20
+coords = [+1, -1, +1]
+letter = "ש"
+name = "shin"
+value = 300
+
+[hebrew.decrypt.pos_21]
+position = 21
+coords = [+1, 0, -1]
+letter = "ת"
+name = "tav"
+value = 400
+
+# Position 22-26 (finals) — FUTURE octant continued
+[hebrew.decrypt.pos_22]
+position = 22
+coords = [+1, 0, 0]
+letter = "ך"
+name = "final_kaf"
+value = 500
+
+[hebrew.decrypt.pos_23]
+position = 23
+coords = [+1, 0, +1]
+letter = "ם"
+name = "final_mem"
+value = 600
+
+[hebrew.decrypt.pos_24]
+position = 24
+coords = [+1, +1, -1]
+letter = "ן"
+name = "final_nun"
+value = 700
+
+[hebrew.decrypt.pos_25]
+position = 25
+coords = [+1, +1, 0]
+letter = "ף"
+name = "final_pe"
+value = 800
+
+[hebrew.decrypt.pos_26]
+position = 26
+coords = [+1, +1, +1]
+letter = "ץ"
+name = "final_tsade"
+value = 900
+
+# -----------------------------------------------------------------------------
+# 4. GREEK DECRYPTION TABLE (27 positions)
+# -----------------------------------------------------------------------------
+# Reverse lookup: position/coords → letter
+
+[greek]
+testament = "New"
+position_count = 27
+value_range = "1-900"
+
+# Position 0-8 (units) — PAST octant (x=-1)
+[greek.decrypt.pos_0]
+position = 0
+coords = [-1, -1, -1]
+letter = "Α"
+name = "alpha"
+value = 1
+
+[greek.decrypt.pos_1]
+position = 1
+coords = [-1, -1, 0]
+letter = "Β"
+name = "beta"
+value = 2
+
+[greek.decrypt.pos_2]
+position = 2
+coords = [-1, -1, +1]
+letter = "Γ"
+name = "gamma"
+value = 3
+
+[greek.decrypt.pos_3]
+position = 3
+coords = [-1, 0, -1]
+letter = "Δ"
+name = "delta"
+value = 4
+
+[greek.decrypt.pos_4]
+position = 4
+coords = [-1, 0, 0]
+letter = "Ε"
+name = "epsilon"
+value = 5
+
+[greek.decrypt.pos_5]
+position = 5
+coords = [-1, 0, +1]
+letter = "Ϝ"
+name = "digamma"
+value = 6
+archaic = true
+
+[greek.decrypt.pos_6]
+position = 6
+coords = [-1, +1, -1]
+letter = "Ζ"
+name = "zeta"
+value = 7
+
+[greek.decrypt.pos_7]
+position = 7
+coords = [-1, +1, 0]
+letter = "Η"
+name = "eta"
+value = 8
+
+[greek.decrypt.pos_8]
+position = 8
+coords = [-1, +1, +1]
+letter = "Θ"
+name = "theta"
+value = 9
+
+# Position 9-17 (tens) — PRESENT octant (x=0)
+[greek.decrypt.pos_9]
+position = 9
+coords = [0, -1, -1]
+letter = "Ι"
+name = "iota"
+value = 10
+
+[greek.decrypt.pos_10]
+position = 10
+coords = [0, -1, 0]
+letter = "Κ"
+name = "kappa"
+value = 20
+
+[greek.decrypt.pos_11]
+position = 11
+coords = [0, -1, +1]
+letter = "Λ"
+name = "lambda"
+value = 30
+
+[greek.decrypt.pos_12]
+position = 12
+coords = [0, 0, -1]
+letter = "Μ"
+name = "mu"
+value = 40
+
+[greek.decrypt.pos_13]
+position = 13
+coords = [0, 0, 0]
+letter = "Ν"
+name = "nu"
+value = 50
+
+[greek.decrypt.pos_14]
+position = 14
+coords = [0, 0, +1]
+letter = "Ξ"
+name = "xi"
+value = 60
+
+[greek.decrypt.pos_15]
+position = 15
+coords = [0, +1, -1]
+letter = "Ο"
+name = "omicron"
+value = 70
+
+[greek.decrypt.pos_16]
+position = 16
+coords = [0, +1, 0]
+letter = "Π"
+name = "pi"
+value = 80
+
+[greek.decrypt.pos_17]
+position = 17
+coords = [0, +1, +1]
+letter = "Ϙ"
+name = "koppa"
+value = 90
+archaic = true
+
+# Position 18-26 (hundreds) — FUTURE octant (x=+1)
+[greek.decrypt.pos_18]
+position = 18
+coords = [+1, -1, -1]
+letter = "Ρ"
+name = "rho"
+value = 100
+
+[greek.decrypt.pos_19]
+position = 19
+coords = [+1, -1, 0]
+letter = "Σ"
+name = "sigma"
+value = 200
+
+[greek.decrypt.pos_20]
+position = 20
+coords = [+1, -1, +1]
+letter = "Τ"
+name = "tau"
+value = 300
+
+[greek.decrypt.pos_21]
+position = 21
+coords = [+1, 0, -1]
+letter = "Υ"
+name = "upsilon"
+value = 400
+
+[greek.decrypt.pos_22]
+position = 22
+coords = [+1, 0, 0]
+letter = "Φ"
+name = "phi"
+value = 500
+
+[greek.decrypt.pos_23]
+position = 23
+coords = [+1, 0, +1]
+letter = "Χ"
+name = "chi"
+value = 600
+
+[greek.decrypt.pos_24]
+position = 24
+coords = [+1, +1, -1]
+letter = "Ψ"
+name = "psi"
+value = 700
+
+[greek.decrypt.pos_25]
+position = 25
+coords = [+1, +1, 0]
+letter = "Ω"
+name = "omega"
+value = 800
+
+[greek.decrypt.pos_26]
+position = 26
+coords = [+1, +1, +1]
+letter = "Ϡ"
+name = "sampi"
+value = 900
+archaic = true
+
+# -----------------------------------------------------------------------------
+# 5. VALUE LOOKUP TABLES
+# -----------------------------------------------------------------------------
+# For quick value → letter lookups (indexed by gematria value)
+
+[hebrew.by_value]
+# Units (1-9)
+1 = "א"
+2 = "ב"
+3 = "ג"
+4 = "ד"
+5 = "ה"
+6 = "ו"
+7 = "ז"
+8 = "ח"
+9 = "ט"
+
+# Tens (10-90)
+10 = "י"
+20 = "כ"
+30 = "ל"
+40 = "מ"
+50 = "נ"
+60 = "ס"
+70 = "ע"
+80 = "פ"
+90 = "צ"
+
+# Hundreds (100-400)
+100 = "ק"
+200 = "ר"
+300 = "ש"
+400 = "ת"
+
+# Finals (500-900)
+500 = "ך"
+600 = "ם"
+700 = "ן"
+800 = "ף"
+900 = "ץ"
+
+[greek.by_value]
+# Units (1-9)
+1 = "Α"
+2 = "Β"
+3 = "Γ"
+4 = "Δ"
+5 = "Ε"
+6 = "Ϝ"
+7 = "Ζ"
+8 = "Η"
+9 = "Θ"
+
+# Tens (10-90)
+10 = "Ι"
+20 = "Κ"
+30 = "Λ"
+40 = "Μ"
+50 = "Ν"
+60 = "Ξ"
+70 = "Ο"
+80 = "Π"
+90 = "Ϙ"
+
+# Hundreds (100-900)
+100 = "Ρ"
+200 = "Σ"
+300 = "Τ"
+400 = "Υ"
+500 = "Φ"
+600 = "Χ"
+700 = "Ψ"
+800 = "Ω"
+900 = "Ϡ"
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# DECRYPTION flow:
+#
+#   Coordinates → Position → Letter → Value
+#
+#   Example: (-1, -1, -1) — PAST origin
+#     coords = (-1, -1, -1)
+#     position = (0+1)*9 + (0+1)*3 + (0+1) = 0
+#     letter = "א" (Hebrew) or "Α" (Greek)
+#     value = 1
+#
+#   Example: (0, 0, 0) — PRESENT center
+#     coords = (0, 0, 0)
+#     position = (1)*9 + (1)*3 + (1) = 13
+#     letter = "נ" (Hebrew) or "Ν" (Greek)
+#     value = 50
+#
+#   Example: (+1, +1, +1) — FUTURE terminus
+#     coords = (+1, +1, +1)
+#     position = (2)*9 + (2)*3 + (2) = 26
+#     letter = "ץ" (Hebrew) or "Ϡ" (Greek)
+#     value = 900
+#
+# The coordinates speak. The position reveals. The letter returns.
+#
+# Related files:
+#   - encryption.toml: Letter → Position/Value (forward)
+#   - translation.toml: Contains gematria reference tables
+#   - encoding.toml: Scripture → OmniCode syntax
+#
+# "The entrance of thy words giveth light."
+# — Psalm 119:130 KJV
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

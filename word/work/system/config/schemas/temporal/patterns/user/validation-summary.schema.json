@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/user/validation-summary.schema.json",
+  "title": "User Validation Summary Schema",
+  "description": "Schema for aggregate validation across all user pattern types",
+  "type": "object",
+  "required": ["metadata", "stated_identity", "overall_validation", "insights", "interpretation_guidance", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["user", "pattern_type", "description", "last_updated", "version", "purpose"],
+      "properties": {
+        "user": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["validation_summary"] },
+        "description": { "type": "string" },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "purpose": { "type": "string" }
+      }
+    },
+    "stated_identity": {
+      "type": "object",
+      "required": ["source", "extracted_date", "key_preferences"],
+      "properties": {
+        "source": { "type": "string" },
+        "extracted_date": { "type": "string", "format": "date" },
+        "key_preferences": {
+          "type": "object",
+          "properties": {
+            "work_rhythm": { "type": "string" },
+            "work_capacity": { "type": "string" },
+            "quality_preferences": { "type": "string" }
+          }
+        }
+      }
+    },
+    "circadian_validation": {
+      "type": "object",
+      "properties": {
+        "source": { "type": "string" },
+        "status": { "type": "string" },
+        "alignment": { "type": "string" },
+        "key_finding": { "type": "string" }
+      }
+    },
+    "duration_validation": {
+      "type": "object",
+      "properties": {
+        "source": { "type": "string" },
+        "status": { "type": "string" },
+        "alignment": { "type": "string" },
+        "key_finding": { "type": "string" }
+      }
+    },
+    "quality_validation": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "status": { "type": "string" },
+        "alignment": { "type": "string" },
+        "key_finding": { "type": "string" }
+      }
+    },
+    "overall_validation": {
+      "type": "object",
+      "required": ["self_knowledge_accuracy", "confidence"],
+      "properties": {
+        "self_knowledge_accuracy": { "type": "string" },
+        "major_alignments": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "major_misalignments": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
+        "note": { "type": "string" }
+      }
+    },
+    "insights": {
+      "type": "object",
+      "required": ["strengths", "growth_opportunities", "discoveries"],
+      "properties": {
+        "strengths": {
+          "type": "object",
+          "properties": {
+            "note": { "type": "string" },
+            "items": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "growth_opportunities": {
+          "type": "object",
+          "properties": {
+            "note": { "type": "string" },
+            "items": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "discoveries": {
+          "type": "object",
+          "properties": {
+            "note": { "type": "string" },
+            "items": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "object",
+      "properties": {
+        "config_updates": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "planning_adjustments": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "rhythm_refinements": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "interpretation_guidance": {
+      "type": "object",
+      "required": ["biblical_foundation", "truth", "grace", "application", "kingdom_principle"],
+      "properties": {
+        "biblical_foundation": { "type": "string" },
+        "truth": { "type": "string" },
+        "grace": { "type": "string" },
+        "application": { "type": "string" },
+        "kingdom_principle": { "type": "string" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

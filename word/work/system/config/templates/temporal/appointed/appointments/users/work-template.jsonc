@@ -1,0 +1,105 @@
+{
+  // ============================================================================
+  // WORK APPOINTMENT TEMPLATE - User
+  // ============================================================================
+  //
+  // INSTRUCTIONS FOR USE:
+  // 1. Copy this template to: appointments/recurring/users/{identity_id}/
+  // 2. Name: work.jsonc
+  // 3. Replace EXAMPLE VALUES with your actual employment details
+  // 4. Update variations for YOUR different work schedules
+  // 5. Remove variations you don't need
+  //
+  // PURPOSE: External employment appointment definition
+  // NOTE: Daily files reference this and specify which variation applies
+  //
+  // EXAMPLE DATA BELOW: Shows typical work schedule with variations
+  // - Regular days, pantry days, flex schedule, second Saturday
+  // - Replace with YOUR actual work schedule
+
+  "$schema": "../../../../../../../config/schemas/temporal/appointed/appointment.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "component": "Appointed Time - Work Appointment",
+    "version": "1.0.0",
+    "created_at": "2025-11-01T00:00:00Z",        // REPLACE: Creation timestamp
+    "last_updated": "2025-11-07T12:00:00Z",     // REPLACE: Last update
+    "purpose": "External employment work schedule",
+    "employer": "Example Company Inc",           // REPLACE: Your employer name
+    "employment_type": "external",               // external or internal
+    "context_specific": "Full-time position with variable daily schedules"  // REPLACE: Additional context
+  },
+
+  // ============================================================================
+  // APPOINTMENT DEFINITION
+  // ============================================================================
+  // Generic definition - specifics go in variations below
+
+  "appointment": {
+    "id": "work",                                // Keep as "work"
+    "category_id": "work",                       // Keep as "work" category
+    "title": "Example Company Work",             // REPLACE: Your employer
+    "description": "External employment - work hours vary by day and schedule. Lunch breaks are FREE TIME (not work hours).",  // REPLACE: Description
+    "recurrence": "weekly",                      // weekly recurrence
+    "protected": true,                           // true = non-negotiable appointment
+    "flexible": false                            // false = fixed schedule
+  },
+
+  // ============================================================================
+  // VARIATIONS - Different work schedule patterns
+  // ============================================================================
+  // Define different schedule patterns for your work days
+  // Each variation should have:
+  // - typical_days: Which days use this schedule
+  // - schedule: Human-readable time range
+  // - duration_minutes: Total scheduled time (including lunch)
+  // - work_minutes: Actual work time (excluding lunch)
+  // - lunch_break: Lunch break time range
+  // - notes: Description of this variation
+
+  "variations": {
+    "regular_day": {                             // REPLACE: Name your variation
+      "typical_days": ["Monday", "Wednesday", "Friday"],  // REPLACE: Which days
+      "schedule": "8:30 AM - 5:00 PM",           // REPLACE: Time range
+      "duration_minutes": 510,                   // REPLACE: Total minutes (8.5 hrs = 510 min)
+      "work_minutes": 450,                       // REPLACE: Actual work (7.5 hrs = 450 min)
+      "lunch_break": "12:00 PM - 1:00 PM",       // REPLACE: Lunch time
+      "notes": "Regular work day - 8.5hrs scheduled, 7.5hrs actual work (minus 1hr lunch)"
+    },
+    "pantry_tuesday": {                          // Example: Extended day variation
+      "typical_days": ["Tuesday"],
+      "schedule": "8:30 AM - 5:30 PM",
+      "duration_minutes": 540,                   // 9 hours scheduled
+      "work_minutes": 480,                       // 8 hours work (minus 1hr lunch)
+      "lunch_break": "12:00 PM - 1:00 PM",
+      "notes": "Pantry Tuesday - 9hrs scheduled, 8hrs actual work (minus 1hr lunch)"
+    },
+    "pantry_thursday": {                         // Example: Longest day variation
+      "typical_days": ["Thursday"],
+      "schedule": "8:30 AM - 7:00 PM",
+      "duration_minutes": 630,                   // 10.5 hours scheduled
+      "work_minutes": 570,                       // 9.5 hours work (minus 1hr lunch)
+      "lunch_break": "12:00 PM - 1:00 PM",
+      "notes": "Pantry Thursday - 10.5hrs scheduled, 9.5hrs actual work (minus 1hr lunch)"
+    }
+    // ADD MORE VARIATIONS AS NEEDED
+    // Copy one of the above and customize for your schedule
+  },
+
+  // ============================================================================
+  // NOTES
+  // ============================================================================
+  // General notes about this appointment type
+
+  "notes": [
+    "Lunch breaks are FREE TIME - not working hours",
+    "Calculate actual work hours: scheduled_hours - lunch_hours",
+    "Pantry days have extended schedules",
+    "No work on weekends (Saturday/Sunday)"
+    // ADD YOUR OWN NOTES
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cpi-si.org/schemas/privacy/filters.schema.json",
+  "title": "Privacy Filters Configuration",
+  "description": "Schema for privacy filter patterns used to detect and redact sensitive information",
+  "type": "object",
+  "required": [
+    "version",
+    "created",
+    "last_updated",
+    "description",
+    "sensitive_keywords",
+    "command_patterns",
+    "redaction_policy"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of this filters configuration"
+    },
+    "created": {
+      "type": "string",
+      "format": "date",
+      "description": "Creation date (YYYY-MM-DD)"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "Last update date (YYYY-MM-DD)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this configuration"
+    },
+    "sensitive_keywords": {
+      "type": "object",
+      "description": "Categorized sensitive keywords for detection",
+      "properties": {
+        "authentication": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Keywords related to authentication (passwords, tokens, keys)"
+        },
+        "cryptographic": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Keywords related to cryptographic material (certificates, key pairs)"
+        },
+        "paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Sensitive path components (.ssh, .gnupg, etc.)"
+        },
+        "database": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Database-related sensitive keywords"
+        },
+        "cloud_services": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Cloud service credentials and secrets"
+        }
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Additional custom keyword categories"
+      }
+    },
+    "sensitive_path_patterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Glob patterns matching sensitive file paths"
+    },
+    "command_patterns": {
+      "type": "object",
+      "description": "Command sanitization patterns",
+      "properties": {
+        "with_subcommand": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "capture_args", "description"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Command name to match"
+              },
+              "capture_args": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 5,
+                "description": "Number of arguments to capture (0-5)"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of this command pattern"
+              }
+            }
+          },
+          "description": "Commands where subcommands/args should be captured"
+        },
+        "name_only": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "description"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Command name to match"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of why this command is name-only"
+              }
+            }
+          },
+          "description": "Commands where only the name should be captured (no args)"
+        }
+      },
+      "required": ["with_subcommand", "name_only"]
+    },
+    "redaction_policy": {
+      "type": "object",
+      "description": "Redaction policy settings",
+      "required": ["default_mode"],
+      "properties": {
+        "default_mode": {
+          "type": "string",
+          "enum": ["full", "partial", "none"],
+          "description": "Default redaction mode (full = complete redaction, partial = show context, none = no redaction)"
+        },
+        "exceptions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Patterns exempted from redaction"
+        }
+      }
+    }
+  }
+}

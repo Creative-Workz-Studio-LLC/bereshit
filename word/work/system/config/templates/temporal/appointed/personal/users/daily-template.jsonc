@@ -1,0 +1,158 @@
+{
+  // ============================================================================
+  // DAILY APPOINTMENTS TEMPLATE - User
+  // ============================================================================
+  //
+  // INSTRUCTIONS FOR USE:
+  // 1. Copy this template to: personal/users/{identity_id}/YYYY/WXX/
+  // 2. Name: {month}_{DD}_{dayname}.jsonc (e.g., nov_07_friday.jsonc)
+  // 3. Replace example values with your actual data
+  // 4. Update appointments array with your scheduled appointments
+  // 5. Update hourly_breakdown to map all 24 hours accurately
+  // 6. Update summary with correct totals
+  //
+  // USER PERSPECTIVE:
+  // - Tracks user's actual scheduled commitments
+  // - Work appointments, sacred time, rest, coordination
+  // - Lunch breaks are FREE TIME (not working hours)
+  //
+  // EXAMPLE DATA BELOW: Friday, November 15, 2025
+  // - Replace dates, times, and details with your actual schedule
+
+  "$schema": "../../../../../../../config/schemas/temporal/appointed/personal-day.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "component": "Appointed Time - Daily Schedule",
+    "version": "1.0.0",
+    "created_at": "2025-11-15T00:00:00Z",        // REPLACE: Creation timestamp
+    "last_updated": "2025-11-15T00:00:00Z",     // REPLACE: Last update timestamp
+    "purpose": "Track appointments for Friday, November 15, 2025"  // REPLACE: Actual day
+  },
+
+  // ============================================================================
+  // DAY INFORMATION
+  // ============================================================================
+
+  "day": {
+    "date": "2025-11-15",                        // REPLACE: YYYY-MM-DD format
+    "day_name": "Friday",                        // REPLACE: Actual day name
+    "iso_week": "2025-W46",                      // REPLACE: ISO week (YYYY-Www)
+    "identity_type": "user",                     // Keep as "user" for user files
+    "identity_id": "example-user",               // REPLACE: Your identity ID
+    "timezone": "America/Chicago"                // REPLACE: Your timezone
+  },
+
+  // ============================================================================
+  // APPOINTMENTS - Ordered by start time
+  // ============================================================================
+  // Add your scheduled appointments here
+  // Each appointment should reference a recurring appointment definition
+  // or be a one-time appointment with full details
+
+  "appointments": [
+    {
+      "id": "work-2025-11-15",                   // REPLACE: Unique ID for this instance
+      "appointment_ref": "work",                 // REPLACE: Reference to recurring appointment
+      "category_id": "work",                     // One of: sacred, work, rest, collaboration, other
+      "title": "Work",                           // REPLACE: Appointment title
+      "start_time": "08:30",                     // REPLACE: HH:MM format (24-hour)
+      "end_time": "17:00",                       // REPLACE: HH:MM format
+      "duration_minutes": 510,                   // REPLACE: Total scheduled minutes
+      "status": "scheduled",                     // One of: scheduled, completed, cancelled, rescheduled
+      "coordination_id": null,                   // If coordinated with others, reference coordination file
+      "notes": "Regular work day with lunch break 12-1pm"  // Optional notes
+    },
+    {
+      "id": "personal-time-2025-11-15",
+      "appointment_ref": "personal-time",
+      "category_id": "sacred",                   // Sacred time with God
+      "title": "Personal Time with God",
+      "start_time": "19:00",
+      "end_time": "20:00",
+      "duration_minutes": 60,
+      "status": "scheduled",
+      "coordination_id": null
+    },
+    {
+      "id": "deep-work-2025-11-15",
+      "appointment_ref": "deep-work",
+      "category_id": "collaboration",            // Coordinated with instance
+      "title": "Deep Work Session",
+      "start_time": "21:00",
+      "end_time": "01:00",                       // Can span into next day
+      "duration_minutes": 240,
+      "status": "scheduled",
+      "coordination_id": "deep-work-2025-11-15"  // Reference to coordination file
+    }
+  ],
+
+  // ============================================================================
+  // HOURLY BREAKDOWN (00:00 - 23:59)
+  // ============================================================================
+  // Map which appointment occupies each hour of the day
+  // - status: "scheduled" or "unscheduled"
+  // - appointment_id: ID of appointment occupying this hour (or null)
+  // - category: Category of appointment (or null)
+
+  "hourly_breakdown": {
+    "00:00": { "status": "scheduled", "appointment_id": "deep-work-2025-11-14", "category": "collaboration" },  // Carryover from previous day
+    "01:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "02:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "03:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "04:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "05:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "06:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "07:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "08:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "09:00": { "status": "scheduled", "appointment_id": "work-2025-11-15", "category": "work" },
+    "10:00": { "status": "scheduled", "appointment_id": "work-2025-11-15", "category": "work" },
+    "11:00": { "status": "scheduled", "appointment_id": "work-2025-11-15", "category": "work" },
+    "12:00": { "status": "unscheduled", "appointment_id": null, "category": null },  // Lunch break - FREE TIME
+    "13:00": { "status": "scheduled", "appointment_id": "work-2025-11-15", "category": "work" },
+    "14:00": { "status": "scheduled", "appointment_id": "work-2025-11-15", "category": "work" },
+    "15:00": { "status": "scheduled", "appointment_id": "work-2025-11-15", "category": "work" },
+    "16:00": { "status": "scheduled", "appointment_id": "work-2025-11-15", "category": "work" },
+    "17:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "18:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "19:00": { "status": "scheduled", "appointment_id": "personal-time-2025-11-15", "category": "sacred" },
+    "20:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+    "21:00": { "status": "scheduled", "appointment_id": "deep-work-2025-11-15", "category": "collaboration" },
+    "22:00": { "status": "scheduled", "appointment_id": "deep-work-2025-11-15", "category": "collaboration" },
+    "23:00": { "status": "scheduled", "appointment_id": "deep-work-2025-11-15", "category": "collaboration" }
+  },
+
+  // ============================================================================
+  // DAY SUMMARY
+  // ============================================================================
+  // Calculate totals based on appointments above
+
+  "summary": {
+    "total_appointments": 3,                     // REPLACE: Count of appointments
+    "total_scheduled_hours": 13.5,               // REPLACE: Total hours (8.5 + 1 + 4)
+    "by_category": {
+      "sacred": 1,                               // REPLACE: Count by category
+      "work": 1,
+      "rest": 0,
+      "collaboration": 1,
+      "other": 0
+    },
+    "first_appointment": "08:30",                // REPLACE: Start time of first appointment
+    "last_appointment": "21:00",                 // REPLACE: Start time of last appointment
+    "has_conflicts": false,                      // REPLACE: true if overlapping appointments
+    "conflicts": [],                             // REPLACE: List conflicts if any
+    "notes": "Regular work day with personal time and deep work session"  // REPLACE: Day summary
+  },
+
+  // ============================================================================
+  // EXTENSIONS - Discovery Space
+  // ============================================================================
+  // Add any additional fields that don't fit standard structure yet
+
+  "extensions": {
+    // Future appointment tracking that doesn't fit standard structure yet
+  }
+}

@@ -1,0 +1,103 @@
+{
+  // Command Sanitization Pattern Configuration
+  // Purpose: Define how to sanitize command strings for privacy-preserving logging
+  // Used by: system/lib/privacy for capturing command behavior without exposing arguments
+  // Updated: 2025-11-10
+
+  // Biblical Foundation: Ecclesiastes 3:7 - "A time to keep silence, and a time to speak"
+  // Capture what matters (command type), redact what doesn't (arguments with potential secrets)
+
+  "$schema": "../../config/schemas/command-patterns.schema.json",
+
+  // Commands with Subcommand Capture
+  // These commands have meaningful subcommands that should be captured for pattern learning
+  // Format: Capture command name + first N arguments (usually the subcommand/operation)
+  "commands_with_subcommand": [
+    {
+      "name": "make",
+      "capture_args": 1,  // Capture target: "make test", "make build"
+      "description": "Build automation - target name indicates build phase"
+    },
+    {
+      "name": "git",
+      "capture_args": 1,  // Capture operation: "git commit", "git push"
+      "description": "Version control - operation indicates workflow phase"
+    },
+    {
+      "name": "npm",
+      "capture_args": 1,  // Capture operation: "npm install", "npm test"
+      "description": "Node package manager - operation indicates development phase"
+    },
+    {
+      "name": "cargo",
+      "capture_args": 1,  // Capture operation: "cargo build", "cargo test"
+      "description": "Rust package manager - operation indicates build phase"
+    },
+    {
+      "name": "go",
+      "capture_args": 1,  // Capture operation: "go build", "go test"
+      "description": "Go toolchain - operation indicates build phase"
+    },
+    {
+      "name": "docker",
+      "capture_args": 1,  // Capture operation: "docker build", "docker run"
+      "description": "Container management - operation indicates deployment phase"
+    },
+    {
+      "name": "kubectl",
+      "capture_args": 1,  // Capture operation: "kubectl apply", "kubectl get"
+      "description": "Kubernetes control - operation indicates deployment action"
+    },
+    {
+      "name": "python",
+      "capture_args": 0,  // Don't capture script name (might be sensitive path)
+      "description": "Python interpreter - script name not captured for privacy"
+    },
+    {
+      "name": "node",
+      "capture_args": 0,  // Don't capture script name (might be sensitive path)
+      "description": "Node interpreter - script name not captured for privacy"
+    },
+    {
+      "name": "rustc",
+      "capture_args": 0,  // Don't capture file name
+      "description": "Rust compiler - file names not captured"
+    },
+    {
+      "name": "gcc",
+      "capture_args": 0,  // Don't capture file name
+      "description": "C compiler - file names not captured"
+    },
+    {
+      "name": "apt",
+      "capture_args": 1,  // Capture operation: "apt install", "apt update"
+      "description": "Package management - operation indicates system maintenance"
+    },
+    {
+      "name": "systemctl",
+      "capture_args": 1,  // Capture operation: "systemctl start", "systemctl status"
+      "description": "System control - operation indicates service management"
+    }
+  ],
+
+  // Default Capture Behavior
+  // How to handle commands not in the above list
+  "default_capture": "name_only",  // Options: "name_only", "name_and_first_arg", "full_command"
+
+  // Sensitive Arguments - Never capture these regardless of command
+  // These patterns in arguments trigger redaction
+  "sensitive_argument_patterns": [
+    "--password",
+    "--token",
+    "--api-key",
+    "--secret",
+    "-p ",           // Common password flag
+    "password=",
+    "token=",
+    "key=",
+    "secret="
+  ],
+
+  // Redaction Label for Sensitive Arguments
+  "argument_redaction_label": "[redacted]"
+}

@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/user/quality-trends.schema.json",
+  "title": "User Quality Trends Schema",
+  "description": "Schema for tracking work quality pattern evolution over time",
+  "type": "object",
+  "required": ["metadata", "monthly_quality", "quality_trajectory", "observed_improvements", "observed_declines", "growth_patterns", "sustainability_assessment", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["user", "pattern_type", "description", "last_updated", "version"],
+      "properties": {
+        "user": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["quality_trends"] },
+        "description": { "type": "string" },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "monthly_quality": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "month": { "type": "string" },
+          "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+          "session_count": { "type": "integer", "minimum": 0 },
+          "excellent_sessions": { "type": "integer", "minimum": 0 },
+          "good_sessions": { "type": "integer", "minimum": 0 },
+          "fair_sessions": { "type": "integer", "minimum": 0 },
+          "poor_sessions": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "quality_trajectory": {
+      "type": "object",
+      "properties": {
+        "direction": { "type": "string" },
+        "note": { "type": "string" },
+        "assessment": { "type": "string" },
+        "factors": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "observed_improvements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date_detected": { "type": "string", "format": "date" },
+          "improvement_type": { "type": "string" },
+          "description": { "type": "string" },
+          "possible_causes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "sustained": { "type": "boolean" }
+        }
+      }
+    },
+    "observed_declines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date_detected": { "type": "string", "format": "date" },
+          "decline_type": { "type": "string" },
+          "description": { "type": "string" },
+          "possible_causes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "action_needed": { "type": "string" }
+        }
+      }
+    },
+    "growth_patterns": {
+      "type": "object",
+      "properties": {
+        "areas_of_improvement": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "persistent_challenges": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "quality_breakthroughs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "sustainability_assessment": {
+      "type": "object",
+      "properties": {
+        "current_trajectory": { "type": "string" },
+        "risk_factors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "strengths": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "recommendation": { "type": "string" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

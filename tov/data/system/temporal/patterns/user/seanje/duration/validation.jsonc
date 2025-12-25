@@ -1,0 +1,97 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// User Patterns - Seanje - Duration Validation
+// Purpose: Validate stated capacity against actual observed durations
+// Scope: User-specific (Seanje)
+// Schema: system/config/schemas/temporal/patterns/user/duration-validation.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Accurate capacity assessment: 40 pts
+// - Clear overestimation/underestimation detection: 35 pts
+// - Sustainable planning insights: 25 pts
+
+{
+  "$schema": "../../../../../../../config/schemas/temporal/patterns/user/duration-validation.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "user": "seanje",
+    "pattern_type": "duration_validation",
+    "description": "Validation of stated work capacity vs actual session durations",
+    "last_updated": "2025-11-08",
+    "version": "1.0.0"
+  },
+
+  // ============================================================================
+  // CONFIG VS ACTUAL
+  // ============================================================================
+
+  "stated_capacity": {
+    "source": "config/user/seanje/config.jsonc",
+    "description": "Stated sustainable work session length",
+    "value": "unknown",
+    "extracted_date": "2025-11-08"
+  },
+
+  "actual_capacity": {
+    "source": "patterns/user/seanje/duration/learned.jsonc",
+    "typical_session_minutes": 0,
+    "sustainable_without_fatigue": 0,
+    "quality_degradation_point": 0,
+    "data_period": "2024-11-01 to 2025-11-08"
+  },
+
+  "validation_result": {
+    "alignment_status": "unknown",
+    "gap_minutes": 0,
+    "assessment": "unknown",
+    "note": "Awaiting aggregated session data"
+  },
+
+  "insights": {
+    "overestimation": {
+      "detected": false,
+      "description": "Stating longer capacity than actually demonstrated",
+      "risk": "Unsustainable planning, burnout potential"
+    },
+    "underestimation": {
+      "detected": false,
+      "description": "Actually capable of longer than stated",
+      "opportunity": "Can plan more ambitious work blocks"
+    },
+    "accurate_assessment": {
+      "detected": false,
+      "description": "Stated capacity matches actual behavior",
+      "strength": "Good self-knowledge"
+    }
+  },
+
+  "recommendations": {
+    "planning_guidance": "Plan work blocks based on proven sustainable duration",
+    "config_update_needed": false,
+    "note": "To be determined from data"
+  },
+
+  // ============================================================================
+  // USAGE NOTES
+  // ============================================================================
+
+  "usage": {
+    "purpose": "Enable realistic capacity planning based on truth, not aspiration",
+    "update_trigger": "When learned capacity shifts OR config capacity changes",
+    "grace_note": "Misalignment reveals opportunity for growth or honest re-assessment"
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "extensions": {
+    "note": "Experimental patterns and discoveries",
+    "usage_guidance": "Add capacity validation insights here"
+  }
+}

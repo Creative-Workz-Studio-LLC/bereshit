@@ -38,6 +38,11 @@
 # Systems load in dependency order (0 = foundation, higher = builds on lower)
 # Within each system, specs load in the order listed
 #
+# DEPENDENCY NOTATION:
+#   depends_on = [] means FOUNDATION — no dependencies (anchor)
+#   depends_on = ["math/ternary.toml"] means depends on that specific spec
+#   System order enforces loading order, depends_on documents WHY
+#
 # =============================================================================
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -50,12 +55,14 @@ name = "math"
 path = "math"
 order = 0
 description = "Ternary mathematics — the foundation all types build on"
+depends_on = []  # ANCHOR — no system dependencies
 
 [[systems.specs]]
 file = "ternary.toml"
 generates = true
 output = "ternary_math.gen.h"
 description = "Trit values, packing, arithmetic, half/full adder, temporal states"
+depends_on = []  # ANCHOR — foundation of all
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -68,22 +75,28 @@ name = "types"
 path = "types"
 order = 1
 description = "Type system — primitives, composition rules, validation"
+depends_on = ["math"]  # Types build on math
 
 [[systems.specs]]
 file = "primitives.toml"
 generates = true
 output = "primitives.gen.h"
 description = "Atomic types: trit, trit5, int9, int27, text, bool3, collections"
+depends_on = ["math/ternary.toml"]  # Uses trit values from math
 
 [[systems.specs]]
 file = "composition.toml"
-generates = false
-description = "How types compose into structs, enums, unions"
+generates = true
+output = "composition.gen.h"
+description = "Type composition — nullability triad, storage alignment"
+depends_on = ["types/primitives.toml"]  # Composes primitives
 
 [[systems.specs]]
 file = "validation.toml"
-generates = false
-description = "Type validation rules and constraints"
+generates = true
+output = "validation.gen.h"
+description = "Validation constants — error severity, exit codes"
+depends_on = ["types/primitives.toml", "types/composition.toml"]  # Validates both
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -96,17 +109,20 @@ name = "language"
 path = "language"
 order = 2
 description = "OmniCode language — keywords and syntax rules"
+depends_on = ["math", "types"]  # Language uses math values and types
 
 [[systems.specs]]
 file = "keywords.toml"
 generates = true
 output = "keywords.gen.h"
 description = "Reserved words, operators, punctuation"
+depends_on = ["math/ternary.toml"]  # Keywords use ternary values
 
 [[systems.specs]]
 file = "syntax.toml"
 generates = false
 description = "Grammar rules and statement structures"
+depends_on = ["language/keywords.toml", "types/primitives.toml"]  # Uses keywords and types
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -119,33 +135,51 @@ name = "bible"
 path = "bible"
 order = 3
 description = "Scripture systems — encoding, addressing, translation"
+depends_on = ["math", "types"]  # Bible uses math for addressing, types for storage
 
 [[systems.specs]]
 file = "scripture-text.toml"
 generates = true
 output = "scripture_text.gen.h"
 description = "Character encoding for scripture text (ASCII subset + extended)"
+depends_on = ["math/ternary.toml"]  # Character encoding uses trit-bytes
 
 [[systems.specs]]
 file = "addressing.toml"
 generates = true
 output = "bible_addressing.gen.h"
 description = "Verse addressing — book/chapter/verse to ternary ordinal"
+depends_on = ["math/ternary.toml", "bible/scripture-text.toml"]  # Addresses scripture
 
 [[systems.specs]]
 file = "encoding.toml"
 generates = false
 description = "How scripture text is encoded in trit-bytes"
+depends_on = ["bible/scripture-text.toml"]  # Encodes using text spec
 
 [[systems.specs]]
 file = "decoding.toml"
 generates = false
 description = "How encoded scripture is decoded back to text"
+depends_on = ["bible/encoding.toml"]  # Decodes what encoding produces
 
 [[systems.specs]]
 file = "translation.toml"
 generates = false
-description = "KJV base + WEB variant marking system"
+description = "KJV base + WEB variant marking system, Hebrew/Greek gematria tables"
+depends_on = ["bible/scripture-text.toml", "bible/addressing.toml"]  # Translations reference verses
+
+[[systems.specs]]
+file = "encryption.toml"
+generates = false
+description = "Letter → Position/Value transliteration (Hebrew + Greek gematria)"
+depends_on = ["math/ternary.toml", "bible/translation.toml"]  # Uses balanced ternary cube, references gematria
+
+[[systems.specs]]
+file = "decryption.toml"
+generates = false
+description = "Position/Value → Letter transliteration (reverse of encryption)"
+depends_on = ["bible/encryption.toml"]  # Decrypts what encryption produces
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -159,27 +193,32 @@ name = "health"
 path = "os/health"
 order = 4
 description = "Health monitoring — scores, diagnostics, logging"
+depends_on = ["math", "types"]  # Health uses primitives for scores
 
 [[systems.specs]]
 file = "score.toml"
 generates = true
 output = "health_score.gen.h"
 description = "Health score constants (-100 to +100 ternary mapping)"
+depends_on = ["math/ternary.toml", "types/primitives.toml"]  # Scores use ternary + int ranges
 
 [[systems.specs]]
 file = "diagnostics.toml"
 generates = false
 description = "Diagnostic categories and severity levels"
+depends_on = ["os/health/score.toml", "types/validation.toml"]  # Diagnostics use scores and severity
 
 [[systems.specs]]
 file = "log.toml"
 generates = false
 description = "Health log format and retention"
+depends_on = ["os/health/diagnostics.toml", "network/timestamp.toml"]  # Logs timestamped diagnostics
 
 [[systems.specs]]
 file = "provider.toml"
 generates = false
 description = "Health provider interface contract"
+depends_on = ["os/health/score.toml"]  # Providers return scores
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -193,12 +232,14 @@ name = "permission"
 path = "os/permission"
 order = 5
 description = "Permission system — access control and grants"
+depends_on = ["math", "types", "health"]  # Permissions gate based on health
 
 [[systems.specs]]
 file = "access.toml"
 generates = true
 output = "permission_access.gen.h"
 description = "Access levels and permission constants"
+depends_on = ["math/ternary.toml", "os/health/score.toml"]  # Ternary states + health gating
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -211,16 +252,19 @@ name = "identity"
 path = "identity"
 order = 6
 description = "Identity system — CPI-SI identity model and contracts"
+depends_on = ["types", "health", "permission"]  # Identity uses types, has health, needs permissions
 
 [[systems.specs]]
 file = "model.toml"
 generates = false
 description = "Identity model fields and structure"
+depends_on = ["types/primitives.toml", "types/composition.toml"]  # Model uses types
 
 [[systems.specs]]
 file = "contract.toml"
 generates = false
 description = "Identity contract interface"
+depends_on = ["identity/model.toml"]  # Contract implements model
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -233,23 +277,27 @@ name = "network"
 path = "network"
 order = 7
 description = "Network systems — messaging, timestamps, contracts"
+depends_on = ["math", "types", "identity"]  # Network carries identity across systems
 
 [[systems.specs]]
 file = "message.toml"
 generates = true
 output = "network_message.gen.h"
 description = "Message format constants and types"
+depends_on = ["math/ternary.toml", "types/primitives.toml", "language/keywords.toml"]  # Messages use ternary modes
 
 [[systems.specs]]
 file = "timestamp.toml"
 generates = true
 output = "network_timestamp.gen.h"
 description = "Ternary timestamp format"
+depends_on = ["math/ternary.toml"]  # Timestamps use ternary temporal states
 
 [[systems.specs]]
 file = "contract.toml"
 generates = false
 description = "Network contract interface"
+depends_on = ["network/message.toml", "network/timestamp.toml"]  # Contract uses message and timestamp
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -262,17 +310,20 @@ name = "filesystem"
 path = "filesystem"
 order = 8
 description = "Filesystem types — OmniFS structures and contracts"
+depends_on = ["types", "bible", "identity"]  # FS uses types, biblical extensions, identity for ownership
 
 [[systems.specs]]
 file = "types.toml"
 generates = true
 output = "filesystem_types.gen.h"
 description = "Filesystem type constants"
+depends_on = ["types/primitives.toml", "bible/scripture-text.toml"]  # File types use biblical vocabulary
 
 [[systems.specs]]
 file = "contract.toml"
 generates = false
 description = "Filesystem contract interface"
+depends_on = ["filesystem/types.toml"]  # Contract implements types
 
 
 # =============================================================================

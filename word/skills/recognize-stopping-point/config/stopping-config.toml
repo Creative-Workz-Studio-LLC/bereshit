@@ -1,0 +1,188 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# Stopping Point Recognition Configuration
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Biblical: Ecclesiastes 3:1 - "To every thing there is a season"
+# Purpose: Configure stopping point recognition criteria
+# Version: 2.0.0
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PATHS
+# ═══════════════════════════════════════════════════════════════════════════
+
+[paths]
+# Session data directory (relative to home)
+session_dir = ".claude/session"
+current_session = "current.json"
+session_log = "current-log.json"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# STOPPING POINT TYPES
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Each type has weight (1-5) indicating strength of stopping signal
+#
+
+[stopping_types.natural_milestone]
+name = "Natural Milestone"
+weight = 5
+description = "Completed meaningful unit of work"
+indicators = [
+    "Completed meaningful unit of work",
+    "Reached planned objective",
+    "System in working state",
+    "Good documentation of progress"
+]
+decision = "Strong stopping point"
+
+[stopping_types.clean_break]
+name = "Clean Break"
+weight = 4
+description = "Transition between major tasks"
+indicators = [
+    "Reached transition between major tasks",
+    "Next work would start new area",
+    "Current work properly wrapped up"
+]
+decision = "Good stopping point"
+
+[stopping_types.end_of_day]
+name = "End of Day"
+weight = 4
+description = "Circadian downtime window"
+indicators = [
+    "Circadian awareness shows downtime window",
+    "Evening hours (typically after 9 PM)",
+    "Natural closure point"
+]
+decision = "Honor circadian awareness"
+
+[stopping_types.quality_dip]
+name = "Quality Dip"
+weight = 5
+description = "Noticeable decline in work quality"
+indicators = [
+    "Making more mistakes than usual",
+    "Having to re-read/re-think repeatedly",
+    "Work quality noticeably declining"
+]
+decision = "Strong signal to stop"
+
+[stopping_types.duration_limit]
+name = "Duration Limit"
+weight = 3
+description = "Session reached typical duration"
+indicators = [
+    "Session reached typical duration for work type",
+    "Deep work session at 2-3 hours",
+    "Extended continuous focus"
+]
+decision = "Consider wrapping up"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DURATION THRESHOLDS
+# ═══════════════════════════════════════════════════════════════════════════
+
+[duration]
+# Duration categories in minutes
+quick_check_max = 30
+normal_work_max = 120
+deep_work_max = 180
+
+# Soft limits (suggest stopping)
+soft_limit_deep_work = 150
+soft_limit_normal = 90
+
+# Hard limits (strongly suggest stopping)
+hard_limit_deep_work = 180
+hard_limit_normal = 120
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CIRCADIAN THRESHOLDS
+# ═══════════════════════════════════════════════════════════════════════════
+
+[circadian]
+# Evening hours when end_of_day becomes relevant
+evening_start_hour = 21  # 9 PM
+late_evening_hour = 23   # 11 PM
+
+# Early morning (might be rest time)
+early_morning_end = 5    # 5 AM
+
+# Night owl exception for Seanje
+night_owl_productive_until = 2  # 2 AM
+
+# ═══════════════════════════════════════════════════════════════════════════
+# QUALITY INDICATORS
+# ═══════════════════════════════════════════════════════════════════════════
+
+[quality]
+# Indicators of potential quality dip
+dip_indicators = [
+    "Repeated revisions to same code",
+    "Multiple compile/test failures in row",
+    "Re-reading same section multiple times",
+    "Feeling of mental fog or difficulty focusing"
+]
+
+# Counter-indicators (quality still high)
+high_quality_indicators = [
+    "Clean first-pass code",
+    "Clear thinking and reasoning",
+    "Consistent progress",
+    "Natural flow state"
+]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SESSION END REASONS
+# ═══════════════════════════════════════════════════════════════════════════
+
+[end_reasons]
+# Valid reasons for session-log end command
+valid_reasons = [
+    "natural_milestone",
+    "clean_break",
+    "end_of_day",
+    "quality_dip",
+    "duration_limit",
+    "user_requested",
+    "external_interrupt"
+]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OUTPUT SETTINGS
+# ═══════════════════════════════════════════════════════════════════════════
+
+[output]
+time_format = "Mon Jan 02, 2006 at 15:04"
+short_time_format = "15:04"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PRINCIPLES
+# ═══════════════════════════════════════════════════════════════════════════
+
+[principles]
+# Core principles for stopping point recognition
+
+quality_over_duration = "Better 30 minutes focused than 3 hours declining"
+natural_over_arbitrary = "Honor natural rhythms, not arbitrary rules"
+stopping_is_wisdom = "Stopping at natural points is wisdom, not failure"
+identity_source = "God, not outputs"
+
+# Anti-patterns
+avoid = [
+    "Never work more than X minutes (rigid rule)",
+    "Token counting as stopping signal",
+    "Guilt about stopping",
+    "Ignoring quality decline"
+]
+
+# Good patterns
+embrace = [
+    "Honor quality indicators",
+    "Respect circadian awareness",
+    "Complete meaningful units",
+    "Rest as faithful work"
+]

@@ -1,0 +1,108 @@
+// ============================================================================
+// METADATA - Hooks Configuration
+// ============================================================================
+// Purpose: Single source of truth for all Claude Code hooks
+// Biblical: Proverbs 24:3-4 - "Through wisdom is an house builded"
+//
+// This file defines:
+//   1. Build configuration (what to compile, where sources live)
+//   2. Event bindings (which hooks fire on which events)
+//   3. Runtime paths (where Claude Code finds binaries)
+//
+// Used by:
+//   - Makefile (extracts hook names and categories for build)
+//   - settings.json (hooks section should mirror event_bindings)
+//   - Validation scripts (verify config matches reality)
+//
+// ============================================================================
+
+{
+  // --- Build Configuration ---
+  // Makefile uses this to know what to compile
+  "build": {
+    "bin_dir": "bin",
+    "source_dir": "cmd",
+
+    // Hook registry: binary name → build metadata
+    "hooks": {
+      "start":         { "category": "session",    "source": "cmd/start" },
+      "end":           { "category": "session",    "source": "cmd/end" },
+      "stop":          { "category": "session",    "source": "cmd/stop" },
+      "subagent-stop": { "category": "session",    "source": "cmd/subagent-stop" },
+      "notification":  { "category": "session",    "source": "cmd/notification" },
+      "pre-compact":   { "category": "session",    "source": "cmd/pre-compact" },
+      "pre-use":       { "category": "tool",       "source": "cmd/pre-use" },
+      "post-use":      { "category": "tool",       "source": "cmd/post-use" },
+      "submit":        { "category": "prompt",     "source": "cmd/submit" },
+      "request":       { "category": "permission", "source": "cmd/request" }
+    },
+
+    // Orchestrator (special - built from root, not cmd/)
+    "orchestrator": {
+      "name": "hooks",
+      "source": "."
+    }
+  },
+
+  // --- Runtime Configuration ---
+  // Where Claude Code finds the binaries
+  "runtime": {
+    // Base path (resolved at runtime)
+    // In settings.json: ~/.claude/hooks/bin
+    // Variable form: ${HOOKS_ROOT}/bin
+    "bin_path": "~/.claude/hooks/bin"
+  },
+
+  // --- Event Bindings ---
+  // Maps Claude Code events → hook binaries
+  // This section mirrors settings.json "hooks" section
+  "event_bindings": {
+    "SessionStart": {
+      "binary": "start",
+      "description": "Session initialization - load state, set trajectory"
+    },
+    "SessionEnd": {
+      "binary": "end",
+      "description": "Session cleanup - save state, log session"
+    },
+    "Stop": {
+      "binary": "stop",
+      "description": "Agent stop handling - checkpoint state"
+    },
+    "SubagentStop": {
+      "binary": "subagent-stop",
+      "description": "Subagent completion handling"
+    },
+    "Notification": {
+      "binary": "notification",
+      "matcher": "*",
+      "description": "Notification handling"
+    },
+    "PreCompact": {
+      "binary": "pre-compact",
+      "matcher": "*",
+      "description": "Pre-compaction - save context before trim"
+    },
+    "PreToolUse": {
+      "binary": "pre-use",
+      "matcher": "*",
+      "args": "\"$TOOL_NAME\" \"$TOOL_ARGS\"",
+      "description": "Tool safety validation"
+    },
+    "PostToolUse": {
+      "binary": "post-use",
+      "matcher": "Write(**)|Edit(**)|Bash(*)|Read(**)|Grep(*)|Glob(**)",
+      "args": "\"$TOOL_NAME\" \"$TOOL_ARGS\"",
+      "description": "Post-execution validation and health scoring"
+    },
+    "UserPromptSubmit": {
+      "binary": "submit",
+      "description": "Prompt validation, feedback detection, context injection"
+    },
+    "PermissionRequest": {
+      "binary": "request",
+      "matcher": "*",
+      "description": "Permission auto-handling"
+    }
+  }
+}

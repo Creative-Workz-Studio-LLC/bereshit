@@ -1,0 +1,340 @@
+# ============================================================================
+# Logging Configuration - Maximum Configurability for Foundation Rails
+# ============================================================================
+# Component: CPI-SI System - Logging Configuration
+# Purpose: Define ALL configurable aspects of logging behavior
+# Scope: System-wide logging behavior (detection layer of immune system)
+#
+# Biblical Foundation: "Let all things be done decently and in order" (1 Cor 14:40)
+# CPI-SI Pattern: Config-driven operation - separate settings (data) from behavior (code)
+#
+# STRUCTURE:
+#   [paths] - Base logging directory configuration
+#   [format] - Log output formatting (timestamps, headers, separators)
+#   [files] - File system configuration (extensions, permissions, naming)
+#   [context_capture] - System context capture formatting
+#   [behavior] - Logging behavior policies (context levels, buffer sizes)
+#   [messages] - User-facing messages and event formats (localization support)
+#   [health_impacts] - Default health impact values for operations
+#   [retention] - Log retention policies by temporal level
+#   [rotation] - File size-based rotation settings
+#   [routing] - Component-to-subdirectory routing rules
+#   [health] - Health score visualization thresholds
+#
+# USAGE:
+#   Loaded by system/runtime/lib/logging to configure all runtime behavior
+#   Settings override hardcoded defaults (fallback when config unavailable)
+#
+# INHERITANCE:
+#   Hardcoded defaults → this config → runtime behavior
+#
+# FOUNDATION PRINCIPLE:
+#   If it's a decision that might change → CONFIG (this file)
+#   If it's how the system works → CODE (logger.go)
+#   Maximum configurability enables decades of use without recompilation
+# ============================================================================
+
+# ============================================================================
+# PATH CONFIGURATION
+# ============================================================================
+
+[paths]
+base_dir = "cpi-si/output"  # Base output directory for logs (relative to ~/.claude/)
+
+# Temporal organization structure:
+#   logs/
+#     current/           # Active logs (today's logs)
+#     daily/YYYY/MM/     # Daily logs by year/month
+#     weekly/YYYY/       # Weekly summaries by year
+#     monthly/YYYY/      # Monthly summaries by year
+#     quarterly/YYYY/    # Quarterly reports by year
+#     yearly/            # Yearly archives
+#
+# Each level contains subdirectories: commands/, scripts/, libraries/, system/
+
+# ============================================================================
+# FORMAT CONFIGURATION
+# ============================================================================
+# Controls log output formatting - timestamps, headers, separators, permissions
+# These affect how logs are written and displayed
+
+[format]
+# Timestamp format for log entries (Go time format: 2006-01-02 15:04:05.000)
+timestamp_format = "2006-01-02 15:04:05.000"  # Microsecond precision, human-readable
+
+# Section headers for log entry structure
+context_header = "  CONTEXT:\n"          # Header for system context section
+event_header = "  EVENT: "               # Prefix for event description
+details_header = "  DETAILS:\n"          # Header for structured details section
+interactions_header = "  INTERACTIONS:\n" # Header for concurrent/dependency tracking
+
+# Entry structure
+entry_separator = "---"                   # Separator between log entries (parser delimiter)
+
+# File permissions (octal format - will be parsed as string then converted)
+log_file_permissions = "0644"            # Log files: readable by owner/group, writable by owner
+log_dir_permissions = "0755"             # Log directories: full owner, read/exec group/others
+
+# Warning messages (stderr output when logging operations fail)
+warn_log_open_failed = "Warning: Failed to open log file %s: %v\n"
+warn_log_write_failed = "Warning: Failed to write to log file %s: %v\n"
+
+# ============================================================================
+# FILES CONFIGURATION
+# ============================================================================
+# File system behavior - extensions, naming patterns, ID formats
+
+[files]
+log_file_extension = ".log"              # Extension for log files
+rotated_log_format = "%s.%d"             # Rotated file naming (path.1, path.2, etc.)
+context_id_format = "%s-%d-%d"           # Context ID format (component-pid-timestamp)
+
+# ============================================================================
+# CONTEXT CAPTURE CONFIGURATION
+# ============================================================================
+# System context capture formatting and behavior
+
+[context_capture]
+# Security and validation
+sudoers_valid_perms = "0440"             # Required permissions for sudoers file (octal string)
+
+# Framework identification
+framework_env_prefix = "CPI_SI_"         # Prefix for framework environment variables
+
+# Format strings for system metrics output
+permissions_format = "%04o"              # Octal format for file permissions display
+load_avg_format = "%s, %s, %s"           # CPU load averages (1min, 5min, 15min)
+memory_usage_format = "%dMB / %dMB"      # Memory usage (used / total)
+disk_usage_format = "%s / %s (%s)"       # Disk usage (used / total (percentage))
+
+# Graceful failure values
+unknown_value = "unknown"                # Returned when context capture fails gracefully
+
+# ============================================================================
+# BEHAVIOR CONFIGURATION
+# ============================================================================
+# Logging behavior policies and runtime settings
+
+[behavior]
+# Buffer sizes
+stack_buffer_size = 4096                 # Buffer size for stack trace capture (bytes)
+
+# Log level context policies - which levels capture full system context
+# true = full context (shell, env, sudoers, system metrics)
+# false = lightweight (timestamp, event, details only)
+[behavior.log_level_full_context]
+OPERATION = true                         # Operation starts need complete environment
+SUCCESS = false                          # Successes are lightweight
+FAILURE = true                           # Failures need debugging info
+ERROR = true                             # Errors need complete state
+CHECK = false                            # Checks are lightweight
+CONTEXT = true                           # Snapshots capture everything by definition
+DEBUG = true                             # Debug needs complete state
+
+# ============================================================================
+# MESSAGES CONFIGURATION
+# ============================================================================
+# User-facing messages and event formats (localization support)
+
+[messages]
+# Event message formats (printf-style format strings)
+event_op_start = "Starting operation: %s"       # Operation start event
+event_check_msg = "Checking: %s"                # Check/validation event
+event_snapshot = "System state snapshot: %s"    # System snapshot event
+event_cmd_failed = "Command failed: %s"         # Command failure event
+event_cmd_success = "Command completed: %s"     # Command success event
+
+# Command execution formatting
+cmd_full_format = "%s %s"                       # Full command with args
+duration_format = "%dms"                        # Duration in milliseconds
+
+# ============================================================================
+# HEALTH IMPACTS CONFIGURATION
+# ============================================================================
+# Default health impact values for automated operations
+
+[health_impacts]
+cmd_operation_impact = 0                 # Neutral impact for command start (tracking only)
+cmd_failure_impact = -10                 # Default negative impact for command failures
+cmd_success_impact = 10                  # Default positive impact for command successes
+
+# ============================================================================
+# RETENTION POLICIES
+# ============================================================================
+# How long to keep logs at each temporal level
+# Older logs are aggregated/summarized to next level before deletion
+
+[retention]
+daily_days = 60                     # Keep daily logs for 60 days (2 months)
+weekly_days = 180                   # Keep weekly summaries for 180 days (6 months)
+monthly_days = 730                  # Keep monthly summaries for 730 days (2 years)
+quarterly_days = 1825               # Keep quarterly reports for 1825 days (5 years)
+yearly_permanent = true             # Keep yearly archives permanently
+
+# Aggregation settings
+auto_aggregate = true               # Automatically aggregate older logs
+aggregate_on_startup = false        # Don't aggregate on every startup (performance)
+aggregate_schedule = "weekly"       # Run aggregation weekly (daily/weekly/monthly)
+
+# ============================================================================
+# ROTATION SETTINGS
+# ============================================================================
+# File size-based rotation within temporal periods
+
+[rotation]
+enabled = true                      # Enable log rotation
+max_size_mb = 10                    # Maximum log file size before rotation
+max_files_per_component = 5         # Number of rotated files to keep per component
+compress_rotated = true             # Compress rotated logs (gzip)
+
+# ============================================================================
+# COMPONENT ROUTING
+# ============================================================================
+# Maps component names to log subdirectories for organized log storage
+#
+# Subdirectories:
+#   - commands/   : Command executables (validate, test, status, diagnose)
+#   - scripts/    : Build and automation scripts
+#   - libraries/  : Reusable library components
+#   - system/     : System-level operations (fallback for unmapped components)
+
+[routing]
+commands = ["validate", "test", "status", "diagnose", "debugger", "unix-safe", "rails-demo"]
+libraries = ["operations", "sudoers", "environment", "display", "logging", "debugging", "calendar", "config", "jsonc", "patterns", "planner", "privacy", "sessiontime", "temporal", "validation"]
+scripts = ["build"]
+
+# ============================================================================
+# HEALTH VISUALIZATION
+# ============================================================================
+# Defines thresholds for health score visualization using emoji and descriptions
+#
+# Health Score Range: -100 (complete failure) to +100 (perfect execution)
+# Organization: Positive gradient → Neutral → Negative gradient
+#
+# SCORING PHILOSOPHY (Base100):
+#   - All actions in a component total 100 points
+#   - Each action's score = (actual result / total possible) * point value
+#   - Component health = sum of all action scores
+#   - Visual indicator determined by threshold lookup (descending)
+#
+# THRESHOLD MATCHING:
+#   - Descending order (highest to lowest)
+#   - First threshold >= score is selected
+#   - Example: score=75 matches threshold=70 (💛 "Good")
+
+# ────────────────────────────────────────────────────────────────
+# POSITIVE GRADIENT (90 to 1)
+# ────────────────────────────────────────────────────────────────
+
+[[health.ranges]]
+threshold = 90
+emoji = "💚"
+description = "Excellent - all systems healthy"
+
+[[health.ranges]]
+threshold = 80
+emoji = "💙"
+description = "Very Good - minor issues only"
+
+[[health.ranges]]
+threshold = 70
+emoji = "💛"
+description = "Good - some concerns"
+
+[[health.ranges]]
+threshold = 60
+emoji = "🧡"
+description = "Above Average - noticeable issues"
+
+[[health.ranges]]
+threshold = 50
+emoji = "❤️"
+description = "Average - mixed results"
+
+[[health.ranges]]
+threshold = 40
+emoji = "🤍"
+description = "Below Average - attention needed"
+
+[[health.ranges]]
+threshold = 30
+emoji = "💔"
+description = "Fair - significant problems"
+
+[[health.ranges]]
+threshold = 20
+emoji = "🩹"
+description = "Poor - major issues"
+
+[[health.ranges]]
+threshold = 10
+emoji = "⚠️"
+description = "Warning - critical attention needed"
+
+[[health.ranges]]
+threshold = 1
+emoji = "☠️"
+description = "Critical - near failure"
+
+# ────────────────────────────────────────────────────────────────
+# NEUTRAL (exact zero)
+# ────────────────────────────────────────────────────────────────
+
+[[health.ranges]]
+threshold = 0
+emoji = "⚫"
+description = "Neutral/Reset - balanced state"
+
+# ────────────────────────────────────────────────────────────────
+# NEGATIVE GRADIENT (-9 to -100)
+# ────────────────────────────────────────────────────────────────
+
+[[health.ranges]]
+threshold = -9
+emoji = "🔴"
+description = "Slight Negative - minor damage"
+
+[[health.ranges]]
+threshold = -19
+emoji = "🟠"
+description = "Negative - noticeable degradation"
+
+[[health.ranges]]
+threshold = -29
+emoji = "🟡"
+description = "Declining - system weakening"
+
+[[health.ranges]]
+threshold = -39
+emoji = "🟢"
+description = "Degraded - significant damage"
+
+[[health.ranges]]
+threshold = -49
+emoji = "🔵"
+description = "Damaged - major problems"
+
+[[health.ranges]]
+threshold = -59
+emoji = "🟣"
+description = "Severe - critical damage"
+
+[[health.ranges]]
+threshold = -69
+emoji = "🟤"
+description = "Critical - near failure"
+
+[[health.ranges]]
+threshold = -79
+emoji = "⚫"
+description = "Failing - barely functional"
+
+[[health.ranges]]
+threshold = -89
+emoji = "⬛"
+description = "Near Death - almost gone"
+
+[[health.ranges]]
+threshold = -100
+emoji = "💀"
+description = "Dead - complete failure"

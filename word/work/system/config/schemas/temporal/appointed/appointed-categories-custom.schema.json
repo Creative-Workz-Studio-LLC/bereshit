@@ -1,0 +1,252 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/appointed/appointed-categories-custom.schema.json",
+  "title": "Appointed Time - Custom Categories",
+  "description": "User-defined appointment categories and staging area for system promotion. Bootstrap pattern applied to taxonomy.",
+  "version": "1.0.0",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "$schema",
+    "metadata",
+    "template",
+    "staging_categories",
+    "user_categories"
+  ],
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Component metadata",
+      "required": ["component", "version", "last_updated", "purpose"],
+      "properties": {
+        "component": {
+          "type": "string",
+          "description": "Component name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Schema version",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "last_updated": {
+          "type": "string",
+          "description": "Last update date (YYYY-MM-DD)",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Purpose of this component"
+        }
+      }
+    },
+    "template": {
+      "type": "object",
+      "description": "Template structure for creating new categories (persists)",
+      "required": [
+        "id",
+        "name",
+        "description",
+        "priority",
+        "flexibility",
+        "default_duration_minutes",
+        "can_recur",
+        "protected"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier (kebab-case)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable category name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Purpose and nature of this appointment type"
+        },
+        "priority": {
+          "type": "string",
+          "description": "Protection level (highest|high|medium|low)"
+        },
+        "flexibility": {
+          "type": "string",
+          "description": "How moveable (fixed|flexible|moveable)"
+        },
+        "default_duration_minutes": {
+          "type": "integer",
+          "description": "Typical duration in minutes"
+        },
+        "can_recur": {
+          "type": "boolean",
+          "description": "Does it repeat?"
+        },
+        "protected": {
+          "type": "boolean",
+          "description": "Resist interruption?"
+        },
+        "color": {
+          "type": "string",
+          "description": "Visual distinction (hex color)"
+        },
+        "biblical_foundation": {
+          "type": "string",
+          "description": "Scripture grounding (optional)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional context"
+        }
+      }
+    },
+    "staging_categories": {
+      "type": "array",
+      "description": "Categories being evaluated for system promotion",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "priority",
+          "flexibility",
+          "default_duration_minutes",
+          "can_recur",
+          "protected"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier (kebab-case)",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "minLength": 2
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable category name",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "Purpose and nature of this appointment type",
+            "minLength": 1
+          },
+          "priority": {
+            "type": "string",
+            "description": "Protection level for this category",
+            "enum": ["highest", "high", "medium", "low"]
+          },
+          "flexibility": {
+            "type": "string",
+            "description": "How moveable this appointment type is",
+            "enum": ["fixed", "flexible", "moveable"]
+          },
+          "default_duration_minutes": {
+            "type": "integer",
+            "description": "Typical duration in minutes",
+            "minimum": 1
+          },
+          "can_recur": {
+            "type": "boolean",
+            "description": "Does this type typically repeat?"
+          },
+          "protected": {
+            "type": "boolean",
+            "description": "Should this resist interruption/rescheduling?"
+          },
+          "color": {
+            "type": "string",
+            "description": "Visual distinction (hex color)",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "biblical_foundation": {
+            "type": "string",
+            "description": "Scripture grounding (if applicable)"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional context or usage guidelines"
+          }
+        }
+      }
+    },
+    "user_categories": {
+      "type": "array",
+      "description": "User-specific custom categories",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "priority",
+          "flexibility",
+          "default_duration_minutes",
+          "can_recur",
+          "protected"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier (kebab-case)",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "minLength": 2
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable category name",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "Purpose and nature of this appointment type",
+            "minLength": 1
+          },
+          "priority": {
+            "type": "string",
+            "description": "Protection level for this category",
+            "enum": ["highest", "high", "medium", "low"]
+          },
+          "flexibility": {
+            "type": "string",
+            "description": "How moveable this appointment type is",
+            "enum": ["fixed", "flexible", "moveable"]
+          },
+          "default_duration_minutes": {
+            "type": "integer",
+            "description": "Typical duration in minutes",
+            "minimum": 1
+          },
+          "can_recur": {
+            "type": "boolean",
+            "description": "Does this type typically repeat?"
+          },
+          "protected": {
+            "type": "boolean",
+            "description": "Should this resist interruption/rescheduling?"
+          },
+          "color": {
+            "type": "string",
+            "description": "Visual distinction (hex color)",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "biblical_foundation": {
+            "type": "string",
+            "description": "Scripture grounding (if applicable)"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional context or usage guidelines"
+          }
+        }
+      }
+    }
+  }
+}

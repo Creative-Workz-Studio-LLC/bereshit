@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/definitions/base/quality-indicators.schema.json",
+  "title": "Quality Indicators Schema",
+  "description": "Schema for universal quality metrics and health scoring",
+  "type": "object",
+  "required": ["metadata", "stopping_reasons", "health_score_ranges", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "created", "last_updated", "purpose", "scope"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "created": { "type": "string", "format": "date" },
+        "last_updated": { "type": "string", "format": "date" },
+        "purpose": { "type": "string" },
+        "scope": { "type": "string", "enum": ["paradigm-wide"] }
+      }
+    },
+    "stopping_reasons": {
+      "type": "object",
+      "description": "Why sessions end",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["description", "quality_indicator"],
+          "properties": {
+            "description": { "type": "string" },
+            "quality_indicator": {
+              "type": "string",
+              "enum": ["positive", "neutral", "attention"]
+            },
+            "examples": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "health_impact": { "type": "string" }
+          }
+        }
+      }
+    },
+    "health_score_ranges": {
+      "type": "object",
+      "description": "Base100 health score categorization",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["min", "max", "emoji", "description", "interpretation"],
+          "properties": {
+            "min": {
+              "type": "integer",
+              "minimum": -100,
+              "maximum": 100
+            },
+            "max": {
+              "type": "integer",
+              "minimum": -100,
+              "maximum": 100
+            },
+            "emoji": { "type": "string" },
+            "description": { "type": "string" },
+            "interpretation": { "type": "string" }
+          }
+        }
+      }
+    },
+    "session_quality_factors": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "measurement": { "type": "string" },
+            "high_quality": { "type": "string" },
+            "medium_quality": { "type": "string" },
+            "low_quality": { "type": "string" },
+            "notes": { "type": "string" }
+          }
+        }
+      }
+    },
+    "rhythm_indicators": {
+      "type": "object",
+      "properties": {
+        "healthy_patterns": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "concerning_patterns": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "pattern_recognition_note": { "type": "string" }
+      }
+    },
+    "productivity_levels": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "notes": { "type": "string" }
+          }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

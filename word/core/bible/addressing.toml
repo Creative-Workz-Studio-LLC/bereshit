@@ -80,7 +80,7 @@
 #
 #   - KJV Index: word/scripture/kjv-ordinal-index.csv (31,102 verse mappings)
 #   - WEB Variants: word/scripture/web-variant-index.adoc (13 variant verses)
-#   - Primitives: word/core/primitives.toml (trit, trit5, uint9)
+#   - Primitives: word/core/types/primitives.toml (trit, trit5, uint9)
 #
 # What Uses This:
 #
@@ -93,8 +93,8 @@
 #
 #   - Scripture: word/scripture/KJV/, word/scripture/WEB/
 #   - Ordinal Index: word/scripture/kjv-ordinal-index.csv
-#   - Primitives: word/core/primitives.toml
-#   - Types: word/core/types.toml
+#   - Primitives: word/core/types/primitives.toml
+#   - Types: word/core/types/composition.toml
 #
 # -----------------------------------------------------------------------------
 # OPERATIONAL (Contextual)
@@ -958,6 +958,25 @@ summary = "Zerubbabel my servant; make you as a signet"
 # =============================================================================
 # END CONTENT
 # =============================================================================
+
+# =============================================================================
+# GENERATION METADATA
+# =============================================================================
+# Tells the generator how to produce C header from this spec.
+
+[_generate]
+enabled = true
+output = "bible_addressing.gen.h"
+order = 3  # After language (2), before health
+guard = "BIBLE_ADDRESSING_GEN_H"
+description = "Bible addressing constants — verse counts, ordinal ranges, ternary capacity"
+sections = [
+    "address_space.kjv",     # TOTAL_KJV_VERSES = 31102, KJV_BOOKS = 66
+    "address_space.web",     # TOTAL_WEB_VERSES = 31115, VARIANT_RANGE_MIN = 243, VARIANT_RANGE_MAX = 255
+    "ternary.capacity",      # TRITS_NEEDED = 10, MAX_ORDINAL = 31102
+    "ternary.packed.trit5",  # TRIT5_STATES = 243
+    "variants"               # VARIANT_COUNT = 13
+]
 
 # =============================================================================
 # CLOSING

@@ -1,0 +1,313 @@
+# ============================================================================
+# SYSTEM CONFIGURATION - Override Schema
+# ============================================================================
+# Purpose: Define what administrators CAN override about system detection
+# Scope: Machine-level preferences and overrides
+#
+# THIS FILE IS NOT A DATABASE OF DETECTED VALUES
+# - Leave fields empty/commented = use auto-detected values
+# - Set a field = override auto-detection with this value
+# - Runtime configurator detects everything, consults this for overrides
+#
+# Detection happens at runtime via system probing:
+# - Hardware: lspci, lsusb, lsblk, sensors, xrandr, upower
+# - OS: uname, /etc/os-release, lsb_release
+# - Capabilities: systemctl, which, command detection
+# - Resources: nproc, free, df, ip, bluetoothctl
+#
+# This file: User/admin preferences that OVERRIDE detection
+# ============================================================================
+
+[metadata]
+# Schema version for validation
+schema_version = "1.0.0"
+
+# ============================================================================
+# SYSTEM IDENTITY OVERRIDES
+# ============================================================================
+# Normally auto-detected, set here to override
+
+[system]
+# Override detected hostname (leave empty to use system hostname)
+# Use case: Want CPI-SI to refer to machine by friendly name
+hostname_override = ""
+
+# Preferred OS name presentation (leave empty to use detected)
+# Use case: Refer to "Ubuntu" as "Linux" or vice versa
+os_display_name = ""
+
+# ============================================================================
+# PACKAGE MANAGEMENT PREFERENCES
+# ============================================================================
+# When multiple package managers detected, which to prefer
+
+[package_management]
+# Preferred package manager (apt, dnf, pacman, brew, etc.)
+# Leave empty = auto-detect and use most appropriate
+# Set = always prefer this one if available
+preferred = ""
+
+# Fallback if preferred not available
+fallback = ""
+
+# ============================================================================
+# SHELL PREFERENCES
+# ============================================================================
+# When multiple shells available, which to prefer
+
+[shell]
+# Preferred shell for CPI-SI operations
+# Leave empty = use system default
+# Set = use this shell if available
+preferred = ""
+
+# ============================================================================
+# DEVELOPMENT TOOLCHAIN PREFERENCES
+# ============================================================================
+# When multiple versions/paths exist, which to prefer
+
+[toolchains]
+# Preferred C compiler (gcc, clang, etc.)
+c_compiler = ""
+
+# Preferred C++ compiler (g++, clang++, etc.)
+cpp_compiler = ""
+
+# Preferred Python interpreter (python3, python3.11, etc.)
+python = ""
+
+# ============================================================================
+# PATH OVERRIDES
+# ============================================================================
+# Override standard system paths if needed
+
+[paths]
+# Override temp directory (leave empty for /tmp)
+temp_override = ""
+
+# Override cache directory (leave empty for standard)
+cache_override = ""
+
+# Additional system binary paths to check
+additional_bin_paths = []
+
+# ============================================================================
+# FEATURE FLAGS
+# ============================================================================
+# Force enable/disable features regardless of detection
+# Values: "auto" (detect), "enabled" (force on), "disabled" (force off)
+
+[features]
+# Docker usage
+docker = "auto"
+
+# Bluetooth usage
+bluetooth = "auto"
+
+# GPU acceleration
+gpu_acceleration = "auto"
+
+# Systemd integration
+systemd = "auto"
+
+# Graphical environment
+graphical = "auto"
+
+# Network operations
+network = "auto"
+
+# ============================================================================
+# RESOURCE LIMITS
+# ============================================================================
+# Override detected capabilities with limits
+
+[limits]
+# Maximum CPU cores to use (0 = use all detected)
+max_cpu_cores = 0
+
+# Maximum memory to use in GB (0 = use all available)
+max_memory_gb = 0
+
+# Maximum disk operations parallelism
+max_io_parallelism = 0
+
+# ============================================================================
+# NETWORK PREFERENCES
+# ============================================================================
+
+[network]
+# Preferred network interface (leave empty to auto-select)
+preferred_interface = ""
+
+# Proxy settings (leave empty for direct)
+http_proxy = ""
+https_proxy = ""
+no_proxy = []
+
+# ============================================================================
+# DISPLAY PREFERENCES
+# ============================================================================
+
+[display]
+# Preferred display/monitor (leave empty for primary)
+preferred_display = ""
+
+# Force specific resolution (leave empty for auto)
+force_resolution = ""
+
+# ============================================================================
+# POWER MANAGEMENT
+# ============================================================================
+
+[power]
+# Performance mode on battery ("auto", "performance", "powersave", "balanced")
+battery_mode = "auto"
+
+# Performance mode on AC ("auto", "performance", "powersave", "balanced")
+ac_mode = "auto"
+
+# ============================================================================
+# LOCALE OVERRIDES
+# ============================================================================
+
+[locale]
+# Override system locale (leave empty to use system default)
+lang_override = ""
+lc_all_override = ""
+
+# Preferred timezone (leave empty to use system)
+timezone = ""
+
+# ============================================================================
+# DETECTION BEHAVIOR
+# ============================================================================
+# Control how detection works
+
+[detection]
+# Cache detection results for this many seconds (0 = always re-detect)
+cache_duration_seconds = 300
+
+# Paths to probe for hardware info
+hardware_probe_paths = [
+    "/sys/class",
+    "/proc",
+    "/dev"
+]
+
+# Commands to try for capability detection
+capability_commands = [
+    "which",
+    "command -v",
+    "type"
+]
+
+# Skip expensive detections (sensors, detailed hardware)
+skip_expensive_detection = false
+
+# ============================================================================
+# ENVIRONMENT DEFAULTS - System Level
+# ============================================================================
+# Universal tool defaults that work across systems
+# These get generated into runtime environment files
+
+[environment.package_management]
+# Debian/Ubuntu APT
+debian_frontend = "noninteractive"
+needrestart_mode = "a"
+needrestart_suspend = "1"
+apt_listchanges_frontend = "none"
+ucf_force_conffnew = "1"
+
+# Python pip
+pip_no_input = "1"
+pip_disable_pip_version_check = "1"
+pythondontwritebytecode = "1"
+pythonunbuffered = "1"
+
+# Node.js/NPM
+npm_config_yes = "true"
+npm_config_color = "always"
+
+[environment.development_tools]
+# Rust/Cargo
+rust_backtrace = "1"
+cargo_term_color = "always"
+
+# Docker
+docker_buildkit = "1"
+compose_docker_cli_build = "1"
+docker_scan_suggest = "false"
+
+# Build tools
+cmake_generator = "Ninja"
+
+[environment.terminal]
+# Terminal configuration
+term = "xterm-256color"
+colorterm = "truecolor"
+
+# Locale
+lang = "en_US.UTF-8"
+lc_all = "en_US.UTF-8"
+
+# History
+histcontrol = "ignoreboth"
+histsize = "10000"
+histfilesize = "20000"
+histtimeformat = "%F %T "
+
+# Less pager
+less = "-R -F -X -i -M"
+lesshistfile = "-"
+
+[environment.claude_code]
+# Claude Code specific
+max_thinking_tokens = "10000"
+bash_max_timeout_ms = "300000"
+
+# ============================================================================
+# NOTES
+# ============================================================================
+#
+# What Gets Detected Automatically:
+#
+# HARDWARE:
+# - CPU: model, cores, frequency, cache (via /proc/cpuinfo, nproc)
+# - Memory: total, available, swap (via free)
+# - GPU: vendor, model, driver (via lspci)
+# - Storage: devices, sizes, filesystems, mounts (via lsblk, df, mount)
+# - Network: interfaces, IPs, MACs (via ip)
+# - USB: connected devices (via lsusb)
+# - Audio: devices (via lspci)
+# - Display: resolution, monitors (via xrandr)
+# - Battery: status, capacity, health (via upower)
+# - Bluetooth: availability, status (via bluetoothctl)
+# - Sensors: thermal, fan (via sensors)
+#
+# SOFTWARE:
+# - OS: type, name, version, codename (via uname, /etc/os-release)
+# - Kernel: version, type (via uname)
+# - Architecture: x86_64, aarch64, etc (via uname -m)
+# - Package managers: available tools (via which/command -v)
+# - Shells: available shells (via which)
+# - Compilers: gcc, clang, rustc, go, etc (via which + --version)
+# - Runtimes: python, node, etc (via which + --version)
+# - Init system: systemd, other (via systemctl)
+# - Services: running services (via systemctl list-units)
+# - Desktop environment: GNOME, KDE, etc (via $DESKTOP_SESSION)
+#
+# CAPABILITIES:
+# - Virtualization: Docker, VMs (via systemctl, command detection)
+# - Graphics: Wayland, X11 (via $WAYLAND_DISPLAY, $DISPLAY)
+# - Audio: PulseAudio, PipeWire (via pactl, pw-cli)
+# - Printing: CUPS (via systemctl)
+#
+# Why Override Instead of Detect:
+# - Preference: Multiple options exist, want specific one
+# - Performance: Skip expensive detection
+# - Constraint: Limit resource usage
+# - Testing: Force specific configuration
+# - Privacy: Don't probe certain hardware
+# - Compatibility: Override incorrect detection
+#
+# ============================================================================

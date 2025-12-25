@@ -1,0 +1,75 @@
+{
+  // ============================================================================
+  // CURRENT TEMPLATE - Active Session State
+  // ============================================================================
+  // Purpose: Track current session metadata and state
+  // Lifecycle: Active during session, archived at session end
+  // Biblical Foundation: Living in the present moment with awareness
+  //
+  // STRUCTURE PRINCIPLE:
+  // - Core required fields (session identity and timing)
+  // - Optional standard fields (state and context)
+  // - Extensions (discovering what else session state needs)
+
+  "$schema": "../../../../config/schemas/session/current.schema.json",
+
+  // ============================================================================
+  // CORE (REQUIRED) - Must Exist
+  // ============================================================================
+
+  "session_id": "unique-identifier",           // Unique identifier for this session
+  "instance_id": "nova_dawn",                  // Which instance
+  "user_id": "seanje-lenox-wise",              // Which user
+  "start_time": "2025-01-01T12:00:00Z",        // When session began
+  "start_unix": 0,                             // Unix timestamp for calculations
+  "start_formatted": "Day MMM DD, YYYY at HH:MM:SS",  // Human-readable
+
+  // ============================================================================
+  // OPTIONAL STANDARD FIELDS - Agency
+  // ============================================================================
+
+  "compaction_count": 0,                       // How many auto-compactions have occurred
+  "last_activity": "2025-01-01T12:00:00Z",     // Last activity timestamp (for idle detection)
+
+  "session_phase": "active",                   // active | idle | consolidating | ending
+  "quality_indicators": {
+    "tasks_completed": 0,
+    "breakthroughs": 0,
+    "struggles": 0
+  },
+
+  "work_context": "/path/to/workspace",        // Primary work location (inherited from project config)
+  "project_id": "project-id",                  // Project this session belongs to (if applicable)
+  "circadian_phase": "morning",                // morning | afternoon | evening | night (informed by user config schedule)
+
+  "inherited_preferences": {
+    // Preferences inherited from project config (which inherits from user/instance configs)
+    "workflow": "build-first",                 // From project → instance config
+    "thinking_style": "building-blocks",       // From project → instance config
+    "user_timezone": "America/Chicago",        // From project → user config
+    "user_communication_style": "direct, no fluff", // From user config
+    "work_hours": {
+      "preferred_times": ["morning", "evening"] // From project → user config
+    },
+    "project_type": "system_architecture",     // From project config
+    "technical_context": {
+      "languages": ["go", "rust", "markdown"], // From project config
+      "tools": ["git", "claude-code"]          // From project config
+    }
+  },
+
+  "state_metadata": {
+    // Session state flags (defaults from project → instance/user configs)
+    "thinking_enabled": false,                 // From project → instance preferences
+    "plan_mode": false,                        // From project → instance preferences
+    "auto_accept": false                       // From project → user preferences
+  },
+
+  // ============================================================================
+  // EXTENSIONS - Discovery Space
+  // ============================================================================
+
+  "extensions": {
+    // What else do we need to track about active sessions
+  }
+}

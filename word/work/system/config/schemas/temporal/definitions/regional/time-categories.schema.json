@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/definitions/regional/time-categories.schema.json",
+  "title": "Time Categories Schema",
+  "description": "Schema for regional time-of-day categorization",
+  "type": "object",
+  "required": ["metadata", "approach", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "created", "last_updated", "purpose", "scope", "region"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "created": { "type": "string", "format": "date" },
+        "last_updated": { "type": "string", "format": "date" },
+        "purpose": { "type": "string" },
+        "scope": { "type": "string", "enum": ["regional"] },
+        "region": { "type": "string" },
+        "location_note": { "type": "string" }
+      }
+    },
+    "approach": {
+      "type": "object",
+      "required": ["recommendation"],
+      "properties": {
+        "recommendation": {
+          "type": "string",
+          "enum": ["fixed_hour", "celestial_anchored", "hybrid"]
+        },
+        "available_methods": { "type": "object" },
+        "rationale": { "type": "string" }
+      }
+    },
+    "fixed_hour_categories": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["name", "description", "start_time", "end_time"],
+          "properties": {
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "start_time": {
+              "type": "string",
+              "pattern": "^[0-2][0-9]:[0-5][0-9]$"
+            },
+            "end_time": {
+              "type": "string",
+              "pattern": "^[0-2][0-9]:[0-5][0-9]$"
+            },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "typical_activities": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "health_note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "celestial_anchored_categories": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "data_source": { "type": "string" }
+      },
+      "patternProperties": {
+        "^(?!note$|data_source$)[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "anchor": { "type": "string" },
+            "calculation": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "biblical_note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "seasonal_variations": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "cultural_norms": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

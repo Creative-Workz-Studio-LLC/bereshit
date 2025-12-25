@@ -1,0 +1,171 @@
+# Linux Commands for OmniCode Validation
+# Reference file for validate-omni skill
+
+# ============================================================================
+# PRAGMA EXTRACTION
+# ============================================================================
+
+# Get pragma line from file:
+head -2 FILE.omni | grep "^#!omni"
+
+# Extract type from pragma:
+head -2 FILE.omni | grep -oP "^#!omni \K(template|code|interface|data|documentation|folder)"
+
+# Extract format from pragma (if present):
+head -2 FILE.omni | grep -oP "#!omni [a-z]+ --\K[a-z]+"
+
+# Validate pragma exists and is valid:
+head -2 FILE.omni | grep -qE "^#!omni (template|code|interface|data|documentation|folder)" && echo "VALID" || echo "INVALID"
+
+# ============================================================================
+# BLOCK STRUCTURE ANALYSIS
+# ============================================================================
+
+# Count block markers:
+grep -c "^// ═" FILE.omni
+
+# List all block headers:
+grep -A1 "^// ═" FILE.omni | grep "^// [A-Z]" | grep -v "END"
+
+# List block names only:
+grep "^// [A-Z][A-Z ]" FILE.omni | grep -v "END" | sed 's/^\/\/ //'
+
+# Find block start lines with line numbers:
+grep -n "^// ═" FILE.omni
+
+# Check for END markers:
+grep -n "^// END" FILE.omni
+
+# Verify block pairs (START matches END):
+diff <(grep "^// [A-Z]" FILE.omni | grep -v "END" | sed 's/^\/\/ //') \
+     <(grep "^// END" FILE.omni | sed 's/^\/\/ END //')
+
+# ============================================================================
+# METADATA VALIDATION
+# ============================================================================
+
+# Check biblical foundation:
+grep -n "grounded in:" FILE.omni
+
+# Check identity:
+grep -nE "(serves as|classifies as)" FILE.omni
+
+# Check authorship:
+grep -n "authored by:" FILE.omni
+
+# Check purpose:
+grep -nE "(exists to:|purpose:)" FILE.omni
+
+# Check health scoring:
+grep -n "health:" FILE.omni
+
+# All required sections in one command:
+grep -nE "(grounded in:|serves as|classifies as|authored by:|exists to:|purpose:)" FILE.omni
+
+# Count required sections found:
+grep -cE "(grounded in:|serves as|classifies as|authored by:|exists to:)" FILE.omni
+
+# ============================================================================
+# DERIVES_FROM CHAIN
+# ============================================================================
+
+# Find derives_from declaration:
+grep -nE "(derives from:|derives_from:)" FILE.omni
+
+# Extract template path:
+grep -oP "(derives from:|derives_from:)\s*\K[^\s]+" FILE.omni
+
+# Check if referenced template exists:
+TEMPLATE=$(grep -oP "(derives from:|derives_from:)\s*\K[^\s]+" FILE.omni)
+test -f "$TEMPLATE" && echo "EXISTS" || echo "MISSING"
+
+# ============================================================================
+# SECTION ANALYSIS
+# ============================================================================
+
+# List all top-level sections (4-space indent):
+grep -n "^    [a-z][a-z ]*:" FILE.omni
+
+# List sub-sections (8-space indent):
+grep -n "^        [a-z][a-z ]*:" FILE.omni
+
+# Count sections per block (between block markers):
+awk '/^\/\/ ═/{block++} /^    [a-z].*:/{print block": "$0}' FILE.omni
+
+# Extract section names only:
+grep "^    [a-z][a-z ]*:" FILE.omni | sed 's/^\s*//' | cut -d: -f1
+
+# ============================================================================
+# TERNARY STATE VALIDATION
+# ============================================================================
+
+# Find all ternary markers:
+grep -nE "\((1|-1|0)\)" FILE.omni
+
+# Count ternary groups:
+grep -c "(1)" FILE.omni
+
+# Verify ternary completeness (should have matching counts):
+echo "Positive (1): $(grep -c '(1)' FILE.omni)"
+echo "Neutral (0): $(grep -c '(0)' FILE.omni)"
+echo "Negative (-1): $(grep -c '(-1)' FILE.omni)"
+
+# ============================================================================
+# COMPREHENSIVE VALIDATION SCRIPT
+# ============================================================================
+
+# Full validation one-liner:
+# Replace FILE.omni with actual file
+
+validate_omni() {
+    local file="$1"
+    echo "=== Validating: $file ==="
+
+    # Pragma
+    echo -n "Pragma: "
+    head -2 "$file" | grep -q "^#!omni" && echo "FOUND" || echo "MISSING"
+
+    # Type
+    echo -n "Type: "
+    head -2 "$file" | grep -oP "^#!omni \K[a-z]+" || echo "UNKNOWN"
+
+    # Blocks
+    echo -n "Blocks: "
+    grep -c "^// ═" "$file" | tr -d '\n'
+    echo " markers"
+
+    # Required sections
+    echo "Required sections:"
+    grep -qE "grounded in:" "$file" && echo "  [x] Biblical" || echo "  [ ] Biblical"
+    grep -qE "(serves as|classifies as)" "$file" && echo "  [x] Identity" || echo "  [ ] Identity"
+    grep -q "authored by:" "$file" && echo "  [x] Authorship" || echo "  [ ] Authorship"
+    grep -qE "(exists to:|purpose:)" "$file" && echo "  [x] Purpose" || echo "  [ ] Purpose"
+}
+
+# ============================================================================
+# BATCH VALIDATION
+# ============================================================================
+
+# Validate all .omni files in directory:
+find . -name "*.omni" -exec sh -c 'echo "=== {} ===" && head -2 {} | grep "^#!omni"' \;
+
+# Find .omni files missing pragma:
+find . -name "*.omni" -exec sh -c 'head -2 {} | grep -q "^#!omni" || echo "Missing pragma: {}"' \;
+
+# Count block types across all files:
+find . -name "*.omni" -exec grep -l "^#!omni code" {} \;
+
+# ============================================================================
+# DIFF AND COMPARISON
+# ============================================================================
+
+# Compare structure of two files:
+diff <(grep "^// [A-Z]" FILE1.omni) <(grep "^// [A-Z]" FILE2.omni)
+
+# Compare section names:
+diff <(grep "^    [a-z].*:" FILE1.omni | sed 's/^\s*//') \
+     <(grep "^    [a-z].*:" FILE2.omni | sed 's/^\s*//')
+
+# Show structural differences:
+vimdiff <(grep -E "^// |^    [a-z].*:" FILE1.omni) \
+        <(grep -E "^// |^    [a-z].*:" FILE2.omni)

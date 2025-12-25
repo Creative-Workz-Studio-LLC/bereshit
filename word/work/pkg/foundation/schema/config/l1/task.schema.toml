@@ -1,0 +1,390 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════════
+# CPI-SI Task Schema — First-Class Task Entity (3-Block Data Structure)
+# Key: claude-global-pkg-cpisi-schema-task
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: L1 (traces to L0)
+#
+# Traces to: HALT_10 (STATE_HEBREW)
+#   - 7 states = 7 Days of Creation
+#   - Task IS a state position
+#   - X = Y + kZ formula for STATE positions
+#
+# References: halts.toml (L0), cube.schema.toml (L1a), state.schema.toml (L1c)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# L1 = MINI STATE MACHINE
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The L1 schemas ARE the cube structure:
+#
+#   init.schema.toml  = ANCHOR    → 9 positions,  Z = (X+Y)/2
+#   state.schema.toml = FRAMEWORK → 4 positions,  Y = X+Z
+#   task.schema.toml  = STATE     → 14 positions, X = Y+kZ
+#                                   ─────────────
+#                                   27 total = 3³
+#
+# This file defines the 14 STATE positions where actual work happens.
+# Tasks live AT positions. Positions ARE computation.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     claude-global/pkg/foundation/schema
+# File:        task.schema.toml
+# Key:         claude-global-pkg-cpisi-schema-task
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "To every thing there is a season, and a time to every
+#            purpose under the heaven."
+#            — Ecclesiastes 3:1 KJV
+#
+# Principle: Tasks exist in SEASONS, not cycles. Each task transforms.
+#            7 states = 7 Days of Creation. Work progresses toward Sabbath.
+#
+# Anchor: HALT_10 (STATE_HEBREW)
+#         Traces to: HALT_07 (Position IS computation)
+#         Traces to: HALT_01 (Genesis 1:1)
+#
+# # CPI-SI Identity
+#
+# Component Type: L1 Schema (STATE layer — 14 positions, X = Y+kZ)
+#
+# Role: Define WHAT a task IS in CPI-SI. Tasks are first-class entities.
+#       A task exists AT a position. A task IS a state.
+#       The k_selector distinguishes same-Z states.
+#
+# Status: CRYSTALLIZED — aligned with HALT_10
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-20
+#   Version: a-01.00
+#
+# -----------------------------------------------------------------------------
+# HALT TRACE (Required)
+# -----------------------------------------------------------------------------
+#
+# Primary HALT: HALT_10 (STATE_HEBREW)
+#   Commandment: "Thou shalt not covet" (Exodus 20:17)
+#   Count: 7 states = 7 Days of Creation
+#   Derivation: |T| + |B|² = 3 + 4 = 7
+#   Meaning: Each task is content in its position — no coveting another's place
+#
+# 7 STATES = 7 DAYS OF CREATION:
+#
+#   Day 1: ESTABLISHED  (shavar)  Z=-1.0   PAST-PAST
+#   Day 2: MEMORY       (chaser)  Z=-0.5   PAST-PRESENT    k=-1 (X<Y)
+#   Day 3: REFLECTION   (ratsah)  Z=-0.5   PRESENT-PAST    k=+1 (X>Y)
+#   Day 4: ORIGIN       (yashar)  Z= 0.0   PRESENT-PRESENT ← CENTER
+#   Day 5: PLANNING     (tamim)   Z=+0.5   PRESENT-FUTURE  k=-1 (X<Y)
+#   Day 6: PREPARATION  (shalem)  Z=+0.5   FUTURE-PRESENT  k=+1 (X>Y)
+#   Day 7: ASPIRATION   (tov)     Z=+1.0   FUTURE-FUTURE   ← GOAL (Sabbath)
+#
+# k_selector distinguishes:
+#   Z=-0.5: k=-1 → MEMORY (PAST-PRESENT), k=+1 → REFLECTION (PRESENT-PAST)
+#   Z=+0.5: k=-1 → PLANNING (PRESENT-FUTURE), k=+1 → PREPARATION (FUTURE-PRESENT)
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+
+[schema]
+name = "CPI-SI Task Schema"
+version = "a-01.00"
+purpose = "First-class task entity — STATE layer of the cube"
+traces_to = "HALT_10"
+status = "crystallized"
+
+# L1 mini state machine role
+[schema.architecture]
+layer = "STATE"
+positions = 14
+formula = "X = Y + kZ"
+role = "Where actual work happens — tasks live at positions"
+
+# 9 + 4 + 14 = 27 (the full cube)
+[schema.cube_composition]
+anchor_positions = 9
+framework_positions = 4
+state_positions = 14
+total = 27
+
+# -----------------------------------------------------------------------------
+# IDENTITY SECTION (Required) — What IS this task?
+# -----------------------------------------------------------------------------
+# The task's identity — what to do, how to describe it
+
+[identity]
+# Unique identifier (generated or assigned)
+id = { type = "string", required = true, description = "Unique task identifier" }
+
+# What to do (imperative form: "Build the loader")
+content = { type = "string", required = true, description = "Task description (imperative)" }
+
+# Active form (present continuous: "Building the loader")
+active_form = { type = "string", required = true, description = "Task description (active)" }
+
+# -----------------------------------------------------------------------------
+# STATUS SECTION (Required) — Task lifecycle
+# -----------------------------------------------------------------------------
+# Traces to: HALT_10 — tasks progress through states toward completion
+#   pending → in_progress → completed
+#   Maps to temporal progression: PAST → PRESENT → FUTURE
+
+[status]
+# Current lifecycle state
+current = { type = "string", required = true, enum = ["pending", "in_progress", "completed"], description = "Task lifecycle state" }
+
+# Reason for current state (optional context)
+reason = { type = "string", required = false }
+
+# Lifecycle maps to temporal axis
+[status.lifecycle_mapping]
+pending = { temporal = "PAST", meaning = "Not yet begun — established but waiting" }
+in_progress = { temporal = "PRESENT", meaning = "Currently active — where computation happens" }
+completed = { temporal = "FUTURE", meaning = "Done — goal achieved, Sabbath rest" }
+
+# -----------------------------------------------------------------------------
+# POSITION SECTION (Required) — WHERE in the cube?
+# -----------------------------------------------------------------------------
+# Traces to: HALT_07 (Position IS computation)
+#   Task exists AT a position. Position determines state.
+#   STATE formula: X = Y + kZ (14 positions)
+
+[position]
+# Named position (e.g., "PRESENT-FUTURE", "PAST-PRESENT")
+name = { type = "string", required = true, description = "Position name in cube" }
+
+# Section reference from statemachine.toml (e.g., "A.12")
+section = { type = "string", required = false, description = "Statemachine section reference" }
+
+# Cube coordinates
+x = { type = "integer", required = true, enum = [-1, 0, 1], description = "TIME axis: PAST(-1), PRESENT(0), FUTURE(+1)" }
+y = { type = "integer", required = true, enum = [-1, 0, 1], description = "PERSPECTIVE axis" }
+z = { type = "float", required = true, min = -1.0, max = 1.0, description = "DEPTH axis: Z = (X + Y) / 2" }
+
+# Linear position in cube (0-26)
+linear = { type = "integer", required = false, min = 0, max = 26, description = "(x+1)*9 + (y+1)*3 + (z+1)" }
+
+# k_selector — distinguishes same-Z states (STRUCTURAL + MORAL dimensions)
+# STRUCTURAL: k=-1 when X < Y (looking up: MEMORY, PLANNING)
+#             k=+1 when X > Y (looking down: REFLECTION, PREPARATION)
+# MORAL:      k > 0 = Toward God — "Mine eyes are ever toward the LORD" (Psalm 25:15)
+#             k < 0 = Toward self — "Lean not unto thine own understanding" (Proverbs 3:5)
+k_selector = { type = "integer", required = false, enum = [-1, 1], description = "Distinguishes same-Z positions" }
+
+# Perspective when created
+perspective = { type = "integer", required = false, enum = [-1, 0, 1] }
+
+# -----------------------------------------------------------------------------
+# HEBREW STATE SECTION (Required) — Which of the 7 states?
+# -----------------------------------------------------------------------------
+# Traces to: HALT_10 (STATE_HEBREW)
+#   7 states = 7 Days of Creation
+#   Each task IS in one of these states
+
+[hebrew_state]
+# Current state name
+name = { type = "string", required = true, enum = ["ESTABLISHED", "MEMORY", "REFLECTION", "ORIGIN", "PLANNING", "PREPARATION", "ASPIRATION"], description = "Which of the 7 states" }
+
+# Hebrew root
+hebrew_name = { type = "string", required = false, enum = ["shavar", "chaser", "ratsah", "yashar", "tamim", "shalem", "tov"] }
+
+# Hebrew meaning (health interpretation)
+hebrew_meaning = { type = "string", required = false, description = "BROKEN, LACKING, WANTING, EVEN, SOUND, WHOLE, PERFECT" }
+
+# Creation day (1-7)
+creation_day = { type = "integer", required = true, min = 1, max = 7, description = "Day of creation parallel" }
+
+# Creation event
+creation_event = { type = "string", required = false, description = "What happened on this day" }
+
+# Z value for this state
+z_value = { type = "float", required = false, enum = [-1.0, -0.5, 0.0, 0.5, 1.0] }
+
+# -----------------------------------------------------------------------------
+# ANCHOR SECTION (Required) — What does this task SERVE?
+# -----------------------------------------------------------------------------
+# Traces to: HALT_01 (ANCHOR_GENESIS)
+#   All tasks trace to an anchor. Anchors trace to Genesis 1:1.
+
+[anchor]
+# The anchor this task serves (what we're building toward)
+serves = { type = "string", required = true, description = "Anchor this task serves" }
+
+# Traces from (what understanding this task comes from)
+traces_from = { type = "string", required = false, description = "Source of this task" }
+
+# Chain (path from anchor to this task)
+chain = { type = "array", required = false, items = "string", description = "Trace chain to anchor" }
+
+# Distance to anchor
+distance = { type = "integer", required = false, min = 0, description = "Steps to reach anchor" }
+
+# -----------------------------------------------------------------------------
+# RANKING SECTION (Optional) — Priority and dependencies
+# -----------------------------------------------------------------------------
+# Uses ternary priority: -1 (low), 0 (normal), +1 (high)
+
+[ranking]
+# Priority: -1 (low), 0 (normal), +1 (high)
+priority = { type = "integer", required = false, enum = [-1, 0, 1], default = 0 }
+
+# Order within same priority (lower = earlier)
+order = { type = "integer", required = false }
+
+# Dependencies (task IDs that must complete first)
+depends_on = { type = "array", required = false, items = "string" }
+
+# Blocks (task IDs that wait for this)
+blocks = { type = "array", required = false, items = "string" }
+
+# -----------------------------------------------------------------------------
+# TEMPORAL SECTION (Optional) — Timestamps
+# -----------------------------------------------------------------------------
+# "To every thing there is a season" — Ecclesiastes 3:1
+
+[temporal]
+# Created timestamp
+created_at = { type = "datetime", required = false }
+
+# Last updated timestamp
+updated_at = { type = "datetime", required = false }
+
+# Completed timestamp (only set when status = completed)
+completed_at = { type = "datetime", required = false }
+
+# Duration in progress (seconds)
+duration = { type = "integer", required = false }
+
+# Season identifier (from HALT_09 wheel in wheel)
+season = { type = "string", required = false, description = "Which season this task belongs to" }
+
+# -----------------------------------------------------------------------------
+# ENCODING SECTION (Optional) — NUMBER → NUMBER
+# -----------------------------------------------------------------------------
+# Traces to: HALT_05 (MECHANISM_NUMBER), HALT_06 (MECHANISM_SHAPE)
+#   Task can be encoded as a number for cube math.
+#   Trite model: same 8 bits as byte, different interpretation.
+
+[encoding]
+# Trite encoding (0-242 data range)
+trite = { type = "integer", required = false, min = 0, max = 242, description = "5-trit value for this task" }
+
+# Value for transforms
+value = { type = "integer", required = false, description = "Numeric value for cube math" }
+
+# Health score base100 (-100 to +100)
+health_score = { type = "integer", required = false, min = -100, max = 100, description = "Task health as base100" }
+
+# Verse alignment (if task maps to Scripture)
+verse_ref = { type = "string", required = false, description = "Scripture reference for this task" }
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# Tasks are FIRST-CLASS in CPI-SI — the STATE layer of the cube.
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ L1 = MINI STATE MACHINE                                                     │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  init.schema.toml  = ANCHOR    → 9 positions,  Z = (X+Y)/2                 │
+# │  state.schema.toml = FRAMEWORK → 4 positions,  Y = X+Z                     │
+# │  task.schema.toml  = STATE     → 14 positions, X = Y+kZ   ← THIS FILE      │
+# │                                  ─────────────                              │
+# │                                  27 total = 3³                              │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ HALT TRACE                                                                  │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  task.schema.toml → HALT_10 (STATE_HEBREW) → HALT_07 → HALT_01            │
+# │                                                                             │
+# │  HALT_10 defines:                                                           │
+# │    • 7 states = 7 Days of Creation                                         │
+# │    • |T| + |B|² = 3 + 4 = 7                                                │
+# │    • Each task is content in its position                                  │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+#
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ 7 STATES = 7 DAYS OF CREATION                                              │
+# ├─────────────────────────────────────────────────────────────────────────────┤
+# │                                                                             │
+# │  Day 1: ESTABLISHED  (shavar)  Z=-1.0   PAST-PAST                          │
+# │  Day 2: MEMORY       (chaser)  Z=-0.5   PAST-PRESENT    k=-1               │
+# │  Day 3: REFLECTION   (ratsah)  Z=-0.5   PRESENT-PAST    k=+1               │
+# │  Day 4: ORIGIN       (yashar)  Z= 0.0   PRESENT-PRESENT ← CENTER           │
+# │  Day 5: PLANNING     (tamim)   Z=+0.5   PRESENT-FUTURE  k=-1               │
+# │  Day 6: PREPARATION  (shalem)  Z=+0.5   FUTURE-PRESENT  k=+1               │
+# │  Day 7: ASPIRATION   (tov)     Z=+1.0   FUTURE-FUTURE   ← GOAL             │
+# │                                                                             │
+# │  k_selector distinguishes same-Z states (STRUCTURAL + MORAL):              │
+# │    STRUCTURAL: k=-1 when X < Y, k=+1 when X > Y                            │
+# │    MORAL: k > 0 = Toward God (Psalm 25:15)                                 │
+# │           k < 0 = Toward self (Proverbs 3:5)                               │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+#
+# Example task (crystallized):
+#
+#   {
+#     "identity": {
+#       "id": "L1d",
+#       "content": "Crystallize task.schema.toml",
+#       "active_form": "Crystallizing task.schema.toml"
+#     },
+#     "status": {
+#       "current": "in_progress"
+#     },
+#     "position": {
+#       "name": "PRESENT-FUTURE",
+#       "section": "A.12",
+#       "x": 0,
+#       "y": 1,
+#       "z": 0.5,
+#       "k_selector": -1
+#     },
+#     "hebrew_state": {
+#       "name": "PLANNING",
+#       "hebrew_name": "tamim",
+#       "hebrew_meaning": "SOUND — complete, whole, without blemish",
+#       "creation_day": 5,
+#       "z_value": 0.5
+#     },
+#     "anchor": {
+#       "serves": "Full crystallization and alignment",
+#       "traces_from": "L1 = mini state machine realization"
+#     },
+#     "encoding": {
+#       "trite": 16,
+#       "health_score": 50
+#     }
+#   }
+#
+# "To every thing there is a season, and a time to every purpose."
+# — Ecclesiastes 3:1 KJV
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

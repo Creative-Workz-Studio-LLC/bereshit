@@ -1,0 +1,59 @@
+Logging Library - Rail Status
+================================================================================
+
+Component Type: RAIL (orthogonal infrastructure - Detection Layer)
+Last Updated: 2025-11-21
+
+Phase 0-10 Refinement: Complete
+Orchestrator Extraction: Complete (v1.0.0)
+Status: Foundation-quality with switchboard orchestrator
+
+Rail Architecture Requirements:
+- Stdlib-only (except config.go TOML dependency for configuration)
+- Non-blocking (logging failures never stop component execution)
+- Graceful degradation (fallback to defaults when config/context unavailable)
+- Rails independence (no imports from ladder rungs)
+- Universal availability to all ladder components
+
+Current State (v1.0.0):
+- logger.go: Switchboard orchestrator (1673 lines with comprehensive METADATA/SETUP/BODY/CLOSING)
+- 6 primitive files:
+  * config.go: Configuration loading with TOML (359 lines)
+  * health.go: Health scoring system (175 lines)
+  * context.go: System context capture (425 lines)
+  * entry.go: Entry construction and formatting (520 lines)
+  * writing.go: File writing and rotation (147 lines)
+  * parsing.go: Log file reading (270 lines)
+- Configuration: system/data/config/logging/logging.toml
+- Multi-layer tripwire fallback pattern implemented
+- All phases (0-10) + orchestrator extraction completed successfully
+
+Orchestrator Pattern Decision:
+- Switchboard orchestration - logger.go coordinates stateful operations
+- Justification: Stateful operations (SessionHealth accumulation), lifecycle management
+- Logger struct maintains: SessionHealth, TotalPossibleHealth, NormalizedHealth, ContextID
+- Public API: NewLogger, DeclareHealthTotal, GetHealth, Operation, Success, Failure, etc.
+- Private primitives: context capture, health calculation, entry formatting, file writing
+- See: temporal/patterns/discovered/paradigm/orchestrator-architecture-decision.jsonc
+
+Immune System Architecture:
+- Detection Layer: Captures WHO, WHEN, WHERE, WHAT, WHY, HOW, RESULT
+- Base100 Health Scoring: All operations total 100 points when fully successful
+- Structured logging: Parseable log entries for debugging analysis
+- Component routing: Automatic subdirectory assignment (commands/, scripts/, libraries/, system/)
+- Temporal routing: Current, daily, weekly, monthly, quarterly, yearly organization
+
+Future Work:
+- Configuration loading from logging.toml (Phase 7)
+- Metadata-enhanced logging with restoration routing
+- Real-time log streaming (watch mode)
+- Log compression for rotated files
+- Health trend analysis over time
+
+Notes:
+- Logging's TOML dependency in config.go is INTENTIONAL exception to stdlib-only
+- Rails can use external data parsers (config), but not code dependencies (system libs)
+- Switchboard pattern is CORRECT for stateful lifecycle operations
+- Do not convert to direct primitives - state coordination requires orchestration
+
+================================================================================

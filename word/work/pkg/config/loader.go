@@ -1,137 +1,73 @@
-// #!omni code --go
-// ═══════════════════════════════════════════════════════════════════════════
-// Config Loader Library (4-Block Structure)
-// Key: B-word-work-pkg-config-loader
-// ═══════════════════════════════════════════════════════════════════════════
+// #!omni code --go -library
+// #!omni meta.key = B-word-work-pkg-config-loader
+// #!omni meta.from = bereshit/word/seed/code/go/library.go
+// #!omni meta.at = a-02.50
+// ============================================================================
+// METADATA
+// ============================================================================
 //
-// DEPENDENCY CLASSIFICATION: PURE (standard library + external TOML parser)
-//   - Uses BurntSushi/toml for TOML parsing
-//   - No internal project dependencies
-//
-// derives_from: bereshit/word/seed/code/go/library.go
-// Derived from: Kingdom Technology 4-block code structure
-//
-// ═══════════════════════════════════════════════════════════════════════════
+// Config Loader Library
+// See: standards/code/4-block/
 
-// Package config provides loading and validation of Kingdom Technology config files.
+// Package config loads and validates Kingdom Technology TOML specifications.
 //
-// Config Loader Library - CPI-SI Bereshit Foundation
+// # M.1 Core Identity [IDENTITY]
 //
-// ────────────────────────────────────────────────────────────────
-// CORE IDENTITY (Required)
-// ────────────────────────────────────────────────────────────────
+//	Key:       B-word-work-pkg-config-loader
 //
-// # Biblical Foundation
+//	Scripture: "Thy word is a lamp unto my feet" — Psalm 119:105
+//	Principle: Specifications illuminate the path; structure guides implementation
+//	Anchor:    "Precept upon precept, line upon line" — Isaiah 28:10
 //
-// Scripture: "Thy word is a lamp unto my feet, and a light unto my path."
-//            — Psalm 119:105 KJV
+//	Type:      Ladder (foundation for Phase 3 Config Reader)
 //
-// Principle: Config files are the "word" that guides system behavior.
-//            The loader illuminates these specifications, making them
-//            accessible and validated for all systems to follow.
+//	Architect:       Seanje Lenox-Wise
+//	Implementation:  Nova Dawn
+//	Created:         2025-12-12
+//	Version:         a-02.50
 //
-// Anchor: "The entrance of thy words giveth light; it giveth understanding
-//          unto the simple." — Psalm 119:130 KJV
+// # M.2 Version History [HISTORY]
 //
-// # CPI-SI Identity
+//   - a-02.50 (2025-12-14) — PhD rigor + Bible accessibility refinement
+//   - a-02.00 (2025-12-14) — Tripwire, dependency validation, error types
+//   - a-01.00 (2025-12-12) — Initial creation, basic loading
 //
-// Component Type: Ladder (foundation that Phase 3+ builds upon)
+// # M.3 Interface [INTERFACE]
 //
-// Role: Load and validate Phase 0 config definitions (TOML files)
+//	Requires: stdlib (1): fmt, os, path/filepath, sort | external (-1): github.com/BurntSushi/toml
+//	Used by:  tov/demo/phase-0/demo-config, generate-config, Phase 3 Reader
+//	Import:   import "bereshit/word/work/pkg/config"
+//	Pattern:  SetRoot(path) → LoadAll() → result.Configs["system"]
 //
-// Paradigm: CPI-SI framework component - config as stored truth
+// # M.4 Public API [API]
 //
-// # Authorship & Lineage
+// M.4.1 Configuration [CONFIG]
 //
-//   - Architect: Seanje Lenox-Wise
-//   - Implementation: Nova Dawn
-//   - Created: 2025-12-12
-//   - Version: a-01.00
-//   - Modified: 2025-12-12 - Initial creation for Phase 0 demo
+//	SetRoot(path)                                    Set bereshit root
 //
-// Version History:
+// M.4.2 Loading [LOAD]
 //
-//   - a-01.00 (2025-12-12) - Initial creation, basic loading and validation
+//	LoadAll() LoadResult                             Load all specs (primary)
+//	LoadAllFromIndex() LoadResult                    Manifest-driven loading
+//	LoadIndex() (*IndexManifest, error)              Get manifest directly
+//	LoadSystem(name) ([]*ConfigFile, error)          Load all specs in system
+//	LoadSpec(system, spec) (*ConfigFile, error)      Load single spec
 //
-// # Purpose & Function
+// M.4.3 Validation (tripwire) [CHECK]
 //
-// Purpose: Load Phase 0 config files and prove they exist and validate
+//	DiscoverAndCompare() (DiscoveryResult, error)    Compare manifest to disk
+//	ValidateDependencyGraph() ([]error, error)       Check dependency tree
+//	GetDependencyTree() (map[string]*DependencyNode) Get full graph
 //
-// Core Design: Simple loader that Phase 3 Config Reader will extend
+// M.4.4 Typed Access [ACCESS]
 //
-// Key Features:
+//	LoadMath(), LoadTypes(), LoadLanguage(), LoadBible(), LoadHealth(),
+//	LoadPermission(), LoadIdentity(), LoadNetwork(), LoadFilesystem()
 //
-//   - Load TOML configs from word/core/ directory structure
-//   - Validate TOML syntax parses without errors
-//   - Report what sections/keys exist in each config
-//   - Foundation for Phase 3 typed config reader
+// # M.5 Operational [OPERATIONAL]
 //
-// Philosophy: Prove the configs work now, type them fully in Phase 3
-//
-// ────────────────────────────────────────────────────────────────
-// INTERFACE (Expected)
-// ────────────────────────────────────────────────────────────────
-//
-// # Dependencies
-//
-// What This Needs:
-//
-//   - Standard Library: fmt, os, path/filepath, strings
-//   - External: github.com/BurntSushi/toml (TOML parsing)
-//   - Internal: None (foundation component)
-//
-// What Uses This:
-//
-//   - Commands: tov/demo/phase-0/demo-config (Phase 0 demo)
-//   - Libraries: Phase 3 Config Reader (will extend this)
-//   - Tools: Future validation tools
-//
-// Integration Points:
-//
-//   - Reads from: word/core/ directory (primitives, types, schemas, contracts, bible)
-//   - Returns: LoadResult with parsed data and validation status
-//   - Extends to: Phase 3 adds typed structs for each config
-//
-// # Usage & Integration
-//
-// Import:
-//
-//	import "bereshit/word/work/pkg/config"
-//
-// Integration Pattern:
-//
-//  1. Call config.SetRoot() to set bereshit root path
-//  2. Call config.LoadAll() to load all configs
-//  3. Check result.Valid and result.Errors
-//  4. Access result.Configs for parsed data
-//
-// Public API (in typical usage order):
-//
-//	Configuration:
-//	  SetRoot(path) - Set bereshit root directory
-//
-//	Loading:
-//	  LoadAll() LoadResult - Load all Phase 0 configs
-//	  LoadPrimitives() (*ConfigFile, error) - Load primitives.toml
-//	  LoadTypes() (*ConfigFile, error) - Load types.toml
-//	  LoadSchemas() ([]*ConfigFile, error) - Load all schemas
-//	  LoadContracts() ([]*ConfigFile, error) - Load all contracts
-//	  LoadBibleRail() ([]*ConfigFile, error) - Load bible rail configs
-//
-// ────────────────────────────────────────────────────────────────
-// OPERATIONAL (Contextual)
-// ────────────────────────────────────────────────────────────────
-//
-// # Blocking Status
-//
-// Non-blocking: Config loading failures don't crash, they report errors
-//
-// Mitigation: Each config loaded independently, failures collected in LoadResult.Errors
-//
-// # Health Scoring
-//
-// [OMIT: Phase 0 foundation - health scoring infrastructure not yet built]
-//
+//	Blocking: no (-1) — file I/O only, no network or long-running operations
+//	Health:   Provider | granted (1): loaded | deferred (0): loading | denied (-1): failed
 package config
 
 // ============================================================================
@@ -143,174 +79,272 @@ package config
 // ============================================================================
 //
 // Section order: Imports → Types → Type Methods → Constants → Variables → Package-Level State
+// See: bereshit/word/seed/code/go/library.go > SETUP
 
 // ────────────────────────────────────────────────────────────────
 // Imports
 // ────────────────────────────────────────────────────────────────
 
-//--- Standard Library ---
+//--- I.1 Standard Library [IMPORT] (1) ---
+// Error handling, filesystem, path operations
 import (
-	"fmt"           // Error formatting and output
-	"os"            // File operations
-	"path/filepath" // Path manipulation
-	"sort"          // Sorting keys for consistent output
+	"fmt"           // error formatting
+	"os"            // file reading, environment
+	"path/filepath" // path construction
+	"sort"          // consistent key ordering in extractKeys()
 )
 
-//--- External Packages ---
+//--- I.2 External Packages [IMPORT] (-1) ---
+// TOML parsing (Go stdlib lacks support)
 import (
-	"github.com/BurntSushi/toml" // TOML parsing - stdlib lacks TOML support
+	"github.com/BurntSushi/toml" // TOML decoding
 )
+
+//--- I.3 Internal Packages [IMPORT] (0) ---
+// [Reserved: Pure library — no internal dependencies]
 
 // ────────────────────────────────────────────────────────────────
 // Types
 // ────────────────────────────────────────────────────────────────
-
-//--- Building Blocks ---
-
-// ConfigFile represents a single loaded TOML config file.
 //
-// This is the fundamental unit returned by all Load* functions.
-// Contains both the raw parsed data and metadata about the file.
+// Subsections: Building Blocks, Composed Types, Manifest Types, Discovery Types, Error Types
+
+//--- T.1 Building Blocks [TYPE] (1) ---
+// Fundamental units returned by Load* functions
+
+// ConfigFile represents a single loaded TOML specification file.
+// Access parsed data via Data["section"]["key"].
 //
-// Usage:
-//   cfg, err := config.LoadPrimitives()
-//   fmt.Println(cfg.Name)  // "primitives.toml"
-//   fmt.Println(cfg.Keys)  // ["primitives", "temporal", "addressing"]
+// Example:
+//
+//	cfg, _ := config.LoadSpec("math", "ternary.toml")
+//	cfg.Data["trit"]["values"]  // nested access
+//	cfg.Keys                     // ["arithmetic", "packing", "trit", ...]
 type ConfigFile struct {
-	Name string         // filename only (e.g., "primitives.toml")
-	Path string         // full filesystem path for debugging
-	Data map[string]any // raw TOML structure - access via Data["section"]["key"]
-	Keys []string       // top-level section names, alphabetically sorted
+	Name string         // filename only, e.g., "ternary.toml"
+	Path string         // full path for debugging/re-reading
+	Data map[string]any // raw TOML: Data["section"]["key"]
+	Keys []string       // top-level sections, sorted
 }
 
-//--- Composed Types ---
+//--- T.2 Composed Types [TYPE] (1) ---
+// Aggregates returned by batch loading operations
 
-// LoadResult holds the result of loading all Phase 0 configs.
+// LoadResult holds the result of loading multiple specifications.
+// Returned by LoadAll() and LoadAllFromIndex().
 //
-// Returned by LoadAll() - aggregates all config files with error tracking.
-// Valid is false if ANY config failed to load; check Errors for details.
+// Example:
 //
-// Usage:
-//   result := config.LoadAll()
-//   if !result.Valid {
-//       for _, err := range result.Errors { log.Println(err) }
-//   }
-//   for _, cfg := range result.Configs["schemas"] { /* use cfg */ }
+//	result := config.LoadAll()
+//	if !result.Valid {
+//	    for _, err := range result.Errors { log.Println(err) }
+//	}
+//	for _, cfg := range result.Configs["math"] { /* use cfg */ }
 type LoadResult struct {
-	Valid   bool                     // true only if ALL configs loaded successfully
-	Configs map[string][]*ConfigFile // category -> configs ("core", "schemas", etc.)
-	Errors  []error                  // all errors encountered during loading
-	Summary map[string][]string      // quick reference: category -> filenames or keys
+	Valid   bool                     // true only if ALL loaded successfully
+	Configs map[string][]*ConfigFile // system name -> configs
+	Errors  []error                  // all errors encountered
+	Summary map[string][]string      // system -> filenames (quick reference)
 }
 
-//--- Configuration Types ---
-// [Reserved: No configuration types needed - uses package variable for root path]
-
-//--- Error Types ---
-// [Reserved: Uses standard errors - no custom error types needed]
-
-//--- Index Manifest Types ---
-// For reading word/core/index.toml manifest
+//--- T.3 Manifest Types [TYPE] (1) ---
+// Map directly to word/core/index.toml structure
+// See: word/core/index.toml for source of truth
 
 // IndexManifest represents the word/core/index.toml manifest file.
-// Single source of truth for both loader and generator.
+// Single source of truth for all specifications. Used by loader and generator.
 type IndexManifest struct {
-	Systems []SystemEntry `toml:"systems"`
+	Systems []SystemEntry `toml:"systems"` // 9 systems in dependency order (0-8)
 }
 
-// SystemEntry represents one of the 9 systems in the manifest.
+// SystemEntry represents one of the 9 specification systems.
+// Ordered by dependency (0 = foundation anchor, 8 = highest).
 type SystemEntry struct {
-	Name        string      `toml:"name"`
-	Path        string      `toml:"path"`
-	Order       int         `toml:"order"`
-	Description string      `toml:"description"`
-	Specs       []SpecEntry `toml:"specs"`
+	Name        string      `toml:"name"`        // e.g., "math", "types"
+	Path        string      `toml:"path"`        // relative to word/core/, e.g., "os/health"
+	Order       int         `toml:"order"`       // 0 = anchor, higher = depends on lower
+	Description string      `toml:"description"` // human-readable purpose
+	DependsOn   []string    `toml:"depends_on"`  // system-level dependencies
+	Specs       []SpecEntry `toml:"specs"`       // specs in this system
 }
 
-// SpecEntry represents a single TOML spec within a system.
+// SpecEntry represents a single TOML specification within a system.
 type SpecEntry struct {
-	File        string `toml:"file"`
-	Generates   bool   `toml:"generates"`
-	Output      string `toml:"output"`
-	Description string `toml:"description"`
+	File        string   `toml:"file"`        // e.g., "ternary.toml"
+	Generates   bool     `toml:"generates"`   // true if generates C header
+	Output      string   `toml:"output"`      // e.g., "ternary_math.gen.h"
+	Description string   `toml:"description"` // what this spec defines
+	DependsOn   []string `toml:"depends_on"`  // "system/file.toml" format
+}
+
+//--- T.4 Discovery Types [TYPE] (1) ---
+// Tripwire pattern: compare manifest to filesystem, detect drift
+
+// DiscoveryResult holds manifest vs filesystem comparison.
+// Used by DiscoverAndCompare() to detect configuration drift.
+type DiscoveryResult struct {
+	Manifest   []string // files declared in index.toml
+	Discovered []string // files found on disk
+	Missing    []string // ERROR: in manifest but not on disk
+	Unexpected []string // WARNING: on disk but not in manifest
+	Valid      bool     // true if no missing files
+}
+
+// DependencyNode represents a spec in the dependency graph (DAG).
+// Used by ValidateDependencyGraph() for cycle detection.
+type DependencyNode struct {
+	Spec      string   // "system/file.toml" format
+	DependsOn []string // dependencies in same format
+	Loaded    bool     // tracking for load order validation
+}
+
+//--- T.5 Error Types [TYPE] (1) ---
+// Config-driven errors: originate in DATA, manifest in CODE
+// Each traces back to source spec. See: BODY > Error Helpers for constructors
+
+// LoadError wraps file-level loading failures.
+// Format: "load math/ternary.toml: parse: unexpected EOF"
+type LoadError struct {
+	File string // spec path, e.g., "math/ternary.toml"
+	Op   string // operation: "read", "parse"
+	Err  error  // underlying error
+}
+
+func (e *LoadError) Error() string {
+	return fmt.Sprintf("load %s: %s: %v", e.File, e.Op, e.Err)
+}
+
+func (e *LoadError) Unwrap() error { return e.Err }
+
+// ValidationError represents a spec validation failure.
+// Format: "types/primitives.toml [int9.min_value]: expected int, got string"
+type ValidationError struct {
+	Spec    string // e.g., "types/primitives.toml"
+	Section string // TOML section, e.g., "int9"
+	Field   string // field name, e.g., "min_value"
+	Message string // what's wrong
+}
+
+func (e *ValidationError) Error() string {
+	// Tiered format based on specificity
+	if e.Field != "" {
+		return fmt.Sprintf("%s [%s.%s]: %s", e.Spec, e.Section, e.Field, e.Message)
+	}
+	if e.Section != "" {
+		return fmt.Sprintf("%s [%s]: %s", e.Spec, e.Section, e.Message)
+	}
+	return fmt.Sprintf("%s: %s", e.Spec, e.Message)
+}
+
+// DependencyError represents a dependency graph problem.
+// Format: "math/ternary.toml -> types/missing.toml (missing): not in manifest"
+type DependencyError struct {
+	Spec    string // spec with the problem
+	DepSpec string // problematic dependency (if applicable)
+	Kind    string // "missing" or "cycle"
+	Message string // details
+}
+
+func (e *DependencyError) Error() string {
+	if e.DepSpec != "" {
+		return fmt.Sprintf("%s -> %s (%s): %s", e.Spec, e.DepSpec, e.Kind, e.Message)
+	}
+	return fmt.Sprintf("%s (%s): %s", e.Spec, e.Kind, e.Message)
 }
 
 // ────────────────────────────────────────────────────────────────
 // Type Methods
 // ────────────────────────────────────────────────────────────────
 
-//--- Interface Implementations ---
-// [Reserved: No interface implementations needed - types use direct field access]
-
-//--- Conversion Methods ---
-// [Reserved: No conversion methods needed yet - Phase 3 will add typed conversions]
-
-//--- Accessor Patterns ---
-// [Reserved: Direct field access used - no getters/setters needed]
+//--- TM Type Methods [METHOD] (0) ---
+// [Reserved: Phase 3 — typed accessors, conversion methods]
+// LoadError implements error interface (Error(), Unwrap())
+// ValidationError implements error interface (Error())
+// DependencyError implements error interface (Error())
 
 // ────────────────────────────────────────────────────────────────
 // Constants
 // ────────────────────────────────────────────────────────────────
-
-//--- Path Constants ---
-// Relative paths within bereshit for 9-system architecture.
-// Structure: word/core/{system}/*.toml
 //
-// Dependency order (anchor → up):
-//   1. math/         - Pure constants (foundation)
-//   2. types/        - Primitives, composition, validation
-//   3. language/     - Keywords, syntax
-//   4. bible/        - Scripture addressing, encoding, text
-//   5. os/           - Health (score, log, diagnostics, provider), permission
-//   6. identity/     - Model, contract
-//   7. network/      - Contract, message, timestamp
-//   8. filesystem/   - Contract, types
+// Filesystem paths for navigating the 9-system architecture.
+// Primary source is index.toml; paths here are fallback for direct access.
+//
+// 9-System Architecture (dependency order, 0=anchor):
+//   0. math         — ternary foundation
+//   1. types        — primitives, composition, validation
+//   2. language     — keywords, syntax
+//   3. bible        — scripture text, addressing, encoding
+//   4. os/health    — scores, diagnostics, logging
+//   5. os/permission— access control
+//   6. identity     — model, contract
+//   7. network      — message, timestamp, contract
+//   8. filesystem   — types, contract
 
+//--- K.1 Core Root [DATA] (1) ---
+// Base path for all specs. Used with index.toml SystemEntry.Path.
 const (
-	// CorePath is the relative path to core definitions.
-	CorePath = "word/core"
-
-	// System paths - the 9 systems under word/core/
-	MathPath       = "word/core/math"
-	TypesPath      = "word/core/types"
-	LanguagePath   = "word/core/language"
-	BiblePath      = "word/core/bible"
-	OSPath         = "word/core/os"
-	HealthPath     = "word/core/os/health"
-	PermissionPath = "word/core/os/permission"
-	IdentityPath   = "word/core/identity"
-	NetworkPath    = "word/core/network"
-	FilesystemPath = "word/core/filesystem"
+	CorePath  = "word/core"   // relative to bereshit root
+	IndexFile = "index.toml"  // manifest filename within CorePath
 )
 
-//--- Defaults ---
-// [Reserved: No default values needed - root path required]
+//--- K.2 System Paths [DATA] (1) ---
+// Path constants for system directories and files.
+// Config-driven: index.toml provides paths via SystemEntry.Path
+// Tripwire: Helpers > Fallback Data > fallbackSystemPaths
+
+//--- K.3 Type Constants [DATA] (0) ---
+// [Reserved: No type constants — uses index.toml string values]
+
+//--- K.4 Validation Thresholds [DATA] (0) ---
+// [Reserved: No thresholds — validation at spec load time]
 
 // ────────────────────────────────────────────────────────────────
 // Variables
 // ────────────────────────────────────────────────────────────────
+//
+// Package-level mutable state. Kept minimal — explicit SetRoot() over implicit.
+//
+// Subsections: Configuration State, Sentinel Errors, Registries
 
-//--- Registries ---
-// [Reserved: No registries needed - configs loaded on demand]
-
-//--- Configuration State ---
-// Root path for bereshit directory.
-
+//--- V.1 Configuration State [DATA] (1) ---
+// Set once at startup, read by all Load* functions.
 var (
-	// bereshitRoot is the absolute path to bereshit directory.
-	// Must be set via SetRoot() before loading configs.
-	bereshitRoot string
+	bereshitRoot string      // absolute path, set via SetRoot()
+	loadedIndex  *IndexManifest // cached index after first load
 )
 
-// ────────────────────────────────────────────────────────────────
-// Package-Level State (Rails Pattern)
-// ────────────────────────────────────────────────────────────────
+//--- V.2 Sentinel Errors [DATA] (1) ---
+// Unexported — wrapped by public error types for context.
+// See: BODY > Helpers > checkRoot (errRootNotSet)
+var (
+	errRootNotSet = fmt.Errorf("bereshit root not set — call SetRoot() first")
+)
 
-//--- Rails Infrastructure ---
-// [Reserved: Phase 0 foundation - Rails infrastructure not yet built]
+//--- V.3 Registries [DATA] (1) ---
+// [Reserved: Phase 3 — cached manifests, loaded specs registry]
 
-//--- Initialization ---
-// [Reserved: No init() needed - SetRoot() called explicitly]
+// ────────────────────────────────────────────────────────────────
+// Package-Level State
+// ────────────────────────────────────────────────────────────────
+//
+// Cross-package coordination via established conventions (like Rails).
+// Currently explicit (SetRoot call); Phase 3+ adds init() auto-discovery.
+//
+// Subsections: Coordination Pattern, Initialization Order, Reserved Features
+
+//--- PS.1 Coordination Pattern [DOC] (1) ---
+// All bereshit packages call config.SetRoot() at startup.
+// Root path flows to all Load* functions via package variable.
+
+//--- PS.2 Initialization Order [DOC] (1) ---
+// Sequence of operations for proper initialization.
+//   1. SetRoot() called by main/demo with absolute path
+//   2. LoadAll() parses index.toml and loads specs
+//   3. GetSystem()/GetSpec() return loaded entries
+
+//--- PS.3 Reserved Features [DOC] (0) ---
+// [Reserved: Phase 3+ — Rails infrastructure for cross-package coordination]
+// [Reserved: init() auto-discovery from BERESHIT_ROOT or environment]
 
 // ============================================================================
 // END SETUP
@@ -320,152 +354,231 @@ var (
 // BODY
 // ============================================================================
 //
-// For BODY structure explanation, see: standards/code/4-block/CWS-STD-007-CODE-body-block.md
-//
-// -----------------------------------------------------------------------------
-// BODY Sections Overview
-// -----------------------------------------------------------------------------
-//
-// 1. ORGANIZATIONAL CHART (Internal Structure)
-//    Purpose: Map dependencies and execution flow within this component
-//    Subsections: Ladder Structure → Baton Flow → Module Dependencies → APUs
-//
-// 2. HELPERS/UTILITIES (Internal Support)
-//    Purpose: Foundation functions - simple, focused, reusable utilities
-//    Subsections: Pure Functions → Utility Functions → [Reserved if extracted]
-//
-// 3. CORE OPERATIONS (Business Logic)
-//    Purpose: Component-specific functionality implementing primary purpose
-//    Subsections: [Category 1] → [Category 2] → ... (organized by concern)
-//
-// 4. ERROR HANDLING/RECOVERY (Safety Patterns)
-//    Purpose: Centralized error management and recovery strategies
-//    Subsections: Design Principle → Recovery Strategy → Helper Functions
-//
-// 5. PUBLIC APIs (Exported Interface)
-//    Purpose: Top-level orchestration - simple functions calling proven pieces
-//    Subsections: [Category 1] → [Category 2] → ... (organized by purpose)
-//
 // Section order: Org Chart → Helpers → Core Operations → Error Handling → Public APIs
-// This flows: understand structure → build foundations → implement logic → handle errors → expose interface
-//
-// Universal mapping (see standards for cross-language patterns):
-//   Organizational Chart ≈ Dependency/Flow Documentation
-//   Helpers/Utilities ≈ Internal Functions (static/private)
-//   Core Operations ≈ Business Logic (the work)
-//   Error Handling ≈ Recovery/Safety Patterns
-//   Public APIs ≈ Exported Interface (what others call)
+// See: bereshit/word/seed/code/go/library.go > BODY
 
 // ────────────────────────────────────────────────────────────────
-// Organizational Chart - Internal Structure
+// Organizational Chart
 // ────────────────────────────────────────────────────────────────
 //
-// Ladder Structure (Dependencies):
+// Navigation map for BODY. When lost in implementation, return here.
+// Shows WHERE functions live (layers), HOW they connect (flow), WHAT exists (count).
+//
+// Subsections: Ladder Structure, Baton Flow, APU Inventory
+
+//--- Ladder Structure ---
+// Vertical dependency layers. Bottom supports top. Read bottom-up for foundations.
 //
 //   Public APIs (Top Rungs - Orchestration)
-//   ├── SetRoot() → sets bereshitRoot variable
-//   ├── LoadAll() → tries LoadAllFromIndex(), falls back to LoadSystem()
-//   ├── LoadAllFromIndex() → uses loadIndex(), loadFile()
-//   ├── LoadIndex() → exposes loadIndex() for external tools
-//   ├── LoadSystem(system) → manifest-driven, uses loadIndex(), loadFile()
-//   ├── LoadSpec(system, spec) → manifest-driven, uses loadIndex(), loadFile()
-//   └── Typed Wrappers → LoadMath(), LoadTypes(), etc. delegate to LoadSystem()
+//   ├── Configuration:    SetRoot()
+//   ├── Batch Loading:    LoadAll(), LoadAllFromIndex()
+//   ├── Index Access:     LoadIndex()
+//   ├── Discovery:        DiscoverAndCompare(), ValidateDependencyGraph(), GetDependencyTree()
+//   ├── Generic Loading:  LoadSystem(), LoadSpec()
+//   └── Typed Wrappers:   LoadMath(), LoadTypes(), ... LoadFilesystem(), LoadConstants
+//
+//   Error Handling (Error constructors)
+//   └── newLoadError(), newValidationError(), newDependencyError()
 //
 //   Core Operations (Middle Rungs - Business Logic)
-//   ├── loadIndex() → uses toml.DecodeFile() for manifest
-//   ├── loadFile() → uses toml.DecodeFile(), extractKeys()
-//   └── loadDirectory() → uses filepath.Glob(), loadFile()
+//   ├── Index Loading:      loadIndex()
+//   ├── File Loading:       loadFile() → extractKeys()
+//   ├── Directory Loading:  loadDirectory() → loadFile()
+//   ├── Discovery:          discoverFiles(), compareManifestToDisc()
+//   └── Dependencies:       buildDependencyGraph(), validateDependencies()
 //
 //   Helpers (Bottom Rungs - Foundations)
-//   ├── extractKeys() → pure function (map → sorted keys)
-//   ├── collectNames() → pure function (configs → filenames)
-//   └── fallbackSystemPaths → hardcoded paths for tripwire fallback
-//
-// Baton Flow (Execution Paths):
+//   ├── Pure Functions:     extractKeys(), collectNames()
+//   ├── Guard Functions:    checkRoot()
+//   └── Fallback Data:      fallbackSystemPaths
+
+//--- Baton Flow ---
+// Horizontal execution paths. Entry → processing → Exit. Follow for debugging.
 //
 //   Entry → SetRoot(path)
 //     ↓
-//   LoadAll() ─────────────────────────────┐
-//     │                                    │
-//     ↓ (primary)                          ↓ (tripwire fallback)
-//   LoadAllFromIndex()                   LoadSystem() × 9
-//     │                                    │
-//     ↓                                    ↓
-//   loadIndex() → manifest              fallbackSystemPaths → loadDirectory()
-//     │
-//     ↓
-//   loadFile() for each spec
-//     │
-//     ↓
-//   extractKeys() for each loaded file
-//     ↓
-//   Exit → LoadResult with all configs
+//   LoadAll() ─────────────────────────────────────────────────┐
+//     │                                                        │
+//     ↓ (primary)                                              ↓ (tripwire fallback)
+//   LoadAllFromIndex()                                       LoadSystem() × 9
+//     │                                                        │
+//     ├─ Step 1: loadIndex() → manifest                       │
+//     ├─ Step 2: buildDependencyGraph() → validateDependencies()
+//     ├─ Step 3: compareManifestToDisc() → tripwire          fallbackSystemPaths
+//     ├─ Step 4: loadFile() for each spec                      │
+//     └─ extractKeys() for each file                         loadDirectory()
+//     ↓                                                        ↓
+//   Exit → LoadResult with all configs ←──────────────────────┘
+
+//--- APU Inventory ---
+// Count of Available Processing Units by category.
 //
-// APUs (Available Processing Units):
-// - 16 functions total
-// - 2 helpers (extractKeys, collectNames) + 1 map (fallbackSystemPaths)
-// - 3 core operations (loadIndex, loadFile, loadDirectory)
-// - 13 public APIs (SetRoot, LoadAll, LoadAllFromIndex, LoadIndex,
-//                   LoadSystem, LoadSpec, + 9 typed wrappers)
+//   Total: 25 functions + 1 map
+//   ├── Helpers: 3 functions + 1 map
+//   │   ├── Pure Functions:  extractKeys(), collectNames()
+//   │   ├── Guard Functions: checkRoot()
+//   │   └── Fallback Data:   fallbackSystemPaths
+//   ├── Core Operations: 7 functions
+//   │   ├── loadIndex(), loadFile(), loadDirectory()
+//   │   ├── discoverFiles(), compareManifestToDisc()
+//   │   └── buildDependencyGraph(), validateDependencies()
+//   ├── Error Handling: 3 functions
+//   │   └── newLoadError(), newValidationError(), newDependencyError()
+//   └── Public APIs: 12 functions + 10 wrappers
+//       ├── SetRoot(), LoadAll(), LoadAllFromIndex(), LoadIndex()
+//       ├── DiscoverAndCompare(), ValidateDependencyGraph(), GetDependencyTree()
+//       ├── LoadSystem(), LoadSpec()
+//       └── 9 typed wrappers + 1 deprecated (LoadConstants)
 
 // ────────────────────────────────────────────────────────────────
 // Helpers/Utilities - Internal Support
 // ────────────────────────────────────────────────────────────────
-
-// extractKeys returns sorted top-level keys from a parsed TOML map.
 //
-// Purpose:
-//   Extracts section names from TOML files so we can report what's defined
-//   without parsing the full structure. This gives a quick "what's in here?"
-//   answer for validation and summary reporting.
+// Foundation layer. Higher rungs depend on these, never the reverse.
+// See: Org Chart > Ladder Structure > Helpers
+//
+// Subsections: Pure Functions, Guard Functions, Domain Functions, Fallback Data
+
+//--- H.1 Pure Functions [TRANSFORM] (1) ---
+// No side effects. Same input → same output. Safe to call from anywhere.
+
+// fileExists returns true if path exists on filesystem.
 //
 // Parameters:
-//   - data: The parsed TOML structure as a map (from BurntSushi/toml decoder)
+//   - path: filesystem path to check
 //
 // Returns:
-//   - Alphabetically sorted slice of top-level key names
+//   - bool: true if file exists, false otherwise
 //
-// Example:
-//   For a TOML file with [primitives], [temporal], [addressing] sections,
-//   returns: ["addressing", "primitives", "temporal"]
+// Used by: Core Operations > Index Loading, File Loading
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
+}
+
+// globTOML finds all .toml files in a directory.
+//
+// Parameters:
+//   - dirPath: directory to search
+//
+// Returns:
+//   - []string: matching file paths
+//   - error: glob pattern errors
+//
+// Used by: Core Operations > Directory Loading, Discovery
+func globTOML(dirPath string) ([]string, error) {
+	pattern := filepath.Join(dirPath, "*.toml")
+	matches, err := filepath.Glob(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("glob error for %s: %w", pattern, err)
+	}
+	return matches, nil
+}
+
+// extractKeys returns sorted top-level section names from a TOML map.
+//
+// Parameters:
+//   - data: raw TOML map from toml.DecodeFile
+//
+// Returns:
+//   - []string: sorted section names, used to populate ConfigFile.Keys
+//
+// Used by: Core Operations > File Loading
 func extractKeys(data map[string]any) []string {
-	keys := make([]string, 0, len(data)) // pre-allocate with exact capacity
-	for k := range data {                // walk map, collect top-level TOML section names
+	keys := make([]string, 0, len(data))
+	for k := range data {
 		keys = append(keys, k)
 	}
-	sort.Strings(keys) // alphabetical for consistent output
+	sort.Strings(keys) // deterministic order for testing
 	return keys
+}
+
+// collectNames extracts filenames from a ConfigFile slice.
+//
+// Parameters:
+//   - configs: slice of loaded ConfigFile pointers
+//
+// Returns:
+//   - []string: filenames only (no paths), used for LoadResult.Summary
+//
+// Used by: Public APIs > Load, LoadByIndex
+func collectNames(configs []*ConfigFile) []string {
+	names := make([]string, 0, len(configs))
+	for _, c := range configs {
+		names = append(names, c.Name)
+	}
+	return names // order preserved from configs (slice, not map)
+}
+
+//--- H.2 Guard Functions [CHECK] (1) ---
+// Precondition checks. Call at function entry to fail fast.
+// See: SETUP > Variables > Sentinel Errors (errors returned by guards)
+
+// checkRoot validates bereshitRoot has been set via SetRoot().
+//
+// Returns:
+//   - error: errRootNotSet if bereshitRoot is empty, nil otherwise
+//
+// Used by: Public APIs (all public functions require root)
+func checkRoot() error {
+	if bereshitRoot == "" {
+		return errRootNotSet // see: SETUP > Variables > Sentinel Errors
+	}
+	return nil
+}
+
+//--- H.3 Domain Functions [DOMAIN] (0) ---
+// Reserved: loader.go focuses on loading, not domain transformation.
+// See: Future config.go > Helpers > Domain Functions
+
+//--- H.4 Fallback Data [DATA] (1) ---
+// Static maps for tripwire fallback when index.toml unavailable.
+// Tripwire: K.2 references this section. If K.2 Tripwire breaks, check here.
+
+// fallbackSystemPaths maps system names to hardcoded paths.
+// Used ONLY when index.toml is missing (tripwire fallback).
+var fallbackSystemPaths = map[string]string{
+	"math":       "word/core/math",
+	"types":      "word/core/types",
+	"language":   "word/core/language",
+	"bible":      "word/core/bible",
+	"health":     "word/core/os/health",
+	"permission": "word/core/os/permission",
+	"identity":   "word/core/identity",
+	"network":    "word/core/network",
+	"filesystem": "word/core/filesystem",
 }
 
 // ────────────────────────────────────────────────────────────────
 // Core Operations - Business Logic
 // ────────────────────────────────────────────────────────────────
+//
+// Middle rung. Depends on Helpers below, used by Public APIs above.
+// See: Org Chart > Ladder Structure > Core Operations
+//
+// Subsections: Index Loading, File Loading, Directory Loading, Discovery, Dependencies
 
-// ────────────────────────────────────────────────────────────────
-// Index Loading - Manifest operations
-// ────────────────────────────────────────────────────────────────
+//--- C.1 Index Loading [LOAD] (1) ---
+// Manifest operations. Entry point for manifest-driven loading.
+// Uses: Helpers > Pure Functions > fileExists, SETUP > Constants > CorePath, IndexFile
 
 // loadIndex loads and parses the word/core/index.toml manifest.
 //
-// Purpose:
-//   Reads the single source of truth manifest that defines all specs.
-//   Both loader and generator use this to discover what to process.
-//
 // Returns:
-//   - *IndexManifest: Parsed manifest with all systems and specs
-//   - error: File not found or TOML parse errors
+//   - *IndexManifest: parsed manifest with all systems and specs
+//   - error: file not found or TOML parse errors
 func loadIndex() (*IndexManifest, error) {
-	indexPath := filepath.Join(bereshitRoot, CorePath, "index.toml")
-	if _, err := os.Stat(indexPath); os.IsNotExist(err) {
+	indexPath := filepath.Join(bereshitRoot, CorePath, IndexFile) // CorePath, IndexFile from SETUP > Constants
+	if !fileExists(indexPath) {                                   // Helpers > Pure Functions
 		return nil, fmt.Errorf("index.toml not found: %s", indexPath)
 	}
 
 	var manifest IndexManifest
-	if _, err := toml.DecodeFile(indexPath, &manifest); err != nil {
+	if _, err := toml.DecodeFile(indexPath, &manifest); err != nil { // BurntSushi/toml
 		return nil, fmt.Errorf("index.toml parse error: %w", err)
 	}
 
-	// Sort systems by order
+	// Sort systems by order (0 = anchor, higher = depends on lower)
 	sort.Slice(manifest.Systems, func(i, j int) bool {
 		return manifest.Systems[i].Order < manifest.Systems[j].Order
 	})
@@ -473,76 +586,59 @@ func loadIndex() (*IndexManifest, error) {
 	return &manifest, nil
 }
 
-// ────────────────────────────────────────────────────────────────
-// File Loading - Single file operations
-// ────────────────────────────────────────────────────────────────
+//--- C.2 File Loading [LOAD] (1) ---
+// Single file operations. Core workhorse, used by Directory Loading and Public APIs.
+// Uses: Helpers > Pure Functions > fileExists, extractKeys
 
 // loadFile loads and parses a single TOML file.
 //
-// Purpose:
-//   Core file loading operation. Validates file exists, parses TOML structure,
-//   and returns a ConfigFile with metadata and extracted keys.
-//
 // Parameters:
-//   - path: Full filesystem path to the TOML file
+//   - path: full filesystem path to the TOML file
 //
 // Returns:
-//   - *ConfigFile: Parsed config with name, path, data, and top-level keys
-//   - error: File not found or TOML parse errors
-//
-// Error handling:
-//   - Returns wrapped error with file context for debugging
-//   - Caller decides whether to continue or abort on error
+//   - *ConfigFile: parsed config with name, path, data, and top-level keys
+//   - error: file not found or TOML parse errors
 func loadFile(path string) (*ConfigFile, error) {
-	if _, err := os.Stat(path); os.IsNotExist(err) { // verify file exists before attempting parse
+	if !fileExists(path) { // Helpers > Pure Functions
 		return nil, fmt.Errorf("file not found: %s", path)
 	}
 
-	var data map[string]any                              // TOML decodes into generic map
-	if _, err := toml.DecodeFile(path, &data); err != nil { // BurntSushi/toml handles parsing
+	var data map[string]any
+	if _, err := toml.DecodeFile(path, &data); err != nil { // BurntSushi/toml
 		return nil, fmt.Errorf("TOML parse error in %s: %w", path, err)
 	}
 
 	return &ConfigFile{
-		Name: filepath.Base(path), // just filename, not full path
-		Path: path,                // full path for debugging/re-reading
-		Data: data,                // raw parsed TOML structure
-		Keys: extractKeys(data),   // top-level section names for summary
+		Name: filepath.Base(path),
+		Path: path,
+		Data: data,
+		Keys: extractKeys(data), // Helpers > Pure Functions
 	}, nil
 }
 
-// ────────────────────────────────────────────────────────────────
-// Directory Loading - Multiple file operations
-// ────────────────────────────────────────────────────────────────
+//--- C.3 Directory Loading [LOAD] (1) ---
+// Batch file operations. Builds on File Loading for multi-file directories.
+// Uses: Helpers > Pure Functions > globTOML, Core Operations > File Loading > loadFile
 
 // loadDirectory loads all TOML files from a directory.
 //
-// Purpose:
-//   Batch loading for directories with multiple config files (schemas/, contracts/, bible/).
-//   Uses glob pattern to find all .toml files, then loads each one.
-//
 // Parameters:
-//   - dirPath: Directory path to scan for TOML files
+//   - dirPath: directory path to scan for TOML files
 //
 // Returns:
-//   - []*ConfigFile: All successfully loaded configs (may be partial on error)
-//   - error: First error encountered, with partial results returned
-//
-// Behavior:
-//   - Stops on first error but returns already-loaded configs
-//   - Empty directory returns empty slice, not error
+//   - []*ConfigFile: all successfully loaded configs (partial on error)
+//   - error: first error encountered, partial results still returned
 func loadDirectory(dirPath string) ([]*ConfigFile, error) {
-	pattern := filepath.Join(dirPath, "*.toml") // glob pattern for all TOML files
-	matches, err := filepath.Glob(pattern)      // find all matching files
+	matches, err := globTOML(dirPath) // Helpers > Pure Functions
 	if err != nil {
-		return nil, fmt.Errorf("glob error for %s: %w", pattern, err)
+		return nil, err
 	}
 
-	var configs []*ConfigFile       // accumulator for loaded configs
-	for _, path := range matches {  // iterate through each matched file
-		cfg, err := loadFile(path)  // delegate to single-file loader
+	var configs []*ConfigFile
+	for _, path := range matches {
+		cfg, err := loadFile(path) // Core Operations > File Loading
 		if err != nil {
-			return configs, err     // return partial results with error
+			return configs, err // partial results on error
 		}
 		configs = append(configs, cfg)
 	}
@@ -550,65 +646,288 @@ func loadDirectory(dirPath string) ([]*ConfigFile, error) {
 	return configs, nil
 }
 
+//--- C.4 Discovery [DISCOVER] (1) ---
+// Filesystem awareness. Finds what exists on disk for tripwire comparison.
+// Uses: Helpers > Pure Functions > globTOML, Helpers > Fallback Data > fallbackSystemPaths
+
+// discoverFiles finds all .toml files in a system directory.
+//
+// Parameters:
+//   - systemPath: full path to system directory (e.g., bereshit/word/core/math)
+//
+// Returns:
+//   - []string: sorted filenames found (e.g., ["ternary.toml"])
+//   - error: directory read errors
+func discoverFiles(systemPath string) ([]string, error) {
+	matches, err := globTOML(systemPath) // Helpers > Pure Functions
+	if err != nil {
+		return nil, err
+	}
+
+	var files []string
+	for _, path := range matches {
+		files = append(files, filepath.Base(path))
+	}
+	sort.Strings(files) // deterministic order for comparison
+	return files, nil
+}
+
+// compareManifestToDisc compares index.toml entries to actual files on disk.
+// Tripwire mechanism: missing = ERROR (broken promise), unexpected = WARNING (untracked).
+//
+// Parameters:
+//   - manifest: parsed IndexManifest from loadIndex()
+//
+// Returns:
+//   - DiscoveryResult: comparison with Missing, Unexpected, and Valid status
+func compareManifestToDisc(manifest *IndexManifest) DiscoveryResult {
+	result := DiscoveryResult{Valid: true}
+
+	for _, system := range manifest.Systems {
+		systemPath := filepath.Join(bereshitRoot, CorePath, system.Path)
+
+		// Collect manifest entries for this system
+		var manifestFiles []string
+		for _, spec := range system.Specs {
+			manifestFiles = append(manifestFiles, spec.File)
+			result.Manifest = append(result.Manifest, system.Path+"/"+spec.File)
+		}
+		sort.Strings(manifestFiles)
+
+		// Discover what actually exists
+		discoveredFiles, err := discoverFiles(systemPath) // Discovery (above)
+		if err != nil {                                   // directory missing = all files missing
+			for _, f := range manifestFiles {
+				result.Missing = append(result.Missing, system.Path+"/"+f)
+			}
+			result.Valid = false
+			continue
+		}
+
+		for _, f := range discoveredFiles {
+			result.Discovered = append(result.Discovered, system.Path+"/"+f)
+		}
+
+		// Build sets for O(1) lookup
+		manifestSet := make(map[string]bool)
+		for _, f := range manifestFiles {
+			manifestSet[f] = true
+		}
+		discoveredSet := make(map[string]bool)
+		for _, f := range discoveredFiles {
+			discoveredSet[f] = true
+		}
+
+		// Missing: in manifest but not on disk (ERROR)
+		for _, f := range manifestFiles {
+			if !discoveredSet[f] {
+				result.Missing = append(result.Missing, system.Path+"/"+f)
+				result.Valid = false
+			}
+		}
+
+		// Unexpected: on disk but not in manifest (WARNING)
+		for _, f := range discoveredFiles {
+			if !manifestSet[f] {
+				result.Unexpected = append(result.Unexpected, system.Path+"/"+f)
+			}
+		}
+	}
+
+	return result
+}
+
+//--- C.5 Dependencies [GRAPH] (1) ---
+// Graph operations. Validates dependency DAG before loading.
+// Uses: SETUP > Types > IndexManifest, SystemEntry
+
+// buildDependencyGraph creates a map of all specs and their dependencies.
+//
+// Parameters:
+//   - manifest: parsed IndexManifest from loadIndex()
+//
+// Returns:
+//   - map[string]*DependencyNode: graph keyed by "system/file.toml"
+func buildDependencyGraph(manifest *IndexManifest) map[string]*DependencyNode {
+	graph := make(map[string]*DependencyNode)
+
+	for _, system := range manifest.Systems {
+		for _, spec := range system.Specs {
+			key := system.Path + "/" + spec.File
+			graph[key] = &DependencyNode{
+				Spec:      key,
+				DependsOn: spec.DependsOn,
+				Loaded:    false, // used by topological sort in future phases
+			}
+		}
+	}
+
+	return graph
+}
+
+// validateDependencies checks that all dependencies exist and are acyclic.
+//
+// Parameters:
+//   - graph: dependency graph from buildDependencyGraph()
+//
+// Returns:
+//   - []error: validation errors (empty if valid)
+func validateDependencies(graph map[string]*DependencyNode) []error {
+	var errs []error
+
+	// Phase 1: Check all referenced deps exist in manifest
+	for spec, node := range graph {
+		for _, dep := range node.DependsOn {
+			if _, exists := graph[dep]; !exists {
+				errs = append(errs, newDependencyError(spec, dep, "missing",
+					"dependency not in manifest")) // Error Handling > Error Constructors
+			}
+		}
+	}
+
+	// Phase 2: Check for cycles using DFS
+	visited := make(map[string]bool) // specs fully processed
+	inStack := make(map[string]bool) // specs in current path (cycle detection)
+
+	var checkCycle func(spec string) bool
+	checkCycle = func(spec string) bool {
+		if inStack[spec] {
+			return true // cycle: same spec twice in path
+		}
+		if visited[spec] {
+			return false // already verified
+		}
+
+		visited[spec] = true
+		inStack[spec] = true
+
+		if node, exists := graph[spec]; exists {
+			for _, dep := range node.DependsOn {
+				if checkCycle(dep) {
+					return true
+				}
+			}
+		}
+
+		inStack[spec] = false
+		return false
+	}
+
+	for spec := range graph {
+		if checkCycle(spec) {
+			errs = append(errs, newDependencyError(spec, "", "cycle",
+				"circular dependency detected"))
+			break // one cycle error is enough
+		}
+		visited = make(map[string]bool) // reset for next starting point
+		inStack = make(map[string]bool)
+	}
+
+	return errs
+}
+
 // ────────────────────────────────────────────────────────────────
 // Error Handling/Recovery Patterns
 // ────────────────────────────────────────────────────────────────
 //
-// Design Principle: Non-blocking - individual config failures don't prevent
-// loading other configs. LoadAll collects errors and continues.
+// Config-driven errors: originate in DATA, manifest in CODE, trace back to source.
+// See: SETUP > Types > Error Types for type definitions
+//
+// Subsections: Design Principles, Error Constructors, Recovery Patterns
+
+//--- Design Principles ---
+// Config-driven systems separate DATA from CODE.
+//
+// Error Categories:
+//   - LoadError:       file-level (not found, parse failed)
+//   - ValidationError: spec-level (wrong type, missing field)
+//   - DependencyError: reference-level (missing dep, cycle)
 //
 // Recovery Strategy:
-//   - File not found: Error returned, other configs continue loading
-//   - TOML parse error: Error returned with file context, other configs continue
-//   - Root not set: Error returned immediately from LoadAll
+//   - Non-blocking: collect all errors, continue loading other specs
+//   - Context-rich: every error traces to file → section → field
+//   - Actionable: message tells you what to fix in the data
+
+//--- Error Constructors ---
+// Factory functions for error types. Used by Core Operations and Public APIs.
+
+// newLoadError creates a LoadError with file and operation context.
 //
-// [Reserved: Simple error wrapping via fmt.Errorf - no custom recovery patterns yet]
+// Parameters:
+//   - file: spec path (e.g., "math/ternary.toml")
+//   - op: operation that failed ("read", "parse")
+//   - err: underlying error
+//
+// Returns:
+//   - *LoadError: wrapped error with context
+func newLoadError(file, op string, err error) *LoadError {
+	return &LoadError{File: file, Op: op, Err: err}
+}
+
+// newValidationError creates a ValidationError with location context.
+//
+// Parameters:
+//   - spec: spec path (e.g., "types/primitives.toml")
+//   - section: TOML section (e.g., "int9")
+//   - field: field name (e.g., "min_value"), empty if section-level
+//   - message: what's wrong
+//
+// Returns:
+//   - *ValidationError: error with full location context
+func newValidationError(spec, section, field, message string) *ValidationError {
+	return &ValidationError{Spec: spec, Section: section, Field: field, Message: message}
+}
+
+// newDependencyError creates a DependencyError for graph problems.
+//
+// Parameters:
+//   - spec: spec with the problem
+//   - depSpec: problematic dependency (empty if cycle)
+//   - kind: "missing" or "cycle"
+//   - message: details
+//
+// Returns:
+//   - *DependencyError: error with dependency context
+func newDependencyError(spec, depSpec, kind, message string) *DependencyError {
+	return &DependencyError{Spec: spec, DepSpec: depSpec, Kind: kind, Message: message}
+}
+
+//--- Recovery Patterns ---
+// [Reserved: Phase 3 — error collection, aggregation, partial load, defaults]
 
 // ────────────────────────────────────────────────────────────────
 // Public APIs - Exported Interface
 // ────────────────────────────────────────────────────────────────
+//
+// Top rung. Orchestrates Core Operations for external callers.
+// See: Org Chart > Ladder Structure > Public APIs
+//
+// Subsections: Configuration, Batch Loading, Index Access, Discovery, Generic Loading, Typed Wrappers
 
-// ═══ Configuration ═══
+//--- Configuration ---
+// Package state initialization. Must be called before Load* functions.
 
 // SetRoot sets the bereshit root directory path.
 //
-// Purpose:
-//   Must be called before any Load* functions. Establishes the base path
-//   from which all config paths are resolved.
-//
 // Parameters:
-//   - path: Absolute path to the bereshit repository root
+//   - path: absolute path to the bereshit repository root
 //
 // Example:
-//   config.SetRoot("/home/user/Project/Bereshit")
-//   result := config.LoadAll()
+//
+//	config.SetRoot("/home/user/Project/Bereshit")
+//	result := config.LoadAll()
 func SetRoot(path string) {
-	bereshitRoot = path // stored at package level, persists for all subsequent Load* calls
+	bereshitRoot = path // SETUP > Variables > Configuration State
 }
 
-// ═══ Loading - All Configs ═══
+//--- Batch Loading ---
+// Load all specs at once. Primary entry points for full system loading.
 
-// LoadAll loads all Phase 0 config files and returns a summary.
-//
-// Purpose:
-//   Primary entry point for loading all Phase 0 specifications at once.
-//   Orchestrates loading of primitives, types, schemas, contracts, and bible rail.
-//   Continues loading even if individual files fail - collects all errors.
-//
-// Prerequisites:
-//   - SetRoot() must be called first with valid bereshit path
+// LoadAll loads all config specs and returns a summary.
+// Tries LoadAllFromIndex() first, falls back to typed loaders if index.toml missing.
 //
 // Returns:
-//   - LoadResult containing:
-//     - Valid: true if ALL configs loaded successfully
-//     - Configs: map of loaded configs by category
-//     - Errors: all errors encountered (may have errors even if partially valid)
-//     - Summary: quick reference of what was loaded
-//
-// Behavior:
-//   - Non-blocking: continues loading after individual failures
-//   - Collects all errors for comprehensive error reporting
-//   - Summary shows file names for directories, keys for single files
+//   - LoadResult: Valid, Configs (by system), Errors, Summary
 func LoadAll() LoadResult {
 	result := LoadResult{
 		Valid:   true,                          // assume valid until proven otherwise
@@ -647,113 +966,28 @@ func LoadAll() LoadResult {
 		}
 	}
 
-	// Fallback: Load using hardcoded paths (graceful degradation)
-	// 1. Math (foundation - pure constants)
-	if math, err := LoadMath(); err != nil {
-		result.Errors = append(result.Errors, err)
-		result.Valid = false
-	} else {
-		result.Configs["math"] = math
-		result.Summary["math"] = collectNames(math)
-	}
-
-	// 2. Types (primitives, composition, validation)
-	if types, err := LoadTypes(); err != nil {
-		result.Errors = append(result.Errors, err)
-		result.Valid = false
-	} else {
-		result.Configs["types"] = types
-		result.Summary["types"] = collectNames(types)
-	}
-
-	// 3. Language (keywords, syntax)
-	if lang, err := LoadLanguage(); err != nil {
-		result.Errors = append(result.Errors, err)
-		result.Valid = false
-	} else {
-		result.Configs["language"] = lang
-		result.Summary["language"] = collectNames(lang)
-	}
-
-	// 4. Bible (addressing, encoding, decoding, translation, scripture-text)
-	if bible, err := LoadBible(); err != nil {
-		result.Errors = append(result.Errors, err)
-		result.Valid = false
-	} else {
-		result.Configs["bible"] = bible
-		result.Summary["bible"] = collectNames(bible)
-	}
-
-	// 5. OS/Health (score, log, diagnostics, provider)
-	if health, err := LoadHealth(); err != nil {
-		result.Errors = append(result.Errors, err)
-		result.Valid = false
-	} else {
-		result.Configs["os/health"] = health
-		result.Summary["os/health"] = collectNames(health)
-	}
-
-	// 6. OS/Permission (access)
-	if perm, err := LoadPermission(); err != nil {
-		result.Errors = append(result.Errors, err)
-		result.Valid = false
-	} else {
-		result.Configs["os/permission"] = perm
-		result.Summary["os/permission"] = collectNames(perm)
-	}
-
-	// 7. Identity (model, contract)
-	if id, err := LoadIdentity(); err != nil {
-		result.Errors = append(result.Errors, err)
-		result.Valid = false
-	} else {
-		result.Configs["identity"] = id
-		result.Summary["identity"] = collectNames(id)
-	}
-
-	// 8. Network (contract, message, timestamp)
-	if net, err := LoadNetwork(); err != nil {
-		result.Errors = append(result.Errors, err)
-		result.Valid = false
-	} else {
-		result.Configs["network"] = net
-		result.Summary["network"] = collectNames(net)
-	}
-
-	// 9. Filesystem (contract, types)
-	if fs, err := LoadFilesystem(); err != nil {
-		result.Errors = append(result.Errors, err)
-		result.Valid = false
-	} else {
-		result.Configs["filesystem"] = fs
-		result.Summary["filesystem"] = collectNames(fs)
+	// Fallback: Load using hardcoded paths directly (graceful degradation)
+	// Uses fallbackSystemPaths → loadDirectory. No loadIndex calls (already failed above).
+	for system, path := range fallbackSystemPaths {
+		dirPath := filepath.Join(bereshitRoot, path) // path includes "word/core/" prefix
+		configs, err := loadDirectory(dirPath)       // Core Operations > Directory Loading
+		if err != nil {
+			result.Errors = append(result.Errors, fmt.Errorf("%s: %w", system, err))
+			result.Valid = false
+			continue // partial results - try other systems
+		}
+		result.Configs[system] = configs               // key matches manifest's system.Name
+		result.Summary[system] = collectNames(configs) // Helpers > Pure Functions
 	}
 
 	return result
 }
 
-// collectNames extracts filenames from a slice of ConfigFiles for summary.
-func collectNames(configs []*ConfigFile) []string {
-	names := make([]string, 0, len(configs))
-	for _, c := range configs {
-		names = append(names, c.Name)
-	}
-	return names
-}
-
 // LoadAllFromIndex loads all configs using word/core/index.toml manifest.
-//
-// Purpose:
-//   Manifest-driven loading - reads index.toml to discover what to load.
-//   Single source of truth shared with generator.
-//
-// Advantages over LoadAll():
-//   - Adding new specs only requires editing index.toml, not Go code
-//   - Loader and generator stay in sync automatically
-//   - Dependency order defined in manifest, not hardcoded
+// Manifest-driven: validates deps, compares to disk (tripwire), loads in order.
 //
 // Returns:
-//   - LoadResult: Same structure as LoadAll() for compatibility
+//   - LoadResult: same structure as LoadAll() for compatibility
 func LoadAllFromIndex() LoadResult {
 	result := LoadResult{
 		Valid:   true,
@@ -768,7 +1002,9 @@ func LoadAllFromIndex() LoadResult {
 		return result
 	}
 
-	// Load the manifest
+	// ═══════════════════════════════════════════════════════════════════════
+	// STEP 1: Load the manifest
+	// ═══════════════════════════════════════════════════════════════════════
 	manifest, err := loadIndex()
 	if err != nil {
 		result.Valid = false
@@ -776,7 +1012,49 @@ func LoadAllFromIndex() LoadResult {
 		return result
 	}
 
-	// Walk systems in dependency order (manifest is pre-sorted)
+	// ═══════════════════════════════════════════════════════════════════════
+	// STEP 2: Validate dependency graph
+	// ═══════════════════════════════════════════════════════════════════════
+	graph := buildDependencyGraph(manifest)
+	depErrors := validateDependencies(graph)
+	if len(depErrors) > 0 {
+		for _, e := range depErrors {
+			result.Errors = append(result.Errors, e)
+		}
+		result.Valid = false
+		// Continue anyway - report dependency errors but try to load
+	}
+
+	// ═══════════════════════════════════════════════════════════════════════
+	// STEP 3: Compare manifest to disk (tripwire)
+	// ═══════════════════════════════════════════════════════════════════════
+	discovery := compareManifestToDisc(manifest)
+	if !discovery.Valid {
+		fmt.Println("════════════════════════════════════════════════════════════════")
+		fmt.Println("⚠️  TRIPWIRE: Manifest/Disk Mismatch")
+		fmt.Println("════════════════════════════════════════════════════════════════")
+		for _, missing := range discovery.Missing {
+			fmt.Printf("  ❌ MISSING: %s (in manifest, not on disk)\n", missing)
+			result.Errors = append(result.Errors, fmt.Errorf("missing file: %s", missing))
+		}
+		result.Valid = false
+		fmt.Println("════════════════════════════════════════════════════════════════")
+	}
+	if len(discovery.Unexpected) > 0 {
+		fmt.Println("════════════════════════════════════════════════════════════════")
+		fmt.Println("⚠️  WARNING: Unexpected files (on disk, not in manifest)")
+		fmt.Println("════════════════════════════════════════════════════════════════")
+		for _, unexpected := range discovery.Unexpected {
+			fmt.Printf("  ⚠️  UNEXPECTED: %s\n", unexpected)
+		}
+		fmt.Println("  Consider adding these to word/core/index.toml")
+		fmt.Println("════════════════════════════════════════════════════════════════")
+		// Unexpected files are warnings, not errors - don't set Valid = false
+	}
+
+	// ═══════════════════════════════════════════════════════════════════════
+	// STEP 4: Load all specs in dependency order
+	// ═══════════════════════════════════════════════════════════════════════
 	for _, system := range manifest.Systems {
 		systemPath := filepath.Join(bereshitRoot, CorePath, system.Path)
 		var configs []*ConfigFile
@@ -791,6 +1069,12 @@ func LoadAllFromIndex() LoadResult {
 				continue
 			}
 			configs = append(configs, cfg)
+
+			// Mark as loaded in dependency graph
+			key := system.Path + "/" + spec.File
+			if node, exists := graph[key]; exists {
+				node.Loaded = true
+			}
 		}
 
 		if len(configs) > 0 {
@@ -802,55 +1086,90 @@ func LoadAllFromIndex() LoadResult {
 	return result
 }
 
+//--- Index Access ---
+// Expose manifest for external tools (generator, CLI).
+
 // LoadIndex loads and returns the word/core/index.toml manifest.
 //
-// Purpose:
-//   Exposes the manifest for external tools (like generator) to use.
-//   Returns the same data structure used internally.
+// Returns:
+//   - *IndexManifest: parsed manifest with all systems and specs
+//   - error: if root not set or manifest can't be loaded
 func LoadIndex() (*IndexManifest, error) {
-	if bereshitRoot == "" {
-		return nil, fmt.Errorf("bereshit root not set - call SetRoot() first")
+	if err := checkRoot(); err != nil { // Helpers > Guard Functions
+		return nil, err
 	}
-	return loadIndex()
+	return loadIndex() // Core Operations > Index Loading
 }
 
-// ═══ Generic Loading - Manifest-Driven ═══
-// These functions use index.toml manifest as the primary source.
-// Hardcoded fallbacks only trigger when index.toml is missing.
+//--- Discovery ---
+// Tripwire patterns. Detect manifest/filesystem drift before it causes problems.
 
-// fallbackSystemPaths maps system names to hardcoded paths.
-// Used ONLY when index.toml is missing (tripwire fallback).
-var fallbackSystemPaths = map[string]string{
-	"math":       "word/core/math",
-	"types":      "word/core/types",
-	"language":   "word/core/language",
-	"bible":      "word/core/bible",
-	"health":     "word/core/os/health",
-	"permission": "word/core/os/permission",
-	"identity":   "word/core/identity",
-	"network":    "word/core/network",
-	"filesystem": "word/core/filesystem",
-}
-
-// LoadSystem loads all specs in a system by name.
-//
-// Purpose:
-//   Generic manifest-driven loading. Reads index.toml to find the system
-//   and loads all its specs. Falls back to hardcoded path if index missing.
-//
-// Parameters:
-//   - system: System name as defined in index.toml (e.g., "math", "bible")
+// DiscoverAndCompare compares manifest entries to files on disk.
 //
 // Returns:
-//   - []*ConfigFile: All specs in the system
-//   - error: System not found, or file errors
+//   - DiscoveryResult: Missing (ERROR), Unexpected (WARNING), Valid status
+//   - error: if manifest can't be loaded
+func DiscoverAndCompare() (DiscoveryResult, error) {
+	if err := checkRoot(); err != nil {
+		return DiscoveryResult{}, err
+	}
+	manifest, err := loadIndex()
+	if err != nil {
+		return DiscoveryResult{}, err
+	}
+	return compareManifestToDisc(manifest), nil // Core Operations > Discovery
+}
+
+// ValidateDependencyGraph checks that all dependencies exist and are acyclic.
 //
-// Example:
-//   configs, err := config.LoadSystem("math")
-//   // Returns all specs: ternary.toml
+// Returns:
+//   - []error: validation errors (empty if valid)
+//   - error: if manifest can't be loaded
+func ValidateDependencyGraph() ([]error, error) {
+	if err := checkRoot(); err != nil {
+		return nil, err
+	}
+
+	manifest, err := loadIndex()
+	if err != nil {
+		return nil, err
+	}
+
+	graph := buildDependencyGraph(manifest)
+	return validateDependencies(graph), nil
+}
+
+// GetDependencyTree returns the full dependency graph for visualization/analysis.
+//
+// Returns:
+//   - map[string]*DependencyNode: graph keyed by "system/file.toml"
+//   - error: if manifest can't be loaded
+func GetDependencyTree() (map[string]*DependencyNode, error) {
+	if err := checkRoot(); err != nil {
+		return nil, err
+	}
+	manifest, err := loadIndex()
+	if err != nil {
+		return nil, err
+	}
+	return buildDependencyGraph(manifest), nil // Core Operations > Dependencies
+}
+
+//--- Generic Loading ---
+// Manifest-driven loading. Falls back to Helpers > Fallback Data when index.toml missing.
+
+// LoadSystem loads all specs in a system by name.
+// Uses index.toml manifest; falls back to fallbackSystemPaths if missing.
+//
+// Parameters:
+//   - system: system name (e.g., "math", "bible")
+//
+// Returns:
+//   - []*ConfigFile: all specs in the system
+//   - error: system not found or file errors
 func LoadSystem(system string) ([]*ConfigFile, error) {
-	if bereshitRoot == "" {
-		return nil, fmt.Errorf("bereshit root not set - call SetRoot() first")
+	if err := checkRoot(); err != nil {
+		return nil, err
 	}
 
 	// ═══════════════════════════════════════════════════════════════════════
@@ -890,24 +1209,18 @@ func LoadSystem(system string) ([]*ConfigFile, error) {
 }
 
 // LoadSpec loads a single spec from a system.
-//
-// Purpose:
-//   Load one specific TOML file by system and spec name.
-//   Uses index.toml manifest to resolve paths.
+// Uses index.toml manifest; falls back to fallbackSystemPaths if missing.
 //
 // Parameters:
-//   - system: System name (e.g., "math", "bible")
-//   - spec: Spec filename (e.g., "ternary.toml", "scripture-text.toml")
+//   - system: system name (e.g., "math", "bible")
+//   - spec: spec filename (e.g., "ternary.toml")
 //
 // Returns:
-//   - *ConfigFile: The loaded spec
-//   - error: Spec not found or file errors
-//
-// Example:
-//   cfg, err := config.LoadSpec("math", "ternary.toml")
+//   - *ConfigFile: the loaded spec
+//   - error: spec not found or file errors
 func LoadSpec(system, spec string) (*ConfigFile, error) {
-	if bereshitRoot == "" {
-		return nil, fmt.Errorf("bereshit root not set - call SetRoot() first")
+	if err := checkRoot(); err != nil {
+		return nil, err
 	}
 
 	// ═══════════════════════════════════════════════════════════════════════
@@ -943,74 +1256,36 @@ func LoadSpec(system, spec string) (*ConfigFile, error) {
 	return loadFile(specPath)
 }
 
-// ═══ Typed Access - Thin Wrappers ═══
-// These provide typed access to specific systems.
-// They delegate to generic LoadSystem for manifest-driven loading.
+//--- Typed Wrappers ---
+// Thin wrappers for typed access. All delegate to LoadSystem().
 
-// LoadMath loads word/core/math/*.toml (foundation constants).
-// Thin wrapper around LoadSystem("math") for typed access.
-func LoadMath() ([]*ConfigFile, error) {
-	return LoadSystem("math")
-}
+// LoadMath loads math system (ternary foundation).
+func LoadMath() ([]*ConfigFile, error) { return LoadSystem("math") }
 
-// LoadTypes loads word/core/types/*.toml (primitives, composition, validation).
-// Thin wrapper around LoadSystem("types") for typed access.
-func LoadTypes() ([]*ConfigFile, error) {
-	return LoadSystem("types")
-}
+// LoadTypes loads types system (primitives, composition, validation).
+func LoadTypes() ([]*ConfigFile, error) { return LoadSystem("types") }
 
-// LoadLanguage loads word/core/language/*.toml (keywords, syntax).
-// Thin wrapper around LoadSystem("language") for typed access.
-func LoadLanguage() ([]*ConfigFile, error) {
-	return LoadSystem("language")
-}
+// LoadLanguage loads language system (keywords, syntax).
+func LoadLanguage() ([]*ConfigFile, error) { return LoadSystem("language") }
 
-// LoadBible loads word/core/bible/*.toml.
-// Thin wrapper around LoadSystem("bible") for typed access.
-func LoadBible() ([]*ConfigFile, error) {
-	return LoadSystem("bible")
-}
+// LoadBible loads bible system (scripture text, addressing, encoding).
+func LoadBible() ([]*ConfigFile, error) { return LoadSystem("bible") }
 
-// LoadHealth loads word/core/os/health/*.toml.
-// Thin wrapper around LoadSystem("health") for typed access.
-func LoadHealth() ([]*ConfigFile, error) {
-	return LoadSystem("health")
-}
+// LoadHealth loads os/health system (scores, diagnostics, logging).
+func LoadHealth() ([]*ConfigFile, error) { return LoadSystem("health") }
 
-// LoadPermission loads word/core/os/permission/*.toml.
-// Thin wrapper around LoadSystem("permission") for typed access.
-func LoadPermission() ([]*ConfigFile, error) {
-	return LoadSystem("permission")
-}
+// LoadPermission loads os/permission system (access control).
+func LoadPermission() ([]*ConfigFile, error) { return LoadSystem("permission") }
 
-// LoadIdentity loads word/core/identity/*.toml.
-// Thin wrapper around LoadSystem("identity") for typed access.
-func LoadIdentity() ([]*ConfigFile, error) {
-	return LoadSystem("identity")
-}
+// LoadIdentity loads identity system (model, contract).
+func LoadIdentity() ([]*ConfigFile, error) { return LoadSystem("identity") }
 
-// LoadNetwork loads word/core/network/*.toml.
-// Thin wrapper around LoadSystem("network") for typed access.
-func LoadNetwork() ([]*ConfigFile, error) {
-	return LoadSystem("network")
-}
+// LoadNetwork loads network system (message, timestamp, contract).
+func LoadNetwork() ([]*ConfigFile, error) { return LoadSystem("network") }
 
-// LoadFilesystem loads word/core/filesystem/*.toml.
-// Thin wrapper around LoadSystem("filesystem") for typed access.
-func LoadFilesystem() ([]*ConfigFile, error) {
-	return LoadSystem("filesystem")
-}
+// LoadFilesystem loads filesystem system (types, contract).
+func LoadFilesystem() ([]*ConfigFile, error) { return LoadSystem("filesystem") }
 
-// LoadConstants loads word/core/math/ternary.toml.
-// Deprecated: Use LoadSpec("math", "ternary.toml") for single spec,
-// or LoadMath() for all math specs.
-func LoadConstants() ([]*ConfigFile, error) {
-	cfg, err := LoadSpec("math", "ternary.toml")
-	if err != nil {
-		return nil, err
-	}
-	return []*ConfigFile{cfg}, nil
-}
 
 // ============================================================================
 // END BODY
@@ -1020,105 +1295,53 @@ func LoadConstants() ([]*ConfigFile, error) {
 // CLOSING
 // ============================================================================
 //
-// For CLOSING structure explanation, see: standards/code/4-block/CWS-STD-008-CODE-closing-block.md
-//
-// -----------------------------------------------------------------------------
-// CLOSING Sections Overview
-// -----------------------------------------------------------------------------
-//
-// GROUP 1: CODING (Operations - Verify, Use, Clean)
-//
-// 1. CODE VALIDATION (Testing & Verification)
-//    Purpose: Prove correctness before shipping - build, test, verify
-//    Subsections: Testing Requirements → Integration Testing → Example Usage
-//
-// 2. CODE EXECUTION (Library Usage)
-//    [Reserved: Libraries don't execute - they're imported and called]
-//
-// 3. CODE CLEANUP (Resource Management)
-//    Purpose: Resource management patterns for library consumers
-//    Subsections: Resource Patterns → Error Handling Patterns
-//
-// GROUP 2: FINAL DOCUMENTATION (Synthesis - Reference Back to Earlier Blocks)
-//
-// 4. LIBRARY OVERVIEW (Summary with Back-References)
-//    Purpose: High-level summary pointing back to METADATA for details
-//    References: METADATA "Purpose & Function", "Key Features", "Usage & Integration"
-//
-// 5. MODIFICATION POLICY (Safe/Careful/Never)
-//    Purpose: Guide future maintainers on what's safe to change
-//    Subsections: Safe to Modify → Modify with Care → Never Modify → Validation After
-//
-// 6. LADDER AND BATON FLOW (Back-Reference to BODY)
-//    Purpose: Point to BODY Organizational Chart for architecture
-//    References: BODY "Organizational Chart - Internal Structure"
-//
-// 7. SURGICAL UPDATE POINTS (Back-Reference to BODY)
-//    Purpose: Point to BODY subsection extension points
-//    References: BODY "Core Operations" subsection comments
-//
-// 8. PERFORMANCE CONSIDERATIONS (Back-Reference to SETUP/BODY)
-//    Purpose: Point to performance notes in earlier sections
-//    References: SETUP constants/types, BODY function docstrings
-//
-// 9. TROUBLESHOOTING GUIDE (Back-Reference to BODY)
-//    Purpose: Point to troubleshooting in function docstrings
-//    References: BODY function docstrings with troubleshooting sections
-//
-// 10. RELATED COMPONENTS (Back-Reference to METADATA)
-//     Purpose: Point to METADATA Dependencies section
-//     References: METADATA "Dependencies" section
-//
-// 11. FUTURE EXPANSIONS (Roadmap)
-//     Purpose: Planned features, research areas, integration targets
-//     Subsections: Planned Features → Research Areas → Integration Targets → Known Limitations
-//
-// 12. CONTRIBUTION GUIDELINES (How to Contribute)
-//     Purpose: Guide for contributing to this component
-//     Subsections: How to Contribute → Scripture/Grounding
-//
-// 13. QUICK REFERENCE (Usage Examples)
-//     Purpose: Copy-paste ready examples for common operations
-//     Subsections: Basic Setup → [Pattern Examples] → Advanced Usage
-//
-// Section order: Validation → [Execution Reserved] → Cleanup → Overview → Policy → Ladder/Baton →
-//                Surgical → Performance → Troubleshooting → Related → Future → Contribution → Reference
-// This flows: verify → (no execution) → clean → document → guide future work
-//
+// Section order: [GROUP 1: CODING] Validation → Execution → Cleanup →
+//                [GROUP 2: DOCUMENTATION] Overview → Policy → Ladder/Baton → Surgical →
+//                Performance → Troubleshooting → Related → Future → Quick Reference
+// See: bereshit/word/seed/code/go/library.go > CLOSING
+
 // ════════════════════════════════════════════════════════════════
-// GROUP 1: CODING
+// GROUP 1: CODING - Verify, Use, Clean
 // ════════════════════════════════════════════════════════════════
 //
 // ────────────────────────────────────────────────────────────────
-// Code Validation: Config Loader
+// Code Validation
 // ────────────────────────────────────────────────────────────────
 //
-// Testing Requirements:
+// Prove correctness before shipping. Build, test, verify.
+//
+// Subsections: Testing Requirements, Build Verification, Integration Testing
+
+//--- Testing Requirements ---
 //   - SetRoot must work with valid bereshit path
 //   - LoadAll must find and parse all TOML files in word/core/
-//   - LoadPrimitives, LoadTypes, LoadSchemas, LoadContracts, LoadBibleRail
-//     must return correct files for their respective directories
+//   - LoadSystem, LoadSpec must work for all 9 systems
+//   - DiscoverAndCompare must detect manifest/filesystem drift
+//   - ValidateDependencyGraph must catch cycles and missing deps
 //   - Extracted keys must match actual TOML structure
 //   - Error handling for missing files, invalid TOML, bad paths
-//
-// Build Verification:
+
+//--- Build Verification ---
 //   - go build ./... (compiles without errors)
 //   - go vet ./... (no warnings)
-//
-// Integration Testing:
+
+//--- Integration Testing ---
 //   - Test with tov/demo/phase-0/demo-config/
 //   - Verify configs load from actual bereshit structure
 //   - Check LoadResult.Summary for expected file counts
 //
 // ────────────────────────────────────────────────────────────────
-// Code Execution: None (Library)
+// Code Execution
 // ────────────────────────────────────────────────────────────────
 //
-// [Reserved: Library - imported and called, not executed]
+// [Reserved: Libraries don't execute - they're imported and called]
 //
-// Usage: import "bereshit/word/work/pkg/config"
-//
-// Example:
+// Subsections: Import Pattern, Usage Example
+
+//--- Import Pattern ---
+//   import "bereshit/word/work/pkg/config"
+
+//--- Usage Example ---
 //
 //     package main
 //
@@ -1129,100 +1352,129 @@ func LoadConstants() ([]*ConfigFile, error) {
 //         result := config.LoadAll()
 //         // Use result.Configs, result.Summary
 //     }
-//
+
 // ────────────────────────────────────────────────────────────────
-// Code Cleanup: None (Library)
+// Code Cleanup
 // ────────────────────────────────────────────────────────────────
 //
-// Resource Management:
+// Resource management patterns for library consumers.
+//
+// Subsections: Resource Management, Graceful Shutdown
+
+//--- Resource Management ---
 //   - File handles: Closed immediately after reading (no defer needed by caller)
 //   - TOML data: In-memory maps, garbage collected
 //   - bereshitRoot: Package-level state, persists until process ends
-//
-// Graceful Shutdown:
+
+//--- Graceful Shutdown ---
 //   - N/A: Stateless operations, no cleanup required
 //   - Each Load* function reads and returns, no open resources
-//
+
 // ════════════════════════════════════════════════════════════════
-// FINAL DOCUMENTATION
+// GROUP 2: DOCUMENTATION - Synthesis and Reference
 // ════════════════════════════════════════════════════════════════
 //
 // ────────────────────────────────────────────────────────────────
-// Library Overview & Integration Summary
+// Library Overview
 // ────────────────────────────────────────────────────────────────
 //
-// Purpose: See METADATA "Purpose & Function" section above
+// High-level summary. References METADATA for details.
 //
-// Quick summary:
+// Subsections: Quick Summary, Public API, Architecture
+
+//--- Quick Summary ---
 //   - Config loader for Phase 0 TOML specifications
-//   - Manifest-driven: reads index.toml to discover specs
-//   - Tripwire fallback: uses hardcoded paths only if index.toml missing
+//   - Manifest-driven: reads index.toml as single source of truth
+//   - Tripwire pattern: detect manifest/filesystem drift
+//   - Dependency validation: catch cycles, missing refs before loading
 //   - Foundation for Phase 3 Config Reader
-//
-// Public API:
-//   Configuration: SetRoot
-//   Generic:       LoadAll, LoadAllFromIndex, LoadIndex, LoadSystem, LoadSpec
-//   Typed Access:  LoadMath, LoadTypes, LoadLanguage, LoadBible, LoadHealth,
-//                  LoadPermission, LoadIdentity, LoadNetwork, LoadFilesystem
-//   Deprecated:    LoadConstants (use LoadSpec or LoadMath)
-//
-// Architecture: LADDER - provides structure that Phase 3 builds upon
+
+//--- Public API ---
+//   Configuration:  SetRoot
+//   Loading:        LoadAll, LoadAllFromIndex, LoadIndex, LoadSystem, LoadSpec
+//   Validation:     DiscoverAndCompare, ValidateDependencyGraph, GetDependencyTree
+//   Typed Access:   LoadMath, LoadTypes, LoadLanguage, LoadBible, LoadHealth,
+//                   LoadPermission, LoadIdentity, LoadNetwork, LoadFilesystem
+//   Deprecated:     LoadConstants (use LoadSpec or LoadMath)
+
+//--- Architecture ---
+//   LADDER - provides structure that Phase 3 builds upon
 //
 // ────────────────────────────────────────────────────────────────
 // Modification Policy
 // ────────────────────────────────────────────────────────────────
 //
-// Safe to Modify (Extension Points):
+// Guide for future maintainers. What's safe to change.
+//
+// Subsections: Safe to Modify, Modify with Care, Never Modify
+
+//--- Safe to Modify ---
 //   ✅ Add new Load* functions for new config directories
 //   ✅ Add new path constants for new config locations
 //   ✅ Enhance extractKeys for deeper TOML parsing
 //   ✅ Add new fields to ConfigFile or LoadResult
-//
-// Modify with Extreme Care (Breaking Changes):
+
+//--- Modify with Care ---
 //   ⚠️ Public API function signatures - breaks demo and future consumers
 //   ⚠️ ConfigFile/LoadResult struct fields - breaks accessing code
 //   ⚠️ Path constants - affects what gets loaded
-//
-// NEVER Modify (Foundational Rails):
+
+//--- Never Modify ---
 //   ❌ 4-block structure (METADATA, SETUP, BODY, CLOSING)
 //   ❌ Pattern: SetRoot before Load* calls
 //   ❌ Return types: LoadResult for LoadAll, (*ConfigFile, error) for singles
-//
-// Validation After Modifications:
-//   See "Code Validation" section above
+//   See "Code Validation" above for validation after changes
 //
 // ────────────────────────────────────────────────────────────────
 // Ladder and Baton Flow
 // ────────────────────────────────────────────────────────────────
 //
-// See BODY "Organizational Chart" section above for complete architecture.
+// Points to BODY > Organizational Chart for complete architecture.
 //
-// Quick summary:
-// - 6 public APIs orchestrate 2 core operations using 1 helper
-// - Ladder: Load* → loadFile/loadDirectory → extractKeys
-// - Baton: Caller → SetRoot → Load* → result
-//
+// Subsections: APU Inventory, Ladder, Baton
+
+//--- APU Inventory ---
+//   Total: 25 functions + 1 map
+//   - Public APIs: 12 + 10 wrappers (9 typed + LoadConstants deprecated)
+//   - Core Operations: 7 (index, file, directory, discovery, dependencies)
+//   - Error Handling: 3 constructors (LoadError, ValidationError, DependencyError)
+//   - Helpers: 3 + 1 map (extractKeys, collectNames, checkRoot, fallbackSystemPaths)
+
+//--- Ladder ---
+//   Public APIs → Core Operations → Helpers
+
+//--- Baton ---
+//   SetRoot → LoadAll → [LoadAllFromIndex or fallbackSystemPaths] → result
+
 // ────────────────────────────────────────────────────────────────
-// Surgical Update Points (Extension Guide)
+// Surgical Update Points
 // ────────────────────────────────────────────────────────────────
 //
-// See BODY "Core Operations" section for extension points:
-// - New config location: Add constant in SETUP, function in Public APIs
-// - New loader type: Add Load[Name] following existing pattern
-// - Enhanced parsing: Extend extractKeys helper
-//
+// Extension guide. Points to BODY subsection extension points.
+
+//--- Extension Points ---
+//   - New config location: Add constant in SETUP, function in Public APIs
+//   - New loader type: Add Load[Name] following existing pattern
+//   - Enhanced parsing: Extend extractKeys helper
+
 // ────────────────────────────────────────────────────────────────
 // Performance Considerations
 // ────────────────────────────────────────────────────────────────
 //
-// - File I/O: Each Load* reads from disk; cache results if called repeatedly
-// - LoadAll: Loads all configs at once; more efficient than multiple Load* calls
-// - Memory: All parsed TOML held in memory until result goes out of scope
-//
+// Points to performance notes in SETUP/BODY function docstrings.
+
+//--- Performance Notes ---
+//   - File I/O: Each Load* reads from disk; cache results if called repeatedly
+//   - LoadAll: Loads all configs at once; more efficient than multiple Load* calls
+//   - Memory: All parsed TOML held in memory until result goes out of scope
+
 // ────────────────────────────────────────────────────────────────
 // Troubleshooting Guide
 // ────────────────────────────────────────────────────────────────
 //
+// Common problems and solutions. Points to BODY function docstrings.
+
+//--- Common Problems ---
 // Problem: "file not found" errors
 //   - Check: Did you call SetRoot with valid bereshit path?
 //   - Check: Does word/core/ directory exist at that path?
@@ -1236,72 +1488,78 @@ func LoadConstants() ([]*ConfigFile, error) {
 //   - Check: Ensure proper quoting of strings, valid table syntax
 //
 // ────────────────────────────────────────────────────────────────
-// Related Components & Dependencies
+// Related Components
 // ────────────────────────────────────────────────────────────────
 //
-// Dependencies:
+// Points to METADATA Dependencies section.
+//
+// Subsections: Dependencies, Dependents
+
+//--- Dependencies ---
 //   - github.com/BurntSushi/toml (TOML parsing)
 //   - word/core/ configs (TOML spec files)
-//
-// Dependents:
+
+//--- Dependents ---
 //   - tov/demo/phase-0/demo-config/ (Phase 0 demo)
 //   - Phase 3 Config Reader (future)
-//
+
 // ────────────────────────────────────────────────────────────────
-// Future Expansions & Roadmap
+// Future Expansions
 // ────────────────────────────────────────────────────────────────
 //
-// Planned Features:
+// Roadmap and known limitations.
+//
+// Subsections: Planned Features, Known Limitations, Version History
+
+//--- Planned Features ---
 //   ✓ Basic TOML loading - COMPLETED
 //   ✓ Directory loading - COMPLETED
 //   ✓ Key extraction - COMPLETED
+//   ✓ Manifest-driven loading (index.toml) - COMPLETED
+//   ✓ Tripwire pattern (manifest/disk comparison) - COMPLETED
+//   ✓ Dependency graph validation - COMPLETED
+//   ✓ Folder discovery - COMPLETED
 //   ⏳ Phase 3: Config Reader integration
 //   ⏳ Schema validation
 //   ⏳ Type-safe config structs
-//
-// Known Limitations:
+
+//--- Known Limitations ---
 //   - No validation against schemas (future Phase 3)
 //   - Top-level keys only (no nested key extraction)
 //   - Requires SetRoot before any Load* calls
-//
-// Version History:
+//   - loadIndex() called multiple times (consider caching if perf issue)
+
+//--- Version History ---
+//   a-02.00 (2025-12-14) - Tripwire pattern, dependency validation
+//         - Manifest-driven loading from index.toml
+//         - Folder discovery and manifest comparison
+//         - Dependency graph building and validation
+//         - checkRoot() helper to reduce duplication
 //   a-01.00 (2025-12-12) - Initial implementation
 //         - Basic loader for Phase 0 demo
 //         - Foundation for Phase 3 Config Reader
-//
+
 // ────────────────────────────────────────────────────────────────
-// Closing Note
-// ────────────────────────────────────────────────────────────────
-//
-// This library is a LADDER component - providing the foundation that Phase 3
-// Config Reader will build upon. It proves "specs exist and validate" for
-// Phase 0, demonstrating that the TOML specifications are well-formed.
-//
-// Modify thoughtfully - changes here affect the Phase 0 demo and will impact
-// Phase 3 Config Reader when it extends this foundation.
-//
-// "Thy word is a lamp unto my feet, and a light unto my path." - Psalm 119:105
-//
-// ────────────────────────────────────────────────────────────────
-// Quick Reference: Usage Examples
+// Quick Reference
 // ────────────────────────────────────────────────────────────────
 //
-// Basic Setup:
+// Copy-paste ready examples for common operations.
 //
+// Subsections: Basic Setup, Typed Access, Generic Loading, Data Access
+
+//--- Basic Setup ---
 //     config.SetRoot("/path/to/bereshit")
 //     result := config.LoadAll()
 //     if !result.Valid {
 //         // Handle errors
 //     }
-//
-// Typed access (thin wrappers around LoadSystem):
-//
+
+//--- Typed Access ---
 //     math, err := config.LoadMath()      // All math/*.toml
 //     bible, err := config.LoadBible()    // All bible/*.toml
 //     types, err := config.LoadTypes()    // All types/*.toml
-//
-// Generic manifest-driven loading:
-//
+
+//--- Generic Loading ---
 //     // Load entire system
 //     configs, err := config.LoadSystem("bible")
 //
@@ -1313,12 +1571,20 @@ func LoadConstants() ([]*ConfigFile, error) {
 //     for _, sys := range manifest.Systems {
 //         fmt.Printf("System: %s, Path: %s\n", sys.Name, sys.Path)
 //     }
-//
-// Access loaded data:
-//
+
+//--- Data Access ---
 //     for _, cfg := range result.Configs["bible"] {
 //         fmt.Printf("File: %s, Keys: %v\n", cfg.Name, cfg.Keys)
 //     }
+
+// ────────────────────────────────────────────────────────────────
+// Closing Note
+// ────────────────────────────────────────────────────────────────
+//
+// This library is a LADDER component - foundation for Phase 3 Config Reader.
+// Proves "specs exist and validate" for Phase 0.
+//
+// "Thy word is a lamp unto my feet, and a light unto my path." — Psalm 119:105
 
 // ============================================================================
 // END CLOSING

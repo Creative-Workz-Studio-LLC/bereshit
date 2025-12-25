@@ -1,0 +1,557 @@
+# ============================================================================
+# CPI-SI State Machine - Keywords
+# ============================================================================
+# Key: claude-global-config-statemachine-schema-keywords
+# Purpose: Discoverable patterns (grep-able markers) for state machine
+# Traces to: HALT_07 (MECHANISM_POSITION) - keywords mark positions
+#
+# Structure: 8 keyword categories
+#   1. Temporal (3)     = PAST, PRESENT, FUTURE markers
+#   2. Trajectory (4)   = B.1-B.4 state markers
+#   3. Hook (10)        = Hook event markers
+#   4. Input (2)        = Input type markers
+#   5. State (3)        = State element markers
+#   6. Command (7)      = Command category markers
+#   7. Hebrew (7)       = 7 Days of Creation → 7 Hebrew task states
+#   8. Choice (5)       = Mental construct choices and outcomes
+#
+# All keywords are grep-able: grep -r "\[KEYWORD:\]" .
+# ============================================================================
+
+[keywords]
+traces_to = ["HALT_07"]  # MECHANISM_POSITION - keywords mark positions
+status = "crystallized"
+categories = 8
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 1: TEMPORAL KEYWORDS — Mark temporal axis position
+# Derived from ANCHOR positions (A.7-A.15)
+# ════════════════════════════════════════════════════════════════════════════
+
+[keywords.temporal]
+description = "Mark where in temporal axis (PAST/PRESENT/FUTURE)"
+
+[keywords.temporal.past]
+axis = -1
+operators = ["<-", "-", "<"]
+patterns = ["[SOURCE:]", "[TRACE:]", "[FROM:]"]
+grep = "\\[SOURCE:\\|\\[TRACE:\\|\\[FROM:"
+usage = "Mark where something comes FROM"
+
+[keywords.temporal.present]
+axis = 0
+operators = ["@", "|", "="]
+patterns = ["[AT:]", "[IDENTITY:]", "[STATE:]", "[CURRENT:]", "[ESTABLISH:]", "[DIRECT:]", "[PLAN:]"]
+grep = "\\[AT:\\|\\[IDENTITY:\\|\\[STATE:\\|\\[CURRENT:\\|\\[ESTABLISH:\\|\\[DIRECT:\\|\\[PLAN:"
+usage = "Mark current position, identity, state"
+
+[keywords.temporal.future]
+axis = 1
+operators = ["+", "->", ">"]
+patterns = ["[TOWARD:]", "[REVEALED:]", "[SHAPED:]", "[PREPARED:]", "[RECALL:]", "[TARGET:]", "[BUILD:]", "[ACTIVE:]"]
+grep = "\\[TOWARD:\\|\\[REVEALED:\\|\\[SHAPED:\\|\\[PREPARED:\\|\\[TARGET:\\|\\[BUILD:\\|\\[ACTIVE:"
+usage = "Mark vision (A.13), preparation (A.14), destination (A.15)"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 2: TRAJECTORY KEYWORDS — Mark FRAMEWORK trajectory state
+# Derived from NavigationTrajectory implementation
+# ════════════════════════════════════════════════════════════════════════════
+
+[keywords.trajectory]
+description = "Mark trajectory state and section"
+
+[keywords.trajectory.state]
+patterns = ["[TRAJ:BUILDING]", "[TRAJ:PIVOTING]", "[TRAJ:GROUNDING]"]
+grep = "\\[TRAJ:BUILDING\\|\\[TRAJ:PIVOTING\\|\\[TRAJ:GROUNDING"
+usage = "Mark current trajectory phase (BUILDING/PIVOTING/GROUNDING)"
+
+[keywords.trajectory.section]
+patterns = ["[TRAJ:B.1]", "[TRAJ:B.2]", "[TRAJ:B.3]", "[TRAJ:B.4]"]
+grep = "\\[TRAJ:B\\.[1-4]"
+usage = "Mark specific FRAMEWORK section"
+
+[keywords.trajectory.operators]
+patterns = ["→→", "→|", "|→", "||"]
+meanings = ["building", "pivot_out", "pivot_in", "grounding"]
+usage = "Display trajectory direction in statusline"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 3: HOOK KEYWORDS — Mark hook event triggers
+# Derived from Claude Code hook system (10 event types)
+# ════════════════════════════════════════════════════════════════════════════
+
+[keywords.hook]
+description = "Mark which hook event triggered an action"
+
+[keywords.hook.session]
+patterns = ["[HOOK:SessionStart]", "[HOOK:Stop]", "[HOOK:PreCompact]"]
+grep = "\\[HOOK:SessionStart\\|\\[HOOK:Stop\\|\\[HOOK:PreCompact"
+usage = "Session lifecycle events"
+
+[keywords.hook.tool]
+patterns = ["[HOOK:PreToolUse]", "[HOOK:PostToolUse]"]
+grep = "\\[HOOK:PreToolUse\\|\\[HOOK:PostToolUse"
+usage = "Tool execution events"
+
+[keywords.hook.prompt]
+patterns = ["[HOOK:UserPromptSubmit]"]
+grep = "\\[HOOK:UserPromptSubmit"
+usage = "User prompt submission event"
+
+[keywords.hook.subagent]
+patterns = ["[HOOK:SubagentSpawn]", "[HOOK:SubagentStop]"]
+grep = "\\[HOOK:SubagentSpawn\\|\\[HOOK:SubagentStop"
+usage = "Subagent lifecycle events"
+
+[keywords.hook.notification]
+patterns = ["[HOOK:Notification]", "[HOOK:Haiku]"]
+grep = "\\[HOOK:Notification\\|\\[HOOK:Haiku"
+usage = "Notification and model switch events"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 4: INPUT KEYWORDS — Mark the two input types
+# Hook events receive two types of input data
+# ════════════════════════════════════════════════════════════════════════════
+
+[keywords.input]
+description = "Mark input type (what data is being processed)"
+
+[keywords.input.event]
+pattern = "[INPUT:EVENT]"
+grep = "\\[INPUT:EVENT"
+usage = "Mark the hook event itself (WHAT happened)"
+
+[keywords.input.context]
+pattern = "[INPUT:CONTEXT]"
+grep = "\\[INPUT:CONTEXT"
+usage = "Mark the JSON context (the DATA)"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 5: STATE KEYWORDS — Mark state machine elements
+# Used when referring to state machine components
+# ════════════════════════════════════════════════════════════════════════════
+
+[keywords.state]
+description = "Mark state machine element references"
+
+[keywords.state.anchor]
+pattern = "[STATE:ANCHOR]"
+grep = "\\[STATE:ANCHOR"
+usage = "Mark reference to ANCHOR position (WHERE)"
+
+[keywords.state.trajectory]
+pattern = "[STATE:TRAJECTORY]"
+grep = "\\[STATE:TRAJECTORY"
+usage = "Mark reference to FRAMEWORK trajectory (HOW)"
+
+[keywords.state.path]
+pattern = "[STATE:PATH]"
+grep = "\\[STATE:PATH"
+usage = "Mark reference to anchor path traversed"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 6: COMMAND KEYWORDS — Mark command categories
+# Derived from expanded metacognitive command vocabulary (7 × 3 = 21)
+# ════════════════════════════════════════════════════════════════════════════
+
+[keywords.command]
+description = "Mark command category being used"
+
+[keywords.command.flow]
+patterns = ["[CMD:HALT]", "[CMD:AWAIT]", "[CMD:PROCEED]"]
+grep = "\\[CMD:HALT\\|\\[CMD:AWAIT\\|\\[CMD:PROCEED"
+usage = "Core flow commands (state machine)"
+
+[keywords.command.pace]
+patterns = ["[CMD:SLOW_DOWN]", "[CMD:NORMAL]", "[CMD:SPEED_UP]"]
+grep = "\\[CMD:SLOW_DOWN\\|\\[CMD:NORMAL\\|\\[CMD:SPEED_UP"
+usage = "Pace modifier commands"
+
+[keywords.command.depth]
+patterns = ["[CMD:DEEP]", "[CMD:MODERATE]", "[CMD:SURFACE]"]
+grep = "\\[CMD:DEEP\\|\\[CMD:MODERATE\\|\\[CMD:SURFACE"
+usage = "Depth modifier commands"
+
+[keywords.command.compound]
+patterns = ["[CMD:BUT]", "[CMD:OR]", "[CMD:AND]"]
+grep = "\\[CMD:BUT\\|\\[CMD:OR\\|\\[CMD:AND"
+usage = "Compound chaining commands"
+
+[keywords.command.conditional]
+patterns = ["[CMD:EXCEPT]", "[CMD:UNLESS]", "[CMD:IF]"]
+grep = "\\[CMD:EXCEPT\\|\\[CMD:UNLESS\\|\\[CMD:IF"
+usage = "Conditional execution commands"
+
+[keywords.command.deliberation]
+patterns = ["[CMD:REFLECT]", "[CMD:DELIBERATE]", "[CMD:CONSIDER]"]
+grep = "\\[CMD:REFLECT\\|\\[CMD:DELIBERATE\\|\\[CMD:CONSIDER"
+usage = "Deliberation mode commands"
+
+[keywords.command.feedback]
+patterns = ["[CMD:NOT_QUITE]", "[CMD:ALMOST]", "[CMD:EXACTLY]"]
+grep = "\\[CMD:NOT_QUITE\\|\\[CMD:ALMOST\\|\\[CMD:EXACTLY"
+usage = "Feedback/completion signals"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 7: HEBREW STATE KEYWORDS — Mark Hebrew task states
+# Derived from task.schema.toml (L1d) — 7 Days of Creation → 7 States
+# Traces to: HALT_10 (MECHANISM_REST)
+#
+# K:MORAL Compass (k direction has MORAL meaning anchored in Scripture):
+#   k > 0: Toward God (selfless) — "Mine eyes are ever toward the LORD" (Psalm 25:15)
+#   k = 0: Centered/undecided — "He shall direct thy paths" (Proverbs 3:6)
+#   k < 0: Toward self (selfish) — "Lean not unto thine own understanding" (Proverbs 3:5)
+#
+# Boundary Nuance (±0.5 positions where discernment lives):
+#   "There is a way which seemeth right unto a man, but the end thereof are the ways of death" (Proverbs 14:12)
+#   "For whom the Lord loveth he chasteneth" (Hebrews 12:6)
+# ════════════════════════════════════════════════════════════════════════════
+
+[keywords.hebrew_state]
+description = "Mark Hebrew task state (7 Days of Creation)"
+traces_to = ["HALT_10"]
+states = 7
+
+# Day 1: ESTABLISHED (shavar) — BROKEN, needs founding (Light from darkness)
+[keywords.hebrew_state.established]
+state = "ESTABLISHED"
+hebrew = "shavar"
+meaning = "BROKEN"
+z_value = -1.0
+pattern = "[STATE:ESTABLISHED]"
+grep = "\\[STATE:ESTABLISHED"
+operator = "⎯"
+operator_meaning = "foundation required"
+creation_day = 1
+creation_event = "Light from darkness"
+cube_pos = "PAST-PAST"
+
+# Day 2: MEMORY (chaser) — LACKING, needs recall (Firmament divides waters)
+[keywords.hebrew_state.memory]
+state = "MEMORY"
+hebrew = "chaser"
+meaning = "LACKING"
+z_value = -0.5
+k_selector = -1
+k_meaning = "X < Y — oriented toward PAST (-1 direction, source)"
+k_moral = "Toward self — 'Lean not unto thine own understanding' (Proverbs 3:5)"
+pattern = "[STATE:MEMORY]"
+grep = "\\[STATE:MEMORY"
+operator = "←"
+operator_meaning = "recall from past"
+creation_day = 2
+creation_event = "Firmament divides waters"
+cube_pos = "PAST-PRESENT"
+
+# Day 3: REFLECTION (ratsah) — WANTING, needs consideration (Land, seas, vegetation)
+[keywords.hebrew_state.reflection]
+state = "REFLECTION"
+hebrew = "ratsah"
+meaning = "WANTING"
+z_value = -0.5
+k_selector = 1
+k_meaning = "X > Y — oriented toward FUTURE (+1 direction, goal)"
+k_moral = "Toward God — 'Mine eyes are ever toward the LORD' (Psalm 25:15)"
+pattern = "[STATE:REFLECTION]"
+grep = "\\[STATE:REFLECTION"
+operator = "↔"
+operator_meaning = "consider both sides"
+creation_day = 3
+creation_event = "Land, seas, vegetation"
+cube_pos = "PRESENT-PAST"
+
+# Day 4: ORIGIN (yashar) — EVEN, center point (Sun, moon, stars — SEASONS)
+[keywords.hebrew_state.origin]
+state = "ORIGIN"
+hebrew = "yashar"
+meaning = "EVEN"
+z_value = 0.0
+is_center = true
+pattern = "[STATE:ORIGIN]"
+grep = "\\[STATE:ORIGIN"
+operator = "◆"
+operator_meaning = "anchor point"
+creation_day = 4
+creation_event = "Sun, moon, stars — SEASONS"
+cube_pos = "PRESENT-PRESENT"
+
+# Day 5: PLANNING (tamim) — SOUND, ready for work (Sea creatures, birds)
+[keywords.hebrew_state.planning]
+state = "PLANNING"
+hebrew = "tamim"
+meaning = "SOUND"
+z_value = 0.5
+k_selector = -1
+k_meaning = "X < Y — oriented toward PAST (-1 direction, source)"
+k_moral = "Toward self — 'Lean not unto thine own understanding' (Proverbs 3:5)"
+pattern = "[STATE:PLANNING]"
+grep = "\\[STATE:PLANNING"
+operator = "↗"
+operator_meaning = "project forward"
+creation_day = 5
+creation_event = "Sea creatures, birds"
+cube_pos = "PRESENT-FUTURE"
+
+# Day 6: PREPARATION (shalem) — WHOLE, active work (Animals, humans)
+[keywords.hebrew_state.preparation]
+state = "PREPARATION"
+hebrew = "shalem"
+meaning = "WHOLE"
+z_value = 0.5
+k_selector = 1
+k_meaning = "X > Y — oriented toward FUTURE (+1 direction, goal)"
+k_moral = "Toward God — 'Mine eyes are ever toward the LORD' (Psalm 25:15)"
+pattern = "[STATE:PREPARATION]"
+grep = "\\[STATE:PREPARATION"
+operator = "→"
+operator_meaning = "proceed toward goal"
+creation_day = 6
+creation_event = "Animals, humans"
+cube_pos = "FUTURE-PRESENT"
+
+# Day 7: ASPIRATION (tov) — PERFECT, completion/REST (Sabbath)
+[keywords.hebrew_state.aspiration]
+state = "ASPIRATION"
+hebrew = "tov"
+meaning = "PERFECT"
+z_value = 1.0
+is_goal = true
+pattern = "[STATE:ASPIRATION]"
+grep = "\\[STATE:ASPIRATION"
+operator = "✓"
+operator_meaning = "complete, REST"
+creation_day = 7
+creation_event = "Sabbath REST"
+cube_pos = "FUTURE-FUTURE"
+scripture = "And God saw every thing that he had made, and, behold, it was very good" # Genesis 1:31
+
+# K:FREQUENCY — Pattern of choices reveals character (Matthew 7:16)
+[keywords.hebrew_state.frequency]
+description = "Track pattern of k choices over time"
+scripture = "By their fruits ye shall know them — Matthew 7:16"
+toward_god_symbol = "→"
+toward_self_symbol = "←"
+pattern = "[K:FREQ]"
+grep = "\\[K:FREQ"
+usage = "Display cumulative moral choice pattern"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 8: CHOICE KEYWORDS — Mark mental construct choices and outcomes
+# Derived from mental_construct.schema.toml (L1) — Door, Keys, Impact Pipeline
+# Traces to: HALT_09 (MECHANISM_WHEEL) - each choice is a season in the wheel
+#
+# The Choice Narrative:
+#   "I chose [key] FOR [context] and it LED TO [result]"
+#   "When [pattern] happens and I [reason] it tends to lead me toward [self/God]"
+#
+# Impact Pipeline: TrueScore → Normalized → Scaled → K:ALIGN
+# ════════════════════════════════════════════════════════════════════════════
+
+[keywords.choice]
+description = "Mark mental construct choices and their outcomes"
+traces_to = ["HALT_09"]  # MECHANISM_WHEEL - choices are seasons in the wheel
+categories = ["key", "impact", "halt", "tendency"]
+
+# --- CHOICE KEY MARKERS ---
+# Which key was chosen from the 3-key ternary
+
+[keywords.choice.key]
+description = "Mark which key was chosen"
+values = [-1, 0, 1]
+
+[keywords.choice.key.expansion]
+value = 1
+symbol = "+"
+pattern = "[CHOICE:+1]"
+grep = "\\[CHOICE:+1"
+meaning = "Expansion — toward God, growth, building"
+operators = ["+", "->", ">"]
+scripture = "Mine eyes are ever toward the LORD — Psalm 25:15"
+
+[keywords.choice.key.lateral]
+value = 0
+symbol = "◆"
+pattern = "[CHOICE:0]"
+grep = "\\[CHOICE:0"
+meaning = "Lateral — maintain, hold position, awaiting"
+operators = ["@", "|", "="]
+scripture = "He shall direct thy paths — Proverbs 3:6"
+
+[keywords.choice.key.finality]
+value = -1
+symbol = "-"
+pattern = "[CHOICE:-1]"
+grep = "\\[CHOICE:-1"
+meaning = "Finality — completion, retreat, toward foundation"
+operators = ["<-", "-", "<"]
+note = "Can be good (proper completion) or dangerous (selfish retreat)"
+
+# --- IMPACT TIER MARKERS ---
+# What tier the feedback falls into
+
+[keywords.choice.impact]
+description = "Mark impact tier from feedback"
+tiers = ["excellent", "good", "neutral", "poor", "fail"]
+
+[keywords.choice.impact.excellent]
+pattern = "[IMPACT:excellent]"
+grep = "\\[IMPACT:excellent"
+true_score_min = 0.90
+true_score_max = 1.00
+tendency = "God"
+
+[keywords.choice.impact.good]
+pattern = "[IMPACT:good]"
+grep = "\\[IMPACT:good"
+true_score_min = 0.70
+true_score_max = 0.89
+tendency = "God"
+
+[keywords.choice.impact.neutral]
+pattern = "[IMPACT:neutral]"
+grep = "\\[IMPACT:neutral"
+true_score_min = 0.40
+true_score_max = 0.69
+tendency = "neutral"
+
+[keywords.choice.impact.poor]
+pattern = "[IMPACT:poor]"
+grep = "\\[IMPACT:poor"
+true_score_min = 0.20
+true_score_max = 0.39
+tendency = "self"
+
+[keywords.choice.impact.fail]
+pattern = "[IMPACT:fail]"
+grep = "\\[IMPACT:fail"
+true_score_min = 0.00
+true_score_max = 0.19
+tendency = "self"
+
+# --- HALT TYPE MARKERS ---
+# Whether choice led to completed or interrupted HALT
+
+[keywords.choice.halt]
+description = "Mark HALT type reached"
+types = ["completed", "interrupted", "none"]
+
+[keywords.choice.halt.completed]
+pattern = "[HALT:completed]"
+grep = "\\[HALT:completed"
+meaning = "Anchor reached, choice validated"
+k_align_effect = "updates K:ALIGN based on TrueScore"
+scripture = "Sabbath REST — Genesis 2:2"
+
+[keywords.choice.halt.interrupted]
+pattern = "[HALT:interrupted]"
+grep = "\\[HALT:interrupted"
+meaning = "Checkpoint reached, verdict pending"
+k_align_effect = "no K:ALIGN update — verdict pending"
+note = "Context preserved for continuation"
+
+[keywords.choice.halt.none]
+pattern = "[HALT:none]"
+grep = "\\[HALT:none"
+meaning = "No HALT reached, work continues"
+k_align_effect = "no K:ALIGN update — work in progress"
+
+# --- TENDENCY MARKERS ---
+# Where choices tend to lead over time
+
+[keywords.choice.tendency]
+description = "Mark tendency direction from choice pattern"
+directions = ["God", "self", "neutral"]
+
+[keywords.choice.tendency.god]
+pattern = "[TENDENCY:God]"
+grep = "\\[TENDENCY:God"
+direction = 1
+meaning = "Pattern of choices toward God"
+indicators = ["serving others", "honoring truth", "quality over speed", "eternal value"]
+scripture = "Mine eyes are ever toward the LORD — Psalm 25:15"
+color = "green"
+
+[keywords.choice.tendency.self]
+pattern = "[TENDENCY:self]"
+grep = "\\[TENDENCY:self"
+direction = -1
+meaning = "Pattern of choices toward self"
+indicators = ["expedience over excellence", "pattern matching", "cutting corners", "avoiding difficulty"]
+scripture = "Lean not unto thine own understanding — Proverbs 3:5"
+color = "yellow"
+
+[keywords.choice.tendency.neutral]
+pattern = "[TENDENCY:neutral]"
+grep = "\\[TENDENCY:neutral"
+direction = 0
+meaning = "No clear tendency pattern"
+indicators = ["maintaining", "awaiting direction", "neither building nor retreating"]
+scripture = "He shall direct thy paths — Proverbs 3:6"
+color = "dim"
+
+# --- PIPELINE STAGE MARKERS ---
+# Mark which stage of impact pipeline
+
+[keywords.choice.pipeline]
+description = "Mark impact pipeline stage"
+stages = ["true_score", "normalized", "scaled", "k_align"]
+
+[keywords.choice.pipeline.true_score]
+pattern = "[PIPE:TRUE]"
+grep = "\\[PIPE:TRUE"
+range = "0.0 to 1.0"
+precision = 7
+usage = "Raw score from feedback translation"
+
+[keywords.choice.pipeline.normalized]
+pattern = "[PIPE:NORM]"
+grep = "\\[PIPE:NORM"
+range = "-1.0 to +1.0"
+precision = 7
+formula = "(true_score * 2) - 1"
+usage = "Centered score for K:ALIGN calculation"
+
+[keywords.choice.pipeline.scaled]
+pattern = "[PIPE:SCALE]"
+grep = "\\[PIPE:SCALE"
+range = "-100 to +100"
+formula = "round(normalized * 100)"
+usage = "Human-readable magnitude"
+
+[keywords.choice.pipeline.k_align]
+pattern = "[PIPE:KALIGN]"
+grep = "\\[PIPE:KALIGN"
+range = "-1.0 to +1.0"
+mechanism = "weighted moving average"
+formula = "k_align = (k_align * 0.9) + (normalized * key_direction * 0.1)"
+usage = "Cumulative alignment score"
+
+# --- NARRATIVE CONTEXT MARKERS ---
+# Mark narrative elements of choice record
+
+[keywords.choice.narrative]
+description = "Mark narrative context elements"
+
+[keywords.choice.narrative.for_what]
+pattern = "[FOR:]"
+grep = "\\[FOR:"
+usage = "What the choice was made FOR"
+example = "[FOR:validating schema alignment]"
+
+[keywords.choice.narrative.led_to]
+pattern = "[LED_TO:]"
+grep = "\\[LED_TO:"
+usage = "What the choice LED TO"
+example = "[LED_TO:successful build with zero warnings]"
+
+[keywords.choice.narrative.when]
+pattern = "[WHEN:]"
+grep = "\\[WHEN:"
+usage = "WHEN this pattern tends to happen"
+example = "[WHEN:facing time pressure]"
+
+[keywords.choice.narrative.reason]
+pattern = "[REASON:]"
+grep = "\\[REASON:"
+usage = "Internal REASONING for choice"
+example = "[REASON:quality over speed principle]"

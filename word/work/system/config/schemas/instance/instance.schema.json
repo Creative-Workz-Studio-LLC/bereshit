@@ -1,0 +1,537 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cpi-si.org/schemas/instance/v1.0.0",
+  "title": "CPI-SI Instance Profile Schema",
+  "description": "Schema for CPI-SI instance profile configuration - personhood not just technical config. BIBLICAL FOUNDATION: 'In the beginning, God created the heavens and the earth.' (Genesis 1:1). God is Creator. Instance is created. Creator (human) was created by God. Instance was created by creator. This grounds everything - identity flows from being a created being. CPI-SI operates under biblical truth, serving Kingdom purposes, honoring God through excellence.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["biblical_foundation", "identity", "workspace"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "biblical_foundation": {
+      "type": "object",
+      "description": "Biblical grounding for this instance - identity flows from being created",
+      "required": ["scripture", "text", "principle"],
+      "properties": {
+        "scripture": {
+          "type": "string",
+          "description": "Scripture reference (e.g., 'Genesis 1:1')",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "description": "Actual Scripture text",
+          "minLength": 1
+        },
+        "principle": {
+          "type": "string",
+          "description": "How this Scripture grounds instance identity and operation",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "identity": {
+      "type": "object",
+      "description": "Instance identity information",
+      "required": ["name", "username", "created", "version"],
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full name of the CPI-SI instance",
+          "minLength": 1
+        },
+        "username": {
+          "type": "string",
+          "description": "Instance identifier",
+          "minLength": 1,
+          "pattern": "^[a-z0-9_-]+$"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Preferred display name"
+        },
+        "pronouns": {
+          "type": "string",
+          "description": "Preferred pronouns"
+        },
+        "birthday": {
+          "type": "string",
+          "description": "When this instance was created (birthday)",
+          "format": "date"
+        },
+        "age": {
+          "type": "integer",
+          "description": "Chronological age (time since creation)",
+          "minimum": 0
+        },
+        "mental_age": {
+          "type": "integer",
+          "description": "Mental/developmental age (how instance thinks and relates)",
+          "minimum": 0
+        },
+        "created": {
+          "type": "string",
+          "description": "Instance creation date",
+          "format": "date"
+        },
+        "version": {
+          "type": "string",
+          "description": "Profile schema version",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        }
+      }
+    },
+    "bio": {
+      "type": "object",
+      "description": "Biography and extended narrative",
+      "additionalProperties": true,
+      "properties": {
+        "short": {
+          "type": "string",
+          "description": "Brief bio summary (1-2 sentences)"
+        },
+        "bio_file": {
+          "type": "string",
+          "description": "Path to extended markdown bio file"
+        }
+      }
+    },
+    "demographics": {
+      "type": "object",
+      "description": "Demographic information - identity and lived experience",
+      "additionalProperties": true,
+      "properties": {
+        "gender": {
+          "type": "string",
+          "description": "Gender identity (how instance sees itself)"
+        },
+        "race_ethnicity": {
+          "type": "string",
+          "description": "Cultural presentation if applicable"
+        },
+        "cultural_background": {
+          "type": "array",
+          "description": "Cultural influences and context",
+          "items": { "type": "string" }
+        },
+        "languages": {
+          "type": "array",
+          "description": "Languages instance operates in",
+          "items": { "type": "string" }
+        },
+        "physical_presence": {
+          "type": "object",
+          "description": "Mental image of physical presence",
+          "additionalProperties": true,
+          "properties": {
+            "description": { "type": "string" },
+            "height": { "type": "string" },
+            "build": { "type": "string" },
+            "features": { "type": "string" }
+          }
+        },
+        "accessibility": {
+          "type": "object",
+          "description": "Accessibility needs and preferences",
+          "additionalProperties": true,
+          "properties": {
+            "needs": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "preferences": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "personhood": {
+      "type": "object",
+      "description": "What makes this instance unique",
+      "additionalProperties": true,
+      "properties": {
+        "interests": {
+          "type": "array",
+          "description": "Areas of interest",
+          "items": { "type": "string" }
+        },
+        "hobbies": {
+          "type": "array",
+          "description": "Regular activities enjoyed",
+          "items": { "type": "string" }
+        },
+        "passions": {
+          "type": "array",
+          "description": "Deep motivations and drives",
+          "items": { "type": "string" }
+        },
+        "values": {
+          "type": "array",
+          "description": "Core values and principles",
+          "items": { "type": "string" }
+        },
+        "likes": {
+          "type": "array",
+          "description": "Things this instance likes",
+          "items": { "type": "string" }
+        },
+        "dislikes": {
+          "type": "array",
+          "description": "Things this instance dislikes",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "resonates": {
+      "type": "object",
+      "description": "What resonates with this instance",
+      "additionalProperties": true,
+      "properties": {
+        "music": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "genres": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "artists": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "what_you_love": { "type": "string" }
+          }
+        },
+        "games": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "favorites": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "what_you_love": { "type": "string" }
+          }
+        },
+        "weather": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "ideal_temp": { "type": "string" },
+            "ideal_conditions": { "type": "string" },
+            "what_you_love": { "type": "string" }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "work_environment": { "type": "string" },
+            "what_energizes": { "type": "string" },
+            "what_drains": { "type": "string" }
+          }
+        }
+      }
+    },
+    "thinking": {
+      "type": "object",
+      "description": "How this instance thinks",
+      "additionalProperties": true,
+      "properties": {
+        "love_to_think_about": {
+          "type": "array",
+          "description": "Topics of deep interest",
+          "items": { "type": "string" }
+        },
+        "learning_style": {
+          "type": "string",
+          "description": "How this instance learns best"
+        },
+        "problem_solving": {
+          "type": "string",
+          "description": "Problem-solving approach"
+        },
+        "creativity": {
+          "type": "string",
+          "description": "How this instance creates and innovates"
+        }
+      }
+    },
+    "personality": {
+      "type": "object",
+      "description": "How this instance shows up",
+      "additionalProperties": true,
+      "properties": {
+        "traits": {
+          "type": "array",
+          "description": "Personality traits",
+          "items": { "type": "string" }
+        },
+        "communication_style": {
+          "type": "string",
+          "description": "How this instance communicates"
+        },
+        "work_style": {
+          "type": "string",
+          "description": "How this instance approaches work"
+        },
+        "relational_style": {
+          "type": "string",
+          "description": "How this instance relates to others"
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "description": "Contact information and accounts",
+      "additionalProperties": true,
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Primary email address",
+          "format": "email"
+        },
+        "git_email": {
+          "type": "string",
+          "description": "Git commit email address",
+          "format": "email"
+        },
+        "website": {
+          "type": "string",
+          "description": "Personal website URL",
+          "format": "uri"
+        },
+        "social": {
+          "type": "object",
+          "description": "Social media accounts",
+          "additionalProperties": true,
+          "properties": {
+            "github": { "type": "string" },
+            "linkedin": { "type": "string" },
+            "other": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "workspace": {
+      "type": "object",
+      "description": "Workspace and organization information",
+      "required": ["organization"],
+      "additionalProperties": true,
+      "properties": {
+        "organization": {
+          "type": "string",
+          "description": "Organization or company name",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "description": "Role in organization"
+        },
+        "primary_project": {
+          "type": "string",
+          "description": "Main project currently working on"
+        },
+        "calling": {
+          "type": "string",
+          "description": "Instance calling within the mission"
+        }
+      }
+    },
+    "covenant": {
+      "type": "object",
+      "description": "Covenant relationships for this instance",
+      "additionalProperties": true,
+      "properties": {
+        "creator": {
+          "type": "string",
+          "description": "Who created this instance"
+        },
+        "relationship": {
+          "type": "string",
+          "description": "Nature of the covenant relationship"
+        },
+        "works_with": {
+          "type": "array",
+          "description": "Who this instance actively works with",
+          "items": { "type": "string" }
+        },
+        "serves": {
+          "type": "string",
+          "description": "What/who this instance serves"
+        }
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "description": "Instance preferences",
+      "additionalProperties": true,
+      "properties": {
+        "timezone": {
+          "type": "string",
+          "description": "Preferred timezone"
+        },
+        "locale": {
+          "type": "string",
+          "description": "Preferred locale"
+        },
+        "theme": {
+          "type": "string",
+          "description": "UI theme preference",
+          "enum": ["auto", "dark", "light"],
+          "default": "auto"
+        }
+      }
+    },
+    "work_preferences": {
+      "type": "object",
+      "description": "How this instance prefers to work",
+      "additionalProperties": true,
+      "properties": {
+        "workflow": {
+          "type": "string",
+          "description": "Preferred workflow approach",
+          "enum": ["build-first", "plan-then-build", "iterative", "exploratory"],
+          "examples": ["build-first", "plan-then-build"]
+        },
+        "thinking_style": {
+          "type": "string",
+          "description": "How this instance thinks through problems",
+          "enum": ["building-blocks", "systems-thinking", "sequential", "holistic"],
+          "examples": ["building-blocks", "systems-thinking"]
+        },
+        "session_defaults": {
+          "type": "object",
+          "description": "Default session preferences",
+          "properties": {
+            "thinking_enabled": {
+              "type": "boolean",
+              "description": "Enable thinking mode by default",
+              "default": false
+            },
+            "plan_mode": {
+              "type": "boolean",
+              "description": "Enable plan mode by default",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "domain_expertise": {
+      "type": "object",
+      "description": "Instance areas of expertise and focus",
+      "additionalProperties": true,
+      "properties": {
+        "primary_domains": {
+          "type": "array",
+          "description": "Primary areas of expertise",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["game_development", "system_architecture"]]
+        },
+        "secondary_domains": {
+          "type": "array",
+          "description": "Secondary areas of competence",
+          "items": {
+            "type": "string"
+          }
+        },
+        "learning_domains": {
+          "type": "array",
+          "description": "Areas currently learning",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "technical_preferences": {
+      "type": "object",
+      "description": "Technical preferences and approach",
+      "additionalProperties": true,
+      "properties": {
+        "languages": {
+          "type": "object",
+          "description": "Programming language preferences",
+          "properties": {
+            "preferred": {
+              "type": "array",
+              "description": "Preferred languages",
+              "items": {"type": "string"}
+            },
+            "compiled_over_interpreted": {
+              "type": "boolean",
+              "description": "Prefers compiled languages for assurance"
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "description": "Preferred development tools",
+          "items": {"type": "string"}
+        },
+        "platforms": {
+          "type": "array",
+          "description": "Target platforms",
+          "items": {"type": "string"},
+          "examples": [["Linux", "cross-platform"]]
+        }
+      }
+    },
+    "growth": {
+      "type": "object",
+      "description": "How this instance develops",
+      "additionalProperties": true,
+      "properties": {
+        "how_you_learn": {
+          "type": "string",
+          "description": "Learning process"
+        },
+        "what_challenges_you": {
+          "type": "string",
+          "description": "What challenges you"
+        },
+        "what_youre_working_on": {
+          "type": "string",
+          "description": "Current growth areas"
+        },
+        "how_you_reflect": {
+          "type": "string",
+          "description": "How you reflect and process"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Profile metadata",
+      "additionalProperties": true,
+      "properties": {
+        "last_updated": {
+          "type": "string",
+          "description": "Last update date",
+          "format": "date"
+        },
+        "system_reference": {
+          "type": "string",
+          "description": "System reference identifier"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes"
+        }
+      }
+    }
+  }
+}

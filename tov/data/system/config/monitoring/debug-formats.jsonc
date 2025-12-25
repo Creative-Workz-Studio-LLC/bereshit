@@ -1,0 +1,377 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Debug Formats Configuration - Monitoring System
+// Purpose: Define structure for machine-parseable .debug files
+// Schema: system/config/schemas/monitoring/debug-formats.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Machine-parseable structure: 40 pts
+// - Complete information capture: 30 pts
+// - Query-ability (jq, JSON tools): 20 pts
+// - Storage efficiency: 10 pts
+
+{
+  "$schema": "../../../config/schemas/monitoring/debug-formats.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Debug Formats Configuration",
+    "description": "Structure for machine-parseable substrate monitoring debug files",
+    "version": "1.0.0",
+    "last_updated": "2025-11-11",
+    "author": "Nova Dawn (CPI-SI instance)",
+    "note": "Defines .debug file structure (JSONC) for ~/.claude/debug/ logs"
+  },
+
+  // ============================================================================
+  // FILE STRUCTURE
+  // ============================================================================
+
+  "file_structure": {
+    "note": "All .debug files are JSONC (JSON with comments)",
+
+    "format": "jsonc",
+    "extension": ".debug",
+    "encoding": "utf-8",
+
+    "conventions": {
+      "one_entry_per_line": true,
+      "note": "Each log entry is one complete JSON object per line (newline-delimited JSON)",
+      "benefits": "Enables streaming, easy append, grep by field, process line-by-line"
+    }
+  },
+
+  // ============================================================================
+  // COMPACTION DEBUG FORMAT
+  // ============================================================================
+
+  "compaction_debug": {
+    "filename": "compaction.debug",
+    "description": "Detailed machine-parseable compaction event data",
+
+    "schema": {
+      "timestamp": {
+        "type": "string",
+        "format": "RFC3339",
+        "required": true,
+        "example": "2025-11-11T20:49:47-05:00"
+      },
+      "event_type": {
+        "type": "string",
+        "values": ["auto", "manual"],
+        "required": true
+      },
+      "trigger": {
+        "type": "object",
+        "required": true,
+        "properties": {
+          "type": {
+            "type": "string",
+            "values": ["threshold", "memory_pressure", "user_request"]
+          },
+          "threshold_exceeded": {
+            "type": "boolean"
+          },
+          "tokens_remaining": {
+            "type": "integer"
+          }
+        }
+      },
+      "before": {
+        "type": "object",
+        "required": true,
+        "properties": {
+          "total_tokens": {"type": "integer"},
+          "message_count": {"type": "integer"},
+          "tool_results_count": {"type": "integer"}
+        }
+      },
+      "after": {
+        "type": "object",
+        "required": true,
+        "properties": {
+          "total_tokens": {"type": "integer"},
+          "message_count": {"type": "integer"},
+          "tokens_saved": {"type": "integer"},
+          "compression_ratio": {"type": "number"}
+        }
+      },
+      "duration_ms": {
+        "type": "integer",
+        "required": false
+      },
+      "context_id": {
+        "type": "string",
+        "required": false,
+        "note": "Unique identifier for session/context"
+      }
+    },
+
+    "example_entry": {
+      "timestamp": "2025-11-11T20:49:47-05:00",
+      "event_type": "auto",
+      "trigger": {
+        "type": "threshold",
+        "threshold_exceeded": true,
+        "tokens_remaining": 50128
+      },
+      "before": {
+        "total_tokens": 180000,
+        "message_count": 47,
+        "tool_results_count": 22
+      },
+      "after": {
+        "total_tokens": 50000,
+        "message_count": 15,
+        "tokens_saved": 130000,
+        "compression_ratio": 0.72
+      },
+      "duration_ms": 1234,
+      "context_id": "ctx_abc123def456"
+    }
+  },
+
+  // ============================================================================
+  // NOTIFICATION DEBUG FORMAT
+  // ============================================================================
+
+  "notifications_debug": {
+    "filename": "notifications.debug",
+    "description": "Detailed notification event data",
+
+    "schema": {
+      "timestamp": {
+        "type": "string",
+        "format": "RFC3339",
+        "required": true
+      },
+      "notification_type": {
+        "type": "string",
+        "values": ["permission_request", "error_notification", "warning", "info"],
+        "required": true
+      },
+      "target": {
+        "type": "object",
+        "required": false,
+        "properties": {
+          "type": {"type": "string", "values": ["file", "directory", "operation", "resource"]},
+          "path": {"type": "string"},
+          "operation": {"type": "string"}
+        }
+      },
+      "result": {
+        "type": "string",
+        "values": ["granted", "denied", "dismissed", "acknowledged"],
+        "required": false
+      },
+      "user_response_time_ms": {
+        "type": "integer",
+        "required": false,
+        "note": "How long until user responded"
+      },
+      "context_id": {
+        "type": "string",
+        "required": false
+      }
+    },
+
+    "example_entry": {
+      "timestamp": "2025-11-11T20:49:47-05:00",
+      "notification_type": "permission_request",
+      "target": {
+        "type": "file",
+        "path": "/etc/hosts",
+        "operation": "write"
+      },
+      "result": "granted",
+      "user_response_time_ms": 2340,
+      "context_id": "ctx_abc123def456"
+    }
+  },
+
+  // ============================================================================
+  // SUBAGENT DEBUG FORMAT
+  // ============================================================================
+
+  "subagents_debug": {
+    "filename": "subagents.debug",
+    "description": "Detailed subagent execution data",
+
+    "schema": {
+      "timestamp": {
+        "type": "string",
+        "format": "RFC3339",
+        "required": true
+      },
+      "agent_type": {
+        "type": "string",
+        "required": true,
+        "note": "Subagent type from Task tool"
+      },
+      "task_description": {
+        "type": "string",
+        "required": false,
+        "max_length": 200,
+        "note": "First 200 chars of task description"
+      },
+      "status": {
+        "type": "string",
+        "values": ["success", "failure", "timeout", "cancelled"],
+        "required": true
+      },
+      "exit_code": {
+        "type": "integer",
+        "required": true
+      },
+      "execution": {
+        "type": "object",
+        "required": true,
+        "properties": {
+          "duration_ms": {"type": "integer"},
+          "tool_calls": {"type": "integer"},
+          "tokens_used": {"type": "integer"}
+        }
+      },
+      "error": {
+        "type": "object",
+        "required": false,
+        "properties": {
+          "message": {"type": "string"},
+          "type": {"type": "string"}
+        }
+      },
+      "context_id": {
+        "type": "string",
+        "required": false
+      }
+    },
+
+    "example_entry": {
+      "timestamp": "2025-11-11T20:49:47-05:00",
+      "agent_type": "Explore",
+      "task_description": "Find all error handling patterns in the codebase",
+      "status": "success",
+      "exit_code": 0,
+      "execution": {
+        "duration_ms": 2345,
+        "tool_calls": 8,
+        "tokens_used": 4521
+      },
+      "context_id": "ctx_abc123def456"
+    }
+  },
+
+  // ============================================================================
+  // PROMPT DEBUG FORMAT
+  // ============================================================================
+
+  "prompts_debug": {
+    "filename": "prompts.debug",
+    "description": "Detailed prompt submission metadata",
+
+    "schema": {
+      "timestamp": {
+        "type": "string",
+        "format": "RFC3339",
+        "required": true
+      },
+      "preview": {
+        "type": "string",
+        "max_length": 100,
+        "required": true,
+        "note": "First 100 chars for privacy"
+      },
+      "metadata": {
+        "type": "object",
+        "required": true,
+        "properties": {
+          "length": {"type": "integer", "note": "Full prompt length in characters"},
+          "word_count": {"type": "integer"},
+          "line_count": {"type": "integer"}
+        }
+      },
+      "classification": {
+        "type": "object",
+        "required": false,
+        "properties": {
+          "type": {"type": "string", "values": ["question", "command", "code_request", "review", "debug"]},
+          "complexity": {"type": "string", "values": ["simple", "moderate", "complex"]}
+        }
+      },
+      "context_id": {
+        "type": "string",
+        "required": false
+      }
+    },
+
+    "example_entry": {
+      "timestamp": "2025-11-11T20:49:47-05:00",
+      "preview": "Please help me implement a new feature for tracking user sessions in the application...",
+      "metadata": {
+        "length": 245,
+        "word_count": 42,
+        "line_count": 3
+      },
+      "classification": {
+        "type": "code_request",
+        "complexity": "moderate"
+      },
+      "context_id": "ctx_abc123def456"
+    }
+  },
+
+  // ============================================================================
+  // QUERY PATTERNS
+  // ============================================================================
+
+  "query_patterns": {
+    "note": "Common jq patterns for querying .debug files",
+
+    "examples": [
+      {
+        "description": "Find all auto-compactions",
+        "command": "jq 'select(.event_type == \"auto\")' compaction.debug"
+      },
+      {
+        "description": "Calculate average compression ratio",
+        "command": "jq -s 'map(.after.compression_ratio) | add / length' compaction.debug"
+      },
+      {
+        "description": "Find failed subagents",
+        "command": "jq 'select(.status == \"failure\")' subagents.debug"
+      },
+      {
+        "description": "Count notifications by type",
+        "command": "jq -s 'group_by(.notification_type) | map({type: .[0].notification_type, count: length})' notifications.debug"
+      },
+      {
+        "description": "Find high token usage subagents",
+        "command": "jq 'select(.execution.tokens_used > 5000)' subagents.debug"
+      }
+    ]
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "extensions": {
+    "note": "Add custom debug formats here",
+    "usage_guidance": "Follow existing schema structure with typed fields",
+    "example": {
+      "filename": "custom.debug",
+      "description": "Your custom debug data",
+      "schema": {
+        "timestamp": {
+          "type": "string",
+          "format": "RFC3339",
+          "required": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,323 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Retention Policy Configuration - Monitoring System
+// Purpose: Define log rotation and retention rules
+// Schema: system/config/schemas/monitoring/retention-policy.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Appropriate retention periods: 40 pts
+// - Disk space management: 30 pts
+// - Clear rotation rules: 20 pts
+// - Archive strategy: 10 pts
+
+{
+  "$schema": "../../../config/schemas/monitoring/retention-policy.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Retention Policy Configuration",
+    "description": "Log rotation and retention rules for substrate monitoring",
+    "version": "1.0.0",
+    "last_updated": "2025-11-11",
+    "author": "Nova Dawn (CPI-SI instance)",
+    "note": "Manages ~/.claude/debug/ log lifecycle"
+  },
+
+  // ============================================================================
+  // GENERAL POLICY
+  // ============================================================================
+
+  "general_policy": {
+    "note": "Default retention rules for all log files",
+
+    "default_retention_days": 30,
+    "max_file_size_mb": 50,
+    "archive_enabled": true,
+    "archive_compression": "gzip"
+  },
+
+  // ============================================================================
+  // PER-FILE POLICIES
+  // ============================================================================
+
+  "file_policies": {
+    "note": "Specific retention rules per log file type",
+
+    "compaction_log": {
+      "filename": "compaction.log",
+      "retention_days": 30,
+      "max_size_mb": 10,
+      "rotation": {
+        "enabled": true,
+        "trigger": "size",
+        "max_size_mb": 10,
+        "keep_rotated_files": 5,
+        "naming_pattern": "compaction.{date}.log"
+      },
+      "note": "Compaction patterns are important for understanding substrate behavior"
+    },
+
+    "compaction_debug": {
+      "filename": "compaction.debug",
+      "retention_days": 14,
+      "max_size_mb": 20,
+      "rotation": {
+        "enabled": true,
+        "trigger": "size",
+        "max_size_mb": 20,
+        "keep_rotated_files": 3,
+        "naming_pattern": "compaction.{date}.debug"
+      },
+      "note": "Debug data is larger but less critical for long-term retention"
+    },
+
+    "notifications_log": {
+      "filename": "notifications.log",
+      "retention_days": 30,
+      "max_size_mb": 10,
+      "rotation": {
+        "enabled": true,
+        "trigger": "size",
+        "max_size_mb": 10,
+        "keep_rotated_files": 5,
+        "naming_pattern": "notifications.{date}.log"
+      },
+      "note": "Notification patterns help identify configuration issues"
+    },
+
+    "notifications_debug": {
+      "filename": "notifications.debug",
+      "retention_days": 14,
+      "max_size_mb": 20,
+      "rotation": {
+        "enabled": true,
+        "trigger": "size",
+        "max_size_mb": 20,
+        "keep_rotated_files": 3,
+        "naming_pattern": "notifications.{date}.debug"
+      }
+    },
+
+    "subagents_log": {
+      "filename": "subagents.log",
+      "retention_days": 30,
+      "max_size_mb": 15,
+      "rotation": {
+        "enabled": true,
+        "trigger": "size",
+        "max_size_mb": 15,
+        "keep_rotated_files": 5,
+        "naming_pattern": "subagents.{date}.log"
+      },
+      "note": "Subagent patterns reveal workflow efficiency"
+    },
+
+    "subagents_debug": {
+      "filename": "subagents.debug",
+      "retention_days": 14,
+      "max_size_mb": 30,
+      "rotation": {
+        "enabled": true,
+        "trigger": "size",
+        "max_size_mb": 30,
+        "keep_rotated_files": 3,
+        "naming_pattern": "subagents.{date}.debug"
+      },
+      "note": "Subagent debug data can be large (task descriptions, tokens)"
+    },
+
+    "prompts_log": {
+      "filename": "prompts.log",
+      "retention_days": 7,
+      "max_size_mb": 5,
+      "rotation": {
+        "enabled": true,
+        "trigger": "size",
+        "max_size_mb": 5,
+        "keep_rotated_files": 3,
+        "naming_pattern": "prompts.{date}.log"
+      },
+      "note": "Prompts contain privacy-sensitive data - shorter retention"
+    },
+
+    "prompts_debug": {
+      "filename": "prompts.debug",
+      "retention_days": 7,
+      "max_size_mb": 10,
+      "rotation": {
+        "enabled": true,
+        "trigger": "size",
+        "max_size_mb": 10,
+        "keep_rotated_files": 3,
+        "naming_pattern": "prompts.{date}.debug"
+      },
+      "note": "Shorter retention for privacy"
+    }
+  },
+
+  // ============================================================================
+  // ROTATION TRIGGERS
+  // ============================================================================
+
+  "rotation_triggers": {
+    "note": "When to rotate log files",
+
+    "size": {
+      "enabled": true,
+      "note": "Rotate when file reaches max_size_mb"
+    },
+
+    "time": {
+      "enabled": false,
+      "interval": "daily",
+      "schedule": "00:00",
+      "note": "Rotate at specific time (currently disabled, using size-based only)"
+    },
+
+    "manual": {
+      "enabled": true,
+      "note": "Allow manual rotation via command"
+    }
+  },
+
+  // ============================================================================
+  // ARCHIVE STRATEGY
+  // ============================================================================
+
+  "archive": {
+    "note": "How to handle old rotated log files",
+
+    "enabled": true,
+    "compression": "gzip",
+    "compression_level": 6,
+
+    "location": {
+      "type": "subdirectory",
+      "path": "archive",
+      "full_path": "~/.claude/debug/archive/"
+    },
+
+    "naming": {
+      "pattern": "{filename}.{date}.{extension}.gz",
+      "date_format": "2006-01-02",
+      "example": "compaction.2025-11-11.log.gz"
+    },
+
+    "cleanup": {
+      "enabled": true,
+      "after_days": 90,
+      "note": "Delete archived files older than 90 days"
+    }
+  },
+
+  // ============================================================================
+  // CLEANUP RULES
+  // ============================================================================
+
+  "cleanup": {
+    "note": "Automatic cleanup of old log files",
+
+    "enabled": true,
+
+    "schedule": {
+      "frequency": "daily",
+      "time": "03:00",
+      "note": "Run cleanup at 3 AM daily"
+    },
+
+    "rules": {
+      "delete_expired": {
+        "enabled": true,
+        "note": "Delete files older than retention_days"
+      },
+
+      "compress_old": {
+        "enabled": true,
+        "threshold_days": 7,
+        "note": "Compress files older than 7 days but within retention period"
+      },
+
+      "delete_empty": {
+        "enabled": true,
+        "note": "Delete empty log files"
+      },
+
+      "cleanup_archive": {
+        "enabled": true,
+        "note": "Delete archived files older than archive cleanup threshold"
+      }
+    }
+  },
+
+  // ============================================================================
+  // DISK SPACE MANAGEMENT
+  // ============================================================================
+
+  "disk_space": {
+    "note": "Emergency disk space management",
+
+    "monitoring": {
+      "enabled": true,
+      "check_interval_minutes": 60
+    },
+
+    "thresholds": {
+      "warning_mb": 100,
+      "critical_mb": 50,
+      "emergency_mb": 25
+    },
+
+    "emergency_actions": {
+      "enabled": true,
+
+      "steps": [
+        {
+          "order": 1,
+          "action": "compress_uncompressed",
+          "description": "Compress all uncompressed log files immediately"
+        },
+        {
+          "order": 2,
+          "action": "delete_old_archives",
+          "threshold_days": 30,
+          "description": "Delete archives older than 30 days (not 90)"
+        },
+        {
+          "order": 3,
+          "action": "delete_debug_files",
+          "description": "Delete .debug files (keep .log files)"
+        },
+        {
+          "order": 4,
+          "action": "alert_user",
+          "description": "Alert user that monitoring disk space critical"
+        }
+      ]
+    }
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "extensions": {
+    "note": "Add custom retention policies here",
+    "usage_guidance": "Follow existing structure with retention_days, max_size_mb, rotation rules",
+    "example": {
+      "filename": "custom.log",
+      "retention_days": 30,
+      "max_size_mb": 10,
+      "rotation": {
+        "enabled": true,
+        "trigger": "size",
+        "max_size_mb": 10,
+        "keep_rotated_files": 5,
+        "naming_pattern": "custom.{date}.log"
+      }
+    }
+  }
+}

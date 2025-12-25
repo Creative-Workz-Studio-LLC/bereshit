@@ -4,14 +4,18 @@
 // METADATA
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// OMNICODE SYNTAX SPECIFICATION
+// ───────────────────────────────────────────────────────────────────────────────
+// SPECIFICATION OVERVIEW (grep: "THREE LAYERS" | "Layer 1" | "Layer 2" | "Layer 3")
+// ───────────────────────────────────────────────────────────────────────────────
 //
+// OMNICODE SYNTAX SPECIFICATION
 // This file defines OmniCode syntax through example. The template IS the spec.
 //
 // THREE LAYERS (Each serves a different audience):
 //
 //   Layer 1: STRUCTURAL SYNTAX  → Compiler  → Required architecture
-//            TWO block structures serving different purposes:
+//            THREE block structures serving different purposes:
+//              3-block for DATA: METADATA → CONTENT → CLOSING
 //              4-block for CODE: METADATA → SETUP → BODY → CLOSING
 //              5-block for DOCS: METADATA → HEADER → CONTEXT → CONTENT → FOOTER
 //            Native grammar - what was documentation IS now syntax
@@ -19,136 +23,290 @@
 //   Layer 2: CODE SYNTAX        → Machine   → Required execution
 //            41 keywords, types, operators, control flow
 //            Natural language patterns - reads like prose
+//            State indicators: "because" = IS active | "when" = WOULD BE if condition
 //
 //   Layer 3: COMMENTARY SYNTAX  → Humans    → Optional elevation
 //            Structured keywords (meaning/teaching/cautioning/examples)
 //            Code works without it - elevates when present
 //
-// Key: B-word-omni-syntax
-// Location: bereshit/word/omni/
-// Purpose: Canonical syntax reference for OmniCode language design
-//
 // Key Insight: OmniCode expresses BOTH code AND documentation natively.
 //              Same language, same discipline, different block structure.
 //              Bidirectional mapping enables code↔documentation translation.
 //
+// ───────────────────────────────────────────────────────────────────────────────
+// OMNICODE NATIVE IDENTITY (grep: "keyed as" | "derives from" | "grounded in")
+// ───────────────────────────────────────────────────────────────────────────────
+
+this is a universal for "OmniCode Syntax Specification":
+    keyed as "B-word-omni-syntax"
+    following "Universal Pattern"
+
+this universal classifies as:
+    word (1) when "defining syntax rules, keywords, and structure"
+    work (0) when "implementing patterns through example"
+    fruit (-1) when "presenting the language for human learning"
+
+this universal derives from:
+    original (1) because "This IS the canonical syntax definition"
+    derived (0) from "N/A - this is the root specification"
+    variant (-1) when "N/A - variants derive from this, not the reverse"
+    documented at "bereshit/word/omni/"
+
+grounded in:
+    scripture "In the beginning God created the heaven and the earth"
+        from Genesis 1:1 in KJV
+    principle "Structure precedes content - God created by separation (badal)"
+    anchor "Precept upon precept, line upon line"
+        from Isaiah 28:10 in KJV
+
+serves as:
+    Rails (foundation) for "All OmniCode files derive structure from this spec"
+    role "Canonical syntax definition - changes here affect everything"
+
+authored by:
+    architect "Seanje Lenox-Wise"
+    implementation "Nova Dawn"
+    created "2025-11-01"
+    version "a-03.00"
+    modified "2025-12-17" with "METADATA expansion, 3-block addition, pragma crystallization"
+
+exists to:
+    purpose "Canonical syntax reference for OmniCode language design"
+    features:
+        "THREE LAYERS: Structural (Compiler), Code (Machine), Commentary (Humans)"
+        "Bidirectional mapping: OmniCode ←→ target formats"
+        "Natural language patterns that read like prose"
+    design "Specification by example - the template IS the spec"
+    philosophy "Code as conversation between user and CPI-SI"
+
+interface of this universal:
+    depends on:
+        requires (1): "None - this IS the foundation"
+        includes (0): "Patterns from Genesis 1 creation narrative"
+        excludes (-1): "External dependencies - self-contained spec"
+    integrated as:
+        import "All OmniCode files reference this spec"
+        pattern "Pragma → Structure → Content → Validation"
+
+operational context:
+    blocking:
+        yes (1) because "Changes here block all downstream files"
+    health:
+        system Base100 with scale from -100 to +100
+        granted (1) above +50 meaning "Spec is complete and greppable"
+        deferred (0) within ±50 meaning "Spec in refinement"
+        denied (-1) below -50 meaning "Spec has breaking inconsistencies"
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // END METADATA
 // ═══════════════════════════════════════════════════════════════════════════════
-
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // LAYER 1: STRUCTURAL SYNTAX
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// OmniCode has TWO native block structures. Not comments - grammar.
+// OmniCode has THREE native block structures. Not comments - grammar.
 // METADATA is native syntax - comments became architecture.
 //
-// Pragma: #!omni [template|code|documentation]
-// Block markers: // === BLOCK_NAME === (compiler enforced)
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ PRAGMA REFERENCE                                                           │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ Format:  #!omni [type] --[format] [modifiers]                              │
+// │ Types:   universal | template | code | interface | data | documentation    │
+// │ Formats: --omni | --go | --c | --rs | --sh | --adoc | --md | --json | --toml│
+// │ Details: See PRAGMA SYSTEM section below                                   │
+// └─────────────────────────────────────────────────────────────────────────────┘
 //
-// TWO STRUCTURES (same language, different purpose):
+// Block markers: // ═══ BLOCK_NAME ═══ (compiler enforced)
 //
-//   4-BLOCK (Code):          5-BLOCK (Documentation):
-//   ─────────────────        ─────────────────────────
-//   METADATA                 METADATA
-//   SETUP                    HEADER (visible identity)
-//   BODY                     CONTEXT (reader preparation)
-//   CLOSING                  CONTENT (value delivery)
-//                            FOOTER (resources/grounding)
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ BLOCK STRUCTURES                                                           │
+// ├─────────────────────┬─────────────────────┬─────────────────────────────────┤
+// │ 3-BLOCK (Data)      │ 4-BLOCK (Code)      │ 5-BLOCK (Documentation)        │
+// ├─────────────────────┼─────────────────────┼─────────────────────────────────┤
+// │ METADATA            │ METADATA            │ METADATA                       │
+// │ CONTENT             │ SETUP               │ HEADER (visible identity)      │
+// │ CLOSING             │ BODY                │ CONTEXT (reader preparation)   │
+// │                     │ CLOSING             │ CONTENT (value delivery)       │
+// │                     │                     │ FOOTER (resources/grounding)   │
+// ├─────────────────────┼─────────────────────┼─────────────────────────────────┤
+// │ configs, settings   │ executables, libs   │ whitepapers, guides, specs     │
+// └─────────────────────┴─────────────────────┴─────────────────────────────────┘
 //
-// BIDIRECTIONAL MAPPING:
-//   Code SETUP      ←→  Doc CONTEXT      (preparation)
-//   Code BODY       ←→  Doc CONTENT      (the work)
-//   Code CLOSING    ←→  Doc FOOTER       (completion)
-//   Code (none)     ←   Doc HEADER       (humans need visible identity)
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ BIDIRECTIONAL MAPPING                                                      │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ Code SETUP      ←→  Doc CONTEXT      (preparation)                         │
+// │ Code BODY       ←→  Doc CONTENT      (the work)                            │
+// │ Code CLOSING    ←→  Doc FOOTER       (completion)                          │
+// │ Code (none)     ←   Doc HEADER       (humans need visible identity)        │
+// └─────────────────────────────────────────────────────────────────────────────┘
 //
 // Key insight: What was documentation IS now grammar. The structure IS the
 // documentation. Code as conversation between user and CPI-SI.
 //
+// grep: "PRAGMA REFERENCE" | "BLOCK STRUCTURES" | "BIDIRECTIONAL MAPPING"
+//
 // ═══════════════════════════════════════════════════════════════════════════════
-
 
 // -----------------------------------------------------------------------------
 // PRAGMA SYSTEM
 // -----------------------------------------------------------------------------
 //
-// Every OmniCode file begins with a pragma declaring its type:
+// PURPOSE: Declare file identity, lineage, and processing rules.
+// GREP:    grep "#!omni" [file]     → all pragma lines
+//          grep "meta\."  [file]    → all metadata fields
 //
-//   #!omni universal      // Foundation files - syntax spec & universal template
-//   #!omni template       // Template file - not compiled, used as pattern
-//   #!omni code           // Executable/library - compiled to binary (4-block)
-//   #!omni documentation  // Documentation file - compiled to docs (5-block)
-//   #!omni interface      // Interface file - pure declaration (3-block)
-//   #!omni data           // Data file - varies by complexity (3/4/5-block)
-//   #!omni folder         // Folder metadata - root.omni files
+// Every OmniCode file begins with pragma lines declaring what it IS and
+// where it comes FROM. Like Genesis 1:1 grounds creation, pragmas ground files.
 //
-// The pragma tells the compiler how to process the file:
-//   universal      → Foundation pair: syntax IS documentation of universal,
-//                    universal IS code for syntax (co-defining)
-//   template       → Parse for pattern extraction, no compilation
-//   code           → Parse 4-block structure, compile to binary
-//   documentation  → Parse 5-block structure, compile to documentation format
-//   interface      → Parse 3-block structure, validate contracts
-//   data           → Parse based on content complexity
-//   folder         → Parse as folder metadata
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// FORMAT FLAGS (OmniCode Stepping Down)
-// -----------------------------------------------------------------------------
-//
-// OmniCode can "step down" to translate into any format while maintaining
-// OmniCode awareness. Format flags declare the target format:
-//
-//   #!omni [type] --[format]
-//
-// COMMON FORMAT FLAGS:
-//
-//   --omni    // Pure OmniCode (default, flag optional)
-//   --adoc    // AsciiDoc format
-//   --md      // Markdown format
-//   --go      // Go source code
-//   --c       // C source code
-//   --rs      // Rust source code
-//   --json    // JSON data format
-//   --yaml    // YAML data format
-//   --toml    // TOML data format
-//
-// EXAMPLES:
-//
-//   #!omni documentation --adoc   // OmniCode-aware AsciiDoc documentation
-//   #!omni template --adoc        // AsciiDoc template following OmniCode structure
-//   #!omni template --go          // Go template following OmniCode structure
-//   #!omni data --json            // OmniCode-structured JSON data
-//
-// The format flag tells the system:
-//   1. What native syntax to expect after the pragma
-//   2. How to render/compile the content
-//   3. That OmniCode structure is embedded in native format comments
-//
-// KEY PRINCIPLE:
-//   OmniCode can step DOWN to any format (translating its patterns)
-//   Other formats must step UP to OmniCode's standards (implementing its patterns)
-//   The pragma with format flag enables this bidirectional relationship
-//
-// TEMPLATE MAPPING:
-//   Format-specific templates reference their OmniCode parent template.
-//   This creates an inheritance chain:
-//
-//     OmniCode Template (structure)
-//           ↓ derives
-//     Format Template (implementation)
-//           ↓ instantiates
-//     Actual Document (content)
-//
-//   The mapping is declared in the format template's metadata:
-//     derives_from: "bereshit/word/omni/seed/B-word-omni-seed-[block-type].omni"
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ PRAGMA STRUCTURE                                                            │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │                                                                             │
+// │   LINE 1: #!omni [type] --[format] -[modifier]                              │
+// │   LINE 2: #!omni meta.key = [unique-identifier]                             │
+// │   LINE 3: #!omni meta.from = [derivation-source]                            │
+// │   LINE 4: #!omni meta.at = [version-state]                                  │
+// │                                                                             │
+// │   EXAMPLE (Go library):                                                     │
+// │     // #!omni code --go -library                                            │
+// │     // #!omni meta.key = B-word-work-pkg-config-loader                      │
+// │     // #!omni meta.from = bereshit/word/seed/code/go/library.go             │
+// │     // #!omni meta.at = a-02.50                                             │
+// │                                                                             │
+// └─────────────────────────────────────────────────────────────────────────────┘
 //
 // -----------------------------------------------------------------------------
-
+// PRAGMA LINE 1: TYPE + FORMAT + MODIFIER
+// -----------------------------------------------------------------------------
+//
+// SYNTAX:   #!omni [type] --[format] -[modifier]
+// REQUIRED: [type]
+// OPTIONAL: --[format], -[modifier]
+//
+// ┌──────────────┬─────────────────────────────────────────────────────────────┐
+// │ TYPES        │ What the file IS                                           │
+// ├──────────────┼─────────────────────────────────────────────────────────────┤
+// │ universal    │ Foundation - syntax spec & universal template (co-defining)│
+// │ template     │ Pattern - not compiled, used as source for derivation      │
+// │ code         │ Executable/library - compiled to binary (4-block)          │
+// │ documentation│ Documentation - compiled to docs (5-block)                 │
+// │ interface    │ Contract - pure declaration (3-block)                      │
+// │ data         │ Data - varies by complexity (3/4/5-block)                  │
+// │ folder       │ Folder metadata - root.omni files                          │
+// └──────────────┴─────────────────────────────────────────────────────────────┘
+//
+// ┌──────────────┬─────────────────────────────────────────────────────────────┐
+// │ FORMATS      │ Target language/format (OmniCode "steps down" to)          │
+// ├──────────────┼─────────────────────────────────────────────────────────────┤
+// │ --omni       │ Pure OmniCode (default, flag optional)                     │
+// │ --go         │ Go source code                                             │
+// │ --c          │ C source code                                              │
+// │ --rs         │ Rust source code                                           │
+// │ --adoc       │ AsciiDoc documentation                                     │
+// │ --md         │ Markdown documentation                                     │
+// │ --json       │ JSON data format                                           │
+// │ --yaml       │ YAML data format                                           │
+// │ --toml       │ TOML data format                                           │
+// │ --txt        │ Plain text format                                          │
+// └──────────────┴─────────────────────────────────────────────────────────────┘
+//
+// ┌──────────────┬─────────────────────────────────────────────────────────────┐
+// │ MODIFIERS    │ Subtype refinement                                         │
+// ├──────────────┼─────────────────────────────────────────────────────────────┤
+// │ -library     │ Code: importable package, no main()                        │
+// │ -executable  │ Code: standalone binary with main()                        │
+// │ -test        │ Code: test file                                            │
+// │ -demo        │ Code: demonstration/example                                │
+// └──────────────┴─────────────────────────────────────────────────────────────┘
+//
+// -----------------------------------------------------------------------------
+// PRAGMA LINES 2-4: META FIELDS
+// -----------------------------------------------------------------------------
+//
+// SYNTAX:   #!omni meta.[field] = [value]
+// PURPOSE:  Identity, lineage, version - enables grep and validation
+//
+// ┌──────────────┬─────────────────────────────────────────────────────────────┐
+// │ META FIELDS  │ Required for all non-universal files                       │
+// ├──────────────┼─────────────────────────────────────────────────────────────┤
+// │ meta.key     │ Unique identifier following keying standard                │
+// │              │ Format: [Project]-[path]-[name]                            │
+// │              │ Example: B-word-work-pkg-config-loader                     │
+// ├──────────────┼─────────────────────────────────────────────────────────────┤
+// │ meta.from    │ Derivation source - what this file derives FROM            │
+// │              │ Points to parent template or spec                          │
+// │              │ Example: bereshit/word/seed/code/go/library.go             │
+// ├──────────────┼─────────────────────────────────────────────────────────────┤
+// │ meta.at      │ Version state - where this file IS in development          │
+// │              │ Values: template | a-XX.YY | v-XX.YY                        │
+// │              │   template = still a template, not instantiated            │
+// │              │   a-XX.YY  = alpha version (pre-release)                   │
+// │              │   v-XX.YY  = release version                               │
+// │              │ Example: a-02.50                                           │
+// └──────────────┴─────────────────────────────────────────────────────────────┘
+//
+// -----------------------------------------------------------------------------
+// DERIVATION CHAIN
+// -----------------------------------------------------------------------------
+//
+// Every file traces back to syntax.omni through meta.from links.
+// Like all creation traces to Genesis 1:1, all OmniCode traces to syntax.
+//
+// CHAIN (anchor → instances):
+//
+//   syntax.omni (#!omni universal)
+//        ↓ defines
+//   universal.omni (#!omni universal)
+//        ↓ derives
+//   code.omni / documentation.omni / etc. (#!omni template)
+//        ↓ derives
+//   library.go / executable.go / etc. (#!omni template --[format])
+//        ↓ derives
+//   actual-file.go (#!omni code --[format] -[modifier])
+//
+// VERIFICATION: grep "meta.from" [file] and follow chain to syntax.omni
+// VALID: chain is complete and traceable
+// INVALID: chain breaks (missing meta.from) or loops (circular reference)
+//
+// DIVERGING PATHS:
+//   Files may derive from different branches (code.omni vs documentation.omni)
+//   but ALL branches trace back to universal.omni → syntax.omni
+//
+// -----------------------------------------------------------------------------
+// FORMAT PLACEMENT
+// -----------------------------------------------------------------------------
+//
+// WHERE pragmas appear depends on target format:
+//
+// ┌──────────────┬─────────────────────────────────────────────────────────────┐
+// │ FORMAT       │ PRAGMA PLACEMENT                                           │
+// ├──────────────┼─────────────────────────────────────────────────────────────┤
+// │ .omni        │ Line 1 (bare, no comment prefix)                           │
+// │ .go          │ Line 1 (// comment prefix)                                 │
+// │ .c / .h      │ Line 1 (// comment prefix)                                 │
+// │ .rs          │ Line 1 (// comment prefix)                                 │
+// │ .adoc        │ Line 2 inside //// comment block                           │
+// │ .md          │ Line 1 inside <!-- comment block -->                       │
+// │ .json        │ Not supported (JSON has no comments)                       │
+// │ .yaml        │ Line 1 (# comment prefix)                                  │
+// │ .toml        │ Line 1 (# comment prefix)                                  │
+// │ .txt         │ Line 1 (# comment prefix)                                  │
+// └──────────────┴─────────────────────────────────────────────────────────────┘
+//
+// -----------------------------------------------------------------------------
+// GREP PATTERNS (Machine Retrieval)
+// -----------------------------------------------------------------------------
+//
+//   grep "#!omni code"        → all code files
+//   grep "#!omni template"    → all template files
+//   grep "meta.key"           → all files with identity
+//   grep "meta.from.*seed"    → all files derived from templates
+//   grep "meta.at = a-"       → all alpha versions
+//   grep "meta.at = v-"       → all release versions
+//
+// -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
 // METADATA ATTRIBUTE MAPPING (OmniCode ←→ AsciiDoc)
@@ -320,12 +478,37 @@
 // This section defines HOW OmniCode translates to each format.
 // These are executable specifications - the transpiler reads this syntax.
 //
-// Structure: format "[name]" for [pragma-type]:
-//                file extension "[.ext]"
-//                pragma placement "[where]"
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ UNIVERSAL MAPPING PATTERN                                                   │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ format "[name]" for [block-type]:                                           │
+// │     file extension "[.ext]"                                                 │
+// │     pragma placement "[where]"                                              │
+// │     metadata pattern "[how METADATA maps]"                                  │
+// │                                                                             │
+// │     [block] mappings:                                                       │
+// │         "[omni-syntax]" translates to "[target-syntax]"                     │
+// └─────────────────────────────────────────────────────────────────────────────┘
 //
-//                [block] mappings:
-//                    "[omni-syntax]" translates to "[target-syntax]"
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ FORMAT CATEGORIES BY BLOCK TYPE                                             │
+// ├──────────────┬──────────────┬───────────────────────────────────────────────┤
+// │ BLOCK TYPE   │ FORMATS      │ METADATA PATTERN                              │
+// ├──────────────┼──────────────┼───────────────────────────────────────────────┤
+// │ 4-block      │ Go, C, Rust  │ M.1-M.5 sections in doc comments              │
+// │ (Code)       │ Shell, Python│ Identity→History→Interface→API→Operational   │
+// ├──────────────┼──────────────┼───────────────────────────────────────────────┤
+// │ 5-block      │ AsciiDoc     │ Document attributes (:key: value)             │
+// │ (Docs)       │ Markdown     │ YAML frontmatter (key: value)                 │
+// ├──────────────┼──────────────┼───────────────────────────────────────────────┤
+// │ 3-block      │ TOML         │ [metadata] section with key = "value"         │
+// │ (Data)       │ JSON, YAML   │ "metadata": {} object or metadata: block      │
+// └──────────────┴──────────────┴───────────────────────────────────────────────┘
+//
+// DELEGATION: Type templates (code.omni, documentation.omni, data.omni) contain
+// format-specific mapping details. This section defines the universal pattern.
+//
+// CHAIN: syntax.omni (pattern) → [type].omni (specifics) → [format-template]
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -644,7 +827,6 @@ format definitions:
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // DOCUMENTATION-SPECIFIC SECTIONS
 // -----------------------------------------------------------------------------
@@ -820,7 +1002,6 @@ format definitions:
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
-
 // -----------------------------------------------------------------------------
 // DATA 3-BLOCK (Simple Declaration)
 // -----------------------------------------------------------------------------
@@ -851,7 +1032,6 @@ format definitions:
 //           quick reference:
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // DATA 4-BLOCK (Structured Data)
@@ -933,7 +1113,6 @@ format definitions:
 //
 // -----------------------------------------------------------------------------
 
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // WORD / WORK / FRUIT - BIBLICAL BLOCK MAPPING
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -999,7 +1178,6 @@ format definitions:
 //   This is the flow: Word → Work → Fruit
 //
 // ═══════════════════════════════════════════════════════════════════════════════
-
 
 // -----------------------------------------------------------------------------
 // METADATA BLOCK - Native Syntax (Established)
@@ -1447,7 +1625,6 @@ interface of this work:
         reserved (-1):
             [none - all interfaces defined]
 
-
 // -----------------------------------------------------------------------------
 // CLOSING BLOCK - Native Syntax (Established)
 // -----------------------------------------------------------------------------
@@ -1660,7 +1837,6 @@ synthesis of this work:
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
-
 // -----------------------------------------------------------------------------
 // KEYWORDS (41 Total - Biblically Grounded)
 // -----------------------------------------------------------------------------
@@ -1720,7 +1896,6 @@ synthesis of this work:
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // PRIMITIVE TYPES (Complete System)
 // -----------------------------------------------------------------------------
@@ -1754,7 +1929,6 @@ synthesis of this work:
 //   covenant   - TERNARY logic: granted (1) / deferred (0) / denied (-1)
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // COVENANT TYPE (Unique Ternary Logic)
@@ -1792,7 +1966,6 @@ synthesis of this work:
 //           return "Access denied"
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // COMPOSITE TYPES
@@ -2524,9 +2697,9 @@ synthesis of this work:
 //    Different where purposes differ (header is human-facing, main is machine-facing)
 //    Enables code↔documentation extraction and generation
 //
-// 10. ONE LANGUAGE, TWO STRUCTURES - OmniCode expresses both natively
+// 10. ONE LANGUAGE, THREE STRUCTURES - OmniCode expresses all natively
 //     Same discipline. Same syntax. Different block organization.
-//     Code and documentation as first-class citizens.
+//     Data, code, and documentation as first-class citizens.
 //
 // "In the beginning was the Word" - John 1:1
 //

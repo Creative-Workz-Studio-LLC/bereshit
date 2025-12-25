@@ -1,0 +1,157 @@
+# Linux Commands for Change Propagation
+# Reference file for propagate-change skill
+
+# ============================================================================
+# FIND DIRECT DESCENDANTS
+# ============================================================================
+
+# Find all files that derive from a specific template:
+grep -rlE "(derives from:|derives_from:).*TEMPLATE_NAME" bereshit/
+
+# Find with line numbers and context:
+grep -rnE "(derives from:|derives_from:).*TEMPLATE_NAME" bereshit/
+
+# Find OmniCode files deriving from template:
+grep -rlE "(derives from:|derives_from:).*TEMPLATE_NAME" bereshit/ --include="*.omni"
+
+# Find format templates deriving from specialized template:
+grep -rlE "(derives from:|derives_from:)" bereshit/word/seed/
+
+# ============================================================================
+# TRACE FULL CHAIN
+# ============================================================================
+
+# Get derives_from value from a file:
+grep -oP "(derives from:|derives_from:)\s*\K[^\s]+" FILE
+
+# Recursive chain trace (bash function):
+trace_chain() {
+    local file="$1"
+    echo "$file"
+    local parent=$(grep -oP "(derives from:|derives_from:)\s*\K[^\s]+" "$file" 2>/dev/null)
+    if [ -n "$parent" ] && [ -f "$parent" ]; then
+        trace_chain "$parent"
+    fi
+}
+
+# One-liner to show full chain upward:
+file="FILE.omni"; while [ -n "$file" ] && [ -f "$file" ]; do echo "$file"; file=$(grep -oP "(derives from:|derives_from:)\s*\K[^\s]+" "$file" 2>/dev/null); done
+
+# ============================================================================
+# FIND ALL DESCENDANTS (Multi-level)
+# ============================================================================
+
+# Level 1 descendants (direct):
+grep -rl "TEMPLATE_NAME" bereshit/
+
+# Level 2+ (find files deriving from level 1):
+for f in $(grep -rl "TEMPLATE_NAME" bereshit/); do
+    grep -rl "$(basename $f)" bereshit/
+done
+
+# Full descendant tree (recursive):
+find_descendants() {
+    local template="$1"
+    local descendants=$(grep -rl "$template" bereshit/ 2>/dev/null)
+    for d in $descendants; do
+        echo "$d"
+        find_descendants "$(basename $d)"
+    done
+}
+
+# ============================================================================
+# FORMAT MAPPING IMPACT
+# ============================================================================
+
+# Find FORMAT DEFINITIONS in a file:
+grep -A 50 "format definitions:" FILE.omni | grep -E "format \"[a-z]+\""
+
+# Find all format definitions across templates:
+grep -rn "format definitions:" bereshit/word/omni/
+
+# Find format templates for a specific format:
+find bereshit/word/seed/ -name "*.[FORMAT]" -o -name "*-[FORMAT]-*"
+
+# List all format templates:
+find bereshit/word/seed/ -type f \( -name "*.adoc" -o -name "*.go" -o -name "*.md" -o -name "*.c" \)
+
+# ============================================================================
+# DOCUMENT DISCOVERY
+# ============================================================================
+
+# Find all OmniCode documents (not templates):
+find bereshit/ -name "*.omni" ! -path "*/word/omni/*" ! -path "*/seed/*"
+
+# Find all AsciiDoc documents:
+find bereshit/ -name "*.adoc" ! -path "*/seed/*"
+
+# Find all Go files (not templates):
+find . -name "*.go" ! -path "*/seed/*" ! -path "*/templates/*"
+
+# Find documents with specific derives_from:
+grep -rl "derives_from.*FORMAT_TEMPLATE" bereshit/
+
+# ============================================================================
+# IMPACT ANALYSIS
+# ============================================================================
+
+# Count direct descendants:
+grep -rl "TEMPLATE_NAME" bereshit/ | wc -l
+
+# Count by file type:
+grep -rl "TEMPLATE_NAME" bereshit/ | xargs -I{} sh -c 'echo {}' | sed 's/.*\.//' | sort | uniq -c
+
+# Show tree of affected files:
+grep -rl "TEMPLATE_NAME" bereshit/ | sort | sed 's/[^/]*$//' | uniq -c | sort -rn
+
+# ============================================================================
+# CHANGE DETECTION
+# ============================================================================
+
+# Find recently modified templates:
+find bereshit/word/omni/seed/ -name "*.omni" -mmin -60
+
+# Find templates modified today:
+find bereshit/word/omni/ -name "*.omni" -mtime 0
+
+# Compare template with its parent:
+diff -u PARENT_TEMPLATE CHILD_TEMPLATE
+
+# Show structural differences only:
+diff <(grep -E "^// |^    [a-z].*:" PARENT.omni) <(grep -E "^// |^    [a-z].*:" CHILD.omni)
+
+# ============================================================================
+# BATCH UPDATE HELPERS
+# ============================================================================
+
+# List all files needing update (for manual review):
+grep -rl "TEMPLATE_NAME" bereshit/ | tee /tmp/files_to_update.txt
+
+# Show derives_from for all descendants:
+for f in $(grep -rl "TEMPLATE_NAME" bereshit/); do
+    echo "=== $f ==="
+    grep -E "(derives from:|derives_from:)" "$f"
+done
+
+# Generate update checklist:
+echo "# Update Checklist for TEMPLATE_NAME" > /tmp/checklist.md
+grep -rl "TEMPLATE_NAME" bereshit/ | while read f; do
+    echo "- [ ] $f" >> /tmp/checklist.md
+done
+
+# ============================================================================
+# VERIFICATION AFTER PROPAGATION
+# ============================================================================
+
+# Verify all descendants still have valid derives_from:
+for f in $(grep -rl "TEMPLATE_NAME" bereshit/); do
+    parent=$(grep -oP "(derives from:|derives_from:)\s*\K[^\s]+" "$f")
+    if [ -n "$parent" ] && [ ! -f "$parent" ]; then
+        echo "BROKEN: $f -> $parent"
+    fi
+done
+
+# Check block structure consistency:
+for f in $(grep -rl "TEMPLATE_NAME" bereshit/); do
+    echo "=== $f: $(grep -c '^// ═' "$f") blocks ==="
+done

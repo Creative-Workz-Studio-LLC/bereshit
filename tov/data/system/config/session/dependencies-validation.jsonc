@@ -1,0 +1,63 @@
+{
+  "metadata": {
+    "name": "Dependencies Validation Configuration",
+    "version": "1.0.0",
+    "description": "Configuration for workspace dependency state validation across Node.js, Go, and Rust ecosystems",
+    "created": "2025-11-12",
+    "last_updated": "2025-11-12",
+    "author": "Nova Dawn"
+  },
+
+  "ecosystems": {
+    "nodejs": {
+      "enabled": true,
+      "description": "Node.js dependency validation (package.json, package-lock.json, node_modules)",
+      "files": {
+        "manifest": "package.json",
+        "lockfile": "package-lock.json",
+        "dependencies_dir": "node_modules"
+      },
+      "warnings": {
+        "lockfile_outdated": "package.json modified after package-lock.json - run npm install",
+        "dependencies_missing": "node_modules not found - run npm install"
+      }
+    },
+
+    "go": {
+      "enabled": true,
+      "description": "Go module dependency validation (go.mod, go.sum)",
+      "files": {
+        "manifest": "go.mod",
+        "lockfile": "go.sum"
+      },
+      "warnings": {
+        "lockfile_outdated": "go.mod modified after go.sum - run go mod tidy"
+      }
+    },
+
+    "rust": {
+      "enabled": true,
+      "description": "Rust cargo dependency validation (Cargo.toml, Cargo.lock)",
+      "files": {
+        "manifest": "Cargo.toml",
+        "lockfile": "Cargo.lock"
+      },
+      "warnings": {
+        "lockfile_outdated": "Cargo.toml modified after Cargo.lock - run cargo build"
+      }
+    }
+  },
+
+  "display": {
+    "header_icon": "📦",
+    "header_text": "Dependency State",
+    "show_when_clean": false,
+    "description": "Display preferences for dependency warnings"
+  },
+
+  "validation": {
+    "check_lockfile_sync": true,
+    "check_dependencies_installed": true,
+    "description": "Which validation checks to perform"
+  }
+}

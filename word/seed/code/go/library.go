@@ -1,174 +1,71 @@
 //go:build ignore
 
-// ═══════════════════════════════════════════════════════════════════════════
+// #!omni template --go -library
+// #!omni meta.key = B-word-seed-code-go-library
+// #!omni meta.from = bereshit/word/omni/seed/code.omni
+// #!omni meta.at = template
+// ============================================================================
+// METADATA
+// ============================================================================
+//
 // TEMPLATE: Go Library Package (4-Block Structure)
-// Key: B-word-seed-code-go-library
-// ═══════════════════════════════════════════════════════════════════════════
-//
-// DEPENDENCY CLASSIFICATION: [PURE/DEPENDED] ([deps if DEPENDED])
-//   - PURE: Standard library only - no internal project dependencies
-//   - DEPENDED: Needs internal packages - list them: (needs: pkg/config, pkg/health)
-//
-// This is a TEMPLATE file - copy and modify for new Go library packages.
-// Replace all [bracketed] placeholders with actual content.
-// Remove "//go:build ignore" when ready to compile.
-//
-// derives_from: bereshit/word/omni/seed/code.omni
-// Derived from: Kingdom Technology 4-block code structure
 // See: standards/code/4-block/ for complete documentation
 //
-// ═══════════════════════════════════════════════════════════════════════════
+// USAGE: When creating a new Go library from this template:
+//   1. Copy this file: cp library.go /path/to/new/package.go
+//   2. Update pragma lines:
+//      - #!omni template → #!omni code --go -library
+//      - meta.key = [your-project-path-key]
+//      - meta.from = bereshit/word/seed/code/go/library.go
+//      - meta.at = [your-version, e.g., a-01.00]
+//   3. Remove "//go:build ignore" line
+//   4. Replace all [bracketed] placeholders with actual content
 
 // Package [packagename] provides [brief description of what this library does].
 //
-// [Library Name] Library - CPI-SI [Project/System Name]
+// # M.1 Core Identity [IDENTITY]
 //
-// For METADATA structure explanation, see: standards/code/4-block/CWS-STD-004-CODE-metadata-block.md
+//	Key:       [project-path-to-file]
 //
-// ────────────────────────────────────────────────────────────────
-// CORE IDENTITY (Required)
-// ────────────────────────────────────────────────────────────────
+//	Scripture: "[Relevant verse grounding this library's purpose]"
+//	           — [Book Chapter:Verse]
+//	Principle: "[Kingdom principle this work demonstrates]"
+//	Anchor:    "Precept upon precept, line upon line" — Isaiah 28:10
 //
-// # Biblical Foundation
+//	Type:      [Ladder/Baton/Rails] ([role in architecture])
 //
-// Scripture: [Relevant verse grounding this library's purpose]
+//	Architect:       [Who designed]
+//	Implementation:  [Who implemented]
+//	Created:         [YYYY-MM-DD]
+//	Version:         [a-XX.XX]
 //
-// Principle: [Kingdom principle this library demonstrates]
+// # M.2 Version History [HISTORY]
 //
-// Anchor: [Supporting verse reinforcing the principle]
+//   - [a-XX.XX] ([YYYY-MM-DD]) — [Brief description of changes]
+//   - [a-XX.XX] ([YYYY-MM-DD]) — [Brief description of changes]
 //
-// # CPI-SI Identity
+// # M.3 Interface [INTERFACE]
 //
-// Component Type: [Ladder/Baton/Rails - see CWS-STD-004 for explanations]
+//	Requires: stdlib (1): [fmt, os, etc.] | internal (0): [pkg/types] | external (-1): [third-party]
+//	Used by:  [what uses this library]
+//	Import:   import "[module-path]/[package-name]"
+//	Pattern:  [typical usage pattern, e.g., SetRoot() → Load() → result.Field]
 //
-// Role: [Specific responsibility in system architecture]
+// # M.4 Public API [API]
 //
-// Paradigm: CPI-SI framework component
+// M.4.1 [Category Name] [TAG]
 //
-// # Authorship & Lineage
+//	[FunctionName](params) returns    [Brief description]
+//	[AnotherFunction](params) returns [Brief description]
 //
-//   - Architect: [Who designed the approach and requirements]
-//   - Implementation: [Who wrote the code and verified it works]
-//   - Created: [YYYY-MM-DD]
-//   - Version: [MAJOR.MINOR.PATCH]
-//   - Modified: [YYYY-MM-DD - what changed]
+// M.4.2 [Category Name] [TAG]
 //
-// Version History:
+//	[FunctionName](params) returns    [Brief description]
 //
-//   - [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
-//   - [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
+// # M.5 Operational [OPERATIONAL]
 //
-// # Purpose & Function
-//
-// Purpose: [What problem does this library solve?]
-//
-// Core Design: [Architectural pattern or paradigm]
-//
-// Key Features:
-//
-//   - [What it provides - major capabilities]
-//   - [What it enables - what others can build with this]
-//   - [What problems it solves - specific use cases]
-//   - [Additional capabilities]
-//
-// Philosophy: [Guiding principle for how this library works]
-//
-// ────────────────────────────────────────────────────────────────
-// INTERFACE (Expected)
-// ────────────────────────────────────────────────────────────────
-//
-// # Dependencies
-//
-// What This Needs:
-//
-//   - Standard Library: [list standard packages]
-//   - External: [None | list external packages with versions]
-//   - Internal: [project packages this depends on]
-//
-// Dependency Safety: [For Rails components - trace imports to stdlib/external only.
-// Include this line to signal "dependencies verified safe." Omit for non-Rails.]
-//
-// What Uses This:
-//
-//   - Commands: [list commands]
-//   - Libraries: [list libraries]
-//   - Tools: [list tools]
-//
-// Integration Points:
-//
-//   - [How other systems connect - Rails/Ladder/Baton mechanism]
-//   - [Cross-component interactions]
-//   - [Data flow or protocol integration]
-//
-// # Usage & Integration
-//
-// Import:
-//
-//	import "[module-path]/[package-name]"
-//
-// Integration Pattern:
-//
-//  1. [Initial setup step]
-//  2. [Configuration step if needed]
-//  3. [Typical usage workflow]
-//  4. [Cleanup if needed]
-//
-// Public API (in typical usage order):
-//
-//	[Category 1] ([purpose]):
-//	  [FunctionName](params) returns
-//	  [AnotherFunction](params) returns
-//
-//	[Category 2] ([purpose]):
-//	  [FunctionName](params) returns
-//
-// ────────────────────────────────────────────────────────────────
-// OPERATIONAL (Contextual)
-// ────────────────────────────────────────────────────────────────
-//
-// # Blocking Status
-//
-// [Blocking/Non-blocking]: [Brief explanation]
-//
-// Mitigation: [How blocking/failures handled]
-//
-// # Health Scoring
-//
-// System: [Base100 with 1-point granular scale from -100 to +100]
-//
-// States: [Granted (>+50), Deferred (±50), Denied (<-50)]
-//
-// [Operation Category]:
-//
-//   - [Specific operation]: ±X points
-//   - [Another operation]: ±Y points
-//
-// Cascade Multipliers: [If applicable - describe categories and multipliers]
-//
-//   - [Category]: [X]x ([brief rationale])
-//
-// See: [Reference to detailed health scoring documentation]
-//
-// Note: Scores reflect TRUE impact. Health scorer normalizes to -100 to +100 scale.
-//
-// ────────────────────────────────────────────────────────────────
-// METADATA Omission Guide
-// ────────────────────────────────────────────────────────────────
-//
-// Tier 1 (CORE IDENTITY): Never omit - every file needs these.
-//
-// Tier 2 (INTERFACE): May omit with [OMIT: reason] notation.
-//   - Dependencies: [OMIT: Self-contained, no external requirements]
-//   - Usage & Integration: Rarely omitted, format adapts to file type
-//
-// Tier 3 (OPERATIONAL): Include when applicable to file type.
-//   - Blocking Status: [OMIT: Configuration file, not executable]
-//   - Health Scoring Variations:
-//       * Config Provider: Provides health config, doesn't track own (use brief note)
-//       * Health Tracker: Full scoring with System/States/Operations
-//       * Pass-through: [OMIT: No health impact]
-//
-// Unlike SETUP (all sections required), METADATA omission signals component characteristics.
+//	Blocking: [yes (1) / conditional (0) / no (-1)] — [Brief explanation]
+//	Health:   [Role] | granted (1): [success] | deferred (0): [pending] | denied (-1): [failed]
 package packagename
 
 // ============================================================================
@@ -179,330 +76,215 @@ package packagename
 // SETUP
 // ============================================================================
 //
-// For SETUP structure explanation, see: standards/code/4-block/CWS-STD-006-CODE-setup-block.md
-//
 // Section order: Imports → Types → Type Methods → Constants → Variables → Package-Level State
-// This flows: dependencies → data model (shape) → behaviors → fixed config → dynamic state → infrastructure
-//
-// Note: Libraries define SHAPE first (Types), then configuration that fills that shape.
-// This differs from executables which consume shapes from libraries.
-//
-// IMPORTANT: All sections MUST be present, even if empty or reserved.
-// For empty sections, use: // [Reserved: Brief reason why not needed]
-//
-// -----------------------------------------------------------------------------
-// SETUP Sections Overview
-// -----------------------------------------------------------------------------
-//
-// 1. IMPORTS (Dependencies)
-//    Purpose: External code this file needs
-//    Subsections: Standard Library → Internal Packages → External Packages
-//
-// 2. TYPES
-//    Purpose: Data structures and type definitions (SHAPE first for libraries)
-//    Subsections: Building Blocks → Composed Types → Configuration Types → Error Types
-//
-// 3. TYPE METHODS
-//    Purpose: Structural behaviors for types (NOT business logic - that's BODY)
-//    Subsections: Interface Implementations → Conversion Methods → Accessor Patterns
-//
-// 4. CONSTANTS
-//    Purpose: Fixed values that never change
-//    Subsections: Category Constants → Defaults
-//
-// 5. VARIABLES
-//    Purpose: Mutable state at package level
-//    Subsections: Registries → Configuration State
-//
-// 6. PACKAGE-LEVEL STATE (Rails Pattern)
-//    Purpose: Logging, debugging, health scoring infrastructure
-//    Subsections: Rails Infrastructure → Initialization
+// See: bereshit/word/seed/code/go/library.go > SETUP
 
 // ────────────────────────────────────────────────────────────────
 // Imports
 // ────────────────────────────────────────────────────────────────
-//
-// Dependencies this component needs. Organized by source - standard library
-// provides Go's built-in capabilities, internal packages provide project-specific
-// functionality. Each import commented with purpose, not just name.
-//
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-001-imports.md
 
-//--- Standard Library ---
-// Foundation packages providing Go's built-in capabilities.
-// Why stdlib: Stability, no external dependency churn, if Go works this works.
-
-import (
-	// "fmt"           // Formatted output for [purpose]
-	// "os"            // File operations and [purpose]
-	// "strings"       // String manipulation for [purpose]
-	// "time"          // Timestamps and duration tracking
-)
-
-//--- Internal Packages ---
-// Project-specific packages showing architectural dependencies.
-// Why internal: Shared functionality within project boundary.
-
+//--- I.1 Standard Library [IMPORT] (1) ---
+// [Summary of stdlib usage - e.g., "Error handling, filesystem, path operations"]
 // import (
-// 	"[module]/internal/[package]"  // [Purpose within project]
-// 	"[module]/pkg/[package]"       // [Shared library purpose]
+// 	"fmt"           // [purpose - e.g., error formatting]
+// 	"os"            // [purpose - e.g., file reading, environment]
+// 	"path/filepath" // [purpose - e.g., path construction]
 // )
 
-//--- External Packages ---
-// Third-party dependencies (use sparingly - each adds risk).
-// Why external: [Justify what stdlib lacks that requires this dependency]
-//
-// [Reserved: Currently none - foundational component uses standard library only]
-
+//--- I.2 External Packages [IMPORT] (-1) ---
+// [Summary of why needed - e.g., "TOML parsing (Go stdlib lacks support)"]
+// OR: [Reserved: No external dependencies — reason]
 // import (
-// 	"github.com/[org]/[package]"  // [Justification for external dependency]
+// 	"github.com/org/pkg" // [purpose]
+// )
+
+//--- I.3 Internal Packages [IMPORT] (0) ---
+// [Summary of internal usage - e.g., "Same package as X — uses Y(), Z()"]
+// OR: [Reserved: Pure library — no internal dependencies]
+// import (
+// 	"module/pkg/internal" // [what it provides]
 // )
 
 // ────────────────────────────────────────────────────────────────
 // Types
 // ────────────────────────────────────────────────────────────────
 //
-// Data structures organized bottom-up: simple building blocks first,
-// then composed structures. This organization reveals dependencies.
-// Types come FIRST in SETUP because they define the SHAPE that
-// configuration (constants, variables) will fill.
-//
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-004-types.md
+// Subsections: Building Blocks, Composed Types, [Domain Types], Error Types
 
-//--- Building Blocks ---
-// Simple foundational types used throughout this component.
-// These are the atoms - other types compose from these.
+//--- T.1 Building Blocks [TYPE] (1) ---
+// Fundamental units returned by Load*/Get* functions
+// [What these types represent and where they come from]
 
 // // [TypeName] represents [what this models].
-// //
-// // [2-4 sentences: what it represents, when used, key constraints]
-// //
-// // Fields:
-// //
-// //   - [FieldName]: [purpose and meaning]
-// //   - [FieldName]: [purpose, units if applicable, constraints]
+// // Access data via [field access pattern].
 // //
 // // Example:
 // //
-// //	t := [TypeName]{
-// //	    [Field]: [value],
-// //	}
+// //	item, err := Load[Type]("[path]")
+// //	item.[Field]  // [what this gives you]
+// //
 // type [TypeName] struct {
-// 	[FieldName] [type]  // [Inline explanation]
-// 	[FieldName] [type]  // [Inline explanation]
+// 	Name string         // identifier, e.g., "ternary.toml"
+// 	Path string         // full path for debugging
+// 	Data map[string]any // parsed content
 // }
 
-//--- Composed Types ---
-// Complex types built from building blocks above.
-// Document the composition relationship explicitly.
+//--- T.2 Composed Types [TYPE] (1) ---
+// Aggregates returned by batch operations
+// [Summary: what these aggregate - e.g., "batch loading results", "validation results"]
 
-// // [ComposedType] combines [building blocks] to represent [concept].
-// //
-// // [Explain relationships: why these pieces go together, what
-// // higher-level functionality they create together]
-// //
-// // Fields:
-// //
-// //   - [FieldName]: [purpose]
-// //   - [FieldName]: Uses [BuildingBlock] for [reason]
+// // [ResultType] holds the result of [batch operation].
+// // Returned by [BatchFunction]().
 // //
 // // Example:
 // //
-// //	c := [ComposedType]{
-// //	    [Field]: [value],
-// //	    [Block]: [BuildingBlock]{...},
+// //	result := LoadAll[Type]("[path]")
+// //	if !result.Valid {
+// //	    for _, err := range result.Errors { log.Println(err) }
 // //	}
-// type [ComposedType] struct {
-// 	[FieldName]  [type]          // [Purpose]
-// 	[BlockField] [BuildingBlock] // Composition from above
+// //
+// type [ResultType] struct {
+// 	Items  [][ItemType] // successfully loaded items
+// 	Valid  bool         // true only if ALL succeeded
+// 	Errors []error      // all errors encountered
 // }
 
-//--- Configuration Types ---
-// Options and settings passed to constructors/functions.
-// Zero values should provide sensible defaults.
+//--- T.3 [Domain] Types [TYPE] (1) ---
+// [Domain-specific types - e.g., Manifest Types, Config Types, Path Types]
+// [Summary: what domain these serve - traces to DATA source]
 
-// // [Config] holds configuration options for [component].
+// // [DomainType] represents [domain concept from DATA].
+// // Maps to: [source file/section]
 // //
-// // Zero values are sensible defaults - can instantiate with [Config]{}
-// // for default behavior.
-// //
-// // Fields:
-// //
-// //   - [Field]: [purpose] (default: [value])
-// type [Config] struct {
-// 	[Field] [type]  // [Purpose] (default: [zero value behavior])
+// type [DomainType] struct {
+// 	[Field] [type] `toml:"[name]"` // [purpose - traces to DATA]
 // }
 
-//--- Error Types ---
-// Custom errors for this component. Implement error interface.
-// Include context needed for handling/debugging.
+//--- T.4 Error Types [TYPE] (1) ---
+// Config-driven errors: originate in DATA, manifest in CODE
+// See: BODY > Error Helpers for constructors
+// [Summary: what error categories - used by health scoring]
 
-// // [ErrorType] represents [error condition].
+// // [ErrorType] represents [error condition from operation].
+// // Constructed by: [helper function in BODY]
 // //
-// // [When this error occurs, what context it captures]
 // type [ErrorType] struct {
-// 	[Field] [type]  // [What context this provides]
+// 	Op      string // operation that failed
+// 	Path    string // file/resource involved
+// 	Wrapped error  // underlying cause
 // }
 //
-// // Error implements the error interface.
-// func (e *[ErrorType]) Error() string {
-// 	return fmt.Sprintf("[format string]", e.[Field])
-// }
+// func (e *[ErrorType]) Error() string { return fmt.Sprintf("[op] %s: %v", e.Path, e.Wrapped) }
+// func (e *[ErrorType]) Unwrap() error { return e.Wrapped }
 
 // ────────────────────────────────────────────────────────────────
 // Type Methods
 // ────────────────────────────────────────────────────────────────
-//
-// Structural behaviors for types defined above. These are NOT business
-// logic - those go in BODY. Type methods here are:
-//   - Interface implementations (Error(), String(), etc.)
-//   - Conversion methods (ToX(), FromX())
-//   - Accessor/mutator patterns if needed
-//
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-005-type-methods.md
-//
-// Key distinction:
-//   - SETUP type methods: Structural (formatting, conversion, interface impl)
-//   - BODY methods: Business logic (Process(), Validate(), Execute())
 
-//--- Interface Implementations ---
-// Methods required by Go interfaces (error, fmt.Stringer, etc.)
-
-// // String implements fmt.Stringer for [TypeName].
-// //
-// // Returns [description of string format].
-// func (t *[TypeName]) String() string {
-// 	return fmt.Sprintf("[format]", t.[Field])
-// }
-
-//--- Conversion Methods ---
-// Transform between types or formats.
-
-// // To[OtherType] converts [TypeName] to [OtherType].
-// //
-// // [When/why you'd use this conversion]
-// func (t *[TypeName]) To[OtherType]() *[OtherType] {
-// 	return &[OtherType]{
-// 		[Field]: t.[Field],
-// 	}
-// }
-
-//--- Accessor Patterns ---
-// Getters/setters if encapsulation needed. Prefer direct field access
-// when no validation or side effects required.
-
-// // [Reserved: Currently no accessor methods needed]
-// // Use direct field access unless validation or side effects required.
+//--- TM Type Methods [METHOD] (0) ---
+// [Reserved: Phase N — typed accessors, conversion methods]
+// Error types implement error interface above (Error(), Unwrap())
+// Use direct field access unless validation or side effects required.
 
 // ────────────────────────────────────────────────────────────────
 // Constants
 // ────────────────────────────────────────────────────────────────
 //
-// Named values that never change. Magic numbers given meaningful names,
-// configuration values documented with reasoning. Constants prevent bugs
-// from typos and make intent clear.
+// [Brief description of what this section provides for THIS library].
+// Primary source is [config/manifest]; constants here for [fallback/direct access].
 //
-// Note: In config-driven systems, many "constants" live in config files.
-// This section holds truly fixed values or accessor functions for config.
+// [N-System/Category Architecture (dependency order, 0=anchor)]:
+//   0. [anchor]    — [role description]
+//   1. [layer 1]   — [role description]
+//   2. [layer 2]   — [role description]
+//   ...
+//   N. [top layer] — [role description]
 //
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-002-constants.md
+// Include architecture overview for config-driven systems.
+// Omit for simple libraries with no multi-system architecture.
 
-//--- [Category Name] Constants ---
-// [Brief explanation of this group and their purpose]
-
+//--- K.1 [Organization/Structure] [DATA] (1) ---
+// Directory structure, file paths, architectural constants
 // const (
-// 	// [ConstantName] [brief description].
-// 	//
-// 	// Set to [value] based on [reasoning]. Higher values risk [problem],
-// 	// lower values cause [problem].
-// 	[ConstantName] = [value]  // [Inline context if needed]
-//
-// 	// [AnotherConstant] [brief description].
-// 	[AnotherConstant] = [value]
+// 	[DirName]  = "[path]" // relative to project root
+// 	[FileExt]  = ".[ext]" // file extension
 // )
 
-//--- Defaults ---
-// Default values for optional configuration. Zero values should be sensible.
+//--- K.2 [Categories/Groups] [DATA] (1) ---
+// Category definitions, groupings, manifests
+// See: [reference to architecture documentation above]
+// Tripwire: Helpers > Fallback Data > [fallbackMapName]
 
+//--- K.3 [Type Constants] [DATA] (1) ---
+// Type strings, format identifiers, protocol constants
 // const (
-// 	// Default[Thing] is used when [Thing] not explicitly configured.
-// 	Default[Thing] = [value]
+// 	Type[Name] = "[value]"
+// )
+
+//--- K.4 [Thresholds/Limits] [DATA] (1) ---
+// Boundaries, limits, scoring thresholds
+// const (
+// 	[Metric]Perfect  = 100 // [description]
+// 	[Metric]Good     = 80  // [description]
+// 	[Metric]Degraded = 50  // [description]
+// 	[Metric]Failed   = 0   // [description]
 // )
 
 // ────────────────────────────────────────────────────────────────
 // Variables
 // ────────────────────────────────────────────────────────────────
 //
-// Package-level mutable state. Use sparingly - prefer constants for fixed
-// values and function parameters for dynamic behavior. Variables here are
-// typically: registries, caches, or configuration that changes at runtime.
+// Package-level mutable state. Kept minimal — explicit SetX() over implicit.
 //
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-003-variables.md
+// Subsections: Configuration State, Sentinel Errors, [Domain-specific]
 
-//--- Registries ---
-// Maps or slices that collect items for lookup or iteration.
+//--- V.1 Configuration State [DATA] (1) ---
+// Set once at startup, read by all Load*/Get* functions.
+// var (
+// 	[packageName]Root string  // absolute path, set via SetRoot()
+// 	loadedConfig      *Config // cached config after first load
+// )
+
+//--- V.2 Sentinel Errors [DATA] (1) ---
+// Unexported — wrapped by public error types for context.
+// See: BODY > Public APIs > [FunctionName] (err[Name])
+// var (
+// 	err[Name] = fmt.Errorf("[error message]")
+// )
+
+//--- V.3 [Domain-Specific] [DATA] (1) ---
+// Cached state, registries, lazy-initialized instances.
 // Pattern: Define structure in SETUP, populate in init() or lazily.
-
 // var (
-// 	// [registryName] maps [key description] to [value description].
-// 	//
-// 	// Populated by [mechanism - init(), Register() calls, etc].
-// 	// Thread-safety: [safe/unsafe - describe synchronization if any]
-// 	[registryName] = make(map[[keyType]][valueType])
-// )
-
-//--- Configuration State ---
-// Runtime-modifiable settings. Document default values and valid ranges.
-
-// var (
-// 	// [configVar] controls [behavior].
-// 	//
-// 	// Default: [value]. Valid range: [min] to [max].
-// 	// Modified by: [what changes this - flags, environment, API calls]
-// 	[configVar] = [defaultValue]
+// 	default[Thing] *[Type]                         // cached instance
+// 	[registryName] = make(map[[keyType]][valueType]) // registry map
 // )
 
 // ────────────────────────────────────────────────────────────────
-// Package-Level State (Rails Pattern)
+// Package-Level State
 // ────────────────────────────────────────────────────────────────
 //
-// Infrastructure available throughout component. Rails pattern - each
-// component creates own logger independently without parameter passing.
-// This is orthogonal infrastructure that all components attach to directly.
+// Cross-package coordination via [SetRoot()/config loader/etc].
+// [Describe how other packages interact with this one's state.]
 //
-// See: standards/code/patterns/CWS-PATTERN-003-CODE-rails.md
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-006-package-level-state.md
-//
-// Note: Not all libraries need Rails infrastructure. Simple pure-function
-// libraries may skip this section entirely.
+// Subsections: Coordination Pattern, Initialization Order, Reserved Features
 
-//--- Rails Infrastructure ---
-// Package-level logger and inspector for this component.
-// Each component creates own infrastructure attachment independently.
+//--- PS.1 Coordination Pattern [DOC] (1) ---
+// How other packages interact with this package's state.
+// [Describe the pattern - e.g., "All packages call SetRoot() at startup"]
 
-// // componentLogger provides health tracking throughout this component.
-// //
-// // All functions in this package use this logger for health scoring and
-// // event recording. Created in init() with component-specific identifier.
-// var componentLogger *logging.Logger
-//
-// // componentInspector provides detailed state inspection for debugging.
-// //
-// // Enabled by default for development visibility. Can be toggled at
-// // runtime for production environments.
-// var componentInspector *debugging.Inspector
+//--- PS.2 Initialization Order [DOC] (1) ---
+// Sequence of operations for proper initialization.
+//   1. [First step - e.g., loader.SetRoot() called by main/hook]
+//   2. [Second step - e.g., DefaultLoader() creates instance]
+//   3. [Third step - e.g., Functions use cached instance]
 
-//--- Initialization ---
-// Attach to Rails infrastructure at package load time.
+//--- PS.3 Reserved Features [DOC] (0) ---
+// [Reserved: init() auto-discovery from [location] or environment]
+// [Reserved: Rails infrastructure for cross-package coordination]
 
-// func init() {
-// 	// Attach to logging rail
-// 	componentLogger = logging.NewLogger("[componentname]")
-//
-// 	// Attach to debugging rail
-// 	componentInspector = debugging.NewInspector("[componentname]")
-// 	componentInspector.Enable()  // Enable by default for development
-// }
+// Note: Simple pure-function libraries may mark all PS sections [Reserved].
+// Use this section when package maintains state other packages depend on.
 
 // -----------------------------------------------------------------------------
 // SETUP Omission Guide
@@ -617,95 +399,257 @@ import (
 //
 // See: standards/code/4-block/sections/body/CWS-SECTION-BODY-002-helpers.md
 //
-// Note: For multi-file packages using orchestrator pattern, helpers may
-// be extracted to separate modules. Document with [Reserved]:
-//   [Reserved: [HelperName]() extracted to [module.go] (orchestrator pattern).
-//   This file acts as orchestrator - it calls helpers in other modules.]
-//
-// [Reserved: Additional helpers will emerge as component develops]
+// Subsections: Pure Functions, Guard Functions, Domain Functions, Fallback Data
 
-// [helperName] [does what]
+//--- H.1 Pure Functions [TRANSFORM] (1) ---
+// No side effects. Same input → same output. Safe to call from anywhere.
 //
-// What It Does:
-// [Brief explanation - helpers are usually simple and focused]
+// Common patterns:
+//   - fileExists()  - check path exists (wraps os.Stat, used by load functions)
+//   - globTOML()    - find all .toml files in directory (wraps filepath.Glob)
+//   - extract[X]()  - extract data from collections (sort if from map)
+//   - find[X]()     - lookup item by criteria, return pointer or nil
+//   - collect[X]()  - gather items from slice into new slice
+//   - to[X]()       - convert between types
 //
-// Parameters:
-//   [paramName]: [Purpose and expected values]
-//
-// Returns:
-//   [returnType]: [What's returned]
-//
-// Example usage:
-//
-//	result := [helperName]([params])
-//
-// func [helperName]([parameters]) [returns] {
-//     // Implementation - keep pure when possible (no side effects)
-//     // Pure functions are easier to test and reason about
-//
-//     return [result]  // Return transformed/calculated result
+// // extract[Thing] returns [what] from [source].
+// //
+// // Parameters:
+// //   - [param]: [purpose]
+// //
+// // Returns:
+// //   - [type]: [what's returned]
+// //
+// // Uses: [SETUP > Constants > ... if referencing SETUP definitions]
+// // Used by: [Core Operations > [section] or Public APIs > [function]]
+// func extract[Thing]([params]) []string {
+// 	result := make([]string, 0, len([source]))
+// 	for [k/v] := range [source] {
+// 		result = append(result, [value])
+// 	}
+// 	sort.Strings(result) // deterministic order (required for maps)
+// 	return result
 // }
+//
+// // find[Thing] locates [what] by [criteria].
+// //
+// // Parameters:
+// //   - [source]: collection to search
+// //   - [criteria]: value to match
+// //
+// // Returns:
+// //   - *[Type]: pointer to found item, nil if not found
+// //
+// // Used by: [Core Operations > [section]]
+// func find[Thing]([source], [criteria]) *[Type] {
+// 	for i := range [source] {
+// 		if [source][i].[Field] == [criteria] {
+// 			return &[source][i]
+// 		}
+// 	}
+// 	return nil
+// }
+
+//--- H.2 Guard Functions [CHECK] (1) ---
+// Precondition checks. Call at function entry to fail fast.
+// See: SETUP > Variables > Sentinel Errors (errors returned by guards)
+// [Reserved (0): if guards live in companion file, See: that file > Helpers > Guard Functions]
+//
+// Common pattern: validate package-level state set by public API (e.g., SetRoot).
+//
+// // check[State] validates [stateVar] has been set via Set[State]().
+// //
+// // Returns:
+// //   - error: err[State]NotSet if [stateVar] is empty, nil otherwise
+// //
+// // Used by: Public APIs (all public functions require [state])
+// func check[State]() error {
+// 	if [stateVar] == "" {
+// 		return err[State]NotSet // see: SETUP > Variables > Sentinel Errors
+// 	}
+// 	return nil
+// }
+
+//--- H.3 Domain Functions [DOMAIN] (1) ---
+// Package-specific helpers. Manifest operations, converters, extractors.
+// See: Helpers > Fallback Data > [dataSource] (data these functions operate on)
+// [Reserved (0): if domain logic lives in companion file, See: that file > Helpers > Domain Functions]
+//
+// Common patterns: extract from manifest, get by key, build paths.
+//
+// // [functionName] [does what] from/for [dataSource].
+// //
+// // Parameters:
+// //   - [param]: [description] (e.g., "[example]")
+// //
+// // Returns:
+// //   - [type]: [description] (e.g., ["example1", "example2", ...])
+// //   - bool: true if [condition], false otherwise
+// //
+// // Uses: Helpers > Fallback Data > [dataSource]
+// // Used by: [Section] > [Subsection] > [caller]  (if wired)
+// // Reserved for: [Future purpose]                 (if not yet wired)
+// func [functionName]([params]) [returns] {
+// 	// implementation
+// 	sort.Strings(result) // deterministic order (if iterating map)
+// 	return result
+// }
+
+//--- H.4 Fallback Data [DATA] (1) ---
+// Static data for tripwire fallback when config-driven source unavailable.
+// Tripwire: K.2 references this section. If K.2 Tripwire breaks, check here.
+// [Reserved (0): if fallback data lives in companion file, See: that file > Helpers > Fallback Data]
+//
+// Pattern A: Emergency fallback (used when config loading fails)
+// // fallback[Name] provides hardcoded [what] when [source] unavailable.
+// // Used ONLY when [config file] is missing (tripwire fallback).
+// var fallback[Name] = [type]{...}
+//
+// Pattern B: Primary data (will become config-driven in future)
+// // fallback[Name] maps [what] to [what].
+// // Used by [Section] > [function] to [purpose].
+// // Tripwire: Future versions may load from [config file]; this is the fallback.
+// var fallback[Name] = [type]{...}
 
 // ────────────────────────────────────────────────────────────────
 // Core Operations - Business Logic
 // ────────────────────────────────────────────────────────────────
-// Component-specific functionality implementing primary purpose. Organized
-// by operational categories (descriptive subsections) below.
 //
-// See: standards/code/4-block/sections/body/CWS-SECTION-BODY-003-core-operations.md
+// Middle rung. Depends on Helpers below, used by Public APIs above.
+// See: Org Chart > Ladder Structure > Core Operations
+//
+// Subsections: [List subsection names here]
 
-// ────────────────────────────────────────────────────────────────
-// [Category 1 Name] - [Purpose]
-// ────────────────────────────────────────────────────────────────
-// What These Do:
-// [High-level description of this category of operations]
+//--- C.1 [Name] [TAG] (1) ---
+// [What this category does. Entry point / workhorse / etc.]
+// Uses: [Section] > [Subsection] > [what it uses]
+// Contrast: [Section] > [Subsection] (when distinguishing from similar functions)
+// [Reserved (0): if this operation category not needed in this file]
 //
-// Why Separated:
-// [Reasoning for this grouping - explain organization logic]
+// Common naming patterns:
+//   - load[Thing]()     - parse file/config, return typed struct (Entry point)
+//   - extract[Thing]()  - pull data from loaded struct (Called after load)
+//   - process[Thing]()  - transform data (may have side effects)
+//   - validate[Thing]() - check constraints, return result
+//   - build[Thing]()    - construct output from inputs
 //
-// Extension Point:
-// To add new [operation type], create function following [naming pattern].
-// Each [operation] should [pattern to follow]. Update [orchestration function]
-// to integrate new operation.
+// Common inline comment patterns:
+//   - // [ConstantName] from SETUP > Constants
+//   - // BurntSushi/toml (or other external library callout)
+//   - // [sort|filter|transform] by [field] ([0 = anchor] | [reason])
 //
-// Pattern to follow:
-//   1. [Step 1 - create function with specific signature]
-//   2. [Step 2 - implement with specific behavior]
-//   3. [Step 3 - integrate with existing code]
-//   4. [Step 4 - update tests]
+// // [functionName] [does what].
+// //
+// // Parameters:
+// //   - [param]: [description]
+// //
+// // Returns:
+// //   - [type]: [description]
+// //   - error: [when returned]
+// //
+// // Uses: [Section] > [Subsection] > [helper/data used]
+// //
+// // Note: [Cross-layer dependency or side effect explanation]
+// func [functionName]([params]) ([returns], error) {
+// 	// implementation using helpers
+// 	return result, nil
+// }
 //
-// Example categories:
-// - Validation: Input checking, constraint verification
-// - Conversion: Data transformation between formats
-// - Processing: Core algorithms and computations
-// - Formatting: Output preparation
-// - Analysis: Data examination and metrics
+// Actual load pattern structure (from real loaders):
+//
+// func load[Thing]() (*[Type], error) {
+// 	// 1. Build path from constants
+// 	path := filepath.Join(root, PathConst, FileConst) // PathConst, FileConst from SETUP > Constants
+//
+// 	// 2. Check file exists — explicit error
+// 	if !fileExists(path) { // Helpers > Pure Functions
+// 		return nil, fmt.Errorf("[thing] not found: %s", path)
+// 	}
+//
+// 	// 3. Declare typed variable
+// 	var result [Type]
+//
+// 	// 4. Parse with external library
+// 	if _, err := toml.DecodeFile(path, &result); err != nil { // BurntSushi/toml
+// 		return nil, fmt.Errorf("[thing] parse error: %w", err)
+// 	}
+//
+// 	// 5. Post-process (sort by Order for dependency ordering)
+// 	sort.Slice(result.Items, func(i, j int) bool { // Sort by order (0 = anchor)
+// 		return result.Items[i].Order < result.Items[j].Order
+// 	})
+//
+// 	// 6. Return
+// 	return &result, nil
+// }
 
-// [FunctionName] [does what]
+//--- C.2 [Name] [TAG] (1) ---
+// [Purpose of this category]
+// Uses: Core Operations > C.1 > [function]  (if builds on C.1)
 //
-// What It Does:
-// [Detailed explanation of function purpose and behavior]
+// Common C.2 patterns (from real files):
 //
-// Parameters:
-//   [paramName]: [Purpose and expected values]
+// Pattern A: Single File Loading (workhorse, used by C.3+)
+// func loadFile(path string) (*ConfigFile, error) {
+// 	if !fileExists(path) { return nil, fmt.Errorf("file not found: %s", path) }
+// 	var data map[string]any
+// 	if _, err := toml.DecodeFile(path, &data); err != nil { return nil, err }
+// 	return &ConfigFile{Name: filepath.Base(path), Path: path, Data: data}, nil
+// }
 //
-// Returns:
-//   [returnType]: [What's returned and meaning]
-//   error: [When error returned, what it means]
+// Pattern B: Extract from Loaded Config (transform, no I/O)
+// func extract[Thing](cfg *Config) *[Type] {
+// 	sys := findSystem(cfg, "[name]") // Helpers > Pure Functions
+// 	if sys == nil { return nil }
+// 	result := &[Type]{}
+// 	for _, p := range sys.Paths {
+// 		switch p.Name {
+// 		case "[field]": result.[Field] = p.Path
+// 		}
+// 	}
+// 	return result
+// }
 //
-// Health Impact:
-//   Success: +X points ([reasoning for value])
-//   Failure: -X points ([reasoning for value])
+// Pattern C: Load with Caching (cached access)
+// func (l *Loader) Load[Thing](path string) (*[Type], error) {
+// 	if cached, ok := l.cache[path]; ok { return cached, nil } // cache hit
+// 	if !fileExists(path) { return nil, [error] }
+// 	// ... load and parse ...
+// 	l.cache[path] = result
+// 	return result, nil
+// }
+
+//--- C.3 [Name] [TAG] (1) ---
+// [Purpose - often batch operations building on C.2]
+// Uses: Helpers > Pure Functions > globTOML, Core Operations > C.2 > [function]
 //
-// Troubleshooting (for operations that commonly have issues):
-//   Problem: "[common error message]"
-//     Check: [What to verify - file exists, permissions, etc.]
-//     Check: [Another thing to verify]
-//     Solution: [How to fix the problem]
+// Common C.3 patterns:
 //
-//   Problem: "[another common issue]"
-//     Check: [Diagnostic step]
-//     Solution: [How to resolve]
+// Pattern A: Directory Loading (batch using C.2 workhorse)
+// func loadDirectory(dirPath string) ([]*ConfigFile, error) {
+// 	matches, err := globTOML(dirPath) // Helpers > Pure Functions
+// 	if err != nil { return nil, err }
+// 	var results []*ConfigFile
+// 	for _, path := range matches {
+// 		cfg, err := loadFile(path) // Core Operations > C.2
+// 		if err != nil { return results, err } // partial results
+// 		results = append(results, cfg)
+// 	}
+// 	return results, nil
+// }
+//
+// Pattern B: Validation (check constraints, return result)
+// func (l *Loader) validate[Thing](result *Result, path string, value any, schema Schema) {
+// 	if !l.checkType(value, schema.Type) { // Helpers > Pure Functions
+// 		result.Errors = append(result.Errors, Error{Path: path, ...})
+// 		result.Health -= weight
+// 	}
+// 	// ... additional validations ...
+// }
+
+//--- C.N [Name] [TAG] (0) ---
+// [Reserved: reason this category not needed]
+// See: [other file] > Core Operations > [section] (if logic lives elsewhere)
 //
 // Include troubleshooting for: File I/O, network operations, configuration
 // parsing, external dependencies, complex validation. Focus on genuinely

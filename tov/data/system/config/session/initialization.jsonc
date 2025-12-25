@@ -1,0 +1,104 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Session Initialization Configuration
+// Controls session timing and logging initialization at session start
+//
+// HEALTH SCORING MAP (Total = 100 points):
+// This configuration file enables flexible session initialization:
+//   Config Load Success: +40 points (file readable, valid JSON)
+//   Path Resolution: +30 points (utilities found at configured paths)
+//   Execution Success: +30 points (utilities run without error)
+//
+// Scoring reflects: Config quality (40) + System setup (30) + Runtime success (30) = 100
+// ============================================================================
+
+{
+  "metadata": {
+    "name": "Session Initialization Configuration",
+    "description": "Controls session timing and logging initialization utilities",
+    "version": "1.0.0",
+    "author": "Seanje Lenox-Wise",
+    "created": "2025-11-12",
+    "last_updated": "2025-11-12"
+  },
+
+  // ============================================================================
+  // Paths Configuration
+  // ============================================================================
+  // Base paths for system utilities - centralized to handle system updates
+
+  "paths": {
+    "system_bin": "~/.claude/cpi-si/system/bin",  // Base directory for system utilities
+    "fallback_system_bin": "~/.claude/system/bin" // Fallback if primary path doesn't exist
+  },
+
+  // ============================================================================
+  // Utilities Configuration
+  // ============================================================================
+  // Session initialization utilities with paths and commands
+
+  "utilities": {
+    "session_time": {
+      "name": "session-time",                     // Utility executable name
+      "path": "{system_bin}/session-time",        // Full path (uses {system_bin} placeholder)
+      "init_command": "init",                     // Subcommand for initialization
+      "description": "Initializes session timing tracking"
+    },
+    "session_log": {
+      "name": "session-log",                      // Utility executable name
+      "path": "{system_bin}/session-log",         // Full path (uses {system_bin} placeholder)
+      "start_command": "start",                   // Subcommand for starting log
+      "description": "Initializes session history logging"
+    }
+  },
+
+  // ============================================================================
+  // Behavior Configuration
+  // ============================================================================
+  // Error handling and execution preferences
+
+  "behavior": {
+    "silent_failures": true,         // true = continue silently on error, false = log errors
+    "require_all_utilities": false,  // true = fail if any utility missing, false = continue with available
+    "timeout_seconds": 5,            // Maximum time to wait for utility execution
+    "retry_on_failure": false,       // true = retry failed utilities once, false = single attempt
+    "log_execution": false           // true = log all utility calls, false = silent execution
+  },
+
+  // ============================================================================
+  // Display Configuration
+  // ============================================================================
+  // Output formatting when logging enabled
+
+  "display": {
+    "show_success": false,           // Show message when initialization succeeds
+    "show_failures": false,          // Show message when initialization fails
+    "success_icon": "✓",             // Icon for successful initialization
+    "failure_icon": "✗",             // Icon for failed initialization
+    "success_message": "Session initialized",
+    "failure_message": "Session initialization incomplete (continuing)"
+  },
+
+  // ============================================================================
+  // Advanced Configuration
+  // ============================================================================
+  // Advanced options for custom setups
+
+  "advanced": {
+    "use_absolute_paths": false,     // true = never use PATH lookup, always use configured paths
+    "validate_before_run": true,     // true = check utility exists before running
+    "cache_utility_paths": true      // true = cache resolved paths (performance optimization)
+  },
+
+  // ============================================================================
+  // Extensions
+  // ============================================================================
+  // Reserved for future functionality
+
+  "extensions": {
+    "custom_utilities": [],          // Future: Allow adding custom initialization utilities
+    "pre_init_hooks": [],            // Future: Commands to run before initialization
+    "post_init_hooks": []            // Future: Commands to run after initialization
+  }
+}

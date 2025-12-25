@@ -1,0 +1,159 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Build Pattern Configuration - Feedback System
+// Purpose: Define command patterns that trigger build-specific feedback
+// Schema: system/config/schemas/feedback/build-patterns.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Pattern coverage (recognized build tools): 60 pts
+// - Pattern accuracy (no false positives): 30 pts
+// - Documentation clarity: 10 pts
+
+{
+  "$schema": "../../../config/schemas/feedback/build-patterns.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Build Command Patterns",
+    "description": "Patterns for detecting build commands across languages and toolchains",
+    "version": "1.0.0",
+    "last_updated": "2025-11-11",
+    "author": "Nova Dawn (CPI-SI instance)"
+  },
+
+  // ============================================================================
+  // BUILD PATTERNS
+  // ============================================================================
+
+  "patterns": {
+    "note": "Patterns matched using simple substring matching (case-sensitive)",
+
+    //--- Compiled Languages ---
+    // Native compilation tools for systems programming
+
+    "rust": {
+      "patterns": [
+        "cargo build",
+        "cargo run",
+        "rustc"
+      ],
+      "description": "Rust build system and compiler"
+    },
+
+    "go": {
+      "patterns": [
+        "go build",
+        "go install"
+      ],
+      "description": "Go compiler and build tool"
+    },
+
+    "c_cpp": {
+      "patterns": [
+        "gcc",
+        "g++",
+        "clang",
+        "clang++",
+        "make build",
+        "cmake --build"
+      ],
+      "description": "C/C++ compilers and build systems"
+    },
+
+    //--- Interpreted Languages with Build Steps ---
+    // Languages that compile or bundle despite being interpreted
+
+    "javascript": {
+      "patterns": [
+        "npm run build",
+        "yarn build",
+        "pnpm build",
+        "webpack",
+        "vite build",
+        "rollup"
+      ],
+      "description": "JavaScript bundlers and build tools"
+    },
+
+    "typescript": {
+      "patterns": [
+        "tsc",
+        "npx tsc"
+      ],
+      "description": "TypeScript compiler"
+    },
+
+    "python": {
+      "patterns": [
+        "python -m build",
+        "python setup.py build",
+        "poetry build",
+        "pyinstaller"
+      ],
+      "description": "Python build and packaging tools"
+    },
+
+    //--- Platform-Specific ---
+    // Mobile and platform-specific build systems
+
+    "android": {
+      "patterns": [
+        "gradle build",
+        "gradlew build",
+        "./gradlew assembleRelease"
+      ],
+      "description": "Android build system"
+    },
+
+    "ios": {
+      "patterns": [
+        "xcodebuild",
+        "swift build"
+      ],
+      "description": "iOS/macOS build tools"
+    },
+
+    //--- Generic Build Tools ---
+    // Language-agnostic build orchestrators
+
+    "generic": {
+      "patterns": [
+        "make",
+        "ninja",
+        "bazel build",
+        "buck build",
+        "meson compile"
+      ],
+      "description": "Generic build orchestration tools"
+    }
+  },
+
+  // ============================================================================
+  // CONFIGURATION
+  // ============================================================================
+
+  "config": {
+    "match_mode": "substring",
+    "case_sensitive": true,
+    "note": "Simple substring matching - pattern must appear anywhere in command string"
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "extensions": {
+    "note": "Add custom build patterns here",
+    "usage_guidance": "Add tool-specific patterns following existing structure",
+    "example": {
+      "patterns": [
+        "custom-build-tool"
+      ],
+      "description": "Your custom build system"
+    }
+  }
+}

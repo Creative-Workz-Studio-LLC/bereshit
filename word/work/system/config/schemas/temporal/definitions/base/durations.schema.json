@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/definitions/base/durations.schema.json",
+  "title": "Duration Thresholds Schema",
+  "description": "Schema for universal duration categorization definitions",
+  "type": "object",
+  "required": ["metadata", "usage", "extensions"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "created", "last_updated", "purpose", "scope"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of this definition set"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semantic version"
+        },
+        "created": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO 8601 date when created"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO 8601 date when last updated"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Why this definition exists"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["paradigm-wide"],
+          "description": "Scope of these definitions"
+        }
+      }
+    },
+    "session_durations": {
+      "type": "object",
+      "description": "Duration categories for sessions",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["description", "min_minutes", "max_minutes"],
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "min_minutes": {
+              "type": "number",
+              "minimum": 0
+            },
+            "max_minutes": {
+              "type": ["number", "null"],
+              "minimum": 0
+            },
+            "typical_use_cases": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "task_durations": {
+      "type": "object",
+      "description": "Duration categories for tasks",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["description", "estimated_minutes"],
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "estimated_minutes": {
+              "type": "number",
+              "minimum": 0
+            },
+            "examples": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "break_recommendations": {
+      "type": "object",
+      "description": "Recommended break durations",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "suggested_minutes": {
+              "type": "number",
+              "minimum": 0
+            },
+            "suggested_frequency": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "response_times": {
+      "type": "object",
+      "description": "Response time expectation categories",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "max_minutes": {
+              "type": ["number", "null"],
+              "minimum": 0
+            },
+            "examples": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "properties": {
+        "purpose": {
+          "type": "string"
+        },
+        "application": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "inheritance": {
+          "type": "string"
+        },
+        "flexibility": {
+          "type": "string"
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

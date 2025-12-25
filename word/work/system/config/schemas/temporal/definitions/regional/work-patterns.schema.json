@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/definitions/regional/work-patterns.schema.json",
+  "title": "Work Patterns Schema",
+  "description": "Schema for regional work pattern definitions",
+  "type": "object",
+  "required": ["metadata", "standard_work_week", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "created", "last_updated", "purpose", "scope", "region"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "created": { "type": "string", "format": "date" },
+        "last_updated": { "type": "string", "format": "date" },
+        "purpose": { "type": "string" },
+        "scope": { "type": "string", "enum": ["regional"] },
+        "region": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "standard_work_week": {
+      "type": "object",
+      "required": ["pattern", "days"],
+      "properties": {
+        "pattern": { "type": "string" },
+        "days": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z]+$": {
+              "type": "object",
+              "required": ["iso_day", "typical_status"],
+              "properties": {
+                "iso_day": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 7
+                },
+                "typical_status": {
+                  "type": "string",
+                  "enum": ["work_day", "weekend", "partial"]
+                },
+                "typical_start": {
+                  "type": "string",
+                  "description": "Typical start time - can be exact (09:00) or range (08:00 or 09:00) reflecting regional variation"
+                },
+                "typical_end": {
+                  "type": "string",
+                  "description": "Typical end time - can be exact (17:00) or range (17:00 or 18:00) reflecting regional variation"
+                },
+                "characteristics": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "typical_work": { "type": "string" },
+                "cultural_note": { "type": "string" },
+                "work_note": { "type": "string" }
+              }
+            }
+          }
+        },
+        "total_hours": { "type": "string" },
+        "variations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "common_schedules": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_0-9]+$": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "start": { "type": "string" },
+            "end": { "type": "string" },
+            "lunch": { "type": "string" },
+            "work_hours": { "type": "number" },
+            "characteristics": { "type": "string" },
+            "patterns": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "rotation": { "type": "string" },
+            "industries": { "type": "string" }
+          }
+        }
+      }
+    },
+    "typical_breaks": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "meeting_culture": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "seasonal_patterns": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "remote_work": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "disclaimers": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

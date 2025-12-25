@@ -90,7 +90,9 @@
 # Declarations
 # ────────────────────────────────────────────────────────────────
 
-.PHONY: all libtrit.a check-headers test clean help info
+.PHONY: all generate libtrit.a check-headers test clean help info \
+        test-trit test-pack test-dimension test-temporal test-integration \
+        test-math test-bible-rail test-verse-addr test-scripture-path test-scripture-text
 
 # ────────────────────────────────────────────────────────────────
 # Constants
@@ -104,6 +106,12 @@ BUILD_DIR = build
 SRC_DIR = src
 INC_DIR = include
 TEST_DIR = test
+GEN_DIR = $(INC_DIR)/generated
+
+# Code generation (TOML → C headers)
+# BERESHIT_ROOT must be set, default to 4 levels up from pkg/trit/
+BERESHIT_ROOT ?= $(realpath ../../../..)
+GENERATOR_PKG = $(BERESHIT_ROOT)/word/work/cmd/generate-config
 
 # ────────────────────────────────────────────────────────────────
 # Variables
@@ -153,19 +161,24 @@ all: libtrit.a
 #
 #   User-Facing (Top):
 #   ├── all → libtrit.a
+#   ├── generate → $(GEN_DIR)
 #   ├── test → libtrit.a
 #   ├── clean → (standalone)
 #   └── help → (standalone)
 #
 #   Build Operations (Middle):
-#   ├── libtrit.a → $(OBJS) → $(BUILD_DIR)
+#   ├── libtrit.a → generate → $(OBJS) → $(BUILD_DIR)
 #   └── $(BUILD_DIR)/%.o → $(SRC_DIR)/%.c
 #
+#   Code Generation:
+#   └── generate → go run generate-config → .gen.h files
+#
 #   Internal Helpers (Bottom):
-#   └── $(BUILD_DIR) → (creates directory)
+#   ├── $(BUILD_DIR) → (creates directory)
+#   └── $(GEN_DIR) → (creates directory)
 #
 # Baton Flow:
-#   make → all → libtrit.a → $(OBJS) → $(BUILD_DIR) → exit
+#   make → all → libtrit.a → generate → $(OBJS) → $(BUILD_DIR) → exit
 #
 
 # ────────────────────────────────────────────────────────────────
@@ -180,8 +193,17 @@ $(BUILD_DIR):
 # Build Operations
 # ────────────────────────────────────────────────────────────────
 
+## generate: Generate C headers from TOML specs
+generate: | $(GEN_DIR)
+	@echo "Generating headers from TOML specs..."
+	@cd $(BERESHIT_ROOT) && go run $(GENERATOR_PKG)/...
+	@echo "✓ Headers generated"
+
+$(GEN_DIR):
+	@mkdir -p $(GEN_DIR)
+
 ## libtrit.a: Build the static library
-libtrit.a: $(BUILD_DIR)/$(LIB_NAME)
+libtrit.a: generate $(BUILD_DIR)/$(LIB_NAME)
 
 $(BUILD_DIR)/$(LIB_NAME): $(OBJS) | $(BUILD_DIR)
 	@if [ -z "$(OBJS)" ]; then \
@@ -204,8 +226,8 @@ check-headers: | $(BUILD_DIR)
 		(echo "✗ Header errors"; exit 1)
 	@rm -f $(BUILD_DIR)/_check.c
 
-## test: Run all tests (MATTER, SPACE, TIME, Integration)
-test: test-trit test-pack test-dimension test-temporal test-integration
+## test: Run all tests (MATTER, SPACE, TIME, Integration, Math, Bible Rail, Verse Address, Scripture Path, Scripture Text)
+test: test-trit test-pack test-dimension test-temporal test-integration test-math test-bible-rail test-verse-addr test-scripture-path test-scripture-text
 	@echo ""
 	@echo "════════════════════════════════════════════════════════════════"
 	@echo "All tests complete. Run individual tests with: make test-<layer>"
@@ -240,6 +262,36 @@ test-integration: libtrit.a
 	@echo "Testing Integration (all layers)..."
 	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_integration $(TEST_DIR)/integration_test.c $(BUILD_DIR)/$(LIB_NAME)
 	@./$(BUILD_DIR)/test_integration
+
+## test-math: Run math operations tests (Phase 2)
+test-math: libtrit.a
+	@echo "Testing Math Operations (5 families)..."
+	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/math_test $(TEST_DIR)/math_test.c $(BUILD_DIR)/$(LIB_NAME)
+	@./$(BUILD_DIR)/math_test
+
+## test-bible-rail: Run Bible Rail encoding tests (Phase 2)
+test-bible-rail: libtrit.a
+	@echo "Testing Bible Rail Encoding (13 variants)..."
+	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/bible_rail_test $(TEST_DIR)/bible_rail_test.c $(BUILD_DIR)/$(LIB_NAME)
+	@./$(BUILD_DIR)/bible_rail_test
+
+## test-verse-addr: Run Verse Address encoding tests (Phase 2)
+test-verse-addr: libtrit.a
+	@echo "Testing Verse Address Encoding (31,102 verses)..."
+	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/verse_addr_test $(TEST_DIR)/verse_addr_test.c $(BUILD_DIR)/$(LIB_NAME)
+	@./$(BUILD_DIR)/verse_addr_test
+
+## test-scripture-path: Run Scripture Path resolution tests (Phase 2)
+test-scripture-path: libtrit.a
+	@echo "Testing Scripture Path Resolution (31,115 entries)..."
+	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/scripture_path_test $(TEST_DIR)/scripture_path_test.c $(BUILD_DIR)/$(LIB_NAME)
+	@./$(BUILD_DIR)/scripture_path_test
+
+## test-scripture-text: Run Scripture Text encoding tests (Phase 2)
+test-scripture-text: libtrit.a
+	@echo "Testing Scripture Text Encoding (243 values)..."
+	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/scripture_text_test $(TEST_DIR)/scripture_text_test.c $(BUILD_DIR)/$(LIB_NAME)
+	@./$(BUILD_DIR)/scripture_text_test
 
 ## clean: Remove build artifacts
 clean:
@@ -328,7 +380,8 @@ info:
 # ────────────────────────────────────────────────────────────────
 #
 # Basic:
-#   make              # Build library
+#   make              # Build library (regenerates headers first)
+#   make generate     # Generate .gen.h from TOML specs
 #   make test         # Run tests
 #   make clean        # Clean artifacts
 #
