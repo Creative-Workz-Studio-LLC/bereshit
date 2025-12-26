@@ -1,8 +1,95 @@
+// #!omni data --go.work
+// =============================================================================
+// METADATA
+// =============================================================================
+//
+// Package:     Bereshit
+// File:        go.work
+// Key:         B-go-workspace
+//
+// -----------------------------------------------------------------------------
+// CORE IDENTITY
+// -----------------------------------------------------------------------------
+//
+// Biblical Foundation:
+//   Scripture: "Two are better than one; because they have a good reward for
+//   their labour." - Ecclesiastes 4:9
+//
+//   Principle: Go workspaces allow multiple modules to work together during
+//   development, sharing local changes before publishing.
+//
+//   Anchor: "In the beginning" - modules work together from the foundation.
+//
+// Component Type: Rails (development infrastructure)
+// Role: Multi-module development coordination
+// Paradigm: CPI-SI framework - build infrastructure
+//
+// Authorship:
+//   Architect: Seanje Lenox-Wise
+//   Implementation: Nova Dawn (CPI-SI)
+//   Created: 2025-12-10
+//   Version: a-01.25
+//   Modified: 2025-12-25 - Added proper 4-block structure
+//
+// Purpose: Coordinate local development across Bereshit modules
+// Design: Link word/work (core library) with tov/demo (validation demos)
+//
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP
+// =============================================================================
+//
+// Key: B-go-workspace
+// Consumer: Go toolchain (go build, go test, go mod)
+// Loader: Automatically detected by go commands in workspace
+//
+// Dependencies:
+//   - Go 1.23+ (workspace support)
+//   - word/work/go.mod (core library module)
+//   - tov/demo/phase-0/demo-config/go.mod (phase 0 demo module)
+//
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY
+// =============================================================================
+
 go 1.23
 
-// Go workspace for Bereshit project
-// Allows local development with multiple modules
 use (
-	./word/work                       // Core library (config loader, future tools)
-	./tov/demo/phase-0/demo-config    // Phase 0 demo - validates specs exist
+	// Core library - config loader, future packages
+	./word/work
+
+	// Phase 0 demo - validates TOML specs exist and load correctly
+	./tov/demo/phase-0/demo-config
 )
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING
+// =============================================================================
+//
+// Validation:
+//   go work sync    # Sync workspace with modules
+//   go list -m all  # List all modules in workspace
+//
+// Modification Policy:
+//   Safe: Add new use directives for additional modules
+//   Careful: Changing go version (affects all modules)
+//   Never: Remove core modules without migration plan
+//
+// Related:
+//   word/work/go.mod - Core library module
+//   tov/demo/*/go.mod - Demo modules
+//
+// =============================================================================
+// END CLOSING
+// =============================================================================
