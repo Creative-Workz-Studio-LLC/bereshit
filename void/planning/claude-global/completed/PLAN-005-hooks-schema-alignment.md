@@ -1,4 +1,22 @@
-# State Machine Activation Plan
+# Plan: Hooks Schema Alignment (COMPLETED)
+
+> *"Let all things be done decently and in order."* — 1 Corinthians 14:40
+
+**Completed:** 2025-12-23
+
+---
+
+## Status
+
+| Phase | State | Updated |
+|-------|-------|---------|
+| COMPLETE | B.4 GROUNDED | 2025-12-23 |
+
+**Trajectory:** || (Grounded)
+
+**Note:** All hooks now use correct `hookSpecificOutput` schema. 10 hook files verified with proper output structure.
+
+---
 
 ## The Big Picture
 
@@ -260,4 +278,15 @@ Once schemas are fixed, the full state machine activates:
 | `prompt/submit.go` | claude-global/hooks/ | Fix field name, add wrapper |
 | `tool/pre-use.go` | claude-global/hooks/ | `decision` → `permissionDecision` |
 | `tool/post-use.go` | claude-global/hooks/ | Add `hookEventName` wrapper |
-| `pkg/hookoutput/` | claude-global/ | NEW: Shared types |
+| `hooks/internal/` | claude-global/ | Shared types (db.go, output schemas) |
+
+---
+
+## Outcome
+
+| Before | After |
+|--------|-------|
+| Hooks built context but didn't deliver | Context reaches Claude via `hookSpecificOutput` |
+| Wrong field names (`injected_context`) | Correct field names (`additionalContext`) |
+| No wrapper structure | Proper `{"hookSpecificOutput": {...}}` wrapper |
+| State machine invisible | State machine activates |

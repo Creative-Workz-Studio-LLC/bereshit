@@ -33,19 +33,19 @@ Statusline IS the state machine (not about it)
 ## What Was Built
 
 ### Phase 1: Package Extraction ✓
-- [x] `pkg/statemachine/display.go` - trajectory display helpers
-- [x] `pkg/display/command.go` - command colors/icons
-- [x] `pkg/health/display.go` - health display helpers
+- [x] `pkg/core/statemachine/display.go` - trajectory display helpers
+- [x] `pkg/util/term/display/display.go` - terminal colors/formatting
+- [x] `pkg/core/health/display.go` - health display helpers
 
 ### Phase 2: Section Builders ✓
-- [x] `statusline/lib/sections/` - 10 section builders
+- [x] `statusline/lib/sections/` - 13 section builders
 - [x] `statusline/lib/builder/` - orchestration
 
 ### Phase 3: Slim main.go ✓
-- [x] `statusline/cmd/statusline/main.go` → 50 lines
+- [x] `statusline/cmd/statusline/main.go` → 60 lines
 
 ### Phase 4: WezTerm Integration ✓
-- [x] `pkg/wezterm/osc.go` - EmitHealth()
+- [x] `pkg/util/term/wezterm/osc.go` - EmitHealth()
 - [x] `~/.config/wezterm/cpisi.lua` - HEALTH display
 
 ---
@@ -54,7 +54,7 @@ Statusline IS the state machine (not about it)
 
 | Before | After |
 |--------|-------|
-| 530-line monolith | 50-line thin caller |
+| 530-line monolith | 60-line thin caller |
 | Logic in main.go | Logic in packages |
 | No health display | Health in WezTerm status |
 
@@ -64,8 +64,9 @@ Statusline IS the state machine (not about it)
 
 | File | Purpose |
 |------|---------|
-| `pkg/statemachine/display.go` | Trajectory display |
-| `pkg/display/command.go` | Command colors |
-| `pkg/health/display.go` | Health display |
-| `statusline/lib/sections/*.go` | Section builders |
+| `pkg/core/statemachine/display.go` | Trajectory display |
+| `pkg/util/term/display/display.go` | Terminal colors/formatting |
+| `pkg/core/health/display.go` | Health display |
+| `pkg/util/term/wezterm/osc.go` | WezTerm OSC integration |
+| `statusline/lib/sections/*.go` | 13 section builders |
 | `statusline/lib/builder/builder.go` | Orchestration |

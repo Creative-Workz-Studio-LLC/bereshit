@@ -1,8 +1,21 @@
 # Plan: Claude-Global Full Restructure + State Machine Wiring
 
 **Date:** 2025-12-22
-**Status:** Ready for Execution
+**Status:** ~60% Complete (core wiring functional)
 **Purpose:** Restructure entire claude-global by layer, implement 3-piece database, wire state machine feedback loop
+
+---
+
+## Progress Notes (2025-12-27 Audit)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| **Phase 0: Root Restructure** | ~40% | bin/ exists, but settings.json not deleted, no cmd→entrypoints rename |
+| **Phase 1: Database Setup** | ✓ 100% | data/schema/, cpisi.db, pkg/foundation/database/ all exist |
+| **Phase 2: Wire Feedback** | ~70% | Core wiring works - 261 choices recorded! Missing inference.go, hebrew_evolution.go |
+| **Phase 3: Consolidation** | ~50% | Database populated, but no migrate tool |
+
+**Key Finding:** The core functionality is WORKING. Database is recording choices. Structure changes are secondary.
 
 ---
 

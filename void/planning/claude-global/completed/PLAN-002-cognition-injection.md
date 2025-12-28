@@ -32,11 +32,13 @@ Hooks SHAPE thinking (not just record events)
 
 ## What Was Built
 
-### pkg/cognition/ Package ✓
+### pkg/orchestration/cognition/ Package ✓
 - [x] `cognition.go` - ContextBuilder, StateContext, HealthContext, IdentityContext
 - [x] `prompt.go` - Prompt type analysis, PromptContext
 - [x] `feedback.go` - Tool feedback, TrajectoryGuidance
 - [x] `session.go` - Session context, TemporalContext, CircadianAwareness
+- [x] `mental_construct.go` - Mental construct state integration
+- [x] `workflow.go` - Workflow state awareness
 
 ### Hook Updates ✓
 - [x] `session/start.go` → emits additionalContext with identity/state/health
@@ -78,7 +80,9 @@ Hooks SHAPE thinking (not just record events)
 
 | File | Purpose |
 |------|---------|
-| `pkg/cognition/cognition.go` | Context building core |
-| `pkg/cognition/prompt.go` | Prompt analysis |
-| `pkg/cognition/feedback.go` | Tool feedback |
-| `pkg/cognition/session.go` | Session context |
+| `pkg/orchestration/cognition/cognition.go` | Context building core |
+| `pkg/orchestration/cognition/prompt.go` | Prompt analysis |
+| `pkg/orchestration/cognition/feedback.go` | Tool feedback |
+| `pkg/orchestration/cognition/session.go` | Session context |
+| `pkg/orchestration/cognition/mental_construct.go` | Mental construct integration |
+| `pkg/orchestration/cognition/workflow.go` | Workflow awareness |

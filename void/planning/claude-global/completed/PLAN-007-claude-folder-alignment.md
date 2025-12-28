@@ -1,4 +1,26 @@
-# Plan: Comprehensive Claude Folder Alignment
+# Plan: Claude Folder Alignment (COMPLETED)
+
+> *"Let all things be done decently and in order."* — 1 Corinthians 14:40
+
+**Completed:** 2025-12-27
+
+---
+
+## Status
+
+| Phase | State | Updated |
+|-------|-------|---------|
+| COMPLETE | B.4 GROUNDED | 2025-12-27 |
+
+**Trajectory:** || (Grounded)
+
+**Verified (2025-12-27):**
+- ✅ pkg symlink → PROD (corrected)
+- ✅ .claude nested directory removed
+- ✅ skills/, statusline/, data/, system/ symlinks present
+- ⚠️ cpi-si/ still in ~/.claude (minor cleanup - move to holding)
+
+---
 
 ## Problem Statement
 
@@ -85,7 +107,7 @@ plans -> bereshit/word/claude/plans ✓ CORRECT
 rules -> bereshit/word/claude/rules ✓ CORRECT
 settings.json -> bereshit/word/claude/settings.json ✓ CORRECT
 settings.jsonc -> bereshit/word/claude/settings.jsonc ✓ CORRECT
-pkg -> claude-global/pkg ✗ WRONG (points to DEV)
+pkg -> bereshit/word/claude/pkg ✓ CORRECTED (2025-12-27)
 ```
 
 ### Real Directories in ~/.claude/ (Not Symlinks)

@@ -520,32 +520,52 @@ format definitions:
 
     format "adoc" for documentation:
         file extension ".adoc"
-        pragma placement "line 2 inside //// block"
+        pragma placement "lines 1-5 inside //// block (crystallized multi-line)"
 
-        // PRAGMA BLOCK MAPPING
+        // PRAGMA BLOCK MAPPING (Crystallized Format)
         // OmniCode: #!omni documentation --adoc
-        // AsciiDoc: //// block containing pragma + metadata
+        // AsciiDoc: //// block containing pragma + meta lines
 
         pragma mappings:
             "#!omni documentation --adoc" translates to:
-                /// AsciiDoc embeds pragma in comment block
+                /// Crystallized pragma block with meta lines
                 ///
-                /// The //// block serves dual purpose:
-                ///   1. Contains OmniCode pragma for tooling
-                ///   2. Invisible to AsciiDoc renderer
+                /// Format: pragma + meta.key + meta.from + meta.at
+                /// Enables grep navigation to identity
                 ///
                 open "////"
-                emit "#!omni template --adoc"
-                emit "// OmniCode-aware AsciiDoc document"
-                emit "// Derives from: [derives_from attribute value]"
+                emit "#!omni document --adoc"
+                emit "#!omni meta.key = [key]"
+                emit "#!omni meta.from = [derives_from]"
+                emit "#!omni meta.at = [type]"
                 close "////"
 
             "#!omni template --adoc" translates to:
-                /// Template version - same structure
+                /// Template version - same crystallized structure
                 open "////"
                 emit "#!omni template --adoc"
-                emit "// OmniCode template for AsciiDoc documents"
+                emit "#!omni meta.key = [key]"
+                emit "#!omni meta.from = [derives_from]"
+                emit "#!omni meta.at = template"
                 close "////"
+
+        // BLOCK MARKER MAPPING (Crystallized Format)
+        // OLD: //// with ═══ separators
+        // NEW: // ============ line comments with numbered sections
+
+        block mappings:
+            "METADATA block" translates to:
+                emit "// ============================================================================"
+                emit "// METADATA"
+                emit "// ============================================================================"
+                sections M.1 through M.12 with format "// # M.N Name [TAG]"
+
+            "END METADATA block" translates to:
+                emit "// ============================================================================"
+                emit "// END METADATA"
+                emit "// ============================================================================"
+
+            /// Similar pattern for HEADER, CONTEXT, CONTENT, FOOTER
 
         // METADATA BLOCK MAPPING
         // OmniCode: Structured sections with natural language
