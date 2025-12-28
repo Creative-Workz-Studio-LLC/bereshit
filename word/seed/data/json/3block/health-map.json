@@ -1,0 +1,139 @@
+{
+  "$pragma": "omni template --json",
+  "$meta": {
+    "key": "B-word-seed-data-json-3block-health-map",
+    "from": "bereshit/word/omni/seed/data.omni",
+    "at": "template"
+  },
+
+  "_template": {
+    "name": "JSON Health Map (3-Block Structure)",
+    "structure": "METADATA -> CONTENT -> CLOSING",
+    "usage": "cp health-map.json /path/to/new.json -> update $meta -> fill brackets",
+    "becomes": ["lexer-operations.json", "parser-operations.json", "codegen-operations.json"]
+  },
+
+  "_metadata": {
+    "_m1_identity": {
+      "key": "[project-path-to-file]",
+      "scripture": "A just weight and balance are the LORD's - Proverbs 16:11",
+      "principle": "Health scoring must be just and accurate measurement",
+      "anchor": "The LORD pondereth the hearts - Proverbs 21:2",
+
+      "type": "Baton - transforms operations into health scores",
+      "role": "[Specific responsibility - lexer health, parser health, etc.]",
+      "dependency": "[PURE: self-contained | DEPENDED: extends crud-base.json]",
+
+      "architect": "[Who designed]",
+      "created": "[YYYY-MM-DD]",
+      "version": "[a-XX.XX]"
+    },
+
+    "_m2_history": [
+      "[a-XX.XX] ([YYYY-MM-DD]) - [Brief description]"
+    ],
+
+    "_m3_interface": {
+      "consumer": "pkg/health (Tracker, Scorer)",
+      "loader": "embed.FS at package init, json.Unmarshal",
+      "depends": "pkg/health/maps.go, crud-base.json",
+      "pattern": "health.RegisterMap(component, mapData) -> tracker.TrackOperation(op, success)",
+      "if_missing": "Compile error (embedded)"
+    },
+
+    "_m4_operational": {
+      "blocking": "no (-1) - health maps are declarative",
+      "health": "Base100 | granted (1): all ops mapped | deferred (0): some missing | denied (-1): parse error",
+
+      "on_error": {
+        "missing_operation": "Use default cascade multiplier",
+        "invalid_score": "Fall back to CRUD base score",
+        "type_mismatch": "Parse error at load time"
+      }
+    },
+
+    "_m5_paradigm": {
+      "philosophy": "Measurement for restoration, not condemnation",
+
+      "crud_meaning": {
+        "C": "Create - bringing new existence (+1 success, cascade on fail)",
+        "R": "Read - understanding what exists (+1 success, minimal cascade)",
+        "U": "Update - transforming toward new state (+1 success, medium cascade)",
+        "D": "Delete - removing existence, irreversible (+1 success, severe cascade)"
+      },
+
+      "cascade_severity": {
+        "hardware": "10 - most severe, physical damage risk",
+        "filesystem": "5 - persistent state corruption",
+        "memory": "3 - recoverable on restart",
+        "readonly": "2 - minimal impact",
+        "default": "1 - baseline"
+      },
+
+      "scoring_flow": "operation -> CRUD type -> base score -> cascade multiplier -> health impact"
+    }
+  },
+
+  "_content": {
+    "_c1_schema": {
+      "format": "JSON (health scoring operation map)",
+      "structure": "crud_base -> operations -> cascade_multipliers",
+      "constraint": "Every operation must have crud field (C, R, U, or D)"
+    },
+
+    "_c2_values": {
+      "crud_base": {
+        "create": { "upper": 1, "lower": -5, "cascade": "filesystem" },
+        "read": { "upper": 1, "lower": -2, "cascade": "readonly" },
+        "update": { "upper": 1, "lower": -3, "cascade": "memory" },
+        "delete": { "upper": 1, "lower": -10, "cascade": "hardware" }
+      },
+
+      "operations": {
+        "[operation_name]": {
+          "crud": "[C/R/U/D]",
+          "description": "[What this operation does]",
+          "cascade_override": "[optional - override base cascade]"
+        }
+      },
+
+      "cascade_multipliers": {
+        "hardware": 10,
+        "filesystem": 5,
+        "memory": 3,
+        "readonly": 2,
+        "default": 1
+      }
+    }
+  },
+
+  "_closing": {
+    "_x1_verify": {
+      "check": "python -m json.tool [filename].json",
+      "test": "go test ./pkg/health/... -run TestMapLoad",
+      "issues": {
+        "missing_crud": "Every operation must have crud field with C, R, U, or D",
+        "invalid_cascade": "cascade_override must be: hardware, filesystem, memory, readonly, default",
+        "duplicate_op": "Each operation name must be unique within map"
+      }
+    },
+
+    "_x2_policy": {
+      "safe": "Add operations, update descriptions, adjust health notes",
+      "careful": "Change CRUD mappings (affects scores), change cascade multipliers",
+      "never": "Break 3-block structure, modify crud_base without understanding impact",
+
+      "future": {
+        "planned": "[operations to add]",
+        "considered": "[cascade adjustments being evaluated]",
+        "rejected": "[scoring decisions that won't change]"
+      }
+    },
+
+    "_x3_synthesis": {
+      "scope": "[Component] operations health scoring",
+      "impact": "Changes affect health calculations for all [component] operations",
+      "note": "A just weight and balance are the LORD's - Proverbs 16:11"
+    }
+  }
+}

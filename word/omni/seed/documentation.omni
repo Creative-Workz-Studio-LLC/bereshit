@@ -637,10 +637,61 @@ format definitions:
         derives from "bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc"
 
         pragma mapping:
+            // Crystallized format: single-line pragma in comment block
             "#!omni documentation --adoc" emits:
                 open "////"
-                emit "#!omni documentation --adoc"
+                emit "#!omni document --adoc"
+                emit "#!omni meta.key = [key]"
+                emit "#!omni meta.from = [derives_from]"
+                emit "#!omni meta.at = [type]"
                 close "////"
+
+        section mapping:
+            // Crystallized numbered sections for grep navigation
+            // Format: "// # [BLOCK].[NUM] [Name] [TAG]"
+            METADATA sections "M.1" through "M.12":
+                M.1 "Core Identity" [IDENTITY] → ":key:", ":title:", ":type:"
+                M.2 "Lifecycle State" [STATE] → ":status:", ":version:", ":created:", ":updated:"
+                M.3 "Attribution" [ATTRIBUTION] → ":authors:", ":contributors:"
+                M.4 "Location" [LOCATION] → ":path:", ":workspace:"
+                M.5 "Derivation" [DERIVATION] → ":derives_from:", ":type_of:"
+                M.6 "Classification" [CLASSIFICATION] → ":tags:", ":audience:"
+                M.7 "Intent" [INTENT] → ":purpose:", ":description:"
+                M.8 "Grounding" [GROUNDING] → ":biblical_foundation:"
+                M.9 "Strictness" [STRICTNESS] → ":strictness:"
+                M.10 "AsciiDoc Settings" [SETTINGS] → format-specific attributes
+                M.11 "Navigation" [NAVIGATION] → ":toc:", ":icons:", ":toclevels:"
+                M.12 "Content Attributes" [CONTENT] → content-specific attributes
+
+            HEADER sections "H.1" through "H.6":
+                H.1 "Title" [TITLE] → "= [Title]"
+                H.2 "Epigraph" [EPIGRAPH] → scripture quote block
+                H.3 "Lead" [LEAD] → "[.lead]" paragraph
+                H.4 "Abstract" [ABSTRACT] → tagline and purpose
+                H.5 "Status" [STATUS] → status table
+                H.6 "Navigation" [NAVIGATION] → navigation table
+
+            CONTEXT sections "C.1" through "C.8":
+                C.1 "Overview" [OVERVIEW] → "== Overview" section
+                C.2 "Audience" [AUDIENCE] → audience table
+                C.3 "Scope" [SCOPE] → in/out scope table
+                C.4 "Prerequisites" [PREREQUISITES] → prerequisites table
+                C.5 "Key Terms" [KEY_TERMS] → terminology table
+                C.6 "Quick Start" [QUICK_START] → quick start section
+                C.7 "Contents" [CONTENTS] → ToC table
+                C.8 "Return" [RETURN] → back to top link
+
+            CONTENT sections "T.1" through "T.4":
+                T.1 "Definition" [DEFINITION] → what this is
+                T.2 "Operations" [OPERATIONS] → what it does
+                T.3 "Application" [APPLICATION] → how to use
+                T.4 "Reference" [REFERENCE] → quick lookup
+
+            FOOTER sections "F.1" through "F.4":
+                F.1 "Biblical Foundation" [BIBLICAL] → scripture grounding
+                F.2 "References" [REFERENCES] → related documents
+                F.3 "See Also" [SEE-ALSO] → cross-references
+                F.4 "Centered Closing" [CLOSING] → closing block
 
         metadata mapping:
             "this is a [document] for" → ":title:"
@@ -889,13 +940,17 @@ formatting reference:
                      ═══════════════════════════════════════════════════════════════════════════════ -->
 
         format "adoc":
-            syntax "comment block"
+            syntax "line comment (crystallized)"
             pattern:
-                ////
-                ═══════════════════════════════════════════════════════════════════════════════
-                BLOCK_NAME
-                ═══════════════════════════════════════════════════════════════════════════════
-                ////
+                // ============================================================================
+                // BLOCK_NAME
+                // ============================================================================
+            section pattern:
+                // # [BLOCK].[NUM] [Name] [TAG]
+                //
+                //	Key:   [value] — description
+                //	Field: [value] — description
+                //
 
         format "typ":
             syntax "line comment"

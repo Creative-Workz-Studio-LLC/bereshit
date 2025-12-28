@@ -1,6 +1,117 @@
+/* #!omni document --css */
+/* #!omni meta.key = B-word-seed-doc-adoc-styles-cws-asciidoctor */
+/* #!omni meta.from = bereshit/word/seed/data/css/stylesheet.css */
+/* #!omni meta.at = document */
+/* ============================================================================ */
+/* METADATA */
+/* ============================================================================ */
+/*
+ * DOCUMENT: CWS Asciidoctor Stylesheet
+ * STRUCTURE: METADATA → CONTENT → CLOSING
+ * PURPOSE: PhD-level rigor + Bible-level accessibility for AsciiDoc output
+ */
+/* # M.1 Core Identity [IDENTITY]
+ *
+ *	Key:         B-word-seed-doc-adoc-styles-cws-asciidoctor
+ *	Scripture:   "Let all things be done decently and in order" — 1 Corinthians 14:40
+ *	Principle:   "Shepherds scan, scholars study — same document serves both"
+ *	Anchor:      "For God is not the author of confusion, but of peace" — 1 Cor 14:33
+ *
+ *	Type:        Rails — visual infrastructure for AsciiDoc documents
+ *	Role:        Render crystallized 5-block documentation with Kingdom aesthetics
+ *	Dependency:  DEPENDED: extends Asciidoctor default stylesheet
+ *
+ *	Architect:   Seanje Lenox-Wise
+ *	Created:     2025-12-15
+ *	Version:     a-01.50
+ *
+ *	Used By:     AsciiDoc preview (VSCode), rendered HTML output
+ */
+/* # M.2 Version History [HISTORY]
+ *
+ *   - a-01.50 (2025-12-28) — Crystallized to 3-block structure with 9 sections
+ *   - a-01.00 (2025-12-15) — Initial CWS overrides for PhD rigor + Bible accessibility
+ */
+/* # M.3 Interface [INTERFACE]
+ *
+ *	Consumer:  Browser CSS engine, VSCode AsciiDoc preview
+ *	Loader:    asciidoc.preview.style in .vscode/settings.json
+ *	Depends:   Asciidoctor default stylesheet (embedded), Font Awesome icons
+ *	Pattern:   Browser applies cascade: defaults → embedded base → CWS overrides
+ *
+ *	If Missing: Documents render with default Asciidoctor styling (functional but generic)
+ */
+/* # M.4 Operational [OPERATIONAL]
+ *
+ *	Blocking:  no (-1) — CSS is declarative, not executable
+ *	Health:    Base100 | granted (1): renders correctly | deferred (0): browser quirks | denied (-1): broken
+ *
+ *	On Error:  invalid property → ignored (CSS fault-tolerant)
+ *	           invalid selector → rule skipped
+ *	           specificity conflict → later rule wins (cascade)
+ *
+ *	Template Elements Styled:
+ *	  - H.2 Epigraph (.quoteblock) — Scripture grounding with warm tones
+ *	  - H.3 Lead (.paragraph.lead) — Key distinction prominence
+ *	  - H.4 Abstract (.abstract) — Scannable facts at a glance
+ *	  - H.5 Status (table.tableblock) — Document metadata table
+ *	  - H.6 Navigation — Pill-style quick links
+ *	  - Admonitions (NOTE, IMPORTANT, WARNING, TIP, CAUTION)
+ *	  - Code blocks, tables, headings, sidebars, details
+ */
+/* ============================================================================ */
+/* END METADATA */
+/* ============================================================================ */
+
+/* ============================================================================ */
+/* CONTENT */
+/* ============================================================================ */
+/* # C.1 Schema [SCHEMA]
+ *
+ *	Format:    CSS (Cascading Style Sheets)
+ *	Order:     Base stylesheet → Layout → Template elements → Components → Utilities
+ *
+ *	Sections:
+ *	  - base:      Asciidoctor default stylesheet (embedded, minified)
+ *	  - layout:    Full-width, proper spacing (#header, #content, #footer)
+ *	  - header:    Document header, preamble styling
+ *	  - epigraph:  Scripture quote blocks with warm Kingdom tones
+ *	  - abstract:  Key facts with icon styling
+ *	  - tables:    Scannable, professional with auto-width
+ *	  - headings:  Clear visual hierarchy
+ *	  - admonitions: Visual weight for importance levels
+ *	  - navigation: Pill-style links for quick navigation
+ *	  - code:      Dark theme code blocks
+ *	  - lead:      Hook/tagline prominence
+ *	  - sidebar:   Progressive disclosure patterns
+ */
+/* # C.2 Values [VALUES] */
+
+/* =========================================================================== */
+/* Asciidoctor Default Stylesheet (MIT License)                                */
+/* Source: https://asciidoctor.org                                             */
+/* =========================================================================== */
+/*
+ * Organization:
+ *   1. Normalize/Reset     — Browser consistency
+ *   2. Base Styles         — Body, box-sizing, fonts
+ *   3. Typography          — Headings, paragraphs, lists
+ *   4. Links & Inline      — Anchors, code, kbd
+ *   5. Tables              — Table structure and cells
+ *   6. Layout              — #header, #content, #toc, #footer
+ *   7. Sections            — .sect1, anchors, headings
+ *   8. Content Blocks      — Admonitions, examples, sidebars, listings
+ *   9. Quotes & Verses     — .quoteblock, .verseblock
+ *  10. Lists               — Ordered, unordered, definition
+ *  11. Images & Media      — .imageblock, figures
+ *  12. Utilities           — Colors, alignment, visibility
+ *  13. Print Styles        — @media print
+ */
+
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
-/* Uncomment the following line when using as a custom stylesheet */
-/* @import "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700"; */
+
+/* --- 1. Normalize/Reset --- */
+
 html{font-family:sans-serif;-webkit-text-size-adjust:100%}
 a{background:none}
 a:focus{outline:thin dotted}
@@ -29,12 +140,15 @@ legend{border:0;padding:0}
 button,input,select,textarea{font-family:inherit;font-size:100%;margin:0}
 button,input{line-height:normal}
 button,select{text-transform:none}
-button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer}
+button,html input[type=button],input[type=reset],input[type=submit]{-webkit-appearance:button;appearance:button;cursor:pointer}
 button[disabled],html input[disabled]{cursor:default}
 input[type=checkbox],input[type=radio]{padding:0}
 button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}
 textarea{overflow:auto;vertical-align:top}
 table{border-collapse:collapse;border-spacing:0}
+
+/* --- 2. Base Styles --- */
+
 *,::before,::after{box-sizing:border-box}
 html,body{font-size:100%}
 body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;line-height:1;position:relative;cursor:auto;-moz-tab-size:4;-o-tab-size:4;tab-size:4;word-wrap:anywhere;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased}
@@ -54,6 +168,9 @@ textarea{height:auto;min-height:50px}
 select{width:100%}
 .subheader,.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{line-height:1.45;color:#7a2518;font-weight:400;margin-top:0;margin-bottom:.25em}
 div,dl,dt,dd,ul,ol,li,h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6,pre,form,p,blockquote,th,td{margin:0;padding:0}
+
+/* --- 3. Typography --- */
+
 a{color:#2156a5;text-decoration:underline;line-height:inherit}
 a:hover,a:focus{color:#1d4b8f}
 a img{border:0}
@@ -88,6 +205,9 @@ h1{font-size:2.75em}
 h2{font-size:2.3125em}
 h3,#toctitle,.sidebarblock>.content>.title{font-size:1.6875em}
 h4{font-size:1.4375em}}
+
+/* --- 5. Tables --- */
+
 table{background:#fff;margin-bottom:1.25em;border:1px solid #dedede;word-wrap:normal}
 table thead,table tfoot{background:#f7f8f7}
 table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:.5em .625em .625em;font-size:inherit;color:rgba(0,0,0,.8);text-align:left}
@@ -108,6 +228,9 @@ pre{color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monosp
 pre code,pre pre{color:inherit;font-size:inherit;line-height:inherit}
 pre>code{display:block}
 pre.nowrap,pre.nowrap pre{white-space:pre;word-wrap:normal}
+
+/* --- 4. Links & Inline Elements --- */
+
 em em{font-style:normal}
 strong strong{font-weight:400}
 .keyseq{color:rgba(51,51,51,.8)}
@@ -123,7 +246,10 @@ b.button::before,b.button::after{position:relative;top:-1px;font-weight:400}
 b.button::before{content:"[";padding:0 3px 0 2px}
 b.button::after{content:"]";padding:0 2px 0 3px}
 p a>code:hover{color:rgba(0,0,0,.9)}
-#header,#content,#footnotes,#footer{width:100%;margin:0 auto;max-width:62.5em;*zoom:1;position:relative;padding-left:.9375em;padding-right:.9375em}
+
+/* --- 6. Layout (#header, #content, #toc, #footer) --- */
+
+#header,#content,#footnotes,#footer{width:100%;margin:0 auto;max-width:62.5em;zoom:1;position:relative;padding-left:.9375em;padding-right:.9375em}
 #header::before,#header::after,#content::before,#content::after,#footnotes::before,#footnotes::after,#footer::before,#footer::after{content:" ";display:table}
 #header::after,#content::after,#footnotes::after,#footer::after{clear:both}
 #content{margin-top:1.25em}
@@ -177,11 +303,17 @@ body.toc2.toc-right{padding-left:0;padding-right:20em}}
 .sect1{padding-bottom:1.25em}}
 .sect1:last-child{padding-bottom:0}
 .sect1+.sect1{border-top:1px solid #e7e7e9}
+
+/* --- 7. Sections & Anchors --- */
+
 #content h1>a.anchor,h2>a.anchor,h3>a.anchor,#toctitle>a.anchor,.sidebarblock>.content>.title>a.anchor,h4>a.anchor,h5>a.anchor,h6>a.anchor{position:absolute;z-index:1001;width:1.5ex;margin-left:-1.5ex;display:block;text-decoration:none!important;visibility:hidden;text-align:center;font-weight:400}
 #content h1>a.anchor::before,h2>a.anchor::before,h3>a.anchor::before,#toctitle>a.anchor::before,.sidebarblock>.content>.title>a.anchor::before,h4>a.anchor::before,h5>a.anchor::before,h6>a.anchor::before{content:"\00A7";font-size:.85em;display:block;padding-top:.1em}
 #content h1:hover>a.anchor,#content h1>a.anchor:hover,h2:hover>a.anchor,h2>a.anchor:hover,h3:hover>a.anchor,#toctitle:hover>a.anchor,.sidebarblock>.content>.title:hover>a.anchor,h3>a.anchor:hover,#toctitle>a.anchor:hover,.sidebarblock>.content>.title>a.anchor:hover,h4:hover>a.anchor,h4>a.anchor:hover,h5:hover>a.anchor,h5>a.anchor:hover,h6:hover>a.anchor,h6>a.anchor:hover{visibility:visible}
 #content h1>a.link,h2>a.link,h3>a.link,#toctitle>a.link,.sidebarblock>.content>.title>a.link,h4>a.link,h5>a.link,h6>a.link{color:#ba3925;text-decoration:none}
 #content h1>a.link:hover,h2>a.link:hover,h3>a.link:hover,#toctitle>a.link:hover,.sidebarblock>.content>.title>a.link:hover,h4>a.link:hover,h5>a.link:hover,h6>a.link:hover{color:#a53221}
+
+/* --- 8. Content Blocks (admonitions, examples, sidebars, listings) --- */
+
 details,.audioblock,.imageblock,.literalblock,.listingblock,.stemblock,.videoblock{margin-bottom:1.25em}
 details{margin-left:1.25rem}
 details>summary{cursor:pointer;display:block;position:relative;line-height:1.6;margin-bottom:.625rem;outline:none;-webkit-tap-highlight-color:transparent}
@@ -226,6 +358,9 @@ table.linenotable td[class]{color:inherit;vertical-align:top;padding:0;line-heig
 table.linenotable td.code{padding-left:.75em}
 table.linenotable td.linenos,pre.pygments .linenos{border-right:1px solid;opacity:.35;padding-right:.5em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
 pre.pygments span.linenos{display:inline-block;margin-right:.75em}
+
+/* --- 9. Quotes & Verses --- */
+
 .quoteblock{margin:0 1em 1.25em 1.5em;display:table}
 .quoteblock:not(.excerpt)>.title{margin-left:-1.5em;margin-bottom:.75em}
 .quoteblock blockquote,.quoteblock p{color:rgba(0,0,0,.85);font-size:1.15rem;line-height:1.75;word-spacing:.1em;letter-spacing:0;font-style:italic;text-align:justify}
@@ -274,6 +409,9 @@ tbody tr th{background:#f7f8f7}
 tbody tr th,tbody tr th p,tfoot tr th,tfoot tr th p{color:rgba(0,0,0,.8);font-weight:bold}
 p.tableblock>code:only-child{background:none;padding:0}
 p.tableblock{font-size:1em}
+
+/* --- 10. Lists --- */
+
 ol{margin-left:1.75em}
 ul li ol{margin-left:1.5em}
 dl dd{margin-left:1.125em}
@@ -305,6 +443,9 @@ td.hdlist2{word-wrap:anywhere}
 .colist td:not([class]):first-child{padding:.4em .75em 0;line-height:1;vertical-align:top}
 .colist td:not([class]):first-child img{max-width:none}
 .colist td:not([class]):last-child{padding:.25em 0}
+
+/* --- 11. Images & Media --- */
+
 .thumb,.th{line-height:0;display:inline-block;border:4px solid #fff;box-shadow:0 0 0 1px #ddd}
 .imageblock.left{margin:.25em .625em 1.25em 0}
 .imageblock.right{margin:.25em 0 1.25em .625em}
@@ -326,6 +467,9 @@ sup.footnote a:active,sup.footnoteref a:active,#footnotes .footnote a:first-of-t
 #footnotes .footnote:last-of-type{margin-bottom:0}
 #content #footnotes{margin-top:-.625em;margin-bottom:0;padding:.75em 0}
 div.unbreakable{page-break-inside:avoid}
+
+/* --- 12. Utilities (colors, alignment, icons) --- */
+
 .big{font-size:larger}
 .small{font-size:smaller}
 .underline{text-decoration:underline}
@@ -386,6 +530,9 @@ p{margin-bottom:1.25rem}
 .sidebarblock p,.sidebarblock dt,.sidebarblock td.content,p.tableblock{font-size:1em}
 .exampleblock>.content{background:#fffef7;border-color:#e0e0dc;box-shadow:0 1px 4px #e0e0dc}
 .print-only{display:none!important}
+
+/* --- 13. Print Styles --- */
+
 @page{margin:1.25cm .75cm}
 @media print{*{box-shadow:none!important;text-shadow:none!important}
 html{font-size:80%}
@@ -423,22 +570,18 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 #footer-text{color:rgba(0,0,0,.6);font-size:.9em}}
 @media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/* CWS OVERRIDES - PhD Rigor + Bible Accessibility                             */
-/* ═══════════════════════════════════════════════════════════════════════════ */
+/* --------------------------------------------------------------------------- */
+/* CWS Overrides — PhD Rigor + Bible Accessibility */
+/* --------------------------------------------------------------------------- */
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* LAYOUT - Full width, proper spacing                                         */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- Layout: Full width, proper spacing --- */
 
 #header, #content, #footnotes, #footer {
   max-width: none;
   padding-right: 2em;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* DOCUMENT HEADER - Title, author, version as unified block                   */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- Document Header: Title, author, version as unified block --- */
 
 #header {
   text-align: center;
@@ -467,7 +610,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   margin: 0 0.5em;
 }
 
-/* Preamble (epigraph, lead, abstract, status, nav) - centered welcome area */
+/* --- Preamble: Epigraph, lead, abstract, status, nav --- */
+
 #preamble {
   padding-top: 1em;
 }
@@ -476,7 +620,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   margin-bottom: 1.25em;
 }
 
-/* Tighter spacing between closely related elements */
 #preamble .quoteblock {
   margin-bottom: 0.75em;
 }
@@ -485,7 +628,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   margin-bottom: 1em;
 }
 
-/* Clear break before main content */
 #preamble::after {
   content: "";
   display: block;
@@ -494,9 +636,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   margin: 1.5em 0;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* EPIGRAPH - Scripture grounding, centered like a book quote                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- H.2 Epigraph: Scripture grounding with warm Kingdom tones --- */
 
 .quoteblock {
   margin: 1.5em auto;
@@ -516,7 +656,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   color: #4a3728;
 }
 
-/* Links inside quotes - blend with quote styling, NO gray background */
 .quoteblock a,
 .quoteblock a:link,
 .quoteblock a:visited,
@@ -531,7 +670,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   color: #5a3d2b !important;
 }
 
-/* Code inside quotes - warm tones, override default gray */
 .quoteblock code,
 .quoteblock blockquote code,
 .quoteblock :not(pre):not([class^=L])>code,
@@ -544,7 +682,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   font-size: 0.9em;
 }
 
-/* Override any remaining gray on quoteblock elements */
 .quoteblock * {
   background-color: transparent;
 }
@@ -558,9 +695,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   margin-top: 0.75em;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* ABSTRACT - Key facts at a glance (5-second scan)                            */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- H.4 Abstract: Key facts at a glance (5-second scan) --- */
 
 .abstract {
   background: #f0f4f8;
@@ -579,14 +714,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   font-weight: 500;
 }
 
-/* Icons in abstract - make them pop */
 .abstract .icon {
   color: #3d5a80;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* TABLES - Scannable, professional                                            */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- H.5 Tables: Scannable, professional --- */
 
 table.tableblock {
   width: auto;
@@ -596,7 +728,6 @@ table.tableblock {
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* Tables in preamble (status tables) - centered */
 #preamble table.tableblock {
   margin-left: auto;
   margin-right: auto;
@@ -624,20 +755,16 @@ table.tableblock tbody tr:hover {
   background: #e8f4f8;
 }
 
-/* Document Status table - prominent, auto-width */
 table.tableblock.frame-topbot {
   border-top: 3px solid #3d5a80;
   border-bottom: 3px solid #3d5a80;
 }
 
-/* Full-width tables when specified */
 table.tableblock.stretch {
   width: 100%;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* HEADINGS - Clear visual hierarchy                                           */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- Headings: Clear visual hierarchy --- */
 
 h2 {
   border-bottom: 2px solid #3d5a80;
@@ -649,9 +776,7 @@ h3 {
   color: #3d5a80;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* ADMONITIONS - Visual weight for importance                                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- Admonitions: Visual weight for importance --- */
 
 .admonitionblock {
   max-width: 100%;
@@ -689,16 +814,12 @@ h3 {
   padding: 1em 1.5em;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* NAVIGATION - Scannable, inviting pill links, centered                       */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- H.6 Navigation: Scannable, inviting pill links --- */
 
-/* Navigation paragraph container - centered */
 #preamble > .sectionbody > .paragraph:not(:first-of-type) {
   text-align: center;
 }
 
-/* Target navigation paragraph - exclude quoteblock links */
 #preamble > .sectionbody > .paragraph:not(:first-of-type) a,
 .nav-links a {
   display: inline-block;
@@ -720,7 +841,6 @@ h3 {
   border-color: #3d5a80;
 }
 
-/* Quoteblock links should NOT get pill styling */
 .quoteblock a {
   display: inline !important;
   padding: 0 !important;
@@ -730,9 +850,7 @@ h3 {
   border: none !important;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* CODE BLOCKS - Clear, readable                                               */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- Code Blocks: Dark theme, readable --- */
 
 pre {
   max-width: 100%;
@@ -749,9 +867,7 @@ pre {
   margin-bottom: 0.5em;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* LEAD TEXT - Hook/tagline prominence                                         */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- H.3 Lead Text: Hook/tagline prominence --- */
 
 .paragraph.lead p,
 p.lead {
@@ -762,9 +878,7 @@ p.lead {
   margin: 1.5em 0;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* SIDEBAR/COLLAPSIBLE - Progressive disclosure                                */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* --- Sidebar/Collapsible: Progressive disclosure --- */
 
 .sidebarblock {
   background: #f8f9fa;
@@ -773,7 +887,6 @@ p.lead {
   padding: 1em 1.5em;
 }
 
-/* Sidebar title - left align, not centered */
 .sidebarblock > .content > .title,
 .sidebarblock .title {
   text-align: left !important;
@@ -800,3 +913,36 @@ details summary {
 details[open] summary {
   border-bottom: 1px solid #d0d7de;
 }
+
+/* ============================================================================ */
+/* END CONTENT */
+/* ============================================================================ */
+
+/* ============================================================================ */
+/* CLOSING */
+/* ============================================================================ */
+/* # X.1 Verification [VERIFY]
+ *
+ *	Check:   Browser dev tools (F12) → Computed styles
+ *	Test:    VSCode AsciiDoc preview → check rendering
+ *	Issues:  specificity conflicts | cascade order | quoteblock link styling
+ */
+/* # X.2 Policy [POLICY]
+ *
+ *	Safe:    Add new component styles, adjust colors, add responsive breakpoints
+ *	Careful: Change Asciidoctor default overrides, modify cascade order
+ *	Never:   Break 3-block structure, remove template element styling
+ *
+ *	Future:  planned: dark mode toggle, print styles refinement
+ *	         considered: CSS custom properties for theming
+ *	         rejected: CSS preprocessor (pure CSS preferred)
+ */
+/* # X.3 Synthesis [SYNTHESIS]
+ *
+ *	Scope:   AsciiDoc document styling for Kingdom documentation
+ *	Impact:  PhD rigor + Bible accessibility — shepherds scan, scholars study
+ *	Note:    "Let all things be done decently and in order" — 1 Cor 14:40
+ */
+/* ============================================================================ */
+/* END CLOSING */
+/* ============================================================================ */

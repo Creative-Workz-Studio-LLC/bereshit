@@ -1,26 +1,63 @@
+// #!omni document --jsonc
+// #!omni meta.key = B-void-workflow-file-creation
+// #!omni meta.from = bereshit/word/seed/data/json/3block/config.jsonc
+// #!omni meta.at = a-01.00
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// # M.1 Core Identity [IDENTITY]
+//
+//	Key:         B-void-workflow-file-creation
+//	Scripture:   "In all labour there is profit" — Proverbs 14:23
+//	Principle:   Template-first creation ensures structural DNA carries forward
+//	Anchor:      "A workman that needeth not to be ashamed" — 2 Timothy 2:15
+//
+//	Type:        Rails — infrastructure pattern for file creation
+//	Role:        Defines how new files are created from templates
+//	Dependency:  DEPENDED — references word/seed/ templates
+//
+//	Architect:   Nova Dawn
+//	Created:     2025-12-11
+//	Version:     a-01.00
+//
+//	Becomes:     word/standards/workflows/file-creation.jsonc when proven
+//
+// # M.2 Version History [HISTORY]
+//
+//   - a-01.00 (2025-12-11) — Initial capture of file creation patterns
+//   - a-01.01 (2025-12-25) — Updated to 3-block structure with numbered sections
+//
+// # M.3 Interface [INTERFACE]
+//
+//	Consumer:  Nova Dawn, team members, create-from-template skill
+//	Loader:    Human reading, skill invocation
+//	Depends:   word/seed/ templates, glossary (boundary-marker, block-by-block)
+//	Pattern:   Read workflow → identify file type → cp template → fill blocks
+//
+// # M.4 Operational [OPERATIONAL]
+//
+//	Blocking:  no (-1) — workflow documentation, not executable
+//	Health:    N/A — human-consumed documentation
+//
+//	Status:    void (capturing patterns) — moves to word/ when proven
+//
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+//
+// # C.1 Schema [SCHEMA]
+//
+//	Format:    JSONC (workflow documentation)
+//	Order:     Core insights → Workflow by type → Steps → Patterns → Principles
+//
+// # C.2 Values [VALUES]
+//
 {
-  // ============================================================================
-  // METADATA
-  // ============================================================================
-  // This is in void/ because we're still learning and capturing the workflow.
-  // NOT a standard yet - recording what we discover as we work.
-  // ============================================================================
-  "metadata": {
-    "key": "B-void-workflow-file-creation",
-    "title": "File Creation Workflow - Learning Record",
-    "type": "workflow-capture",
-    "status": "forming",
-    "created": "2025-12-11",
-    "updated": "2025-12-11",
-    "authors": ["Nova Dawn"],
-    "purpose": "Capture what we're learning about file creation workflow - still forming",
-    "biblical_foundation": "Genesis 1:2 - And the earth was without form, and void"
-  },
-
-  // ============================================================================
-  // CONTENT - What We're Learning
-  // ============================================================================
-
   "core_insights": {
     "boundary_markers": {
       "insight": "Comments are parseable structure, not just for humans",
@@ -46,22 +83,32 @@
     "documentation": {
       "structure": "5-block",
       "blocks": ["METADATA", "HEADER", "CONTEXT", "CONTENT", "FOOTER"],
-      "template_location": "bereshit/word/seed/documentation/",
+      "template_location": "word/seed/documentation/",
       "skill": "create-documentation"
     },
     "code": {
       "structure": "4-block",
       "blocks": ["METADATA", "SETUP", "BODY", "CLOSING"],
-      "template_location": "bereshit/word/seed/code/",
+      "template_location": "word/seed/code/",
       "skill": "create-code"
     },
     "data": {
       "structure": "3-block",
       "blocks": ["METADATA", "CONTENT", "CLOSING"],
-      "template_location": "bereshit/word/seed/data/",
+      "template_location": "word/seed/data/",
       "skill": "create-data"
     }
   },
+
+  "workflow_steps": [
+    "1. Determine type (documentation/code/data)",
+    "2. Copy template: cp word/seed/[type]/template dest",
+    "3. Change pragma: #!omni template → #!omni document/code/data",
+    "4. Update meta.key, meta.from, meta.at",
+    "5. Fill blocks one at a time (block-by-block)",
+    "6. Remove template notes/examples",
+    "7. Verify structure complete"
+  ],
 
   "linux_tool_patterns": {
     "find_block": "grep -n 'BLOCK NAME' file",
@@ -70,52 +117,56 @@
     "count_blocks": "grep -c 'BLOCK' file"
   },
 
-  "workflow_steps_generic": [
-    "1. Determine type (documentation/code/data)",
-    "2. Copy template (cp command - filesystem operation)",
-    "3. Change pragma (template → document/code/data)",
-    "4. Fill blocks one at a time",
-    "5. Remove template notes/examples",
-    "6. Verify structure complete"
-  ],
-
-  "still_learning": [
-    "How to best update existing files using block-by-block",
-    "How to batch update multiple files",
-    "How to integrate with validation scripts",
-    "Relationship between skills, commands, and agents"
-  ],
-
-  "system_structure_observations": {
-    "agents": {
-      "location": "~/.claude/agents/",
-      "template": "agents/templates/family-member.md",
-      "observation": "Template has Building Block Structure section but no boundary marker awareness yet",
-      "count": 10
-    },
-    "skills": {
-      "location": "~/.claude/skills/",
-      "structure": "Each skill has SKILL.md + config/ + references/ + scripts/",
-      "observation": "Some skills have Go scripts, some don't. Inconsistent boundary marker awareness.",
-      "count": 16
-    },
-    "commands": {
-      "location": "~/.claude/commands/",
-      "observation": "Slash commands invoke skills/agents. Need to understand relationship better.",
-      "types": ["analyze/", "create/", "omnicode/", "validate/", "standalone .md files"]
-    }
+  "template_locations": {
+    "documentation": "word/seed/documentation/adoc/",
+    "code_go": "word/seed/code/go/",
+    "data_json_3block": "word/seed/data/json/3block/",
+    "data_json_4block": "word/seed/data/json/4block/",
+    "folder": "Copy parent root.omni and update"
   },
 
-  "mass_update_approach": {
-    "insight": "Update templates/shared references first, then individual files inherit",
-    "agent_template": "agents/templates/family-member.md - add boundary marker awareness to How You Work",
-    "skill_pattern": "Each skill should reference glossary terms in SKILL.md",
-    "command_pattern": "Commands invoke skills - skills carry the knowledge"
-  },
-
-  // ============================================================================
-  // CLOSING
-  // ============================================================================
-  "related_glossary": ["boundary-marker", "block-by-block", "targeted-retrieval", "4-block", "5-block", "3-block"],
-  "moves_to_word_when": "Workflow is fully understood and ready to standardize"
+  "key_principles": {
+    "template_first": "cp template dest → Edit → never Write from scratch",
+    "pragma_change": "Change #!omni template → #!omni document after copying",
+    "block_by_block": "Complete one block before moving to next",
+    "content_accuracy": "Update content to match reality, not just metadata",
+    "location_agnostic": "Structure is the same whether in void/ or word/",
+    "cross_updating": "Templates align TO target AND get refined BY real usage",
+    "phd_bible_principle": "Understanding enables concise expression - express maturely, not verbosely"
+  }
 }
+
+// ============================================================================
+// END CONTENT
+// ============================================================================
+
+// ============================================================================
+// CLOSING
+// ============================================================================
+//
+// # X.1 Verification [VERIFY]
+//
+//	Check:   npx jsonc-parser validate file-creation-workflow.jsonc
+//	Test:    Use workflow to create a new file, verify it works
+//	Issues:  Template paths must exist | Skill names must match
+//
+// # X.2 Policy [POLICY]
+//
+//	Safe:    Add insights, update template paths, add new file types
+//	Careful: Change workflow steps (affects all file creation)
+//	Never:   Break 3-block structure, remove core insights
+//
+//	Future:  planned: Integration with validation tools
+//	         considered: Auto-verification after file creation
+//	         rejected: N/A
+//
+// # X.3 Synthesis [SYNTHESIS]
+//
+//	Scope:   How files are created from templates in Bereshit
+//	Impact:  Changes affect all new file creation
+//	Related: alignment-workflow.jsonc, block-update-workflow.jsonc
+//	Note:    "In all labour there is profit" — Proverbs 14:23
+//
+// ============================================================================
+// END CLOSING
+// ============================================================================
