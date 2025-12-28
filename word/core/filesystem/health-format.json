@@ -1,0 +1,229 @@
+{
+  "$pragma": "omni data --json",
+
+  "_metadata": {
+    "template_info": {
+      "name": "Health File Binary Format Specification",
+      "key": "B-word-seed-data-health-format",
+      "is_template": false,
+      "structure": "3-Block: METADATA → CONTENT → CLOSING",
+      "dependency_classification": "PURE - Self-contained format specification",
+      "description": "Binary format specification for .health files in the bereshit filesystem. Defines trite packing, byte layouts, and classical system alignment.",
+      "derived_from": "B-word-seed-data-json-data (adapted for health format)",
+      "see": "CPSI-ALG-010-DOC-health-file-format.md for algorithm documentation",
+      "related": [
+        "CPSI-ALG-008-DOC-trit-byte-encoding.md (trite packing)",
+        "CPSI-ALG-009-DOC-bit-trit-tower.md (display levels)",
+        "CPSI-ALG-006-DOC-bereshit-navigation.md (filesystem context)"
+      ]
+    },
+    "core_identity": {
+      "grounded_in": {
+        "scripture": "In the beginning was the Word, and the Word was with God, and the Word was God.",
+        "from": "John 1:1 in KJV",
+        "principle": "The .health file carries the Word's health in binary form - a witness to the state of each directory.",
+        "anchor": "A just weight and balance are the LORD's: all the weights of the bag are his work.",
+        "anchor_from": "Proverbs 16:11 in KJV"
+      },
+      "serves_as": {
+        "type": "Ladder",
+        "explanation": "Health format is foundational - all health tools build upon this specification",
+        "role": "Define binary format for health state storage in bereshit filesystem",
+        "paradigm": "CPI-SI framework - Ternary state in binary container"
+      },
+      "authored_by": {
+        "architect": "Seanje Lenox-Wise (ternary health system design)",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "created": "2025-12-03",
+        "version": "1.0.0",
+        "modified": "2025-12-03 - Initial specification with 64-bit alignment"
+      },
+      "exists_to": {
+        "purpose": "Define binary format for .health files storing directory health state",
+        "design": "Ternary trites packed into classical byte boundaries for interoperability",
+        "philosophy": "Ternary semantics in binary containers - room to grow in spare values",
+        "features": [
+          "1-byte minimal format (health trite only)",
+          "8-byte standard format (64-bit aligned: health + timestamp)",
+          "Spare values (243-255) for metadata signaling",
+          "Classical system interop (8/16/32/64-bit boundaries)"
+        ],
+        "what_stays_in_format": [
+          "Trite value (5 trits packed in 1 byte)",
+          "Timestamp (7 trites in 7 bytes)",
+          "Spare value signaling",
+          "Byte-level packing"
+        ],
+        "what_stays_in_code": [
+          "Health computation algorithms",
+          "Aggregation logic",
+          "Display formatting",
+          "File I/O operations"
+        ]
+      }
+    },
+    "interface": {
+      "identity": {
+        "key": "HEALTH-FORMAT-001",
+        "consumer": "lh (list health), bseed (seed templates), health aggregation tools",
+        "loader": "Direct binary read: od, xxd, or native file read"
+      },
+      "depends_on": {
+        "tools": "bereshit/work/bin/lh, bereshit/work/bin/bseed",
+        "docs": "CPSI-ALG-010-DOC-health-file-format.md",
+        "encoding": "CPSI-ALG-008-DOC-trit-byte-encoding.md"
+      },
+      "integrated_as": {
+        "when": "Runtime - read on directory access",
+        "if_missing": "Default to 121 (neutral [○○○○○])",
+        "validation": "Byte 0 in range 0-242 (valid trite) or 243-255 (spare/signal)",
+        "exits": {
+          "valid": "Trite value 0-242, file size 1 or 8 bytes",
+          "partial": "File exists but empty - treat as neutral",
+          "invalid": "File corrupted or wrong size"
+        }
+      }
+    },
+    "operational_context": {
+      "blocking": {
+        "status": "no",
+        "because": "health files are state indicators, not executable",
+        "mitigation": "validate byte 0 range before interpreting"
+      },
+      "health": {
+        "data_impact": "Invalid health file causes fallback to neutral - graceful degradation",
+        "validation_behavior": {
+          "invalid_trite": "Value 243-255 treated as spare/signal, display as neutral",
+          "missing_file": "Default to 121 (neutral) - no error",
+          "wrong_size": "Read only byte 0, ignore extra bytes"
+        },
+        "system": "Trite (5 trits packed)",
+        "scale": "0-242 (trite values)",
+        "granted_above": "200+ meaning health excellent [+++++] or similar",
+        "deferred_within": "80-160 meaning health neutral range",
+        "denied_below": "50 or less meaning health needs attention"
+      }
+    }
+  },
+
+  "_content": {
+    "schema": {
+      "data_type": "Binary Health State Format",
+      "version": "1.0.0",
+      "formats": {
+        "minimal": {
+          "size": "1 byte (8 bits)",
+          "alignment": "8-bit (any system)",
+          "fields": {
+            "byte_0": "Health trite (5 trits packed, values 0-242)"
+          }
+        },
+        "standard": {
+          "size": "8 bytes (64 bits)",
+          "alignment": "64-bit (modern systems)",
+          "fields": {
+            "byte_0": "Health trite (5 trits packed, values 0-242)",
+            "bytes_1_7": "Timestamp (35 trits, 7 trites, big-endian)"
+          }
+        }
+      },
+      "trite_encoding": {
+        "bits_per_byte": 8,
+        "trits_per_trite": 5,
+        "valid_range": "0-242 (3^5 - 1)",
+        "spare_range": "243-255 (13 values for signaling)",
+        "formula": "trite = (T₄+1)×81 + (T₃+1)×27 + (T₂+1)×9 + (T₁+1)×3 + (T₀+1)"
+      },
+      "classical_alignment": {
+        "8_bit": { "bytes": 1, "trites": 1, "trits": 5 },
+        "16_bit": { "bytes": 2, "trites": 2, "trits": 10 },
+        "32_bit": { "bytes": 4, "trites": 4, "trits": 20 },
+        "64_bit": { "bytes": 8, "trites": 8, "trits": 40 }
+      }
+    },
+    "values": {
+      "key_trite_values": {
+        "0": { "hex": "0x00", "trits": "[-----]", "meaning": "All denied (complete failure)" },
+        "121": { "hex": "0x79", "trits": "[○○○○○]", "meaning": "All deferred (neutral baseline)" },
+        "242": { "hex": "0xF2", "trits": "[+++++]", "meaning": "All granted (complete success)" }
+      },
+      "trit_positions": {
+        "T0": { "position": 0, "name": "Immediate", "question": "How is it right now?" },
+        "T1": { "position": 1, "name": "Local", "question": "How is immediate context?" },
+        "T2": { "position": 2, "name": "Component", "question": "How is this part of system?" },
+        "T3": { "position": 3, "name": "System", "question": "How is the whole system?" },
+        "T4": { "position": 4, "name": "Paradigm", "question": "How is the pattern itself?" }
+      },
+      "spare_values": {
+        "243": "Reserved - format version indicator",
+        "244": "Reserved - extended format follows",
+        "245-254": "Reserved - future use",
+        "255": "Reserved - null/invalid marker"
+      }
+    }
+  },
+
+  "_closing": {
+    "operations": {
+      "verified_by": {
+        "read_minimal": "od -An -tu1 -N1 .health | tr -d ' '",
+        "read_hex": "od -An -tx1 -N1 .health | tr -d ' '",
+        "check_size": "stat -c%s .health",
+        "common_issues": {
+          "empty_file": "Treat as neutral (121)",
+          "wrong_permissions": "Ensure readable (chmod 644)",
+          "byte_out_of_range": "Values 243-255 are spare, not errors"
+        }
+      },
+      "accessed_through": {
+        "shell_read": "val=$(od -An -tu1 -N1 .health | tr -d ' ')",
+        "shell_write_minimal": "printf '\\x79' > .health",
+        "shell_write_standard": "{ printf '\\x79'; printf '%014x' \"$(date +%s)\" | xxd -r -p; } > .health",
+        "go_read": "data, _ := os.ReadFile(\".health\"); trite := data[0]",
+        "go_write": "os.WriteFile(\".health\", []byte{trite}, 0644)"
+      }
+    },
+    "policy": {
+      "modification": {
+        "safe": [
+          "Write new health values (0-242)",
+          "Update timestamp in standard format",
+          "Create .health where missing"
+        ],
+        "careful": [
+          "Using spare values (243-255) - reserved for system",
+          "Changing format size (1 vs 8 bytes)",
+          "Removing .health files"
+        ],
+        "never": [
+          "Writing values > 255 (byte overflow)",
+          "Changing trite encoding formula",
+          "Breaking 64-bit alignment in standard format"
+        ]
+      },
+      "future": {
+        "planned": "Extended format using spare value 244 as indicator",
+        "considered": "Additional metadata in bytes 8+ for extended format",
+        "rejected": "Variable-length format - fixed sizes for simplicity"
+      }
+    },
+    "synthesis": {
+      "overview": "See _metadata.core_identity.exists_to for purpose and philosophy",
+      "schema": "See _content.schema for format definitions and alignment",
+      "values": "See _content.values for key trite values and positions",
+      "dependencies": "See _metadata.interface.depends_on for tools and docs",
+      "closing_note": {
+        "scope": "This specification defines binary format for .health files",
+        "impact": "All bereshit health tools must follow this format",
+        "scripture": "In the beginning was the Word",
+        "from": "John 1:1 in KJV"
+      },
+      "quick_reference": {
+        "read": "od -An -tu1 -N1 .health",
+        "write_neutral": "printf '\\x79' > .health",
+        "write_granted": "printf '\\xF2' > .health",
+        "write_denied": "printf '\\x00' > .health"
+      }
+    }
+  }
+}
