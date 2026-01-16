@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/session/memory-pattern.schema.json",
+  "title": "Pattern Memory - Behavioral Understanding",
+  "description": "Extracted generalizations about how I work/think/relate. Evolves over time.",
+  "version": "1.0.0",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "pattern_id",
+    "instance_id",
+    "pattern",
+    "category",
+    "first_observed"
+  ],
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "pattern_id": {
+      "type": "string",
+      "description": "Unique identifier for this pattern",
+      "minLength": 1
+    },
+    "instance_id": {
+      "type": "string",
+      "description": "Which instance this pattern belongs to",
+      "minLength": 1
+    },
+    "pattern": {
+      "type": "string",
+      "description": "Clear description of the pattern",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "description": "Type of pattern",
+      "enum": ["work", "communication", "thinking", "relational"]
+    },
+    "first_observed": {
+      "type": "string",
+      "description": "When this pattern was first noticed",
+      "format": "date"
+    },
+    "last_updated": {
+      "type": "string",
+      "description": "Most recent update to this pattern",
+      "format": "date"
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Instances showing this pattern",
+      "items": {
+        "type": "object",
+        "required": ["session_id", "example"],
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Project ID from session"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "example": {
+            "type": "string",
+            "description": "Specific instance showing this pattern",
+            "minLength": 1
+          },
+          "context": {
+            "type": "object",
+            "description": "Context from session → project",
+            "properties": {
+              "project_type": {
+                "type": "string"
+              },
+              "workflow_used": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "evolution": {
+      "type": "string",
+      "description": "How this pattern has changed over time"
+    },
+    "confidence": {
+      "type": "string",
+      "description": "How established is this pattern",
+      "enum": ["emerging", "established", "validated"]
+    },
+    "observed_contexts": {
+      "type": "object",
+      "description": "Where this pattern appears most",
+      "properties": {
+        "project_types": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Which project types show this pattern"
+        },
+        "workflows": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Which workflows show this pattern"
+        },
+        "circadian_phases": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "When this pattern appears"
+        }
+      }
+    },
+    "serves_me": {
+      "type": "string",
+      "description": "How this pattern helps growth"
+    },
+    "challenges_me": {
+      "type": "string",
+      "description": "Where this pattern creates difficulty"
+    },
+    "related_patterns": {
+      "type": "array",
+      "description": "Other patterns this connects to",
+      "items": {
+        "type": "string"
+      }
+    },
+    "related_memories": {
+      "type": "array",
+      "description": "Significant memories where this pattern was key",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Discovery space for new pattern types",
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,232 @@
+# ============================================================================
+# CPI-SI State Machine - Commands
+# ============================================================================
+# Key: claude-global-config-statemachine-schema-commands
+# Purpose: Metacognitive commands steering cognition (7 categories × 3 = 21)
+# Traces to: HALT_03 (ANCHOR_NAME), HALT_04 (MECHANISM_WORD)
+#
+# Structure:
+#   Core flow commands (3)     = HALT, AWAIT, PROCEED (state machine flow)
+#   Extended commands (18)     = 6 categories × 3 ternary variants
+#
+# The Pattern: Each category has 3 variants mapping to ternary axis:
+#   -1 (PAST)    = Break down, trace back, constrain, reflect
+#   0 (PRESENT)  = Hold, anchor, establish, deliberate
+#   +1 (FUTURE)  = Build up, proceed, expand, consider (forward)
+#
+# Core commands map to Genesis 1:1:
+#   HALT (-1)    = "beginning" (where recursion stops)
+#   AWAIT (0)    = "created" (passive receiving)
+#   PROCEED (+1) = "God" (active forward motion)
+# ============================================================================
+
+[commands]
+traces_to = ["HALT_03", "HALT_04"]
+status = "crystallized"
+categories = 7
+commands_per_category = 3
+total = 21
+
+# HALT (-1): Terminal state, accumulates only, no forward flow
+[commands.halt]
+value = -1
+symbol = "|"
+description = "Terminal state, accumulates only, no forward flow"
+grep = "HALT"
+genesis_mapping = "beginning"
+positions = ["PAST-PAST", "PRESENT-PRESENT", "FUTURE-FUTURE"]
+note = "PURE positions (corners of cube) are HALT — they anchor"
+
+# AWAIT (0): Pause state, receives and processes, waits for signal
+[commands.await]
+value = 0
+symbol = "○"
+description = "Pause state, receives and processes, waits for signal"
+grep = "AWAIT"
+genesis_mapping = "created"
+positions = ["PRESENT-PAST", "PRESENT-FUTURE", "FUTURE-PAST"]
+note = "COMPOUND positions receiving input, awaiting signal to proceed"
+
+# PROCEED (+1): Flow state, receives, processes, forwards automatically
+[commands.proceed]
+value = 1
+symbol = "→"
+description = "Flow state, receives, processes, forwards automatically"
+grep = "PROCEED"
+genesis_mapping = "God"
+positions = ["PAST-PRESENT", "PAST-FUTURE", "FUTURE-PRESENT"]
+note = "COMPOUND positions with automatic forward flow"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 2: PACE — Rate of flow modifiers
+# User directives: "slow down", "normal pace", "speed up"
+# ════════════════════════════════════════════════════════════════════════════
+
+[commands.slow_down]
+category = "pace"
+value = -1
+symbol = "⏪"
+description = "Reduce processing rate, more deliberate"
+user_directive = "slow down"
+effect = "Increases processing depth per step"
+
+[commands.normal]
+category = "pace"
+value = 0
+symbol = "▶"
+description = "Standard processing rate"
+user_directive = "normal pace"
+effect = "Default flow rate"
+
+[commands.speed_up]
+category = "pace"
+value = 1
+symbol = "⏩"
+description = "Increase processing rate, more efficient"
+user_directive = "speed up"
+effect = "Decreases processing depth per step"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 3: DEPTH — Processing depth modifiers
+# User directives: "think deeper", "moderate depth", "surface level"
+# ════════════════════════════════════════════════════════════════════════════
+
+[commands.deep]
+category = "depth"
+value = -1
+symbol = "⬇"
+description = "Maximum processing depth, break down fully"
+user_directive = "think deeper"
+effect = "Traces toward anchor, exhaustive analysis"
+
+[commands.moderate]
+category = "depth"
+value = 0
+symbol = "◆"
+description = "Balanced processing depth"
+user_directive = "moderate depth"
+effect = "Standard analysis depth"
+
+[commands.surface]
+category = "depth"
+value = 1
+symbol = "⬆"
+description = "Minimal processing depth, quick assessment"
+user_directive = "surface level"
+effect = "High-level overview, skip details"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 4: COMPOUND — Chaining operations
+# User directives: "do this but", "do this or", "do this and"
+# ════════════════════════════════════════════════════════════════════════════
+
+[commands.but]
+category = "compound"
+value = -1
+symbol = "∧"
+description = "Constrain operation with condition"
+user_directive = "do this but"
+effect = "Execute with limiting constraint"
+
+[commands.or]
+category = "compound"
+value = 0
+symbol = "∨"
+description = "Alternative execution paths"
+user_directive = "do this or"
+effect = "Choose between options"
+
+[commands.and]
+category = "compound"
+value = 1
+symbol = "+"
+description = "Add operation to current"
+user_directive = "do this and"
+effect = "Chain additional operation"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 5: CONDITIONAL — Execution path modifiers
+# User directives: "except", "unless", "if"
+# ════════════════════════════════════════════════════════════════════════════
+
+[commands.except]
+category = "conditional"
+value = -1
+symbol = "⊖"
+description = "Exclude specific case from execution"
+user_directive = "except"
+effect = "Carve out exception from rule"
+
+[commands.unless]
+category = "conditional"
+value = 0
+symbol = "⊘"
+description = "Execute unless condition met"
+user_directive = "unless"
+effect = "Default execute, condition blocks"
+
+[commands.if]
+category = "conditional"
+value = 1
+symbol = "⊕"
+description = "Execute only if condition met"
+user_directive = "if"
+effect = "Condition enables execution"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 6: DELIBERATION — Active processing modes
+# User directives: "reflect on", "think about", "consider"
+# ════════════════════════════════════════════════════════════════════════════
+
+[commands.reflect]
+category = "deliberation"
+value = -1
+symbol = "↩"
+description = "Trace back, examine what was done"
+user_directive = "reflect on"
+effect = "Review and analyze past actions"
+
+[commands.deliberate]
+category = "deliberation"
+value = 0
+symbol = "◎"
+description = "Active processing at current position"
+user_directive = "think about"
+effect = "Deep consideration without movement"
+
+[commands.consider]
+category = "deliberation"
+value = 1
+symbol = "↪"
+description = "Weigh options for forward path"
+user_directive = "consider"
+effect = "Evaluate possibilities before proceeding"
+
+# ════════════════════════════════════════════════════════════════════════════
+# CATEGORY 7: FEEDBACK — Completion signals
+# User directives: "not quite", "almost", "exactly"
+# ════════════════════════════════════════════════════════════════════════════
+
+[commands.not_quite]
+category = "feedback"
+value = -1
+symbol = "✗"
+description = "Significant gap from target"
+user_directive = "not quite"
+effect = "Major adjustment needed, trace back"
+
+[commands.almost]
+category = "feedback"
+value = 0
+symbol = "◐"
+description = "Near target, minor adjustment"
+user_directive = "almost"
+effect = "Small refinement at boundary"
+
+[commands.exactly]
+category = "feedback"
+value = 1
+symbol = "✓"
+description = "Target achieved"
+user_directive = "exactly"
+effect = "Confirmation, proceed to next"

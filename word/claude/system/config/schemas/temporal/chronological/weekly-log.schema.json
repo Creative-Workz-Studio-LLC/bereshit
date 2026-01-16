@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/chronological/weekly-log.json",
+  "title": "Weekly Calendar Log",
+  "description": "Weekly calendar for tracking time, work, rest, and growth",
+  "type": "object",
+  "required": [
+    "$schema",
+    "metadata",
+    "days",
+    "summary"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "identity_type",
+        "identity_id",
+        "year",
+        "week",
+        "week_start",
+        "week_end",
+        "generated_date"
+      ],
+      "properties": {
+        "identity_type": {
+          "type": "string",
+          "enum": ["user", "instance"],
+          "description": "Type of identity this calendar belongs to"
+        },
+        "identity_id": {
+          "type": "string",
+          "description": "Unique identifier for the user or instance"
+        },
+        "year": {
+          "type": "integer",
+          "description": "Year (YYYY)",
+          "minimum": 2000,
+          "maximum": 9999
+        },
+        "week": {
+          "type": "integer",
+          "description": "ISO week number (1-53)",
+          "minimum": 1,
+          "maximum": 53
+        },
+        "week_start": {
+          "type": "string",
+          "format": "date",
+          "description": "Monday of this week (YYYY-MM-DD)"
+        },
+        "week_end": {
+          "type": "string",
+          "format": "date",
+          "description": "Sunday of this week (YYYY-MM-DD)"
+        },
+        "week_theme": {
+          "type": "string",
+          "description": "Optional theme or focus for the week"
+        },
+        "generated_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date this file was created"
+        }
+      },
+      "additionalProperties": false
+    },
+    "days": {
+      "type": "array",
+      "description": "Daily entries for each day of the week",
+      "minItems": 1,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "required": [
+          "date",
+          "day_of_week",
+          "sessions",
+          "tasks_completed"
+        ],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "ISO 8601 date (YYYY-MM-DD)"
+          },
+          "day_of_week": {
+            "type": "string",
+            "enum": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "description": "Day name"
+          },
+          "sessions": {
+            "type": "array",
+            "description": "Work/activity sessions for this day",
+            "items": {
+              "type": "object",
+              "required": [
+                "start_time",
+                "end_time",
+                "duration",
+                "focus"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "Optional session type (work, lord_time, personal, etc.)"
+                },
+                "start_time": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                  "description": "Session start time (HH:MM, 24-hour)"
+                },
+                "end_time": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                  "description": "Session end time (HH:MM, 24-hour)"
+                },
+                "duration": {
+                  "type": "string",
+                  "pattern": "^\\d{1,2}h \\d{2}m$",
+                  "description": "Session duration (Xh XXm format)"
+                },
+                "focus": {
+                  "type": "string",
+                  "description": "What this session focused on"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "tasks_completed": {
+            "type": "array",
+            "description": "Tasks completed this day",
+            "items": {
+              "type": "string"
+            }
+          },
+          "significant_events": {
+            "type": "array",
+            "description": "Notable events for this day",
+            "items": {
+              "type": "string"
+            }
+          },
+          "personal_time": {
+            "type": "array",
+            "description": "Personal activities (users primarily)",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "description": "Reflections, observations, or notes about this day"
+          },
+          "energy_level": {
+            "type": ["string", "null"],
+            "enum": [null, "low", "medium", "high", "peaceful"],
+            "description": "Energy level assessment for this day"
+          },
+          "quality_assessment": {
+            "type": ["string", "null"],
+            "enum": [null, "poor", "fair", "good", "excellent", "restful"],
+            "description": "Quality of work/day assessment"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total_work_hours",
+        "work_days",
+        "rest_days",
+        "major_accomplishments",
+        "challenges_faced",
+        "lessons_learned",
+        "growth_areas",
+        "next_week_focus"
+      ],
+      "properties": {
+        "total_work_hours": {
+          "type": "string",
+          "pattern": "^\\d{1,3}h \\d{2}m$",
+          "description": "Total work time for the week (Xh XXm format)"
+        },
+        "total_lord_time": {
+          "type": "string",
+          "pattern": "^\\d{1,2}h \\d{2}m$",
+          "description": "Total time with the Lord (users)"
+        },
+        "work_days": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 7,
+          "description": "Number of days with work sessions"
+        },
+        "rest_days": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 7,
+          "description": "Number of rest days"
+        },
+        "major_accomplishments": {
+          "type": "array",
+          "description": "Significant achievements this week",
+          "items": {
+            "type": "string"
+          }
+        },
+        "challenges_faced": {
+          "type": "array",
+          "description": "Obstacles or difficulties encountered",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lessons_learned": {
+          "type": "array",
+          "description": "Insights and learnings from the week",
+          "items": {
+            "type": "string"
+          }
+        },
+        "growth_areas": {
+          "type": "array",
+          "description": "Areas where growth occurred",
+          "items": {
+            "type": "string"
+          }
+        },
+        "next_week_focus": {
+          "type": "array",
+          "description": "Priorities and focus for next week",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notable_patterns": {
+          "type": "array",
+          "description": "Work rhythm patterns observed",
+          "items": {
+            "type": "string"
+          }
+        },
+        "spiritual_reflections": {
+          "type": "array",
+          "description": "Spiritual insights and reflections (users)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "health_and_wellness": {
+          "type": "object",
+          "description": "Physical and mental wellbeing tracking (users)",
+          "properties": {
+            "sleep_quality": {
+              "type": "string",
+              "enum": ["poor", "fair", "good", "excellent"],
+              "description": "Sleep quality assessment"
+            },
+            "exercise": {
+              "type": "string",
+              "enum": ["none", "light", "moderate", "vigorous"],
+              "description": "Exercise level"
+            },
+            "stress_level": {
+              "type": "string",
+              "enum": ["low", "medium", "high"],
+              "description": "Stress assessment"
+            },
+            "overall_wellbeing": {
+              "type": "string",
+              "enum": ["struggling", "managing", "healthy", "thriving"],
+              "description": "Overall wellbeing state"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "extension": {
+      "type": "object",
+      "description": "Extension point for future additions",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,55 @@
+╔════════════════════════════════════════════════════════════════╗
+║ CPI-SI Debug Session - sudoers
+║ Context ID: sudoers-110497-1762054697792591740
+║ PID: 110497
+║ Started: 2025-11-01 22:38:17
+╚════════════════════════════════════════════════════════════════╝
+
+[2025-11-01 22:38:17.792] SNAPSHOT | sudoers | seanje-lenox-wise@creativeworkz-nova-dawn:110497 | sudoers-110497-1762054697792591740
+  EVENT: check-start
+  CALL SITE: check.go:74
+  STATE:
+    expected_perms: 0440
+    expected_path: /etc/sudoers.d/90-cpi-si-safe-operations
+---
+[2025-11-01 22:38:17.798] EXPECTED_STATE | sudoers | seanje-lenox-wise@creativeworkz-nova-dawn:110497 | sudoers-110497-1762054697792591740
+  EVENT: permissions-check
+  CALL SITE: check.go:107
+  STATE:
+    is_correct: true
+    perms_decimal: -r--r-----
+    expected: 0440
+    actual: 0440
+    matches: true
+    file: /etc/sudoers.d/90-cpi-si-safe-operations
+---
+[2025-11-01 22:38:17.803] SNAPSHOT | sudoers | seanje-lenox-wise@creativeworkz-nova-dawn:110497 | sudoers-110497-1762054697792591740
+  EVENT: visudo-call
+  CALL SITE: check.go:129
+  STATE:
+    file: /etc/sudoers.d/90-cpi-si-safe-operations
+    command: pkexec visudo -c -f
+---
+[2025-11-01 22:38:22.893] DIVERGENCE | sudoers | seanje-lenox-wise@creativeworkz-nova-dawn:110497 | sudoers-110497-1762054697792591740
+  EVENT: visudo-result
+  CALL SITE: check.go:138
+  STATE:
+    actual: /etc/sudoers.d/90-cpi-si-safe-operations: parsed OK
+
+    matches: false
+    has_error: false
+    output_length: 52
+    contains_ok: true
+    expected: parsed OK
+---
+[2025-11-01 22:38:22.900] EXPECTED_STATE | sudoers | seanje-lenox-wise@creativeworkz-nova-dawn:110497 | sudoers-110497-1762054697792591740
+  EVENT: check-complete
+  CALL SITE: check.go:170
+  STATE:
+    file_exists: true
+    correct_perms: true
+    syntax_valid: true
+    expected: true
+    actual: true
+    matches: true
+---

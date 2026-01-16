@@ -1,0 +1,225 @@
+{
+  // ============================================================================
+  // CPI-SI Health System - Log Entry Format
+  // ============================================================================
+  // Key: claude-global-config-health-runtime-log-entry
+  // Purpose: Runtime format for individual health log entries
+  //
+  // DESIGN PRINCIPLE: Format references schema, doesn't duplicate
+  //   - Structure defined here (how to present)
+  //   - Rules come from: pkg/cpisi/schema/config/l2/health/log.toml
+  //   - Ternary values from: pkg/cpisi/schema/config/l2/health/score.toml
+  //
+  // This is a FORMAT TEMPLATE - developers can create alternative formats
+  // but the RULES (atomic values, action types, etc.) come from TOML schemas.
+  //
+  // Written by: Hooks (append entries)
+  // Read by: Diagnostics (calculate true score), Recovery (track progress)
+  // ============================================================================
+
+  "$schema": "log-entry-schema.json",
+  "version": "1.0.0",
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SCHEMA REFERENCES — Where the rules come from
+  // ──────────────────────────────────────────────────────────────────────────
+  "schema_refs": {
+    "log_schema": "pkg/cpisi/schema/config/l2/health/log.toml",
+    "score_schema": "pkg/cpisi/schema/config/l2/health/score.toml",
+    "ternary_section": "log.toml#ternary",
+    "entry_section": "log.toml#entry",
+    "actions_section": "log.toml#actions"
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TERNARY FOUNDATION — Pulled from log.toml#ternary
+  // ──────────────────────────────────────────────────────────────────────────
+  // These values are READ from TOML at runtime, shown here for visibility
+  "ternary": {
+    "_source": "log.toml#ternary.atomic",
+    "success_value": 1,
+    "failure_value": -1,
+    "neutral_value": 0,
+    "_note": "Narrow way (+1), broad way (-1), neutral (0)"
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // ENTRY FORMAT — Structure for each log line
+  // ──────────────────────────────────────────────────────────────────────────
+  "entry_format": {
+    "_source": "log.toml#entry",
+    "delimiter": "|",
+    "fields": [
+      {
+        "position": 1,
+        "name": "timestamp",
+        "type": "ISO8601",
+        "required": true,
+        "description": "When the action occurred",
+        "example": "2025-12-21T17:30:00Z"
+      },
+      {
+        "position": 2,
+        "name": "action",
+        "type": "enum",
+        "required": true,
+        "valid_values": ["success", "failure", "neutral", "recovery", "reset"],
+        "_source": "log.toml#entry.action.values",
+        "description": "Category of health-affecting action"
+      },
+      {
+        "position": 3,
+        "name": "delta",
+        "type": "int",
+        "required": true,
+        "description": "Health change value (+1, -1, -N, 0)",
+        "_note": "Success always +1, failure -1 or worse, neutral 0"
+      },
+      {
+        "position": 4,
+        "name": "source",
+        "type": "string",
+        "required": true,
+        "description": "What triggered the action",
+        "examples": ["test_pass", "test_fail", "lint_error", "build_success", "recovery"]
+      },
+      {
+        "position": 5,
+        "name": "detail",
+        "type": "string",
+        "required": false,
+        "description": "Additional context (file path, error message, etc.)"
+      }
+    ],
+    "line_format": "TIMESTAMP|ACTION|DELTA|SOURCE|DETAIL",
+    "example_lines": [
+      "2025-12-21T17:30:00Z|success|+1|test_pass|tests/unit/foo_test.go",
+      "2025-12-21T17:31:00Z|failure|-1|lint_error|src/main.go:45 undefined var",
+      "2025-12-21T17:32:00Z|neutral|0|file_read|src/config.toml",
+      "2025-12-21T17:33:00Z|recovery|+1|fix_test|fixed failing assertion",
+      "2025-12-21T17:34:00Z|reset|0|full_reset|manual health reset"
+    ]
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // ACTION DEFINITIONS — Pulled from log.toml#actions
+  // ──────────────────────────────────────────────────────────────────────────
+  "actions": {
+    "_source": "log.toml#actions",
+
+    "success": {
+      "delta": 1,
+      "direction": "integrity",
+      "scripture": "Matthew 7:14 — narrow is the way which leadeth unto life",
+      "description": "Positive action — always +1 (one path to success)",
+      "typical_sources": ["test_pass", "lint_clean", "build_success", "file_created", "documentation_added"]
+    },
+
+    "failure": {
+      "delta_range": [-1, -100],
+      "direction": "wanting",
+      "scripture": "Matthew 7:13 — broad is the way that leadeth to destruction",
+      "description": "Negative action — -1 or more severe (many paths to failure)",
+      "typical_sources": [
+        { "source": "test_fail", "typical_delta": -1 },
+        { "source": "lint_error", "typical_delta": -1 },
+        { "source": "build_fail", "typical_delta": -3 },
+        { "source": "broken_reference", "typical_delta": -5 },
+        { "source": "security_issue", "typical_delta": -10 }
+      ]
+    },
+
+    "neutral": {
+      "delta": 0,
+      "direction": "center",
+      "description": "No health impact",
+      "typical_sources": ["file_read", "status_check", "log_viewed"]
+    },
+
+    "recovery": {
+      "delta": 1,
+      "direction": "integrity",
+      "description": "Intentional recovery action — +1 per fix (narrow way)",
+      "typical_sources": ["manual_fix", "refactor_complete", "debt_paid"],
+      "_note": "Recovery uses +1 per action like success, but tracked separately"
+    },
+
+    "reset": {
+      "delta": "special",
+      "direction": "center",
+      "description": "Health reset to baseline (even balance)",
+      "effect": "Clears accumulated score, sets to 0",
+      "_note": "Rare — use only for fresh start"
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TRUE SCORE CALCULATION — From log.toml#calculation
+  // ──────────────────────────────────────────────────────────────────────────
+  "calculation": {
+    "_source": "log.toml#calculation",
+    "method": "sum",
+    "formula": "true_score = Σ(entry.delta for all entries)",
+    "reset_handling": "clear_accumulator",
+    "_note": "Reset action clears running sum to 0",
+
+    "algorithm": {
+      "pseudocode": [
+        "true_score = 0",
+        "for each line in .health-log:",
+        "    parse entry",
+        "    if entry.action == 'reset':",
+        "        true_score = 0",
+        "    else:",
+        "        true_score += entry.delta",
+        "return true_score"
+      ]
+    },
+
+    "example": {
+      "log_entries": [
+        { "action": "success", "delta": 1, "cumulative": 1 },
+        { "action": "success", "delta": 1, "cumulative": 2 },
+        { "action": "failure", "delta": -3, "cumulative": -1 },
+        { "action": "success", "delta": 1, "cumulative": 0 },
+        { "action": "failure", "delta": -5, "cumulative": -5 }
+      ],
+      "true_score": -5,
+      "_note": "+1 +1 -3 +1 -5 = -5"
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // LEVEL MAPPING — From score.toml#levels (for context)
+  // ──────────────────────────────────────────────────────────────────────────
+  "level_context": {
+    "_source": "score.toml#levels",
+    "_note": "True score maps to these levels for interpretation",
+    "levels": {
+      "broken":  { "range": [-100, -67], "direction": "wanting" },
+      "wanting": { "range": [-66, -34], "direction": "wanting" },
+      "lacking": { "range": [-33, -1], "direction": "wanting" },
+      "even":    { "range": [0, 0], "direction": "center" },
+      "sound":   { "range": [1, 33], "direction": "integrity" },
+      "whole":   { "range": [34, 66], "direction": "integrity" },
+      "perfect": { "range": [67, 100], "direction": "integrity" }
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // FILE METADATA — From log.toml#file
+  // ──────────────────────────────────────────────────────────────────────────
+  "file_spec": {
+    "_source": "log.toml#file",
+    "filename": ".health-log",
+    "location": "directory root (same as .health)",
+    "format": "append-only text, one entry per line",
+    "encoding": "UTF-8",
+    "line_terminator": "LF",
+    "permissions": {
+      "read": "all",
+      "write": "append only",
+      "execute": "none"
+    }
+  }
+}

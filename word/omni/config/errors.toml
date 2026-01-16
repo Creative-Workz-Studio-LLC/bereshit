@@ -1,0 +1,202 @@
+# =============================================================================
+# OmniCode Error Message Specifications
+# Key: B-word-omni-config-errors
+# =============================================================================
+#
+# Semantic error messages that explain WHAT is wrong, not just WHERE.
+# "A word fitly spoken is like apples of gold in pictures of silver."
+#   — Proverbs 25:11
+#
+# =============================================================================
+
+[metadata]
+key = "B-word-omni-config-errors"
+title = "OmniCode Error Messages"
+version = "a-01.00"
+purpose = "Semantic error messages for DETECT phase"
+
+# =============================================================================
+# Error Severity Levels
+# =============================================================================
+
+[severity]
+# Maps to ternary: error (-1), warning (0), info (+1)
+error = -1      # Must be fixed, blocks parsing
+warning = 0     # Should be fixed, parsing continues
+info = 1        # Suggestion, not required
+
+# =============================================================================
+# Structural Errors (Block-Level)
+# =============================================================================
+
+[errors.structure]
+
+[errors.structure.missing_pragma]
+code = "E001"
+severity = "error"
+message = "Missing OmniCode pragma"
+detail = "Every OmniCode file must start with '#!omni' pragma declaring its type"
+recovery = "pragma_template"
+
+[errors.structure.invalid_pragma]
+code = "E002"
+severity = "error"
+message = "Invalid pragma format"
+detail = "Pragma must follow format: #!omni <type> [options]"
+recovery = "pragma_template"
+
+[errors.structure.missing_block]
+code = "E003"
+severity = "error"
+message = "Missing required block: {block_name}"
+detail = "This file type requires a {block_name} block at position {position}"
+recovery = "block_template"
+
+[errors.structure.wrong_block_order]
+code = "E004"
+severity = "error"
+message = "Block out of order: {block_name}"
+detail = "Expected {expected_block} at position {position}, found {block_name}"
+recovery = "reorder_suggestion"
+
+[errors.structure.duplicate_block]
+code = "E005"
+severity = "error"
+message = "Duplicate block: {block_name}"
+detail = "Block {block_name} already exists at line {first_line}"
+recovery = "merge_suggestion"
+
+[errors.structure.unknown_block]
+code = "E006"
+severity = "warning"
+message = "Unknown block marker: {marker}"
+detail = "Block marker '{marker}' is not recognized for this file type"
+recovery = "none"
+
+[errors.structure.unclosed_block]
+code = "E007"
+severity = "error"
+message = "Unclosed block: {block_name}"
+detail = "Block {block_name} started at line {start_line} but never closed"
+recovery = "close_block"
+
+# =============================================================================
+# Semantic Errors (Chunk-Level)
+# =============================================================================
+
+[errors.semantic]
+
+[errors.semantic.missing_identity]
+code = "S001"
+severity = "error"
+message = "Missing identity section"
+detail = "METADATA block must contain identity (key, name, type)"
+recovery = "identity_template"
+
+[errors.semantic.missing_key]
+code = "S002"
+severity = "error"
+message = "Missing entity key"
+detail = "Every OmniCode entity must have a unique key (keyed as \"...\")"
+recovery = "key_template"
+
+[errors.semantic.invalid_key_format]
+code = "S003"
+severity = "warning"
+message = "Invalid key format: {key}"
+detail = "Keys should follow format: B-zone-path-name (e.g., B-word-omni-config)"
+recovery = "key_suggestion"
+
+[errors.semantic.missing_grounding]
+code = "S004"
+severity = "warning"
+message = "Missing biblical grounding"
+detail = "OmniCode entities should be grounded in Scripture (grounded in:)"
+recovery = "grounding_template"
+
+[errors.semantic.invalid_zone]
+code = "S005"
+severity = "error"
+message = "Invalid zone: {zone}"
+detail = "Zone must be void (-1), word (0), or tov (+1)"
+recovery = "zone_suggestion"
+
+[errors.semantic.missing_role]
+code = "S006"
+severity = "warning"
+message = "Missing role declaration"
+detail = "Entity should declare its role (serves as Zone: role \"...\")"
+recovery = "role_template"
+
+[errors.semantic.missing_attribution]
+code = "S007"
+severity = "info"
+message = "Missing attribution"
+detail = "Consider adding architect and implementation attribution"
+recovery = "attribution_template"
+
+# =============================================================================
+# Lexical Errors (Token-Level)
+# =============================================================================
+
+[errors.lexical]
+
+[errors.lexical.unexpected_char]
+code = "L001"
+severity = "error"
+message = "Unexpected character: '{char}'"
+detail = "Character '{char}' (U+{codepoint}) is not valid in this context"
+recovery = "none"
+
+[errors.lexical.unterminated_string]
+code = "L002"
+severity = "error"
+message = "Unterminated string literal"
+detail = "String starting at line {start_line} was never closed"
+recovery = "close_string"
+
+[errors.lexical.invalid_escape]
+code = "L003"
+severity = "error"
+message = "Invalid escape sequence: \\{char}"
+detail = "Valid escapes are: \\n, \\t, \\r, \\\", \\\\"
+recovery = "escape_suggestion"
+
+[errors.lexical.invalid_number]
+code = "L004"
+severity = "error"
+message = "Invalid number format: {text}"
+detail = "Number format not recognized"
+recovery = "none"
+
+# =============================================================================
+# Gap Analysis Messages
+# =============================================================================
+
+[gaps]
+# Messages for ASSESS phase - what's missing
+
+[gaps.block]
+template = "Gap: Missing {block_name} block (required for {file_type})"
+
+[gaps.section]
+template = "Gap: Missing {section_name} in {block_name} block"
+
+[gaps.field]
+template = "Gap: Missing {field_name} field in {section_name}"
+
+[gaps.grounding]
+template = "Gap: No biblical grounding found (recommended for all OmniCode files)"
+
+# =============================================================================
+# Error Context
+# =============================================================================
+# Additional context provided with errors
+
+[context]
+show_line = true
+show_column = true
+show_snippet = true
+snippet_lines_before = 2
+snippet_lines_after = 2
+show_suggestion = true

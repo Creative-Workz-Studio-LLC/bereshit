@@ -1,0 +1,187 @@
+# ============================================================================
+# METADATA
+# ============================================================================
+# CPI-SI Safe Operations - Passwordless operations for development work
+# Purpose: Enable autonomous development operations through Claude Code CLI
+# Safety: Explicit boundaries prevent operations that could brick the laptop
+# Non-blocking: Designed for seamless terminal integration
+#
+# IMPORTANT: sudo-rs Compatibility
+# ================================
+# This system uses sudo-rs (0.2.8+) which intentionally does NOT support
+# wildcards in command-line arguments for security reasons.
+#
+# Works:     /usr/bin/apt update (exact match)
+# Fails:     /usr/bin/apt install * (wildcard in arguments)
+# Solution:  Use pkexec for commands with variable arguments
+#
+# Installation: pkexec visudo -c -f /etc/sudoers.d/90-cpi-si-safe-operations
+#              pkexec cp 90-cpi-si-safe-operations /etc/sudoers.d/
+#              pkexec chmod 440 /etc/sudoers.d/90-cpi-si-safe-operations
+
+# ============================================================================
+# SETUP - Environment and Defaults
+# ============================================================================
+
+# Preserve environment variables needed for non-interactive operations
+Defaults:seanje-lenox-wise env_keep += "DEBIAN_FRONTEND"
+Defaults:seanje-lenox-wise env_keep += "NEEDRESTART_MODE"
+Defaults:seanje-lenox-wise env_keep += "NEEDRESTART_SUSPEND"
+
+# ============================================================================
+# BODY - Safe Operations (Passwordless)
+# ============================================================================
+
+# ────────────────────────────────────────────────────────────────
+# Section 1: Exact Match Commands (sudo-rs Compatible)
+# ────────────────────────────────────────────────────────────────
+# These commands work with sudo because they have NO wildcards in arguments.
+# They match EXACTLY what's in the sudoers file.
+
+# Package Management - Exact Commands Only
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt update
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt upgrade
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt full-upgrade
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt dist-upgrade
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt autoremove
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt autoclean
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt clean
+
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt-get update
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt-get upgrade
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt-get autoremove
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt-get clean
+
+# Service Management - Exact Commands Only
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl daemon-reload
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart networking
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart NetworkManager
+
+# Service Status Checks - Common Services
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl status ssh
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl status docker
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl status networking
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl status NetworkManager
+
+# Network Operations - Exact Commands
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/netplan apply
+
+# System Information Commands (No Arguments)
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/lsmod
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/dmesg
+
+# ────────────────────────────────────────────────────────────────
+# Section 2: pkexec Elevation (For Commands with Variable Arguments)
+# ────────────────────────────────────────────────────────────────
+# pkexec is used for operations requiring root context with arguments.
+# pkexec provides GUI password prompts (better for desktop environment).
+# Since sudo-rs doesn't support wildcards in arguments, we don't grant
+# blanket pkexec access. Instead, specific operations should be called
+# with pkexec directly when needed.
+
+# Sudoers Validation - Requires actual root context
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/visudo -c
+seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/visudo -c -f /etc/sudoers.d/90-cpi-si-safe-operations
+
+# ────────────────────────────────────────────────────────────────
+# Section 3: Documented Wildcard Rules (sudo-rs Incompatible)
+# ────────────────────────────────────────────────────────────────
+# The following rules contain wildcards in argument positions.
+# sudo-rs (0.2.8+) intentionally REJECTS these for security reasons.
+# They are documented here for reference if switching to standard sudo.
+#
+# For now, these operations should be performed using pkexec directly:
+#   Example: pkexec apt install openssh-server
+#   Example: pkexec systemctl start docker
+#   Example: pkexec chmod 755 /path/to/file
+#
+# THESE RULES DO NOT WORK WITH sudo-rs:
+
+# Package Installation (use pkexec apt install <package>)
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt install *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt reinstall *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt-get install *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/dpkg -i *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/dpkg --configure *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/dpkg-reconfigure *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/add-apt-repository *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/apt-add-repository *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/snap install *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/snap refresh *
+
+# Service Management with Arguments (use pkexec systemctl <action> <service>)
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl start *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl status *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl enable *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl disable *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/service * start
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/service * stop
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/service * restart
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/service * reload
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/service * status
+
+# File Operations with Arguments (use pkexec chmod/chown/etc)
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/chmod *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/chown *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/chgrp *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/cp * /etc/*
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/mv * /etc/*
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/mkdir /etc/*
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/touch /etc/*
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/nano /etc/*
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/vim /etc/*
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/vi /etc/*
+
+# Docker Operations with Arguments (use pkexec docker <command>)
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/docker *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/docker-compose *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/local/bin/docker-compose *
+
+# Process Management with Arguments (use pkexec kill/killall/pkill)
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/kill *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/killall *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/pkill *
+
+# Log File Access with Arguments (use pkexec tail/cat/etc)
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/tail /var/log/*
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/cat /var/log/*
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/less /var/log/*
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/head /var/log/*
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/grep * /var/log/*
+
+# Kernel Module Management with Arguments (use pkexec modprobe/rmmod)
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/modprobe *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/sbin/rmmod *
+
+# System Information with Arguments (use pkexec systemctl/journalctl)
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl list-units *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/systemctl list-unit-files *
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/journalctl *
+
+# pkexec blanket access (use pkexec directly for elevated operations)
+# seanje-lenox-wise ALL=(ALL) NOPASSWD: /usr/bin/pkexec *
+
+# ============================================================================
+# CLOSING - Safety Boundaries (Explicit Denies)
+# ============================================================================
+
+# ────────────────────────────────────────────────────────────────
+# CRITICAL: Safety Boundaries - Password Required
+# ────────────────────────────────────────────────────────────────
+#
+# The following operations are NOT granted NOPASSWD and will require
+# password authentication. This provides explicit safety boundaries
+# preventing operations that could brick the laptop.
+#
+# Protected operations (password required):
+#   - Essential package removal (systemd, kernel, grub, initramfs)
+#   - Critical system service disabling (systemd services)
+#   - Filesystem destruction (mkfs, fdisk, parted, dd)
+#   - Bootloader modifications (grub-install, update-grub)
+#   - All pkexec operations (GUI password prompt)
+#
+# By default, any sudo operation not explicitly granted NOPASSWD above
+# will require password authentication.

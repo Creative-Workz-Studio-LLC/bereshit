@@ -1,0 +1,92 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# METADATA
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Key: create-from-template-config
+# Purpose: Template discovery and creation configuration
+# Biblical: Exodus 25:40 - "Look that thou make them after their pattern"
+# Authors: Nova Dawn
+# Version: 1.0.0
+# Created: 2025-12-09
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CONTENT
+# ═══════════════════════════════════════════════════════════════════════════
+
+# --- Template Locations ---
+
+[paths]
+# Canonical template location
+bereshit_seed = "bereshit/word/seed"
+
+# Sub-paths within seed
+code_templates = "code"
+data_templates = "data"
+documentation_templates = "documentation"
+
+# OmniCode templates
+omni_seed = "bereshit/word/omni/seed"
+
+# --- Template Categories ---
+
+[categories.code]
+name = "Code Templates"
+description = "4-block executable and library templates"
+block_structure = "4-block"
+path = "code"
+
+  [categories.code.languages]
+  go = { extensions = [".go"], types = ["executable", "library", "test"] }
+  c = { extensions = [".c", ".h"], types = ["source", "header"] }
+  asm = { extensions = [".asm", ".s"], types = ["source"] }
+  shell = { extensions = [".sh"], types = ["script", "atomic"] }
+  make = { extensions = ["Makefile", ".mk"], types = ["build"] }
+
+[categories.data]
+name = "Data Templates"
+description = "3-block configuration and data templates"
+block_structure = "3-block"
+path = "data"
+
+  [categories.data.formats]
+  docker = { extensions = ["Dockerfile", ".dockerfile"], types = ["container"] }
+  json = { extensions = [".json", ".jsonc"], types = ["config"] }
+  toml = { extensions = [".toml"], types = ["config"] }
+  yaml = { extensions = [".yaml", ".yml"], types = ["config"] }
+
+[categories.documentation]
+name = "Documentation Templates"
+description = "5-block documentation templates"
+block_structure = "5-block"
+path = "documentation"
+
+  [categories.documentation.formats]
+  adoc = { extensions = [".adoc"], types = ["standard", "guide", "reference"] }
+  md = { extensions = [".md"], types = ["readme", "guide", "reference"] }
+  typ = { extensions = [".typ"], types = ["document"] }
+
+# --- Block Structure Reference ---
+
+[block_structures]
+"3-block" = ["METADATA", "CONTENT", "CLOSING"]
+"4-block" = ["METADATA", "SETUP", "BODY", "CLOSING"]
+"5-block" = ["METADATA", "HEADER", "CONTEXT", "CONTENT", "FOOTER"]
+
+# --- Template Discovery Patterns ---
+
+[discovery]
+# File patterns to recognize as templates
+template_markers = ["#!omni", "// METADATA", "# METADATA", "<!-- METADATA"]
+# Directories to skip
+skip_dirs = [".git", "node_modules", "build", "bin", "__pycache__"]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CLOSING
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Configuration serves the building block method:
+# - Foundation (0): Templates in bereshit/word/seed/
+# - Build Up (+1): Discover templates → select appropriate → create file
+# - Break Down (-1): Verify created file follows template structure

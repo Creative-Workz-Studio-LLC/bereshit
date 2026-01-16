@@ -1,0 +1,86 @@
+{
+  // Privacy-Preserving Pattern Matching Configuration
+  // Purpose: Define patterns that indicate sensitive information requiring redaction
+  // Used by: system/lib/privacy for sanitizing paths, commands, and user data
+  // Updated: 2025-11-10
+
+  // Biblical Foundation: Proverbs 25:2 - "It is the glory of God to conceal a matter"
+  // Privacy is protection, not secrecy. We protect what should be protected.
+
+  "$schema": "../../config/schemas/privacy-patterns.schema.json",
+
+  // Sensitive Keywords - Patterns that indicate private/confidential information
+  // These patterns trigger redaction when found in file paths or command arguments
+  "sensitive_keywords": [
+    // Personal Data Indicators
+    "personal",
+    "private",
+    "confidential",
+
+    // Security-Related Paths
+    "secret",
+    "password",
+    "passwd",
+    "credentials",
+    "creds",
+    "token",
+    "key",
+    "keys",
+
+    // Common Security Directories
+    ".ssh",           // SSH keys and config
+    ".gnupg",         // GPG keys
+    ".password-store", // Password manager
+    ".auth",          // Authentication data
+    ".cert",          // Certificates
+    ".pki",           // Public key infrastructure
+
+    // Sensitive File Extensions
+    ".pem",           // Private key files
+    ".key",           // Key files
+    ".p12",           // Certificate bundles
+    ".pfx",           // Certificate files
+
+    // Environment and Config Files with Secrets
+    ".env",           // Environment variables (often contain secrets)
+    ".env.local",
+    ".env.production",
+    "secrets.json",
+    "secrets.yaml",
+
+    // API and Service Credentials
+    "api-key",
+    "api_key",
+    "apikey",
+    "service-account",
+    "oauth",
+
+    // Backup and Archive Files (may contain sensitive data)
+    "backup",
+    "archive",
+
+    // Database Credentials
+    "database.yml",
+    "db-credentials",
+
+    // Cloud Provider Credentials
+    ".aws",           // AWS credentials
+    ".azure",         // Azure credentials
+    ".gcloud"         // Google Cloud credentials
+  ],
+
+  // Redaction Label - What to display when sensitive pattern detected
+  "redaction_label": "[private]",
+
+  // Path Handling - How to sanitize file paths
+  "path_handling": {
+    // When sensitive pattern found, what to show
+    "show_basename_only": false,  // If true, show filename; if false, show redaction_label
+
+    // Always show basename for non-sensitive paths (privacy by default)
+    "default_to_basename": true
+  },
+
+  // Case Sensitivity
+  "case_sensitive": false  // Patterns matched case-insensitively for broader protection
+}

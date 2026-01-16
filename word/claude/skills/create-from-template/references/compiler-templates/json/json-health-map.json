@@ -1,0 +1,186 @@
+{
+  "_template": {
+    "name": "JSON Health Map (4-Block Structure for CRUD Operations)",
+    "key": "LANG-TEMPLATE-014",
+    "description": "TEMPLATE file for health scoring operation maps. Replace all [bracketed] placeholders with actual content.",
+    "derived_from": "templates/code/json/CODE-JSON-003-JSON-health-map.json (root template)",
+    "see": "standards/code/4-block/ for complete documentation",
+    "compiler_adaptations": [
+      "Compiler phase operations (lexer, parser, semantic, codegen)",
+      "AST node creation/modification health tracking",
+      "Symbol table operations",
+      "Type system operations",
+      "Code generation I/O operations"
+    ]
+  },
+
+  "_metadata": {
+    "biblical_foundation": {
+      "scripture": "A just weight and balance are the LORD's: all the weights of the bag are his work. - Proverbs 16:11",
+      "principle": "Health scoring must be just and accurate measurement. Like weights and balances that belong to the Lord, our scoring system gives truthful assessment of compiler health.",
+      "anchor": "The LORD pondereth the hearts. - Proverbs 21:2"
+    },
+    "cpi_si_identity": {
+      "component_type": "Baton",
+      "explanation": "Health maps transform raw operations into health scores - classic data transformation",
+      "role": "Define CRUD operation health scores for [compiler phase/component]",
+      "paradigm": "CPI-SI framework component - health scoring map"
+    },
+    "authorship": {
+      "architect": "Seanje Lenox-Wise (CPI-SI health scoring design)",
+      "implementation": "Nova Dawn (CPI-SI)",
+      "created": "[YYYY-MM-DD]",
+      "version": "[MAJOR.MINOR.PATCH]",
+      "modified": "[YYYY-MM-DD - what changed]"
+    },
+    "purpose": {
+      "description": "Define CRUD base scores and operation mappings for [component]",
+      "core_design": "Health scoring primitives for covenant-aligned measurement",
+      "key_features": [
+        "CRUD base scores (+1 upper / -cascade lower)",
+        "Operation-to-CRUD mappings",
+        "Cascade multipliers by category",
+        "Biblical grounding for operation philosophy"
+      ]
+    },
+    "health_scoring": {
+      "map_impact": "Defines the scoring weights for all operations in [component]",
+      "validation_behavior": {
+        "missing_operation": "Use default cascade multiplier",
+        "invalid_score": "Fall back to CRUD base score",
+        "type_mismatch": "Parse error at load time"
+      }
+    }
+  },
+
+  "_setup": {
+    "file_identity": {
+      "key": "[HEALTH-MAP-###]",
+      "consumer": "pkg/health (Tracker, Scorer)",
+      "loader": "embed.FS at package init, parsed via json.Unmarshal"
+    },
+    "related_files": {
+      "code": "pkg/health/maps.go (map loader and registry)",
+      "docs": "docs/api/pkg/health/ (health package documentation)",
+      "base_map": "crud-base.json (CRUD base scores)"
+    },
+    "loading_behavior": {
+      "when": "Package initialization (import-time)",
+      "if_missing": "Compile error (embedded)",
+      "validation": "Go struct tags + custom validator"
+    }
+  },
+
+  "map_info": {
+    "name": "[Component] Operations Health Map",
+    "version": "[MAJOR.MINOR.PATCH]",
+    "description": "Health scoring operations for [compiler component]",
+    "scope": "[What operations this map covers]"
+  },
+
+  "crud_base": {
+    "_comment": "Base scores for CRUD operations - copy from crud-base.json or define custom",
+    "create": {
+      "upper": 1,
+      "lower": -5,
+      "biblical": "Creation brings new existence into being",
+      "cascade_category": "filesystem"
+    },
+    "read": {
+      "upper": 1,
+      "lower": -2,
+      "biblical": "Reading seeks to understand what exists",
+      "cascade_category": "readonly"
+    },
+    "update": {
+      "upper": 1,
+      "lower": -3,
+      "biblical": "Updates transform what exists toward new state",
+      "cascade_category": "memory"
+    },
+    "delete": {
+      "upper": 1,
+      "lower": -10,
+      "biblical": "Deletion removes existence entirely - irreversible",
+      "cascade_category": "hardware"
+    }
+  },
+
+  "operations": {
+    "_comment": "Map operations to CRUD types",
+
+    "[operation_name_1]": {
+      "crud": "[C/R/U/D]",
+      "description": "[What this operation does]",
+      "cascade_override": "[optional - override base cascade category]",
+      "health_notes": "[optional - special considerations]"
+    },
+
+    "[operation_name_2]": {
+      "crud": "[C/R/U/D]",
+      "description": "[What this operation does]"
+    },
+
+    "[grouped_operations]": {
+      "_comment": "Group related operations",
+      "[sub_op_1]": { "crud": "[C/R/U/D]", "description": "[desc]" },
+      "[sub_op_2]": { "crud": "[C/R/U/D]", "description": "[desc]" }
+    }
+  },
+
+  "cascade_multipliers": {
+    "_comment": "Cascade multipliers by category - override defaults if needed",
+    "hardware": 10,
+    "filesystem": 5,
+    "memory": 3,
+    "readonly": 2,
+    "default": 1
+  },
+
+  "_closing": {
+    "validation": {
+      "syntax_check": "python -m json.tool [filename].json",
+      "go_validation": "go test ./pkg/health/... -run TestMapLoad",
+      "health_test": "./bin/omnic health --map=[filename].json --validate",
+      "common_issues": {
+        "missing_crud": "Every operation must have a 'crud' field with C, R, U, or D",
+        "invalid_cascade": "cascade_override must be: hardware, filesystem, memory, readonly, or default",
+        "duplicate_operation": "Each operation name must be unique within the map"
+      }
+    },
+    "modification_policy": {
+      "safe_to_modify": [
+        "Add new operations following the pattern",
+        "Update operation descriptions",
+        "Add cascade_override for specific operations",
+        "Group operations for organization"
+      ],
+      "modify_with_care": [
+        "Changing CRUD mappings (affects all health scores)",
+        "Changing cascade multipliers (affects score severity)",
+        "Removing operations (may break callers)"
+      ],
+      "never_modify": [
+        "4-block documentation structure",
+        "crud_base structure (use cascade_override instead)",
+        "Required fields (crud, description)"
+      ]
+    },
+    "usage_examples": {
+      "tracking_operation": "tracker.TrackOperation(\"[operation_name]\", success)",
+      "getting_score": "score := tracker.GetHealthScore()",
+      "checking_covenant": "state := tracker.GetCovenantState()"
+    },
+    "integration_notes": {
+      "file_pattern": "[component]-operations.json",
+      "embed_pattern": "//go:embed maps/*.json\nvar mapsFS embed.FS",
+      "registration": "health.RegisterMap(\"[component]\", mapData)"
+    },
+    "closing_note": {
+      "scope": "This health map defines scoring for [component] operations",
+      "impact": "Changes affect health scores for all [component] operations",
+      "scripture": "A just weight and balance are the LORD's - Proverbs 16:11",
+      "reminder": "Let health scores be accurate and just - honest assessment for restoration"
+    }
+  }
+}

@@ -1,0 +1,319 @@
+{
+  // ============================================================================
+  // CPI-SI State Machine - Hook → Transition Mapping
+  // ============================================================================
+  // Key: claude-global-config-statemachine-hooks
+  // Purpose: Map Claude Code hook events to state machine operations
+  //
+  // Two Inputs:
+  //   1. Hook events (SessionStart, PreToolUse, Stop, etc.) — WHAT happened
+  //   2. JSON context (session_id, tool_name, cost, etc.) — the DATA
+  //
+  // This file defines HOW those inputs drive state machine transitions.
+  // ============================================================================
+
+  // "$schema": "hooks-schema.json", // TODO: Create schema when ready
+  "version": "1.0.0",
+  "status": "active",
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SCHEMA REFERENCES
+  // ──────────────────────────────────────────────────────────────────────────
+  "schema": {
+    "anchors": "./schema/anchors.toml",
+    "framework": "./schema/framework.toml",
+    "operators": "./schema/operators.toml",
+    "commands": "./schema/commands.toml",
+    "keywords": "./schema/keywords.toml"
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // RUNTIME STATE PATHS
+  // ──────────────────────────────────────────────────────────────────────────
+  "runtime": {
+    "state": "./runtime/state.jsonc",
+    "path": "./runtime/path.jsonc",
+    "history": "./runtime/history.jsonc"
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // HOOK → TRANSITION MAPPINGS
+  // ──────────────────────────────────────────────────────────────────────────
+  "hooks": {
+
+    // SESSION START — Initialize state machine
+    // Priority: FIRST (can't advance what doesn't exist)
+    "SessionStart": {
+      "priority": 1,
+      "blocking": false,
+      "description": "Initialize state machine at Origin, trajectory B.1",
+      "context_fields": ["session_id", "matcher"],
+      "operations": [
+        {
+          "type": "init",
+          "anchor": "PRESENT-PRESENT",
+          "trajectory": "B.1",
+          "command": "await"
+        },
+        {
+          "type": "write",
+          "target": "runtime/state.jsonc",
+          "content": {
+            "anchor": "PRESENT-PRESENT",
+            "trajectory": {
+              "section": "B.1",
+              "state": "BUILDING",
+              "operator": "→→",
+              "path_length": 0
+            },
+            "command": "await",
+            "initialized_at": "${timestamp}"
+          }
+        },
+        {
+          "type": "write",
+          "target": "runtime/path.jsonc",
+          "content": {
+            "session_id": "${session_id}",
+            "anchors": [],
+            "started_at": "${timestamp}"
+          }
+        }
+      ]
+    },
+
+    // POST TOOL USE — Record observation, check pivot
+    // Priority: SECOND (record what happened before deciding what's allowed)
+    "PostToolUse": {
+      "priority": 2,
+      "blocking": false,
+      "description": "Record tool event, check for pivot conditions",
+      "context_fields": ["session_id", "tool_name", "tool_output"],
+      "operations": [
+        {
+          "type": "read",
+          "source": "runtime/state.jsonc"
+        },
+        {
+          "type": "append",
+          "target": "runtime/path.jsonc",
+          "field": "events",
+          "content": {
+            "type": "tool",
+            "tool": "${tool_name}",
+            "timestamp": "${timestamp}",
+            "trajectory_section": "${current_section}"
+          }
+        },
+        {
+          "type": "check_pivot",
+          "conditions": [
+            {
+              "if": "tool_name matches verification pattern",
+              "then": "transition B.1 → B.2"
+            },
+            {
+              "if": "tool_output indicates failure",
+              "then": "transition B.2 → B.3"
+            }
+          ]
+        },
+        {
+          "type": "advance",
+          "description": "Record anchor traversal if applicable"
+        }
+      ]
+    },
+
+    // PRE TOOL USE — Validate against trajectory
+    // Priority: THIRD (now we have state to validate against)
+    "PreToolUse": {
+      "priority": 3,
+      "blocking": true,
+      "description": "Validate tool against current trajectory rules",
+      "context_fields": ["session_id", "tool_name", "tool_input"],
+      "operations": [
+        {
+          "type": "read",
+          "source": "runtime/state.jsonc"
+        },
+        {
+          "type": "validate",
+          "rules": {
+            "B.1": {
+              "description": "Building - most tools allowed",
+              "allow": ["*"],
+              "deny": []
+            },
+            "B.2": {
+              "description": "Pivot out - limited operations",
+              "allow": ["Read", "Grep", "Glob", "Bash:git*"],
+              "deny": ["Write", "Edit"]
+            },
+            "B.3": {
+              "description": "Pivot in - correction operations",
+              "allow": ["Read", "Grep", "Edit"],
+              "deny": ["Write"]
+            },
+            "B.4": {
+              "description": "Grounding - verification only",
+              "allow": ["Read", "Bash:git status"],
+              "deny": ["Write", "Edit", "Bash:*"]
+            }
+          }
+        },
+        {
+          "type": "return",
+          "format": {
+            "allow": "boolean",
+            "reason": "string (if denied)"
+          }
+        }
+      ]
+    },
+
+    // STOP — Check grounding
+    // Priority: FOURTH (ensure proper grounding before stop)
+    "Stop": {
+      "priority": 4,
+      "blocking": true,
+      "description": "Check if grounding is complete before stopping",
+      "context_fields": ["session_id"],
+      "operations": [
+        {
+          "type": "read",
+          "source": "runtime/state.jsonc"
+        },
+        {
+          "type": "check_grounding",
+          "conditions": [
+            {
+              "if": "trajectory.section == 'B.4'",
+              "then": "allow stop"
+            },
+            {
+              "if": "trajectory.section != 'B.4'",
+              "then": "suggest grounding first",
+              "message": "Consider grounding (B.4) before stopping. Current: ${section}"
+            }
+          ]
+        },
+        {
+          "type": "return",
+          "format": {
+            "allow": "boolean",
+            "suggestion": "string (if not grounded)"
+          }
+        }
+      ]
+    },
+
+    // PRE COMPACT — Persist state before compaction
+    // Priority: FIFTH (preserve state before context compact)
+    "PreCompact": {
+      "priority": 5,
+      "blocking": false,
+      "description": "Snapshot state to history before compaction",
+      "context_fields": ["session_id", "matcher"],
+      "operations": [
+        {
+          "type": "read",
+          "source": "runtime/state.jsonc"
+        },
+        {
+          "type": "read",
+          "source": "runtime/path.jsonc"
+        },
+        {
+          "type": "append",
+          "target": "runtime/history.jsonc",
+          "field": "compactions",
+          "content": {
+            "session_id": "${session_id}",
+            "compaction_type": "${matcher}",
+            "timestamp": "${timestamp}",
+            "state_snapshot": "${current_state}",
+            "path_length": "${path_length}"
+          }
+        }
+      ]
+    },
+
+    // USER PROMPT SUBMIT — Inject state context
+    "UserPromptSubmit": {
+      "priority": 6,
+      "blocking": false,
+      "description": "Inject current state context into prompt processing",
+      "context_fields": ["session_id", "prompt"],
+      "operations": [
+        {
+          "type": "read",
+          "source": "runtime/state.jsonc"
+        },
+        {
+          "type": "inject_context",
+          "fields": ["anchor", "trajectory", "command"]
+        }
+      ]
+    },
+
+    // SUBAGENT SPAWN — Record trajectory fork
+    "SubagentSpawn": {
+      "priority": 7,
+      "blocking": false,
+      "description": "Record subagent spawn in trajectory path",
+      "context_fields": ["session_id", "subagent_type"],
+      "operations": [
+        {
+          "type": "append",
+          "target": "runtime/path.jsonc",
+          "field": "events",
+          "content": {
+            "type": "subagent_spawn",
+            "subagent": "${subagent_type}",
+            "timestamp": "${timestamp}",
+            "parent_section": "${current_section}"
+          }
+        }
+      ]
+    },
+
+    // SUBAGENT STOP — Record trajectory return
+    "SubagentStop": {
+      "priority": 8,
+      "blocking": false,
+      "description": "Record subagent completion in trajectory path",
+      "context_fields": ["session_id"],
+      "operations": [
+        {
+          "type": "append",
+          "target": "runtime/path.jsonc",
+          "field": "events",
+          "content": {
+            "type": "subagent_stop",
+            "timestamp": "${timestamp}",
+            "return_section": "${current_section}"
+          }
+        }
+      ]
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // NOTES
+  // ──────────────────────────────────────────────────────────────────────────
+  //
+  // This configuration is READ by the hooks in bereshit:
+  //   bereshit/word/claude/hooks/session/start.go
+  //   bereshit/word/claude/hooks/tool/pre-use.go
+  //   bereshit/word/claude/hooks/tool/post-use.go
+  //   bereshit/word/claude/hooks/session/stop.go
+  //   bereshit/word/claude/hooks/session/pre-compact.go
+  //
+  // The hooks load this config and execute the operations defined here.
+  // This creates a separation between:
+  //   - WHAT transitions are valid (this file)
+  //   - HOW transitions are executed (hook code)
+  //
+  // ──────────────────────────────────────────────────────────────────────────
+}

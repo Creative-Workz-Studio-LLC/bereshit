@@ -1,0 +1,165 @@
+{
+  // Schema reference for validation
+  "$schema": "../../config/schemas/privacy/filters.schema.json",
+  "version": "1.0.0",
+  "created": "2025-11-15",
+  "last_updated": "2025-11-15",
+  "description": "Privacy filters for sensitive data detection and redaction",
+
+  // Sensitive keywords organized by category
+  // These trigger redaction when found in paths, commands, or logs
+  "sensitive_keywords": {
+    // Authentication credentials - anything related to proving identity
+    // Why sensitive: Exposure allows unauthorized access to systems
+    "authentication": [
+      "password",      // User passwords (all forms)
+      "passwd",
+      "pwd",
+      "secret",        // Generic secrets
+      "api_key",       // API authentication keys (all naming conventions)
+      "apikey",
+      "api-key",
+      "token",         // Authentication tokens (all types)
+      "auth_token",
+      "access_token",
+      "bearer",        // Bearer tokens (OAuth standard)
+      "jwt",           // JSON Web Tokens
+      "credential",    // Any credential references
+      "credentials"
+    ],
+    // Cryptographic material - keys, certificates, signatures
+    // Why sensitive: Compromise allows impersonation and decryption
+    "cryptographic": [
+      "private_key",   // Private keys (all naming conventions)
+      "privatekey",
+      "private-key",
+      "public_key",    // Public keys (paired with private keys)
+      "publickey",
+      "public-key",
+      "cert",          // Certificates
+      "certificate",
+      "pem",           // PEM-encoded key/cert files
+      "key_pair",      // Key pairs
+      "keypair"
+    ],
+
+    // Sensitive directory paths - locations containing secrets
+    // Why sensitive: These directories typically contain authentication material
+    "paths": [
+      ".ssh",          // SSH keys and known_hosts
+      ".gnupg",        // GPG keys and trust database
+      ".aws",          // AWS credentials and config
+      ".kube",         // Kubernetes configs with cluster credentials
+      ".docker",       // Docker registry credentials
+      ".npm",          // NPM authentication tokens
+      "id_rsa",        // SSH private key files (all algorithms)
+      "id_ed25519",
+      "id_ecdsa"
+    ],
+
+    // Database credentials - connection strings and passwords
+    // Why sensitive: Direct access to data stores
+    "database": [
+      "db_password",
+      "database_password",
+      "connection_string",  // Often contains embedded credentials
+      "dsn"                 // Data Source Name with credentials
+    ],
+
+    // Cloud service credentials - provider-specific secrets
+    // Why sensitive: Account-level access to cloud resources
+    "cloud_services": [
+      "aws_secret_access_key",
+      "azure_client_secret",
+      "gcp_service_account",
+      "github_token",
+      "gitlab_token"
+    ]
+  },
+
+  // Glob patterns matching sensitive file paths
+  // Used for path-based detection (more specific than keywords)
+  "sensitive_path_patterns": [
+    "**/.ssh/**",           // SSH directory and all contents
+    "**/.gnupg/**",         // GPG directory and all contents
+    "**/credentials*",      // Any file/dir with "credentials" in name
+    "**/secrets*",          // Any file/dir with "secrets" in name
+    "**/*.key",             // Any .key file (private keys)
+    "**/*.pem",             // PEM-encoded keys/certificates
+    "**/*.p12",             // PKCS#12 certificate bundles
+    "**/*.pfx",             // Personal Information Exchange files
+    "**/.env",              // Environment variable files (often contain secrets)
+    "**/.env.*",            // Environment files for different environments
+    "**/config/secrets/**"  // Secrets subdirectories in config
+  ],
+
+  // Command sanitization patterns
+  // Defines how to capture commands while preserving privacy
+  "command_patterns": {
+    // Commands where subcommand/action is useful but args may be sensitive
+    "with_subcommand": [
+      {
+        "name": "git",
+        "capture_args": 1,
+        "description": "Capture git subcommand (e.g., git commit, git push)"
+      },
+      {
+        "name": "make",
+        "capture_args": 1,
+        "description": "Capture make target (e.g., make build, make test)"
+      },
+      {
+        "name": "docker",
+        "capture_args": 1,
+        "description": "Capture docker subcommand (e.g., docker build, docker run)"
+      },
+      {
+        "name": "kubectl",
+        "capture_args": 2,
+        "description": "Capture kubectl verb and resource (e.g., kubectl get pods)"
+      },
+      {
+        "name": "npm",
+        "capture_args": 1,
+        "description": "Capture npm command (e.g., npm install, npm run)"
+      },
+      {
+        "name": "cargo",
+        "capture_args": 1,
+        "description": "Capture cargo subcommand (e.g., cargo build, cargo test)"
+      },
+      {
+        "name": "go",
+        "capture_args": 1,
+        "description": "Capture go subcommand (e.g., go build, go test)"
+      }
+    ],
+
+    // Commands where only the name should be captured (all args are potentially sensitive)
+    // Example: ssh user@host - both user and host are identifying information
+    "name_only": [
+      {
+        "name": "ssh",
+        "description": "SSH connection - args contain hostname/username"
+      },
+      {
+        "name": "scp",
+        "description": "Secure copy - args contain paths/hostnames"
+      },
+      {
+        "name": "curl",
+        "description": "HTTP requests - URLs may contain sensitive data"
+      },
+      {
+        "name": "wget",
+        "description": "Web downloads - URLs may contain tokens/credentials"
+      }
+    ]
+  },
+
+  // Redaction policy - how to handle sensitive matches
+  "redaction_policy": {
+    "default_mode": "full",  // Full redaction by default (maximum privacy)
+    "exceptions": []         // No exceptions (all sensitive patterns redacted)
+  }
+}

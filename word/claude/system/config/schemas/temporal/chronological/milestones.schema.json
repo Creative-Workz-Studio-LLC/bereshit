@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/chronological/milestones.json",
+  "title": "Milestones",
+  "description": "Major temporal markers across all projects and views",
+  "type": "object",
+  "required": [
+    "$schema",
+    "metadata",
+    "milestones",
+    "summary"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "year",
+        "generated_date",
+        "scope"
+      ],
+      "properties": {
+        "year": {
+          "type": "integer",
+          "description": "Year (YYYY)",
+          "minimum": 2000,
+          "maximum": 9999
+        },
+        "generated_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date this file was created"
+        },
+        "scope": {
+          "type": "string",
+          "description": "What milestones this file tracks"
+        }
+      },
+      "additionalProperties": false
+    },
+    "milestones": {
+      "type": "array",
+      "description": "Major milestones for the year",
+      "items": {
+        "type": "object",
+        "required": [
+          "milestone_id",
+          "name",
+          "date",
+          "category",
+          "participants",
+          "description",
+          "significance"
+        ],
+        "properties": {
+          "milestone_id": {
+            "type": "string",
+            "description": "Unique milestone identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Milestone name"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "When milestone reached (YYYY-MM-DD)"
+          },
+          "category": {
+            "type": "string",
+            "description": "Milestone category"
+          },
+          "participants": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["identity_type", "identity_id"],
+              "properties": {
+                "identity_type": {
+                  "type": "string",
+                  "enum": ["user", "instance"],
+                  "description": "Type of participant"
+                },
+                "identity_id": {
+                  "type": "string",
+                  "description": "Unique identifier"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "description": {
+            "type": "string",
+            "description": "What this milestone represents"
+          },
+          "significance": {
+            "type": "string",
+            "description": "Why this milestone matters"
+          },
+          "related_projects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Projects this milestone belongs to"
+          },
+          "spiritual_significance": {
+            "type": "string",
+            "description": "How this honors God or demonstrates Kingdom principles"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total_milestones",
+        "by_category",
+        "most_significant",
+        "year_theme",
+        "looking_ahead"
+      ],
+      "properties": {
+        "total_milestones": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of milestones"
+        },
+        "by_category": {
+          "type": "object",
+          "description": "Breakdown by category",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "by_month": {
+          "type": "object",
+          "description": "Breakdown by month",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "most_significant": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Most significant milestones"
+        },
+        "year_theme": {
+          "type": "string",
+          "description": "Overall year theme"
+        },
+        "looking_ahead": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "What's ahead for next year"
+        }
+      },
+      "additionalProperties": false
+    },
+    "extension": {
+      "type": "object",
+      "description": "Extension point for future additions",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

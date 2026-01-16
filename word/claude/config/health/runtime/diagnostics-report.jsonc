@@ -1,0 +1,298 @@
+{
+  // ============================================================================
+  // CPI-SI Health System - Diagnostics Report Format
+  // ============================================================================
+  // Key: claude-global-config-health-runtime-diagnostics-report
+  // Purpose: Runtime format for health diagnostic output
+  //
+  // DESIGN PRINCIPLE: Format references schema, doesn't duplicate
+  //   - Structure defined here (how to present diagnostics)
+  //   - Rules come from: pkg/cpisi/schema/config/l2/health/diagnostics.toml
+  //   - Ternary values from: pkg/cpisi/schema/config/l2/health/score.toml
+  //
+  // This is a FORMAT TEMPLATE - developers can create alternative formats
+  // (compact, verbose, JSON, text) but the RULES come from TOML schemas.
+  //
+  // Written by: Diagnostics engine
+  // Read by: CLI display, statusline, recovery planning
+  // ============================================================================
+
+  "$schema": "diagnostics-report-schema.json",
+  "version": "1.0.0",
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SCHEMA REFERENCES — Where the rules come from
+  // ──────────────────────────────────────────────────────────────────────────
+  "schema_refs": {
+    "diagnostics_schema": "pkg/cpisi/schema/config/l2/health/diagnostics.toml",
+    "score_schema": "pkg/cpisi/schema/config/l2/health/score.toml",
+    "log_schema": "pkg/cpisi/schema/config/l2/health/log.toml",
+    "ternary_section": "diagnostics.toml#ternary",
+    "atomic_section": "diagnostics.toml#atomic",
+    "recovery_section": "diagnostics.toml#recovery"
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TERNARY FOUNDATION — Pulled from diagnostics.toml#ternary
+  // ──────────────────────────────────────────────────────────────────────────
+  "ternary": {
+    "_source": "diagnostics.toml#ternary",
+    "scale": {
+      "min": -100,
+      "center": 0,
+      "max": 100,
+      "_note": "Diagnostics OBSERVES position on scale"
+    },
+    "levels": {
+      "_source": "score.toml#levels",
+      "broken":  { "range": [-100, -67], "emoji": "💔", "priority": "critical" },
+      "wanting": { "range": [-66, -34], "emoji": "🩹", "priority": "high" },
+      "lacking": { "range": [-33, -1], "emoji": "💛", "priority": "medium" },
+      "even":    { "range": [0, 0], "emoji": "⚖️", "priority": "none" },
+      "sound":   { "range": [1, 33], "emoji": "💚", "priority": "none" },
+      "whole":   { "range": [34, 66], "emoji": "💙", "priority": "none" },
+      "perfect": { "range": [67, 100], "emoji": "💜", "priority": "none" }
+    },
+    "atomic": {
+      "_source": "diagnostics.toml#ternary.atomic",
+      "success_value": 1,
+      "failure_value": -1,
+      "neutral_value": 0
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // REPORT STRUCTURE — What a diagnostic report contains
+  // ──────────────────────────────────────────────────────────────────────────
+  "report_structure": {
+    "_source": "diagnostics.toml#report",
+
+    // Summary section — quick overview
+    "summary": {
+      "fields": [
+        "true_score",
+        "normalized",
+        "level",
+        "emoji",
+        "trend"
+      ],
+      "format_template": "Health: {true_score} true → {normalized} normalized → {emoji} {level}",
+      "example": "Health: -15 true → 0 normalized (Base50) → 💛 lacking"
+    },
+
+    // Detail section — full diagnostic
+    "detail": {
+      "fields": [
+        "true_score",
+        "normalized_all_bases",
+        "level",
+        "level_range",
+        "breakdown_by_source",
+        "breakdown_by_action",
+        "hotspots",
+        "recovery_to_even",
+        "recovery_to_sound",
+        "recovery_to_whole",
+        "recovery_to_perfect",
+        "trend",
+        "recent_entries"
+      ]
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SCORE COMPONENTS — How scores are calculated and displayed
+  // ──────────────────────────────────────────────────────────────────────────
+  "score_components": {
+    "_source": "diagnostics.toml#true_score + #normalization",
+
+    "true_score": {
+      "description": "Unbounded sum of all atomic scores from log",
+      "range": "unbounded (-∞ to +∞)",
+      "source": "health-log calculation",
+      "interpretation": {
+        "positive": "Net successes — in integrity",
+        "zero": "Even balance — baseline",
+        "negative": "Net failures — in debt"
+      }
+    },
+
+    "normalized_score": {
+      "_source": "diagnostics.toml#normalization",
+      "description": "True score projected onto bounded scale",
+      "formula": "round(true_score / base) * base, then clamp to [-100, +100]",
+      "bases": {
+        "base1":   { "step": 1, "points": 201, "use_case": "Precise calculations" },
+        "base5":   { "step": 5, "points": 41, "use_case": "Detailed progress" },
+        "base10":  { "step": 10, "points": 21, "use_case": "General display" },
+        "base25":  { "step": 25, "points": 9, "use_case": "Quarter-scale" },
+        "base50":  { "step": 50, "points": 5, "use_case": "Quick status (default)" }
+      },
+      "default_base": 50
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // BREAKDOWN COMPONENTS — Source and action analysis
+  // ──────────────────────────────────────────────────────────────────────────
+  "breakdown_components": {
+    "_source": "diagnostics.toml#breakdown",
+
+    "by_source": {
+      "method": "group_by_source",
+      "output": "source → total_delta",
+      "example": {
+        "test_pass": 45,
+        "test_fail": -31,
+        "lint_clean": 8,
+        "lint_error": -15,
+        "net": 7
+      }
+    },
+
+    "by_action": {
+      "method": "group_by_action",
+      "output": "action_type → total_delta",
+      "example": {
+        "success": 65,
+        "failure": -35,
+        "neutral": 0,
+        "recovery": 10,
+        "net": 40
+      }
+    },
+
+    "hotspots": {
+      "description": "Sources with most failures (worst first)",
+      "method": "sort_by_delta_ascending",
+      "use_case": "Target recovery efforts at biggest problems",
+      "example": [
+        { "source": "test_fail", "delta": -31, "rank": 1 },
+        { "source": "lint_error", "delta": -15, "rank": 2 },
+        { "source": "stale_file", "delta": -8, "rank": 3 }
+      ]
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // RECOVERY ASSESSMENT — From diagnostics.toml#recovery
+  // ──────────────────────────────────────────────────────────────────────────
+  "recovery_assessment": {
+    "_source": "diagnostics.toml#recovery",
+    "description": "Calculate effort needed to reach target level",
+
+    "targets": {
+      "_note": "Uses LOWER BOUNDS to enter each level",
+      "even":    { "true_score": 0, "description": "Back to baseline — no debt" },
+      "sound":   { "true_score": 1, "description": "Enter sound level — building integrity" },
+      "whole":   { "true_score": 34, "description": "Enter whole level — significant integrity" },
+      "perfect": { "true_score": 67, "description": "Enter perfect level — full wholeness" }
+    },
+
+    "calculation": {
+      "method": "target - current",
+      "unit": "atomic successes (+1 each)",
+      "formulas": {
+        "to_even": "max(0, 0 - true_score)",
+        "to_sound": "max(0, 1 - true_score)",
+        "to_whole": "max(0, 34 - true_score)",
+        "to_perfect": "max(0, 67 - true_score)"
+      }
+    },
+
+    "effort_classification": {
+      "_source": "diagnostics.toml#recovery.effort_estimate",
+      "trivial":  { "range": [1, 10], "description": "Quick fixes" },
+      "minor":    { "range": [11, 50], "description": "Some focused work" },
+      "moderate": { "range": [51, 200], "description": "Significant effort" },
+      "major":    { "range": [201, 500], "description": "Major recovery project" },
+      "massive":  { "range": [501, null], "description": "Consider reset or restructure" }
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // OUTPUT FORMATS — Different presentation styles
+  // ──────────────────────────────────────────────────────────────────────────
+  "output_formats": {
+    "_note": "Same data, different presentations — format is creative layer",
+
+    "text_summary": {
+      "template": "Health: {true_score} true → {normalized} normalized → {emoji} {level}\nTrend: {trend_arrow} {trend} ({trend_delta} last 24h)"
+    },
+
+    "text_full": {
+      "template": "see diagnostics.toml#report.example_full",
+      "_note": "Full box-drawing diagnostic display"
+    },
+
+    "json": {
+      "structure": {
+        "true_score": "int",
+        "normalized": { "base50": "int", "base25": "int", "base10": "int" },
+        "level": "string",
+        "emoji": "string",
+        "breakdown": { "by_source": "map", "by_action": "map" },
+        "hotspots": "array",
+        "recovery": { "to_even": "int", "to_sound": "int", "to_whole": "int", "to_perfect": "int" },
+        "trend": "string"
+      }
+    },
+
+    "statusline": {
+      "template": "{emoji} {normalized}",
+      "compact": true,
+      "_note": "Minimal format for terminal prompt"
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // EXAMPLE REPORT — Complete diagnostic output
+  // ──────────────────────────────────────────────────────────────────────────
+  "example_report": {
+    "input": {
+      "path": "/project/src",
+      "log_entries": 47
+    },
+    "output": {
+      "true_score": -15,
+      "normalized": {
+        "base100": -15,
+        "base50": 0,
+        "base25": -25,
+        "base10": -20,
+        "base1": -15
+      },
+      "level": "lacking",
+      "level_range": [-33, -1],
+      "emoji": "💛",
+      "breakdown": {
+        "by_source": {
+          "test_pass": 23,
+          "lint_clean": 8,
+          "test_fail": -31,
+          "lint_error": -15
+        },
+        "by_action": {
+          "success": 31,
+          "failure": -46,
+          "neutral": 0
+        }
+      },
+      "hotspots": [
+        { "source": "test_fail", "delta": -31, "rank": 1 },
+        { "source": "lint_error", "delta": -15, "rank": 2 }
+      ],
+      "recovery": {
+        "to_even": { "needed": 15, "effort": "minor" },
+        "to_sound": { "needed": 16, "effort": "minor" },
+        "to_whole": { "needed": 49, "effort": "minor" },
+        "to_perfect": { "needed": 82, "effort": "moderate" }
+      },
+      "trend": {
+        "direction": "improving",
+        "arrow": "↑",
+        "delta_24h": 5
+      }
+    }
+  }
+}

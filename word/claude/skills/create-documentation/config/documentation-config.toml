@@ -1,0 +1,225 @@
+# ============================================================================
+# METADATA - Create Documentation Configuration
+# ============================================================================
+# Purpose: Configuration for create-documentation skill
+# Biblical: Proverbs 25:2 - "It is the glory of God to conceal a thing: but the honour of kings is to search out a matter"
+
+# ============================================================================
+# QUALITY STANDARD
+# ============================================================================
+# PhD-level rigor + Bible-level accessibility
+
+[quality]
+standard = "PhD Grade by Bible Accessible"
+description = "Dissertation-level rigor with universal accessibility"
+
+rigor = [
+    "Complete structure - nothing missing",
+    "Clear citations and cross-references",
+    "Defensible arguments with evidence",
+    "Layered for different reader depths",
+    "Machine-parseable metadata"
+]
+
+accessibility = [
+    "5-second scan gives the shape",
+    "Clear navigation for all skill levels",
+    "Footnotes for first technical terms",
+    "Collapsible sections for depth without clutter",
+    "Timeless principles that endure"
+]
+
+# ============================================================================
+# DOCUMENT TYPES - Decision Tree Leaves
+# ============================================================================
+
+[types.base]
+name = "Base Document"
+description = "General documentation for any topic"
+template = "bereshit/word/seed/documentation/adoc/asciidoc-base.adoc"
+use_when = [
+    "Standard documentation",
+    "Guides and tutorials",
+    "Specifications and standards",
+    "Reports and analysis"
+]
+strictness = "G"  # Guided - adapt thoughtfully
+
+[types.research]
+name = "Research Document"
+description = "Research papers, deep analysis, investigations"
+template = "bereshit/word/seed/documentation/adoc/asciidoc-research.adoc"
+use_when = [
+    "Original research findings",
+    "Deep technical analysis",
+    "Investigation or exploration",
+    "Academic-style papers"
+]
+strictness = "T"  # Tight - follow structure exactly
+
+[types.index]
+name = "Index Document"
+description = "Directory indices and navigation hubs"
+template = "bereshit/word/seed/documentation/adoc/asciidoc-index.adoc"
+use_when = [
+    "root.adoc for directories",
+    "Collection overviews",
+    "Navigation hubs",
+    "Catalog pages"
+]
+strictness = "T"  # Tight - consistent indexing structure
+
+[types.community]
+name = "Community Document"
+description = "README, CONTRIBUTING, community-facing docs"
+template = "bereshit/word/seed/documentation/adoc/asciidoc-community.adoc"
+use_when = [
+    "README files",
+    "CONTRIBUTING guides",
+    "Public-facing documentation",
+    "Onboarding materials"
+]
+strictness = "G"  # Guided - adapt for audience
+
+# ============================================================================
+# DECISION TREE
+# ============================================================================
+# Walk through to find the right document type
+
+[decision_tree]
+root = "purpose"
+
+[decision_tree.purpose]
+question = "What is the primary PURPOSE of this document?"
+options = [
+    { answer = "Navigate/organize content", next = "index" },
+    { answer = "Welcome/onboard readers", next = "community" },
+    { answer = "Present research findings", next = "research" },
+    { answer = "Document/explain something", next = "depth" }
+]
+
+[decision_tree.depth]
+question = "What DEPTH of analysis does this require?"
+options = [
+    { answer = "Deep investigation/original research", next = "research" },
+    { answer = "Standard documentation", next = "base" }
+]
+
+[decision_tree.index]
+result = "index"
+rationale = "Navigational content needs consistent indexing structure"
+
+[decision_tree.community]
+result = "community"
+rationale = "Public-facing content needs welcoming, accessible structure"
+
+[decision_tree.research]
+result = "research"
+rationale = "Research needs rigorous structure for findings and methodology"
+
+[decision_tree.base]
+result = "base"
+rationale = "General documentation with flexible depth and sections"
+
+# ============================================================================
+# 5-BLOCK STRUCTURE
+# ============================================================================
+
+[structure]
+name = "5-Block Documentation Structure"
+blocks = ["METADATA", "HEADER", "CONTEXT", "CONTENT", "FOOTER"]
+
+[structure.METADATA]
+purpose = "The catalog card - parseable identity for systems"
+contains = [
+    "Key (unique identifier)",
+    "Title, type, status, version",
+    "Dates (created, updated, revdate)",
+    "Authors and attribution",
+    "Derivation (OmniCode template)",
+    "Biblical foundation"
+]
+
+[structure.HEADER]
+purpose = "The cover - visible identity in 5 seconds"
+contains = [
+    "Title (document heading)",
+    "Tagline (one-line value proposition)",
+    "Badges (status, version)",
+    "Quick navigation bar"
+]
+
+[structure.CONTEXT]
+purpose = "The introduction - prepares understanding"
+contains = [
+    "Overview (what this covers)",
+    "Important/critical concept",
+    "Scope (in/out)",
+    "Quick start (optional)",
+    "What this provides (table)"
+]
+
+[structure.CONTENT]
+purpose = "The chapters - value organized for discovery"
+contains = [
+    "Major sections (== headings)",
+    "Tables for comparison/decision",
+    "Collapsible sections for depth",
+    "Examples with real files",
+    "Quick reference/checklists"
+]
+
+[structure.FOOTER]
+purpose = "The appendix - resources and grounding"
+contains = [
+    "Biblical foundation connection",
+    "Related documents",
+    "Standards and specifications",
+    "External resources",
+    "See also links",
+    "Centered closing with key info"
+]
+
+# ============================================================================
+# ASCIIDOC TOOLKIT
+# ============================================================================
+# Elements to use throughout documents
+
+[toolkit.text]
+bold = "*text*"
+italic = "_text_"
+monospace = "`code`"
+highlight = "#marked text#"
+keyboard = "kbd:[Ctrl+C]"
+footnote = "termfootnote:[definition]"
+
+[toolkit.admonitions]
+note = "NOTE - additional context"
+tip = "TIP - best practices"
+important = "IMPORTANT - must-know"
+warning = "WARNING - cautions"
+caution = "CAUTION - serious warnings"
+
+[toolkit.structure]
+collapsible_open = "[%collapsible%open] - visible, can collapse"
+collapsible_closed = "[%collapsible] - hidden by default"
+table = "[cols='...'] |=== ... |==="
+cross_ref = "<<anchor,text>>"
+
+[toolkit.symbols]
+check = "✓"
+cross = "✗"
+optional = "○"
+arrow = "→"
+bullet = "•"
+
+# ============================================================================
+# LAYERED READING
+# ============================================================================
+
+[layers]
+scan = { time = "5 seconds", focus = "Title, badges, tagline" }
+skim = { time = "1 minute", focus = "Overview, tables, headings" }
+read = { time = "full", focus = "All content" }
+study = { time = "deep", focus = "Collapsible sections, footnotes" }
+reference = { time = "quick", focus = "Quick reference, anchors" }

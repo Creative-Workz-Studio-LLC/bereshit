@@ -1,0 +1,84 @@
+#!omni code
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+// Basic OmniCode Program - Hello World
+// Tests: let, covenant, when, establish work, return
+
+core identity of this work:
+    keyed as "hello-omni"
+    role "Prove OmniCode can be executable"
+
+grounded in:
+    scripture "Let there be light" from Genesis 1:3 in KJV
+    principle "Words that DO things"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// No imports needed - standalone
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// Variable declarations using covenant (ternary)
+let permission be covenant of granted
+let status be covenant of deferred
+
+// Function definition
+establish work greet that takes word name and returns word:
+    meaning "Return a greeting message"
+    return "Hello, " name "!"
+
+// Conditional using covenant
+establish work check_access that takes covenant perm and returns word:
+    meaning "Check ternary permission state"
+    when perm is granted:
+        return "Access allowed"
+    when perm is deferred:
+        return "Please wait"
+    when perm is denied:
+        return "Access denied"
+
+// Main entry point
+provide work main that returns count:
+    meaning "Program entry point"
+
+    let message be greet with "OmniCode"
+    witness message with level info
+
+    let result be check_access with permission
+    witness result with level info
+
+    return 0
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// Validated: Parses with omni lexer/parser
+// Expected output:
+//   Hello, OmniCode!
+//   Access allowed
+
+// "Let there be light: and there was light." — Genesis 1:3
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

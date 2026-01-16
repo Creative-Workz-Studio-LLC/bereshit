@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/dev/log-format.schema.json",
+  "title": "CPI-SI Structured Logging Template Schema",
+  "description": "Schema for structured logging format template",
+  "type": "object",
+  "required": ["$schema", "version", "description", "entry_format", "fields", "formatting_rules", "examples", "usage"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "entry_format": {
+      "type": "object",
+      "required": ["structure", "description"],
+      "properties": {
+        "structure": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "$ref": "#/definitions/fieldDefinition"
+        },
+        "level": {
+          "type": "object",
+          "required": ["values", "description"],
+          "properties": {
+            "values": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "description": { "type": "string" }
+          }
+        },
+        "component": {
+          "$ref": "#/definitions/fieldDefinition"
+        },
+        "identity": {
+          "$ref": "#/definitions/fieldDefinition"
+        },
+        "context_id": {
+          "$ref": "#/definitions/fieldDefinition"
+        },
+        "health": {
+          "type": "object",
+          "required": ["format", "description", "components", "emoji_mapping"],
+          "properties": {
+            "format": { "type": "string" },
+            "example": { "type": "string" },
+            "description": { "type": "string" },
+            "components": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "emoji_mapping": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          }
+        },
+        "content": {
+          "type": "object",
+          "required": ["format", "description", "structure"],
+          "properties": {
+            "format": { "type": "string" },
+            "description": { "type": "string" },
+            "structure": {
+              "type": "object",
+              "properties": {
+                "event": { "type": "string" },
+                "details": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "formatting_rules": {
+      "type": "object",
+      "properties": {
+        "indentation": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "multiline": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "escaping": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "examples": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  },
+  "definitions": {
+    "fieldDefinition": {
+      "type": "object",
+      "required": ["format", "description"],
+      "properties": {
+        "format": { "type": "string" },
+        "example": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

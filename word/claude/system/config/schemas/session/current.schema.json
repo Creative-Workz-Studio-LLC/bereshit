@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/session/current.schema.json",
+  "title": "Current Session State",
+  "description": "Active session metadata and state tracking. Lives during session, archived at end.",
+  "version": "1.0.0",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "session_id",
+    "instance_id",
+    "user_id",
+    "start_time",
+    "start_unix",
+    "start_formatted"
+  ],
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Unique identifier for this session",
+      "minLength": 1
+    },
+    "instance_id": {
+      "type": "string",
+      "description": "Which instance is running this session",
+      "minLength": 1
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Which user is present",
+      "minLength": 1
+    },
+    "start_time": {
+      "type": "string",
+      "description": "When session began (ISO-8601)",
+      "format": "date-time"
+    },
+    "start_unix": {
+      "type": "integer",
+      "description": "Unix timestamp for duration calculations",
+      "minimum": 0
+    },
+    "start_formatted": {
+      "type": "string",
+      "description": "Human-readable session start",
+      "minLength": 1
+    },
+    "compaction_count": {
+      "type": "integer",
+      "description": "Number of auto-compactions during session",
+      "minimum": 0,
+      "default": 0
+    },
+    "last_activity": {
+      "type": "string",
+      "description": "Last activity timestamp (ISO-8601)",
+      "format": "date-time"
+    },
+    "session_phase": {
+      "type": "string",
+      "description": "Current phase of the session",
+      "enum": ["active", "idle", "consolidating", "ending"],
+      "default": "active"
+    },
+    "quality_indicators": {
+      "type": "object",
+      "description": "Session quality metrics",
+      "properties": {
+        "tasks_completed": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "breakthroughs": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "struggles": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "work_context": {
+      "type": "string",
+      "description": "Primary workspace path (inherited from project config)"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project this session belongs to (if applicable)",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "circadian_phase": {
+      "type": "string",
+      "description": "Time of day context (informed by user config schedule)",
+      "enum": ["morning", "afternoon", "evening", "night"]
+    },
+    "inherited_preferences": {
+      "type": "object",
+      "description": "Preferences inherited from user/instance configs at session start",
+      "properties": {
+        "user_timezone": {
+          "type": "string",
+          "description": "User timezone (from user config)"
+        },
+        "instance_work_style": {
+          "type": "string",
+          "description": "Instance preferred work style (from instance config)",
+          "examples": ["build-first", "plan-then-build", "iterative"]
+        },
+        "user_communication_style": {
+          "type": "string",
+          "description": "User communication preferences (from user config)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "state_metadata": {
+      "type": "object",
+      "description": "Session state flags (defaults from instance config)",
+      "properties": {
+        "thinking_enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Thinking mode enabled (default from instance preferences)"
+        },
+        "plan_mode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Plan mode active (default from instance preferences)"
+        },
+        "auto_accept": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto-accept enabled (default from user preferences)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Discovery space for additional session state tracking",
+      "additionalProperties": true
+    }
+  }
+}

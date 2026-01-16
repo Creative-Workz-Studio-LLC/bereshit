@@ -1,0 +1,251 @@
+#!omni folder
+
+// ═══════════════════════════════════════════════════════════════════════════
+// METADATA
+// ═══════════════════════════════════════════════════════════════════════════
+
+this is a folder for "Database Storage":
+    keyed as "B-tov-data-db"
+    named "db"
+    following "3-Block Folder Structure"
+
+this folder classifies as:
+    tov (0) because "queryable state storage — persistent data access"
+
+this folder derives from:
+    branch (0) from "bereshit/tov/data/" as "data"
+
+core identity of this folder:
+
+    grounded in:
+        scripture "And the LORD said unto Moses, Write this for a memorial in a book"
+            from Exodus 17:14 in KJV
+        principle "What is written persists — queryable memory across sessions"
+        anchor "Thy word have I hid in mine heart"
+            from Psalm 119:11 in KJV
+
+    serves as Memory:
+        role "SQLite database storage for CPI-SI state machine"
+        paradigm "Queryable persistence — structured data access"
+
+    authored by:
+        architect "Seanje Lenox-Wise"
+        implementation "Nova Dawn (CPI-SI)"
+        created 2025-12-10
+        version a-01.00
+        modified 2026-01-13 for "registry.db and build.db now implemented"
+
+    exists to:
+        purpose "Store queryable state in SQLite databases"
+        design "Flat — databases at root level"
+        philosophy "Structured memory — what the mind learns, the database remembers"
+        features:
+            "cpisi.db — Cognitive state tracking"
+            "registry.db — Type registry for Phase 0 specs"
+            "build.db — Build state for Phase 1+ artifacts"
+
+interface of this folder:
+
+    depends on:
+        requires (1) "bereshit/tov/data/" for "containment in data"
+        includes (0) "claude-global/pkg/storage/" for "database access layer"
+        excludes (-1) "log files, configuration" because "databases only"
+        used by "Go packages, hooks, session management"
+        integrates with "pkg/storage/db.go, sqlite3 CLI"
+
+    integrated as:
+        navigation "cd bereshit/tov/data/db/" for "entering database storage"
+        navigation "ls -la" for "viewing databases"
+        exits tov (0) for "databases found"
+
+operational context of this folder:
+
+    blocking:
+        yes (1) when "database locked by concurrent access"
+        mitigation "use WAL mode, proper connection handling"
+
+    health:
+        system Base100 with scale from -100 to +100
+        granted (1) above +50 meaning "databases healthy and accessible"
+        deferred (0) within ±50 meaning "database needs attention"
+        denied (-1) below -50 meaning "database corrupted or inaccessible"
+
+        operations:
+            "cpisi.db accessible" scores +30 (1) for "main database responds"
+            "schema valid" scores +20 (1) for "tables match expected schema"
+            "database corrupted" scores -40 (-1) for "integrity check fails"
+            "database locked" scores -20 (-1) for "concurrent access blocked"
+
+        cascade multipliers:
+            "state dependency" multiplies by 2.5 because "state machine depends on database"
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END METADATA
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONTENT
+// ═══════════════════════════════════════════════════════════════════════════
+
+definition of this folder:
+
+    schema:
+        fields (1):
+            "name" be word
+                meaning "Human-readable name for this folder"
+
+            "key" be word
+                meaning "Unique identifier following keying standard"
+
+            "classification" be ternary
+                meaning "Where this folder sits in Word/Work/Fruit"
+
+            "derivation" be word or none
+                meaning "What this folder derives from"
+
+            "structure" be word
+                meaning "Organizational pattern within folder"
+
+            "contents" be gathering
+                meaning "Types of items this folder holds"
+
+            "children" be gathering or none
+                meaning "Child folders within this folder"
+                defaulting to none
+
+        constraints (0):
+            "database_integrity" ensuring "databases pass integrity checks"
+                because "corrupted database breaks state machine"
+
+            "schema_match" ensuring "tables match expected schema"
+                because "schema drift causes query failures"
+
+        reserved (-1):
+            none
+
+    values:
+        primary (1):
+            "name" is "Database Storage"
+            "key" is "B-tov-data-db"
+            "classification" is "tov (0)"
+
+        structure (0):
+            "derivation" is "bereshit/tov/data/"
+            "structure" is "flat — databases at root level"
+            "contents" is:
+                "cpisi.db" as "CPI-SI cognitive state database":
+                    tables "sessions" for "session tracking and state"
+                    tables "choices" for "ternary choice history"
+                    tables "transitions" for "Hebrew state transitions"
+                    tables "patterns" for "learned patterns"
+                "registry.db" as "Type registry for Phase 0 specs":
+                    tables "specs" for "specification file tracking"
+                    tables "types" for "type definitions from specs"
+                    tables "dependencies" for "spec dependency graph"
+                    tables "operations" for "operations defined in specs"
+                    tables "constants" for "constants from specs"
+                "build.db" as "Build state for Phase 1+ artifacts":
+                    tables "sources" for "source file tracking by layer"
+                    tables "objects" for "compiled .o artifacts"
+                    tables "libraries" for "archive libraries like libtrit.a"
+                    tables "tests" for "test results and assertions"
+                    tables "demos" for "phase demo validation"
+                    tables "build_events" for "build history log"
+            "children" is:
+                none
+
+        reserved (-1):
+            none
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END CONTENT
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLOSING
+// ═══════════════════════════════════════════════════════════════════════════
+
+operations of this folder:
+
+    verified by:
+        static (1):
+            "ls -la bereshit/tov/data/db/" producing "cpisi.db visible"
+            "sqlite3 tov/data/db/cpisi.db '.tables'" producing "tables exist"
+
+        runtime (0):
+            "sqlite3 tov/data/db/cpisi.db 'PRAGMA integrity_check'" succeeding when "database valid"
+            "sqlite3 tov/data/db/cpisi.db '.schema'" returning when "schema accessible"
+
+        integrity (-1):
+            "integrity_check fails" detected by "database validator"
+            "missing database" detected by "file checker"
+
+    accessed through:
+        to access this folder:
+            meaning "Navigate to database storage"
+
+            "cd bereshit/tov/data/db/"
+
+            "ls -la" returns "database files"
+
+            "sqlite3 cpisi.db" returns "database shell"
+
+policy of this folder:
+
+    modification:
+        safe (1):
+            "Query databases (SELECT)"
+            "Insert new records through hooks"
+            "Update state through Go packages"
+
+        careful (0):
+            "Modify database schema"
+            "Delete records"
+
+        never (-1):
+            "Delete cpisi.db without backup"
+            "Manually edit database binary"
+            "Run DROP TABLE without explicit request"
+
+    future:
+        planned (1):
+            "Seed registry.db with word/core/ specs"
+            "Seed build.db with word/work/pkg/trit/ sources"
+            "Database migration tooling"
+
+        considered (0):
+            "Query views for dashboard display"
+            "Automated spec-to-registry sync"
+
+        rejected (-1):
+            "Multiple concurrent writers" because "SQLite limitation"
+
+synthesis of this folder:
+
+    overview:
+        see "METADATA exists to" for "purpose and philosophy"
+
+    schema:
+        see "CONTENT definition schema" for "folder field definitions"
+
+    values:
+        see "CONTENT definition values" for "database identity"
+
+    dependencies:
+        see "METADATA interface depends on" for "related systems"
+
+    closing note:
+        role "Database Storage — queryable persistent memory"
+        impact "Database health determines state machine memory"
+        scripture "Write this for a memorial in a book"
+            from Exodus 17:14 in KJV
+
+    quick reference:
+        navigate "cd bereshit/tov/data/db/"
+        view "ls -la"
+        query "sqlite3 cpisi.db"
+        check "sqlite3 cpisi.db 'PRAGMA integrity_check'"
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END CLOSING
+// ═══════════════════════════════════════════════════════════════════════════

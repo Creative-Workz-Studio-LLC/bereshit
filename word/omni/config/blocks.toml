@@ -1,0 +1,192 @@
+# =============================================================================
+# OmniCode Block Structure Specifications
+# Key: B-word-omni-config-blocks
+# =============================================================================
+#
+# Defines the valid block structures for OmniCode files.
+# The lexer/parser loads this to validate structure.
+#
+# "Look that thou make them after their pattern." — Exodus 25:40
+#
+# =============================================================================
+
+[metadata]
+key = "B-word-omni-config-blocks"
+title = "OmniCode Block Specifications"
+version = "a-01.00"
+purpose = "Define valid block structures for validation and recovery"
+
+# =============================================================================
+# 3-Block Structure (Data Files)
+# =============================================================================
+# METADATA → CONTENT → CLOSING
+# Used for: configs, settings, simple data files
+
+[blocks.three]
+name = "3-Block"
+use_case = "Simple data files (configs, settings, glossary entries)"
+block_count = 3
+
+[blocks.three.structure]
+order = ["METADATA", "CONTENT", "CLOSING"]
+
+[blocks.three.blocks.METADATA]
+required = true
+position = 1
+purpose = "Identity and grounding"
+required_sections = ["identity"]
+optional_sections = ["grounding", "lineage"]
+
+[blocks.three.blocks.CONTENT]
+required = true
+position = 2
+purpose = "The actual data/content"
+required_sections = []
+optional_sections = ["values", "definitions", "entries"]
+
+[blocks.three.blocks.CLOSING]
+required = true
+position = 3
+purpose = "Summary and navigation"
+required_sections = []
+optional_sections = ["summary", "navigation", "references"]
+
+# =============================================================================
+# 4-Block Structure (Code Files)
+# =============================================================================
+# METADATA → SETUP → BODY → CLOSING
+# Used for: executables, libraries, scripts
+
+[blocks.four]
+name = "4-Block"
+use_case = "Code files (executables, libraries, scripts)"
+block_count = 4
+
+[blocks.four.structure]
+order = ["METADATA", "SETUP", "BODY", "CLOSING"]
+
+[blocks.four.blocks.METADATA]
+required = true
+position = 1
+purpose = "Identity, grounding, and interface"
+required_sections = ["identity"]
+optional_sections = ["grounding", "lineage", "interface"]
+
+[blocks.four.blocks.SETUP]
+required = true
+position = 2
+purpose = "Imports, declarations, initialization"
+required_sections = []
+optional_sections = ["imports", "constants", "types", "globals"]
+
+[blocks.four.blocks.BODY]
+required = true
+position = 3
+purpose = "Main implementation"
+required_sections = []
+optional_sections = ["functions", "methods", "logic"]
+
+[blocks.four.blocks.CLOSING]
+required = true
+position = 4
+purpose = "Cleanup, usage examples, notes"
+required_sections = []
+optional_sections = ["usage", "examples", "notes", "cleanup"]
+
+# =============================================================================
+# 5-Block Structure (Documentation Files)
+# =============================================================================
+# METADATA → HEADER → CONTEXT → CONTENT → FOOTER
+# Used for: documentation, guides, specifications
+
+[blocks.five]
+name = "5-Block"
+use_case = "Documentation files (guides, specs, references)"
+block_count = 5
+
+[blocks.five.structure]
+order = ["METADATA", "HEADER", "CONTEXT", "CONTENT", "FOOTER"]
+
+[blocks.five.blocks.METADATA]
+required = true
+position = 1
+purpose = "Machine-readable identity and classification"
+required_sections = ["identity"]
+optional_sections = ["grounding", "lineage", "classification"]
+
+[blocks.five.blocks.HEADER]
+required = true
+position = 2
+purpose = "Human-readable title and navigation"
+required_sections = ["title"]
+optional_sections = ["subtitle", "navigation", "quick_reference"]
+
+[blocks.five.blocks.CONTEXT]
+required = true
+position = 3
+purpose = "Scope, prerequisites, orientation"
+required_sections = ["scope"]
+optional_sections = ["prerequisites", "key_terms", "orientation"]
+
+[blocks.five.blocks.CONTENT]
+required = true
+position = 4
+purpose = "The main documentation content"
+required_sections = []
+optional_sections = []  # Content is freeform
+
+[blocks.five.blocks.FOOTER]
+required = true
+position = 5
+purpose = "References, related docs, closing"
+required_sections = []
+optional_sections = ["references", "related", "changelog", "closing_note"]
+
+# =============================================================================
+# Block Markers
+# =============================================================================
+# How blocks are identified in source
+
+[markers]
+# Standard markers
+metadata_start = ["[METADATA]", "METADATA [METADATA]", "// METADATA"]
+metadata_end = ["END METADATA", "// END METADATA"]
+
+header_start = ["[HEADER]", "HEADER [HEADER]"]
+header_end = ["END HEADER"]
+
+context_start = ["[CONTEXT]", "CONTEXT [CONTEXT]"]
+context_end = ["END CONTEXT"]
+
+setup_start = ["[SETUP]", "SETUP [SETUP]", "// SETUP"]
+setup_end = ["END SETUP", "// END SETUP"]
+
+body_start = ["[BODY]", "BODY [BODY]", "// BODY"]
+body_end = ["END BODY", "// END BODY"]
+
+content_start = ["[CONTENT]", "CONTENT [CONTENT]"]
+content_end = ["END CONTENT"]
+
+closing_start = ["[CLOSING]", "CLOSING [CLOSING]", "// CLOSING"]
+closing_end = ["END CLOSING", "// END CLOSING"]
+
+footer_start = ["[FOOTER]", "FOOTER [FOOTER]"]
+footer_end = ["END FOOTER"]
+
+# =============================================================================
+# Validation Rules
+# =============================================================================
+
+[validation]
+# Blocks must appear in order
+enforce_order = true
+
+# All required blocks must be present
+enforce_required = true
+
+# No duplicate blocks allowed
+allow_duplicates = false
+
+# Pragma must be first non-comment line
+pragma_required = true
+pragma_pattern = "#!omni"

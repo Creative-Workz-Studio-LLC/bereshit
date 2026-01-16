@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/celestial/seasonal-data.json",
+  "title": "Seasonal Data - Yearly",
+  "description": "Season markers based on astronomical events (equinoxes/solstices) for a specific location and year",
+  "type": "object",
+  "required": [
+    "$schema",
+    "metadata",
+    "events",
+    "seasons",
+    "summary"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "location_id",
+        "year",
+        "hemisphere",
+        "latitude",
+        "timezone",
+        "generated_date",
+        "data_version"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string",
+          "description": "Location identifier matching location config"
+        },
+        "year": {
+          "type": "integer",
+          "description": "Year (YYYY)"
+        },
+        "hemisphere": {
+          "type": "string",
+          "description": "Which hemisphere this location is in (affects season names)",
+          "enum": ["Northern", "Southern"]
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Location's latitude (for reference)",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone identifier"
+        },
+        "generated_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date this data was generated"
+        },
+        "data_version": {
+          "type": "string",
+          "description": "Version of this data"
+        }
+      },
+      "additionalProperties": false
+    },
+    "events": {
+      "type": "array",
+      "description": "Astronomical events marking season transitions",
+      "items": {
+        "type": "object",
+        "required": [
+          "event",
+          "season_start",
+          "date",
+          "time",
+          "timezone_offset",
+          "description",
+          "solar_position"
+        ],
+        "properties": {
+          "event": {
+            "type": "string",
+            "description": "Astronomical event name",
+            "enum": ["Vernal Equinox", "Summer Solstice", "Autumnal Equinox", "Winter Solstice"]
+          },
+          "season_start": {
+            "type": "string",
+            "description": "Which season begins with this event (depends on hemisphere)"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of event"
+          },
+          "time": {
+            "type": "string",
+            "description": "Local time of event (HH:MM, 24-hour)",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "timezone_offset": {
+            "type": "string",
+            "description": "UTC offset at moment of event",
+            "pattern": "^[+-]\\d{2}:\\d{2}$"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this event means for this location"
+          },
+          "solar_position": {
+            "type": "string",
+            "description": "Description of sun's position at this event"
+          },
+          "day_length_st_louis": {
+            "type": "string",
+            "description": "Approximate day length at this location (location-specific field name)",
+            "pattern": "^~?\\d{1,2}h \\d{2}m$"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "seasons": {
+      "type": "array",
+      "description": "Season definitions with date ranges",
+      "items": {
+        "type": "object",
+        "required": [
+          "season",
+          "start_date",
+          "end_date",
+          "characteristics"
+        ],
+        "properties": {
+          "season": {
+            "type": "string",
+            "description": "Season name"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date season begins (astronomical)"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date season ends (day before next season)"
+          },
+          "characteristics": {
+            "type": "string",
+            "description": "How this season manifests astronomically"
+          },
+          "typical_weather_st_louis": {
+            "type": "string",
+            "description": "Typical weather patterns for this location (location-specific field name)"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "cross_quarter_days": {
+      "type": "array",
+      "description": "Traditional midpoints between equinoxes/solstices (optional)",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "date",
+          "position",
+          "significance"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Traditional or cultural name for this day"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of cross-quarter day"
+          },
+          "position": {
+            "type": "string",
+            "description": "Which events this falls between"
+          },
+          "significance": {
+            "type": "string",
+            "description": "What this day traditionally marks"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "longest_day",
+        "longest_day_length",
+        "shortest_day",
+        "shortest_day_length",
+        "day_length_variation"
+      ],
+      "properties": {
+        "longest_day": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of longest day (usually summer solstice)"
+        },
+        "longest_day_length": {
+          "type": "string",
+          "description": "Length of longest day",
+          "pattern": "^~?\\d{1,2}h \\d{2}m$"
+        },
+        "shortest_day": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of shortest day (usually winter solstice)"
+        },
+        "shortest_day_length": {
+          "type": "string",
+          "description": "Length of shortest day",
+          "pattern": "^~?\\d{1,2}h \\d{2}m$"
+        },
+        "day_length_variation": {
+          "type": "string",
+          "description": "Difference between longest and shortest days",
+          "pattern": "^~?\\d{1,2}h \\d{2}m$"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any observations about seasonal patterns at this latitude"
+        }
+      },
+      "additionalProperties": false
+    },
+    "extension": {
+      "type": "object",
+      "description": "Extension point for future seasonal data (meteorological seasons, climate data, etc.)",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

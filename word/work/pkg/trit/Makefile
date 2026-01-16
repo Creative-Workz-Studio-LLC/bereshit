@@ -92,7 +92,8 @@
 
 .PHONY: all generate libtrit.a check-headers test clean help info \
         test-trit test-pack test-dimension test-temporal test-integration \
-        test-math test-bible-rail test-verse-addr test-scripture-path test-scripture-text
+        test-math test-bible-rail test-verse-addr test-scripture-path test-scripture-text \
+        test-statemachine
 
 # ────────────────────────────────────────────────────────────────
 # Constants
@@ -226,8 +227,8 @@ check-headers: | $(BUILD_DIR)
 		(echo "✗ Header errors"; exit 1)
 	@rm -f $(BUILD_DIR)/_check.c
 
-## test: Run all tests (MATTER, SPACE, TIME, Integration, Math, Bible Rail, Verse Address, Scripture Path, Scripture Text)
-test: test-trit test-pack test-dimension test-temporal test-integration test-math test-bible-rail test-verse-addr test-scripture-path test-scripture-text
+## test: Run all tests (MATTER, SPACE, TIME, Integration, Math, Bible Rail, Verse Address, Scripture Path, Scripture Text, State Machine)
+test: test-trit test-pack test-dimension test-temporal test-integration test-math test-bible-rail test-verse-addr test-scripture-path test-scripture-text test-statemachine
 	@echo ""
 	@echo "════════════════════════════════════════════════════════════════"
 	@echo "All tests complete. Run individual tests with: make test-<layer>"
@@ -292,6 +293,12 @@ test-scripture-text: libtrit.a
 	@echo "Testing Scripture Text Encoding (243 values)..."
 	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/scripture_text_test $(TEST_DIR)/scripture_text_test.c $(BUILD_DIR)/$(LIB_NAME)
 	@./$(BUILD_DIR)/scripture_text_test
+
+## test-statemachine: Run CPI-SI State Machine tests (Hebrew, Cube, K:ALIGN, Trajectory, Unified)
+test-statemachine: libtrit.a
+	@echo "Testing CPI-SI State Machine (25 tests)..."
+	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/statemachine_test $(TEST_DIR)/statemachine_test.c $(BUILD_DIR)/$(LIB_NAME) -lm
+	@./$(BUILD_DIR)/statemachine_test
 
 ## clean: Remove build artifacts
 clean:

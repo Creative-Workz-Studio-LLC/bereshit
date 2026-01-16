@@ -1,0 +1,282 @@
+# Linux Commands for Create-From-Template
+# Reference file for create-from-template skill
+
+# ============================================================================
+# SKILL DIRECTORY SETUP
+# ============================================================================
+
+# Set skill directory variable (use in all commands)
+SKILL_DIR=~/.claude/skills/create-from-template/references
+
+# Verify skill resources exist
+ls -la $SKILL_DIR/
+ls -la $SKILL_DIR/compiler-templates/
+ls -la $SKILL_DIR/code-templates/
+
+# ============================================================================
+# FIND TEMPLATES
+# ============================================================================
+
+# List all template categories
+ls $SKILL_DIR/compiler-templates/
+ls $SKILL_DIR/code-templates/
+
+# Find Go templates
+ls $SKILL_DIR/compiler-templates/go/
+ls $SKILL_DIR/code-templates/go/
+
+# Find C templates
+ls $SKILL_DIR/compiler-templates/c/
+ls $SKILL_DIR/code-templates/c/
+
+# Find Assembly templates
+ls $SKILL_DIR/code-templates/asm/
+
+# Find Shell templates
+ls $SKILL_DIR/code-templates/shell/
+
+# Find Build templates (Makefile, CMake)
+ls $SKILL_DIR/compiler-templates/build/
+
+# Find by extension
+find $SKILL_DIR -name "*.go" -type f
+find $SKILL_DIR -name "*.c" -type f
+find $SKILL_DIR -name "*.asm" -type f
+find $SKILL_DIR -name "*.sh" -type f
+find $SKILL_DIR -name "*makefile*" -type f
+
+# Search for template by purpose
+grep -rl "executable" $SKILL_DIR/compiler-templates/go/
+grep -rl "library" $SKILL_DIR/compiler-templates/go/
+
+# ============================================================================
+# DIRECTORY CREATION (ALWAYS DO FIRST)
+# ============================================================================
+
+# Create single directory
+mkdir -p /path/to/target/
+
+# Create multiple directories at once
+mkdir -p pkg/health/{scoring,tracking,reporting}
+mkdir -p cmd/myapp/
+
+# Create Go module structure
+mkdir -p pkg/mymodule/ cmd/myapp/ internal/
+
+# Create nested structure for multi-file operation
+mkdir -p pkg/health/ cmd/health-cli/ internal/config/
+
+# Verify directories exist before copying
+ls -la /path/to/target/ 2>/dev/null || mkdir -p /path/to/target/
+
+# ============================================================================
+# COPY TEMPLATES
+# ============================================================================
+
+# Copy single template
+cp $SKILL_DIR/compiler-templates/go/go-library-package.go /path/to/target/myfile.go
+
+# Copy with verification
+cp -v $SKILL_DIR/compiler-templates/go/go-library-package.go pkg/health/scoring.go
+
+# Batch copy for multiple files
+cp $SKILL_DIR/compiler-templates/go/go-library-package.go pkg/health/types.go
+cp $SKILL_DIR/compiler-templates/go/go-library-package.go pkg/health/scoring.go
+cp $SKILL_DIR/compiler-templates/go/go-library-package.go pkg/health/tracker.go
+cp $SKILL_DIR/compiler-templates/go/go-main-executable.go cmd/myapp/main.go
+
+# Copy to scratch for migration work
+cp $SKILL_DIR/compiler-templates/go/go-library-package.go /tmp/template-scratch.go
+
+# Copy preserving attributes
+cp -p $SKILL_DIR/compiler-templates/go/go-library-package.go pkg/health/scoring.go
+
+# ============================================================================
+# TEMPLATE TYPE SELECTION
+# ============================================================================
+
+# Go executable (has main())
+TEMPLATE=$SKILL_DIR/compiler-templates/go/go-main-executable.go
+
+# Go library (reusable package)
+TEMPLATE=$SKILL_DIR/compiler-templates/go/go-library-package.go
+
+# Go demo-test (showcase with RunX())
+TEMPLATE=$SKILL_DIR/compiler-templates/go/go-demo-test.go
+
+# C source
+TEMPLATE=$SKILL_DIR/compiler-templates/c/c-source.c
+
+# C header
+TEMPLATE=$SKILL_DIR/compiler-templates/c/c-header.h
+
+# Assembly (x86 NASM)
+TEMPLATE=$SKILL_DIR/code-templates/asm/CODE-ASM-001-ASM-source.asm
+
+# Shell script
+TEMPLATE=$SKILL_DIR/code-templates/shell/CODE-SH-001-SH-script.sh
+
+# Makefile
+TEMPLATE=$SKILL_DIR/compiler-templates/build/make-project-makefile.mk
+
+# ============================================================================
+# PRE-CHECK: FILE EXISTS?
+# ============================================================================
+
+# Check if file exists
+ls -la /path/to/target/file.go 2>/dev/null && echo "EXISTS" || echo "NEW FILE"
+
+# Check if target directory exists
+test -d /path/to/target/ && echo "Directory exists" || echo "Need to create"
+
+# Combined check before operation
+TARGET="/path/to/target/file.go"
+test -f "$TARGET" && echo "File exists - migration mode" || echo "New file - creation mode"
+
+# ============================================================================
+# BUILD AND VERIFY (BY LANGUAGE)
+# ============================================================================
+
+# Go - single file
+go build ./path/to/file.go
+
+# Go - package
+go build ./pkg/health/
+
+# Go - all packages
+go build ./...
+
+# Go - with race detection
+go build -race ./...
+
+# Go - run tests
+go test ./...
+go test -v ./pkg/health/
+
+# C - single file
+gcc -Wall -Wextra -o output file.c
+
+# C - with header
+gcc -Wall -Wextra -I./include -o output main.c
+
+# Assembly - NASM x86_64
+nasm -f elf64 -o output.o source.asm
+
+# Assembly - link
+ld -o output output.o
+
+# Shell - syntax check
+bash -n script.sh
+
+# Shell - run with debug
+bash -x script.sh
+
+# Make - build
+make
+make all
+make build
+
+# ============================================================================
+# MIGRATION WORKFLOW
+# ============================================================================
+
+# 1. Read existing file
+cat /path/to/existing/file.go
+
+# 2. Copy template to scratch
+cp $SKILL_DIR/compiler-templates/go/go-library-package.go /tmp/template-scratch.go
+
+# 3. Edit scratch file (migrate content block-by-block)
+# ... use Edit tool ...
+
+# 4. Verify scratch builds
+go build /tmp/template-scratch.go
+
+# 5. Replace original
+mv /tmp/template-scratch.go /path/to/existing/file.go
+
+# 6. Final verification
+go build ./...
+
+# ============================================================================
+# TEMPLATE SYNC (UPDATE SKILL RESOURCES)
+# ============================================================================
+
+# Workspace root
+WORKSPACE=/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC
+
+# Sync code templates from workspace
+cp -r $WORKSPACE/templates/code/* $SKILL_DIR/code-templates/
+
+# Sync compiler templates from workspace
+cp -r $WORKSPACE/divisions/tech/language/compiler/templates/* $SKILL_DIR/compiler-templates/
+
+# Sync documentation
+cp $WORKSPACE/templates/TEMPLATE-MATRIX.md $SKILL_DIR/docs/
+cp $WORKSPACE/templates/CODE-ALIGNMENT-MATRIX.md $SKILL_DIR/docs/
+
+# ============================================================================
+# 4-BLOCK VERIFICATION
+# ============================================================================
+
+# Count block markers in file
+grep -c "// ===" file.go
+grep -c "/\* === \*/" file.c
+grep -c "; ===" file.asm
+grep -c "# ===" script.sh
+
+# List block names
+grep "// ===" file.go | head -8
+grep -E "^// [A-Z]+" file.go
+
+# Verify all 4 blocks present (Go)
+for block in METADATA SETUP BODY CLOSING; do
+    grep -q "// $block" file.go && echo "[x] $block" || echo "[ ] $block - MISSING"
+done
+
+# ============================================================================
+# HEALTH SCORING SECTIONS
+# ============================================================================
+
+# Find health scoring in templates
+grep -n "Health:" $SKILL_DIR/compiler-templates/go/*.go
+
+# Find health map templates
+ls $SKILL_DIR/compiler-templates/json/json-health-map.json
+
+# Check file has health section
+grep -q "Health Scoring" file.go && echo "Has health section" || echo "Missing health"
+
+# ============================================================================
+# QUICK OPERATIONS
+# ============================================================================
+
+# One-liner: Create Go library
+mkdir -p pkg/newpkg/ && cp $SKILL_DIR/compiler-templates/go/go-library-package.go pkg/newpkg/newpkg.go
+
+# One-liner: Create Go executable
+mkdir -p cmd/newcmd/ && cp $SKILL_DIR/compiler-templates/go/go-main-executable.go cmd/newcmd/main.go
+
+# One-liner: Create shell script
+cp $SKILL_DIR/code-templates/shell/CODE-SH-001-SH-script.sh scripts/newscript.sh && chmod +x scripts/newscript.sh
+
+# Batch: Create multi-file module
+mkdir -p pkg/health/ cmd/health-cli/ && \
+cp $SKILL_DIR/compiler-templates/go/go-library-package.go pkg/health/scoring.go && \
+cp $SKILL_DIR/compiler-templates/go/go-library-package.go pkg/health/tracker.go && \
+cp $SKILL_DIR/compiler-templates/go/go-main-executable.go cmd/health-cli/main.go
+
+# ============================================================================
+# TEMPLATE INVENTORY QUICK REFERENCE
+# ============================================================================
+
+# View template inventory
+cat $SKILL_DIR/template-inventory.md
+
+# View full matrix
+cat $SKILL_DIR/docs/TEMPLATE-MATRIX.md 2>/dev/null || echo "Matrix not synced"
+
+# Count templates by category
+echo "Go templates: $(ls $SKILL_DIR/compiler-templates/go/*.go 2>/dev/null | wc -l)"
+echo "C templates: $(ls $SKILL_DIR/compiler-templates/c/*.c $SKILL_DIR/compiler-templates/c/*.h 2>/dev/null | wc -l)"
+echo "Build templates: $(ls $SKILL_DIR/compiler-templates/build/* 2>/dev/null | wc -l)"

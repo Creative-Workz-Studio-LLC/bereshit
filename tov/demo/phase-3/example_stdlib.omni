@@ -1,0 +1,147 @@
+#!omni code --omni -executable
+#!omni meta.key = B-tov-demo-phase-3-example-stdlib
+#!omni meta.from = word/seed/code/omni/executable.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a file for "Standard Library Example":
+    keyed as "B-tov-demo-phase-3-example-stdlib"
+    named "example_stdlib"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// Import standard library modules
+import covenant from "stdlib/covenant"
+import trit from "stdlib/trit"
+import health from "stdlib/health"
+import state from "stdlib/state"
+import math from "stdlib/math"
+import io from "stdlib/io"
+import test from "stdlib/test"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # Demo: Covenant Operations
+
+witness "=== Covenant Demo ===" with info
+
+let permission be covenant with granted
+let status be covenant with deferred
+
+when permission is granted:
+    witness "Permission granted - proceeding" with info
+otherwise:
+    witness "Permission denied - stopping" with error
+
+let combined be covenant with covenant_and permission status
+display "AND result: "
+display covenant_name combined
+
+let negated be covenant with covenant_negate permission
+display "Negated granted: "
+display covenant_name negated
+
+// # Demo: Trit Operations
+
+witness "=== Trit Demo ===" with info
+
+let positive be covenant with TRIT_POS
+let negative be covenant with TRIT_NEG
+
+let sign_result be covenant with trit_sign 42
+display "Sign of 42: "
+display covenant_name sign_result
+
+let compare_result be covenant with trit_compare 10 20
+display "Compare 10 vs 20: "
+display covenant_name compare_result
+
+// # Demo: Health System
+
+witness "=== Health Demo ===" with info
+
+let my_health be count with 75
+let my_state be count with health_state my_health
+
+display "Health: "
+display my_health
+display " -> State: "
+display state_full_name my_state
+
+when is_healthy my_health is yes:
+    witness "Health is positive" with info
+otherwise:
+    witness "Health needs attention" with error
+
+// # Demo: Math Operations
+
+witness "=== Math Demo ===" with info
+
+let x be count with -15
+let abs_x be count with abs x
+display "Absolute value of -15: "
+display abs_x
+
+let clamped be count with clamp 150 0 100
+display "150 clamped to 0-100: "
+display clamped
+
+let pow3 be count with power_of_3 5
+display "3^5 = "
+display pow3
+
+// # Demo: State System
+
+witness "=== State Demo ===" with info
+
+let current_state be count with STATE_YASHAR
+display "Starting state: "
+display state_full_name current_state
+
+let next be count with next_state current_state K_EXPAND
+display "After expanding: "
+display state_full_name next
+
+when is_centered current_state is yes:
+    witness "State is centered (yashar)" with info
+otherwise:
+    witness "State is not centered" with info
+
+// # Summary
+
+witness "=== Example Complete ===" with info
+display "All stdlib modules demonstrated successfully"
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// "Wisdom is the principal thing; therefore get wisdom:
+//  and with all thy getting get understanding."
+//   — Proverbs 4:7
+//
+// This example demonstrates the OmniCode standard library.
+// Each module provides foundational capabilities for Kingdom Technology.
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

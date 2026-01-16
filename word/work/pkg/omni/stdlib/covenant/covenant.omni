@@ -1,0 +1,150 @@
+#!omni code --omni -library
+#!omni meta.key = B-word-work-pkg-omni-stdlib-covenant
+#!omni meta.from = word/seed/code/omni/library.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a library for "Covenant Primitives":
+    keyed as "B-word-work-pkg-omni-stdlib-covenant"
+    named "covenant"
+
+this library provides:
+    granted     "Positive covenant response (+1)"
+    deferred    "Neutral covenant response (0)"
+    denied      "Negative covenant response (-1)"
+    is_granted  "Check if covenant is granted"
+    is_deferred "Check if covenant is deferred"
+    is_denied   "Check if covenant is denied"
+    covenant_to_count  "Convert covenant to count"
+    count_to_covenant  "Convert count to covenant"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # Covenant Type
+//
+// The covenant type represents a ternary decision state:
+// - granted (+1): Permission given, positive outcome, approval
+// - deferred (0): Decision pending, neutral state, waiting
+// - denied (-1): Permission refused, negative outcome, rejection
+//
+// This reflects the reality that most decisions aren't binary.
+// "Maybe" and "not yet" are valid states.
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # Constants
+
+let GRANTED be covenant with granted
+let DEFERRED be covenant with deferred
+let DENIED be covenant with denied
+
+// # Type Checks
+
+provide work is_granted that takes covenant value returns truth:
+    when value is granted:
+        return yes
+    otherwise:
+        return no
+
+provide work is_deferred that takes covenant value returns truth:
+    when value is deferred:
+        return yes
+    otherwise:
+        return no
+
+provide work is_denied that takes covenant value returns truth:
+    when value is denied:
+        return yes
+    otherwise:
+        return no
+
+// # Conversions
+
+provide work covenant_to_count that takes covenant value returns count:
+    when value is granted:
+        return 1
+    when value is denied:
+        return -1
+    otherwise:
+        return 0
+
+provide work count_to_covenant that takes count value returns covenant:
+    when value is greater than 0:
+        return granted
+    when value is less than 0:
+        return denied
+    otherwise:
+        return deferred
+
+// # Covenant Logic (Ternary AND - minimum)
+
+provide work covenant_and that takes covenant a and covenant b returns covenant:
+    let a_val be count with covenant_to_count a
+    let b_val be count with covenant_to_count b
+    when a_val is less than b_val:
+        return a
+    otherwise:
+        return b
+
+// # Covenant Logic (Ternary OR - maximum)
+
+provide work covenant_or that takes covenant a and covenant b returns covenant:
+    let a_val be count with covenant_to_count a
+    let b_val be count with covenant_to_count b
+    when a_val is greater than b_val:
+        return a
+    otherwise:
+        return b
+
+// # Covenant Negation
+
+provide work covenant_negate that takes covenant value returns covenant:
+    when value is granted:
+        return denied
+    when value is denied:
+        return granted
+    otherwise:
+        return deferred
+
+// # Covenant to Word
+
+provide work covenant_name that takes covenant value returns word:
+    when value is granted:
+        return "granted"
+    when value is denied:
+        return "denied"
+    otherwise:
+        return "deferred"
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// "Then Jonathan and David made a covenant, because he loved him
+//  as his own soul." — 1 Samuel 18:3
+//
+// The covenant type is foundational to CPI-SI. Every decision,
+// every permission, every state change flows through this ternary lens.
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

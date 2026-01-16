@@ -1,0 +1,98 @@
+# OmniCode Format Mappings Quick Reference
+# Reference file for format-lookup skill
+
+# ============================================================================
+# METADATA MAPPINGS (UNIVERSAL)
+# ============================================================================
+
+# OmniCode Element         | AsciiDoc           | Go               | Markdown
+# -------------------------|--------------------|-----------------|-----------------
+# grounded in: scripture   | :biblical_foundation: | // Biblical:  | biblical_foundation:
+# serves as / classifies as| :tags:             | // Component:    | tags:
+# authored by: architect   | :author:           | // Authors:      | author:
+# exists to: purpose       | :purpose:          | Package doc L1   | purpose:
+# version                  | :version:          | // Version:      | version:
+# created                  | :created:          | // Created:      | created:
+# modified                 | :updated:          | // Modified:     | updated:
+# derives from             | :derives_from:     | // Derives:      | derives_from:
+
+# ============================================================================
+# CODE FORMAT MAPPINGS (GO)
+# ============================================================================
+
+# Block          | OmniCode Section              | Go Equivalent
+# ---------------|-------------------------------|----------------------------
+# METADATA       | grounded in: scripture        | // Biblical: comment
+# METADATA       | exists to: purpose            | Package doc first sentence
+# SETUP          | inputs: from stdlib (1)       | Standard library imports
+# SETUP          | inputs: from internal (0)     | Internal package imports
+# SETUP          | inputs: from external (-1)    | Third-party imports
+# SETUP          | definitions: constants        | const block
+# SETUP          | definitions: variables        | var block
+# SETUP          | definitions: assemblies       | type struct definitions
+# BODY           | implementation: helpers       | unexported helper functions
+# BODY           | implementation: operations    | core unexported functions
+# BODY           | interface: exposes: exported  | Exported (Capitalized) funcs
+# BODY           | interface: exposes: internal  | unexported funcs
+# CLOSING        | operations: main              | func main()
+# CLOSING        | operations: cleanup           | defer statements
+
+# ============================================================================
+# DOCUMENTATION FORMAT MAPPINGS (ASCIIDOC)
+# ============================================================================
+
+# Block          | OmniCode Section              | AsciiDoc Equivalent
+# ---------------|-------------------------------|----------------------------
+# PRAGMA         | #!omni documentation --adoc   | //// pragma block ////
+# METADATA       | this is a [document] for      | :title: attribute
+# METADATA       | grounded in: scripture        | :biblical_foundation:
+# HEADER         | presented as: title           | = Title Level 1
+# HEADER         | presented as: tagline         | _italicized tagline_
+# CONTEXT        | terms:                        | Glossary/definition list
+# CONTEXT        | clarifications:               | NOTE: TIP: blocks
+# CONTENT        | structure of this document    | == Section headers
+# FOOTER         | closing note                  | Final scripture reference
+
+# ============================================================================
+# FORMAT-SPECIFIC SYNTAX
+# ============================================================================
+
+# AsciiDoc attributes:
+#   :attribute: value
+#   = Title
+#   == Section
+#   === Subsection
+#   NOTE: Admonition
+#   [source,language]
+
+# Go syntax:
+#   // Single line comment
+#   /* Multi-line comment */
+#   package name
+#   import "path"
+#   func Name()
+#   type Struct struct {}
+
+# Markdown:
+#   ---
+#   yaml: frontmatter
+#   ---
+#   # Title
+#   ## Section
+#   **bold**
+#   _italic_
+#   ```code```
+
+# ============================================================================
+# TEMPLATE LOCATIONS
+# ============================================================================
+
+# Format templates are located at:
+# bereshit/word/seed/documentation/  → Documentation format templates
+# bereshit/word/seed/go/             → Go format templates
+# bereshit/word/seed/c/              → C format templates [planned]
+# bereshit/word/seed/rust/           → Rust format templates [planned]
+
+# Specific templates:
+ADOC_TEMPLATE="bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc"
+GO_EXEC_TEMPLATE="bereshit/word/seed/go/B-word-seed-go-executable.go"

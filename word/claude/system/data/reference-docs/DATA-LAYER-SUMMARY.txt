@@ -1,0 +1,159 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                      CPI-SI DATA LAYER ARCHITECTURE                          ║
+║                        Current State Assessment                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ DATA CATEGORIES & STATUS                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  CONFIGURATION LAYER ✅ EXCELLENT
+  ├─ Location: ~/.claude/cpi-si/config/
+  ├─ Files: 8 (4 JSONC configs + 4 markdown bios)
+  ├─ Schemas: instance.schema.json, user.schema.json (both complete)
+  ├─ Purpose: Personhood identity (who users/instances are)
+  ├─ Quality: Well-structured, comprehensive, validation-enabled
+  └─ Issues: None significant
+
+  OPERATIONAL DATA 🟡 NEEDS WORK
+  ├─ Location: ~/.claude/cpi-si/system/data/
+  ├─ Files: 100+ (26 calendar + 40 session + 5 planner + 1 schedule)
+  ├─ Schemas: planner.schema.json exists (partial)
+  │           calendar, schedule, session → MISSING
+  ├─ Sub-categories:
+  │   • CALENDAR ✅ - Reference data, complete, no schema needed yet
+  │   • PLANNER 🟡 - Schema exists, templates defined, no instances
+  │   • SCHEDULE 🔴 - Single file, no schema, incomplete
+  │   • SESSION 🔴 - Multiple formats, no schema, fragmented
+  └─ Issues: Loose relationships, no cross-references, inconsistent formats
+
+  LEARNING & REFLECTION ✅ EXCELLENT
+  ├─ Location: outputs/journals/ + docs/knowledge-base/journals/
+  ├─ Files: 35+ journal entries
+  ├─ Types: Bible Study (3), Instance (4), Personal (5), Universal
+  ├─ Format: Markdown with YAML frontmatter
+  ├─ Quality: Clear structure, well-documented, good semantics
+  └─ Issues: Duplication (outputs/ + docs/), no automation for migration
+
+  SYSTEM LOGS 🟡 BASIC COVERAGE
+  ├─ Location: ~/.claude/cpi-si/outputs/logs/
+  ├─ Files: 12 log files
+  ├─ Format: Human-readable plaintext (NOT machine-parseable)
+  ├─ Features: Health scoring, timestamps, context
+  └─ Issues: No schema, no machine parsing, no rotation policy, undocumented
+
+  KNOWLEDGE BASE ✅ EXCELLENT
+  ├─ Location: ~/.claude/cpi-si/docs/
+  ├─ Files: 100+ documents
+  ├─ Organization: By type (patterns, algorithms, architecture)
+  ├─ Keying: CPSI-PAT-, CPSI-ALG-, CPSI-ARCH-, CWS-STD-
+  ├─ Status: Comprehensive, well-documented, indexed
+  └─ Issues: None significant
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CRITICAL DATA GAPS                                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  1. ❌ SESSION DATA NOT SCHEMA'D
+     Current: 3 different file types (current.json, activity.jsonl, history.json)
+     Problem: No formal relationship between them
+     Impact: Can't query sessions, aggregate data, or validate structure
+     Priority: HIGH - Do first
+
+  2. ❌ OPERATIONAL DATA UNLINKED
+     Current: Session, Planner, Schedule exist independently
+     Problem: No documented relationships or cross-references
+     Impact: Can't ask "did actual sessions match planned availability?"
+     Priority: HIGH - Do first
+
+  3. ❌ CALENDAR DATA NO FORMAL SCHEMA
+     Current: Consistent structure but undocumented
+     Problem: No schema validation, no documentation
+     Impact: Modifications could break assumptions silently
+     Priority: MEDIUM - Do soon
+
+  4. ❌ SCHEDULE DATA INCOMPLETE
+     Current: Single "current-schedule.json" with empty fields
+     Problem: No history, no project tracking, no velocity data
+     Impact: Can't track progress or estimate velocity
+     Priority: MEDIUM - Do soon
+
+  5. ❌ NO PLANNER VERSIONING
+     Current: Templates exist but no actual monthly planners
+     Problem: Can't track how availability changes over time
+     Impact: Can't learn from planner → session relationship
+     Priority: MEDIUM - Do soon
+
+  6. ❌ LOGS NOT MACHINE-PARSEABLE
+     Current: Human-readable plaintext with custom format
+     Problem: Can't query, aggregate, or analyze programmatically
+     Impact: Health scoring present but not usable for automation
+     Priority: LOW - Nice to have later
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ DATA RELATIONSHIPS - WHAT SHOULD FLOW WHERE?                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  Configuration (Identity)
+     ↓
+     ├─→ Planner (Initialize availability based on preferences?)
+     ├─→ Session Patterns (Initialize pattern detection?)
+     └─→ Instance Behavior (Personalize based on who user is?)
+
+  Session History (Actual work)
+     ↓
+     ├─→ Patterns (Aggregate & learn work rhythm)
+     ├─→ Planner (Update predictions based on actual?)
+     └─→ Journals (Reflect & document learnings)
+
+  Planner (Planned availability)
+     ↓
+     ├─→ Schedule (Feed into project planning?)
+     └─→ Session Patterns (Validate against actual?)
+
+  Schedule (Project tracking)
+     ↓
+     └─→ Velocity (Calculate from actual sessions?)
+
+  MISSING: No documented flow, no automation, implicit only
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ IMMEDIATE ACTION ITEMS                                                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  HIGH PRIORITY (Week 1):
+  ☐ Define session.schema.json
+  ☐ Define activity.schema.json (JSONL line format)
+  ☐ Document session data lifecycle: current → activity → history → archive
+  ☐ Create SESSION.md explaining relationships
+
+  MEDIUM PRIORITY (Week 2):
+  ☐ Define calendar.schema.json
+  ☐ Define schedule.schema.json
+  ☐ Create actual planner files for current month (from templates)
+  ☐ Document planner versioning strategy
+
+  NICE TO HAVE (Week 3+):
+  ☐ Consolidate journal duplication
+  ☐ Create query interface for session history
+  ☐ Establish log rotation policy
+  ☐ Add health scoring documentation
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SIZE SUMMARY                                                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  ~/.claude/cpi-si/
+  ├─ config/              116 KB    (8 files)     ✅ Configuration
+  ├─ docs/               1.9 MB   (100+ files)    ✅ Knowledge Base
+  ├─ outputs/            556 KB    (35+ files)    ✅ Journals & Logs
+  └─ system/             94 MB     (code + data)  🟡 Mostly operational
+      └─ system/data/    788 KB    (100+ files)  🟡 Needs organization
+
+  Total: ~97 MB (mostly system/runtime code, not data)
+  Data Storage: ~788 KB (small, manageable)
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ RECOMMENDATION: Start with HIGH PRIORITY items (schemas) in next session     ║
+║ These unblock everything else and are foundational for data layer           ║
+╚══════════════════════════════════════════════════════════════════════════════╝

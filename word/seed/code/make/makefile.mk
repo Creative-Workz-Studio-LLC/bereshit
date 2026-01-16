@@ -1,478 +1,493 @@
 # .PHONY: __TEMPLATE__  # TEMPLATE: Remove this line when ready to use
-# ═══════════════════════════════════════════════════════════════════════════
+# #!omni template --makefile
+# #!omni meta.key = B-word-seed-code-make-makefile
+# #!omni meta.from = bereshit/word/omni/seed/B-word-omni-seed-code.omni
+# #!omni meta.at = template
+#
 # TEMPLATE: Project Makefile (4-Block Structure)
-# Key: B-word-seed-code-make-makefile
-# ═══════════════════════════════════════════════════════════════════════════
-#
-# DEPENDENCY CLASSIFICATION: [PURE/DEPENDED] ([deps if DEPENDED])
-#   - PURE: Standard toolchain only - no external scripts or tools
-#   - DEPENDED: Needs external tools - list them: (needs: go, gcc, nasm)
-#
-# This is a TEMPLATE file - copy and modify for new project Makefiles.
-# Replace all [bracketed] placeholders with actual content.
-# Rename to "Makefile" (no extension) when ready to use.
-# Remove the "__TEMPLATE__" line above when ready.
-#
-# derives_from: bereshit/word/omni/seed/code.omni
-# Derived from: Kingdom Technology 4-block code structure
-# See: standards/code/4-block/ for complete documentation
-#
-# ═══════════════════════════════════════════════════════════════════════════
+# STRUCTURE: METADATA → SETUP → BODY → CLOSING
+# USAGE: cp makefile.mk Makefile → update pragma → fill sections
 
-# ============================================================================
-# METADATA
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA [METADATA]
+# ═══════════════════════════════════════════════════════════════════════════════
 #
-# Package:     [organization/project-name]
-# File:        Makefile
-# Key:         [PROJECT-BUILD-###] (Build automation system)
+# 4-Block Code Structure: Identity and context for this component
 #
-# ────────────────────────────────────────────────────────────────
-# CORE IDENTITY (Required)
-# ────────────────────────────────────────────────────────────────
+# Section order: Identity → State → Attribution → Location → Derivation → Classification → Intent → Grounding → Dependencies → Roadmap
+# Flow: who → when → by whom → where → from what → tagged as → why → grounded in → needs → going where
 #
-# # Biblical Foundation
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# # M.1 Core Identity [IDENTITY]
 #
-# Scripture: [Relevant verse grounding this build system's purpose]
+#   Key:       [PROJECT-BUILD-###] — Unique identifier
+#   Title:     [Title] — What this file is
+#   Type:      Build
+#   Component: [Ladder/Baton/Rails] — Architectural role
+#   Role:      [Specific responsibility in system]
 #
-# Principle: [Kingdom principle this build system demonstrates]
+# Key: B-word-seed-code-make-makefile
+# Title: Project Makefile
+# Type: Build
+# Component: Rails
+# Role: Orchestrates compilation and build automation
+
+# # M.2 Lifecycle State [STATE]
 #
-# Anchor: [Supporting verse reinforcing the principle]
+#   Status:   Draft | Active | Deprecated | Archived
+#   Version:  a-XX.XX — Living versioning
+#   Created:  YYYY-MM-DD
+#   Updated:  YYYY-MM-DD
 #
-# # CPI-SI Identity
+# Status: Active
+# Version: a-01.00
+# Created: 2026-01-02
+# Updated: 2026-01-03
+
+# # M.3 Attribution [ATTRIBUTION]
 #
-# Component Type: [Ladder/Baton/Rails - see CWS-STD-004 for explanations]
+#   Authors:      [Name (Role)]
+#   Organization: [Company]
+#   Copyright:    [© YYYY Company]
 #
-# Role: [Specific responsibility in system architecture]
+# Authors: Seanje Lenox-Wise (Architect), Nova Dawn (Author)
+# Organization: CreativeWorkzStudio LLC
+# Copyright: © 2026 CreativeWorkzStudio LLC. All rights reserved.
+
+# # M.4 Location [LOCATION]
 #
-# Paradigm: CPI-SI framework component
+#   Path:      [/path/to/file]
 #
-# # Authorship & Lineage
+# Path: word/seed/code/make/makefile.mk
+
+# # M.5 Derivation [DERIVATION]
 #
-#   Architect: [Who designed the approach and requirements]
-#   Implementation: [Who wrote the Makefile and verified it works]
-#   Created: [YYYY-MM-DD]
-#   Version: [MAJOR.MINOR.PATCH]
-#   Modified: [YYYY-MM-DD - what changed]
+#   Derives_from:  [path/to/parent/template] — file template copied from
 #
-# Version History:
+#   (Note: pragma meta.from = OmniCode spec; Derives_from = file lineage)
 #
-#   [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
+# Derives_from: None — this is the canonical source template
+
+# # M.6 Classification [CLASSIFICATION]
 #
-# # Purpose & Function
+#   Tags:      [build, makefile, automation] — discovery
 #
-# Purpose: [What problem does this build system solve?]
+# Tags: build, makefile, automation
+
+# # M.7 Intent [INTENT]
 #
-# Core Design: [Architectural pattern or paradigm]
+#   Purpose:     [Enables X for Y] — one-line purpose statement
+#   Core Design: [Architectural pattern or paradigm]
+#   Philosophy:  [Guiding principle for how this works]
 #
-# Key Features:
+#   Key Features:
+#     - [What it provides — major capabilities]
 #
-#   - [What it provides - major build capabilities]
-#   - [What it enables - what developers can do with this]
-#   - [What problems it solves - specific build use cases]
+# Purpose: Orchestrate build process — compile, test, clean, deploy
+# Core Design: Target-based dependency resolution
+# Philosophy: Explicit is better than implicit — declare dependencies, let make resolve order
+
+# # M.8 Grounding [GROUNDING]
 #
-# Philosophy: [Guiding principle for how this build system works]
+#   Scripture:  [Book Chapter:Verse] — grounding verse for this component
+#   Principle:  [Kingdom principle demonstrated]
+#   Anchor:     [Supporting verse] — reinforcing principle (optional)
 #
-# ────────────────────────────────────────────────────────────────
-# INTERFACE (Expected)
-# ────────────────────────────────────────────────────────────────
+# Scripture: Nehemiah 4:6 — The people had a mind to work
+# Principle: Organized labor builds the wall — structured build process
+# Anchor: Ecclesiastes 3:3 — A time to build
 #
-# # Dependencies
+# Example:
+#   Scripture: Colossians 3:23 — Do it heartily, as to the Lord
+#   Principle: Excellence in build orchestration as worship
+#   Anchor: Proverbs 22:29 — Skilled work stands before kings
+
+# # M.9 Dependencies [DEPENDENCIES]
+#
+#   Purpose:  Relationship context — what this needs, what uses it
+#   Contains: What This Needs, What Uses This, Integration Points, Usage
+#
+#   What This Needs:
+#     System Tools: [make, gcc, etc.]
+#     External: [None | tool with version]
+#     Internal: [project files this depends on]
+#
+#   What Uses This:
+#     Commands: [executables built by this]
+#     Libraries: [libraries built by this]
+#     Scripts: [scripts that invoke this]
+#
+#   Integration Points:
+#     - [How other systems connect — Rails/Ladder/Baton mechanism]
+#     - [Cross-component interactions]
+#     - [Build pipeline integration]
+#
+#   Usage:
+#     Command Line:
+#       make [target]         Build specified target
+#       make                  Build default target
+#       make help             Show available targets
+#
+#     Exit Codes:
+#       0  - Success
+#       1  - Build error
+#       2  - Missing dependency
 #
 # What This Needs:
-#
-#   - System Tools: [make, shell, etc.]
-#   - Language Toolchain: [go, gcc, rustc, etc.]
-#   - External Tools: [None | list external tools]
+#   System Tools: make, shell
+#   External: None
+#   Internal: None — self-contained template
 #
 # What Uses This:
-#
-#   - Developers: [build, test, run workflows]
-#   - CI/CD: [automated build pipelines]
+#   Commands: None
+#   Libraries: None
+#   Scripts: cp (template instantiation)
 #
 # Integration Points:
+#   - Template system in bereshit/word/seed/
+#   - 4-block structure for Makefiles
 #
-#   - [How other systems connect - scripts, CI, etc.]
+# Usage: N/A — this is a template, not an executable
+
+# # M.10 Roadmap [ROADMAP]
 #
-# # Usage & Integration
+#   Purpose:  Vision and trajectory — where this is going
+#   Contains: Planned, Limitations, Research, Operational
 #
-# Basic Usage:
+#   Planned:
+#     ⏳ [Planned feature 1]
+#     ⏳ [Planned feature 2]
 #
-#   make [target]         # Run specific target
-#   make                  # Run default target (all)
-#   make help             # Show available targets
+#   Limitations:
+#     - [Known limitation 1]
 #
-# Integration Pattern:
+#   Research:
+#     - [Research direction 1]
 #
-#   1. [Initial setup step]
-#   2. [Configuration step if needed]
-#   3. [Typical usage workflow]
+#   Operational (for components with health tracking):
+#     Blocking: [Blocking/Non-blocking] — [Brief explanation]
+#     Mitigation: [How blocking/failures handled]
 #
-# Public API (Make Targets - in typical usage order):
+#     Health Scoring:
+#       System: Base100 with 1-point granular scale (-100 to +100)
+#       States: Granted (>+50), Deferred (±50), Denied (<-50)
 #
-#   [Category] ([purpose]):
-#     make [target]       # [Description]
-#     make [target]       # [Description]
+#       [Operation Category]:
+#         - [Specific operation]: ±X points
+#         - [Another operation]: ±Y points
 #
-# ────────────────────────────────────────────────────────────────
-# OPERATIONAL (Contextual)
-# ────────────────────────────────────────────────────────────────
+# Planned:
+#   ⏳ Align with bereshit/word/seed/ canonical templates
 #
-# # Blocking Status
+# Limitations:
+#   - Currently project-local, not yet in bereshit
 #
-# [Blocking/Non-blocking]: [Brief explanation]
+# Research:
+#   - Cross-platform make patterns (Windows nmake compatibility)
 #
-# Mitigation: [How blocking/failures handled]
-#
-# # Health Scoring
-#
-# [Brief description of how health is tracked for this build system]
-#
-# [Operation Category]:
-#
-#   - [Specific operation]: ±X
-#   - [Another operation]: ±Y
-#
-# Note: Scores reflect TRUE impact. Health scorer normalizes to -100 to +100 scale.
-#
-# ────────────────────────────────────────────────────────────────
-# METADATA Omission Guide
-# ────────────────────────────────────────────────────────────────
-#
-# Tier 1 (CORE IDENTITY): Never omit - every file needs these.
-#
-# Tier 2 (INTERFACE): May omit with [OMIT: reason] notation.
-#   - Dependencies: Required - documents toolchain requirements
-#   - Usage & Integration: Required - shows make targets and workflow
-#
-# Tier 3 (OPERATIONAL): Include when applicable to file type.
-#   - Blocking Status: Include if build can block (network downloads, etc.)
-#   - Health Scoring: Include if Makefile orchestrates health-tracked operations
-#
-# Unlike SETUP (all sections required), METADATA omission signals component characteristics.
-#
-# ============================================================================
+# Operational: N/A — template, not runtime component
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # END METADATA
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ============================================================================
-# SETUP
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
+# SETUP [SETUP]
+# ═══════════════════════════════════════════════════════════════════════════════
 #
-# For SETUP structure explanation, see: standards/code/4-block/CWS-STD-006-CODE-setup-block.md
+# 4-Block Code Structure: Configuration and declarations before body
 #
-# Section order: Declarations → Constants → Variables → Pattern Rules → Default Target → Shell Config
-# This flows: what exists → fixed config → dynamic config → file patterns → entry point → environment
+# Section order: Declarations → Constants → Variables → Patterns → Default → Shell → Omission
+# Flow: what exists → fixed config → dynamic config → transformations → entry → environment → guidance
 #
-# IMPORTANT: All sections MUST be present, even if empty or reserved.
-# For empty sections, use: # [Reserved: Brief reason why not needed]
-#
-# -----------------------------------------------------------------------------
-# SETUP Sections Overview
-# -----------------------------------------------------------------------------
-#
-# 1. DECLARATIONS (Dependencies)
-#    Purpose: Declare what targets exist, include shared fragments
-#    Subsections: Target Declarations (.PHONY) → Include Directives
-#
-# 2. CONSTANTS
-#    Purpose: Fixed values that never change (not overridable)
-#    Subsections: Tool Paths → Build Constants → Project Constants
-#
-# 3. VARIABLES
-#    Purpose: Configurable values (can be overridden from command line)
-#    Subsections: Derived Paths → Build Flags → User Overrides
-#
-# 4. PATTERN RULES (Types)
-#    Purpose: File transformation patterns (how to build file types)
-#    Subsections: Compilation Patterns → Linking Patterns
-#
-# 5. DEFAULT TARGET (Type Behaviors)
-#    Purpose: Entry point when running 'make' with no arguments
-#    Subsections: Default Target Declaration
-#
-# 6. SHELL CONFIGURATION (Rails Pattern)
-#    Purpose: Environment setup for recipe execution
-#    Subsections: Shell Selection → Environment Variables
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ────────────────────────────────────────────────────────────────
-# Declarations
-# ────────────────────────────────────────────────────────────────
-#
-# Declare what targets exist. .PHONY prevents conflicts with files of same name.
-# Include directives bring in shared Makefile fragments if needed.
-#
-# See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-001-imports.md
+# ───────────────────────────────────────────────────────────────────────────────
+# CODE SECTIONS
+# ───────────────────────────────────────────────────────────────────────────────
 
-# ═══ Target Declarations ═══
-# All targets that don't produce files of the same name.
+# # S.1 Declarations [DECLARATIONS]
+#
+#   Purpose:  Declare targets and includes
+#   Contains: PHONY Targets, Include Directives
+
+# # S.1a PHONY Targets [PHONY]
+#
+#   .PHONY: all build test clean run help
+#   .PHONY: fmt lint check                   # quality targets
+#   .PHONY: install uninstall                # installation targets
+#   .PHONY: debug release                    # build variants
 
 .PHONY: all build test clean run help
 
-# ═══ Include Directives ═══
-# Shared Makefile fragments (use sparingly - each adds complexity).
+# # S.1b Include Directives [INCLUDE]
+#
+#   include config.mk                        # shared configuration
+#   include $(BUILD_DIR)/deps.mk             # generated dependencies
+#   -include local.mk                        # optional local overrides (- = silent fail)
+
 # [Reserved: Currently none - self-contained Makefile]
+# include [path/to/shared.mk]
 
-# include [path/to/shared.mk]  # [Purpose of included fragment]
-
-# ────────────────────────────────────────────────────────────────
-# Constants
-# ────────────────────────────────────────────────────────────────
+# # S.2 Constants [CONSTANTS]
 #
-# Fixed values that never change. No ?= syntax - these are immutable.
-# Magic numbers given meaningful names, paths documented with reasoning.
+#   Purpose:  Fixed values that never change (not overridable)
+#   Contains: Project Constants, Path Constants
 #
-# See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-002-constants.md
+#   Project Constants:
+#     BINARY_NAME  — output binary name
+#     VERSION      — project version
+#     PREFIX       — installation prefix
+#
+#   Path Constants:
+#     SRC_DIR      — source files
+#     TEST_DIR     — test files
+#     INCLUDE_DIR  — header files
+#     BUILD_DIR    — build output
 
-# ═══ Project Constants ═══
-# Core project identity - changing these affects all build outputs.
+# # S.2a Project Constants [PROJECT]
+#
+#   BINARY_NAME = [name]             # output binary name
+#   VERSION = 1.0.0                  # project version
+#   PREFIX = /usr/local              # installation prefix
 
 BINARY_NAME = [binary-name]
 BUILD_DIR = bin
 
-# ═══ Path Constants ═══
-# Directory structure - consistent paths for all operations.
+# # S.2b Path Constants [PATHS]
+#
+#   SRC_DIR = src                    # source files
+#   TEST_DIR = tests                 # test files
+#   INCLUDE_DIR = include            # header files
+#   LIB_DIR = lib                    # library files
 
 SRC_DIR = [src-directory]
 TEST_DIR = [test-directory]
 
-# ────────────────────────────────────────────────────────────────
-# Variables
-# ────────────────────────────────────────────────────────────────
+# # S.3 Variables [VARIABLES]
 #
-# Overridable configuration. Use ?= for defaults that can be changed.
-# Document what each controls and valid values.
+#   Purpose:  Configurable values (can be overridden: make build CC=clang)
+#   Contains: Tool Config, Runtime Config
 #
-# See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-003-variables.md
-
-# ═══ Tool Configuration ═══
-# Can be overridden: make build CC=clang
-
-# CC ?= gcc           # C compiler (default: gcc)
-# CFLAGS ?= -Wall     # Compiler flags (default: warnings enabled)
-
-# ═══ Runtime Configuration ═══
-# Passed at invocation: make run ARGS="--verbose"
-
-ARGS ?=              # Arguments passed to run target
-
-# ────────────────────────────────────────────────────────────────
-# Pattern Rules
-# ────────────────────────────────────────────────────────────────
+#   Tool Config:
+#     CC       — C compiler (gcc, clang)
+#     CXX      — C++ compiler (g++, clang++)
+#     CFLAGS   — C compiler flags
+#     LDFLAGS  — linker flags
 #
-# File type transformations. Define how one file type becomes another.
-# These are like "type definitions" - they define transformation shapes.
+#   Runtime Config:
+#     ARGS     — arguments passed to run target
+#     VERBOSE  — verbose output (0/1)
+#     DEBUG    — debug mode (0/1)
+
+# # S.3a Tool Config [TOOLS]
 #
-# See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-004-types.md
+#   CC ?= gcc                        # C compiler
+#   CXX ?= g++                       # C++ compiler
+#   CFLAGS ?= -Wall -Wextra          # C flags
+#   CXXFLAGS ?= -Wall -Wextra        # C++ flags
+#   LDFLAGS ?= -lm                   # linker flags
 
-# ═══ Compilation Patterns ═══
-# [Reserved: Add pattern rules like %.o: %.c if needed]
+# [Reserved: Uncomment if C/C++ compilation needed]
+# CC ?= gcc
+# CFLAGS ?= -Wall
 
+# # S.3b Runtime Config [RUNTIME]
+#
+#   ARGS ?=                          # arguments passed to run target
+#   VERBOSE ?= 0                     # verbose output
+#   DEBUG ?= 0                       # debug mode
+
+ARGS ?=
+
+# # S.4 Pattern Rules [PATTERNS]
+#
+#   Purpose:  File type transformations (how to build file types)
+#   Contains: Compilation, Linking
+#
+#   Compilation:
+#     %.o: %.c     — compile C source to object
+#     %.o: %.cpp   — compile C++ source to object
+#
+#   Linking:
+#     $(TARGET): $(OBJS)  — link objects to binary
+
+# # S.4a Compilation [COMPILATION]
+#
+#   %.o: %.c
+#   	$(CC) $(CFLAGS) -c $< -o $@
+#
+#   %.o: %.cpp
+#   	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# [Reserved: Uncomment if object file compilation needed]
 # %.o: %.c
 # 	$(CC) $(CFLAGS) -c $< -o $@
 
-# ────────────────────────────────────────────────────────────────
-# Default Target
-# ────────────────────────────────────────────────────────────────
+# # S.4b Linking [LINKING]
 #
-# Entry point - what happens when you run `make` with no arguments.
-# Should be the most common workflow (typically build + test).
-#
-# See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-005-type-methods.md
+#   $(BUILD_DIR)/$(BINARY_NAME): $(OBJS)
+#   	$(CC) $(LDFLAGS) -o $@ $^
 
-# Default: build and test
+# [Reserved: Uncomment if explicit linking rule needed]
+
+# # S.5 Default Target [DEFAULT]
+#
+#   Purpose:  Entry point when running 'make' with no arguments
+#   Contains: Default target declaration
+#
+#   all: build test                  # build + test
+#   all: build                       # build only
+#   all: test                        # test only
+
 all: build test
 
-# ────────────────────────────────────────────────────────────────
-# Shell Configuration
-# ────────────────────────────────────────────────────────────────
+# # S.6 Shell Configuration [SHELL]
 #
-# Environment setup. Shell selection, exports, environment variables.
-# This is the "Rails attachment" - infrastructure all targets use.
+#   Purpose:  Environment setup for recipe execution
+#   Contains: Shell Selection, Environment Exports
 #
-# See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-006-package-level-state.md
+#   Shell Selection:
+#     SHELL := /bin/bash               — use bash for recipes
+#     .SHELLFLAGS := -eu -o pipefail -c  — strict bash mode
+#
+#   Environment Exports:
+#     export PATH      — extend PATH for recipe execution
+#     export CC        — share compiler with subprocesses
 
-# ═══ Shell Selection ═══
-# Use bash for consistent behavior across platforms.
+# # S.6a Shell Selection [SHELL_SELECT]
+#
+#   SHELL := /bin/bash               # use bash for recipes
+#   .SHELLFLAGS := -eu -o pipefail -c  # strict bash mode
+
 # [Reserved: Uncomment if bash-specific features needed]
-
 # SHELL := /bin/bash
 # .SHELLFLAGS := -eu -o pipefail -c
 
-# ═══ Environment Exports ═══
-# Variables exported to sub-processes.
-# [Reserved: Add exports as needed]
+# # S.6b Environment Exports [EXPORTS]
+#
+#   export PATH := $(BUILD_DIR):$(PATH)
+#   export CC
+#   export CFLAGS
 
+# [Reserved: Add exports as needed]
 # export PATH := $(BUILD_DIR):$(PATH)
 
-# -----------------------------------------------------------------------------
-# SETUP Omission Guide
-# -----------------------------------------------------------------------------
+# # S.7 Omission Guide [OMISSION]
 #
-# ALL sections MUST be present. Content may be reserved with reason:
+#   Purpose:  What can be reserved and why
 #
-#   - Declarations: Rarely reserved - most Makefiles declare .PHONY targets
-#   - Constants: [Reserved: No fixed tool paths needed]
-#   - Variables: [Reserved: No configurable values needed]
-#   - Pattern Rules: [Reserved: Using explicit rules only]
-#   - Default Target: Rarely reserved - most Makefiles have a default
-#   - Shell Configuration: [Reserved: Using default shell]
-#
-# Unlike METADATA (sections omitted entirely with [OMIT:]), SETUP preserves
-# all section headers with [Reserved:] notation for unused sections.
+#   All sections must be present. Empty sections use: [Reserved: reason]
+#   Omit subsection content, never the subsection header itself.
 
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 # END SETUP
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ============================================================================
-# BODY
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
+# BODY [BODY]
+# ═══════════════════════════════════════════════════════════════════════════════
 #
-# For BODY structure explanation, see: standards/code/4-block/CWS-STD-007-CODE-body-block.md
+# 4-Block Code Structure: The actual work — targets and recipes
 #
-# -----------------------------------------------------------------------------
-# BODY Sections Overview
-# -----------------------------------------------------------------------------
+# Section order: Graph → Helpers → Operations → Errors → API → Omission
+# Flow: map structure → foundations → categorized work → safety → public interface → guidance
 #
-# 1. ORGANIZATIONAL CHART (Target Dependency Graph)
-#    Purpose: Map target dependencies and execution flow within this Makefile
-#    Subsections: Ladder Structure → Baton Flow → Target Summary
-#
-# 2. HELPERS/UTILITIES (Internal Helper Targets)
-#    Purpose: Foundation targets used by others - prefixed with underscore
-#    Subsections: _ensure-dirs → _check-tools → [other internal targets]
-#
-# 3. CORE OPERATIONS (Build Operations)
-#    Purpose: Core build operations - the actual work gets done here
-#    Subsections: Compilation → Testing → Quality → Execution → Maintenance
-#
-# 4. ERROR HANDLING/RECOVERY (Recipe Patterns)
-#    Purpose: Common error handling patterns for Makefile recipes
-#    Subsections: Continue on failure (||) → Stop on failure (&&) → Safe operations
-#
-# 5. PUBLIC APIs (User-Facing Targets)
-#    Purpose: Primary targets for user interaction - what `make help` shows
-#    Subsections: all → build → test → run → clean → help → info
-#
-# Section order: Target Graph → Internal Helpers → Build Operations → Error Handling → User-Facing
-# This flows: map structure → foundations → categorized operations → safety patterns → public interface
-#
-# Universal mapping (see standards for cross-language patterns):
-#   Target Dependency Graph ≈ Organizational Chart (internal structure map)
-#   Internal Helper Targets ≈ Helpers/Utilities (foundations)
-#   Build Operations ≈ Core Operations (categorized business logic)
-#   Error Handling Recipes ≈ Error Handling/Recovery Patterns
-#   User-Facing Targets ≈ Public APIs (exported interface)
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ────────────────────────────────────────────────────────────────
-# Target Dependency Graph - Build Order
-# ────────────────────────────────────────────────────────────────
+# # B.1 Dependency Graph [GRAPH]
 #
-# Maps target dependencies and execution flow within this Makefile.
-# Provides navigation for both development (what targets exist) and
-# maintenance (what depends on this target).
+#   Purpose:  Map target dependencies and execution flow
+#   Contains: Ladder Structure, Baton Flow, Target Summary
 #
-# See: standards/code/4-block/sections/body/CWS-SECTION-BODY-001-organizational-chart.md
+#   Ladder Structure:
+#     User-Facing (top) / Build Ops (middle) / Helpers (bottom)
 #
-# Ladder Structure (Dependencies):
+#   Baton Flow:
+#     Execution path from entry to exit
 #
-#   User-Facing Targets (Top Rungs - Primary Interface)
-#   ├── all → build, test
-#   ├── check → fmt, vet, test
-#   └── help → (standalone)
-#
-#   Build Operations (Middle Rungs - Core Functionality)
-#   ├── build → _ensure-dirs
-#   ├── test → (standalone)
-#   ├── run → build
-#   └── clean → (standalone)
-#
-#   Internal Helpers (Bottom Rungs - Foundations)
-#   ├── _ensure-dirs → (standalone)
-#   └── _check-tools → (standalone)
-#
-# Baton Flow (Execution Paths):
-#
-#   Entry → make (no args)
-#     ↓
-#   all (default target)
-#     ↓
-#   build → _ensure-dirs
-#     ↓
-#   test
-#     ↓
-#   Exit → success/failure
-#
-# Target Summary:
-# - [X] targets total
-# - [X] internal helpers (foundation targets)
-# - [X] build operations (core functionality)
-# - [X] user-facing targets (primary interface)
+#   Target Summary:
+#     Count of targets by category
 
-# ────────────────────────────────────────────────────────────────
-# Internal Helper Targets - Support Operations
-# ────────────────────────────────────────────────────────────────
-#
-# Foundation targets used by other targets. Bottom rungs of the ladder -
-# simple, focused, reusable utilities. Usually prefixed with underscore
-# to indicate internal use, not listed in help.
-#
-# See: standards/code/4-block/sections/body/CWS-SECTION-BODY-002-helpers.md
-#
-# Key characteristics:
-# - NOT in .PHONY declarations at top (unless needed)
-# - NOT documented in help target
-# - Prefixed with underscore (_) by convention
-# - Simple, single-purpose operations
-# - Reusable by multiple targets
+# # B.1a Ladder Structure [LADDER]
 
-# _ensure-dirs creates required directories.
+# User-Facing (top):    all → build, test | help → standalone
+# Build Ops (middle):   build → _ensure-dirs | test, clean → standalone
+# Helpers (bottom):     _ensure-dirs, _check-tools → standalone
+
+# # B.1b Baton Flow [BATON]
+
+# make → all → build → _ensure-dirs → test → exit
+
+# # B.1c Target Summary [SUMMARY]
+
+# User-Facing:  [X] targets
+# Build Ops:    [X] targets
+# Helpers:      [X] targets
+
+# # B.2 Internal Helpers [HELPERS]
 #
-# What It Does:
-# Creates build output directories if they don't exist.
-# Silent operation - only shows output on error.
+#   Purpose:  Foundation targets used by others (prefixed with _)
+#   Contains: Directory Setup, Tool Checks
 #
-# Used By:
-#   build (ensures output directory exists before compilation)
+#   Directory Setup:
+#     Create build directories, clean artifacts
 #
+#   Tool Checks:
+#     Verify required tools are available
+
+# # B.2a Directory Setup [DIRS]
+#
+#   _ensure-dirs:
+#   	@mkdir -p $(BUILD_DIR)
+#   	@mkdir -p $(BUILD_DIR)/obj
+#
+#   _clean-dirs:
+#   	@rm -rf $(BUILD_DIR)
+
 _ensure-dirs:
 	@mkdir -p $(BUILD_DIR)
 
-# _check-tools verifies required tools are installed.
+# # B.2b Tool Checks [TOOLS]
 #
-# What It Does:
-# Checks that required build tools are available in PATH.
-# Fails with helpful message if tools missing.
-#
-# Used By:
-#   build, test (ensures environment is ready)
-#
+#   _check-tools:
+#   	@which gcc > /dev/null || (echo "Error: gcc not found" && exit 1)
+#   	@which make > /dev/null || (echo "Error: make not found" && exit 1)
+
+# [Reserved: Uncomment if tool verification needed]
 # _check-tools:
 # 	@which [tool] > /dev/null || (echo "Error: [tool] not found" && exit 1)
 
-# ────────────────────────────────────────────────────────────────
-# Build Operations - Core Functionality
-# ────────────────────────────────────────────────────────────────
+# # B.3 Core Operations [OPERATIONS]
 #
-# Core build operations implementing the Makefile's primary purpose.
-# Organized by operational categories (descriptive subsections) below.
+#   Purpose:  The actual build work — compilation, testing, execution
+#   Contains: Compilation, Testing, Quality, Execution, Maintenance
 #
-# See: standards/code/4-block/sections/body/CWS-SECTION-BODY-003-core-operations.md
+#   Compilation:
+#     Build targets — release, debug variants
+#
+#   Testing:
+#     Test targets — unit, integration, coverage
+#
+#   Quality:
+#     Code quality — format, lint, static analysis
+#
+#   Execution:
+#     Run targets — execute built binary
+#
+#   Maintenance:
+#     Cleanup targets — remove artifacts
 
-# ────────────────────────────────────────────────────────────────
-# Compilation - Binary Building
-# ────────────────────────────────────────────────────────────────
+# # B.3a Compilation [COMPILATION]
 #
-# What These Do:
-# Transform source code into executable binaries.
+#   ## build: Build the binary
+#   build: _ensure-dirs
+#   	$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(SRC_DIR)/*.c $(LDFLAGS)
 #
-# Why Separated:
-# Compilation is the core purpose - central to all build workflows.
-#
-# Extension Point:
-# To add new build variants, create target following [name]-build pattern.
-# Each build target should use _ensure-dirs prerequisite.
+#   ## debug: Build with debug symbols
+#   debug: _ensure-dirs
+#   	$(CC) $(CFLAGS) -g -O0 -o $(BUILD_DIR)/$(BINARY_NAME) $(SRC_DIR)/*.c $(LDFLAGS)
 
 ## build: Build the [binary] binary
 build: _ensure-dirs
@@ -480,22 +495,18 @@ build: _ensure-dirs
 	@# [Build command - language specific]
 	@# go build -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/[name]
 	@# gcc $(CFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(SRC_DIR)/*.c
-	@# cargo build --release
 	@echo "✓ Build complete: $(BUILD_DIR)/$(BINARY_NAME)"
 
-# ────────────────────────────────────────────────────────────────
-# Testing - Verification
-# ────────────────────────────────────────────────────────────────
+# # B.3b Testing [TESTING]
 #
-# What These Do:
-# Run tests to verify correctness and quality.
+#   ## test: Run all tests
+#   test:
+#   	go test -v ./...
+#   	pytest -v
 #
-# Why Separated:
-# Testing is distinct from building - verifies what was built.
-#
-# Extension Point:
-# To add new test types, create target following test-[type] pattern.
-# Consider: test-unit, test-integration, test-e2e, test-cover.
+#   ## test-coverage: Run tests with coverage
+#   test-coverage:
+#   	go test -coverprofile=coverage.out ./...
 
 ## test: Run all tests
 test:
@@ -503,60 +514,40 @@ test:
 	@# [Test command - language specific]
 	@# go test -v ./...
 	@# pytest -v
-	@# cargo test
 	@echo "✓ Tests complete"
 
-## test-cover: Run tests with coverage
-# test-cover:
-# 	@echo "Running tests with coverage..."
-# 	@# [Coverage command]
-# 	@echo "✓ Coverage complete"
+# # B.3c Quality [QUALITY]
+#
+#   ## fmt: Format code
+#   fmt:
+#   	go fmt ./...
+#   	clang-format -i $(SRC_DIR)/*.c
+#
+#   ## lint: Run linter
+#   lint:
+#   	golangci-lint run
+#   	cppcheck $(SRC_DIR)
 
-# ────────────────────────────────────────────────────────────────
-# Quality - Code Standards
-# ────────────────────────────────────────────────────────────────
-#
-# What These Do:
-# Enforce code quality standards (formatting, linting, static analysis).
-#
-# Why Separated:
-# Quality checks are pre-commit gates - run before other operations.
-#
-# Extension Point:
-# To add new quality checks, create target and add to 'check' prerequisites.
-# Pattern: [tool]: runs the tool, check: aggregates all quality targets.
-
+# [Reserved: Uncomment quality targets as needed]
 ## fmt: Format code
 # fmt:
-# 	@echo "Formatting code..."
-# 	@# [Format command]
+# 	@echo "Formatting..."
 # 	@echo "✓ Format complete"
-
-## vet: Run static analysis
-# vet:
-# 	@echo "Running static analysis..."
-# 	@# [Analysis command]
-# 	@echo "✓ Analysis complete"
 
 ## lint: Run linter
 # lint:
-# 	@echo "Running linter..."
-# 	@# [Lint command]
+# 	@echo "Linting..."
 # 	@echo "✓ Lint complete"
 
-# ────────────────────────────────────────────────────────────────
-# Execution - Running
-# ────────────────────────────────────────────────────────────────
+# # B.3d Execution [EXECUTION]
 #
-# What These Do:
-# Execute the built binary with various configurations.
+#   ## run: Run the binary
+#   run: build
+#   	./$(BUILD_DIR)/$(BINARY_NAME) $(ARGS)
 #
-# Why Separated:
-# Running is distinct from building - uses what was built.
-#
-# Extension Point:
-# To add new run modes, create target following run-[mode] pattern.
-# Pass arguments via ARGS variable: make run ARGS="--flag value"
+#   ## run-dev: Run in development mode
+#   run-dev: debug
+#   	./$(BUILD_DIR)/$(BINARY_NAME) --dev $(ARGS)
 
 ## run: Run the binary (use ARGS for arguments)
 run: build
@@ -568,80 +559,81 @@ run: build
 		./$(BUILD_DIR)/$(BINARY_NAME) $(ARGS); \
 	fi
 
-# ────────────────────────────────────────────────────────────────
-# Maintenance - Cleanup
-# ────────────────────────────────────────────────────────────────
+# # B.3e Maintenance [MAINTENANCE]
 #
-# What These Do:
-# Remove generated files and reset to clean state.
+#   ## clean: Remove build artifacts
+#   clean:
+#   	@rm -rf $(BUILD_DIR)
 #
-# Why Separated:
-# Cleanup is destructive - intentionally separated from build operations.
-#
-# Extension Point:
-# Add cleanup commands to 'clean' target. Be thorough but careful -
-# never remove source files or version control.
+#   ## distclean: Remove all generated files
+#   distclean: clean
+#   	@rm -rf vendor/ node_modules/
 
 ## clean: Remove build artifacts
 clean:
 	@echo "Cleaning..."
 	@rm -rf $(BUILD_DIR)
-	@# [Additional cleanup - language specific]
-	@# go clean
-	@# cargo clean
-	@# rm -f *.o
 	@echo "✓ Clean complete"
 
-# ────────────────────────────────────────────────────────────────
-# Error Handling - Recipe Patterns
-# ────────────────────────────────────────────────────────────────
+# # B.4 Error Handling [ERRORS]
 #
-# Common error handling patterns for Makefile recipes.
-# These patterns ensure graceful failure and helpful error messages.
+#   Purpose:  Common recipe patterns for graceful failure
+#   Contains: Failure Patterns, Recovery Patterns
 #
-# See: standards/code/4-block/sections/body/CWS-SECTION-BODY-004-error-handling.md
+#   Failure Patterns:
+#     How to handle command failures in recipes
 #
-# Pattern: Continue on failure (||)
-#   @command || echo "Warning: command failed"
+#   Recovery Patterns:
+#     How to detect and recover from missing resources
+
+# # B.4a Failure Patterns [FAILURE]
 #
-# Pattern: Stop on failure (&&)
-#   @command1 && command2 && command3
+#   @command || echo "Warning: failed"           # continue on failure
+#   @command1 && command2                        # stop on failure
+#   @command || exit 1                           # fail recipe on error
+#   -@command                                    # ignore exit status (- prefix)
+
+# # B.4b Recovery Patterns [RECOVERY]
 #
-# Pattern: Check prerequisites
 #   @which tool > /dev/null || (echo "Error: tool not found" && exit 1)
-#
-# Pattern: Conditional execution
-#   @if [ -f file ]; then command; fi
-#
-# Pattern: Safe directory operations
-#   @mkdir -p dir          # Create if not exists (no error if exists)
-#   @rm -rf dir            # Remove recursively (no error if not exists)
-#
-# Pattern: Verbose error messages
-#   @command 2>&1 || (echo "Error: operation failed"; exit 1)
-#
-# Note: Recipes prefixed with @ suppress command echo.
-# Note: Recipes prefixed with - continue on error (not recommended).
+#   @test -d $(DIR) || mkdir -p $(DIR)           # create if missing
+#   @test -f $(FILE) || touch $(FILE)            # create file if missing
+#   @mkdir -p dir                                # safe create (no error if exists)
+#   @rm -rf dir                                  # safe remove (no error if missing)
 
-# ────────────────────────────────────────────────────────────────
-# User-Facing Targets - Public Interface
-# ────────────────────────────────────────────────────────────────
+# # B.5 Public API [API]
 #
-# Primary targets for user interaction. Top rungs of the ladder -
-# orchestrate build operations into complete workflows.
-# These ARE in .PHONY, ARE documented in help.
+#   Purpose:  User-facing targets — what `make help` shows
+#   Contains: Aggregators, Information
 #
-# See: standards/code/4-block/sections/body/CWS-SECTION-BODY-005-public-apis.md
+#   Aggregators:
+#     Composite targets combining multiple operations
 #
-# Key characteristics:
-# - Listed in .PHONY declarations
-# - Documented with ## comments for help extraction
-# - Orchestrate lower targets (don't duplicate logic)
-# - Represent complete workflows
+#   Information:
+#     Targets that display help and configuration
 
-## check: Run all quality checks (fmt, vet, test)
-# check: fmt vet test
+# # B.5a Aggregators [AGGREGATORS]
+#
+#   ## check: Run all quality checks
+#   check: fmt lint test
+#   	@echo "✓ All checks passed"
+#
+#   ## all: Build and test
+#   all: build test
+
+## check: Run all quality checks
+# check: fmt lint test
 # 	@echo "✓ All checks passed"
+
+# # B.5b Information [INFO]
+#
+#   ## help: Show available targets
+#   help:
+#   	@sed -n 's/^## //p' Makefile | column -t -s ':'
+#
+#   ## info: Show build configuration
+#   info:
+#   	@echo "BINARY_NAME: $(BINARY_NAME)"
 
 ## help: Show available targets
 help:
@@ -665,535 +657,232 @@ info:
 	@echo "  BINARY_NAME: $(BINARY_NAME)"
 	@echo "  BUILD_DIR:   $(BUILD_DIR)"
 	@echo "  SRC_DIR:     $(SRC_DIR)"
-	@# @echo "  CC:          $(CC)"
-	@# @echo "  CFLAGS:      $(CFLAGS)"
 
-# -----------------------------------------------------------------------------
-# BODY Omission Guide
-# -----------------------------------------------------------------------------
+# # B.6 Omission Guide [OMISSION]
 #
-# ALL five sections MUST be present. Content may be reserved with reason:
+#   Purpose:  What can be reserved and why
 #
-#   - Organizational Chart: Rarely reserved - target structure benefits from map
-#   - Helpers/Utilities: [Reserved: No internal helper targets - uses includes only]
-#   - Core Operations: Rarely reserved - contains build/test/run operations
-#   - Error Handling: [Reserved: Uses standard recipe failure, no custom recovery]
-#   - Public APIs: Rarely reserved - user-facing targets are the interface
-#
-# Unlike METADATA (sections omitted entirely with [OMIT:]), BODY preserves
-# all section headers with [Reserved:] notation for unused sections.
-#
-# For multi-Makefile projects:
-#   - Root Makefile: Contains user-facing targets, includes modules
-#   - Module Makefiles: Contains _internal targets for specific concerns
-#   - Document inclusion with [Reserved: Uses targets from build/compile.mk]
+#   All sections must be present. Empty sections use: [Reserved: reason]
+#   Omit subsection content, never the subsection header itself.
 
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 # END BODY
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ============================================================================
-# CLOSING
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLOSING [CLOSING]
+# ═══════════════════════════════════════════════════════════════════════════════
 #
-# For CLOSING structure explanation, see: standards/code/4-block/CWS-STD-008-CODE-closing-block.md
+# 4-Block Code Structure: Operational guidance and closing notes
 #
-# -----------------------------------------------------------------------------
-# CLOSING Sections Overview
-# -----------------------------------------------------------------------------
+# Section order: Validation → Execution → Cleanup | Policy → Extension → Troubleshooting → Reference → Note → Template
+# Flow: verify → run → release | modify → extend → debug → lookup → ground → instantiate
 #
-# GROUP 1: CODING (Operations - Verify, Execute, Clean)
-#
-# 1. MAKEFILE VALIDATION (Testing & Verification)
-#    Purpose: Verify Makefile correctness - syntax, targets, dependencies
-#    Subsections: Syntax Check → Target Verification → Dry Run Testing
-#
-# 2. MAKEFILE EXECUTION (Build Process)
-#    Purpose: How make processes this file
-#    Subsections: Default Target → Dependency Resolution → Parallel Execution
-#
-# 3. MAKEFILE CLEANUP (Build Artifacts)
-#    Purpose: Clean target patterns and artifact management
-#    Subsections: Clean Patterns → Generated File Management
-#
-# GROUP 2: FINAL DOCUMENTATION (Synthesis - Reference Back to Earlier Blocks)
-#
-# 4. MAKEFILE OVERVIEW (Summary with Back-References)
-#    Purpose: High-level summary of build capabilities
-#    References: METADATA "Purpose & Function", "Key Features"
-#
-# 5. MODIFICATION POLICY (Safe/Careful/Never)
-#    Purpose: Guide future maintainers on what's safe to change
-#    Subsections: Safe to Modify → Modify with Care → Never Modify
-#
-# 6. LADDER AND BATON FLOW (Back-Reference to BODY)
-#    Purpose: Point to BODY Target Dependency Graph
-#    References: BODY "Organizational Chart - Target Dependency Graph"
-#
-# 7. SURGICAL UPDATE POINTS (Back-Reference to BODY)
-#    Purpose: Point to BODY for adding new targets
-#    References: BODY section categories for target placement
-#
-# 8. PERFORMANCE CONSIDERATIONS (Build Performance)
-#    Purpose: Parallel make, incremental builds, caching
-#    References: SETUP variables affecting build performance
-#
-# 9. TROUBLESHOOTING GUIDE (Build Issues)
-#    Purpose: Common build problems and solutions
-#    Subsections: Missing Dependencies → Permission Errors → Path Issues
-#
-# 10. RELATED COMPONENTS (Build Dependencies)
-#     Purpose: Point to related Makefiles and build components
-#     References: METADATA "Dependencies" - included Makefiles, tools
-#
-# 11. FUTURE EXPANSIONS (Build Roadmap)
-#     Purpose: Planned build targets, tool integrations
-#     Subsections: Planned Targets → Tool Integration → CI/CD Support
-#
-# 12. CONTRIBUTION GUIDELINES (Adding Targets)
-#     Purpose: How to add new targets to this Makefile
-#     Subsections: Target Naming → Dependency Declaration → Recipe Patterns
-#
-# 13. QUICK REFERENCE (Make Commands)
-#     Purpose: Copy-paste ready make commands
-#     Subsections: Basic Commands → Advanced Options → Debug Commands
-#
-# Section order: Makefile Validation → Makefile Execution → Makefile Cleanup → Final Documentation
-# This flows: verify correctness → entry points → resource management → synthesis
-#
-# Universal mapping (see standards for cross-language patterns):
-#   Makefile Validation ≈ Code Validation (testing/verification)
-#   Makefile Execution ≈ Code Execution (entry points and flow)
-#   Makefile Cleanup ≈ Code Cleanup (resource management)
-#   Final Documentation = Same across all languages
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ────────────────────────────────────────────────────────────────
-# Makefile Validation: [project-name] (Build System)
-# ────────────────────────────────────────────────────────────────
+# # X.1 Validation [VALIDATION]
 #
-# For Code Validation section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-001-code-validation.md
+#   Purpose:  Verify Makefile correctness
+#   Contains: Checks, Build Commands, Common Issues
 #
-# Testing Requirements:
-#   - Verify all targets execute without errors
-#   - Confirm dependencies resolve correctly
-#   - Test with clean environment (make clean && make all)
-#   - Verify PHONY targets don't conflict with file names
-#   - Check help target produces expected output
-#   - Run: make help (verify all documented targets appear)
+#   Checks:
+#     What to verify before running
 #
-# Syntax Verification:
-#   - make -n [target] (dry-run shows commands without executing)
-#   - make --warn-undefined-variables (catch undefined variable usage)
-#   - make -p (print database to verify target/variable definitions)
+#   Build Commands:
+#     Commands to test the Makefile
 #
-# Build Verification:
-#   - make all (complete build succeeds)
-#   - make clean && make build (fresh build works)
-#   - make test (all tests pass if applicable)
-#
-# Integration Testing:
-#   - Test from project root directory
-#   - Verify paths work with different working directories
-#   - Test with different shell environments if applicable
-#   - Confirm CI/CD integration works
-#
-# Example validation sequence:
-#
-#   # Syntax check (dry-run)
-#   make -n all
-#
-#   # Clean build test
-#   make clean && make all
-#
-#   # Help documentation check
-#   make help
-#
-#   # Individual target verification
-#   make build
-#   make test
-#   make run ARGS="--test"
+#   Common Issues:
+#     Frequent problems and solutions
 
-# ────────────────────────────────────────────────────────────────
-# Makefile Execution: [project-name] (Build System)
-# ────────────────────────────────────────────────────────────────
+# # X.1a Checks [CHECKS]
 #
-# For Code Execution section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-002-code-execution.md
-#
-# This is a BUILD SYSTEM. It orchestrates build operations via make targets.
-# Entry points are make targets, not functions. Default target runs when
-# make is invoked without arguments.
-#
-# Entry Point: `make` (runs default target: all)
-#
-# Execution Flow:
-#   1. User invokes `make [target]` or just `make`
-#   2. Make parses Makefile, resolves target dependencies
-#   3. Prerequisites execute first (bottom-up dependency resolution)
-#   4. Target recipe executes
-#   5. Health status echoed (✓/✗ messages)
-#   6. Exit code propagates (0=success, non-zero=failure)
-#
-# Available Entry Points:
-#   make                  # Default: runs 'all' target
-#   make all              # Build and test
-#   make build            # Build only
-#   make test             # Test only
-#   make run              # Build and run
-#   make run ARGS="..."   # Run with arguments
-#   make clean            # Remove build artifacts
-#   make help             # Show available targets
-#   make info             # Show build configuration
-#
-# Dependency Resolution:
-#   make all → build → _ensure-dirs
-#           → test
-#
-# Example invocation:
-#
-#   # Default workflow
-#   make
-#
-#   # Specific target with variable override
-#   make build BINARY_NAME=custom-name
-#
-#   # Run with arguments
-#   make run ARGS="--verbose --config=test.yaml"
+#   - Targets exist and are spelled correctly
+#   - Recipe lines use TAB, not spaces
+#   - Variables are defined before use
+#   - Dependencies are correct
 
-# ────────────────────────────────────────────────────────────────
-# Makefile Cleanup: [project-name] (Build System)
-# ────────────────────────────────────────────────────────────────
+# # X.1b Build Commands [BUILD]
 #
-# For Code Cleanup section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-003-code-cleanup.md
-#
-# Resource Management:
-#   - Build artifacts: Removed by `make clean`
-#   - Temporary files: Removed by `make clean`
-#   - Object files: Removed by `make clean` (if applicable)
-#   - Cache directories: [Preserved/Removed - specify behavior]
-#
-# Clean Target Scope:
-#   - $(BUILD_DIR): Removed entirely (bin/ directory)
-#   - [Generated files]: [How handled]
-#   - Source files: NEVER removed (safety boundary)
-#   - Version control: NEVER touched (.git/)
-#
-# Error State Cleanup:
-#   - Partial builds: `make clean` resets to known state
-#   - Failed targets: Re-run after fixing issues
-#   - Interrupted builds: `make clean && make all` for fresh start
-#
-# Safe Cleanup Patterns:
-#   - rm -rf $(BUILD_DIR) - Safe (only removes build output)
-#   - rm -f *.o - Safe (only removes object files)
-#   - NEVER: rm -rf * or rm -rf / (catastrophic)
-#   - NEVER: rm -rf $(SRC_DIR) (removes source code)
-#
-# Example cleanup sequence:
-#
-#   # Standard cleanup
-#   make clean
-#
-#   # Full reset (clean + rebuild)
-#   make clean && make all
-#
-#   # Verify clean state
-#   ls -la $(BUILD_DIR)  # Should not exist or be empty
+#   make -n all                       # Dry-run (show commands)
+#   make --warn-undefined-variables   # Catch undefined vars
+#   make clean && make all            # Clean build test
+#   make help                         # Check documentation
 
-# ════════════════════════════════════════════════════════════════
-# FINAL DOCUMENTATION
-# ════════════════════════════════════════════════════════════════
+# # X.1c Common Issues [ISSUES]
+#
+#   "No rule to make target" → Check spelling, target exists
+#   "Missing separator" → Recipe lines need TAB, not spaces
+#   "Up to date" → Use make clean first
+#   "Undefined variable" → Define before use or use ?=
 
-# ────────────────────────────────────────────────────────────────
-# Build System Overview & Integration Summary
-# ────────────────────────────────────────────────────────────────
+# # X.2 Execution [EXECUTION]
 #
-# For Library Overview section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-004-library-overview.md
+#   Purpose:  Entry points and execution flow
+#   Contains: Entry Points, Flow
 #
-# Purpose: See METADATA "Purpose & Function" section above
+#   Entry Points:
+#     Common make commands and what they do
 #
-# Provides: See METADATA "Key Features" list above for comprehensive capabilities
-#
-# Quick summary (high-level only - details in METADATA):
-#   - [1-2 sentence overview of what this build system does]
-#   - Orchestrates [build/test/run] operations for [project type]
-#
-# Integration Pattern: See METADATA "Usage & Integration" section above for
-# complete step-by-step integration guide
-#
-# Public API (Targets): See METADATA "Usage & Integration" section above for
-# complete target list organized by category in typical usage order
-#
-# Architecture: See METADATA "CPI-SI Identity" section above for complete
-# architectural role (Rails/Ladder/Baton) explanation
+#   Flow:
+#     How targets depend on each other
 
-# ────────────────────────────────────────────────────────────────
-# Modification Policy
-# ────────────────────────────────────────────────────────────────
+# # X.2a Entry Points [ENTRY]
 #
-# For Modification Policy section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-005-modification-policy.md
-#
-# Safe to Modify (Extension Points):
-#   ✅ Add new targets (follow ## comment convention for help)
-#   ✅ Add new internal helpers (use _ prefix)
-#   ✅ Extend clean target (add more cleanup commands)
-#   ✅ Add build variants (build-debug, build-release, etc.)
-#   ✅ Add test variants (test-unit, test-integration, etc.)
-#
-# Modify with Extreme Care (Breaking Changes):
-#   ⚠️ Default target (all) - affects `make` with no args
-#   ⚠️ Target names - breaks scripts/CI depending on them
-#   ⚠️ Variable names - breaks command-line overrides
-#   ⚠️ Build output paths - breaks deployment/packaging
-#   ⚠️ clean target scope - may remove more/less than expected
-#
-# NEVER Modify (Foundational Structure):
-#   ❌ 4-block structure (METADATA, SETUP, BODY, CLOSING)
-#   ❌ Remove clean target (safety mechanism)
-#   ❌ Remove help target (documentation mechanism)
-#   ❌ Add recursive rm without constraints
-#   ❌ Hardcode absolute paths (portability)
-#
-# Validation After Modifications:
-#   See "Makefile Validation" section above for comprehensive testing
-#   requirements, syntax verification, and integration testing procedures.
-
-# ────────────────────────────────────────────────────────────────
-# Target Dependency Flow (Ladder and Baton)
-# ────────────────────────────────────────────────────────────────
-#
-# For Ladder and Baton Flow section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-006-ladder-baton-flow.md
-#
-# See BODY "Target Dependency Graph - Build Order" section above for
-# complete ladder structure (dependencies) and baton flow (execution paths).
-#
-# The Target Dependency Graph in BODY provides the detailed map showing:
-# - All targets and their prerequisites (ladder)
-# - Complete execution flow paths (baton)
-# - Target count and categorization
-#
-# Quick architectural summary (details in BODY Target Dependency Graph):
-# - [X] user-facing targets orchestrate [Y] build operations using [Z] helpers
-# - Ladder: User targets → Build operations → Internal helpers
-# - Baton: make → all → build → _ensure-dirs → test → exit
-
-# ────────────────────────────────────────────────────────────────
-# Surgical Update Points (Extension Guide)
-# ────────────────────────────────────────────────────────────────
-#
-# For Surgical Update Points section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-007-surgical-update-points.md
-#
-# See BODY "Build Operations" subsection header comments above for detailed
-# extension points. Each subsection includes "Extension Point" guidance showing:
-# - Where to add new targets
-# - What naming pattern to follow
-# - How to integrate with existing targets
-# - What documentation to update (## comments for help)
-#
-# Quick reference (details in BODY subsection comments):
-# - Adding build variants: See BODY "Compilation" extension point
-# - Adding test types: See BODY "Testing" extension point
-# - Adding quality checks: See BODY "Quality" extension point
-# - Adding run modes: See BODY "Execution" extension point
-# - Adding cleanup commands: See BODY "Maintenance" extension point
-# - Adding internal helpers: See BODY "Internal Helper Targets" section
-
-# ────────────────────────────────────────────────────────────────
-# Performance Considerations
-# ────────────────────────────────────────────────────────────────
-#
-# For Performance Considerations section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-008-performance-considerations.md
-#
-# See SETUP section above for build performance characteristics:
-# - Constants: Paths and names affecting build output
-# - Variables: Configurable options affecting build behavior
-#
-# Quick summary:
-# - Parallel builds: Use `make -j$(nproc)` for parallel execution
-# - Incremental builds: Make only rebuilds changed dependencies
-# - Clean builds: `make clean && make` forces full rebuild
-# - Dry runs: `make -n` shows commands without executing (fast)
-#
-# Key optimization tips:
-# - Order prerequisites by execution time (longest first for parallelism)
-# - Use order-only prerequisites (|) when dependency doesn't require rebuild
-# - Minimize recipe shell invocations (combine commands with &&)
-# - Use @ prefix to suppress command echo (reduces output overhead)
-
-# ────────────────────────────────────────────────────────────────
-# Troubleshooting Guide
-# ────────────────────────────────────────────────────────────────
-#
-# For Troubleshooting Guide section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-009-troubleshooting-guide.md
-#
-# Problem: "make: *** No rule to make target 'X'"
-#   Check: Target exists in Makefile
-#   Check: Target spelling matches exactly (case-sensitive)
-#   Check: No typo in prerequisite names
-#   Solution: Add missing target or fix spelling
-#
-# Problem: "make: 'X' is up to date"
-#   Expected: Target has no changed prerequisites
-#   Solution: `make clean && make X` for forced rebuild
-#   Solution: Touch source files to trigger rebuild
-#
-# Problem: Target runs but command fails
-#   Check: Required tools are installed (which tool)
-#   Check: Paths are correct for current directory
-#   Check: Variables are set correctly (make info)
-#   Solution: Install missing tools, fix paths, set variables
-#
-# Problem: "*** missing separator"
-#   Cause: Recipe lines must start with TAB, not spaces
-#   Solution: Convert leading spaces to TAB character
-#
-# Problem: Variable not expanding
-#   Check: Use $(VAR) not $VAR for multi-char names
-#   Check: Variable is defined before use
-#   Solution: Fix syntax or define variable
-#
-# Problem: Help shows wrong/missing targets
-#   Check: ## comments have correct format
-#   Check: sed command in help target is correct
-#   Solution: Add/fix ## comments on target lines
-
-# ────────────────────────────────────────────────────────────────
-# Related Components & Dependencies
-# ────────────────────────────────────────────────────────────────
-#
-# For Related Components section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-010-related-components.md
-#
-# See METADATA "Dependencies" section above for complete dependency information:
-# - Dependencies (What This Needs): System tools, language toolchain, external tools
-# - Dependents (What Uses This): Developers, CI/CD pipelines
-# - Integration Points: How scripts and automation connect
-#
-# Quick summary (details in METADATA Dependencies section above):
-# - Key dependencies: make, [language toolchain]
-# - Primary consumers: Developers, CI/CD
-#
-# Parallel Implementation (if applicable):
-#   - Other build systems: [CMake/Meson/Ninja equivalents if any]
-#   - CI configuration: [.github/workflows/, .gitlab-ci.yml, etc.]
-#   - Shared philosophy: 4-block structure, health tracking, clear targets
-
-# ────────────────────────────────────────────────────────────────
-# Future Expansions & Roadmap
-# ────────────────────────────────────────────────────────────────
-#
-# For Future Expansions section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-011-future-expansions.md
-#
-# Planned Features:
-#   ⏳ [Additional build targets]
-#   ⏳ [CI/CD integration targets]
-#   ⏳ [Documentation generation]
-#   ⏳ [Release/packaging automation]
-#
-# Research Areas:
-#   - [Cross-platform compatibility]
-#   - [Parallel build optimization]
-#   - [Containerized builds]
-#
-# Integration Targets:
-#   - [CI/CD pipeline integration]
-#   - [IDE integration]
-#   - [Container/Docker builds]
-#
-# Known Limitations to Address:
-#   - [Current limitation 1]
-#   - [Current limitation 2]
-#
-# Version History:
-#
-# See METADATA "Authorship & Lineage" section above for brief version changelog.
-# Comprehensive version history with full context:
-#
-#   [X.Y.Z] ([Date]) - [Initial version]
-#         - [Core targets implemented]
-#         - [4-block structure established]
-
-# ────────────────────────────────────────────────────────────────
-# Closing Note
-# ────────────────────────────────────────────────────────────────
-#
-# For Closing Note section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-012-closing-note.md
-#
-# This Makefile is the BUILD ORCHESTRATION LAYER for [project-name].
-# It coordinates compilation, testing, and execution through simple commands.
-#
-# Modify thoughtfully - changes here affect all build workflows.
-# Maintain the target naming conventions and help documentation.
-#
-# For questions, issues, or contributions:
-#   - Review the modification policy above
-#   - Follow the 4-block structure pattern
-#   - Test all targets before committing (make clean && make all)
-#   - Document new targets with ## comments
-#   - Update Target Dependency Graph when adding targets
-#
-# "[Relevant Scripture verse]" - [Reference]
-
-# ────────────────────────────────────────────────────────────────
-# Quick Reference: Usage Examples
-# ────────────────────────────────────────────────────────────────
-#
-# For Quick Reference section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-013-quick-reference.md
-#
-# Basic Usage:
-#   make              # Build and test (default)
+#   make              # Default: all (build + test)
 #   make build        # Build only
-#   make test         # Run tests
+#   make test         # Test only
+#   make run          # Build and run
 #   make clean        # Remove artifacts
-#   make help         # Show all targets
-#
-# Development Workflow:
-#   make build && make run          # Build and run
-#   make run ARGS="--verbose"       # Run with arguments
-#   make clean && make all          # Fresh build
-#
-# CI/CD Integration:
-#   make all          # Complete build pipeline
-#   make test         # Test phase
-#   make clean        # Cleanup phase
-#
-# Debugging:
-#   make -n all       # Dry-run (show commands)
-#   make info         # Show configuration
-#   make -p           # Print make database
-#
-# Configuration Override:
-#   make build BINARY_NAME=custom   # Override variable
-#   CC=clang make build             # Override environment
+#   make help         # Show targets
 
-# -----------------------------------------------------------------------------
-# CLOSING Omission Guide
-# -----------------------------------------------------------------------------
+# # X.2b Flow [FLOW]
 #
-# ALL thirteen sections MUST be present. Content may be reserved with reason:
-#
-# GROUP 1: CODING
-#   - Makefile Validation: Syntax and target verification
-#   - Makefile Execution: How make processes targets
-#   - Makefile Cleanup: Clean target patterns
-#
-# GROUP 2: FINAL DOCUMENTATION (mostly back-references)
-#   - Makefile Overview: Summary of build capabilities
-#   - Modification Policy: Guide for modifying targets safely
-#   - Ladder and Baton Flow: Back-reference to BODY target graph
-#   - Surgical Update Points: Where to add new targets
-#   - Performance Considerations: Parallel make and caching
-#   - Troubleshooting Guide: Common build problems
-#   - Related Components: Related Makefiles and includes
-#   - Future Expansions: [Reserved: Build complete, no planned targets]
-#   - Contribution Guidelines: How to add new targets
-#   - Quick Reference: Common make commands
-#
-# Unlike BODY (which uses [Reserved:] inline), CLOSING sections can be
-# entirely replaced with back-references to avoid duplication.
-#
-# The key principle: CLOSING synthesizes, METADATA/SETUP/BODY contain details.
-# Don't repeat - reference back to where the information lives.
+#   make → all → build → _ensure-dirs → test → exit
+#   make run → build → _ensure-dirs → run binary → exit
+#   make clean → remove $(BUILD_DIR) → exit
 
-# ============================================================================
+# # X.3 Cleanup [CLEANUP]
+#
+#   Purpose:  Clean target patterns and artifact management
+#   Contains: Safe Patterns, Dangerous Patterns
+#
+#   Safe Patterns:
+#     rm commands that only remove build artifacts
+#
+#   Dangerous Patterns:
+#     Commands that can destroy source or system
+
+# # X.3a Safe Patterns [SAFE]
+#
+#   rm -rf $(BUILD_DIR)   # Safe - only build output
+#   rm -f *.o             # Safe - only object files
+#   rm -f $(BUILD_DIR)/*  # Safe - contents only
+
+# # X.3b Dangerous Patterns [DANGEROUS]
+#
+#   rm -rf *              # CATASTROPHIC - removes everything
+#   rm -rf $(SRC_DIR)     # CATASTROPHIC - removes source code
+#   rm -rf /              # CATASTROPHIC - system destruction
+
+# ───────────────────────────────────────────────────────────────────────────────
+# END CODE SECTIONS
+# ───────────────────────────────────────────────────────────────────────────────
+
+# # X.4 Policy [POLICY]
+#
+#   Purpose:  Guide future maintainers — what's safe to change
+#   Contains: Safe / Careful / Never modification levels
+#
+# Safe to Modify:
+#   ✅ Add new targets (use ## for help)
+#   ✅ Add internal helpers (use _ prefix)
+#   ✅ Extend clean target
+#
+# Modify with Care:
+#   ⚠️ Default target (all) — affects bare `make`
+#   ⚠️ Target names — breaks scripts/CI
+#   ⚠️ Variable names — breaks overrides
+#
+# NEVER Modify:
+#   ❌ 4-block structure (METADATA, SETUP, BODY, CLOSING)
+#   ❌ Remove clean/help targets
+#   ❌ Hardcode absolute paths
+#
+# Validation: See X.1 for build and correctness checks.
+
+# # X.5 Extension [EXTENSION]
+#
+#   Purpose:  How to expand this Makefile — mirrors M.10 Roadmap
+#   Contains: Extension patterns, planned features
+#
+# Adding New Targets:
+#   1. Add to .PHONY declaration
+#   2. Add ## comment for help
+#   3. Add target with recipe
+#   4. Update B.1 Dependency Graph
+#
+# Adding New Variables:
+#   1. Add to S.2 (constants) or S.3 (variables)
+#   2. Use ?= for overridable, = for fixed
+#   3. Document in make info target
+#
+# Architecture: See BODY B.1 for Ladder/Baton structure.
+# Roadmap: See M.10 for planned features and research areas.
+
+# # X.6 Troubleshooting [TROUBLESHOOTING]
+#
+#   Purpose:  Common problems and solutions — makefile issues
+#
+# "No rule to make target 'X'":
+#   → Check target exists, spelling matches
+#
+# "'X' is up to date":
+#   → make clean && make X
+#
+# "Missing separator":
+#   → Recipe lines must use TAB, not spaces
+#
+# Variable not expanding:
+#   → Use $(VAR) not $VAR for multi-char names
+#
+# Target-specific troubleshooting in BODY B.3 target docstrings.
+
+# # X.7 Reference [REFERENCE]
+#
+#   Purpose:  Quick lookup — copy-paste ready commands
+#
+# Basic:
+#   make              # Build and test
+#   make build        # Build only
+#   make test         # Test only
+#   make clean        # Remove artifacts
+#
+# Development:
+#   make run ARGS="--verbose"   # Run with args
+#   make clean && make all      # Fresh build
+#
+# Debug:
+#   make -n all       # Dry-run
+#   make info         # Show config
+#   make -p           # Print database
+
+# # X.8 Closing Note [NOTE]
+#
+#   Purpose:  Final guidance and grounding — echoes M.8
+#   Verse:    Nehemiah 4:6
+#
+# This Makefile orchestrates build operations for [project-name].
+# Modify thoughtfully — changes affect all build workflows.
+#
+# "So built we the wall... for the people had a mind to work."
+#   — Nehemiah 4:6
+#
+# May organized labor build well.
+
+# # X.9 Template Guidance [TEMPLATE]
+#
+#   Purpose:  How to use this template — remove when instantiating
+#   Usage:    cp makefile.mk Makefile → update pragma → fill sections
+#
+# Update on instantiation:
+#   - M.1: Key, Title
+#   - M.2: Created/Updated dates
+#   - M.4: Path
+#   - M.5: Derives_from (point to this template)
+#   - M.9: Dependencies
+#   - M.10: Roadmap
+#   - S.2: Constants (BINARY_NAME, paths)
+#
+# Remove this section (X.9) when instantiating.
+
+# # X.10 Omission Guide [OMISSION]
+#
+#   Purpose:  What can be reserved and why — guidance for CLOSING sections
+#
+#   All sections must be present. Empty sections use: [Reserved: reason]
+#   Omit subsection content, never the subsection header itself.
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # END CLOSING
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 

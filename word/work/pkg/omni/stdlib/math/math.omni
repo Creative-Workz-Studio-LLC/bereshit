@@ -1,0 +1,221 @@
+#!omni code --omni -library
+#!omni meta.key = B-word-work-pkg-omni-stdlib-math
+#!omni meta.from = word/seed/code/omni/library.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a library for "Mathematical Operations":
+    keyed as "B-word-work-pkg-omni-stdlib-math"
+    named "math"
+
+this library provides:
+    abs         "Absolute value"
+    min         "Minimum of two values"
+    max         "Maximum of two values"
+    clamp       "Clamp value to range"
+    sign        "Sign of value (-1, 0, +1)"
+    is_even     "Check if even"
+    is_odd      "Check if odd"
+    is_positive "Check if positive"
+    is_negative "Check if negative"
+    is_zero     "Check if zero"
+    power_of_3  "Calculate 3^n"
+    div_floor   "Floor division"
+    mod         "Modulo operation"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # Mathematical Operations
+//
+// These operations are designed with balanced ternary in mind.
+// Many operations naturally produce three outcomes: negative, zero, positive.
+//
+// All operations respect the ternary paradigm where applicable.
+
+import covenant from "stdlib/covenant"
+import trit from "stdlib/trit"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # Basic Operations
+
+provide work abs that takes count value returns count:
+    when value is less than 0:
+        return 0 minus value
+    otherwise:
+        return value
+
+provide work min that takes count a and count b returns count:
+    when a is less than b:
+        return a
+    otherwise:
+        return b
+
+provide work max that takes count a and count b returns count:
+    when a is greater than b:
+        return a
+    otherwise:
+        return b
+
+provide work clamp that takes count value and count low and count high returns count:
+    when value is less than low:
+        return low
+    when value is greater than high:
+        return high
+    otherwise:
+        return value
+
+// # Sign Operations
+
+provide work sign that takes count value returns count:
+    when value is greater than 0:
+        return 1
+    when value is less than 0:
+        return -1
+    otherwise:
+        return 0
+
+provide work sign_covenant that takes count value returns covenant:
+    when value is greater than 0:
+        return granted
+    when value is less than 0:
+        return denied
+    otherwise:
+        return deferred
+
+// # Parity Checks
+
+provide work is_even that takes count value returns truth:
+    let remainder be count with value mod 2
+    when remainder is 0:
+        return yes
+    otherwise:
+        return no
+
+provide work is_odd that takes count value returns truth:
+    let remainder be count with value mod 2
+    when remainder is 0:
+        return no
+    otherwise:
+        return yes
+
+// # Sign Checks
+
+provide work is_positive that takes count value returns truth:
+    when value is greater than 0:
+        return yes
+    otherwise:
+        return no
+
+provide work is_negative that takes count value returns truth:
+    when value is less than 0:
+        return yes
+    otherwise:
+        return no
+
+provide work is_zero that takes count value returns truth:
+    when value is 0:
+        return yes
+    otherwise:
+        return no
+
+// # Powers of 3 (Ternary-native)
+
+provide work power_of_3 that takes count n returns count:
+    // Calculate 3^n for small n
+    when n is 0:
+        return 1
+    when n is 1:
+        return 3
+    when n is 2:
+        return 9
+    when n is 3:
+        return 27
+    when n is 4:
+        return 81
+    when n is 5:
+        return 243
+    when n is 6:
+        return 729
+    when n is 7:
+        return 2187
+    when n is 8:
+        return 6561
+    when n is 9:
+        return 19683
+    otherwise:
+        return 0
+
+// # Division Operations
+
+provide work div_floor that takes count dividend and count divisor returns count:
+    // Integer division rounding toward negative infinity
+    when divisor is 0:
+        return 0
+    otherwise:
+        let quotient be count with dividend divided by divisor
+        return quotient
+
+provide work mod that takes count dividend and count divisor returns count:
+    // Modulo operation
+    when divisor is 0:
+        return 0
+    otherwise:
+        let quotient be count with dividend divided by divisor
+        let product be count with quotient times divisor
+        return dividend minus product
+
+// # Bounded Operations
+
+provide work add_bounded that takes count a and count b and count max_val returns count:
+    let sum be count with a plus b
+    when sum is greater than max_val:
+        return max_val
+    otherwise:
+        return sum
+
+provide work sub_bounded that takes count a and count b and count min_val returns count:
+    let diff be count with a minus b
+    when diff is less than min_val:
+        return min_val
+    otherwise:
+        return diff
+
+// # Distance
+
+provide work distance that takes count a and count b returns count:
+    let diff be count with a minus b
+    return abs diff
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// "Yea, the LORD shall give that which is good; and our land shall yield
+//  her increase." — Psalm 85:12
+//
+// Mathematics reflects the order God placed in creation.
+// Numbers, like words, have meaning and purpose.
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

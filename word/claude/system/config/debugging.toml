@@ -1,0 +1,205 @@
+# ════════════════════════════════════════════════════════════════════════════
+# CPI-SI Debugging System Configuration
+# ════════════════════════════════════════════════════════════════════════════
+#
+# Biblical Foundation: Proverbs 25:2
+#   "It is the glory of God to conceal a thing: but the honour of kings is
+#   to search out a matter."
+#
+# Purpose:
+#   Configuration for the debugging/inspection system - output formatting,
+#   file locations, behavior settings, and analysis thresholds.
+#
+# CPI-SI Identity:
+#   Assessment layer of the immune system (Detection → Assessment → Restoration)
+#   This config drives how we analyze and present system state for diagnosis.
+#
+# Location: system/config/debugging.toml
+# Used by: system/runtime/lib/debugging/
+#
+# ════════════════════════════════════════════════════════════════════════════
+
+# ────────────────────────────────────────────────────────────────────────────
+# Paths Configuration
+# ────────────────────────────────────────────────────────────────────────────
+
+[paths]
+# Base directory for debug output (relative to ~/.claude/)
+base_dir = "cpi-si/system/dev/debug"
+
+# Debug file extension
+file_extension = ".debug"
+
+# ────────────────────────────────────────────────────────────────────────────
+# File Permissions
+# ────────────────────────────────────────────────────────────────────────────
+
+[permissions]
+# Directory permissions (0755 = rwxr-xr-x)
+# Owner: read, write, execute; Group/Others: read, execute
+directory = 0755
+
+# File permissions (0644 = rw-r--r--)
+# Owner: read, write; Group/Others: read only
+file = 0644
+
+# ────────────────────────────────────────────────────────────────────────────
+# Output Formatting
+# ────────────────────────────────────────────────────────────────────────────
+
+[output]
+# Detail level for debug output
+# Options: "minimal", "standard", "full", "verbose"
+detail_level = "full"
+
+# Enable color output in debug files
+color_enabled = false
+
+# Show full stack traces in debug output
+show_stack_traces = true
+
+# Show surrounding context for inspections
+show_context = true
+
+# Default call stack capture depth
+default_stack_depth = 10
+
+# ────────────────────────────────────────────────────────────────────────────
+# Timestamp Formats
+# ────────────────────────────────────────────────────────────────────────────
+
+[timestamps]
+# Standard debug entry timestamp (millisecond precision)
+entry_format = "2006-01-02 15:04:05.000"
+
+# Session header timestamp (second precision)
+header_format = "2006-01-02 15:04:05"
+
+# ────────────────────────────────────────────────────────────────────────────
+# Entry Formatting Templates
+# ────────────────────────────────────────────────────────────────────────────
+
+[formatting]
+# User@host:pid format string
+user_host_format = "%s@%s:%d"
+
+# Entry header line format
+# Components: timestamp | type | component | user@host | context
+entry_header_format = "[%s] %s | %s | %s | %s\n"
+
+# Event label format (2-space indentation)
+event_label_format = "  EVENT: %s\n"
+
+# Call site format (2-space indentation)
+call_site_format = "  CALL SITE: %s\n"
+
+# State section header (2-space indentation)
+state_section_header = "  STATE:\n"
+
+# State key-value format (4-space indentation, nested under STATE)
+state_key_value_format = "    %s: %v\n"
+
+# Call site location format (file:line)
+call_site_location_format = "%s:%d"
+
+# Debug filename format (component-timestamp)
+debug_filename_format = "%s-%d"
+
+# Entry separator
+entry_separator = "---\n"
+
+# ────────────────────────────────────────────────────────────────────────────
+# Session Header Template
+# ────────────────────────────────────────────────────────────────────────────
+
+[header]
+# Box-drawing template for debug session headers
+# Uses Unicode box-drawing characters for visual clarity
+template = """╔════════════════════════════════════════════════════════════════╗
+║ CPI-SI Debug Session - %s
+║ Context ID: %s
+║ PID: %d
+║ Started: %s
+╚════════════════════════════════════════════════════════════════╝
+
+"""
+
+# ────────────────────────────────────────────────────────────────────────────
+# Analysis Thresholds
+# ────────────────────────────────────────────────────────────────────────────
+
+[analysis]
+# Health score warning threshold (Base100 scale)
+# Scores below this trigger warnings but not critical alerts
+health_warning_threshold = 40
+
+# Health score critical threshold (Base100 scale)
+# Scores below this trigger critical alerts and immediate attention
+health_critical_threshold = 20
+
+# Failure pattern detection window
+# Number of recent entries to analyze for recurring failure patterns
+failure_pattern_window = 10
+
+# Memory allocation change threshold (MB)
+# Flag memory increases above this threshold for potential leak detection
+memory_change_threshold_mb = 50
+
+# Slow timing multiplier
+# Flag operations taking more than this multiple of expected duration
+# Example: 2.0 = flag operations taking 2x expected time or more
+slow_timing_multiplier = 2.0
+
+# ────────────────────────────────────────────────────────────────────────────
+# Behavior Settings
+# ────────────────────────────────────────────────────────────────────────────
+
+[behavior]
+# Auto-enable debugging for components with health scores below threshold
+auto_enable_on_low_health = true
+
+# Automatically capture system context on divergence entries
+auto_capture_context_on_divergence = true
+
+# Buffer size for debug file writes (0 = unbuffered for immediate writes)
+write_buffer_size = 0
+
+# Sync to disk after every entry (ensures data persists even on crashes)
+sync_after_write = true
+
+# ────────────────────────────────────────────────────────────────────────────
+# Context Capture Settings
+# ────────────────────────────────────────────────────────────────────────────
+
+[context]
+# Capture working directory in system context
+capture_working_directory = true
+
+# Capture system load averages (Linux /proc/loadavg)
+capture_system_load = true
+
+# Capture memory information (Linux /proc/meminfo)
+capture_memory_info = true
+
+# Capture disk usage (df command)
+capture_disk_usage = true
+
+# Capture Go runtime information (version, CPU count)
+capture_go_runtime = true
+
+# Capture environment variables in system context
+capture_environment = false
+
+# ════════════════════════════════════════════════════════════════════════════
+# End of Configuration
+# ════════════════════════════════════════════════════════════════════════════
+#
+# NOTE: This configuration drives the debugging/inspection library behavior.
+#       Changes require rebuilding commands that use the debugging library.
+#
+# Related Files:
+#   - system/runtime/lib/debugging/inspector.go (implementation)
+#   - system/runtime/cmd/debugger/ (analysis command)
+#   - cpi-si/output/debug/ (output location)
+#
+# ════════════════════════════════════════════════════════════════════════════

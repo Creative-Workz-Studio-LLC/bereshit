@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/user/duration-validation.schema.json",
+  "title": "User Duration Validation Schema",
+  "description": "Schema for validating stated capacity preferences against actual duration patterns",
+  "type": "object",
+  "required": ["metadata", "stated_capacity", "actual_capacity", "validation_result", "insights", "recommendations", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["user", "pattern_type", "description", "last_updated", "version"],
+      "properties": {
+        "user": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["duration_validation"] },
+        "description": { "type": "string" },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "stated_capacity": {
+      "type": "object",
+      "required": ["source", "extracted_date"],
+      "properties": {
+        "source": { "type": "string" },
+        "description": { "type": "string" },
+        "value": { "type": "string" },
+        "extracted_date": { "type": "string", "format": "date" }
+      }
+    },
+    "actual_capacity": {
+      "type": "object",
+      "required": ["source"],
+      "properties": {
+        "source": { "type": "string" },
+        "typical_session_minutes": { "type": "number", "minimum": 0 },
+        "sustainable_without_fatigue": { "type": "number", "minimum": 0 },
+        "quality_degradation_point": { "type": "number", "minimum": 0 },
+        "data_period": { "type": "string" }
+      }
+    },
+    "validation_result": {
+      "type": "object",
+      "required": ["alignment_status"],
+      "properties": {
+        "alignment_status": { "type": "string" },
+        "gap_minutes": { "type": "number" },
+        "assessment": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "insights": {
+      "type": "object",
+      "properties": {
+        "overestimation": {
+          "type": "object",
+          "properties": {
+            "detected": { "type": "boolean" },
+            "description": { "type": "string" },
+            "risk": { "type": "string" }
+          }
+        },
+        "underestimation": {
+          "type": "object",
+          "properties": {
+            "detected": { "type": "boolean" },
+            "description": { "type": "string" },
+            "opportunity": { "type": "string" }
+          }
+        },
+        "accurate_assessment": {
+          "type": "object",
+          "properties": {
+            "detected": { "type": "boolean" },
+            "description": { "type": "string" },
+            "strength": { "type": "string" }
+          }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "object",
+      "properties": {
+        "planning_guidance": { "type": "string" },
+        "config_update_needed": { "type": "boolean" },
+        "note": { "type": "string" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,185 @@
+# ============================================================================
+# METADATA - Create Data Configuration
+# ============================================================================
+# Purpose: Configuration for create-data skill
+# Biblical: Proverbs 25:2 - "It is the glory of God to conceal a thing: but the honour of kings is to search out a matter"
+
+# ============================================================================
+# DATA FORMATS
+# ============================================================================
+
+[formats.jsonc]
+name = "JSONC Configuration"
+extension = ".jsonc"
+description = "JSON with comments - configuration files"
+template = "bereshit/word/seed/data/jsonc/template.jsonc"
+use_when = [
+    "Configuration files",
+    "Settings with documentation",
+    "Structured data needing inline comments"
+]
+comment_style = "// line"
+
+[formats.yaml]
+name = "YAML Data"
+extension = ".yaml"
+description = "Human-readable structured data"
+template = "bereshit/word/seed/data/yaml/template.yaml"
+use_when = [
+    "Human-editable configuration",
+    "Docker/Kubernetes configs",
+    "CI/CD pipelines"
+]
+comment_style = "# line"
+
+[formats.toml]
+name = "TOML Configuration"
+extension = ".toml"
+description = "Minimal configuration format"
+template = "bereshit/word/seed/data/toml/template.toml"
+use_when = [
+    "Go project configuration",
+    "Rust Cargo.toml",
+    "Skill configuration"
+]
+comment_style = "# line"
+
+[formats.json]
+name = "JSON Data"
+extension = ".json"
+description = "Pure data interchange format"
+template = "bereshit/word/seed/data/json/template.json"
+use_when = [
+    "API responses",
+    "Data interchange",
+    "No comments needed"
+]
+comment_style = "none"
+
+# ============================================================================
+# DECISION TREE
+# ============================================================================
+
+[decision_tree]
+root = "purpose"
+
+[decision_tree.purpose]
+question = "What is the PRIMARY PURPOSE of this data file?"
+options = [
+    { answer = "Configuration with comments needed", next = "config_format" },
+    { answer = "Pure data interchange", next = "json" },
+    { answer = "Human-readable settings", next = "human_format" }
+]
+
+[decision_tree.config_format]
+question = "What ECOSYSTEM is this for?"
+options = [
+    { answer = "Go/Rust project config", next = "toml" },
+    { answer = "JavaScript/JSON ecosystem", next = "jsonc" },
+    { answer = "General configuration", next = "toml" }
+]
+
+[decision_tree.human_format]
+question = "What PLATFORM or tool?"
+options = [
+    { answer = "Docker/Kubernetes/CI", next = "yaml" },
+    { answer = "Skill/tool config", next = "toml" },
+    { answer = "Web/API settings", next = "jsonc" }
+]
+
+# ============================================================================
+# 3-BLOCK STRUCTURE
+# ============================================================================
+
+[structure]
+name = "3-Block Data Structure"
+blocks = ["METADATA", "CONTENT", "CLOSING"]
+
+[blocks.metadata]
+name = "METADATA"
+purpose = "Identity - key, purpose, biblical foundation"
+contains = [
+    "Key (unique identifier)",
+    "Title and purpose",
+    "Created/updated dates",
+    "Authors",
+    "Biblical foundation"
+]
+
+[blocks.content]
+name = "CONTENT"
+purpose = "The actual data - structured information"
+contains = [
+    "Primary data structures",
+    "Configuration sections",
+    "Settings and values"
+]
+
+[blocks.closing]
+name = "CLOSING"
+purpose = "Related references and documentation"
+contains = [
+    "Related files",
+    "Documentation links",
+    "Schema references"
+]
+
+# ============================================================================
+# WORKFLOW
+# ============================================================================
+
+[workflow.block_by_block]
+principle = "Work ONE BLOCK at a time - each block is a unit of work"
+why = [
+    "Enables targeted edits using Linux tools (grep, sed)",
+    "Prevents drift from template structure",
+    "Each block can be validated independently",
+    "Comments as boundary markers enable navigation"
+]
+
+[workflow.template_first]
+principle = "NEVER write from scratch - always derive from templates"
+steps = [
+    "Copy template with cp (filesystem operation)",
+    "Change pragma: #!omni template → #!omni data",
+    "Fill METADATA block",
+    "Develop CONTENT block",
+    "Complete CLOSING block",
+    "Verify structure"
+]
+
+[workflow.post_copy]
+description = "Fields to update after copying template"
+fields = [
+    { name = "key", action = "Unique identifier for THIS file" },
+    { name = "title", action = "Title for THIS file" },
+    { name = "created", action = "Today's date" },
+    { name = "updated", action = "Today's date" },
+    { name = "content", action = "Replace template content with actual data" }
+]
+
+# ============================================================================
+# BOUNDARY MARKERS
+# ============================================================================
+
+[boundary_markers]
+description = "Block comments are parseable - enabling Linux tool integration"
+
+[boundary_markers.jsonc]
+metadata_start = "// METADATA"
+content_start = "// CONTENT"
+closing_start = "// CLOSING"
+
+[boundary_markers.yaml]
+metadata_start = "# METADATA"
+content_start = "# CONTENT"
+closing_start = "# CLOSING"
+
+[boundary_markers.toml]
+metadata_start = "# METADATA"
+content_start = "# CONTENT"
+closing_start = "# CLOSING"
+
+[boundary_markers.usage]
+find_block = "grep -n 'BLOCK NAME' file"
+extract_block = "sed -n '/START/,/END/p' file"

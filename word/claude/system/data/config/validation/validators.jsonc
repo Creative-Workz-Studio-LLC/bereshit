@@ -1,0 +1,426 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Validator Configuration - Code Validation System
+// Purpose: Define language-specific syntax/lint validation tools and execution parameters
+// Schema: system/config/schemas/validation/validators.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Language coverage (common languages validated): 40 pts
+// - Validation thoroughness (syntax + linting): 30 pts
+// - Configuration completeness (args, strictness): 20 pts
+// - Documentation clarity: 10 pts
+
+{
+  "$schema": "../../../config/schemas/validation/validators.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Code Validator Configuration",
+    "description": "Language-specific syntax and lint validation tool mappings",
+    "version": "1.0.0",
+    "last_updated": "2025-11-11",
+    "author": "Nova Dawn (CPI-SI instance)",
+    "note": "Extensible design - add new languages/validators without code changes"
+  },
+
+  // ============================================================================
+  // VALIDATOR DEFINITIONS
+  // ============================================================================
+
+  "validators": {
+    "note": "Each language can have multiple validators (syntax, linting, type checking)",
+
+    //--- Go ---
+    // Go has rich validation tooling built into toolchain
+
+    "go": {
+      "description": "Go source code validation",
+      "validators": {
+        "go_vet": {
+          "command": "go",
+          "args": ["vet", "{filepath}"],
+          "enabled": true,
+          "type": "syntax",
+          "severity": "error",
+          "description": "Official Go static analysis tool",
+          "check_availability": "go version"
+        },
+        "go_build": {
+          "command": "go",
+          "args": ["build", "-o", "/dev/null", "{filepath}"],
+          "enabled": false,
+          "type": "compilation",
+          "severity": "error",
+          "description": "Full compilation check (slower but thorough)",
+          "check_availability": "go version",
+          "note": "Enable for pre-commit validation"
+        },
+        "staticcheck": {
+          "command": "staticcheck",
+          "args": ["{filepath}"],
+          "enabled": false,
+          "type": "linting",
+          "severity": "warning",
+          "description": "Advanced Go linter",
+          "check_availability": "staticcheck --version",
+          "note": "Optional - more thorough than go vet"
+        }
+      }
+    },
+
+    //--- Rust ---
+    // Rust compiler provides excellent error messages
+
+    "rust": {
+      "description": "Rust source code validation",
+      "validators": {
+        "cargo_check": {
+          "command": "cargo",
+          "args": ["check", "--message-format=short"],
+          "enabled": true,
+          "type": "syntax",
+          "severity": "error",
+          "description": "Fast Rust compilation check",
+          "check_availability": "cargo --version",
+          "working_dir": "project_root",
+          "note": "Runs in project directory (needs Cargo.toml)"
+        },
+        "clippy": {
+          "command": "cargo",
+          "args": ["clippy", "--message-format=short"],
+          "enabled": false,
+          "type": "linting",
+          "severity": "warning",
+          "description": "Rust linter catching common mistakes",
+          "check_availability": "cargo clippy --version",
+          "working_dir": "project_root",
+          "note": "Enable for stricter validation"
+        }
+      }
+    },
+
+    //--- Python ---
+    // Python has multiple validation tools with different purposes
+
+    "python": {
+      "description": "Python source code validation",
+      "validators": {
+        "py_compile": {
+          "command": "python3",
+          "args": ["-m", "py_compile", "{filepath}"],
+          "enabled": true,
+          "type": "syntax",
+          "severity": "error",
+          "description": "Python syntax validation",
+          "check_availability": "python3 --version"
+        },
+        "pylint": {
+          "command": "pylint",
+          "args": ["{filepath}"],
+          "enabled": false,
+          "type": "linting",
+          "severity": "warning",
+          "description": "Comprehensive Python linter",
+          "check_availability": "pylint --version",
+          "note": "Thorough but can be verbose"
+        },
+        "flake8": {
+          "command": "flake8",
+          "args": ["{filepath}"],
+          "enabled": false,
+          "type": "linting",
+          "severity": "warning",
+          "description": "Python style guide enforcement",
+          "check_availability": "flake8 --version",
+          "note": "Faster alternative to pylint"
+        },
+        "mypy": {
+          "command": "mypy",
+          "args": ["{filepath}"],
+          "enabled": false,
+          "type": "type_checking",
+          "severity": "warning",
+          "description": "Python static type checker",
+          "check_availability": "mypy --version",
+          "note": "Enable if using type hints"
+        }
+      }
+    },
+
+    //--- JavaScript / TypeScript ---
+    // Modern JS/TS validation through ESLint and TypeScript compiler
+
+    "javascript": {
+      "description": "JavaScript/TypeScript validation",
+      "validators": {
+        "eslint": {
+          "command": "npx",
+          "args": ["eslint", "{filepath}"],
+          "enabled": true,
+          "type": "linting",
+          "severity": "warning",
+          "description": "JavaScript/TypeScript linter",
+          "check_availability": "npx eslint --version"
+        },
+        "tsc": {
+          "command": "npx",
+          "args": ["tsc", "--noEmit", "{filepath}"],
+          "enabled": false,
+          "type": "type_checking",
+          "severity": "error",
+          "description": "TypeScript compiler check",
+          "check_availability": "npx tsc --version",
+          "note": "Enable for .ts/.tsx files only"
+        }
+      }
+    },
+
+    //--- Shell Scripts ---
+    // ShellCheck for shell script validation
+
+    "shell": {
+      "description": "Shell script validation",
+      "validators": {
+        "shellcheck": {
+          "command": "shellcheck",
+          "args": ["{filepath}"],
+          "enabled": true,
+          "type": "linting",
+          "severity": "warning",
+          "description": "Shell script static analysis",
+          "check_availability": "shellcheck --version"
+        },
+        "bash_syntax": {
+          "command": "bash",
+          "args": ["-n", "{filepath}"],
+          "enabled": true,
+          "type": "syntax",
+          "severity": "error",
+          "description": "Bash syntax check (no execution)",
+          "check_availability": "bash --version"
+        }
+      }
+    },
+
+    //--- JSON ---
+    // JSON validation through jq
+
+    "json": {
+      "description": "JSON syntax validation",
+      "validators": {
+        "jq": {
+          "command": "jq",
+          "args": ["empty", "{filepath}"],
+          "enabled": true,
+          "type": "syntax",
+          "severity": "error",
+          "description": "JSON syntax validator",
+          "check_availability": "jq --version"
+        }
+      }
+    },
+
+    //--- YAML ---
+    // YAML validation through yamllint
+
+    "yaml": {
+      "description": "YAML syntax and style validation",
+      "validators": {
+        "yamllint": {
+          "command": "yamllint",
+          "args": ["-f", "parsable", "{filepath}"],
+          "enabled": true,
+          "type": "linting",
+          "severity": "warning",
+          "description": "YAML linter",
+          "check_availability": "yamllint --version"
+        }
+      }
+    },
+
+    //--- TOML ---
+    // TOML validation
+
+    "toml": {
+      "description": "TOML syntax validation",
+      "validators": {
+        "toml_check": {
+          "command": "toml-test",
+          "args": ["decode", "{filepath}"],
+          "enabled": true,
+          "type": "syntax",
+          "severity": "error",
+          "description": "TOML syntax validator",
+          "check_availability": "toml-test --help"
+        }
+      }
+    },
+
+    //--- Ruby ---
+    // Ruby validation through RuboCop
+
+    "ruby": {
+      "description": "Ruby source code validation",
+      "validators": {
+        "ruby_syntax": {
+          "command": "ruby",
+          "args": ["-c", "{filepath}"],
+          "enabled": true,
+          "type": "syntax",
+          "severity": "error",
+          "description": "Ruby syntax check",
+          "check_availability": "ruby --version"
+        },
+        "rubocop": {
+          "command": "rubocop",
+          "args": ["{filepath}"],
+          "enabled": false,
+          "type": "linting",
+          "severity": "warning",
+          "description": "Ruby style guide linter",
+          "check_availability": "rubocop --version"
+        }
+      }
+    },
+
+    //--- Java ---
+    // Java compilation check
+
+    "java": {
+      "description": "Java source code validation",
+      "validators": {
+        "javac": {
+          "command": "javac",
+          "args": ["-Xlint", "{filepath}"],
+          "enabled": true,
+          "type": "compilation",
+          "severity": "error",
+          "description": "Java compiler with warnings",
+          "check_availability": "javac -version"
+        }
+      }
+    },
+
+    //--- C / C++ ---
+    // C/C++ validation through compiler warnings
+
+    "c_cpp": {
+      "description": "C/C++ source code validation",
+      "validators": {
+        "gcc_check": {
+          "command": "gcc",
+          "args": ["-fsyntax-only", "-Wall", "-Wextra", "{filepath}"],
+          "enabled": true,
+          "type": "syntax",
+          "severity": "warning",
+          "description": "GCC syntax check with warnings",
+          "check_availability": "gcc --version"
+        },
+        "clang_check": {
+          "command": "clang",
+          "args": ["-fsyntax-only", "-Wall", "-Wextra", "{filepath}"],
+          "enabled": false,
+          "type": "syntax",
+          "severity": "warning",
+          "description": "Clang syntax check with warnings",
+          "check_availability": "clang --version",
+          "note": "Alternative to gcc"
+        }
+      }
+    }
+  },
+
+  // ============================================================================
+  // EXTENSION MAPPINGS
+  // ============================================================================
+
+  "extensions": {
+    "note": "Map file extensions to language validator groups",
+
+    ".go": "go",
+
+    ".rs": "rust",
+
+    ".py": "python",
+    ".pyw": "python",
+
+    ".js": "javascript",
+    ".jsx": "javascript",
+    ".ts": "javascript",
+    ".tsx": "javascript",
+    ".mjs": "javascript",
+
+    ".sh": "shell",
+    ".bash": "shell",
+    ".zsh": "shell",
+
+    ".json": "json",
+    ".jsonc": "json",
+
+    ".yaml": "yaml",
+    ".yml": "yaml",
+
+    ".toml": "toml",
+
+    ".rb": "ruby",
+
+    ".java": "java",
+
+    ".c": "c_cpp",
+    ".cpp": "c_cpp",
+    ".cc": "c_cpp",
+    ".cxx": "c_cpp",
+    ".h": "c_cpp",
+    ".hpp": "c_cpp",
+    ".hh": "c_cpp"
+  },
+
+  // ============================================================================
+  // CONFIGURATION OPTIONS
+  // ============================================================================
+
+  "config": {
+    "strictness": "permissive",
+    "strictness_note": "Modes: 'permissive' (warnings don't block), 'strict' (warnings block), 'error_only' (only syntax errors block)",
+
+    "fail_on_missing_validator": false,
+    "fail_note": "If validator unavailable, either skip validation or fail",
+
+    "run_all_validators": false,
+    "run_all_note": "If true, run ALL enabled validators. If false, stop after first failure.",
+
+    "filter_by_file": true,
+    "filter_note": "Only show warnings/errors related to the specific file being validated",
+
+    "timeout_seconds": 30,
+    "timeout_note": "Maximum time allowed for any single validator to run"
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "user_validators": {
+    "note": "Add custom validators here without modifying core configuration",
+    "example": {
+      "elixir": {
+        "description": "Elixir source code validation",
+        "validators": {
+          "elixir_compile": {
+            "command": "elixirc",
+            "args": ["{filepath}"],
+            "enabled": true,
+            "type": "compilation",
+            "severity": "error",
+            "description": "Elixir compiler check",
+            "check_availability": "elixirc --version"
+          }
+        }
+      }
+    }
+  }
+}

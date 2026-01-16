@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/user/stopping-reasons-learned.schema.json",
+  "title": "User Stopping Reasons Learned Patterns Schema",
+  "description": "Schema for learned patterns about how and why sessions end",
+  "type": "object",
+  "required": ["metadata", "stopping_reasons", "patterns", "quality_correlations", "sustainable_rhythm_assessment", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["user", "pattern_type", "description", "data_period", "last_updated", "version"],
+      "properties": {
+        "user": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["stopping_reasons_learned"] },
+        "description": { "type": "string" },
+        "data_period": {
+          "type": "object",
+          "required": ["start", "end", "total_sessions_analyzed"],
+          "properties": {
+            "start": { "type": "string", "format": "date" },
+            "end": { "type": "string", "format": "date" },
+            "total_sessions_analyzed": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "stopping_reasons": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "natural_completion": { "$ref": "#/definitions/stoppingReason" },
+        "fatigue": { "$ref": "#/definitions/stoppingReason" },
+        "interruption": { "$ref": "#/definitions/stoppingReason" },
+        "time_constraint": { "$ref": "#/definitions/stoppingReason" },
+        "sabbath": { "$ref": "#/definitions/stoppingReason" },
+        "context_switch": { "$ref": "#/definitions/stoppingReason" },
+        "technical_issue": { "$ref": "#/definitions/stoppingReason" }
+      }
+    },
+    "patterns": {
+      "type": "object",
+      "properties": {
+        "most_common_reason": { "type": "string" },
+        "healthiest_stopping_pattern": { "type": "string" },
+        "concern_indicators": {
+          "type": "object",
+          "properties": {
+            "high_fatigue_percentage": { "type": "boolean" },
+            "frequent_interruptions": { "type": "boolean" },
+            "low_natural_completions": { "type": "boolean" },
+            "note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "quality_correlations": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "positive_indicators": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "negative_indicators": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "neutral_indicators": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "sustainable_rhythm_assessment": {
+      "type": "object",
+      "properties": {
+        "natural_stopping_percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+        "fatigue_stopping_percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+        "assessment": { "type": "string" },
+        "recommendation": { "type": "string" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "definitions": {
+    "stoppingReason": {
+      "type": "object",
+      "required": ["description", "session_count", "percentage", "avg_health_score", "quality_assessment"],
+      "properties": {
+        "description": { "type": "string" },
+        "session_count": { "type": "integer", "minimum": 0 },
+        "percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+        "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+        "avg_duration_minutes": { "type": "number", "minimum": 0 },
+        "quality_assessment": { "type": "string" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

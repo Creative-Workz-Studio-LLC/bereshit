@@ -1,0 +1,337 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# TEMPLATE: Git Ignore File (4-Block Structure for Compiler Projects)
+# Key: LANG-TEMPLATE-019
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# This is a TEMPLATE file - copy and modify for new compiler projects.
+# Replace all [bracketed] placeholders with actual content.
+# Rename to .gitignore (remove template prefix).
+#
+# Derived from: templates/code/dotfiles/CODE-GIT-001-GIT-gitignore.gitignore
+# See: standards/code/4-block/ for complete documentation
+#
+# Compiler-Specific Adaptations:
+#   - Go build artifacts and test caches
+#   - OmniCode compiler output directories
+#   - AST dumps and debug output
+#   - Generated code from codegen phase
+#   - Health scoring logs and reports
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# # Biblical Foundation
+#
+# Scripture: "But let your communication be, Yea, yea; Nay, nay: for whatsoever
+# is more than these cometh of evil." - Matthew 5:37
+#
+# Principle: Clear boundaries define what belongs in version control. For a
+# compiler project, we track source code and documentation but exclude build
+# artifacts, generated code, and debugging output that can be recreated.
+#
+# Anchor: "A time to keep, and a time to cast away." - Ecclesiastes 3:6
+#
+# # CPI-SI Identity
+#
+# Component Type: Rails
+#
+# Gitignore provides infrastructure that affects ALL version control for the
+# compiler project. It ensures clean repository state and prevents accidental
+# commit of generated binaries or sensitive debugging output.
+#
+# Role: Repository hygiene for compiler development
+#
+# Paradigm: CPI-SI framework component - compiler version control configuration
+#
+# # Authorship & Lineage
+#
+#   - Architect: Seanje Lenox-Wise (language design)
+#   - Implementation: Nova Dawn (CPI-SI)
+#   - Created: [YYYY-MM-DD]
+#   - Version: [MAJOR.MINOR.PATCH]
+#   - Modified: [YYYY-MM-DD - what changed]
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# SETUP
+# =============================================================================
+#
+# File Identity:
+#   - Key: LANG-TEMPLATE-015
+#   - Consumer: Git version control system
+#   - Loader: Automatic - git reads .gitignore recursively
+#
+# Related Files:
+#   - Root: ../../.gitignore (project-wide ignores)
+#   - Global: ~/.gitignore_global (user-wide ignores)
+#
+# =============================================================================
+# END SETUP
+# =============================================================================
+
+# =============================================================================
+# BODY
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Go Build Artifacts
+# -----------------------------------------------------------------------------
+# Go-specific build outputs and caches.
+
+# Compiled binaries (conventionally in bin/ or root)
+/bin/
+/omnic
+/omnic.exe
+
+# Go build cache and test cache
+.cache/
+
+# Go module download cache (usually in GOPATH, but just in case)
+/pkg/
+
+# Coverage output
+coverage.out
+coverage.html
+*.coverprofile
+
+# CPU/Memory profiles
+*.prof
+*.pprof
+
+# Go workspace (if not sharing)
+# go.work
+# go.work.sum
+
+# -----------------------------------------------------------------------------
+# Compiler Output Directories
+# -----------------------------------------------------------------------------
+# Directories where the compiler writes output.
+
+# Build output directory
+/build/
+/dist/
+/out/
+
+# Generated code from codegen phase
+/generated/
+
+# Intermediate representation files
+*.ir
+*.ll
+*.bc
+
+# Object files and assembly output
+*.o
+*.s
+*.S.out
+
+# Executable output (when testing compiler)
+*.omnic.out
+
+# -----------------------------------------------------------------------------
+# Debugging and Development Output
+# -----------------------------------------------------------------------------
+# Temporary files generated during development and debugging.
+
+# AST dump files
+*.ast
+*.ast.json
+*.ast.txt
+/ast-dumps/
+
+# Token stream dumps
+*.tokens
+*.tokens.json
+
+# Parse tree dumps
+*.parse
+*.parse.json
+
+# Symbol table dumps
+*.symtab
+*.symbols
+
+# Type checking output
+*.types
+*.typecheck
+
+# Compiler trace output
+*.trace
+/traces/
+
+# Debug logs
+debug.log
+compiler-debug.log
+/debug-output/
+
+# -----------------------------------------------------------------------------
+# Health Scoring Output
+# -----------------------------------------------------------------------------
+# Health scoring reports and logs.
+
+# Health reports
+*.health
+*.health.json
+/health-reports/
+
+# Scoring logs
+health-scoring.log
+
+# Detection resolution output
+*.hardpoints
+*.detection
+
+# -----------------------------------------------------------------------------
+# Test Artifacts
+# -----------------------------------------------------------------------------
+# Test-generated files.
+
+# Test binaries
+*_test
+*.test
+/test-output/
+
+# Test fixtures (generated, not checked in)
+/test-fixtures-generated/
+
+# Benchmark output
+*.bench
+/benchmarks/results/
+
+# Fuzzing corpus (can be large)
+/fuzz/corpus/
+/fuzz/crashers/
+
+# -----------------------------------------------------------------------------
+# IDE and Editor (Compiler Development)
+# -----------------------------------------------------------------------------
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains (GoLand)
+.idea/
+
+# Vim
+*.swp
+*.swo
+*~
+
+# -----------------------------------------------------------------------------
+# Environment and Secrets
+# -----------------------------------------------------------------------------
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Never commit these
+*.pem
+*.key
+
+# -----------------------------------------------------------------------------
+# OS Generated
+# -----------------------------------------------------------------------------
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Linux
+*~
+
+# -----------------------------------------------------------------------------
+# Logs and Temporary Files
+# -----------------------------------------------------------------------------
+
+# Log files
+*.log
+/logs/
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
+# -----------------------------------------------------------------------------
+# Documentation Generation (if applicable)
+# -----------------------------------------------------------------------------
+
+# Generated documentation
+/docs/generated/
+/docs/api/generated/
+
+# godoc output
+/godoc/
+
+# =============================================================================
+# END BODY
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# -----------------------------------------------------------------------------
+# Validation
+# -----------------------------------------------------------------------------
+#
+# Verify gitignore is working:
+#
+#   # Check if compiler binary is ignored
+#   git check-ignore -v bin/omnic
+#
+#   # List all ignored files
+#   git status --ignored
+#
+# Common Compiler-Specific Issues:
+#
+#   "Binary committed" - Add to gitignore, then: git rm --cached bin/omnic
+#   "AST dumps in repo" - Add *.ast pattern, clean up existing
+#   "Test output tracked" - Ensure /test-output/ is ignored
+#
+# -----------------------------------------------------------------------------
+# Modification Policy
+# -----------------------------------------------------------------------------
+#
+# Safe to Modify:
+#   ✅ Add patterns for new compiler phases
+#   ✅ Add patterns for new output formats
+#   ✅ Refine patterns for development needs
+#
+# Modify with Care:
+#   ⚠️ Removing build artifact patterns
+#   ⚠️ Patterns that might match source files
+#
+# NEVER:
+#   ❌ Remove *.key, *.pem patterns
+#   ❌ Remove environment file patterns
+#   ❌ 4-block documentation structure
+#
+# -----------------------------------------------------------------------------
+# Closing Note
+# -----------------------------------------------------------------------------
+#
+# This gitignore keeps the compiler repository clean by excluding build
+# artifacts, generated output, and debugging files.
+#
+# "A time to keep, and a time to cast away." - Ecclesiastes 3:6
+#
+# Keep source code, cast away what can be regenerated.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

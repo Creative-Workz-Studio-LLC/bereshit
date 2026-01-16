@@ -1,83 +1,418 @@
+// #!omni data --jsonc -config
+// #!omni meta.key = B-tov-data-system-config-display-formatting
+// #!omni meta.from = word/seed/data/json/3block/config.jsonc
+// #!omni meta.at = b-02.00
+//
 // ============================================================================
-// METADATA
+// METADATA [METADATA]
 // ============================================================================
-// Display Formatting Library Configuration - Rails Infrastructure
-// Purpose: Universal ANSI color and formatting configuration for all components
+//
+// Display System Configuration - Complete UI/UX Infrastructure
+//
+// Purpose: Universal display configuration for CLI, TUI, and GUI backends
 // Type: RAIL configuration (stdlib-only infrastructure)
+// Scope: All display output, themes, menus, keybindings, IDE styling
 //
 // HEALTH SCORING MAP (Total = 100):
-// - Configuration loaded successfully: +40 pts
-// - All required fields present: +30 pts
-// - Valid ANSI codes and Unicode: +20 pts
-// - Graceful fallback on errors: +10 pts
+// - Configuration loaded successfully: +30 pts
+// - All required sections present: +20 pts
+// - Valid color/style definitions: +20 pts
+// - Menu/keybinding consistency: +15 pts
+// - Graceful fallback on errors: +15 pts
+//
+// Scripture: Proverbs 25:11 (KJV)
+//   "A word fitly spoken is like apples of gold in pictures of silver."
+// Principle: Presentation matters — how information is shown affects understanding
+//
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// CONTENT [CONTENT]
+// ============================================================================
 
 {
-  // ============================================================================
-  // CORE METADATA
-  // ============================================================================
+  // ==========================================================================
+  // Cc.1 CORE IDENTITY
+  // ==========================================================================
 
   "metadata": {
-    "name": "Display Formatting Library Configuration",
-    "description": "ANSI colors, icons, box characters, and formatting primitives for universal terminal output",
-    "version": "1.0.0",
+    "name": "Display System Configuration",
+    "description": "Complete display infrastructure: colors, themes, menus, keybindings, IDE styling",
+    "version": "b-02.00",
     "created": "2025-11-15",
-    "last_updated": "2025-11-15",
+    "last_updated": "2026-01-16",
     "author": "Nova Dawn (CPI-SI instance)",
-    "component": "system/runtime/lib/display",
+    "component": "cornerstone/engine/display",
     "type": "rail_configuration",
-    "note": "Rails are stdlib-only with self-evident failure - maximum configurability enables universal compatibility"
+    "scope": "global",
+    "note": "Unified configuration for CLI/TUI/GUI display backends"
   },
 
-  // ============================================================================
-  // ANSI COLOR CODES
-  // ============================================================================
+  // ==========================================================================
+  // Cc.2 BASE COLORS
+  // ==========================================================================
+  //
+  // Foundation color palette - all themes and styles reference these.
+  // Maps to DisplayColor enum in cornerstone/engine/display/include/display.h
+  //
 
   "colors": {
-    "description": "ANSI escape codes for terminal colors - configure for themes, accessibility, or custom terminal support",
+    "description": "Base color definitions - DisplayColor enum compatible",
 
-    "basic": {
+    "palette": {
+      "default":        0,
+      "black":          1,
+      "red":            2,
+      "green":          3,
+      "yellow":         4,
+      "blue":           5,
+      "magenta":        6,
+      "cyan":           7,
+      "white":          8,
+      "bright_black":   9,
+      "bright_red":     10,
+      "bright_green":   11,
+      "bright_yellow":  12,
+      "bright_blue":    13,
+      "bright_magenta": 14,
+      "bright_cyan":    15,
+      "bright_white":   16
+    },
+
+    "ansi": {
       "reset":   "\u001b[0m",
       "bold":    "\u001b[1m",
       "dim":     "\u001b[2m",
-      "note": "Basic text modifiers"
-    },
+      "italic":  "\u001b[3m",
+      "underline": "\u001b[4m",
+      "blink":   "\u001b[5m",
+      "reverse": "\u001b[7m",
 
-    "foreground": {
-      "red":     "\u001b[31m",
-      "green":   "\u001b[32m",
-      "yellow":  "\u001b[33m",
-      "blue":    "\u001b[34m",
-      "magenta": "\u001b[35m",
-      "cyan":    "\u001b[36m",
-      "gray":    "\u001b[37m",
-      "note": "Standard 8-color foreground"
-    },
+      "foreground": {
+        "black":   "\u001b[30m",
+        "red":     "\u001b[31m",
+        "green":   "\u001b[32m",
+        "yellow":  "\u001b[33m",
+        "blue":    "\u001b[34m",
+        "magenta": "\u001b[35m",
+        "cyan":    "\u001b[36m",
+        "white":   "\u001b[37m",
+        "default": "\u001b[39m"
+      },
 
-    "bold_foreground": {
-      "bold_red":     "\u001b[1;31m",
-      "bold_green":   "\u001b[1;32m",
-      "bold_yellow":  "\u001b[1;33m",
-      "bold_blue":    "\u001b[1;34m",
-      "bold_magenta": "\u001b[1;35m",
-      "bold_cyan":    "\u001b[1;36m",
-      "note": "Bold variants for emphasis"
-    },
+      "background": {
+        "black":   "\u001b[40m",
+        "red":     "\u001b[41m",
+        "green":   "\u001b[42m",
+        "yellow":  "\u001b[43m",
+        "blue":    "\u001b[44m",
+        "magenta": "\u001b[45m",
+        "cyan":    "\u001b[46m",
+        "white":   "\u001b[47m",
+        "default": "\u001b[49m"
+      },
 
-    "rationale": "JSON uses \\u001b instead of \\033 for Unicode escape - Go handles both equivalently",
-    "accessibility_note": "Configure for color blindness (deuteranopia: adjust red/green), light/dark themes",
-    "future_extensions": {
-      "bright_colors": "256-color support (\u001b[38;5;Nm)",
-      "rgb_colors": "True color support (\u001b[38;2;R;G;Bm)",
-      "themes": "Named themes (dark, light, high_contrast, accessible)"
+      "bright_foreground": {
+        "black":   "\u001b[90m",
+        "red":     "\u001b[91m",
+        "green":   "\u001b[92m",
+        "yellow":  "\u001b[93m",
+        "blue":    "\u001b[94m",
+        "magenta": "\u001b[95m",
+        "cyan":    "\u001b[96m",
+        "white":   "\u001b[97m"
+      }
     }
   },
 
-  // ============================================================================
-  // STATUS ICONS
-  // ============================================================================
+  // ==========================================================================
+  // Cc.3 THEMES
+  // ==========================================================================
+  //
+  // Named color schemes. Each theme defines semantic colors.
+  // Styles reference theme colors; switching themes changes entire UI.
+  //
+
+  "themes": {
+    "description": "Named color schemes - switch themes to change entire UI appearance",
+    "current": "kingdom_dark",
+
+    "kingdom_dark": {
+      "name": "Kingdom Dark",
+      "description": "Default dark theme with Kingdom Technology aesthetic",
+
+      "ui": {
+        "background": "default",
+        "foreground": "default",
+        "border": "white",
+        "accent": "cyan",
+        "highlight": "yellow",
+        "selection": "blue",
+        "error": "red",
+        "warning": "yellow",
+        "success": "green",
+        "info": "cyan"
+      },
+
+      "syntax": {
+        "normal": "default",
+        "pragma": "magenta",
+        "keyword": "yellow",
+        "comment": "green",
+        "string": "red",
+        "number": "cyan",
+        "block_marker": "yellow",
+        "section_marker": "blue",
+        "identifier": "default",
+        "operator": "white",
+        "type": "cyan",
+        "function": "yellow"
+      },
+
+      "blocks": {
+        "metadata": "cyan",
+        "setup": "blue",
+        "header": "magenta",
+        "context": "yellow",
+        "body": "green",
+        "content": "green",
+        "closing": "red",
+        "footer": "red"
+      },
+
+      "menu": {
+        "bar_fg": "black",
+        "bar_bg": "white",
+        "item_fg": "black",
+        "item_bg": "white",
+        "selected_fg": "white",
+        "selected_bg": "blue",
+        "hotkey_fg": "red",
+        "hotkey_bg": "white",
+        "disabled_fg": "bright_black",
+        "disabled_bg": "white"
+      },
+
+      "status": {
+        "bar_fg": "black",
+        "bar_bg": "white",
+        "mode_fg": "white",
+        "mode_bg": "blue",
+        "file_fg": "black",
+        "file_bg": "white",
+        "position_fg": "black",
+        "position_bg": "white"
+      },
+
+      "editor": {
+        "line_number_fg": "cyan",
+        "line_number_bg": "default",
+        "current_line_bg": "bright_black",
+        "cursor_fg": "black",
+        "cursor_bg": "white",
+        "selection_fg": "white",
+        "selection_bg": "blue",
+        "matching_bracket": "yellow"
+      }
+    },
+
+    "kingdom_light": {
+      "name": "Kingdom Light",
+      "description": "Light theme for daytime use",
+
+      "ui": {
+        "background": "white",
+        "foreground": "black",
+        "border": "black",
+        "accent": "blue",
+        "highlight": "yellow",
+        "selection": "cyan",
+        "error": "red",
+        "warning": "yellow",
+        "success": "green",
+        "info": "blue"
+      },
+
+      "syntax": {
+        "normal": "black",
+        "pragma": "magenta",
+        "keyword": "blue",
+        "comment": "green",
+        "string": "red",
+        "number": "magenta",
+        "block_marker": "blue",
+        "section_marker": "cyan",
+        "identifier": "black",
+        "operator": "black",
+        "type": "cyan",
+        "function": "blue"
+      },
+
+      "blocks": {
+        "metadata": "blue",
+        "setup": "cyan",
+        "header": "magenta",
+        "context": "yellow",
+        "body": "green",
+        "content": "green",
+        "closing": "red",
+        "footer": "red"
+      },
+
+      "menu": {
+        "bar_fg": "white",
+        "bar_bg": "blue",
+        "item_fg": "black",
+        "item_bg": "white",
+        "selected_fg": "white",
+        "selected_bg": "blue",
+        "hotkey_fg": "red",
+        "hotkey_bg": "white",
+        "disabled_fg": "bright_black",
+        "disabled_bg": "white"
+      },
+
+      "status": {
+        "bar_fg": "white",
+        "bar_bg": "blue",
+        "mode_fg": "white",
+        "mode_bg": "cyan",
+        "file_fg": "white",
+        "file_bg": "blue",
+        "position_fg": "white",
+        "position_bg": "blue"
+      },
+
+      "editor": {
+        "line_number_fg": "bright_black",
+        "line_number_bg": "white",
+        "current_line_bg": "bright_white",
+        "cursor_fg": "white",
+        "cursor_bg": "black",
+        "selection_fg": "black",
+        "selection_bg": "cyan",
+        "matching_bracket": "yellow"
+      }
+    },
+
+    "high_contrast": {
+      "name": "High Contrast",
+      "description": "Accessibility theme with maximum contrast",
+
+      "ui": {
+        "background": "black",
+        "foreground": "bright_white",
+        "border": "bright_white",
+        "accent": "bright_yellow",
+        "highlight": "bright_yellow",
+        "selection": "bright_cyan",
+        "error": "bright_red",
+        "warning": "bright_yellow",
+        "success": "bright_green",
+        "info": "bright_cyan"
+      },
+
+      "syntax": {
+        "normal": "bright_white",
+        "pragma": "bright_magenta",
+        "keyword": "bright_yellow",
+        "comment": "bright_green",
+        "string": "bright_red",
+        "number": "bright_cyan",
+        "block_marker": "bright_yellow",
+        "section_marker": "bright_blue",
+        "identifier": "bright_white",
+        "operator": "bright_white",
+        "type": "bright_cyan",
+        "function": "bright_yellow"
+      },
+
+      "blocks": {
+        "metadata": "bright_cyan",
+        "setup": "bright_blue",
+        "header": "bright_magenta",
+        "context": "bright_yellow",
+        "body": "bright_green",
+        "content": "bright_green",
+        "closing": "bright_red",
+        "footer": "bright_red"
+      },
+
+      "menu": {
+        "bar_fg": "black",
+        "bar_bg": "bright_white",
+        "item_fg": "black",
+        "item_bg": "bright_white",
+        "selected_fg": "bright_white",
+        "selected_bg": "bright_blue",
+        "hotkey_fg": "bright_red",
+        "hotkey_bg": "bright_white",
+        "disabled_fg": "bright_black",
+        "disabled_bg": "bright_white"
+      },
+
+      "status": {
+        "bar_fg": "black",
+        "bar_bg": "bright_white",
+        "mode_fg": "bright_white",
+        "mode_bg": "bright_blue",
+        "file_fg": "black",
+        "file_bg": "bright_white",
+        "position_fg": "black",
+        "position_bg": "bright_white"
+      },
+
+      "editor": {
+        "line_number_fg": "bright_cyan",
+        "line_number_bg": "black",
+        "current_line_bg": "bright_black",
+        "cursor_fg": "black",
+        "cursor_bg": "bright_white",
+        "selection_fg": "black",
+        "selection_bg": "bright_cyan",
+        "matching_bracket": "bright_yellow"
+      }
+    }
+  },
+
+  // ==========================================================================
+  // Cc.4 STYLES
+  // ==========================================================================
+  //
+  // Predefined DisplayStyle structs. Code references by name.
+  // Structure: { "fg": color, "bg": color, "bold": bool }
+  //
+
+  "styles": {
+    "description": "Named DisplayStyle definitions - { fg, bg, bold }",
+
+    "text": {
+      "normal":     { "fg": "default", "bg": "default", "bold": false },
+      "bold":       { "fg": "default", "bg": "default", "bold": true },
+      "dim":        { "fg": "bright_black", "bg": "default", "bold": false },
+      "error":      { "fg": "white", "bg": "red", "bold": true },
+      "warning":    { "fg": "black", "bg": "yellow", "bold": false },
+      "success":    { "fg": "green", "bg": "default", "bold": false },
+      "info":       { "fg": "cyan", "bg": "default", "bold": false }
+    },
+
+    "ui": {
+      "border":     { "fg": "white", "bg": "default", "bold": false },
+      "title":      { "fg": "white", "bg": "default", "bold": true },
+      "header":     { "fg": "cyan", "bg": "default", "bold": true },
+      "footer":     { "fg": "bright_black", "bg": "default", "bold": false }
+    }
+  },
+
+  // ==========================================================================
+  // Co.1 ICONS
+  // ==========================================================================
 
   "icons": {
-    "description": "Unicode icons for status messages - configure for terminal compatibility or preference",
+    "description": "Unicode icons for status messages and UI elements",
+    "current_mode": "status",
 
     "status": {
       "success":  "✓",
@@ -87,25 +422,66 @@
       "check":    "◉",
       "cross":    "◯",
       "compaction": "🔄",
-      "preservation": "📍",
-      "note": "Primary status indicators used by Success(), Failure(), Warning(), Info(), StatusLine()"
+      "preservation": "📍"
     },
 
-    "environment": {
-      "workspace": "🏢",
-      "working_directory": "📍",
-      "git_branch": "🌿",
-      "time": "🕐",
-      "system": "💻",
-      "note": "Icons for session environment section"
+    "file_types": {
+      "omni":     "◈",
+      "folder":   "📁",
+      "code":     "📄",
+      "data":     "📊",
+      "doc":      "📝",
+      "image":    "🖼",
+      "audio":    "🎵",
+      "video":    "🎬",
+      "archive":  "📦",
+      "unknown":  "❓"
     },
 
-    "temporal": {
-      "external_time": "🌍",
-      "internal_time": "⏱️",
-      "schedule": "📋",
-      "calendar": "📅",
-      "note": "Icons for temporal awareness section"
+    "blocks": {
+      "metadata": "◆",
+      "setup":    "▸",
+      "header":   "◈",
+      "context":  "◇",
+      "body":     "▪",
+      "content":  "▫",
+      "closing":  "◀",
+      "footer":   "◇"
+    },
+
+    "navigation": {
+      "up":       "↑",
+      "down":     "↓",
+      "left":     "←",
+      "right":    "→",
+      "enter":    "⏎",
+      "back":     "◀",
+      "forward":  "▶",
+      "home":     "⌂",
+      "end":      "⌁"
+    },
+
+    "actions": {
+      "save":     "💾",
+      "open":     "📂",
+      "close":    "✕",
+      "new":      "➕",
+      "delete":   "🗑",
+      "edit":     "✎",
+      "search":   "🔍",
+      "compile":  "⚙",
+      "run":      "▶",
+      "debug":    "🐛"
+    },
+
+    "hebrew_states": {
+      "shavar":   "💔",
+      "chaser":   "📉",
+      "ratsah":   "📈",
+      "yashar":   "⚖️",
+      "tamim":    "🔒",
+      "shalem":   "🔓",
+      "tov":      "✨"
     },
 
     "ascii_fallback": {
@@ -115,30 +491,22 @@
       "info":     "i",
       "check":    "*",
       "cross":    "o",
-      "note": "ASCII-only alternatives for terminals without Unicode support"
-    },
-
-    "emoji_variant": {
-      "success":  "✅",
-      "failure":  "❌",
-      "warning":  "⚠️",
-      "info":     "ℹ️",
-      "check":    "✔️",
-      "cross":    "❎",
-      "note": "Emoji variants for visual emphasis (may not render in all terminals)"
-    },
-
-    "current_mode": "status",
-    "rationale": "Unicode icons provide clear visual distinction, ASCII fallback ensures universal compatibility",
-    "note": "Set current_mode to 'status', 'ascii_fallback', or 'emoji_variant' to switch icon sets"
+      "folder":   "[D]",
+      "file":     "[F]",
+      "up":       "^",
+      "down":     "v",
+      "left":     "<",
+      "right":    ">"
+    }
   },
 
-  // ============================================================================
-  // BOX DRAWING CHARACTERS
-  // ============================================================================
+  // ==========================================================================
+  // Co.2 BOX DRAWING
+  // ==========================================================================
 
   "box_characters": {
-    "description": "Unicode box drawing for Box() function - configure for terminal compatibility or style preference",
+    "description": "Unicode box drawing for borders and frames",
+    "current_style": "single_line",
 
     "single_line": {
       "top_left":     "┌",
@@ -147,7 +515,11 @@
       "bottom_right": "┘",
       "horizontal":   "─",
       "vertical":     "│",
-      "note": "Light box-drawing characters (U+250x range) - current default"
+      "t_down":       "┬",
+      "t_up":         "┴",
+      "t_right":      "├",
+      "t_left":       "┤",
+      "cross":        "┼"
     },
 
     "double_line": {
@@ -157,7 +529,11 @@
       "bottom_right": "╝",
       "horizontal":   "═",
       "vertical":     "║",
-      "note": "Heavy box-drawing for emphasis"
+      "t_down":       "╦",
+      "t_up":         "╩",
+      "t_right":      "╠",
+      "t_left":       "╣",
+      "cross":        "╬"
     },
 
     "rounded": {
@@ -167,7 +543,11 @@
       "bottom_right": "╯",
       "horizontal":   "─",
       "vertical":     "│",
-      "note": "Rounded corners for softer appearance"
+      "t_down":       "┬",
+      "t_up":         "┴",
+      "t_right":      "├",
+      "t_left":       "┤",
+      "cross":        "┼"
     },
 
     "ascii_fallback": {
@@ -177,117 +557,336 @@
       "bottom_right": "+",
       "horizontal":   "-",
       "vertical":     "|",
-      "note": "ASCII-only box drawing for maximum compatibility"
-    },
-
-    "current_style": "single_line",
-    "rationale": "Single-line provides clean appearance without overwhelming visual weight",
-    "note": "Set current_style to 'single_line', 'double_line', 'rounded', or 'ascii_fallback'"
+      "t_down":       "+",
+      "t_up":         "+",
+      "t_right":      "+",
+      "t_left":       "+",
+      "cross":        "+"
+    }
   },
 
-  // ============================================================================
-  // PROGRESS BAR CHARACTERS
-  // ============================================================================
+  // ==========================================================================
+  // Co.3 MENUS
+  // ==========================================================================
+  //
+  // Data-driven menu definitions. IDE loads menus from config.
+  // Actions reference function names; keybindings defined separately.
+  //
+
+  "menus": {
+    "description": "Data-driven menu definitions for IDE and applications",
+
+    "main_menu": {
+      "items": [
+        {
+          "label": "File",
+          "hotkey": "F",
+          "submenu": [
+            { "label": "New",        "hotkey": "N", "action": "file_new",     "key": "Ctrl+N" },
+            { "label": "Open",       "hotkey": "O", "action": "file_open",    "key": "Ctrl+O" },
+            { "label": "Save",       "hotkey": "S", "action": "file_save",    "key": "Ctrl+S" },
+            { "label": "Save As",    "hotkey": "A", "action": "file_save_as", "key": "Ctrl+Shift+S" },
+            { "type": "separator" },
+            { "label": "Close",      "hotkey": "C", "action": "file_close",   "key": "Ctrl+W" },
+            { "label": "Quit",       "hotkey": "Q", "action": "quit",         "key": "Ctrl+Q" }
+          ]
+        },
+        {
+          "label": "Edit",
+          "hotkey": "E",
+          "submenu": [
+            { "label": "Undo",       "hotkey": "U", "action": "edit_undo",    "key": "Ctrl+Z" },
+            { "label": "Redo",       "hotkey": "R", "action": "edit_redo",    "key": "Ctrl+Y" },
+            { "type": "separator" },
+            { "label": "Cut",        "hotkey": "T", "action": "edit_cut",     "key": "Ctrl+X" },
+            { "label": "Copy",       "hotkey": "C", "action": "edit_copy",    "key": "Ctrl+C" },
+            { "label": "Paste",      "hotkey": "P", "action": "edit_paste",   "key": "Ctrl+V" },
+            { "type": "separator" },
+            { "label": "Find",       "hotkey": "F", "action": "edit_find",    "key": "Ctrl+F" },
+            { "label": "Replace",    "hotkey": "H", "action": "edit_replace", "key": "Ctrl+H" },
+            { "label": "Go to Line", "hotkey": "G", "action": "edit_goto",    "key": "Ctrl+G" }
+          ]
+        },
+        {
+          "label": "View",
+          "hotkey": "V",
+          "submenu": [
+            { "label": "Toggle Panels",    "hotkey": "P", "action": "view_toggle_panels",  "key": "F9" },
+            { "label": "Toggle Line Nums", "hotkey": "L", "action": "view_toggle_lines",   "key": "F10" },
+            { "label": "Toggle Block Ind", "hotkey": "B", "action": "view_toggle_blocks",  "key": "F11" },
+            { "type": "separator" },
+            { "label": "Zoom In",          "hotkey": "+", "action": "view_zoom_in",        "key": "Ctrl+=" },
+            { "label": "Zoom Out",         "hotkey": "-", "action": "view_zoom_out",       "key": "Ctrl+-" },
+            { "label": "Reset Zoom",       "hotkey": "0", "action": "view_zoom_reset",     "key": "Ctrl+0" }
+          ]
+        },
+        {
+          "label": "Build",
+          "hotkey": "B",
+          "submenu": [
+            { "label": "Compile",          "hotkey": "C", "action": "build_compile",       "key": "F5" },
+            { "label": "Run",              "hotkey": "R", "action": "build_run",           "key": "F6" },
+            { "label": "Compile & Run",    "hotkey": "B", "action": "build_compile_run",   "key": "F7" },
+            { "type": "separator" },
+            { "label": "Clean",            "hotkey": "L", "action": "build_clean",         "key": "Shift+F5" },
+            { "label": "Rebuild All",      "hotkey": "A", "action": "build_rebuild",       "key": "Ctrl+F5" }
+          ]
+        },
+        {
+          "label": "Tools",
+          "hotkey": "T",
+          "submenu": [
+            { "label": "Validate Blocks",  "hotkey": "V", "action": "tools_validate",      "key": "Ctrl+Shift+V" },
+            { "label": "Format Document",  "hotkey": "F", "action": "tools_format",        "key": "Ctrl+Shift+F" },
+            { "label": "Insert Template",  "hotkey": "T", "action": "tools_template",      "key": "Ctrl+Shift+T" },
+            { "type": "separator" },
+            { "label": "Settings",         "hotkey": "S", "action": "tools_settings",      "key": "Ctrl+," }
+          ]
+        },
+        {
+          "label": "Help",
+          "hotkey": "H",
+          "submenu": [
+            { "label": "OmniCode Help",    "hotkey": "O", "action": "help_omnicode",       "key": "F1" },
+            { "label": "Keyboard Shortcuts","hotkey": "K", "action": "help_shortcuts",     "key": "Ctrl+?" },
+            { "type": "separator" },
+            { "label": "About",            "hotkey": "A", "action": "help_about",          "key": "" }
+          ]
+        }
+      ]
+    },
+
+    "context_menu": {
+      "editor": [
+        { "label": "Cut",        "action": "edit_cut",     "key": "Ctrl+X" },
+        { "label": "Copy",       "action": "edit_copy",    "key": "Ctrl+C" },
+        { "label": "Paste",      "action": "edit_paste",   "key": "Ctrl+V" },
+        { "type": "separator" },
+        { "label": "Go to Definition", "action": "goto_definition", "key": "F12" },
+        { "label": "Find References",  "action": "find_references", "key": "Shift+F12" }
+      ],
+      "file_tree": [
+        { "label": "Open",       "action": "file_open",    "key": "" },
+        { "label": "Rename",     "action": "file_rename",  "key": "F2" },
+        { "label": "Delete",     "action": "file_delete",  "key": "Delete" },
+        { "type": "separator" },
+        { "label": "New File",   "action": "file_new",     "key": "" },
+        { "label": "New Folder", "action": "folder_new",   "key": "" }
+      ]
+    }
+  },
+
+  // ==========================================================================
+  // Co.4 KEYBINDINGS
+  // ==========================================================================
+  //
+  // Key-to-action mappings. Supports modifier combinations.
+  // Maps to DisplayKey enum in cornerstone/engine/display/include/display.h
+  //
+
+  "keybindings": {
+    "description": "Key-to-action mappings for IDE and applications",
+
+    "global": {
+      "Ctrl+Q":       "quit",
+      "Ctrl+N":       "file_new",
+      "Ctrl+O":       "file_open",
+      "Ctrl+S":       "file_save",
+      "Ctrl+Shift+S": "file_save_as",
+      "Ctrl+W":       "file_close",
+
+      "Ctrl+Z":       "edit_undo",
+      "Ctrl+Y":       "edit_redo",
+      "Ctrl+X":       "edit_cut",
+      "Ctrl+C":       "edit_copy",
+      "Ctrl+V":       "edit_paste",
+      "Ctrl+F":       "edit_find",
+      "Ctrl+H":       "edit_replace",
+      "Ctrl+G":       "edit_goto",
+
+      "F1":           "help_omnicode",
+      "F5":           "build_compile",
+      "F6":           "build_run",
+      "F7":           "build_compile_run",
+      "F9":           "view_toggle_panels",
+      "F10":          "view_toggle_lines",
+      "F11":          "view_toggle_blocks",
+
+      "Escape":       "cancel",
+      "Alt+F":        "menu_file",
+      "Alt+E":        "menu_edit",
+      "Alt+V":        "menu_view",
+      "Alt+B":        "menu_build",
+      "Alt+T":        "menu_tools",
+      "Alt+H":        "menu_help"
+    },
+
+    "editor": {
+      "Up":           "cursor_up",
+      "Down":         "cursor_down",
+      "Left":         "cursor_left",
+      "Right":        "cursor_right",
+      "Home":         "cursor_line_start",
+      "End":          "cursor_line_end",
+      "Ctrl+Home":    "cursor_file_start",
+      "Ctrl+End":     "cursor_file_end",
+      "PageUp":       "page_up",
+      "PageDown":     "page_down",
+
+      "Backspace":    "delete_backward",
+      "Delete":       "delete_forward",
+      "Enter":        "insert_newline",
+      "Tab":          "insert_tab",
+      "Shift+Tab":    "unindent",
+
+      "Ctrl+D":       "duplicate_line",
+      "Ctrl+K":       "delete_line",
+      "Ctrl+L":       "select_line",
+      "Ctrl+/":       "toggle_comment",
+
+      "Ctrl+Up":      "scroll_up",
+      "Ctrl+Down":    "scroll_down"
+    },
+
+    "menu": {
+      "Up":           "menu_prev",
+      "Down":         "menu_next",
+      "Left":         "menu_parent",
+      "Right":        "menu_child",
+      "Enter":        "menu_select",
+      "Escape":       "menu_close"
+    },
+
+    "prompt": {
+      "Enter":        "prompt_submit",
+      "Escape":       "prompt_cancel",
+      "Tab":          "prompt_complete",
+      "Up":           "prompt_history_prev",
+      "Down":         "prompt_history_next"
+    }
+  },
+
+  // ==========================================================================
+  // Co.5 LAYOUT
+  // ==========================================================================
+
+  "layout": {
+    "description": "Spacing, padding, and layout values",
+
+    "editor": {
+      "line_number_width": 6,
+      "left_margin": 1,
+      "right_margin": 1,
+      "tab_width": 4,
+      "scroll_margin": 3
+    },
+
+    "panels": {
+      "file_tree_width": 25,
+      "output_height": 10,
+      "min_editor_width": 40,
+      "min_editor_height": 10
+    },
+
+    "menu": {
+      "item_padding": 2,
+      "submenu_indent": 2,
+      "separator_char": "─"
+    },
+
+    "status_bar": {
+      "height": 1,
+      "padding": 1
+    },
+
+    "dialog": {
+      "min_width": 40,
+      "max_width": 80,
+      "padding": 2,
+      "button_spacing": 2
+    }
+  },
+
+  // ==========================================================================
+  // Co.6 PROGRESS & FEEDBACK
+  // ==========================================================================
 
   "progress_bar": {
-    "description": "Characters for ProgressBar() function - configure for terminal compatibility or visual preference",
+    "description": "Progress bar characters for long operations",
+    "current_style": "block_style",
 
     "block_style": {
       "filled": "█",
       "empty":  "░",
-      "note": "Full/light block characters (current default) - high visual contrast"
-    },
-
-    "ascii_style": {
-      "filled": "#",
-      "empty":  ".",
-      "note": "ASCII-only progress bar for maximum compatibility"
+      "partial": ["▏", "▎", "▍", "▌", "▋", "▊", "▉"]
     },
 
     "bar_style": {
       "filled": "▓",
-      "empty":  "░",
-      "note": "Medium/light shade - softer contrast"
+      "empty":  "░"
     },
 
-    "current_style": "block_style",
-    "rationale": "Block characters provide immediate visual feedback on progress",
-    "note": "Set current_style to 'block_style', 'ascii_style', or 'bar_style'"
-  },
-
-  // ============================================================================
-  // LAYOUT AND SPACING
-  // ============================================================================
-
-  "layout": {
-    "description": "Spacing and padding values for consistent formatting across all display functions",
-
-    "header": {
-      "padding": 4,
-      "note": "Characters added to title length for separator width (Header() function, line 110)"
-    },
-
-    "key_value": {
-      "column_width": 20,
-      "note": "Fixed width for key column in KeyValue() function (line 127)"
-    },
-
-    "table": {
-      "column_padding": 2,
-      "note": "Spaces added after each column in Table.Render() (line 179)"
-    },
-
-    "box": {
-      "width_padding": 4,
-      "note": "Characters added to max width for box borders (Box() function, line 257)"
-    },
-
-    "indentation": {
-      "status_line": "  ",
-      "key_value": "  ",
-      "note": "Indentation for nested/secondary content (lines 127, 134, 136)"
-    },
-
-    "rationale": "Configurable spacing enables compact vs spacious layouts, different display densities",
-    "accessibility_note": "Larger padding values improve readability for users with vision impairments"
-  },
-
-  // ============================================================================
-  // FORMAT STRINGS
-  // ============================================================================
-
-  "format_strings": {
-    "description": "Output format templates - configure for localization, accessibility, or preference",
-
-    "progress_bar": {
-      "template": "[%s] %d/%d (%.0f%%)",
-      "note": "ProgressBar() output format (line 232): [bar] current/total (percent%)",
-      "components": {
-        "bar_position": "first",
-        "show_numbers": true,
-        "show_percentage": true,
-        "percentage_precision": 0
-      },
-      "alternatives": {
-        "compact": "%d/%d [%s]",
-        "verbose": "Progress: %d of %d (%.1f%%) [%s]",
-        "minimal": "[%s] %.0f%%"
-      }
-    },
-
-    "rationale": "Format strings enable internationalization, reordering components, precision control",
-    "future_extensions": {
-      "locale_support": "Language-specific formatting (e.g., European number formats)",
-      "component_visibility": "Toggle individual components (hide percentage, show only bar, etc.)"
+    "ascii_style": {
+      "filled": "#",
+      "empty":  "."
     }
   },
 
-  // ============================================================================
-  // BEHAVIOR AND FEATURES
-  // ============================================================================
+  // ==========================================================================
+  // Co.7 IDE SETTINGS
+  // ==========================================================================
+
+  "ide": {
+    "description": "IDE-specific configuration",
+
+    "editor": {
+      "show_line_numbers": true,
+      "show_block_indicators": true,
+      "highlight_current_line": true,
+      "show_matching_brackets": true,
+      "auto_indent": true,
+      "wrap_lines": false,
+      "tab_to_spaces": true,
+      "trim_trailing_whitespace": true,
+      "ensure_newline_at_eof": true
+    },
+
+    "syntax": {
+      "enabled": true,
+      "omni_extensions": [".omni", ".omnicode"],
+      "c_extensions": [".c", ".h"],
+      "go_extensions": [".go"],
+      "toml_extensions": [".toml"],
+      "json_extensions": [".json", ".jsonc"]
+    },
+
+    "blocks": {
+      "validate_on_save": true,
+      "show_structure_hints": true,
+      "auto_insert_end_markers": false
+    },
+
+    "files": {
+      "recent_max": 10,
+      "auto_save": false,
+      "auto_save_interval_ms": 60000,
+      "backup_on_save": true
+    },
+
+    "output": {
+      "max_lines": 1000,
+      "auto_scroll": true,
+      "show_timestamps": true,
+      "clear_on_build": true
+    }
+  },
+
+  // ==========================================================================
+  // Co.8 BEHAVIOR
+  // ==========================================================================
 
   "behavior": {
-    "description": "Control display library behavior and optional features",
+    "description": "Behavioral settings and feature toggles",
 
     "panic_recovery": {
       "enabled": true,
@@ -299,151 +898,175 @@
       "empty_table_returns_empty": true,
       "no_headers_returns_empty": true,
       "zero_total_returns_empty": true,
-      "negative_values_return_empty": true,
-      "note": "Validation behavior in Table.Render() and ProgressBar()"
+      "negative_values_return_empty": true
     },
 
-    "session_display": {
-      "show_temporal_awareness": true,
-      "show_workspace_analysis": true,
-      "show_stopping_context": true,
-      "show_temporal_journey": true,
-      "show_compaction_preservation": true,
-      "note": "Control visibility of optional session display sections"
+    "accessibility": {
+      "reduce_motion": false,
+      "high_contrast": false,
+      "large_text": false,
+      "screen_reader_hints": false
     },
 
-    "future_features": {
-      "color_detection": "Auto-detect terminal color support and fall back appropriately",
-      "width_detection": "Auto-detect terminal width for responsive formatting",
-      "unicode_detection": "Auto-detect Unicode support and switch to ASCII fallback",
-      "accessibility_mode": "High-contrast colors, larger spacing, screen reader optimization"
+    "terminal": {
+      "detect_capabilities": true,
+      "unicode_fallback": true,
+      "color_fallback": true,
+      "min_width": 80,
+      "min_height": 24
     }
   },
 
-  // ============================================================================
-  // SESSION-SPECIFIC CONTENT
-  // ============================================================================
+  // ==========================================================================
+  // Co.9 SESSION DISPLAY
+  // ==========================================================================
 
-  "banner": {
-    "description": "Banner formatting for session headers (used by hooks/lib/session)",
-    "width": 64,
-    "content_width": 62,
-    "border_style": "single_line",
-    "note": "border_style references box_characters styles (single_line, double_line, rounded, ascii_fallback)"
-  },
+  "session": {
+    "description": "Session-specific display content",
 
-  "section_headers": {
-    "description": "Section header text for session display sections",
-    "session_start": {
-      "environment": "SESSION ENVIRONMENT",
-      "temporal_awareness": "TEMPORAL AWARENESS",
-      "workspace_analysis": "WORKSPACE ANALYSIS"
+    "banner": {
+      "width": 64,
+      "content_width": 62,
+      "border_style": "single_line"
     },
-    "session_stop": {
-      "stopping_point": "STOPPING POINT CHECK",
-      "temporal_context": "TEMPORAL CONTEXT AT STOP"
+
+    "section_headers": {
+      "session_start": {
+        "environment": "SESSION ENVIRONMENT",
+        "temporal_awareness": "TEMPORAL AWARENESS",
+        "workspace_analysis": "WORKSPACE ANALYSIS"
+      },
+      "session_stop": {
+        "stopping_point": "STOPPING POINT CHECK",
+        "temporal_context": "TEMPORAL CONTEXT AT STOP"
+      },
+      "session_end": {
+        "session_summary": "SESSION SUMMARY",
+        "temporal_journey": "TEMPORAL JOURNEY",
+        "state_reminders": "STATE REMINDERS"
+      }
     },
-    "session_end": {
-      "session_summary": "SESSION SUMMARY",
-      "temporal_journey": "TEMPORAL JOURNEY",
-      "state_reminders": "STATE REMINDERS"
+
+    "biblical_verses": {
+      "session_stop": {
+        "banner_title": "Task Complete - Excellence that Honors God",
+        "verse_text": "Whatever you do, work heartily, as for the Lord and not for men.",
+        "verse_ref": "Colossians 3:23"
+      },
+      "session_end": {
+        "banner_title": "Session Ending - Grace and Peace",
+        "verse_text": "The Lord bless you and keep you; the Lord make his face shine on you and be gracious to you.",
+        "verse_ref": "Numbers 6:24-25"
+      }
     },
-    "subagent": {
-      "completion": "SUBAGENT COMPLETION"
+
+    "messages": {
+      "workspace": {
+        "no_workspace": "ⓘ No workspace configured (NOVA_DAWN_WORKSPACE not set)",
+        "workspace_healthy": "✓ Workspace healthy - no warnings or context to report"
+      },
+      "compaction": {
+        "manual": "Manual compaction #{count} - optimizing context...",
+        "auto": "Auto-compaction #{count} - managing token usage...",
+        "preservation_header": "📍 Temporal State Preservation:"
+      }
     }
   },
 
-  "biblical_verses": {
-    "description": "Biblical verses for session banners (session_start uses instance config, others configurable here)",
-    "session_stop": {
-      "banner_title": "Task Complete - Excellence that Honors God",
-      "verse_text": "Whatever you do, work heartily, as for the Lord and not for men.",
-      "verse_ref": "Colossians 3:23"
-    },
-    "session_end": {
-      "banner_title": "Session Ending - Grace and Peace",
-      "verse_text": "The Lord bless you and keep you; the Lord make his face shine on you and be gracious to you.",
-      "verse_ref": "Numbers 6:24-25"
-    }
+  // ==========================================================================
+  // Cv.1 VALIDATION
+  // ==========================================================================
+
+  "_validation": {
+    "commands": [
+      "npx jsonc-parser validate formatting.jsonc",
+      "cornerstone --config-check display"
+    ]
   },
 
-  "messages": {
-    "description": "Standard messages used throughout session display (placeholders: {count}, {type}, {code})",
-    "workspace": {
-      "no_workspace": "ⓘ No workspace configured (NOVA_DAWN_WORKSPACE not set)",
-      "workspace_healthy": "✓ Workspace healthy - no warnings or context to report"
-    },
-    "compaction": {
-      "manual": "Manual compaction #{count} - optimizing context...",
-      "auto": "Auto-compaction #{count} - managing token usage...",
-      "unknown": "Compaction #{count} starting...",
-      "preservation_header": "📍 Temporal State Preservation:"
-    },
-    "subagent": {
-      "success": "✓ Subagent [{type}] completed successfully",
-      "failure": "⚠️  Subagent [{type}] completed with errors (exit code: {code})",
-      "default": "✓ Subagent [{type}] completed"
-    }
+  // ==========================================================================
+  // Cv.2 SCHEMA
+  // ==========================================================================
+
+  "_schema": {
+    "required": [
+      "metadata",
+      "colors",
+      "themes",
+      "styles",
+      "icons",
+      "menus",
+      "keybindings",
+      "layout",
+      "behavior"
+    ],
+    "optional": [
+      "box_characters",
+      "progress_bar",
+      "ide",
+      "session"
+    ]
   },
 
-  "field_labels": {
-    "description": "Field labels for displayed information in session display",
-    "environment": {
-      "workspace": "Workspace:",
-      "working_directory": "Working Directory:",
-      "git_branch": "Git Branch:",
-      "session_time": "Session Time:",
-      "system": "System:"
-    },
-    "temporal": {
-      "external_time": "External Time:",
-      "internal_time": "Internal Time:",
-      "internal_schedule": "Internal Schedule:",
-      "external_calendar": "External Calendar:",
-      "session_duration": "Session Duration:",
-      "work_context": "Work Context:",
-      "date_context": "Date Context:"
-    },
-    "stop": {
-      "stopped": "Stopped:",
-      "time": "Time:",
-      "schedule_context": "Schedule Context:",
-      "date": "Date:"
-    },
-    "end": {
-      "ended": "Ended:",
-      "reason": "Reason:",
-      "ending_at": "Ending At:",
-      "started": "Started:"
-    },
-    "subagent": {
-      "completed_at": "Completed At:",
-      "during": "During:"
-    },
-    "compaction": {
-      "time": "Time:",
-      "session": "Session:",
-      "context": "Context:",
-      "date": "Date:",
-      "compactions": "Compactions:"
-    }
-  },
+  // ==========================================================================
+  // Cv.3 MAINTENANCE
+  // ==========================================================================
 
-  // ============================================================================
-  // USAGE NOTES AND EXAMPLES
-  // ============================================================================
-
-  "usage": {
-    "description": "How to use this configuration file",
-
-    "loading": "Display library loads this config at init() from system/data/config/display/formatting.jsonc",
-    "fallback": "All functions have hardcoded defaults if config fails to load (rails self-evidence)",
-    "override": "User/instance configs can override these defaults for customization",
-
-    "examples": {
-      "ascii_mode": "Set icons.current_mode='ascii_fallback', box_characters.current_style='ascii_fallback', progress_bar.current_style='ascii_style'",
-      "high_contrast": "Use bold_foreground colors, emoji_variant icons, double_line boxes",
-      "compact_layout": "Reduce layout padding values, use minimal format_strings"
-    }
+  "_maintenance": {
+    "safe": [
+      "Add new themes",
+      "Modify color values",
+      "Add menu items with new actions",
+      "Change keybinding mappings"
+    ],
+    "careful": [
+      "Change existing action names (breaks code references)",
+      "Remove menu items (may break UI expectations)",
+      "Change theme structure (affects all themes)"
+    ],
+    "never": [
+      "Remove required schema sections",
+      "Break DisplayColor enum compatibility",
+      "Remove core keybindings without replacement"
+    ]
   }
 }
+
+// ============================================================================
+// END CONTENT
+// ============================================================================
+
+// ============================================================================
+// CLOSING [CLOSING]
+// ============================================================================
+//
+// X.1 Purpose
+//
+// This configuration drives the entire display system:
+// - CLI, TUI, and GUI backends all load from this single source
+// - Themes, styles, menus, and keybindings are data-driven
+// - IDE behavior is configurable without code changes
+//
+// X.2 Integration
+//
+// Engine loads via: engine_config_init() → display_config_load()
+// Display layer references: g_config->display->themes, menus, keybindings
+// IDE consumes: menus.main_menu, themes.current, ide.editor settings
+//
+// X.3 Extension
+//
+// To add new theme: Copy existing theme block, modify colors
+// To add menu item: Add to menus.main_menu.items[].submenu
+// To add keybinding: Add to keybindings.global or keybindings.editor
+//
+// Closing Note:
+//   "A word fitly spoken is like apples of gold in pictures of silver."
+//     — Proverbs 25:11
+//
+//   Presentation matters. How we display information affects understanding.
+//   This configuration ensures consistent, accessible, beautiful output
+//   across all display backends and applications.
+//
+// ============================================================================
+// END CLOSING
+// ============================================================================

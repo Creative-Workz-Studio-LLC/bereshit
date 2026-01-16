@@ -1,0 +1,96 @@
+{
+  // ============================================================================
+  // CURRENT-LOG TEMPLATE - Activity Stream
+  // ============================================================================
+  // Purpose: Track activities and events during active session
+  // Lifecycle: Active during session, feeds into consolidation
+  // Biblical Foundation: Recording faithfully as events unfold
+  //
+  // STRUCTURE PRINCIPLE:
+  // - Core required fields (session context)
+  // - Optional standard fields (activity tracking)
+  // - Extensions (discovering what else needs tracking)
+
+  "$schema": "../../../../config/schemas/session/current-log.schema.json",
+
+  // ============================================================================
+  // CORE (REQUIRED) - Must Exist
+  // ============================================================================
+
+  "session_id": "unique-identifier",           // Which session this log belongs to
+  "instance_id": "nova_dawn",                  // Which instance
+  "user_id": "seanje-lenox-wise",              // Which user
+  "start_time": "2025-01-01T12:00:00Z",        // Session start
+  "last_updated": "2025-01-01T12:00:00Z",      // Last activity recorded
+
+  // ============================================================================
+  // OPTIONAL STANDARD FIELDS - Agency
+  // ============================================================================
+
+  "day_of_week": "Monday",                     // Context for patterns
+  "time_of_day_category": "morning",           // morning | afternoon | evening | night
+  "work_context": "/path/to/workspace",        // Primary workspace (inherited from project config)
+  "project_id": "project-id",                  // Project this session belongs to (if applicable)
+
+  "inherited_context": {
+    // Context inherited through project config (which inherits from user/instance configs)
+    "user_work_schedule": {
+      "timezone": "America/Chicago",           // From project → user config
+      "typical_work_hours": ["morning", "evening"] // From project → user config
+    },
+    "instance_preferences": {
+      "workflow": "build-first",               // From project → instance config
+      "thinking_style": "building-blocks",     // From project → instance config
+      "domain_expertise": ["game_development", "system_architecture"] // From instance config
+    },
+    "project_details": {
+      "project_type": "system_architecture",   // From project config
+      "technical_context": {
+        "languages": ["go", "rust", "markdown"], // From project config
+        "frameworks": [],                      // From project config
+        "tools": ["git", "claude-code"]        // From project config
+      },
+      "workspace": {
+        "path": "/path/to/workspace",          // From project config
+        "repository_url": null,                // From project config
+        "branch": "main"                       // From project config
+      }
+    }
+  },
+
+  "activities": [
+    // Array of activity objects (each could become activity.json entry)
+    {
+      "timestamp": "2025-01-01T12:00:00Z",
+      "event_type": "interaction",             // interaction | realization | struggle | breakthrough | routine
+      "context": "What was happening",
+      "felt_significant": false,
+      "emotional_tone": "",
+      "notes": ""
+    }
+  ],
+
+  "quality_indicators": {
+    "tasks_completed": 0,
+    "tasks_attempted": 0,
+    "breakthroughs": 0,
+    "struggles": 0,
+    "learning_moments": 0
+  },
+
+  "session_notes": [],                         // Array of timestamped notes
+
+  "work_tracking": {
+    "projects_touched": [],                    // Which projects were active
+    "domains": [],                             // Which domains (backend, frontend, docs, etc.)
+    "collaboration_moments": 0                 // User interactions
+  },
+
+  // ============================================================================
+  // EXTENSIONS - Discovery Space
+  // ============================================================================
+
+  "extensions": {
+    // What else do we need to track in the activity stream
+  }
+}

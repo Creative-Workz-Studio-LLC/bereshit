@@ -1,0 +1,249 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cpi-si.org/schemas/temporal/appointed/planner-preferences.schema.json",
+  "title": "Planner Preferences",
+  "description": "Schema for planner behavior and display settings",
+  "type": "object",
+  "required": ["metadata", "default_view", "week_starts_on", "timezone", "time_format", "date_format", "display", "behavior", "notifications", "coordination", "category_preferences", "integrations"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["component", "version", "last_updated", "purpose"],
+      "properties": {
+        "component": {
+          "type": "string",
+          "description": "Component name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version"
+        },
+        "last_updated": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Last update date (YYYY-MM-DD)"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Purpose of this configuration"
+        }
+      }
+    },
+    "default_view": {
+      "type": "string",
+      "enum": ["day", "week", "month", "year"],
+      "description": "Default planner view mode"
+    },
+    "week_starts_on": {
+      "type": "string",
+      "enum": ["monday", "sunday"],
+      "description": "First day of the week"
+    },
+    "timezone": {
+      "type": "string",
+      "description": "IANA timezone identifier (e.g., 'America/Chicago')"
+    },
+    "time_format": {
+      "type": "string",
+      "enum": ["12h", "24h"],
+      "description": "Time format preference"
+    },
+    "date_format": {
+      "type": "string",
+      "description": "Date format string (e.g., 'YYYY-MM-DD')"
+    },
+    "display": {
+      "type": "object",
+      "required": ["show_time_blocks", "compact_mode", "show_category_colors", "show_duration", "show_conflicts", "group_by_category", "working_hours_highlight", "working_hours_start", "working_hours_end"],
+      "properties": {
+        "show_time_blocks": {
+          "type": "boolean",
+          "description": "Enable visual time blocking"
+        },
+        "compact_mode": {
+          "type": "boolean",
+          "description": "Use condensed view"
+        },
+        "show_category_colors": {
+          "type": "boolean",
+          "description": "Display category colors"
+        },
+        "show_duration": {
+          "type": "boolean",
+          "description": "Show appointment duration"
+        },
+        "show_conflicts": {
+          "type": "boolean",
+          "description": "Highlight scheduling conflicts"
+        },
+        "group_by_category": {
+          "type": "boolean",
+          "description": "Group appointments by category"
+        },
+        "working_hours_highlight": {
+          "type": "boolean",
+          "description": "Highlight typical work hours"
+        },
+        "working_hours_start": {
+          "type": "string",
+          "pattern": "^\\d{2}:\\d{2}$",
+          "description": "Work hours start time (HH:MM)"
+        },
+        "working_hours_end": {
+          "type": "string",
+          "pattern": "^\\d{2}:\\d{2}$",
+          "description": "Work hours end time (HH:MM)"
+        }
+      }
+    },
+    "behavior": {
+      "type": "object",
+      "required": ["auto_refresh", "refresh_interval_seconds", "show_past_appointments", "past_retention_days", "auto_archive", "conflict_detection", "travel_time_buffer"],
+      "properties": {
+        "auto_refresh": {
+          "type": "boolean",
+          "description": "Enable automatic refresh"
+        },
+        "refresh_interval_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "description": "Refresh interval in seconds"
+        },
+        "show_past_appointments": {
+          "type": "boolean",
+          "description": "Show past appointments by default"
+        },
+        "past_retention_days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Days to retain past appointments"
+        },
+        "auto_archive": {
+          "type": "boolean",
+          "description": "Automatically archive old appointments"
+        },
+        "conflict_detection": {
+          "type": "boolean",
+          "description": "Enable scheduling conflict detection"
+        },
+        "travel_time_buffer": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minutes buffer between appointments for travel time"
+        }
+      }
+    },
+    "notifications": {
+      "type": "object",
+      "required": ["enabled", "reminder_before_minutes", "daily_summary", "daily_summary_time", "weekly_preview", "conflict_alerts"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable planner notifications"
+        },
+        "reminder_before_minutes": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": "Minutes before appointments to send reminders"
+        },
+        "daily_summary": {
+          "type": "boolean",
+          "description": "Send daily summary notification"
+        },
+        "daily_summary_time": {
+          "type": "string",
+          "pattern": "^\\d{2}:\\d{2}$",
+          "description": "Time to send daily summary (HH:MM)"
+        },
+        "weekly_preview": {
+          "type": "boolean",
+          "description": "Send weekly preview notification"
+        },
+        "conflict_alerts": {
+          "type": "boolean",
+          "description": "Alert on scheduling conflicts"
+        }
+      }
+    },
+    "coordination": {
+      "type": "object",
+      "required": ["show_coordination_appointments", "coordination_color", "auto_accept_coordination", "coordination_reminder"],
+      "properties": {
+        "show_coordination_appointments": {
+          "type": "boolean",
+          "description": "Display shared/coordination appointments"
+        },
+        "coordination_color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "description": "Color for coordination appointments (hex format)"
+        },
+        "auto_accept_coordination": {
+          "type": "boolean",
+          "description": "Automatically accept coordination requests"
+        },
+        "coordination_reminder": {
+          "type": "boolean",
+          "description": "Remind about pending coordination"
+        }
+      }
+    },
+    "category_preferences": {
+      "type": "object",
+      "description": "Display preferences per category",
+      "patternProperties": {
+        "^(sacred|work|rest|collaboration)$": {
+          "type": "object",
+          "required": ["always_show", "highlight"],
+          "properties": {
+            "always_show": {
+              "type": "boolean",
+              "description": "Always show this category, never filter"
+            },
+            "highlight": {
+              "type": "boolean",
+              "description": "Visually emphasize this category"
+            }
+          }
+        }
+      }
+    },
+    "integrations": {
+      "type": "object",
+      "required": ["sync_with_celestial", "sync_with_patterns", "sync_with_chronological", "external_calendars"],
+      "properties": {
+        "sync_with_celestial": {
+          "type": "boolean",
+          "description": "Integrate with celestial time (seasons, sabbath)"
+        },
+        "sync_with_patterns": {
+          "type": "boolean",
+          "description": "Learn from temporal patterns"
+        },
+        "sync_with_chronological": {
+          "type": "boolean",
+          "description": "Track chronological time"
+        },
+        "external_calendars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "External calendar integrations"
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Discovery space for future preferences"
+    }
+  }
+}

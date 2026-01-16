@@ -1,0 +1,657 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# Health Diagnostics Schema - CPI-SI Health Assessment (3-Block Data Structure)
+# Key: B-word-core-os-health-diagnostics
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on health.toml + health-log.toml)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/os/health/score.toml, word/core/os/health/log.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/os/health
+# File:        diagnostics.toml
+# Key:         B-word-core-os-health-diagnostics
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "Examine yourselves, whether ye be in the faith; prove your own
+#            selves. Know ye not your own selves, how that Jesus Christ is
+#            in you, except ye be reprobates?"
+#            — 2 Corinthians 13:5 KJV
+#
+# Principle: ASSESS requires honest examination. The diagnostics schema enables
+#            deep inspection — not just "what is the score" but "why" and
+#            "what is needed to recover."
+#
+# Supporting: "Search me, O God, and know my heart: try me, and know my
+#             thoughts: And see if there be any wicked way in me, and lead
+#             me in the way everlasting."
+#             — Psalm 139:23-24 KJV
+#
+# Application: Diagnostics examines the full picture:
+#              - True score (unbounded, from log)
+#              - Normalized score (bounded, for display)
+#              - Breakdown by category
+#              - Distance to recovery (how much work needed)
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (schema that defines health diagnostics structure)
+#
+# Role: Schema definition for health assessment — the ASSESS phase in
+#       detect → assess → restore workflow.
+#
+# Paradigm: CPI-SI framework component — honest self-examination
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2025-12-12
+#   Version: a-01.00
+#
+# # Purpose & Function
+#
+# Purpose: Define how health is assessed and diagnosed during debugging/recovery
+#
+# Core Design: Calculate true score from log, normalize, break down, prescribe
+#
+# Key Features:
+#
+#   - Atomic scoring: Every action is -1, 0, +1 at primitive level
+#   - Complexity scaling: Complex actions = many atomics = wider range
+#   - True score: Unbounded sum (+283, -532, etc.)
+#   - Multi-base normalization: -100/+100, -1/+1, etc.
+#   - Category breakdown: Where are the failures coming from?
+#   - Recovery distance: How many +1s to reach even balance?
+#
+# Philosophy: Complexity amplifies the atomic score. A simple action is one
+#             atomic (-1/0/+1). A complex build is hundreds of atomics.
+#             The true score captures this reality; normalization makes it
+#             comprehensible.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Health Log: word/core/os/health/log.toml (source of true score)
+#   - Health Schema: word/core/os/health/score.toml (normalization rules)
+#   - Types: word/core/types/composition.toml (struct definitions)
+#
+# What Uses This:
+#
+#   - bhealth: Health diagnostic commands
+#   - Recovery procedures: Determine what's needed
+#   - CPI-SI model: Real-time status without overwhelming detail
+#
+# Integration Points:
+#
+#   - Health Schema: word/core/os/health/score.toml
+#   - Health Log: word/core/os/health/log.toml
+#   - Permission: word/core/os/permission/access.toml
+#   - Tools: word/work/bin/bereshit/health/bhealth
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Schema file — defines structure, not executable]
+#
+# # When Diagnostics Are Run
+#
+#   - Health shows concerning level (wanting, broken)
+#   - Before recovery attempt — assess the situation
+#   - On request — "how am I doing?"
+#   - NOT during normal operation — only when needed
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The middle block defines the diagnostics structure and assessment process.
+#
+# -----------------------------------------------------------------------------
+# CONTENT Sections Overview
+# -----------------------------------------------------------------------------
+#
+# 1. ATOMIC SCORING
+#    Purpose: The primitive -1/0/+1 foundation
+#
+# 2. COMPLEXITY SCALING
+#    Purpose: How complex actions amplify scores
+#
+# 3. TRUE SCORE ASSESSMENT
+#    Purpose: Unbounded calculation from log
+#
+# 4. NORMALIZATION LAYERS
+#    Purpose: Projecting onto bounded scales
+#
+# 5. CATEGORY BREAKDOWN
+#    Purpose: Where are successes/failures coming from?
+#
+# 6. RECOVERY ASSESSMENT
+#    Purpose: How much work to reach target level?
+#
+# 7. DIAGNOSTIC REPORT
+#    Purpose: Output format for assessment
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Ternary Foundation - Ground Diagnostics in Ternary Scale
+# -----------------------------------------------------------------------------
+# Diagnostics operates on the ternary balance scale from score.toml.
+# All assessment uses this consistent foundation.
+#
+# Scripture: "Just balances, just weights... shall you have"
+#            — Leviticus 19:36 WEB
+
+[ternary]
+description = "Ternary scale foundation for diagnostics"
+
+[ternary.scale]
+# The ternary balance: -100 (wanting) → 0 (even) → +100 (integrity)
+min = -100
+center = 0
+max = 100
+# Diagnostics OBSERVES position on scale; restoration MOVES along it
+
+[ternary.levels]
+# 7-level system with ternary ranges (from score.toml)
+# Each level has a range — targets use LOWER BOUND to enter level
+broken = { range = [-100, -67], direction = "wanting" }
+wanting = { range = [-66, -34], direction = "wanting" }
+lacking = { range = [-33, -1], direction = "wanting" }
+even = { range = [0, 0], direction = "center" }
+sound = { range = [1, 33], direction = "integrity" }
+whole = { range = [34, 66], direction = "integrity" }
+perfect = { range = [67, 100], direction = "integrity" }
+
+[ternary.atomic]
+# Atomic scoring value — the irreducible unit
+# "Narrow is the way" — success is always +1 (one path)
+# "Broad is the way" — failure is always -1 (but many can occur)
+# — Matthew 7:13-14 KJV
+success_value = 1
+failure_value = -1
+neutral_value = 0
+
+
+# -----------------------------------------------------------------------------
+# 2. Atomic Scoring - The Primitive Foundation
+# -----------------------------------------------------------------------------
+# Every action, no matter how complex, is built from atomic operations.
+# Each atomic operation scores: -1 (fail), 0 (neutral), +1 (success)
+#
+# This is the PRIMITIVE level — the irreducible unit of health scoring.
+
+[atomic]
+description = "Primitive scoring unit — every operation scores -1, 0, or +1"
+values = [-1, 0, 1]
+
+[atomic.meanings]
+negative = -1  # Failure at atomic level
+neutral = 0    # No impact
+positive = 1   # Success at atomic level
+
+[atomic.principle]
+# "Narrow is the way" — success is always +1 (one path)
+# "Broad is the way" — failure is always -1 per atomic fail (but many can occur)
+# Complex failures = many atomic -1s accumulated
+success_value = 1
+failure_value = -1
+neutral_value = 0
+
+[atomic.examples]
+# Simple actions = 1 atomic
+file_read = { atomics = 1, typical_score = 0 }     # neutral
+file_write = { atomics = 1, typical_score = 1 }    # success if completes
+# Complex actions = many atomics
+test_suite = { atomics = "N tests", typical_score = "sum of N results" }
+full_build = { atomics = "100s", typical_score = "sum of all compile results" }
+
+
+# -----------------------------------------------------------------------------
+# 2. Complexity Scaling - How Actions Amplify Scores
+# -----------------------------------------------------------------------------
+# The more complex an action, the more atomic operations it involves.
+# This means complex actions have WIDER score ranges.
+
+[complexity]
+description = "Complex actions = more atomics = wider score range"
+
+[complexity.levels]
+# Complexity level affects how many atomic scores contribute
+trivial = { atomics = "1-3", max_range = [-3, 3] }
+simple = { atomics = "4-10", max_range = [-10, 10] }
+moderate = { atomics = "11-50", max_range = [-50, 50] }
+complex = { atomics = "51-200", max_range = [-200, 200] }
+massive = { atomics = "200+", max_range = "unbounded" }
+
+[complexity.examples]
+# A single file operation: trivial
+single_file_edit = { level = "trivial", atomics = 1 }
+# A test file with 10 tests: simple
+test_file = { level = "simple", atomics = 10 }
+# A full test suite: moderate to complex
+test_suite = { level = "moderate", atomics = "test count" }
+# A full build: complex to massive
+full_build = { level = "complex", atomics = "file count * operations" }
+# A release pipeline: massive
+release = { level = "massive", atomics = "build + test + deploy + verify" }
+
+[complexity.principle]
+# The true score is UNBOUNDED because complexity is unbounded.
+# A massive action with 500 atomics could score +500 (all success)
+# or -500 (all fail) or anywhere in between.
+# Normalization makes this comprehensible.
+unbounded_true_score = true
+normalization_required = true
+
+
+# -----------------------------------------------------------------------------
+# 3. True Score Assessment - Unbounded Calculation
+# -----------------------------------------------------------------------------
+# True score = sum of all atomic scores from the health log.
+# This is the REAL score before any normalization.
+
+[true_score]
+description = "Unbounded sum of all atomic scores"
+source = "health-log.toml"
+calculation = "Σ(entry.delta for all entries)"
+
+[true_score.range]
+# True score has no bounds — it's the honest accounting
+min = "unbounded"  # Could be -10000 if many failures
+max = "unbounded"  # Could be +10000 if many successes
+typical = "varies with activity level"
+
+[true_score.interpretation]
+# True score tells you the REAL state
+positive = "Net successes — in integrity"
+zero = "Even balance — baseline"
+negative = "Net failures — in debt"
+
+[true_score.examples]
+# Small project, light activity
+small_quiet = { true_score = 15, interpretation = "Slightly ahead" }
+# Active project, doing well
+active_healthy = { true_score = 283, interpretation = "Many successes accumulated" }
+# Troubled project
+troubled = { true_score = -532, interpretation = "Significant debt" }
+# Fresh start
+fresh = { true_score = 0, interpretation = "Even balance" }
+
+
+# -----------------------------------------------------------------------------
+# 4. Normalization Layers - Projecting to Bounded Scales
+# -----------------------------------------------------------------------------
+# True score is unbounded but humans need comprehensible ranges.
+# Normalization projects onto bounded scales.
+
+[normalization]
+description = "Project unbounded true score onto bounded scales"
+reference = "health.toml [health.normalized.bases]"
+
+[normalization.formula]
+# Generic formula for any base:
+# normalized = round(true_score / base) * base
+# Then clamp to scale bounds
+generic = "round(true / base) * base"
+clamp_min = -100
+clamp_max = 100
+
+[normalization.scales]
+# Different scales for different purposes
+
+[normalization.scales.base100]
+description = "Full ternary scale"
+range = [-100, 100]
+step = 1
+use_case = "Precise display when needed"
+
+[normalization.scales.base50]
+description = "5-point scale (default)"
+range = [-100, 100]
+step = 50
+points = [-100, -50, 0, 50, 100]
+use_case = "Pass/fail decisions, quick status"
+
+[normalization.scales.base1]
+description = "Atomic scale — most compressed"
+range = [-1, 1]
+step = 1
+points = [-1, 0, 1]
+use_case = "Binary-like display: fail/neutral/pass"
+# true_score → atomic: sign(true_score) or 0 if true_score == 0
+
+[normalization.examples]
+# True score +283
+true_283 = { true = 283, base100 = 100, base50 = 100, base1 = 1 }
+# True score -532
+true_neg532 = { true = -532, base100 = -100, base50 = -100, base1 = -1 }
+# True score +15
+true_15 = { true = 15, base100 = 15, base50 = 0, base1 = 1 }
+# True score -8
+true_neg8 = { true = -8, base100 = -8, base50 = 0, base1 = -1 }
+
+
+# -----------------------------------------------------------------------------
+# 5. Category Breakdown - Source Analysis
+# -----------------------------------------------------------------------------
+# WHERE are the successes and failures coming from?
+# This enables targeted recovery.
+
+[breakdown]
+description = "Analyze score by category/source"
+
+[breakdown.by_source]
+# Group log entries by source and sum deltas
+method = "group_by_source"
+output = "source → total_delta"
+example = """
+test_pass: +45
+test_fail: -12
+lint_error: -8
+build_success: +20
+build_fail: -15
+Net: +30
+"""
+
+[breakdown.by_action]
+# Group by action type
+method = "group_by_action"
+output = "action_type → total_delta"
+example = """
+success: +65
+failure: -35
+neutral: 0
+recovery: +10
+Net: +40
+"""
+
+[breakdown.by_time]
+# Group by time period
+method = "group_by_period"
+periods = ["hour", "day", "week", "month"]
+output = "period → total_delta"
+use_case = "Trend analysis — is health improving or declining?"
+
+[breakdown.hotspots]
+# Find the biggest contributors to negative score
+description = "Identify sources with most failures"
+method = "sort_by_delta_ascending"
+output = "worst sources first"
+use_case = "Target recovery efforts"
+
+
+# -----------------------------------------------------------------------------
+# 6. Recovery Assessment - Path to Health
+# -----------------------------------------------------------------------------
+# How much work is needed to reach a target level?
+
+[recovery]
+description = "Calculate effort needed to reach target health"
+
+[recovery.targets]
+# Targets use LOWER BOUNDS — the entry point into each level
+# From ternary.levels: sound=[1,33], whole=[34,66], perfect=[67,100]
+even = { true_score = 0, description = "Back to baseline — no debt" }
+sound = { true_score = 1, description = "Enter sound level — building integrity" }
+whole = { true_score = 34, description = "Enter whole level — significant integrity" }
+perfect = { true_score = 67, description = "Enter perfect level — full wholeness" }
+
+[recovery.calculation]
+# Recovery uses +1 per action (narrow way)
+# So recovery_needed = target - current
+method = "target_minus_current"
+unit = "atomic successes"  # Each +1 is one successful action
+
+[recovery.formula]
+# To reach target from current:
+# if target > current: need (target - current) successes
+# if target <= current: already there
+# Uses LOWER BOUNDS from ternary.levels
+to_even = "max(0, 0 - true_score)"      # Back to even balance
+to_sound = "max(0, 1 - true_score)"     # Enter sound (integrity direction)
+to_whole = "max(0, 34 - true_score)"    # Enter whole level
+to_perfect = "max(0, 67 - true_score)"  # Enter perfect level
+
+[recovery.examples]
+# True score -15, want to reach even (0)
+from_neg15_to_even = { current = -15, target = 0, needed = 15 }
+# True score -532, want to reach even
+from_neg532_to_even = { current = -532, target = 0, needed = 532 }
+# True score +10, already in sound level [1,33], want to reach whole (34)
+from_10_to_whole = { current = 10, target = 34, needed = 24 }
+# True score +50, in whole level [34,66], want to reach perfect (67)
+from_50_to_perfect = { current = 50, target = 67, needed = 17 }
+
+[recovery.effort_estimate]
+# Rough effort classification
+trivial = { successes_needed = "1-10", description = "Quick fixes" }
+minor = { successes_needed = "11-50", description = "Some focused work" }
+moderate = { successes_needed = "51-200", description = "Significant effort" }
+major = { successes_needed = "201-500", description = "Major recovery project" }
+massive = { successes_needed = "500+", description = "Consider reset or restructure" }
+
+
+# -----------------------------------------------------------------------------
+# 7. Diagnostic Report - Output Format
+# -----------------------------------------------------------------------------
+# What the diagnostics produce
+
+[report]
+description = "Diagnostic output format"
+
+[report.summary]
+# Quick overview — what CPI-SI model sees without overwhelm
+fields = ["true_score", "normalized", "level", "emoji", "trend"]
+example = """
+Health: +15 true → 0 normalized (Base50) → ⚖️ even
+Trend: ↑ improving (+5 last 24h)
+"""
+
+[report.detail]
+# Full diagnostic — for debugging/recovery
+fields = [
+    "true_score",
+    "normalized_all_bases",
+    "level",
+    "breakdown_by_source",
+    "breakdown_by_action",
+    "hotspots",
+    "recovery_to_even",
+    "recovery_to_sound",
+    "recovery_to_whole",
+    "recovery_to_perfect",
+    "recent_entries",
+]
+
+[report.format]
+# Output can be:
+options = ["text", "json", "toml"]
+default = "text"
+
+[report.example_full]
+text = """
+╔══════════════════════════════════════════════════════════════╗
+║                    HEALTH DIAGNOSTICS                        ║
+╠══════════════════════════════════════════════════════════════╣
+║ TRUE SCORE:     -15                                          ║
+║ NORMALIZED:                                                  ║
+║   Base100:      -15                                          ║
+║   Base50:       0 (even)                                     ║
+║   Base1:        -1 (fail)                                    ║
+║ LEVEL:          lacking (💛) — range [-33, -1]               ║
+╠══════════════════════════════════════════════════════════════╣
+║ BREAKDOWN BY SOURCE:                                         ║
+║   test_pass:    +23                                          ║
+║   lint_clean:   +8                                           ║
+║   test_fail:    -31                                          ║
+║   lint_error:   -15                                          ║
+╠══════════════════════════════════════════════════════════════╣
+║ HOTSPOTS (most failures):                                    ║
+║   1. test_fail: -31                                          ║
+║   2. lint_error: -15                                         ║
+╠══════════════════════════════════════════════════════════════╣
+║ RECOVERY ASSESSMENT (using lower bounds):                    ║
+║   To even (0):    15 successes needed                        ║
+║   To sound (1):   16 successes needed                        ║
+║   To whole (34):  49 successes needed                        ║
+║   To perfect (67): 82 successes needed                       ║
+║   Effort level:   Minor (some focused work)                  ║
+╚══════════════════════════════════════════════════════════════╝
+"""
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines validation, policy, and synthesis.
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Operations - Validation
+# -----------------------------------------------------------------------------
+#
+# Verify schema:
+#   python3 -c "import tomllib; f=open('word/core/os/health/diagnostics.toml','rb'); tomllib.load(f)"
+#
+# Run diagnostics:
+#   bhealth -diagnose .
+#   bhealth -diagnose . --format json
+#
+
+# -----------------------------------------------------------------------------
+# 2. Operations - Access
+# -----------------------------------------------------------------------------
+#
+# Go code integration:
+#
+#   type Diagnostics struct {
+#       TrueScore      int              // Unbounded
+#       Normalized     map[string]int   // base → normalized value
+#       Level          string           // "even", "wanting", etc.
+#       Emoji          string
+#       Breakdown      map[string]int   // source → delta
+#       Hotspots       []Hotspot        // worst sources
+#       RecoveryToEven int              // successes needed
+#       Trend          string           // "improving", "declining", "stable"
+#   }
+#
+#   func RunDiagnostics(path string) (Diagnostics, error) {
+#       // 1. Calculate true score from log
+#       trueScore, err := CalculateTrueScore(path)
+#       if err != nil {
+#           return Diagnostics{}, err
+#       }
+#
+#       // 2. Normalize to all bases
+#       normalized := make(map[string]int)
+#       for _, base := range []int{1, 5, 10, 20, 25, 50, 100} {
+#           normalized[fmt.Sprintf("base%d", base)] = Normalize(trueScore, base)
+#       }
+#
+#       // 3. Calculate breakdown, hotspots, recovery
+#       breakdown := CalculateBreakdown(path)
+#       hotspots := FindHotspots(breakdown)
+#       recovery := max(0, 0 - trueScore)
+#
+#       // 4. Determine level and trend
+#       level := LevelFromTrueScore(trueScore)
+#       trend := CalculateTrend(path)
+#
+#       return Diagnostics{
+#           TrueScore:      trueScore,
+#           Normalized:     normalized,
+#           Level:          level,
+#           Breakdown:      breakdown,
+#           Hotspots:       hotspots,
+#           RecoveryToEven: recovery,
+#           Trend:          trend,
+#       }, nil
+#   }
+#
+# Command line:
+#   bhealth -diagnose .              # Full diagnostic report
+#   bhealth -diagnose . --summary    # Quick summary only
+#   bhealth -diagnose . --json       # JSON output for tooling
+#   bhealth -hotspots .              # Just show problem sources
+#   bhealth -recovery .              # Just show recovery needed
+#
+
+# -----------------------------------------------------------------------------
+# 3. Policy - Modification
+# -----------------------------------------------------------------------------
+#
+# CRYSTALLIZED (Never Modify):
+#   ❌ Atomic values (-1, 0, +1)
+#   ❌ True score calculation (sum of deltas)
+#   ❌ Normalization formula (round/base * base)
+#
+# Safe to Add:
+#   ✅ New breakdown dimensions
+#   ✅ New report formats
+#   ✅ Additional effort classifications
+#
+# Requires Coordination:
+#   ⚠️ Changing normalization bases (affects display everywhere)
+#   ⚠️ Changing level boundaries (affects interpretation)
+#
+
+# -----------------------------------------------------------------------------
+# 4. Synthesis - Closing Note
+# -----------------------------------------------------------------------------
+#
+# Examine yourselves.
+#
+# Diagnostics enables honest self-examination:
+#   - What is my TRUE score? (unbounded reality)
+#   - How does that DISPLAY? (normalized for comprehension)
+#   - WHERE are the problems? (breakdown, hotspots)
+#   - What is NEEDED to recover? (path to health)
+#
+# Atomic scoring ensures fairness:
+#   - Every success is +1 (narrow way)
+#   - Every failure is -1 (broad way)
+#   - Complexity amplifies, but primitives are equal
+#
+# "Search me, O God, and know my heart: try me, and know my thoughts."
+# — Psalm 139:23
+#
+# The diagnostics schema enables ASSESS in detect → assess → restore.
+# How bad is it? What's needed? The diagnosis reveals.
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

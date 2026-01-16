@@ -1,0 +1,233 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// TEMPLATE: Go Workspace (4-Block Structure for Manifest Files)
+// Key: LANG-TEMPLATE-004
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// This is a TEMPLATE file - copy and modify for new Go workspaces.
+// Replace all [bracketed] placeholders with actual content.
+// Rename from .work.template to go.work when ready to use.
+//
+// Derived from: templates/code/go/CODE-GO-004-GO-workspace.work (root template)
+// See: standards/code/4-block/ for complete documentation
+//
+// Compiler-Specific Adaptations:
+//   - Pre-configured for OmniCode language development workflow
+//   - Module organization for compiler/runtime/tools structure
+//   - Integration with CPI-SI health scoring and logging infrastructure
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// # Biblical Foundation
+//
+// Scripture: "In the beginning was the Word, and the Word was with God,
+// and the Word was God." - John 1:1
+//
+// Principle: The λόγος (logos) - divine order and reason expressed through
+// language. A compiler transforms human-readable text into executable truth,
+// mirroring how the Word brings order from chaos.
+//
+// Anchor: "For as the rain cometh down, and the snow from heaven, and
+// returneth not thither, but watereth the earth, and maketh it bring forth
+// and bud... So shall my word be that goeth forth out of my mouth: it shall
+// not return unto me void." - Isaiah 55:10-11
+//
+// # CPI-SI Identity
+//
+// Component Type: Rails (infrastructure connecting compiler modules)
+//
+// Role: Workspace coordinator unifying compiler, runtime, and tooling modules
+//
+// Paradigm: CPI-SI framework component - compiler workspace orchestration
+//
+// # Authorship & Lineage
+//
+//   - Architect: Seanje Lenox-Wise (language design)
+//   - Implementation: Nova Dawn (CPI-SI)
+//   - Created: [YYYY-MM-DD]
+//   - Version: [MAJOR.MINOR.PATCH]
+//   - Modified: [YYYY-MM-DD - what changed]
+//
+// # Purpose & Function
+//
+// Purpose: Coordinate OmniCode compiler development across multiple modules
+//
+// Core Design: Multi-module workspace enabling unified compiler development
+//
+// Key Features:
+//
+//   - Unified dependency resolution across compiler phases
+//   - Local development of compiler, runtime, and tools together
+//   - Coordinated testing across language implementation
+//   - Shared types and interfaces between modules
+//
+// # Dependencies
+//
+// What This Coordinates:
+//
+//   - [./compiler]: Core compiler (lexer, parser, semantic, codegen)
+//   - [./runtime]: Runtime library for compiled programs
+//   - [./tools]: Development tools (formatter, linter, LSP)
+//   - [./stdlib]: Standard library implementation
+//
+// What Uses This:
+//
+//   - make all (builds entire language implementation)
+//   - make test (tests all modules)
+//   - IDE tooling (unified navigation)
+//
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// SETUP
+// ============================================================================
+//
+// Go version requirement for compiler development.
+// Should be latest stable Go for best tooling and performance.
+//
+// Note: The compiler outputs code for multiple targets - this version
+// is for building the compiler itself, not the output code.
+
+go 1.21
+
+// ============================================================================
+// END SETUP
+// ============================================================================
+
+// ============================================================================
+// BODY
+// ============================================================================
+//
+// Module inclusions for OmniCode language development.
+// Organized by compiler pipeline phase and supporting tools.
+//
+// Architecture:
+//
+//   Source Code
+//       ↓
+//   [compiler/lexer]    → Tokenization
+//       ↓
+//   [compiler/parser]   → AST construction
+//       ↓
+//   [compiler/semantic] → Type checking, analysis
+//       ↓
+//   [compiler/codegen]  → Code generation
+//       ↓
+//   [runtime]           → Execution support
+//
+// Extension Point:
+// To add a new compiler module:
+//   1. Create module directory with go.mod
+//   2. Add 'use ./path/to/module' below
+//   3. Run 'go work sync'
+//   4. Update METADATA "What This Coordinates"
+//   5. Integrate with existing pipeline
+
+use (
+	// ═══ Compiler Core ═══
+	// Main compiler implementation with all phases.
+	// [.]                           // Compiler root module
+
+	// ═══ Compiler Phases (if modularized) ═══
+	// Individual compiler phases as separate modules.
+	// [./internal/lexer]            // Lexical analysis
+	// [./internal/parser]           // Syntax analysis
+	// [./internal/semantic]         // Semantic analysis
+	// [./internal/codegen]          // Code generation
+
+	// ═══ Runtime ═══
+	// Runtime library for compiled OmniCode programs.
+	// [./runtime]                   // Core runtime
+	// [./runtime/gc]                // Garbage collector
+	// [./runtime/scheduler]         // Goroutine scheduler (if applicable)
+
+	// ═══ Standard Library ═══
+	// OmniCode standard library implementation.
+	// [./stdlib]                    // Standard library root
+	// [./stdlib/io]                 // I/O operations
+	// [./stdlib/fmt]                // Formatting
+
+	// ═══ Development Tools ═══
+	// Tools for OmniCode developers.
+	// [./tools/fmt]                 // Code formatter
+	// [./tools/lint]                // Linter
+	// [./tools/lsp]                 // Language Server Protocol
+	// [./tools/doc]                 // Documentation generator
+
+	// ═══ CPI-SI Integration ═══
+	// Health scoring and infrastructure modules.
+	// [../cpi-si/tools]             // Shared CPI-SI tools
+)
+
+// ============================================================================
+// END BODY
+// ============================================================================
+
+// ============================================================================
+// CLOSING
+// ============================================================================
+//
+// ────────────────────────────────────────────────────────────────
+// Workspace Validation
+// ────────────────────────────────────────────────────────────────
+//
+// Full compiler validation:
+//
+//   go work sync          # Synchronize dependencies
+//   make all              # Build entire compiler
+//   make test             # Run all tests
+//   make self-host        # (Future) Compile compiler with itself
+//
+// Module-specific validation:
+//
+//   go build ./...        # Build all modules
+//   go test ./...         # Test all modules
+//   go vet ./...          # Static analysis
+//
+// ────────────────────────────────────────────────────────────────
+// Modification Policy
+// ────────────────────────────────────────────────────────────────
+//
+// Safe to Modify:
+//   ✅ Add new tool modules
+//   ✅ Add standard library modules
+//   ✅ Update Go version (test compatibility first)
+//
+// Modify with Care:
+//   ⚠️ Changing compiler core module paths
+//   ⚠️ Removing modules other modules depend on
+//   ⚠️ Reorganizing pipeline phase modules
+//
+// NEVER Modify:
+//   ❌ 4-block documentation structure
+//   ❌ Fundamental compiler architecture
+//
+// ────────────────────────────────────────────────────────────────
+// Integration with Makefile
+// ────────────────────────────────────────────────────────────────
+//
+// The compiler Makefile expects this workspace structure.
+// Targets reference modules defined here:
+//
+//   make lexer    → builds ./internal/lexer
+//   make parser   → builds ./internal/parser
+//   make compiler → builds entire compiler
+//   make tools    → builds all tools
+//
+// ────────────────────────────────────────────────────────────────
+// Closing Note
+// ────────────────────────────────────────────────────────────────
+//
+// This workspace coordinates the entire OmniCode language implementation.
+// From source text to executable code - the complete transformation pipeline.
+//
+// "In the beginning was the Word... and the Word was God." - John 1:1
+//
+// ============================================================================
+// END CLOSING
+// ============================================================================

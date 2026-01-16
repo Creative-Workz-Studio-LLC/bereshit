@@ -1,0 +1,370 @@
+# ============================================================================
+# USER CONFIGURATION - Preference Schema
+# ============================================================================
+# Purpose: Define user preferences and customizations
+# Scope: Single user account on this system
+#
+# THIS FILE IS NOT A DATABASE OF DETECTED VALUES
+# - Leave fields empty/commented = use auto-detected values
+# - Set a field = user preference to override detection
+# - Runtime configurator detects user info, consults this for preferences
+#
+# Detection happens at runtime:
+# - User identity: whoami, id, /etc/passwd
+# - Home directory: $HOME, ~
+# - Groups: id -Gn
+# - Shell: $SHELL, /etc/passwd
+# - Paths: Scanning home directory for common locations
+# - Git config: ~/.gitconfig
+# - SSH: ~/.ssh/
+# - Development tools: ~/.nvm, ~/.pyenv, ~/.cargo, etc.
+#
+# This file: User's preferred overrides and customizations
+# ============================================================================
+
+[metadata]
+# Schema version for validation
+schema_version = "1.0.0"
+
+# Which system this user config belongs to (optional)
+system_reference = ""
+
+# ============================================================================
+# REMOVED: Identity/personhood fields moved to JSON configs
+# ============================================================================
+# The following fields were removed as they belong in user JSON configs,
+# not technical TOML overrides:
+# - display_name (now in config/user/[username]/config.jsonc)
+# - pronouns (now in config/user/[username]/config.jsonc)
+# - faith section (now in config/user/[username]/config.jsonc)
+#
+# TOMLs = Technical overrides for auto-detected values
+# JSONs = Identity and personhood data
+
+# ============================================================================
+# PATH PREFERENCES
+# ============================================================================
+# Override default path detection
+
+[paths]
+# Preferred project root (leave empty to auto-detect)
+# Use case: Projects in ~/Projects but want /media/external/Projects
+project_root_override = ""
+
+# Preferred workspace location
+workspace_override = ""
+
+# Additional paths to include in searches
+additional_search_paths = []
+
+# ============================================================================
+# SHELL PREFERENCES
+# ============================================================================
+
+[shell]
+# Preferred shell (leave empty to use system default)
+# Use case: System default is bash but user prefers zsh
+preferred_shell = ""
+
+# Preferred terminal emulator
+preferred_terminal = ""
+
+# Shell aliases to always set
+[shell.aliases]
+# Example: ll = "ls -la"
+
+# ============================================================================
+# EDITOR PREFERENCES
+# ============================================================================
+
+[editor]
+# Preferred text editor (leave empty for system default)
+# Options: nano, vim, emacs, code, etc.
+preferred = ""
+
+# Visual editor preference (for VISUAL env var)
+visual_preferred = ""
+
+# Editor-specific settings
+[editor.settings]
+# Example for vim: set number relativenumber
+vim_settings = []
+# Example for nano: set tabsize 4
+nano_settings = []
+
+# ============================================================================
+# DEVELOPMENT PREFERENCES
+# ============================================================================
+
+[development]
+# Preferred code directory
+code_dir_override = ""
+
+# Version manager preferences
+[development.version_managers]
+# Use NVM for Node.js? ("auto", "yes", "no")
+use_nvm = "auto"
+
+# Use pyenv for Python? ("auto", "yes", "no")
+use_pyenv = "auto"
+
+# Use rustup for Rust? ("auto", "yes", "no")
+use_rustup = "auto"
+
+# Preferred language versions
+[development.preferred_versions]
+python = ""      # e.g. "3.11" or "3.11.6"
+node = ""        # e.g. "20" or "20.19.5"
+go = ""          # e.g. "1.21"
+rust = ""        # e.g. "stable", "nightly", "1.75.0"
+
+# ============================================================================
+# GIT PREFERENCES
+# ============================================================================
+
+[git]
+# Override git name (leave empty to use .gitconfig)
+name_override = ""
+
+# Override git email (leave empty to use .gitconfig)
+email_override = ""
+
+# Preferred git editor (leave empty to use editor.preferred)
+editor_override = ""
+
+# Signing preference
+sign_commits = "auto"  # "auto", "always", "never"
+sign_tags = "auto"
+
+# ============================================================================
+# TERMINAL PREFERENCES
+# ============================================================================
+
+[terminal]
+# Preferred color scheme ("auto", "dark", "light")
+color_scheme = "auto"
+
+# Color support preference ("truecolor", "256color", "16color", "none")
+color_support = "auto"
+
+# Font preferences
+font_family = ""
+font_size = 0  # 0 = use terminal default
+
+# ============================================================================
+# WORKSPACE ORGANIZATION
+# ============================================================================
+
+[workspace]
+# How to organize projects ("flat", "by_language", "by_client", "custom")
+organization_style = "auto"
+
+# Default license for new projects
+default_license = ""
+
+# Default .gitignore template
+default_gitignore_template = ""
+
+# ============================================================================
+# CPI-SI INTEGRATION PREFERENCES
+# ============================================================================
+
+[cpi_si]
+# Preferred CPI-SI instance to work with (leave empty for default)
+default_instance = ""
+
+# Skills directory preference (leave empty for ~/.claude/skills)
+skills_dir_override = ""
+
+# Hooks directory preference (leave empty for ~/.claude/hooks)
+hooks_dir_override = ""
+
+# Session preferences
+[cpi_si.session]
+# Auto-save session frequency in minutes (0 = never)
+auto_save_minutes = 5
+
+# Default thinking mode ("auto", "always", "never")
+default_thinking_mode = "auto"
+
+# ============================================================================
+# PRIVACY PREFERENCES
+# ============================================================================
+
+[privacy]
+# Include home directory in searches ("yes", "no", "ask")
+include_home_in_search = "yes"
+
+# Include hidden files by default
+include_hidden_files = "yes"
+
+# Telemetry preference
+allow_telemetry = "ask"
+
+# ============================================================================
+# ACCESSIBILITY PREFERENCES
+# ============================================================================
+
+[accessibility]
+# Screen reader support
+screen_reader = "auto"
+
+# High contrast mode
+high_contrast = "auto"
+
+# Font scaling (1.0 = normal, 1.5 = 150%)
+font_scale = 1.0
+
+# ============================================================================
+# NOTIFICATIONS
+# ============================================================================
+
+[notifications]
+# Desktop notifications ("auto", "enabled", "disabled")
+desktop_notifications = "auto"
+
+# Sound notifications
+sound_notifications = "auto"
+
+# Notify on long-running commands (threshold in seconds, 0 = never)
+long_command_threshold = 30
+
+# ============================================================================
+# PERFORMANCE PREFERENCES
+# ============================================================================
+
+[performance]
+# File search indexing preference
+enable_file_indexing = "auto"
+
+# Cache user environment (faster startup)
+cache_environment = true
+
+# Parallel operations preference
+prefer_parallel = "auto"
+
+# ============================================================================
+# LOCALE PREFERENCES
+# ============================================================================
+
+[locale]
+# Preferred language (leave empty for system default)
+preferred_language = ""
+
+# Preferred timezone (leave empty for system default)
+preferred_timezone = ""
+
+# Date format preference ("iso", "us", "eu", "system")
+date_format = "system"
+
+# Time format preference ("12h", "24h", "system")
+time_format = "system"
+
+# ============================================================================
+# BACKUP AND SYNC
+# ============================================================================
+
+[backup]
+# Enable automatic config backup
+auto_backup = true
+
+# Backup frequency in days
+backup_frequency_days = 7
+
+# Backup location (leave empty for default)
+backup_location = ""
+
+# ============================================================================
+# USER ENVIRONMENT PREFERENCES
+# ============================================================================
+# User-specific environment preferences
+# These override or supplement system defaults
+
+[environment.editor]
+# Editor preferences (leave empty to auto-detect from $EDITOR)
+editor = ""
+visual = ""
+git_editor = ""
+
+[environment.pager]
+# Pager preferences (leave empty for system default)
+pager = ""
+git_pager = ""
+
+[environment.development]
+# Development environment variables
+gopath = ""           # Leave empty to use ~/go
+node_env = ""         # "development", "production", or empty for auto
+
+# Version manager paths (auto-detected if empty)
+nvm_dir = ""
+pyenv_root = ""
+cargo_home = ""
+rustup_home = ""
+
+[environment.sudo]
+# Sudo askpass helper (leave empty for default)
+sudo_askpass = ""
+
+[environment.ssh_gpg]
+# SSH agent socket (leave empty for auto-detection)
+ssh_auth_sock = ""
+
+# GPG TTY (auto-detected if empty)
+gpg_tty = ""
+
+[environment.custom]
+# Custom user environment variables
+# Example: MY_API_KEY = "..."
+# Note: Sensitive values should use secret management
+
+# ============================================================================
+# NOTES
+# ============================================================================
+#
+# What Gets Detected Automatically:
+#
+# USER IDENTITY:
+# - Username: whoami
+# - UID/GID: id
+# - Groups: id -Gn
+# - Home directory: $HOME
+# - Shell: $SHELL or /etc/passwd
+# - Full name: /etc/passwd GECOS field
+#
+# PATHS:
+# - Project locations: Scan for common patterns
+#   ~/Projects, ~/Code, ~/Development, ~/workspace
+#   /media/{user}/*, external drives
+# - Development tools: ~/.nvm, ~/.pyenv, ~/.rustup, ~/.cargo, ~/go
+# - Config directories: ~/.config, ~/.local
+# - Git config: ~/.gitconfig
+# - SSH: ~/.ssh
+#
+# PREFERENCES (from existing configs):
+# - Git: name, email from ~/.gitconfig
+# - Editor: $EDITOR, $VISUAL env vars
+# - Shell: $SHELL, .bashrc, .zshrc presence
+# - Terminal: $TERM, $COLORTERM
+#
+# CPI-SI PATHS:
+# - ~/.claude/
+# - ~/.claude/cpi-si/
+# - ~/.claude/skills/
+# - ~/.claude/hooks/
+#
+# Why Prefer Instead of Detect:
+# - Multiple valid options: Choose preference
+# - Performance: Specify instead of searching
+# - Privacy: Exclude certain paths
+# - Organization: Custom workspace layout
+# - Integration: Specific tool preferences
+# - Workflow: Personal development style
+#
+# Multiple Users:
+# - Each user on system has own user.toml
+# - Location: ~/.claude/cpi-si/system/config/user.toml
+# - Isolated preferences per user
+# - Can reference same system.toml
+#
+# ============================================================================

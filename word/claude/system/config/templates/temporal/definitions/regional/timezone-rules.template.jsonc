@@ -1,0 +1,135 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Regional Definitions - Timezone Rules
+// Purpose: Define timezone behavior for specific region
+// Scope: Regional (specific timezone)
+// Schema: system/config/schemas/temporal/definitions/regional/timezone-rules.schema.json
+//
+// INSTRUCTIONS FOR USE:
+// 1. Copy to: data/temporal/definitions/regional/<continent>/<country>/<region>/timezone-rules.jsonc
+//    Example: regional/europe/uk/london/timezone-rules.jsonc
+// 2. Update metadata with region details
+// 3. Define timezone information (IANA name, offsets)
+// 4. Specify DST rules if applicable
+// 5. Add DST transition dates for upcoming years
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Accurate timezone rules: 40 pts
+// - DST handling correctness: 30 pts
+// - Useful for timestamp interpretation: 30 pts
+
+{
+  "$schema": "../../../../../config/schemas/temporal/definitions/regional/timezone-rules.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    // UPDATE: Descriptive name for this timezone
+    "name": "Region Timezone Rules",
+    "version": "1.0.0",
+    "created": "2025-01-01",
+    "last_updated": "2025-01-01",
+    "purpose": "Define timezone rules for [Region Name]",
+    "scope": "regional",
+    // UPDATE: Geographic scope
+    "region": "Continent - Country - Region",
+    "applies_to": [
+      // UPDATE: Cities/areas using this timezone
+      "City Name",
+      "Other City"
+    ]
+  },
+
+  // ============================================================================
+  // TIMEZONE INFORMATION
+  // ============================================================================
+  // UPDATE: Timezone details for this region
+
+  "timezone": {
+    // UPDATE: IANA timezone name (e.g., "America/Chicago", "Europe/London")
+    "iana_name": "Continent/City",
+    // UPDATE: Standard time abbreviation (e.g., "CST", "GMT")
+    "standard_abbreviation": "STD",
+    // UPDATE: Full standard time name
+    "standard_name": "Standard Time Name",
+    // UPDATE: Daylight time abbreviation (if DST observed)
+    "daylight_abbreviation": "DLT",
+    // UPDATE: Full daylight time name (if DST observed)
+    "daylight_name": "Daylight Time Name",
+    // UPDATE: UTC offset during standard time (e.g., "-06:00", "+00:00")
+    "utc_offset_standard": "-06:00",
+    // UPDATE: UTC offset during daylight time (if DST observed)
+    "utc_offset_daylight": "-05:00"
+  },
+
+  // ============================================================================
+  // DAYLIGHT SAVING TIME RULES
+  // ============================================================================
+  // UPDATE: DST rules for this region (or set observes_dst: false)
+
+  "daylight_saving_time": {
+    // UPDATE: Does this region observe DST? (true/false)
+    "observes_dst": true,
+    "start_rule": {
+      // UPDATE: When DST starts
+      "description": "Second Sunday in March at 2:00 AM local time",
+      "month": 3,
+      "week": "second",
+      "day_of_week": "Sunday",
+      "time": "02:00",
+      "offset_change": "Spring forward 1 hour",
+      "utc_offset_before": "-06:00",
+      "utc_offset_after": "-05:00"
+    },
+    "end_rule": {
+      // UPDATE: When DST ends
+      "description": "First Sunday in November at 2:00 AM local time",
+      "month": 11,
+      "week": "first",
+      "day_of_week": "Sunday",
+      "time": "02:00",
+      "offset_change": "Fall back 1 hour",
+      "utc_offset_before": "-05:00",
+      "utc_offset_after": "-06:00"
+    }
+  },
+
+  // ============================================================================
+  // DST TRANSITION DATES
+  // ============================================================================
+  // UPDATE: Specific transition dates for upcoming years
+
+  "dst_transitions": {
+    "2025": {
+      "spring_forward": "2025-03-09T02:00:00-06:00",
+      "fall_back": "2025-11-02T02:00:00-05:00"
+    },
+    "2026": {
+      "spring_forward": "2026-03-08T02:00:00-06:00",
+      "fall_back": "2026-11-01T02:00:00-05:00"
+    }
+    // ADD MORE: Additional years as needed
+  },
+
+  // ============================================================================
+  // USAGE NOTES
+  // ============================================================================
+
+  "usage": {
+    "purpose": "Provide accurate timezone rules for temporal calculations in this region",
+    "dst_complexity": "DST transitions create ambiguous and non-existent times - handle carefully",
+    "library_recommendation": "Use robust timezone libraries rather than manual offset calculations"
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "extensions": {
+    "note": "Experimental patterns and discoveries - may be promoted to formal definitions or removed",
+    "usage_guidance": "Add timezone-specific discoveries, DST edge cases, or temporal calculation patterns here during discovery phase"
+  }
+}

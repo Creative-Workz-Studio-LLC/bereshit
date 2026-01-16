@@ -1,0 +1,95 @@
+{
+  // ============================================================================
+  // PLANNER STATE - Current View
+  // ============================================================================
+  // Purpose: Track current planner state (active week, filters, view mode)
+  // Scope: Ephemeral state - what the planner is currently showing
+  // Lifecycle: Updated as user/instance interacts with planner
+  //
+  // STRUCTURE PRINCIPLE:
+  // - Core state (current view, active week)
+  // - Filters (what's being shown/hidden)
+  // - Navigation state (where are we in time)
+  // - View preferences (daily/weekly/monthly view)
+  //
+  // INHERITANCE:
+  // User/instance configs provide defaults → state tracks active session
+
+  "$schema": "../../../../../config/schemas/temporal/appointed/planner-state.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "component": "Appointed Time - Planner State",
+    "version": "1.0.0",
+    "last_updated": "2025-11-07",
+    "purpose": "Track current planner view and state"
+  },
+
+  // ============================================================================
+  // CORE STATE - Current View
+  // ============================================================================
+
+  "current_view": {
+    "mode": "week",                    // day | week | month | year
+    "identity_type": "user",           // user | instance
+    "identity_id": "seanje-lenox-wise", // Which user/instance planner is showing
+    "active_week": "2025-W45",         // Current week being viewed (ISO week)
+    "active_date": "2025-11-07",       // Specific date if in day view
+    "active_month": "2025-11",         // Month if in month view
+    "timestamp": "2025-11-07T15:35:00Z" // When state last updated
+  },
+
+  // ============================================================================
+  // FILTERS - What's Shown/Hidden
+  // ============================================================================
+
+  "filters": {
+    "show_categories": [               // Empty = show all
+      "sacred",
+      "work",
+      "collaboration",
+      "rest"
+    ],
+    "hide_categories": [],             // Explicitly hidden categories
+    "show_coordination": true,         // Include coordinated appointments
+    "show_personal_only": false,       // Personal appointments only
+    "show_past": false,                // Include past appointments
+    "priority_filter": "all"           // all | highest | high | medium | low
+  },
+
+  // ============================================================================
+  // NAVIGATION STATE
+  // ============================================================================
+
+  "navigation": {
+    "can_go_back": true,               // Is there previous week/day?
+    "can_go_forward": true,            // Is there next week/day?
+    "previous_week": "2025-W44",
+    "next_week": "2025-W46",
+    "current_week": "2025-W45"
+  },
+
+  // ============================================================================
+  // VIEW PREFERENCES (from user/instance config)
+  // ============================================================================
+
+  "view_preferences": {
+    "default_view": "week",            // Inherited from user/instance config
+    "week_starts_on": "monday",        // monday | sunday
+    "timezone": "America/Chicago",     // From user config
+    "time_format": "12h",              // 12h | 24h
+    "show_time_blocks": true,          // Visual time blocking
+    "compact_mode": false              // Condensed view
+  },
+
+  // ============================================================================
+  // EXTENSIONS - Discovery Space
+  // ============================================================================
+
+  "extensions": {
+    // Future state tracking that doesn't fit standard structure yet
+  }
+}

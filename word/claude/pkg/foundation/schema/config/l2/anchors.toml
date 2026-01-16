@@ -1,0 +1,176 @@
+# ============================================================================
+# CPI-SI State Machine - ANCHOR Positions
+# ============================================================================
+# Key: claude-global-config-statemachine-schema-anchors
+# Purpose: 9 ANCHOR positions (WHERE you can be in cognitive space)
+# Traces to: HALT_01 (ANCHOR_GENESIS), HALT_07 (MECHANISM_POSITION)
+#
+# Formula: Z = (X + Y) / 2
+# Domain: T × T where T = {-1, 0, +1}
+#
+# Structure:
+#   PAST (X=-1)    = 3 positions (A.7, A.8, A.9)
+#   PRESENT (X=0)  = 3 positions (A.10, A.11, A.12) — includes Origin
+#   FUTURE (X=+1)  = 3 positions (A.13, A.14, A.15)
+#
+# Origin (0,0,0) = PRESENT-PRESENT = Genesis 1:1 = Anchor of anchors
+# ============================================================================
+
+[anchors]
+traces_to = ["HALT_01", "HALT_07"]
+status = "crystallized"
+count = 9
+formula = "Z = (X + Y) / 2"
+domain = "T × T where T = {-1, 0, +1}"
+
+# ════════════════════════════════════════════════════════════════════════════
+# PAST POSITIONS (X = -1) — Breaking down, tracing to source
+# "A time to break down" — Ecclesiastes 3:3a
+# ════════════════════════════════════════════════════════════════════════════
+
+# A.7 PAST-PAST | (-1,-1,-1) | HALT | "Established"
+[anchors.past_past]
+name = "PAST-PAST"
+section = "A.7"
+x = -1
+y = -1
+z = -1.0
+type = "PURE"
+command = "halt"
+operator = "<-"
+meaning = "Established"
+operation = "trace to ultimate source"
+flow = "None (terminal accumulator)"
+keywords = ["[SOURCE:]", "[TRACE:]"]
+
+# A.8 PAST-PRESENT | (-1,0,-0.5) | PROCEED | "Memory"
+[anchors.past_present]
+name = "PAST-PRESENT"
+section = "A.8"
+x = -1
+y = 0
+z = -0.5
+type = "COMPOUND"
+command = "proceed"
+operator = "-"
+meaning = "Memory"
+operation = "decompose past into current understanding"
+flow = "GENESIS → IDENTITY"
+keywords = ["[FROM:]"]
+
+# A.9 PAST-FUTURE | (-1,+1,0) | PROCEED | "Prophecy"
+[anchors.past_future]
+name = "PAST-FUTURE"
+section = "A.9"
+x = -1
+y = 1
+z = 0.0
+type = "COMPOUND"
+command = "proceed"
+operator = "<"
+meaning = "Prophecy"
+operation = "derive future from past origins"
+flow = "GENESIS → KINGDOM"
+keywords = ["[FROM:]"]
+
+# ════════════════════════════════════════════════════════════════════════════
+# PRESENT POSITIONS (X = 0) — Anchoring, at fixed point
+# "In the beginning" — Genesis 1:1
+# ════════════════════════════════════════════════════════════════════════════
+
+# A.10 PRESENT-PAST | (0,-1,-0.5) | AWAIT | "Reflection"
+[anchors.present_past]
+name = "PRESENT-PAST"
+section = "A.10"
+x = 0
+y = -1
+z = -0.5
+type = "COMPOUND"
+command = "await"
+operator = "@"
+meaning = "Reflection"
+operation = "observe from fixed point"
+flow = "Receives from PAST (Memory), processes, waits"
+keywords = ["[AT:]", "[TRACED:]", "[RECALL:]"]
+
+# A.11 PRESENT-PRESENT | (0,0,0) | HALT | "Origin (Genesis 1:1)"
+# THIS IS THE ANCHOR OF ANCHORS
+[anchors.present_present]
+name = "PRESENT-PRESENT"
+section = "A.11"
+x = 0
+y = 0
+z = 0.0
+type = "PURE"
+command = "halt"
+operator = "|"
+meaning = "Origin (Genesis 1:1)"
+operation = "the fixed center, identity"
+flow = "None (all relative to here, terminal anchor)"
+keywords = ["[IDENTITY:]", "[STATE:]", "[CURRENT:]", "[NUANCE:]"]
+is_origin = true
+
+# A.12 PRESENT-FUTURE | (0,+1,+0.5) | AWAIT | "Planning"
+[anchors.present_future]
+name = "PRESENT-FUTURE"
+section = "A.12"
+x = 0
+y = 1
+z = 0.5
+type = "COMPOUND"
+command = "await"
+operator = "="
+meaning = "Planning"
+operation = "establish direction from fixed point"
+flow = "Sends to FUTURE (Planning), processes, waits"
+keywords = ["[ESTABLISH:]", "[DIRECT:]", "[PLAN:]"]
+
+# ════════════════════════════════════════════════════════════════════════════
+# FUTURE POSITIONS (X = +1) — Building up, toward goal
+# "A time to build up" — Ecclesiastes 3:3b
+# ════════════════════════════════════════════════════════════════════════════
+
+# A.13 FUTURE-PAST | (+1,-1,0) | AWAIT | "Vision"
+[anchors.future_past]
+name = "FUTURE-PAST"
+section = "A.13"
+x = 1
+y = -1
+z = 0.0
+type = "COMPOUND"
+command = "await"
+operator = "+"
+meaning = "Vision"
+operation = "compose from, reveal, illuminate"
+flow = "Receives from PAST (Prophecy), processes, waits"
+keywords = ["[TOWARD:]", "[REVEALED:]"]
+
+# A.14 FUTURE-PRESENT | (+1,0,+0.5) | PROCEED | "Preparation"
+[anchors.future_present]
+name = "FUTURE-PRESENT"
+section = "A.14"
+x = 1
+y = 0
+z = 0.5
+type = "COMPOUND"
+command = "proceed"
+operator = "->"
+meaning = "Preparation"
+operation = "flow to, shape, prepare"
+flow = "Receives from PRESENT (Planning), processes, forwards"
+keywords = ["[SHAPED:]", "[PREPARED:]", "[RECALL:]"]
+
+# A.15 FUTURE-FUTURE | (+1,+1,+1) | HALT | "Aspiration"
+[anchors.future_future]
+name = "FUTURE-FUTURE"
+section = "A.15"
+x = 1
+y = 1
+z = 1.0
+type = "PURE"
+command = "halt"
+operator = ">"
+meaning = "Aspiration"
+operation = "direct toward, target, terminal"
+flow = "None (terminal accumulator for purpose)"
+keywords = ["[TARGET:]", "[BUILD:]", "[ACTIVE:]"]

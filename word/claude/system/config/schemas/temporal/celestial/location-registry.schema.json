@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/celestial/location-registry.json",
+  "title": "Celestial Location Registry",
+  "description": "Index of all configured celestial data locations",
+  "type": "object",
+  "required": [
+    "$schema",
+    "registry_version",
+    "last_updated",
+    "total_locations",
+    "locations",
+    "usage"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "registry_version": {
+      "type": "string",
+      "description": "Version of this registry format"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this registry was last updated"
+    },
+    "total_locations": {
+      "type": "integer",
+      "description": "Total number of locations in this registry",
+      "minimum": 0
+    },
+    "locations": {
+      "type": "array",
+      "description": "List of all configured locations",
+      "items": {
+        "type": "object",
+        "required": [
+          "location_id",
+          "display_name",
+          "country",
+          "coordinates",
+          "timezone",
+          "config_path",
+          "data_available",
+          "status"
+        ],
+        "properties": {
+          "location_id": {
+            "type": "string",
+            "description": "Unique identifier matching folder name",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Human-readable location name"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country name"
+          },
+          "state_province": {
+            "type": ["string", "null"],
+            "description": "State or province name (if applicable)"
+          },
+          "coordinates": {
+            "type": "object",
+            "required": ["latitude", "longitude"],
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "description": "Latitude in decimal degrees",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "description": "Longitude in decimal degrees",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "additionalProperties": false
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone identifier"
+          },
+          "config_path": {
+            "type": "string",
+            "description": "Relative path to location config file"
+          },
+          "data_available": {
+            "type": "object",
+            "description": "What celestial data exists for this location",
+            "properties": {
+              "solar": {
+                "type": "object",
+                "description": "Available solar data organized by year",
+                "patternProperties": {
+                  "^\\d{4}$": {
+                    "type": "array",
+                    "description": "List of available months for this year (YYYY-MM format)",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+                    }
+                  }
+                },
+                "additionalProperties": false
+              },
+              "lunar": {
+                "type": "object",
+                "description": "Available lunar data organized by year",
+                "patternProperties": {
+                  "^\\d{4}$": {
+                    "type": "array",
+                    "description": "List of available months for this year (YYYY-MM format)",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+                    }
+                  }
+                },
+                "additionalProperties": false
+              },
+              "seasonal": {
+                "type": "array",
+                "description": "List of available seasonal data years (YYYY format)",
+                "items": {
+                  "type": "string",
+                  "pattern": "^\\d{4}$"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "primary_users": {
+            "type": "array",
+            "description": "Primary users or organizations using this location",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of this location",
+            "enum": ["active", "inactive", "archived"]
+          },
+          "notes": {
+            "type": "string",
+            "description": "Any relevant notes about this location"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "usage": {
+      "type": "object",
+      "description": "How to use this registry",
+      "properties": {
+        "adding_location": {
+          "type": "string",
+          "description": "Instructions for adding a new location"
+        },
+        "updating_registry": {
+          "type": "string",
+          "description": "When to update this registry"
+        },
+        "lookup_pattern": {
+          "type": "string",
+          "description": "How the system uses this registry"
+        },
+        "data_organization": {
+          "type": "string",
+          "description": "How celestial data is organized in folders"
+        }
+      },
+      "additionalProperties": false
+    },
+    "extension": {
+      "type": "object",
+      "description": "Extension point for future registry features",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/definitions/base/time-phases.schema.json",
+  "title": "Time Phases Schema",
+  "description": "Schema for universal work state phase categorization",
+  "type": "object",
+  "required": ["metadata", "work_phases", "usage", "extensions"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "created", "last_updated", "purpose", "scope"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "created": {
+          "type": "string",
+          "format": "date"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date"
+        },
+        "purpose": { "type": "string" },
+        "scope": {
+          "type": "string",
+          "enum": ["paradigm-wide"]
+        }
+      }
+    },
+    "work_phases": {
+      "type": "object",
+      "description": "Work state phase definitions",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["name", "description"],
+          "properties": {
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "optimal_work_types": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "avoid_during_peak": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "duration_note": { "type": "string" },
+            "biblical_parallel": { "type": "string" },
+            "biblical_foundation": { "type": "string" },
+            "typical_duration": { "type": "string" },
+            "transition_note": { "type": "string" },
+            "when_appropriate": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "value_note": { "type": "string" },
+            "types": { "type": "object" },
+            "importance": { "type": "string" },
+            "warning_signs": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "examples": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "typical_progressions": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "pattern": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "optimization_principles": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "principle": { "type": "string" },
+            "rationale": { "type": "string" },
+            "application": { "type": "string" }
+          }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

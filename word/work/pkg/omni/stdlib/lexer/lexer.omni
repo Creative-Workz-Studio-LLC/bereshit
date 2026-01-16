@@ -1,0 +1,459 @@
+#!omni code --omni -library
+#!omni meta.key = B-word-work-pkg-omni-stdlib-lexer
+#!omni meta.from = word/seed/code/omni/library.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a library for "OmniCode Lexer":
+    keyed as "B-word-work-pkg-omni-stdlib-lexer"
+    named "lexer"
+
+this library provides:
+    lexer_init          "Initialize lexer with source"
+    lexer_next          "Get next token"
+    lexer_peek          "Peek at next token without consuming"
+    token_type          "Get token type"
+    token_text          "Get token text"
+    token_line          "Get token line number"
+    token_column        "Get token column"
+    type_name           "Get name of token type"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # OmniCode Self-Hosting Lexer
+//
+// "In the beginning was the Word, and the Word was with God,
+//  and the Word was God." — John 1:1
+//
+// This lexer tokenizes OmniCode source into a stream of tokens.
+// It's written in OmniCode itself - a step toward self-hosting.
+//
+// ## Token Representation
+// Tokens are lists with 4 elements:
+//   [0] = type (count)
+//   [1] = text (word)
+//   [2] = line (count)
+//   [3] = column (count)
+//
+// ## Usage
+//   lexer_init source_code
+//   repeat until done:
+//     let tok be count with lexer_next
+//     let t be count with token_type tok
+//     when t is TOK_EOF:
+//       break
+
+import string from "stdlib/string"
+import collections from "stdlib/collections"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # Token Type Constants
+
+let TOK_EOF be count with 0
+let TOK_ERROR be count with 1
+let TOK_NEWLINE be count with 2
+let TOK_IDENTIFIER be count with 3
+let TOK_STRING be count with 4
+let TOK_NUMBER be count with 5
+let TOK_COLON be count with 6
+let TOK_COMMA be count with 7
+let TOK_DOT be count with 8
+let TOK_EQUAL be count with 9
+let TOK_LPAREN be count with 10
+let TOK_RPAREN be count with 11
+let TOK_LBRACKET be count with 12
+let TOK_RBRACKET be count with 13
+let TOK_PLUS be count with 14
+let TOK_MINUS be count with 15
+let TOK_STAR be count with 16
+let TOK_SLASH be count with 17
+
+// # Lexer State (module-level)
+
+let lex_source be word with ""
+let lex_pos be count with 0
+let lex_len be count with 0
+let lex_line be count with 1
+let lex_col be count with 1
+
+// # Core Functions
+
+provide work lexer_init that takes word source returns covenant:
+    // Initialize lexer with source code
+    let lex_source be word with source
+    let lex_pos be count with 0
+    intrinsic str_len source
+    // Result is on stack, store it
+    let lex_len be count with 0  // TODO: capture intrinsic result
+    let lex_line be count with 1
+    let lex_col be count with 1
+    return granted
+
+provide work is_at_end returns truth:
+    when lex_pos is lex_len:
+        return yes
+    when lex_pos is greater than lex_len:
+        return yes
+    otherwise:
+        return no
+
+provide work peek_char returns word:
+    when is_at_end is yes:
+        return ""
+    intrinsic str_char lex_source lex_pos
+
+provide work advance_char returns word:
+    when is_at_end is yes:
+        return ""
+    let c be word with peek_char
+    let lex_pos be count with lex_pos plus 1
+    when c is "\n":
+        let lex_line be count with lex_line plus 1
+        let lex_col be count with 1
+    otherwise:
+        let lex_col be count with lex_col plus 1
+    return c
+
+// # Character Classification
+
+provide work is_digit that takes word c returns truth:
+    when c is "0":
+        return yes
+    when c is "1":
+        return yes
+    when c is "2":
+        return yes
+    when c is "3":
+        return yes
+    when c is "4":
+        return yes
+    when c is "5":
+        return yes
+    when c is "6":
+        return yes
+    when c is "7":
+        return yes
+    when c is "8":
+        return yes
+    when c is "9":
+        return yes
+    otherwise:
+        return no
+
+provide work is_alpha that takes word c returns truth:
+    // Check a-z, A-Z, _
+    when c is "_":
+        return yes
+    // TODO: full alphabet check via ASCII comparison
+    // For now, check common letters
+    when c is "a":
+        return yes
+    when c is "b":
+        return yes
+    when c is "c":
+        return yes
+    when c is "d":
+        return yes
+    when c is "e":
+        return yes
+    when c is "f":
+        return yes
+    when c is "g":
+        return yes
+    when c is "h":
+        return yes
+    when c is "i":
+        return yes
+    when c is "j":
+        return yes
+    when c is "k":
+        return yes
+    when c is "l":
+        return yes
+    when c is "m":
+        return yes
+    when c is "n":
+        return yes
+    when c is "o":
+        return yes
+    when c is "p":
+        return yes
+    when c is "q":
+        return yes
+    when c is "r":
+        return yes
+    when c is "s":
+        return yes
+    when c is "t":
+        return yes
+    when c is "u":
+        return yes
+    when c is "v":
+        return yes
+    when c is "w":
+        return yes
+    when c is "x":
+        return yes
+    when c is "y":
+        return yes
+    when c is "z":
+        return yes
+    otherwise:
+        return no
+
+provide work is_alnum that takes word c returns truth:
+    when is_alpha c is yes:
+        return yes
+    when is_digit c is yes:
+        return yes
+    otherwise:
+        return no
+
+provide work is_whitespace that takes word c returns truth:
+    when c is " ":
+        return yes
+    when c is "\t":
+        return yes
+    when c is "\r":
+        return yes
+    otherwise:
+        return no
+
+// # Token Creation
+
+provide work make_token that takes count typ and word text returns count:
+    // Create token as a list [type, text, line, col]
+    intrinsic list_new
+    let tok be count with 0  // TODO: capture result
+    intrinsic list_push tok typ
+    // TODO: push text, line, col
+    return tok
+
+// # Skip Whitespace and Comments
+
+provide work skip_whitespace returns covenant:
+    repeat until is_at_end is yes:
+        let c be word with peek_char
+        when is_whitespace c is yes:
+            advance_char
+        when c is "/":
+            // Check for comment
+            // TODO: peek ahead for second /
+            return deferred
+        otherwise:
+            return deferred
+    return deferred
+
+// # Scan Tokens
+
+provide work scan_string returns count:
+    // Already consumed opening quote
+    let start be count with lex_pos
+    repeat until is_at_end is yes:
+        let c be word with peek_char
+        when c is "\"":
+            // End of string
+            let end be count with lex_pos
+            advance_char  // consume closing quote
+            intrinsic str_sub lex_source start end
+            return make_token TOK_STRING ""  // TODO: capture substring
+        otherwise:
+            advance_char
+    // Unterminated string
+    return make_token TOK_ERROR "unterminated string"
+
+provide work scan_number returns count:
+    let start be count with lex_pos minus 1
+    repeat until is_at_end is yes:
+        let c be word with peek_char
+        when is_digit c is yes:
+            advance_char
+        when c is ".":
+            advance_char
+        otherwise:
+            // End of number
+            let end be count with lex_pos
+            intrinsic str_sub lex_source start end
+            return make_token TOK_NUMBER ""
+    let end be count with lex_pos
+    intrinsic str_sub lex_source start end
+    return make_token TOK_NUMBER ""
+
+provide work scan_identifier returns count:
+    let start be count with lex_pos minus 1
+    repeat until is_at_end is yes:
+        let c be word with peek_char
+        when is_alnum c is yes:
+            advance_char
+        otherwise:
+            // End of identifier
+            let end be count with lex_pos
+            intrinsic str_sub lex_source start end
+            return make_token TOK_IDENTIFIER ""
+    let end be count with lex_pos
+    intrinsic str_sub lex_source start end
+    return make_token TOK_IDENTIFIER ""
+
+// # Main Lexer Entry Point
+
+provide work lexer_next returns count:
+    // Get next token from source
+    skip_whitespace
+
+    when is_at_end is yes:
+        return make_token TOK_EOF ""
+
+    let c be word with advance_char
+
+    // Single-character tokens
+    when c is "\n":
+        return make_token TOK_NEWLINE "\n"
+    when c is ":":
+        return make_token TOK_COLON ":"
+    when c is ",":
+        return make_token TOK_COMMA ","
+    when c is ".":
+        return make_token TOK_DOT "."
+    when c is "=":
+        return make_token TOK_EQUAL "="
+    when c is "(":
+        return make_token TOK_LPAREN "("
+    when c is ")":
+        return make_token TOK_RPAREN ")"
+    when c is "[":
+        return make_token TOK_LBRACKET "["
+    when c is "]":
+        return make_token TOK_RBRACKET "]"
+    when c is "+":
+        return make_token TOK_PLUS "+"
+    when c is "-":
+        return make_token TOK_MINUS "-"
+    when c is "*":
+        return make_token TOK_STAR "*"
+    when c is "/":
+        return make_token TOK_SLASH "/"
+
+    // String
+    when c is "\"":
+        return scan_string
+
+    // Number
+    when is_digit c is yes:
+        return scan_number
+
+    // Identifier
+    when is_alpha c is yes:
+        return scan_identifier
+
+    // Unknown character
+    return make_token TOK_ERROR c
+
+provide work lexer_peek returns count:
+    // Peek at next token without consuming
+    // Save position
+    let saved_pos be count with lex_pos
+    let saved_line be count with lex_line
+    let saved_col be count with lex_col
+
+    let tok be count with lexer_next
+
+    // Restore position
+    let lex_pos be count with saved_pos
+    let lex_line be count with saved_line
+    let lex_col be count with saved_col
+
+    return tok
+
+// # Token Accessors
+
+provide work token_type that takes count tok returns count:
+    intrinsic list_get tok 0
+
+provide work token_text that takes count tok returns word:
+    // TODO: implement when list can store words
+    return ""
+
+provide work token_line that takes count tok returns count:
+    intrinsic list_get tok 2
+
+provide work token_column that takes count tok returns count:
+    intrinsic list_get tok 3
+
+// # Type Names
+
+provide work type_name that takes count typ returns word:
+    when typ is TOK_EOF:
+        return "EOF"
+    when typ is TOK_ERROR:
+        return "ERROR"
+    when typ is TOK_NEWLINE:
+        return "NEWLINE"
+    when typ is TOK_IDENTIFIER:
+        return "IDENTIFIER"
+    when typ is TOK_STRING:
+        return "STRING"
+    when typ is TOK_NUMBER:
+        return "NUMBER"
+    when typ is TOK_COLON:
+        return "COLON"
+    when typ is TOK_COMMA:
+        return "COMMA"
+    when typ is TOK_DOT:
+        return "DOT"
+    when typ is TOK_EQUAL:
+        return "EQUAL"
+    when typ is TOK_LPAREN:
+        return "LPAREN"
+    when typ is TOK_RPAREN:
+        return "RPAREN"
+    when typ is TOK_LBRACKET:
+        return "LBRACKET"
+    when typ is TOK_RBRACKET:
+        return "RBRACKET"
+    when typ is TOK_PLUS:
+        return "PLUS"
+    when typ is TOK_MINUS:
+        return "MINUS"
+    when typ is TOK_STAR:
+        return "STAR"
+    when typ is TOK_SLASH:
+        return "SLASH"
+    otherwise:
+        return "UNKNOWN"
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// # Self-Hosting Milestone
+//
+// This lexer is the first step toward an OmniCode compiler written in OmniCode.
+// It demonstrates that the language has sufficient expressive power to
+// implement its own tooling.
+//
+// "The beginning of wisdom is this: Get wisdom.
+//  Though it cost all you have, get understanding." — Proverbs 4:7
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

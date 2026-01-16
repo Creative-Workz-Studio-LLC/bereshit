@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/celestial/lunar-data.json",
+  "title": "Lunar Data - Monthly",
+  "description": "Moon phase and position information for a specific location and month",
+  "type": "object",
+  "required": [
+    "$schema",
+    "metadata",
+    "major_phases",
+    "days",
+    "summary"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "location_id",
+        "year",
+        "month",
+        "month_name",
+        "timezone",
+        "timezone_offset",
+        "generated_date",
+        "data_version"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string",
+          "description": "Location identifier matching location config"
+        },
+        "year": {
+          "type": "integer",
+          "description": "Year (YYYY)"
+        },
+        "month": {
+          "type": "integer",
+          "description": "Month number (1-12)",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "month_name": {
+          "type": "string",
+          "description": "Month name in English"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone identifier"
+        },
+        "timezone_offset": {
+          "type": "string",
+          "description": "UTC offset for this month (accounts for DST)",
+          "pattern": "^[+-]\\d{2}:\\d{2}$"
+        },
+        "generated_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date this data was generated"
+        },
+        "data_version": {
+          "type": "string",
+          "description": "Version of this data"
+        }
+      },
+      "additionalProperties": false
+    },
+    "major_phases": {
+      "type": "array",
+      "description": "Primary lunar phase transitions (New Moon, First Quarter, Full Moon, Last Quarter)",
+      "items": {
+        "type": "object",
+        "required": [
+          "phase",
+          "date",
+          "time",
+          "illumination",
+          "description"
+        ],
+        "properties": {
+          "phase": {
+            "type": "string",
+            "description": "Phase name",
+            "enum": ["New Moon", "First Quarter", "Full Moon", "Last Quarter"]
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of phase transition"
+          },
+          "time": {
+            "type": "string",
+            "description": "Local time of phase transition (HH:MM, 24-hour)",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "illumination": {
+            "type": "string",
+            "description": "Percentage of moon illuminated",
+            "pattern": "^\\d{1,3}%$"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of this phase"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "days": {
+      "type": "array",
+      "description": "Daily lunar data for each day of the month",
+      "items": {
+        "type": "object",
+        "required": [
+          "date",
+          "phase_name",
+          "illumination",
+          "age"
+        ],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "ISO 8601 date (YYYY-MM-DD)"
+          },
+          "moonrise": {
+            "type": ["string", "null"],
+            "description": "Local time moon rises (HH:MM, 24-hour) or null if no moonrise this day",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "moonset": {
+            "type": ["string", "null"],
+            "description": "Local time moon sets (HH:MM, 24-hour) or null if no moonset this day",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "phase_name": {
+            "type": "string",
+            "description": "Descriptive phase name",
+            "enum": [
+              "New Moon",
+              "Waxing Crescent",
+              "First Quarter",
+              "Waxing Gibbous",
+              "Full Moon",
+              "Waning Gibbous",
+              "Last Quarter",
+              "Waning Crescent"
+            ]
+          },
+          "illumination": {
+            "type": "string",
+            "description": "Percentage of moon illuminated",
+            "pattern": "^\\d{1,3}%$"
+          },
+          "age": {
+            "type": "number",
+            "description": "Days since last new moon (0-29.5)",
+            "minimum": 0,
+            "maximum": 29.5
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional notes about this day"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "lunar_month_length",
+        "phases_this_month"
+      ],
+      "properties": {
+        "lunar_month_length": {
+          "type": "string",
+          "description": "Synodic month length (average or specific)"
+        },
+        "phases_this_month": {
+          "type": "array",
+          "description": "List of major phases that occurred this month",
+          "items": {
+            "type": "string"
+          }
+        },
+        "full_moon_name": {
+          "type": "string",
+          "description": "Traditional name for this month's full moon (if applicable)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any observations about this month's lunar cycle"
+        }
+      },
+      "additionalProperties": false
+    },
+    "extension": {
+      "type": "object",
+      "description": "Extension point for future lunar data (elevation, distance, tidal, etc.)",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

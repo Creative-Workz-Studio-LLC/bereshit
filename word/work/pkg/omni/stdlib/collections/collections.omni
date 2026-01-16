@@ -1,0 +1,247 @@
+#!omni code --omni -library
+#!omni meta.key = B-word-work-pkg-omni-stdlib-collections
+#!omni meta.from = word/seed/code/omni/library.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a library for "Collection Operations":
+    keyed as "B-word-work-pkg-omni-stdlib-collections"
+    named "collections"
+
+this library provides:
+    list_create     "Create empty list"
+    list_push       "Add item to list"
+    list_pop        "Remove last item"
+    list_get        "Get item at index"
+    list_set        "Set item at index"
+    list_length     "Get list length"
+    list_is_empty   "Check if list is empty"
+    list_clear      "Clear all items"
+    list_contains   "Check if item exists"
+    list_find       "Find index of item"
+    range           "Generate range of numbers"
+    map_create      "Create empty map"
+    map_get         "Get value by key"
+    map_set         "Set value by key"
+    map_has         "Check if key exists"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # Collections
+//
+// OmniCode collections are designed around the ternary paradigm:
+// - Operations return covenant indicating success/failure
+// - Indexes use balanced ternary addressing where beneficial
+// - Collections have intrinsic capacity tied to powers of 3
+//
+// ## List
+// Ordered sequence of values. Capacity follows 3^n pattern:
+// - trit3: 27 items (3^3)
+// - trit5: 243 items (3^5)
+// - trit7: 2187 items (3^7)
+//
+// ## Map
+// Key-value associative container. Keys are words (strings).
+//
+// Note: Full implementation requires VM support for heap allocation.
+// These function signatures define the API; implementation is native.
+
+import covenant from "stdlib/covenant"
+import math from "stdlib/math"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # Capacity Constants (Powers of 3)
+
+let CAPACITY_SMALL be count with 27
+let CAPACITY_MEDIUM be count with 243
+let CAPACITY_LARGE be count with 2187
+
+// # List Operations
+//
+// List operations are implemented via VM intrinsics with heap allocation
+
+provide work list_create returns count:
+    // Returns list handle
+    intrinsic list_new
+
+provide work list_create_with_capacity that takes count capacity returns count:
+    // Returns list handle with specified capacity
+    return 0
+
+provide work list_destroy that takes count list returns covenant:
+    // Free list memory
+    return granted
+
+provide work list_push that takes count list and count value returns covenant:
+    // Add value to end of list
+    intrinsic list_push list value
+    return granted
+
+provide work list_pop that takes count list returns count:
+    // Remove and return last value
+    intrinsic list_pop list
+
+provide work list_get that takes count list and count index returns count:
+    // Get value at index
+    intrinsic list_get list index
+
+provide work list_set that takes count list and count index and count value returns covenant:
+    // Set value at index
+    intrinsic list_set list index value
+    return granted
+
+provide work list_length that takes count list returns count:
+    // Get current length
+    intrinsic list_len list
+
+provide work list_capacity that takes count list returns count:
+    // Get capacity (same as length for dynamic lists)
+    intrinsic list_len list
+
+provide work list_is_empty that takes count list returns truth:
+    let len be count with list_length list
+    when len is 0:
+        return yes
+    otherwise:
+        return no
+
+provide work list_is_full that takes count list returns truth:
+    let len be count with list_length list
+    let cap be count with list_capacity list
+    when len is cap:
+        return yes
+    otherwise:
+        return no
+
+provide work list_clear that takes count list returns covenant:
+    // Remove all items
+    intrinsic list_clear list
+    return granted
+
+// # List Search
+
+provide work list_contains that takes count list and count value returns truth:
+    let idx be count with list_find list value
+    when idx is less than 0:
+        return no
+    otherwise:
+        return yes
+
+provide work list_find that takes count list and count value returns count:
+    // Find index of value, returns -1 if not found
+    intrinsic list_find list value
+
+provide work list_count that takes count list and count value returns count:
+    // Count occurrences of value
+    return 0
+
+// # Range Generation
+
+provide work range that takes count start and count end returns count:
+    // Create list containing [start, start+1, ..., end-1]
+    // Implementation: VM intrinsic
+    return 0
+
+provide work range_step that takes count start and count end and count step returns count:
+    // Create list with step increment
+    return 0
+
+// # Map Operations
+
+provide work map_create returns count:
+    // Returns map handle
+    intrinsic map_new
+
+provide work map_destroy that takes count map returns covenant:
+    // Free map memory
+    return granted
+
+provide work map_get that takes count map and word key returns count:
+    // Get value by key (returns 0 if not found)
+    intrinsic map_get map key
+
+provide work map_get_or_default that takes count map and word key and count default_val returns count:
+    when map_has map key is yes:
+        return map_get map key
+    otherwise:
+        return default_val
+
+provide work map_set that takes count map and word key and count value returns covenant:
+    // Set key to value
+    intrinsic map_set map key value
+    return granted
+
+provide work map_has that takes count map and word key returns truth:
+    // Check if key exists
+    intrinsic map_has map key
+
+provide work map_remove that takes count map and word key returns covenant:
+    // Remove key
+    intrinsic map_del map key
+    return granted
+
+provide work map_clear that takes count map returns covenant:
+    // Remove all entries
+    return granted
+
+provide work map_size that takes count map returns count:
+    // Get number of entries
+    intrinsic map_len map
+
+provide work map_is_empty that takes count map returns truth:
+    let size be count with map_size map
+    when size is 0:
+        return yes
+    otherwise:
+        return no
+
+// # Iteration Helpers
+//
+// Note: Full iteration requires language-level support
+// These provide functional-style operations
+
+provide work list_foreach_sum that takes count list returns count:
+    // Sum all elements
+    return 0
+
+provide work list_foreach_max that takes count list returns count:
+    // Find maximum element
+    return 0
+
+provide work list_foreach_min that takes count list returns count:
+    // Find minimum element
+    return 0
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// "For where two or three are gathered together in my name,
+//  there am I in the midst of them." — Matthew 18:20
+//
+// Collections gather values together. The ternary capacity system
+// (27, 243, 2187) reflects the threefold pattern in creation.
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

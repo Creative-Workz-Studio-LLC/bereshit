@@ -1,0 +1,121 @@
+# Linux Commands for Format Lookup
+# Reference file for format-lookup skill
+
+# ============================================================================
+# FIND FORMAT DEFINITIONS
+# ============================================================================
+
+# Find FORMAT DEFINITIONS section in syntax spec:
+grep -n "FORMAT DEFINITIONS" bereshit/word/omni/B-word-omni-syntax.omni
+
+# Extract format definitions block:
+sed -n '/FORMAT DEFINITIONS/,/^\/\/ ═/p' bereshit/word/omni/B-word-omni-syntax.omni
+
+# Find specific format mapping (e.g., adoc):
+grep -A 30 'format "adoc"' bereshit/word/omni/B-word-omni-syntax.omni
+
+# List all defined formats:
+grep -oP 'format "\K[^"]+' bereshit/word/omni/B-word-omni-syntax.omni
+
+# ============================================================================
+# LOOKUP SPECIFIC MAPPINGS
+# ============================================================================
+
+# Find how a specific element maps (e.g., "grounded in"):
+grep -n "grounded in" bereshit/word/omni/B-word-omni-syntax.omni
+grep -n "biblical" bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc
+
+# Find pragma mapping for a format:
+head -20 bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc
+
+# Find how metadata maps in Go:
+head -50 bereshit/word/seed/go/B-word-seed-go-executable.go | grep -E "^//"
+
+# ============================================================================
+# COMPARE ACROSS FORMATS
+# ============================================================================
+
+# Compare same element in different formats:
+echo "=== Biblical Foundation Mapping ==="
+echo "OmniCode: grounded in: scripture"
+echo "AsciiDoc: $(grep -o ':biblical[^:]*:' bereshit/word/seed/documentation/*.adoc | head -1)"
+echo "Go: $(grep 'Biblical' bereshit/word/seed/go/*.go | head -1)"
+
+# Show all attribute mappings in AsciiDoc template:
+grep -E "^:" bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc
+
+# Show all comment-based mappings in Go template:
+grep -E "^// [A-Z][a-z]+:" bereshit/word/seed/go/B-word-seed-go-executable.go
+
+# ============================================================================
+# FIND TEMPLATE FOR FORMAT
+# ============================================================================
+
+# Find template by format:
+find bereshit/word/seed/ -name "*.adoc" -type f
+find bereshit/word/seed/ -name "*.go" -type f
+find bereshit/word/seed/ -name "*.md" -type f
+find bereshit/word/seed/ -name "*.c" -type f
+
+# List all format templates:
+find bereshit/word/seed/ -type f ! -name "*.omni"
+
+# ============================================================================
+# VERIFY MAPPING CONSISTENCY
+# ============================================================================
+
+# Check if mapping exists in both OmniCode and format template:
+check_mapping() {
+    local element="$1"
+    local format_file="$2"
+    echo "Element: $element"
+    echo "In OmniCode spec:"
+    grep -n "$element" bereshit/word/omni/B-word-omni-syntax.omni | head -3
+    echo "In format template:"
+    grep -n "$element" "$format_file" | head -3
+}
+
+# Check biblical foundation mapping:
+# check_mapping "biblical" bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc
+
+# ============================================================================
+# EXTRACT FULL MAPPING TABLE
+# ============================================================================
+
+# Generate mapping table for a format:
+echo "| OmniCode | AsciiDoc |"
+echo "|----------|----------|"
+grep -E "^:" bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc | \
+    sed 's/:\([^:]*\):.*/| \1 | :\1: |/'
+
+# ============================================================================
+# QUICK LOOKUPS
+# ============================================================================
+
+# What does "grounded in" become in AsciiDoc?
+grep -B2 -A2 "biblical" bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc
+
+# What does "exists to: purpose" become in Go?
+grep -B2 -A2 -i "purpose\|provides" bereshit/word/seed/go/B-word-seed-go-executable.go
+
+# What does the pragma look like in each format?
+echo "=== Pragma by Format ==="
+echo "AsciiDoc:"
+head -5 bereshit/word/seed/documentation/B-word-seed-doc-asciidoc-base.adoc
+echo ""
+echo "Go:"
+head -5 bereshit/word/seed/go/B-word-seed-go-executable.go
+
+# ============================================================================
+# FORMAT-AWARE FILE DISCOVERY
+# ============================================================================
+
+# Find files using a specific format:
+grep -rl "#!omni.*--adoc" bereshit/
+grep -rl "#!omni.*--go" bereshit/
+
+# Find format from pragma:
+head -2 FILE | grep -oP "#!omni [a-z]+ --\K[a-z]+"
+
+# List all format-aware OmniCode files:
+find bereshit/ -name "*.omni" -exec sh -c 'head -2 {} | grep -q "#!omni.*--" && echo {}' \;

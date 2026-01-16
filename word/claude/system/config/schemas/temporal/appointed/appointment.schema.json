@@ -1,0 +1,205 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cpi-si.org/schemas/temporal/appointed/appointment.schema.json",
+  "title": "Appointment Definition",
+  "description": "Schema for defining individual recurring or one-time appointments",
+  "type": "object",
+  "required": ["metadata", "appointment"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["component", "version", "created_at", "last_updated", "purpose"],
+      "properties": {
+        "component": {
+          "type": "string",
+          "description": "Component name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 creation timestamp"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 last update timestamp"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Purpose of this appointment"
+        },
+        "biblical_foundation": {
+          "type": "string",
+          "description": "Optional biblical foundation for this appointment"
+        },
+        "context_specific": {
+          "type": "string",
+          "description": "Optional context-specific information"
+        },
+        "employer": {
+          "type": "string",
+          "description": "Employer name for work appointments"
+        },
+        "employment_type": {
+          "type": "string",
+          "description": "Type of employment (external, internal, etc.)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "appointment": {
+      "type": "object",
+      "required": ["id", "category_id", "title", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this appointment"
+        },
+        "category_id": {
+          "type": "string",
+          "description": "Category this appointment belongs to"
+        },
+        "title": {
+          "type": "string",
+          "description": "Appointment title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description"
+        },
+        "start_time": {
+          "type": "string",
+          "pattern": "^\\d{2}:\\d{2}$",
+          "description": "Default start time in HH:MM format (24-hour)"
+        },
+        "end_time": {
+          "type": "string",
+          "pattern": "^\\d{2}:\\d{2}$",
+          "description": "Default end time in HH:MM format (24-hour)"
+        },
+        "duration_minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Default duration in minutes"
+        },
+        "recurrence": {
+          "type": "string",
+          "enum": ["once", "daily", "weekly", "monthly", "custom"],
+          "description": "Recurrence pattern type"
+        },
+        "recurrence_pattern": {
+          "type": "object",
+          "description": "Detailed recurrence pattern",
+          "properties": {
+            "frequency": {
+              "type": "string",
+              "enum": ["once", "daily", "weekly", "monthly", "custom"]
+            },
+            "day_of_week": {
+              "type": "string",
+              "enum": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+            },
+            "exceptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "description": "Dates when this appointment doesn't occur"
+            }
+          }
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of appointment"
+        },
+        "protected": {
+          "type": "boolean",
+          "description": "Whether this is a protected/non-negotiable appointment"
+        },
+        "flexible": {
+          "type": "boolean",
+          "description": "Whether timing can be adjusted"
+        }
+      }
+    },
+    "variations": {
+      "type": "object",
+      "description": "Different variations of this appointment (e.g., regular day vs pantry day)",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "typical_days": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Days when this variation applies"
+            },
+            "schedule": {
+              "type": "string",
+              "description": "Time range for this variation"
+            },
+            "duration_minutes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "work_minutes": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Actual work time excluding breaks"
+            },
+            "lunch_break": {
+              "type": "string",
+              "description": "Lunch break time range"
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "coordination_notes": {
+      "type": "object",
+      "description": "Notes about coordination with other identities",
+      "properties": {
+        "tracking_method": {
+          "type": "string"
+        },
+        "file_location": {
+          "type": "string"
+        },
+        "participants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "timing_rationale": {
+          "type": "string"
+        },
+        "preparation": {
+          "type": "string"
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "description": "Additional notes about this appointment",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

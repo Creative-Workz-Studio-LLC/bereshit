@@ -1,0 +1,141 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Activity Tracking Configuration - CPI-SI Session Management
+//
+// HEALTH SCORING MAP (Total = 100):
+//   Configuration Structure (100):
+//     - Valid JSONC structure: +40
+//     - Complete time_window settings: +20
+//     - Complete exclusion_patterns: +20
+//     - Complete display settings: +20
+
+{
+  // ──────────────────────────────────────────────────────────────
+  // Metadata - Configuration Identity
+  // ──────────────────────────────────────────────────────────────
+  "metadata": {
+    "name": "Activity Tracking Configuration",
+    "description": "Configures recent file activity detection for session context awareness",
+    "version": "1.0.0",
+    "author": "Nova Dawn",
+    "created": "2025-11-12",
+    "last_updated": "2025-11-12"
+  },
+
+  // ──────────────────────────────────────────────────────────────
+  // Time Window - How Far Back to Look
+  // ──────────────────────────────────────────────────────────────
+  // Controls the time window for "recent" activity detection.
+  // Larger values capture more context, smaller values focus on immediate work.
+
+  "time_window": {
+    "minutes": 60,
+    "description": "How many minutes back to search for modified files",
+    "reasoning": "60 minutes (1 hour) captures recent session work without overwhelming with old changes"
+  },
+
+  // ──────────────────────────────────────────────────────────────
+  // Exclusion Patterns - What to Ignore
+  // ──────────────────────────────────────────────────────────────
+  // Patterns for paths to exclude from activity tracking.
+  // Uses find command -not -path patterns.
+
+  "exclusion_patterns": [
+    {
+      "pattern": "*/.*",
+      "description": "Hidden files and directories (dotfiles)",
+      "reasoning": "Hidden files are typically system/config files, not user work"
+    },
+    {
+      "pattern": "*/node_modules/*",
+      "description": "Node.js dependencies",
+      "reasoning": "Package installs shouldn't count as meaningful activity"
+    },
+    {
+      "pattern": "*/.git/*",
+      "description": "Git repository internals",
+      "reasoning": "Git operations modify internal files, not user work"
+    },
+    {
+      "pattern": "*/vendor/*",
+      "description": "Go/PHP vendor directories",
+      "reasoning": "Dependency management, not user work"
+    },
+    {
+      "pattern": "*/__pycache__/*",
+      "description": "Python bytecode cache",
+      "reasoning": "Compiler artifacts, not source modifications"
+    },
+    {
+      "pattern": "*/target/*",
+      "description": "Rust/Java build output",
+      "reasoning": "Build artifacts, not source work"
+    },
+    {
+      "pattern": "*/dist/*",
+      "description": "Distribution/build directories",
+      "reasoning": "Build output, not source modifications"
+    },
+    {
+      "pattern": "*/build/*",
+      "description": "Build output directories",
+      "reasoning": "Compiled artifacts, not source work"
+    }
+  ],
+
+  // ──────────────────────────────────────────────────────────────
+  // Display Settings - How to Show Results
+  // ──────────────────────────────────────────────────────────────
+  // Controls how activity information is displayed to user.
+
+  "display": {
+    "threshold_detailed": 10,
+    "threshold_summary": 50,
+    "show_file_list": false,
+    "icon": "📂",
+    "description": {
+      "threshold_detailed": "Show count when <= this many files (detailed mode)",
+      "threshold_summary": "Show summary count when > detailed but <= this (summary mode)",
+      "show_file_list": "If true, display actual file paths (can be verbose)",
+      "icon": "Emoji icon for activity messages"
+    },
+    "reasoning": {
+      "threshold_detailed": "<=10 files: specific count gives good context",
+      "threshold_summary": ">10 but <=50: general awareness without overwhelming",
+      "show_file_list": "Default false to avoid clutter, can enable for debugging"
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────
+  // Configuration Behavior
+  // ──────────────────────────────────────────────────────────────
+  "config": {
+    "fallback_on_error": true,
+    "description": "If true, use hardcoded defaults when config fails to load"
+  },
+
+  // ──────────────────────────────────────────────────────────────
+  // Extensions - Future Additions
+  // ──────────────────────────────────────────────────────────────
+  // Reserved for future configuration options without breaking changes.
+
+  "extensions": {
+    "file_type_filters": {
+      "enabled": false,
+      "description": "Future: Filter by file extensions (e.g., only show .go, .rs files)",
+      "patterns": []
+    },
+    "size_filters": {
+      "enabled": false,
+      "description": "Future: Filter by file size (e.g., ignore large binary files)",
+      "min_bytes": 0,
+      "max_bytes": 0
+    },
+    "user_filters": {
+      "enabled": false,
+      "description": "Future: Filter by file owner/modifier",
+      "users": []
+    }
+  }
+}

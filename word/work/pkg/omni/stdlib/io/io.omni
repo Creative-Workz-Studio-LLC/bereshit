@@ -1,0 +1,196 @@
+#!omni code --omni -library
+#!omni meta.key = B-word-work-pkg-omni-stdlib-io
+#!omni meta.from = word/seed/code/omni/library.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a library for "Input/Output Operations":
+    keyed as "B-word-work-pkg-omni-stdlib-io"
+    named "io"
+
+this library provides:
+    display     "Display value to output"
+    display_line "Display value with newline"
+    witness     "Log message with level"
+    witness_error "Log error message"
+    witness_info "Log info message"
+    witness_debug "Log debug message"
+    prompt      "Display prompt and read input"
+    read_line   "Read line from input"
+    read_count  "Read count from input"
+    newline     "Output newline"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # Input/Output Operations
+//
+// OmniCode I/O is designed around the witness pattern:
+// - witness: Observational output (doesn't affect flow)
+// - display: Direct output to user
+// - prompt: Interactive input
+//
+// Witness levels follow trit semantics:
+// - error (-1): Problems that need attention
+// - info (0): Normal informational output
+// - debug (+1): Detailed diagnostic output
+//
+// This maps to covenant values:
+// - denied → error level
+// - deferred → info level
+// - granted → debug level
+
+import covenant from "stdlib/covenant"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # Witness Levels
+
+let LEVEL_ERROR be count with -1
+let LEVEL_INFO be count with 0
+let LEVEL_DEBUG be count with 1
+
+// # Witness Operations
+//
+// Note: These translate to VM WITNESS opcode
+
+provide work witness_error that takes word message returns covenant:
+    witness message with error
+    return deferred
+
+provide work witness_info that takes word message returns covenant:
+    witness message with info
+    return deferred
+
+provide work witness_debug that takes word message returns covenant:
+    witness message with debug
+    return deferred
+
+// # Level Helpers
+
+provide work level_name that takes count level returns word:
+    when level is LEVEL_ERROR:
+        return "ERROR"
+    when level is LEVEL_DEBUG:
+        return "DEBUG"
+    otherwise:
+        return "INFO"
+
+provide work level_from_covenant that takes covenant c returns count:
+    when c is denied:
+        return LEVEL_ERROR
+    when c is granted:
+        return LEVEL_DEBUG
+    otherwise:
+        return LEVEL_INFO
+
+// # Display Wrappers
+
+provide work print that takes word message returns covenant:
+    display message
+    return granted
+
+provide work println that takes word message returns covenant:
+    display message
+    newline
+    return granted
+
+provide work print_count that takes count value returns covenant:
+    display value
+    return granted
+
+provide work println_count that takes count value returns covenant:
+    display value
+    newline
+    return granted
+
+// # Formatted Output
+
+provide work print_labeled that takes word label and word value returns covenant:
+    display label
+    display ": "
+    display value
+    newline
+    return granted
+
+provide work print_covenant that takes word label and covenant value returns covenant:
+    display label
+    display ": "
+    when value is granted:
+        display "granted"
+    when value is denied:
+        display "denied"
+    otherwise:
+        display "deferred"
+    newline
+    return granted
+
+// # Separator Output
+
+provide work print_line that takes count width returns covenant:
+    // Print a line of dashes
+    let i be count with 0
+    repeat while i is less than width:
+        display "-"
+        let i be count with i plus 1
+    newline
+    return granted
+
+provide work print_header that takes word title returns covenant:
+    print_line 60
+    display "  "
+    display title
+    newline
+    print_line 60
+    return granted
+
+// # Error Handling
+
+provide work report_error that takes word context and word message returns covenant:
+    witness_error message
+    display "Error in "
+    display context
+    display ": "
+    display message
+    newline
+    return denied
+
+provide work report_success that takes word context and word message returns covenant:
+    witness_info message
+    display context
+    display ": "
+    display message
+    newline
+    return granted
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// "A faithful witness will not lie: but a false witness will utter lies."
+//   — Proverbs 14:5
+//
+// The witness pattern ensures truthful, observable output.
+// Every message is categorized by its significance level.
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

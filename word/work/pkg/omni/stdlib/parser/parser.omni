@@ -1,0 +1,325 @@
+#!omni code --omni -library
+#!omni meta.key = B-word-work-pkg-omni-stdlib-parser
+#!omni meta.from = word/seed/code/omni/library.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a library for "OmniCode Parser":
+    keyed as "B-word-work-pkg-omni-stdlib-parser"
+    named "parser"
+
+this library provides:
+    parser_init         "Initialize parser with source"
+    parser_parse        "Parse source to AST"
+    node_type           "Get AST node type"
+    node_value          "Get AST node value"
+    node_secondary      "Get AST node secondary value"
+    type_name           "Get name of AST node type"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # OmniCode Self-Hosting Parser
+//
+// "For the word of God is quick, and powerful, and sharper than any
+//  two-edged sword, piercing even to the dividing asunder of soul and spirit."
+//  — Hebrews 4:12
+//
+// This parser transforms OmniCode tokens into an Abstract Syntax Tree (AST).
+// It recognizes the sentence-based patterns that make OmniCode readable.
+//
+// ## AST Node Representation
+// Nodes are lists with 5 elements:
+//   [0] = type (count) - AST_* constant
+//   [1] = value (count -> string index) - primary value
+//   [2] = secondary (count -> string index) - type or secondary value
+//   [3] = line (count) - source line
+//   [4] = column (count) - source column
+//
+// ## Sentence Patterns Recognized
+// - "let NAME be TYPE with VALUE"
+// - "return VALUE"
+// - "witness MESSAGE"
+// - "when CONDITION:"
+// - "otherwise:"
+// - "provide work NAME that takes PARAMS returns TYPE:"
+// - "intrinsic NAME ARGS"
+
+import string from "stdlib/string"
+import collections from "stdlib/collections"
+import lexer from "stdlib/lexer"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # AST Node Type Constants
+
+let AST_PROGRAM be count with 0
+let AST_LET_STMT be count with 1
+let AST_RETURN_STMT be count with 2
+let AST_WITNESS_STMT be count with 3
+let AST_DISPLAY_STMT be count with 4
+let AST_WHEN_STMT be count with 5
+let AST_OTHERWISE_STMT be count with 6
+let AST_FUNC_DEF be count with 7
+let AST_INTRINSIC_STMT be count with 8
+let AST_IMPORT_STMT be count with 9
+let AST_METADATA be count with 10
+let AST_IDENTIFIER be count with 11
+let AST_NUMBER be count with 12
+let AST_STRING be count with 13
+
+// # Parser State
+
+let parse_source be word with ""
+let parse_tokens be count with 0
+let parse_pos be count with 0
+let parse_nodes be count with 0
+
+// # Initialization
+
+provide work parser_init that takes word source returns covenant:
+    // Initialize parser with source code
+    let parse_source be word with source
+    lexer_init source
+    let parse_tokens be count with list_new
+    let parse_nodes be count with list_new
+    let parse_pos be count with 0
+    return granted
+
+// # Token Access
+
+provide work current_token returns count:
+    // Get current token without advancing
+    let tok be count with lexer_peek
+    return tok
+
+provide work advance returns count:
+    // Get current token and advance
+    let tok be count with lexer_next
+    return tok
+
+provide work match_type that takes count expected returns truth:
+    // Check if current token matches expected type
+    let tok be count with current_token
+    let typ be count with token_type tok
+    when typ is expected:
+        return yes
+    otherwise:
+        return no
+
+provide work expect that takes count expected returns count:
+    // Consume token if it matches, error otherwise
+    when match_type expected is yes:
+        return advance
+    otherwise:
+        witness "Parse error: unexpected token"
+        return 0
+
+// # AST Node Creation
+
+provide work make_node that takes count typ and word val returns count:
+    // Create AST node: [type, value, secondary, line, col]
+    let node be count with list_new
+    intrinsic list_push node typ
+    // Note: storing word values requires string table
+    // For now, just store 0 as placeholder
+    intrinsic list_push node 0
+    intrinsic list_push node 0
+    intrinsic list_push node 0
+    intrinsic list_push node 0
+    return node
+
+// # Statement Parsing
+
+provide work is_keyword that takes word text and word keyword returns truth:
+    // Check if text matches keyword (case-insensitive)
+    let lower_text be word with str_lower text
+    let lower_key be word with str_lower keyword
+    intrinsic str_eq lower_text lower_key
+
+provide work parse_let_statement returns count:
+    // Pattern: "let NAME be TYPE with VALUE"
+    // Already consumed 'let'
+
+    let name_tok be count with advance
+    let name be word with token_text name_tok
+
+    // Expect 'be'
+    advance  // consume 'be'
+
+    // Get type
+    let type_tok be count with advance
+    let var_type be word with token_text type_tok
+
+    // Check for 'with'
+    let next be count with current_token
+    let next_text be word with token_text next
+    when is_keyword next_text "with" is yes:
+        advance  // consume 'with'
+        // Get value tokens until newline
+        let value_tok be count with advance
+        let value be word with token_text value_tok
+
+    let node be count with make_node AST_LET_STMT name
+    return node
+
+provide work parse_return_statement returns count:
+    // Pattern: "return VALUE"
+    // Already consumed 'return'
+
+    let value_tok be count with advance
+    let value be word with token_text value_tok
+
+    let node be count with make_node AST_RETURN_STMT value
+    return node
+
+provide work parse_witness_statement returns count:
+    // Pattern: "witness MESSAGE"
+    // Already consumed 'witness'
+
+    let msg_tok be count with advance
+    let msg be word with token_text msg_tok
+
+    let node be count with make_node AST_WITNESS_STMT msg
+    return node
+
+provide work parse_intrinsic_statement returns count:
+    // Pattern: "intrinsic NAME ARGS"
+    // Already consumed 'intrinsic'
+
+    let name_tok be count with advance
+    let name be word with token_text name_tok
+
+    // Collect args until newline
+    let node be count with make_node AST_INTRINSIC_STMT name
+    return node
+
+// # Main Parse Loop
+
+provide work parse_statement returns count:
+    // Parse a single statement
+    let tok be count with current_token
+    let tok_type be count with token_type tok
+
+    when tok_type is TOK_EOF:
+        return 0
+
+    when tok_type is TOK_NEWLINE:
+        advance
+        return 0
+
+    when tok_type is TOK_IDENTIFIER:
+        let text be word with token_text tok
+
+        when is_keyword text "let" is yes:
+            advance
+            return parse_let_statement
+
+        when is_keyword text "return" is yes:
+            advance
+            return parse_return_statement
+
+        when is_keyword text "witness" is yes:
+            advance
+            return parse_witness_statement
+
+        when is_keyword text "intrinsic" is yes:
+            advance
+            return parse_intrinsic_statement
+
+    // Skip unknown token
+    advance
+    return 0
+
+provide work parser_parse returns count:
+    // Parse all statements and return AST node list
+    let nodes be count with list_new
+
+    repeat until match_type TOK_EOF is yes:
+        let node be count with parse_statement
+        when node is greater than 0:
+            intrinsic list_push nodes node
+
+    return nodes
+
+// # Node Accessors
+
+provide work node_type that takes count node returns count:
+    // Get AST node type
+    intrinsic list_get node 0
+
+provide work node_value that takes count node returns count:
+    // Get AST node value index
+    intrinsic list_get node 1
+
+provide work node_secondary that takes count node returns count:
+    // Get AST node secondary value index
+    intrinsic list_get node 2
+
+// # Type Names
+
+provide work type_name that takes count typ returns word:
+    when typ is AST_PROGRAM:
+        return "PROGRAM"
+    when typ is AST_LET_STMT:
+        return "LET"
+    when typ is AST_RETURN_STMT:
+        return "RETURN"
+    when typ is AST_WITNESS_STMT:
+        return "WITNESS"
+    when typ is AST_DISPLAY_STMT:
+        return "DISPLAY"
+    when typ is AST_WHEN_STMT:
+        return "WHEN"
+    when typ is AST_OTHERWISE_STMT:
+        return "OTHERWISE"
+    when typ is AST_FUNC_DEF:
+        return "FUNC_DEF"
+    when typ is AST_INTRINSIC_STMT:
+        return "INTRINSIC"
+    when typ is AST_IMPORT_STMT:
+        return "IMPORT"
+    when typ is AST_METADATA:
+        return "METADATA"
+    when typ is AST_IDENTIFIER:
+        return "IDENTIFIER"
+    when typ is AST_NUMBER:
+        return "NUMBER"
+    when typ is AST_STRING:
+        return "STRING"
+    otherwise:
+        return "UNKNOWN"
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// # Parser Architecture
+//
+// The parser follows a recursive descent pattern, recognizing OmniCode's
+// sentence-based syntax. Each statement type has a dedicated parse function.
+//
+// "Every word of God is pure: he is a shield unto them that put their
+//  trust in him." — Proverbs 30:5
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

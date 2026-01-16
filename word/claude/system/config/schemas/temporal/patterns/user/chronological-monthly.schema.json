@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/user/chronological-monthly.schema.json",
+  "title": "User Chronological Monthly Patterns Schema",
+  "description": "Schema for month-of-year and month-phase work patterns",
+  "type": "object",
+  "required": ["metadata", "month_patterns", "month_phase_patterns", "insights", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["user", "pattern_type", "description", "data_period", "last_updated", "version"],
+      "properties": {
+        "user": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["chronological_monthly"] },
+        "description": { "type": "string" },
+        "data_period": {
+          "type": "object",
+          "required": ["start", "end", "months_analyzed"],
+          "properties": {
+            "start": { "type": "string", "format": "date" },
+            "end": { "type": "string", "format": "date" },
+            "months_analyzed": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "month_patterns": {
+      "type": "object",
+      "properties": {
+        "january": { "$ref": "#/definitions/monthPattern" },
+        "february": { "$ref": "#/definitions/monthPattern" },
+        "march": { "$ref": "#/definitions/monthPattern" },
+        "april": { "$ref": "#/definitions/monthPattern" },
+        "may": { "$ref": "#/definitions/monthPattern" },
+        "june": { "$ref": "#/definitions/monthPattern" },
+        "july": { "$ref": "#/definitions/monthPattern" },
+        "august": { "$ref": "#/definitions/monthPattern" },
+        "september": { "$ref": "#/definitions/monthPattern" },
+        "october": { "$ref": "#/definitions/monthPattern" },
+        "november": { "$ref": "#/definitions/monthPattern" },
+        "december": { "$ref": "#/definitions/monthPattern" }
+      }
+    },
+    "month_phase_patterns": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "early_month": {
+          "type": "object",
+          "required": ["days", "session_count", "avg_health_score"],
+          "properties": {
+            "days": { "type": "string" },
+            "session_count": { "type": "integer", "minimum": 0 },
+            "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "mid_month": {
+          "type": "object",
+          "required": ["days", "session_count", "avg_health_score"],
+          "properties": {
+            "days": { "type": "string" },
+            "session_count": { "type": "integer", "minimum": 0 },
+            "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "late_month": {
+          "type": "object",
+          "required": ["days", "session_count", "avg_health_score"],
+          "properties": {
+            "days": { "type": "string" },
+            "session_count": { "type": "integer", "minimum": 0 },
+            "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "insights": {
+      "type": "object",
+      "properties": {
+        "highest_productivity_month": { "type": "string" },
+        "lowest_activity_month": { "type": "string" },
+        "month_end_patterns": { "type": "string" },
+        "holiday_impact": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "definitions": {
+    "monthPattern": {
+      "type": "object",
+      "required": ["session_count", "avg_health_score", "avg_duration_minutes"],
+      "properties": {
+        "session_count": { "type": "integer", "minimum": 0 },
+        "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+        "avg_duration_minutes": { "type": "number", "minimum": 0 },
+        "characteristics": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "holiday_note": { "type": "string" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

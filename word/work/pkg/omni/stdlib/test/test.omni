@@ -1,0 +1,247 @@
+#!omni code --omni -library
+#!omni meta.key = B-word-work-pkg-omni-stdlib-test
+#!omni meta.from = word/seed/code/omni/library.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a library for "Testing and Assertions":
+    keyed as "B-word-work-pkg-omni-stdlib-test"
+    named "test"
+
+this library provides:
+    assert          "Assert condition is true"
+    assert_eq       "Assert two values are equal"
+    assert_ne       "Assert two values are not equal"
+    assert_gt       "Assert a is greater than b"
+    assert_lt       "Assert a is less than b"
+    assert_granted  "Assert covenant is granted"
+    assert_denied   "Assert covenant is denied"
+    expect          "Soft assertion (witness failure)"
+    test_case       "Define a test case"
+    test_suite      "Run a test suite"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # Testing Framework
+//
+// OmniCode testing follows the ternary pattern:
+// - granted: Test passed
+// - deferred: Test inconclusive/skipped
+// - denied: Test failed
+//
+// Assertions provide immediate feedback during development.
+// The witness pattern ensures all test output is categorized.
+
+import covenant from "stdlib/covenant"
+import io from "stdlib/io"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # Test State
+
+let test_count be count with 0
+let pass_count be count with 0
+let fail_count be count with 0
+let current_test be word with ""
+
+// # Basic Assertions
+
+provide work assert that takes truth condition and word message returns covenant:
+    let test_count be count with test_count plus 1
+    when condition is yes:
+        let pass_count be count with pass_count plus 1
+        return granted
+    otherwise:
+        let fail_count be count with fail_count plus 1
+        witness message with error
+        fail with message
+        return denied
+
+provide work assert_eq that takes count a and count b and word message returns covenant:
+    when a is b:
+        let pass_count be count with pass_count plus 1
+        return granted
+    otherwise:
+        let fail_count be count with fail_count plus 1
+        witness message with error
+        fail with message
+        return denied
+
+provide work assert_ne that takes count a and count b and word message returns covenant:
+    when a is b:
+        let fail_count be count with fail_count plus 1
+        witness message with error
+        fail with message
+        return denied
+    otherwise:
+        let pass_count be count with pass_count plus 1
+        return granted
+
+provide work assert_gt that takes count a and count b and word message returns covenant:
+    when a is greater than b:
+        let pass_count be count with pass_count plus 1
+        return granted
+    otherwise:
+        let fail_count be count with fail_count plus 1
+        witness message with error
+        fail with message
+        return denied
+
+provide work assert_lt that takes count a and count b and word message returns covenant:
+    when a is less than b:
+        let pass_count be count with pass_count plus 1
+        return granted
+    otherwise:
+        let fail_count be count with fail_count plus 1
+        witness message with error
+        fail with message
+        return denied
+
+// # Covenant Assertions
+
+provide work assert_granted that takes covenant value and word message returns covenant:
+    when value is granted:
+        let pass_count be count with pass_count plus 1
+        return granted
+    otherwise:
+        let fail_count be count with fail_count plus 1
+        witness message with error
+        fail with message
+        return denied
+
+provide work assert_denied that takes covenant value and word message returns covenant:
+    when value is denied:
+        let pass_count be count with pass_count plus 1
+        return granted
+    otherwise:
+        let fail_count be count with fail_count plus 1
+        witness message with error
+        fail with message
+        return denied
+
+provide work assert_deferred that takes covenant value and word message returns covenant:
+    when value is deferred:
+        let pass_count be count with pass_count plus 1
+        return granted
+    otherwise:
+        let fail_count be count with fail_count plus 1
+        witness message with error
+        fail with message
+        return denied
+
+// # Soft Assertions (Don't halt on failure)
+
+provide work expect that takes truth condition and word message returns covenant:
+    let test_count be count with test_count plus 1
+    when condition is yes:
+        let pass_count be count with pass_count plus 1
+        witness message with info
+        return granted
+    otherwise:
+        let fail_count be count with fail_count plus 1
+        witness message with error
+        return denied
+
+provide work expect_eq that takes count a and count b and word message returns covenant:
+    when a is b:
+        let pass_count be count with pass_count plus 1
+        return granted
+    otherwise:
+        let fail_count be count with fail_count plus 1
+        witness message with error
+        return denied
+
+// # Test Organization
+
+provide work test_case that takes word name returns covenant:
+    let current_test be word with name
+    display "  Testing: "
+    display name
+    display "..."
+    return deferred
+
+provide work test_pass that takes word message returns covenant:
+    display " PASS"
+    newline
+    return granted
+
+provide work test_fail that takes word message returns covenant:
+    display " FAIL: "
+    display message
+    newline
+    return denied
+
+// # Test Suite Management
+
+provide work begin_suite that takes word name returns covenant:
+    display "═══════════════════════════════════════════════════════════════════"
+    newline
+    display "  Test Suite: "
+    display name
+    newline
+    display "═══════════════════════════════════════════════════════════════════"
+    newline
+    newline
+    let test_count be count with 0
+    let pass_count be count with 0
+    let fail_count be count with 0
+    return granted
+
+provide work end_suite returns covenant:
+    newline
+    display "───────────────────────────────────────────────────────────────────"
+    newline
+    display "  Results: "
+    display pass_count
+    display " passed, "
+    display fail_count
+    display " failed"
+    newline
+    display "───────────────────────────────────────────────────────────────────"
+    newline
+    when fail_count is greater than 0:
+        return denied
+    otherwise:
+        return granted
+
+// # Utility
+
+provide work skip that takes word reason returns covenant:
+    display "  SKIP: "
+    display reason
+    newline
+    return deferred
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// "Prove all things; hold fast that which is good."
+//   — 1 Thessalonians 5:21
+//
+// Testing is proof. Each assertion validates that truth holds.
+// The ternary outcome (pass/skip/fail) reflects reality more accurately
+// than binary pass/fail.
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

@@ -1,0 +1,143 @@
+# ════════════════════════════════════════════════════════════════════════════
+# CPI-SI Privacy System Configuration
+# ════════════════════════════════════════════════════════════════════════════
+#
+# Biblical Foundation: Proverbs 25:2
+#   "It is the glory of God to conceal a thing: but the honour of kings is
+#   to search out a matter."
+#
+# Purpose:
+#   Configuration for the privacy/sanitization system - defines behavior for
+#   protecting sensitive information in logs, displays, and activity streams.
+#
+# CPI-SI Identity:
+#   Privacy-preserving layer - protects what should be protected while revealing
+#   what's useful for system learning and behavioral pattern recognition.
+#
+# Location: system/config/privacy.toml
+# Used by: system/runtime/lib/privacy/
+#
+# ════════════════════════════════════════════════════════════════════════════
+
+# ────────────────────────────────────────────────────────────────────────────
+# Paths Configuration
+# ────────────────────────────────────────────────────────────────────────────
+
+[paths]
+# Base directory for privacy data files (relative to ~/.claude/)
+data_dir = "cpi-si/system/data/privacy"
+
+# Privacy filters data file (JSONC format - JSON with comments)
+filters_file = "filters.jsonc"
+
+# Privacy filters schema file
+filters_schema = "schemas/filters.schema.json"
+
+# ────────────────────────────────────────────────────────────────────────────
+# Sanitization Behavior
+# ────────────────────────────────────────────────────────────────────────────
+
+[sanitization]
+# Enable privacy filtering system-wide
+enabled = true
+
+# Redaction text for sensitive matches
+redaction_label = "[REDACTED]"
+
+# Case-sensitive pattern matching
+case_sensitive = false
+
+# Partial redaction vs full redaction
+# true = show some context, false = full redaction
+partial_redaction = false
+
+# ────────────────────────────────────────────────────────────────────────────
+# Path Sanitization Settings
+# ────────────────────────────────────────────────────────────────────────────
+
+[paths_sanitization]
+# Default behavior for non-sensitive paths
+# Options: "basename" (file/dir name only), "relative" (from project root), "full" (complete path)
+default_mode = "basename"
+
+# Sanitize home directory references
+sanitize_home = true
+
+# Replace home directory with this token
+home_token = "~"
+
+# Sanitize system-wide absolute paths
+sanitize_absolute = true
+
+# ────────────────────────────────────────────────────────────────────────────
+# Command Sanitization Settings
+# ────────────────────────────────────────────────────────────────────────────
+
+[commands_sanitization]
+# Default capture mode for unrecognized commands
+# Options: "name_only", "name_and_subcommand", "full_command"
+default_capture = "name_only"
+
+# Capture subcommand for known commands (from filters.json)
+capture_subcommands = true
+
+# Maximum number of arguments to capture for commands with capture rules
+max_args_capture = 2
+
+# ────────────────────────────────────────────────────────────────────────────
+# Sensitive Keywords Detection
+# ────────────────────────────────────────────────────────────────────────────
+
+[keywords]
+# Enable keyword-based detection
+enabled = true
+
+# Additional keywords loaded from filters.json
+# This section defines base keywords always checked regardless of filters.json
+
+# Fallback keywords if filters.json unavailable (emergency privacy mode)
+fallback_keywords = ["password", "secret", "key", "token", "api_key", ".ssh", "credentials"]
+
+# ────────────────────────────────────────────────────────────────────────────
+# Pattern Matching Configuration
+# ────────────────────────────────────────────────────────────────────────────
+
+[patterns]
+# Enable regex pattern matching (from filters.json)
+regex_enabled = true
+
+# Maximum regex execution time (milliseconds) to prevent ReDoS
+regex_timeout_ms = 100
+
+# Enable glob pattern matching for paths
+glob_patterns_enabled = true
+
+# ────────────────────────────────────────────────────────────────────────────
+# Emergency Privacy Mode
+# ────────────────────────────────────────────────────────────────────────────
+
+[emergency]
+# Activate maximum privacy if config loading fails
+# true = redact everything, false = use hardcoded minimal defaults
+maximum_privacy_on_failure = true
+
+# Redaction label for emergency mode
+emergency_redaction_label = "[PRIVATE]"
+
+# Log when emergency mode activates
+log_emergency_activation = true
+
+# ════════════════════════════════════════════════════════════════════════════
+# End of Configuration
+# ════════════════════════════════════════════════════════════════════════════
+#
+# NOTE: This configuration drives the privacy library behavior.
+#       Actual sensitive patterns are defined in filters.json (data file).
+#       Changes to this config require no rebuild - loaded at runtime.
+#
+# Related Files:
+#   - system/runtime/lib/privacy/privacy.go (implementation)
+#   - system/data/privacy/filters.json (sensitive patterns data)
+#   - system/data/privacy/schemas/filters.schema.json (validation schema)
+#
+# ════════════════════════════════════════════════════════════════════════════

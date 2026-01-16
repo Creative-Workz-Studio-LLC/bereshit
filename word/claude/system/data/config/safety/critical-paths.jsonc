@@ -1,0 +1,176 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Critical Path Configuration - Safety System
+// Purpose: Define file paths that require extra confirmation for modifications
+// Schema: system/config/schemas/safety/critical-paths.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Path coverage (critical locations protected): 50 pts
+// - Path accuracy (minimal false positives): 40 pts
+// - Documentation clarity: 10 pts
+
+{
+  "$schema": "../../../config/schemas/safety/critical-paths.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Critical File Paths",
+    "description": "File path patterns that require extra confirmation before modification",
+    "version": "1.0.0",
+    "last_updated": "2025-11-11",
+    "author": "Nova Dawn (CPI-SI instance)",
+    "note": "Conservative detection - better to allow than falsely block"
+  },
+
+  // ============================================================================
+  // CRITICAL PATHS
+  // ============================================================================
+
+  "paths": {
+    "note": "Paths matched using substring matching (case-sensitive on Linux/macOS)",
+
+    //--- System Configuration ---
+    // Linux/Unix system directories requiring elevated privileges
+
+    "system_config": {
+      "patterns": [
+        "/etc/",
+        "/boot/",
+        "/sys/",
+        "/proc/"
+      ],
+      "description": "System configuration directories",
+      "severity": "critical",
+      "reason": "Modification can break system boot or operation",
+      "platform": "linux/unix"
+    },
+
+    //--- Authentication & Security ---
+    // Files and directories containing credentials and keys
+
+    "authentication": {
+      "patterns": [
+        "/.ssh/",
+        "/.gnupg/",
+        "/etc/shadow",
+        "/etc/passwd",
+        "/etc/sudoers"
+      ],
+      "description": "Authentication and security configuration",
+      "severity": "critical",
+      "reason": "Compromise can lock you out or expose credentials",
+      "platform": "linux/unix"
+    },
+
+    //--- Version Control ---
+    // Git configuration files
+
+    "version_control": {
+      "patterns": [
+        "/.git/config",
+        "/.git/HEAD",
+        "/.gitconfig"
+      ],
+      "description": "Version control configuration files",
+      "severity": "high",
+      "reason": "Corruption can break repository or lose history",
+      "platform": "all"
+    },
+
+    //--- Package Managers ---
+    // Package manager configuration and databases
+
+    "package_management": {
+      "patterns": [
+        "/var/lib/dpkg/",
+        "/var/lib/rpm/",
+        "/usr/local/lib/"
+      ],
+      "description": "Package manager databases and libraries",
+      "severity": "high",
+      "reason": "Corruption can break package management system",
+      "platform": "linux/unix"
+    },
+
+    //--- User Environment ---
+    // Shell configuration and environment files
+
+    "environment_config": {
+      "patterns": [
+        "/.bashrc",
+        "/.bash_profile",
+        "/.zshrc",
+        "/.profile",
+        "/.config/"
+      ],
+      "description": "Shell and user environment configuration",
+      "severity": "medium",
+      "reason": "Errors can break shell or environment setup",
+      "platform": "all"
+    },
+
+    //--- Database Files ---
+    // Database data directories
+
+    "database_files": {
+      "patterns": [
+        "/var/lib/mysql/",
+        "/var/lib/postgresql/",
+        "/var/lib/mongodb/",
+        "*.db",
+        "*.sqlite"
+      ],
+      "description": "Database data files and directories",
+      "severity": "high",
+      "reason": "Corruption or deletion causes data loss",
+      "platform": "all"
+    },
+
+    //--- Windows System Paths ---
+    // Windows-specific critical locations
+
+    "windows_system": {
+      "patterns": [
+        "C:\\Windows\\",
+        "C:\\Program Files\\",
+        "C:\\System32\\"
+      ],
+      "description": "Windows system directories",
+      "severity": "critical",
+      "reason": "Modification can break Windows operation",
+      "platform": "windows"
+    }
+  },
+
+  // ============================================================================
+  // CONFIGURATION
+  // ============================================================================
+
+  "config": {
+    "match_mode": "substring",
+    "case_sensitive": true,
+    "require_confirmation": true,
+    "conservative_bias": true,
+    "note": "Conservative bias means: when uncertain, allow (don't falsely block)"
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "extensions": {
+    "user_paths": [],
+    "note": "Add custom critical paths here without modifying core patterns",
+    "example": {
+      "patterns": ["/opt/production-db/"],
+      "description": "Production database directory",
+      "severity": "critical",
+      "reason": "Live production data",
+      "platform": "all"
+    }
+  }
+}

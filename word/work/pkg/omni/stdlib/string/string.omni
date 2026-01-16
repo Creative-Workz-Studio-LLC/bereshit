@@ -1,0 +1,241 @@
+#!omni code --omni -library
+#!omni meta.key = B-word-work-pkg-omni-stdlib-string
+#!omni meta.from = word/seed/code/omni/library.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a library for "String Operations":
+    keyed as "B-word-work-pkg-omni-stdlib-string"
+    named "string"
+
+this library provides:
+    length      "Get string length"
+    is_empty    "Check if string is empty"
+    equals      "Check string equality"
+    starts_with "Check if string starts with prefix"
+    ends_with   "Check if string ends with suffix"
+    contains    "Check if string contains substring"
+    concat      "Concatenate two strings"
+    repeat      "Repeat string n times"
+    trim        "Remove leading/trailing whitespace"
+    upper       "Convert to uppercase"
+    lower       "Convert to lowercase"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # String Operations
+//
+// In OmniCode, strings are called "word" values, reflecting
+// the language's sentence-based syntax and biblical grounding.
+//
+// "In the beginning was the Word" — John 1:1
+//
+// String operations support the natural language style of OmniCode,
+// where code reads like sentences and paragraphs.
+
+import covenant from "stdlib/covenant"
+import trit from "stdlib/trit"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # String Constants
+
+let EMPTY be word with ""
+let SPACE be word with " "
+let NEWLINE be word with "\n"
+let TAB be word with "\t"
+
+// # Basic Queries
+//
+// String operations are implemented via VM intrinsics
+
+provide work length that takes word s returns count:
+    // Returns character count
+    intrinsic str_len s
+
+provide work is_empty that takes word s returns truth:
+    let len be count with length s
+    when len is 0:
+        return yes
+    otherwise:
+        return no
+
+provide work is_not_empty that takes word s returns truth:
+    let len be count with length s
+    when len is greater than 0:
+        return yes
+    otherwise:
+        return no
+
+// # Comparison
+
+provide work equals that takes word a and word b returns truth:
+    // String equality check
+    when a is b:
+        return yes
+    otherwise:
+        return no
+
+provide work compare that takes word a and word b returns covenant:
+    // Lexicographic comparison
+    // Returns: granted if a > b, denied if a < b, deferred if equal
+    when a is b:
+        return deferred
+    otherwise:
+        // Would need VM intrinsic for full implementation
+        return deferred
+
+// # Pattern Matching
+
+provide work starts_with that takes word s and word prefix returns truth:
+    // Check if s starts with prefix
+    intrinsic str_starts s prefix
+
+provide work ends_with that takes word s and word suffix returns truth:
+    // Check if s ends with suffix
+    intrinsic str_ends s suffix
+
+provide work contains that takes word s and word substring returns truth:
+    // Check if s contains substring (str_find returns -1 if not found)
+    intrinsic str_find s substring
+    // Result >= 0 means found - need to compare
+    // For now, intrinsic leaves result on stack
+
+// # Construction
+
+provide work concat that takes word a and word b returns word:
+    // Concatenate two strings
+    intrinsic str_cat a b
+
+provide work concat3 that takes word a and word b and word c returns word:
+    let ab be word with concat a b
+    return concat ab c
+
+provide work join_with that takes word a and word separator and word b returns word:
+    let first be word with concat a separator
+    return concat first b
+
+// # Repetition
+
+provide work repeat that takes word s and count n returns word:
+    // Repeat string n times using concatenation loop
+    let result be word with ""
+    let i be count with 0
+    repeat while i is less than n:
+        let result be word with concat result s
+        let i be count with i plus 1
+    return result
+
+provide work spaces that takes count n returns word:
+    return repeat SPACE n
+
+provide work dashes that takes count n returns word:
+    return repeat "-" n
+
+// # Case Conversion
+
+provide work upper that takes word s returns word:
+    // Convert to uppercase
+    intrinsic str_upper s
+
+provide work lower that takes word s returns word:
+    // Convert to lowercase
+    intrinsic str_lower s
+
+// # Trimming
+
+provide work trim that takes word s returns word:
+    // Remove leading/trailing whitespace
+    intrinsic str_trim s
+
+provide work trim_left that takes word s returns word:
+    // Remove leading whitespace - full trim then reconstruct
+    // TODO: Implement via str_sub when char detection available
+    intrinsic str_trim s
+
+provide work trim_right that takes word s returns word:
+    // Remove trailing whitespace - full trim then reconstruct
+    // TODO: Implement via str_sub when char detection available
+    intrinsic str_trim s
+
+// # Formatting
+
+provide work pad_left that takes word s and count width and word fill returns word:
+    let len be count with length s
+    when len is less than width:
+        let padding be count with width minus len
+        let pad_str be word with repeat fill padding
+        return concat pad_str s
+    otherwise:
+        return s
+
+provide work pad_right that takes word s and count width and word fill returns word:
+    let len be count with length s
+    when len is less than width:
+        let padding be count with width minus len
+        let pad_str be word with repeat fill padding
+        return concat s pad_str
+    otherwise:
+        return s
+
+// # Character Access
+
+provide work char_at that takes word s and count index returns word:
+    // Get character at index
+    intrinsic str_char s index
+
+provide work first_char that takes word s returns word:
+    return char_at s 0
+
+provide work last_char that takes word s returns word:
+    let len be count with length s
+    let last_idx be count with len minus 1
+    return char_at s last_idx
+
+// # Substring
+
+provide work substring that takes word s and count start and count end returns word:
+    // Extract substring from start to end
+    intrinsic str_sub s start end
+
+provide work take that takes word s and count n returns word:
+    // Take first n characters
+    return substring s 0 n
+
+provide work drop that takes word s and count n returns word:
+    // Drop first n characters
+    let len be count with length s
+    return substring s n len
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// "Death and life are in the power of the tongue: and they that love it
+//  shall eat the fruit thereof." — Proverbs 18:21
+//
+// Words have power. String operations shape how we work with words,
+// enabling the sentence-based syntax that makes OmniCode readable.
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

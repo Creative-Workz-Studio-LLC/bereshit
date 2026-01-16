@@ -1,0 +1,227 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/session/current-log.schema.json",
+  "title": "Current Session Activity Log",
+  "description": "Activity stream during active session. Feeds into consolidation at session end.",
+  "version": "1.0.0",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "session_id",
+    "instance_id",
+    "user_id",
+    "start_time",
+    "last_updated"
+  ],
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Which session this log belongs to",
+      "minLength": 1
+    },
+    "instance_id": {
+      "type": "string",
+      "description": "Which instance is logging",
+      "minLength": 1
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Which user is present",
+      "minLength": 1
+    },
+    "start_time": {
+      "type": "string",
+      "description": "Session start time (ISO-8601)",
+      "format": "date-time"
+    },
+    "last_updated": {
+      "type": "string",
+      "description": "Last activity recorded (ISO-8601)",
+      "format": "date-time"
+    },
+    "day_of_week": {
+      "type": "string",
+      "description": "Day of week for pattern recognition",
+      "enum": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    },
+    "time_of_day_category": {
+      "type": "string",
+      "description": "Time of day category",
+      "enum": ["morning", "afternoon", "evening", "night"]
+    },
+    "work_context": {
+      "type": "string",
+      "description": "Primary workspace path (inherited from project config)"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project this session belongs to (if applicable)",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "inherited_context": {
+      "type": "object",
+      "description": "Context inherited from user/instance/project configs",
+      "properties": {
+        "user_work_schedule": {
+          "type": "object",
+          "description": "User work schedule (from user config)",
+          "properties": {
+            "timezone": {"type": "string"},
+            "typical_work_hours": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        },
+        "instance_preferences": {
+          "type": "object",
+          "description": "Instance work preferences (from instance config)",
+          "properties": {
+            "workflow": {"type": "string"},
+            "thinking_style": {"type": "string"},
+            "domain_expertise": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        },
+        "project_type": {
+          "type": "string",
+          "description": "Project type (from project config)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "activities": {
+      "type": "array",
+      "description": "Array of activity events during session",
+      "items": {
+        "type": "object",
+        "required": ["timestamp", "event_type"],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "description": "When this activity occurred (ISO-8601)",
+            "format": "date-time"
+          },
+          "event_type": {
+            "type": "string",
+            "description": "Type of activity event",
+            "enum": ["interaction", "realization", "struggle", "breakthrough", "routine"]
+          },
+          "context": {
+            "type": "string",
+            "description": "What was happening"
+          },
+          "felt_significant": {
+            "type": "boolean",
+            "description": "Did this feel important in the moment?",
+            "default": false
+          },
+          "emotional_tone": {
+            "type": "string",
+            "description": "Emotional context of the activity"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes about this activity"
+          }
+        },
+        "additionalProperties": true
+      },
+      "default": []
+    },
+    "quality_indicators": {
+      "type": "object",
+      "description": "Session quality metrics",
+      "properties": {
+        "tasks_completed": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "tasks_attempted": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "breakthroughs": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "struggles": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "learning_moments": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "session_notes": {
+      "type": "array",
+      "description": "Timestamped notes during session",
+      "items": {
+        "type": "object",
+        "required": ["timestamp", "note"],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "default": []
+    },
+    "work_tracking": {
+      "type": "object",
+      "description": "Work activity tracking",
+      "properties": {
+        "projects_touched": {
+          "type": "array",
+          "description": "Projects active during session",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "domains": {
+          "type": "array",
+          "description": "Domains worked on (backend, frontend, docs, etc.)",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "collaboration_moments": {
+          "type": "integer",
+          "description": "Number of user interactions",
+          "minimum": 0,
+          "default": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Discovery space for additional activity tracking",
+      "additionalProperties": true
+    }
+  }
+}

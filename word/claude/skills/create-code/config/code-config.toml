@@ -1,0 +1,231 @@
+# ============================================================================
+# METADATA - Create Code Configuration
+# ============================================================================
+# Purpose: Configuration for create-code skill
+# Biblical: Proverbs 25:2 - "It is the glory of God to conceal a thing: but the honour of kings is to search out a matter"
+
+# ============================================================================
+# PROGRAMMING LANGUAGES
+# ============================================================================
+
+[languages.go]
+name = "Go Source"
+extension = ".go"
+description = "Go programming language - compiled, typed"
+template = "bereshit/word/seed/code/go/template.go"
+use_when = [
+    "System tools and CLIs",
+    "High-performance services",
+    "CPI-SI infrastructure",
+    "Compiled binaries preferred"
+]
+comment_style = "// block"
+
+[languages.c]
+name = "C Source"
+extension = ".c"
+description = "C programming language - low-level, portable"
+template = "bereshit/word/seed/code/c/template.c"
+use_when = [
+    "System-level programming",
+    "Performance-critical code",
+    "Embedded systems",
+    "Cross-platform libraries"
+]
+comment_style = "// block"
+
+[languages.bash]
+name = "Bash Script"
+extension = ".sh"
+description = "Shell scripting - automation, glue code"
+template = "bereshit/word/seed/code/bash/template.sh"
+use_when = [
+    "Build scripts",
+    "Automation tasks",
+    "System administration",
+    "Quick utilities"
+]
+comment_style = "# line"
+
+[languages.python]
+name = "Python Script"
+extension = ".py"
+description = "Python - scripting, prototyping, data"
+template = "bereshit/word/seed/code/python/template.py"
+use_when = [
+    "Data processing",
+    "Prototyping",
+    "Scripting tasks",
+    "When Go isn't appropriate"
+]
+comment_style = "# line"
+
+# ============================================================================
+# DECISION TREE
+# ============================================================================
+
+[decision_tree]
+root = "purpose"
+
+[decision_tree.purpose]
+question = "What is the PRIMARY PURPOSE of this code?"
+options = [
+    { answer = "System tool/CLI binary", next = "compiled" },
+    { answer = "Automation/scripting", next = "script" },
+    { answer = "Low-level/embedded", next = "c" },
+    { answer = "Data processing/prototyping", next = "python" }
+]
+
+[decision_tree.compiled]
+question = "What ECOSYSTEM is this for?"
+options = [
+    { answer = "CPI-SI infrastructure", next = "go" },
+    { answer = "General system tool", next = "go" },
+    { answer = "Cross-platform library", next = "c" }
+]
+
+[decision_tree.script]
+question = "What KIND of scripting?"
+options = [
+    { answer = "Build/deploy automation", next = "bash" },
+    { answer = "System administration", next = "bash" },
+    { answer = "Data manipulation", next = "python" }
+]
+
+# ============================================================================
+# 4-BLOCK STRUCTURE
+# ============================================================================
+
+[structure]
+name = "4-Block Code Structure"
+blocks = ["METADATA", "SETUP", "BODY", "CLOSING"]
+
+[blocks.metadata]
+name = "METADATA"
+purpose = "Identity, purpose, health scoring tiers"
+contains = [
+    "Key (unique identifier)",
+    "Purpose and description",
+    "Health scoring (Core Identity → Interface → Operational)",
+    "Authors and dates",
+    "Biblical foundation"
+]
+
+[blocks.setup]
+name = "SETUP"
+purpose = "Imports, constants, variables, types"
+contains = [
+    "Package declaration",
+    "Imports (grouped: stdlib, external, internal)",
+    "Constants",
+    "Variables",
+    "Types and structs",
+    "Type methods"
+]
+
+[blocks.body]
+name = "BODY"
+purpose = "Core logic - helpers, operations, public APIs"
+contains = [
+    "Org Chart (structural overview)",
+    "Helper functions (internal)",
+    "Core operations",
+    "Error handling",
+    "Public APIs (exported)"
+]
+
+[blocks.closing]
+name = "CLOSING"
+purpose = "Validation, execution, cleanup"
+contains = [
+    "Validation functions",
+    "Main/execution entry",
+    "Cleanup and teardown",
+    "Documentation/usage"
+]
+
+# ============================================================================
+# WORKFLOW
+# ============================================================================
+
+[workflow.block_by_block]
+principle = "Work ONE BLOCK at a time - each block is a unit of work"
+why = [
+    "Forces intentional design at each layer",
+    "Enables targeted edits using Linux tools (grep, sed)",
+    "Prevents drift from template structure",
+    "Each block can be validated independently"
+]
+
+[workflow.template_first]
+principle = "NEVER write from scratch - always derive from templates"
+steps = [
+    "Copy template with cp (filesystem operation)",
+    "Change pragma: #!omni template → #!omni code",
+    "Fill METADATA block",
+    "Build SETUP block",
+    "Develop BODY block",
+    "Complete CLOSING block",
+    "Verify: compiles, tests pass"
+]
+
+[workflow.post_copy]
+description = "Fields to update after copying template"
+fields = [
+    { name = "key", action = "Unique identifier for THIS file" },
+    { name = "purpose", action = "Purpose for THIS file" },
+    { name = "created", action = "Today's date" },
+    { name = "updated", action = "Today's date" },
+    { name = "package", action = "Correct package name" },
+    { name = "imports", action = "Required imports only" }
+]
+
+# ============================================================================
+# BOUNDARY MARKERS
+# ============================================================================
+
+[boundary_markers]
+description = "Block comments are parseable - enabling Linux tool integration"
+
+[boundary_markers.go]
+metadata_start = "// METADATA"
+setup_start = "// SETUP"
+body_start = "// BODY"
+closing_start = "// CLOSING"
+
+[boundary_markers.c]
+metadata_start = "// METADATA"
+setup_start = "// SETUP"
+body_start = "// BODY"
+closing_start = "// CLOSING"
+
+[boundary_markers.bash]
+metadata_start = "# METADATA"
+setup_start = "# SETUP"
+body_start = "# BODY"
+closing_start = "# CLOSING"
+
+[boundary_markers.python]
+metadata_start = "# METADATA"
+setup_start = "# SETUP"
+body_start = "# BODY"
+closing_start = "# CLOSING"
+
+[boundary_markers.usage]
+find_block = "grep -n 'BLOCK NAME' file"
+extract_block = "sed -n '/START/,/END/p' file"
+
+# ============================================================================
+# HEALTH SCORING
+# ============================================================================
+
+[health_scoring]
+description = "Three-tier health scoring for code files"
+
+[health_scoring.tiers]
+core_identity = { weight = 0.4, description = "Metadata completeness, biblical grounding" }
+interface = { weight = 0.35, description = "Proper SETUP block, clear types" }
+operational = { weight = 0.25, description = "Working code, tests pass" }
+
+[health_scoring.formula]
+description = "Health = (Core × 0.4) + (Interface × 0.35) + (Operational × 0.25)"

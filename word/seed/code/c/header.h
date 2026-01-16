@@ -1,1200 +1,950 @@
-#if 0  // TEMPLATE: Remove this #if 0 / #endif block when ready to compile
-// ═══════════════════════════════════════════════════════════════════════════
+#if 0  // TEMPLATE: Remove this block when instantiating
+// #!omni template --header
+// #!omni meta.key = B-word-seed-code-c-header
+// #!omni meta.from = bereshit/word/omni/seed/B-word-omni-seed-code.omni
+// #!omni meta.at = template
+//
 // TEMPLATE: C Header File (4-Block Structure)
-// Key: B-word-seed-code-c-header
-// ═══════════════════════════════════════════════════════════════════════════
-//
-// DEPENDENCY CLASSIFICATION: [PURE/DEPENDED] ([deps if DEPENDED])
-//   - PURE: Standard library only - no internal project dependencies
-//   - DEPENDED: Needs internal headers - list them: (needs: header1.h, header2.h)
-//
-// This is a TEMPLATE file - copy and modify for new C header files.
-// Replace all [bracketed] placeholders with actual content.
-// Rename to appropriate name (e.g., module.h, types.h).
-// Remove "#if 0" and matching "#endif" when ready to compile.
-//
-// derives_from: bereshit/word/omni/seed/code.omni
-// Derived from: Kingdom Technology 4-block code structure
-// See: standards/code/4-block/ for complete documentation
-//
-// ═══════════════════════════════════════════════════════════════════════════
+// STRUCTURE: METADATA → SETUP → BODY → CLOSING
+// USAGE: cp header.h dest.h → update pragma → fill sections
 #endif
 
 #ifndef [HEADER_GUARD_NAME]_H
 #define [HEADER_GUARD_NAME]_H
 
-// [brief description of what this header declares].
+// ═══════════════════════════════════════════════════════════════════════════════
+// METADATA [METADATA]
+// ═══════════════════════════════════════════════════════════════════════════════
 //
-// [Library Name] Library - CPI-SI [Project/System Name]
+// 4-Block Code Structure: Identity and context for this component
 //
-// ============================================================================
-// METADATA
-// ============================================================================
+// Section order: Identity → State → Attribution → Location → Derivation → Classification → Intent → Grounding → Dependencies → Roadmap
+// Flow: who → when → by whom → where → from what → tagged as → why → grounded in → needs → going where
 //
-// ────────────────────────────────────────────────────────────────
-// CORE IDENTITY (Required)
-// ────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// # M.1 Core Identity [IDENTITY]
 //
-// # Biblical Foundation
+//   Key:       [PROJECT-HEADER-###] — Unique identifier
+//   Title:     [Title] — What this file is
+//   Type:      Header
+//   Component: [Ladder/Baton/Rails] — Architectural role
+//   Role:      [Specific responsibility in system]
 //
-// Scripture: [Relevant verse grounding this library's purpose]
+// Key: B-word-seed-code-c-header
+// Title: C Header File Template
+// Type: Header
+// Component: Template
+// Role: Declares 4-block interface for C headers
+
+// # M.2 Lifecycle State [STATE]
 //
-// Principle: [Kingdom principle this library demonstrates]
+//   Status:   Draft | Active | Deprecated | Archived
+//   Version:  a-XX.XX — Living versioning
+//   Created:  YYYY-MM-DD
+//   Updated:  YYYY-MM-DD
 //
-// Anchor: [Supporting verse reinforcing the principle]
+// Status: Active
+// Version: a-01.00
+// Created: 2026-01-02
+// Updated: 2026-01-03
+
+// # M.3 Attribution [ATTRIBUTION]
 //
-// # CPI-SI Identity
+//   Authors:      [Name (Role)]
+//   Organization: [Company]
+//   Copyright:    [© YYYY Company]
 //
-// Component Type: [Ladder/Baton/Rails - see CWS-STD-004 for explanations]
+// Authors: Seanje Lenox-Wise (Architect), Nova Dawn (Author)
+// Organization: CreativeWorkzStudio LLC
+// Copyright: © 2026 CreativeWorkzStudio LLC. All rights reserved.
+
+// # M.4 Location [LOCATION]
 //
-// Role: [Specific responsibility in system architecture]
+//   Path:      [/path/to/file]
 //
-// Paradigm: CPI-SI framework component
+// Path: word/seed/code/c/header.h
+
+// # M.5 Derivation [DERIVATION]
 //
-// # Authorship & Lineage
+//   Derives_from:  [path/to/parent/template] — file template copied from
 //
-//   - Architect: [Who designed the approach and requirements]
-//   - Implementation: [Who wrote the code and verified it works]
-//   - Created: [YYYY-MM-DD]
-//   - Version: [MAJOR.MINOR.PATCH]
-//   - Modified: [YYYY-MM-DD - what changed]
+//   (Note: pragma meta.from = OmniCode spec; Derives_from = file lineage)
 //
-// Version History:
+// Derives_from: None — this is the canonical source template
+
+// # M.6 Classification [CLASSIFICATION]
 //
-//   - [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
-//   - [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
+//   Tags:      [header, c, interface] — discovery
 //
-// # Purpose & Function
+// Tags: header, c, interface
+
+// # M.7 Intent [INTENT]
 //
-// Purpose: [What problem does this library solve?]
+//   Purpose:     [Enables X for Y] — one-line purpose statement
+//   Core Design: [Architectural pattern or paradigm]
+//   Philosophy:  [Guiding principle for how this works]
 //
-// Core Design: [Architectural pattern or paradigm]
+//   Key Features:
+//     - [What it provides — major capabilities]
+//     - [What it enables — what others can build with this]
+//     - [What problems it solves — specific use cases]
+//
+// Purpose: Declare types and function prototypes — C header interface
+// Core Design: Interface separation
+// Philosophy: Headers declare, sources implement
 //
 // Key Features:
+//   - Type definitions for public API
+//   - Function prototypes for implementation
+//   - Include guard for safe multiple inclusion
+
+// # M.8 Grounding [GROUNDING]
 //
-//   - [What it provides - major capabilities]
-//   - [What it enables - what others can build with this]
-//   - [What problems it solves - specific use cases]
-//   - [Additional capabilities]
+//   Scripture:  [Book Chapter:Verse] — grounding verse for this component
+//   Principle:  [Kingdom principle demonstrated]
+//   Anchor:     [Supporting verse] — reinforcing principle (optional)
 //
-// Philosophy: [Guiding principle for how this library works]
+// Scripture: Proverbs 24:27 — Prepare thy work without
+// Principle: Establish foundations before building
+// Anchor: Exodus 25:40 — Make after the pattern shown
 //
-// ────────────────────────────────────────────────────────────────
-// INTERFACE (Expected)
-// ────────────────────────────────────────────────────────────────
+// Example:
+//   Scripture: Colossians 3:23 — Do it heartily, as to the Lord
+//   Principle: Excellence in implementation as worship
+//   Anchor: Proverbs 22:29 — Skilled work stands before kings
+
+// # M.9 Dependencies [DEPENDENCIES]
 //
-// # Dependencies
+//   Purpose:  Relationship context — what this needs, what uses it
+//   Contains: What This Needs, What Uses This, Integration Points, Usage
+//
+//   What This Needs:
+//     Standard Library: [stdio.h, stdlib.h, string.h, etc.]
+//     External: [None | library with version]
+//     Internal: [project headers this depends on]
+//
+//   What Uses This:
+//     Commands: [executables that use this]
+//     Libraries: [libraries that use this]
+//     Tools: [tools that interact with this]
+//
+//   Integration Points:
+//     - [How other systems connect — Rails/Ladder/Baton mechanism]
+//     - [Cross-component interactions]
+//     - [Data flow or protocol integration]
+//
+//   Usage (for executables — omit for library code):
+//     Command Line:
+//       [executable-name] [args]        [Brief description]
+//       [executable-name] --help        Show usage
+//
+//     Exit Codes:
+//       0  - Success
+//       1  - General error
+//       2  - Usage/argument error
+//       [N] - [Specific error meaning]
 //
 // What This Needs:
-//
-//   - Standard Library: [list standard packages]
-//   - External: [None | list external packages with versions]
-//   - Internal: [project packages this depends on]
-//
-// Dependency Safety: [For Rails components - trace imports to stdlib/external only.
-// Include this line to signal "dependencies verified safe." Omit for non-Rails.]
+//   Standard Library: None
+//   External: None
+//   Internal: None — self-contained template
 //
 // What Uses This:
-//
-//   - Commands: [list commands]
-//   - Libraries: [list libraries]
-//   - Tools: [list tools]
+//   Commands: None
+//   Libraries: None
+//   Tools: cp (template instantiation)
 //
 // Integration Points:
+//   - Template system in bereshit/word/seed/
+//   - 4-block structure for C headers
 //
-//   - [How other systems connect - Rails/Ladder/Baton mechanism]
-//   - [Cross-component interactions]
-//   - [Data flow or protocol integration]
-//
-// # Usage & Integration
-//
-// Import:
-//
-//	#include "[header].h"
-//
-// Integration Pattern:
-//
-//  1. [Initial setup step]
-//  2. [Configuration step if needed]
-//  3. [Typical usage workflow]
-//  4. [Cleanup if needed]
-//
-// Public API (in typical usage order):
-//
-//	[Category 1] ([purpose]):
-//	  [FunctionName](params) returns
-//	  [AnotherFunction](params) returns
-//
-//	[Category 2] ([purpose]):
-//	  [FunctionName](params) returns
-//
-// ────────────────────────────────────────────────────────────────
-// OPERATIONAL (Contextual)
-// ────────────────────────────────────────────────────────────────
-//
-// # Blocking Status
-//
-// [Blocking/Non-blocking]: [Brief explanation]
-//
-// Mitigation: [How blocking/failures handled]
-//
-// # Health Scoring
-//
-// System: [Base100 with 1-point granular scale from -100 to +100]
-//
-// States: [Granted (>+50), Deferred (±50), Denied (<-50)]
-//
-// [Operation Category]:
-//
-//   - [Specific operation]: ±X points
-//   - [Another operation]: ±Y points
-//
-// Cascade Multipliers: [If applicable - describe categories and multipliers]
-//
-//   - [Category]: [X]x ([brief rationale])
-//
-// See: [Reference to detailed health scoring documentation]
-//
-// Note: Scores reflect TRUE impact. Health scorer normalizes to -100 to +100 scale.
-//
-// ────────────────────────────────────────────────────────────────
-// METADATA Omission Guide
-// ────────────────────────────────────────────────────────────────
-//
-// Tier 1 (CORE IDENTITY): Never omit - every file needs these.
-//
-// Tier 2 (INTERFACE): May omit with [OMIT: reason] notation.
-//   - Dependencies: [OMIT: Self-contained, no external requirements]
-//   - Usage & Integration: Rarely omitted, format adapts to file type
-//
-// Tier 3 (OPERATIONAL): Include when applicable to file type.
-//   - Blocking Status: [OMIT: Configuration file, not executable code]
-//   - Health Scoring Variations:
-//       * Config Provider: Provides health config, doesn't track own (use brief note)
-//       * Health Tracker: Full scoring with System/States/Operations
-//       * Pass-through: [OMIT: No health impact]
-//
-// Unlike SETUP (all sections required), METADATA omission signals component characteristics.
-//
-// Note: C headers declare interfaces, not implementations. Function bodies
-// belong in corresponding .c source files (see CODE-C-001 template).
+// Usage: N/A — this is a template, not an executable
 
-// ============================================================================
+// # M.10 Roadmap [ROADMAP]
+//
+//   Purpose:  Vision and trajectory — where this is going
+//   Contains: Planned, Limitations, Research, Operational
+//
+//   Planned:
+//     ⏳ [Planned feature 1]
+//     ⏳ [Planned feature 2]
+//
+//   Limitations:
+//     - [Known limitation 1]
+//
+//   Research:
+//     - [Research direction 1]
+//
+//   Operational (for components with health tracking):
+//     Blocking: [Blocking/Non-blocking] — [Brief explanation]
+//     Mitigation: [How blocking/failures handled]
+//
+//     Health Scoring:
+//       System: Base100 with 1-point granular scale (-100 to +100)
+//       States: Granted (>+50), Deferred (±50), Denied (<-50)
+//
+//       [Operation Category]:
+//         - [Specific operation]: ±X points
+//         - [Another operation]: ±Y points
+//
+// Planned:
+//   ⏳ Align with bereshit/word/seed/ canonical templates
+//
+// Limitations:
+//   - Currently project-local, not yet in bereshit
+//
+// Research:
+//   - Cross-platform header patterns
+//
+// Operational: N/A — template, not runtime component
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // END METADATA
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// ============================================================================
-// SETUP
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════════
+// SETUP [SETUP]
+// ═══════════════════════════════════════════════════════════════════════════════
 //
-// For SETUP structure explanation, see: standards/code/4-block/CWS-STD-006-CODE-setup-block.md
+// 4-Block Code Structure: Configuration and declarations before body
 //
-// Section order: Includes → Defines → Extern Variables → Types → Function Prototypes → Extern State
-// This flows: dependencies → constants → shared state → data model → interface → infrastructure
+// Section order: Includes → Defines → Types → Prototypes → Extern → Omission
+// Flow: dependencies → constants → data model → interface → shared state → guidance
 //
-// IMPORTANT: All sections MUST be present, even if empty or reserved.
-// For empty sections, use: // [Reserved: Brief reason why not needed]
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ───────────────────────────────────────────────────────────────────────────────
+// CODE SECTIONS
+// ───────────────────────────────────────────────────────────────────────────────
+
+// # S.1 Includes [INCLUDES]
 //
-// -----------------------------------------------------------------------------
-// SETUP Sections Overview
-// -----------------------------------------------------------------------------
+//   Purpose:  Headers this component needs
+//   Contains: Standard Library, Project Headers, External Libraries
 //
-// 1. INCLUDES (Dependencies)
-//    Purpose: External headers this file needs
-//    Subsections: Standard Library → Project Headers → External Libraries
+//   Standard Library:
+//     <stddef.h>   — size_t, NULL, offsetof
+//     <stdint.h>   — int32_t, uint64_t, int8_t
+//     <stdbool.h>  — bool, true, false
+//     <stdlib.h>   — malloc, free, exit
+//     <string.h>   — memcpy, strlen, strcmp
+//     <stdio.h>    — FILE, printf, fprintf
+//     <math.h>     — sin, cos, sqrt
+//     <assert.h>   — assert
+//     <errno.h>    — errno, error codes
+//     <limits.h>   — INT_MAX, UINT_MAX
 //
-// 2. DEFINES (Constants)
-//    Purpose: Fixed values that never change (#define macros)
-//    Subsections: Category Constants → Defaults
+//   Project Headers:
+//     "[header].h" — [purpose within project]
 //
-// 3. EXTERN VARIABLES (Variables)
-//    Purpose: Shared variable declarations (defined in .c, declared extern here)
-//    Subsections: [Reserved: Headers declare extern, source files define]
+//   External Libraries:
+//     <[lib].h>    — [justification — what stdlib lacks]
+
+// # S.1a Standard Library [STDLIB]
+
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+// # S.1b Project Headers [PROJECT]
+
+// #include "[header].h"
+
+// # S.1c External Libraries [EXTERNAL]
+
+// [Reserved: Currently none — uses standard library only]
+
+// # S.2 Defines [DEFINES]
 //
-// 4. TYPES (Type Definitions)
-//    Purpose: Data structures and type definitions (typedef struct)
-//    Subsections: Enumerations → Building Blocks → Composed Types → Config Types → Error Types
+//   Purpose:  Preprocessor constants and macros
+//   Contains: Sizes, Limits, Flags, Macros
 //
-// 5. FUNCTION PROTOTYPES (Type Behaviors)
-//    Purpose: Function declarations for consumers to call
-//    Subsections: Core Functions → Utility Functions → Lifecycle Functions
+//   Sizes:
+//     [NAME]_SIZE      — buffer/array size
+//     [NAME]_CAPACITY  — maximum capacity
+//     [NAME]_COUNT     — default count
 //
-// 6. EXTERN STATE (Rails Pattern)
-//    Purpose: Shared infrastructure declarations (logger, inspector)
-//    Subsections: Rails Infrastructure Declarations
-
-// ────────────────────────────────────────────────────────────────
-// Includes
-// ────────────────────────────────────────────────────────────────
+//   Limits:
+//     [NAME]_MIN       — minimum value
+//     [NAME]_MAX       — maximum value
+//     [NAME]_DEFAULT   — default value
 //
-// Headers this component needs. Organized by source - standard library
-// provides C's built-in capabilities, project headers provide internal
-// functionality. Each include commented with purpose, not just name.
+//   Flags:
+//     [NAME]_ENABLED   — on state
+//     [NAME]_DISABLED  — off state
+//     [NAME]_FLAG_[X]  — bit flags
 //
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-001-imports.md
+//   Macros:
+//     MIN, MAX, CLAMP  — value clamping
+//     ARRAY_LEN        — array element count
+//     UNUSED           — suppress unused warnings
 
-//--- Standard Library ---
-// Foundation headers providing C's built-in capabilities.
-// Use angle brackets for system headers.
+// # S.2a Sizes [SIZES]
 
-// #include <stddef.h>     // size_t, NULL, offsetof
-// #include <stdint.h>     // Fixed-width integer types (int32_t, uint64_t, etc.)
-// #include <stdbool.h>    // bool, true, false (C99+)
-// #include <stdio.h>      // FILE*, printf, fprintf (if needed in declarations)
+#define [NAME]_SIZE 1024
+#define [NAME]_CAPACITY 256
+#define [NAME]_COUNT 32
 
-//--- Project Headers ---
-// Internal headers showing architectural dependencies.
-// Use quotes for project headers.
+// # S.2b Limits [LIMITS]
 
-// #include "[header].h"       // [Purpose within project]
-// #include "../[path].h"      // [Shared component purpose]
+#define [NAME]_MIN 0
+#define [NAME]_MAX 255
+#define [NAME]_DEFAULT 100
 
-//--- External Libraries ---
-// Third-party dependencies (use sparingly - each adds risk).
-// Why external: [Justify what stdlib lacks that requires this dependency]
+// # S.2c Flags [FLAGS]
+
+#define [NAME]_ENABLED 1
+#define [NAME]_DISABLED 0
+#define [NAME]_FLAG_[X] (1 << 0)
+
+// # S.2d Macros [MACROS]
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define CLAMP(x, lo, hi) (MIN(MAX(x, lo), hi))
+#define ARRAY_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
+#define UNUSED(x) ((void)(x))
+
+// # S.3 Types [TYPES]
 //
-// [Reserved: Currently none - foundational component uses standard library only]
-
-// #include <[external-lib].h>  // [Justification for external dependency]
-
-// ────────────────────────────────────────────────────────────────
-// Defines
-// ────────────────────────────────────────────────────────────────
+//   Purpose:  Data structures and type definitions
+//   Contains: Enums, Structs, Opaque, Errors
 //
-// Preprocessor constants and macros. Magic numbers given meaningful names,
-// configuration values documented with reasoning. Defines prevent bugs
-// from typos and make intent clear.
+//   Enumerations:
+//     [PREFIX]_NONE    — default/invalid (always 0)
+//     [PREFIX]_COUNT   — sentinel for array sizing
 //
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-002-constants.md
-
-//--- [Category Name] Constants ---
-// [Brief explanation of this group and their purpose]
-
-// #define [CONSTANT_NAME] [value]  // [Purpose and reasoning]
-// #define [ANOTHER_CONST] [value]  // [Inline context]
-
-//--- Defaults ---
-// Default values for optional configuration.
-
-// #define DEFAULT_[THING] [value]  // Used when [thing] not configured
-
-//--- Macros ---
-// Function-like macros (use sparingly - prefer inline functions when possible)
-
-// #define [MACRO_NAME](x) ((x) * 2)  // [Purpose - wrap args in parens]
-
-// ────────────────────────────────────────────────────────────────
-// Type Definitions
-// ────────────────────────────────────────────────────────────────
+//   Structs:
+//     // [TypeName] represents [what this models].
+//     // Fields: [field_name]: [purpose]
 //
-// Data structures organized bottom-up: simple building blocks first,
-// then composed structures. This organization reveals dependencies.
-// Use typedef for cleaner type names.
+//   Opaque Types:
+//     typedef struct [Type] [Type]; — internals hidden in .c
 //
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-004-types.md
+//   Error Codes:
+//     [PREFIX]_OK          — success (always 0)
+//     [PREFIX]_ERR_[NAME]  — specific error conditions
 
-//--- Enumerations ---
-// Named constants for discrete values.
+// # S.3a Enumerations [ENUMS]
 
-// // [EnumName] represents [what these values mean].
-// //
-// // Values:
-// //   - [VALUE_NAME]: [meaning and when used]
-// //   - [VALUE_NAME]: [meaning and when used]
-// typedef enum {
-//     [ENUM_PREFIX]_[VALUE1],  // [Inline explanation]
-//     [ENUM_PREFIX]_[VALUE2],  // [Inline explanation]
-//     [ENUM_PREFIX]_COUNT      // Sentinel for array sizing
-// } [EnumName];
+typedef enum {
+    [PREFIX]_NONE = 0,
+    [PREFIX]_[VALUE],
+    [PREFIX]_COUNT
+} [EnumName];
 
-//--- Building Blocks ---
-// Simple foundational types used throughout this component.
-// These are the atoms - other types compose from these.
+// # S.3b Structs [STRUCTS]
 
-// // [TypeName] represents [what this models].
-// //
-// // [2-4 sentences: what it represents, when used, key constraints]
-// //
-// // Fields:
-// //   - [field_name]: [purpose and meaning]
-// //   - [field_name]: [purpose, units if applicable, constraints]
-// //
-// // Example:
-// //   [TypeName] t = { .field1 = value1, .field2 = value2 };
-// typedef struct {
-//     [type] [field_name];  // [Inline explanation]
-//     [type] [field_name];  // [Inline explanation]
-// } [TypeName];
-
-//--- Composed Types ---
-// Complex types built from building blocks above.
-// Document the composition relationship explicitly.
-
-// // [ComposedType] combines [building blocks] to represent [concept].
-// //
-// // [Explain relationships: why these pieces go together]
-// //
-// // Fields:
-// //   - [field_name]: [purpose]
-// //   - [block_field]: Uses [BuildingBlock] for [reason]
-// typedef struct {
-//     [type] [field_name];         // [Purpose]
-//     [BuildingBlock] block_field; // Composition from above
-// } [ComposedType];
-
-//--- Configuration Types ---
-// Options and settings passed to functions.
-// Document default values and valid ranges.
-
-// // [Config] holds configuration options for [component].
-// //
-// // Fields:
-// //   - [field]: [purpose] (default: [value])
-// typedef struct {
-//     [type] [field];  // [Purpose] (default: [zero value behavior])
-// } [Config];
-
-//--- Opaque Types ---
-// Forward declarations for types whose internals are hidden.
-// Implementation in .c file, consumers use pointers only.
-
-// // [OpaqueType] - opaque handle (internals in .c file)
-// typedef struct [OpaqueType] [OpaqueType];
-
-//--- Error Codes ---
-// Return codes for error handling (C doesn't have exceptions).
-
-// // [ErrorCode] represents error conditions from [component].
-// typedef enum {
-//     [PREFIX]_OK = 0,           // Success
-//     [PREFIX]_ERR_INVALID,      // Invalid input
-//     [PREFIX]_ERR_NOMEM,        // Memory allocation failed
-//     [PREFIX]_ERR_IO,           // I/O operation failed
-// } [ErrorCode];
-
-// ────────────────────────────────────────────────────────────────
-// Function Prototypes
-// ────────────────────────────────────────────────────────────────
+// [TypeName] represents [what this models].
 //
-// Declarations for functions implemented in the corresponding .c file.
-// Headers declare the interface - what functions exist and their signatures.
-// Implementations go in CODE-C-001 source file.
+// Fields:
+//   - [field_name]: [purpose and meaning]
+typedef struct {
+    [type] [field_name];
+} [TypeName];
+
+// # S.3c Opaque Types [OPAQUE]
+
+typedef struct [Type] [Type];
+
+// # S.3d Error Codes [ERRORS]
+
+typedef enum {
+    [PREFIX]_OK = 0,
+    [PREFIX]_ERR_INVALID,
+    [PREFIX]_ERR_NOMEM,
+    [PREFIX]_ERR_IO,
+    [PREFIX]_ERR_NOT_FOUND,
+    [PREFIX]_ERR_EXISTS,
+} [ErrorCode];
+
+// # S.4 Function Prototypes [PROTOTYPES]
 //
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-005-type-methods.md
+//   Purpose:  Function declarations — public API (headers), static (sources)
+//   Contains: Lifecycle, Accessors, Operations
 //
-// Note: C doesn't have methods. Functions that operate on types take
-// the type as a parameter (usually pointer for modification).
-
-//--- Lifecycle Functions ---
-// Create, initialize, and destroy instances.
-
-// // [type]_create allocates and initializes a new [TypeName].
-// //
-// // Returns: Pointer to new instance, or NULL on failure.
-// //          Caller must call [type]_destroy when done.
-// [TypeName]* [type]_create(void);
-
-// // [type]_init initializes an existing [TypeName] (stack-allocated).
-// //
-// // Parameters:
-// //   self: Pointer to uninitialized instance
-// //
-// // Returns: 0 on success, error code on failure.
-// int [type]_init([TypeName]* self);
-
-// // [type]_destroy frees resources associated with [TypeName].
-// //
-// // Parameters:
-// //   self: Pointer to instance (NULL-safe)
-// void [type]_destroy([TypeName]* self);
-
-//--- Accessor Functions ---
-// Get and set values (when encapsulation needed).
-
-// // [type]_get_[field] returns the [field] value.
-// [FieldType] [type]_get_[field](const [TypeName]* self);
-
-// // [type]_set_[field] updates the [field] value.
-// void [type]_set_[field]([TypeName]* self, [FieldType] value);
-
-//--- Conversion Functions ---
-// Transform between types or formats.
-
-// // [type]_to_string converts [TypeName] to string representation.
-// //
-// // Parameters:
-// //   self: Instance to convert
-// //   buf: Output buffer
-// //   buf_size: Size of output buffer
-// //
-// // Returns: Number of characters written (excluding null terminator),
-// //          or negative error code.
-// int [type]_to_string(const [TypeName]* self, char* buf, size_t buf_size);
-
-// ────────────────────────────────────────────────────────────────
-// Extern Declarations
-// ────────────────────────────────────────────────────────────────
+//   Lifecycle:
+//     [prefix]_create    — allocate + init, caller must destroy
+//     [prefix]_init      — init existing (stack-allocated)
+//     [prefix]_destroy   — free resources (NULL-safe)
+//     [prefix]_clone     — deep copy
 //
-// Global variables declared here, defined in .c file. Use sparingly -
-// prefer constants (#define) for fixed values and function parameters
-// for dynamic behavior. Extern variables are typically: global state,
-// shared configuration, or cross-file data.
+//   Accessors:
+//     [prefix]_get_[field] — retrieve field value
+//     [prefix]_set_[field] — update field value
+//     [prefix]_is_[state]  — boolean queries
 //
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-003-variables.md
+//   Operations:
+//     [prefix]_[verb]    — action, returns 0 on success
+//     [prefix]_reset     — reset to initial state
+//     [prefix]_validate  — check invariants
 
-//--- Global State ---
-// Variables shared across multiple compilation units.
-// Declared here with extern, defined in .c file.
+// # S.4a Lifecycle [LIFECYCLE]
 
-// // [g_variable_name] [what it holds and purpose].
-// //
-// // Defined in: [source_file].c
-// // Thread-safety: [safe/unsafe - describe synchronization if any]
-// extern [type] [g_variable_name];
+[Type]* [type]_create(void);
+int [type]_init([Type]* self);
+void [type]_destroy([Type]* self);
+[Type]* [type]_clone(const [Type]* src);
 
-//--- Configuration State ---
-// Runtime-modifiable settings. Document default values and valid ranges.
+// # S.4b Accessors [ACCESSORS]
 
-// // [g_config_var] controls [behavior].
-// //
-// // Default: [value]. Valid range: [min] to [max].
-// // Modified by: [what changes this - functions, initialization]
-// extern [type] [g_config_var];
+[FieldType] [type]_get_[field](const [Type]* self);
+void [type]_set_[field]([Type]* self, [FieldType] value);
+bool [type]_is_[state](const [Type]* self);
 
-//--- Callback Types ---
-// Function pointer types for callbacks and hooks.
+// # S.4c Operations [OPERATIONS]
 
-// // [CallbackName] is called when [event/condition].
-// //
-// // Parameters:
-// //   [param]: [purpose]
-// //
-// // Returns: [what return value means]
-// typedef [return_type] (*[CallbackName])([parameters]);
+int [type]_[verb]([Type]* self, ...);
+int [type]_reset([Type]* self);
+int [type]_validate(const [Type]* self);
 
-// [Reserved: Additional extern declarations as component develops]
-
-// -----------------------------------------------------------------------------
-// SETUP Omission Guide
-// -----------------------------------------------------------------------------
+// # S.5 File-Level Declarations [FILE_LEVEL]
 //
-// ALL sections MUST be present. Content may be reserved with reason:
+//   Purpose:  File-level state — extern (headers), static (sources)
+//   Contains: Variables, Function Types, Infrastructure
 //
-//   - Includes: Rarely reserved - headers often need other headers
-//   - Defines: [Reserved: No constants needed for this interface]
-//   - Extern Variables: [Reserved: No shared variables in this interface]
-//   - Types: Rarely reserved - headers typically declare types
-//   - Function Prototypes: Rarely reserved - headers declare functions
-//   - Extern State: [Reserved: Pure interface - no shared infrastructure]
+//   Variables:
+//     extern [type] g_[name];     — shared state (headers)
+//     static [type] [name];       — file state (sources)
 //
-// Unlike METADATA (sections omitted entirely with [OMIT:]), SETUP preserves
-// all section headers with [Reserved:] notation for unused sections.
+//   Function Types:
+//     typedef [ret] (*[Name]_fn)(...); — callback signatures
+//
+//   Infrastructure:
+//     Logger, Inspector — Rails health tracking (sources)
 
-// ============================================================================
+// # S.5a Variables [VARIABLES]
+
+extern [type] g_[name];
+extern const [type] g_[name];
+
+// # S.5b Function Types [FUNC_TYPES]
+
+typedef void (*[Name]_fn)(void* ctx);
+typedef int (*[Name]_fn)([type] arg, void* ctx);
+
+// # S.5c Infrastructure [INFRASTRUCTURE]
+
+// [Reserved: Infrastructure lives in source files, not headers]
+
+// # S.6 Omission Guide [OMISSION]
+//
+//   Purpose:  What can be reserved and why
+//
+//   All sections must be present. Empty sections use: [Reserved: reason]
+//   Omit subsection content, never the subsection header itself.
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // END SETUP
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// ============================================================================
-// BODY
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════════
+// BODY [BODY]
+// ═══════════════════════════════════════════════════════════════════════════════
 //
-// For BODY structure explanation, see: standards/code/4-block/CWS-STD-007-CODE-body-block.md
+// 4-Block Code Structure: The actual work — declarations (headers), implementations (sources)
 //
-// NOTE: C headers declare interfaces, they do NOT contain implementations.
-// All function bodies belong in the corresponding .c source file.
-// This BODY section documents the declared interface structure.
+// Section order: Org Chart → Helpers → Core Ops → Errors → Public API → Omission
+// Flow: map structure → foundations → business logic → error handling → exported interface → guidance
 //
-// -----------------------------------------------------------------------------
-// BODY Sections Overview
-// -----------------------------------------------------------------------------
-//
-// 1. ORGANIZATIONAL CHART (Interface Structure Map)
-//    Purpose: Document the declared interface - types, functions, constants
-//    Subsections: Public APIs → Lifecycle Functions → Accessors → Type Definitions
-//
-// 2. HELPERS/UTILITIES (Internal Support Declarations)
-//    Purpose: Declare cross-file internal helpers (most are static in .c)
-//    Subsections: [Reserved: Internal helpers typically static in .c file]
-//
-// 3. CORE OPERATIONS (Business Logic Declarations)
-//    Purpose: Declare component-specific functions by category
-//    Subsections: [Category 1] → [Category 2] → ... (organized by concern)
-//
-// 4. ERROR HANDLING/RECOVERY (Error Types and Recovery)
-//    Purpose: Declare error codes, checking functions, recovery patterns
-//    Subsections: Error Codes (enum) → Error Functions → Recovery Strategy
-//
-// 5. PUBLIC APIs (Exported Interface Declarations)
-//    Purpose: Declare the functions consumers actually call
-//    Subsections: [Category] → [Category] → ... (organized by purpose)
-//
-// Section order: Org Chart → Helpers → Core Operations → Error Handling → Public APIs
-// This flows: understand interface → internal support → categorized declarations → error handling → exported interface
-//
-// Universal mapping (see standards for cross-language patterns):
-//   Organizational Chart ≈ Interface Documentation (what's declared)
-//   Helpers/Utilities ≈ Internal Function Declarations (cross-file helpers)
-//   Core Operations ≈ Business Logic Declarations (categorized by purpose)
-//   Error Handling ≈ Error Types/Functions (error codes, checking, recovery)
-//   Public APIs ≈ Exported Interface (what consumers call)
-//
-// Note: Headers DECLARE, source files IMPLEMENT. See CODE-C-001 for implementations.
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// ────────────────────────────────────────────────────────────────
-// Organizational Chart - Declared Interface Structure
-// ────────────────────────────────────────────────────────────────
-// Maps the interface this header exposes. Provides navigation for both
-// consumers (what's available to use) and implementers (what to implement).
+// # B.1 Organizational Chart [ORG_CHART]
 //
-// See: standards/code/4-block/sections/body/CWS-SECTION-BODY-001-organizational-chart.md
+//   Purpose:  Map structure — interface (headers), internals (sources)
+//   Contains: Structure, Flow, Counts
 //
-// Declared Interface (by category):
+//   Structure:
+//     Interface overview (headers) / Ladder hierarchy (sources)
 //
-//   Public APIs (Exported Functions)
-//   ├── [function_name]() → [brief purpose]
-//   ├── [function_name]() → [brief purpose]
-//   └── [function_name]() → [brief purpose]
+//   Flow:
+//     Implementation location (headers) / Baton execution path (sources)
 //
-//   Lifecycle Functions
-//   ├── [type]_create() → allocate and initialize
-//   ├── [type]_init() → initialize existing
-//   └── [type]_destroy() → cleanup resources
-//
-//   Accessors
-//   ├── [type]_get_[field]() → read value
-//   └── [type]_set_[field]() → write value
-//
-// Type Definitions:
-//   ├── [TypeName] → [brief description]
-//   ├── [EnumName] → [brief description]
-//   └── [ErrorCode] → [brief description]
-//
-// Implementation Location:
-//   All function implementations in: [source_file].c (see CODE-C-001)
-//
-// Declared Units:
-// - [X] types total
-// - [X] enums
-// - [X] function prototypes
-// - [X] extern variables
-//
-// See: standards/code/4-block/sections/body/CWS-SECTION-BODY-005-public-apis.md
+//   Counts:
+//     Interface counts (headers) / APUs (sources)
 
-// ────────────────────────────────────────────────────────────────
-// Helpers/Utilities - Internal Support Declarations
-// ────────────────────────────────────────────────────────────────
-// Foundation function declarations used internally by this component.
-// Bottom rungs of the ladder - simple, focused, reusable utilities.
-// Usually NOT exported (static in .c file), but declared here if needed
-// across multiple .c files in the same component.
-//
-// See: standards/code/4-block/sections/body/CWS-SECTION-BODY-002-helpers.md
-//
-// Note: Most helpers are static in .c file and don't appear here.
-// Only declare helpers that need visibility across compilation units.
-//
-// [Reserved: Internal helpers typically static in .c - add if cross-file needed]
+// # B.1a Structure [STRUCTURE]
 
-// // [helper_name] [does what - internal use only].
-// //
-// // Parameters:
-// //   [param]: [purpose]
-// //
-// // Returns: [what's returned]
-// //
-// // Note: Internal helper - not part of public API.
-// [return_type] [helper_name]([parameters]);
+// Types:      [X] structs, [X] enums
+// Functions:  [X] lifecycle, [X] accessors, [X] operations
+// Externs:    [X] globals, [X] callbacks
 
-// ────────────────────────────────────────────────────────────────
-// Core Operations - Business Logic Declarations
-// ────────────────────────────────────────────────────────────────
-// Component-specific function declarations implementing primary purpose.
-// Middle rungs of the ladder - the actual work gets done here.
-// Organized by operational categories below.
+// # B.1b Flow [FLOW]
+
+// Implementation: [source_file].c
+
+// # B.1c Counts [COUNTS]
+
+// Types:      [X] total
+// Functions:  [X] total
+// Externs:    [X] total
+
+// # B.2 Helpers [HELPERS]
 //
-// See: standards/code/4-block/sections/body/CWS-SECTION-BODY-003-core-operations.md
+//   Purpose:  Foundation functions — declarations (headers), implementations (sources)
+//   Contains: Pure Functions, Utilities
 //
-// Implementation: All function bodies in corresponding .c file.
-
-// ────────────────────────────────────────────────────────────────
-// [Category 1 Name] - [Purpose]
-// ────────────────────────────────────────────────────────────────
-// What These Do:
-// [High-level description of this category of operations]
+//   Pure Functions:
+//     Side-effect-free transformations
 //
-// Extension Point:
-// To add new [operation type], add declaration here following [naming pattern],
-// then implement in .c file.
-
-// // [function_name] [does what].
-// //
-// // Parameters:
-// //   [param]: [purpose]
-// //
-// // Returns: [what's returned]
-// //
-// // Health Impact:
-// //   Success: +X points
-// //   Failure: -X points
-// [return_type] [function_name]([parameters]);
-
-// ────────────────────────────────────────────────────────────────
-// [Category 2 Name] - [Purpose]
-// ────────────────────────────────────────────────────────────────
-// [Same documentation pattern as Category 1]
-
-// [Reserved: Additional core operation declarations as component develops]
-
-// ────────────────────────────────────────────────────────────────
-// Error Handling - Error Types and Recovery Declarations
-// ────────────────────────────────────────────────────────────────
-// Error handling declarations ensuring component handles failures gracefully.
-// Documents error codes, error checking functions, and recovery patterns.
+//   Utilities:
+//     Common operations with potential side effects
 //
-// See: standards/code/4-block/sections/body/CWS-SECTION-BODY-004-error-handling.md
-//
-// Design Principle: [Blocking/Non-blocking] - [Brief explanation]
-//
-// Error Codes: See SETUP "Error Codes" section for [ErrorCode] enum.
-//
-// Recovery Strategy:
-//   - [Error type 1]: [How handled]
-//   - [Error type 2]: [How handled]
+//   Note: Most helpers are static in sources. Declare in headers only if
+//         needed across multiple .c files in the same component.
 
-// // [component]_get_error_string returns human-readable error description.
-// //
-// // Parameters:
-// //   err: Error code from [ErrorCode] enum
-// //
-// // Returns: Static string describing the error (do not free).
-// const char* [component]_get_error_string([ErrorCode] err);
+// # B.2a Pure Functions [PURE]
 
-// // [component]_is_error checks if return value indicates error.
-// //
-// // Parameters:
-// //   result: Return value to check
-// //
-// // Returns: true if result indicates error, false otherwise.
-// bool [component]_is_error(int result);
+// [Reserved: Pure helpers typically static in source file]
 
-// [Reserved: Additional error handling declarations as patterns emerge]
+// # B.2b Utilities [UTIL]
 
-// ────────────────────────────────────────────────────────────────
-// Public APIs - Exported Interface Declarations
-// ────────────────────────────────────────────────────────────────
-// Exported function declarations defining component's public interface.
-// Top rungs of the ladder - these are what consumers call.
-// Simple by design - complexity lives in core operations.
+// [Reserved: Utility helpers typically static in source file]
+
+// # B.3 Core Operations [OPERATIONS]
 //
-// See: standards/code/4-block/sections/body/CWS-SECTION-BODY-005-public-apis.md
+//   Purpose:  Component-specific functionality — declarations (headers), implementations (sources)
+//   Contains: Categorized business logic organized by operation type
 //
-// Organization: Group public APIs by purpose using category dividers.
-// Common categories: Initialization, Creation, Operations, Health, Cleanup
+//   Organize by operational categories. Common categories:
+//     - Validation: Input checking, constraint verification
+//     - Conversion: Data transformation between formats
+//     - Processing: Core algorithms and computations
+//     - Formatting: Output preparation
+//     - Analysis: Data examination and metrics
 
-// ═══ [Category Name] ═══
-
-// // [PublicFunctionName] [does what at high level].
-// //
-// // What It Does:
-// // [Detailed explanation of complete operation]
-// //
-// // Parameters:
-// //   [param]: [purpose]
-// //
-// // Returns: [what's returned]
-// //
-// // Health Impact:
-// //   Success: +X points
-// //   Failure: -X points
-// //
-// // Example:
-// //   [return_type] result = [PublicFunctionName](params);
-// //   if ([component]_is_error(result)) {
-// //       // handle error
-// //   }
-// [return_type] [PublicFunctionName]([parameters]);
-
-// [Reserved: Additional public API declarations as component develops]
-
-// -----------------------------------------------------------------------------
-// BODY Omission Guide
-// -----------------------------------------------------------------------------
+// # B.3a [Category Name] [CATEGORY]
 //
-// ALL five sections MUST be present. Content may be reserved with reason:
+//   Purpose:  [High-level description of this category]
+//   Why Separated: [Reasoning for this grouping]
 //
-//   - Organizational Chart: Rarely reserved - documents interface structure
-//   - Helpers/Utilities: [Reserved: Internal helpers are static in .c file]
-//   - Core Operations: Contains function declarations by category
-//   - Error Handling: Contains error codes and checking function declarations
-//   - Public APIs: Rarely reserved - this IS the public interface
-//
-// Unlike METADATA (sections omitted entirely with [OMIT:]), BODY preserves
-// all section headers with [Reserved:] notation for unused sections.
-//
-// Header files declare, .c files implement:
-//   - Org Chart documents what the interface provides
-//   - Helpers typically [Reserved: static in implementation]
-//   - Core Operations declare the function signatures
-//   - Error Handling declares error types and checking functions
-//   - Public APIs declare the primary consumer interface
+//   Extension Point:
+//   To add new [operation type]:
+//     1. Create function following [naming pattern]
+//     2. Implement with [specific behavior]
+//     3. Integrate with [orchestration function]
+//     4. Update tests
 
-// ============================================================================
+// [function_name] [does what]
+//
+// Parameters:
+//   [paramName]: [Purpose and expected values]
+//
+// Returns:
+//   [returnType]: [What's returned and meaning]
+//   error: [When error returned, what it means]
+//
+// Health Impact:
+//   Success: +X points ([reasoning for value])
+//   Failure: -X points ([reasoning for value])
+//
+// Troubleshooting:
+//   Problem: "[common error message]"
+//     Check: [What to verify]
+//     Solution: [How to fix]
+[return_type] [function_name]([params]);
+
+// # B.3b [Category 2 Name] [CATEGORY2]
+//
+//   [Reserved: Additional category as needed]
+
+// # B.4 Error Handling [ERRORS]
+//
+//   Purpose:  Error handling — query declarations (headers), management patterns (sources)
+//   Contains: Error Queries, Recovery Helpers
+//
+//   Design Principle: [Blocking/Non-blocking]
+//   Example: Non-blocking - [component] failures never interrupt [main operation]
+//
+//   Recovery Strategy:
+//     - [Error type 1]: Graceful degradation (fallback behavior)
+//     - [Error type 2]: Fallback to alternative
+//     - [Error type 3]: Caught and logged, no panics
+
+// # B.4a Error Queries [QUERIES]
+//
+//   Purpose:  Functions to query error state and get human-readable messages
+
+// [prefix]_get_error_string returns human-readable description.
+//
+// Parameters:
+//   err: Error code from [ErrorCode] enum
+//
+// Returns: Static string (do not free)
+const char* [prefix]_get_error_string([ErrorCode] err);
+
+// [prefix]_is_error checks if result indicates error.
+//
+// Parameters:
+//   result: Return value to check
+//
+// Returns: true if error, false otherwise
+bool [prefix]_is_error(int result);
+
+// # B.4b Recovery [RECOVERY]
+//
+//   Purpose:  Functions to restore valid state after error
+
+// [prefix]_reset restores to valid state after error.
+//
+// Parameters:
+//   self: Instance to reset
+//
+// Returns: 0 on success, error code on failure
+int [prefix]_reset([Type]* self);
+
+// # B.5 Public API [API]
+//
+//   Purpose:  Public API — declarations (headers), implementations (sources)
+//   Contains: Lifecycle, Operations, Health, Utilities
+//
+//   Top rungs of the ladder - orchestrate helpers and core operations.
+//   Simple by design - complexity lives in helpers and core operations,
+//   Public APIs orchestrate proven pieces.
+
+// # B.5a Lifecycle [LIFECYCLE]
+//
+//   Purpose:  Creation, initialization, destruction
+
+// [type]_create allocates and initializes new instance.
+//
+// Returns: New instance (caller owns), or NULL on failure
+//
+// Health Impact:
+//   Success: +10 points (component ready)
+//   Failure: -20 points (initialization failed)
+[Type]* [type]_create(void);
+
+// [type]_init initializes caller-owned memory.
+//
+// Parameters:
+//   self: Instance to initialize
+//
+// Returns: 0 on success, error code on failure
+int [type]_init([Type]* self);
+
+// [type]_destroy frees resources (NULL-safe).
+//
+// Parameters:
+//   self: Instance to destroy
+void [type]_destroy([Type]* self);
+
+// # B.5b Operations [OPS]
+//
+//   Purpose:  Primary functionality exposed to consumers
+
+// [public_function] [does what at high level]
+//
+// Parameters:
+//   [paramName]: [Purpose and expected values]
+//
+// Returns:
+//   [returnType]: [What's returned and meaning]
+//   error: [When error returned, what it means]
+//
+// Health Impact:
+//   Success: +X points ([reasoning])
+//   Validation failure: -X points ([reasoning])
+//   Processing failure: -X points ([reasoning])
+int [public_function]([params], [return_type]* result);
+
+// # B.5c Health [HEALTH]
+//
+//   Purpose:  Health score queries and status reporting
+
+// [type]_health returns current health score.
+//
+// Returns: Health score (-100 to +100)
+int [type]_health(const [Type]* self);
+
+// # B.5d Utilities [UTIL]
+//
+//   Purpose:  Helper functions for consumers
+
+// [type]_clone creates deep copy.
+//
+// Parameters:
+//   src: Instance to copy
+//
+// Returns: New instance (caller owns), or NULL on failure
+[Type]* [type]_clone(const [Type]* src);
+
+// [type]_validate checks invariants.
+//
+// Parameters:
+//   self: Instance to validate
+//
+// Returns: 0 if valid, error code if invalid
+int [type]_validate(const [Type]* self);
+
+// # B.6 Omission Guide [OMISSION]
+//
+//   Purpose:  What can be reserved and why — guidance for headers and sources
+//
+//   All sections must be present. Empty sections use: [Reserved: reason]
+//
+//   B.1 Org Chart:   Rarely reserved — documents interface structure (headers) / internal structure (sources)
+//   B.2 Helpers:     Often reserved — most helpers are static in source files
+//   B.3 Core Ops:    Add categories as component develops
+//   B.4 Errors:      Add queries/recovery as patterns emerge
+//   B.5 Public API:  Rarely reserved — this IS the public interface
+//
+//   For multi-file components:
+//     - Main file: Org Chart, Public APIs, Error Handling
+//     - Module files: Helpers, Core Operations
+//     - Document extraction: [Reserved: Extracted to module.c (main orchestrates)]
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // END BODY
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// ============================================================================
-// CLOSING
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════════
+// CLOSING [CLOSING]
+// ═══════════════════════════════════════════════════════════════════════════════
 //
-// For CLOSING structure explanation, see: standards/code/4-block/CWS-STD-008-CODE-closing-block.md
+// 4-Block Code Structure: Operational guidance and closing notes
 //
-// -----------------------------------------------------------------------------
-// CLOSING Sections Overview
-// -----------------------------------------------------------------------------
+// Section order: Validation → Execution → Cleanup | Policy → Extension → Troubleshooting → Reference → Note → Template
+// Flow: verify → run → release | modify → extend → debug → lookup → ground → instantiate
 //
-// GROUP 1: CODING (Operations - Verify, Include, Clean)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// # X.1 Validation [VALIDATION]
 //
-// 1. CODE VALIDATION (Header Verification)
-//    Purpose: Verify header correctness - include guard, declarations, compatibility
-//    Subsections: Include Guard → Declaration Verification → C++ Compatibility
+//   Purpose:  Verify correctness — headers (syntax, self-containment), sources (build, runtime, memory)
+//   Contains: Build Commands, Checks/Runtime Tests, Self-Test/Memory Checks
+
+// # X.1a Build Commands [BUILD]
 //
-// 2. CODE EXECUTION (Header Usage)
-//    [Reserved: Headers don't execute - they're included and used]
+//   gcc -fsyntax-only -Wall -Wextra [header].h    // syntax check
+//   gcc -c -Wall -Wextra [source].c               // compile with header
+//   cppcheck --enable=all [header].h              // static analysis
+
+// # X.1b Checks [CHECKS]
 //
-// 3. CODE CLEANUP (Include Patterns)
-//    Purpose: Proper include order and dependency management
-//    Subsections: Include Order → Dependency Chain
-//
-// GROUP 2: FINAL DOCUMENTATION (Synthesis - Reference Back to Earlier Blocks)
-//
-// 4. HEADER OVERVIEW (Summary with Back-References)
-//    Purpose: High-level summary of interface this header provides
-//    References: METADATA "Purpose & Function", "Key Features"
-//
-// 5. MODIFICATION POLICY (Safe/Careful/Never)
-//    Purpose: Guide future maintainers on what's safe to change
-//    Subsections: Safe to Modify → Modify with Care → Never Modify (ABI stability)
-//
-// 6. LADDER AND BATON FLOW (Back-Reference to BODY)
-//    Purpose: Point to BODY Organizational Chart for interface structure
-//    References: BODY "Organizational Chart - Interface Structure Map"
-//
-// 7. SURGICAL UPDATE POINTS (Back-Reference to BODY)
-//    Purpose: Point to BODY sections for adding declarations
-//    References: BODY section categories
-//
-// 8. PERFORMANCE CONSIDERATIONS (Type Sizes)
-//    Purpose: Memory layout and type size considerations
-//    References: BODY type declarations, struct layouts
-//
-// 9. TROUBLESHOOTING GUIDE (Include Issues)
-//    Purpose: Common header inclusion problems and solutions
-//    Subsections: Missing Dependencies → Circular Includes → Redefinition Errors
-//
-// 10. RELATED COMPONENTS (Implementation Files)
-//     Purpose: Point to .c files that implement this interface
-//     References: METADATA "Dependencies" - implementations
-//
-// 11. FUTURE EXPANSIONS (Interface Roadmap)
-//     Purpose: Planned interface additions and changes
-//     Subsections: Planned Additions → Deprecations → ABI Changes
-//
-// 12. CONTRIBUTION GUIDELINES (Adding Declarations)
-//     Purpose: How to add new declarations to this header
-//     Subsections: Declaration Style → Documentation → ABI Considerations
-//
-// 13. QUICK REFERENCE (Include Pattern)
-//     Purpose: Copy-paste ready include pattern
-//     Subsections: Basic Include → With Guards → Conditional
-//
-// Section order: Validation → [Execution Reserved] → Cleanup → Overview → Policy → Ladder/Baton →
-//                Surgical → Performance → Troubleshooting → Related → Future → Contribution → Reference
-// This flows: verify header → document interface → guide expansion
-//
-// ════════════════════════════════════════════════════════════════
-// GROUP 1: CODING
-// ════════════════════════════════════════════════════════════════
-//
-// ────────────────────────────────────────────────────────────────
-// Code Validation: Header (Declaration Only)
-// ────────────────────────────────────────────────────────────────
-// For Code Validation section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-001-code-validation.md
-//
-// Header Validation:
-//   - Include the header without errors (self-contained)
-//   - No missing type definitions or forward declarations
+//   - Self-contained (includes without errors)
+//   - No missing type definitions
 //   - No circular include dependencies
-//   - Include guards work correctly (no redefinition errors)
-//   - All function prototypes match implementations in .c file
+//   - Include guards work (no redefinition)
+//   - Prototypes match implementations in .c
+
+// # X.1c Self-Containment Test [SELF_TEST]
 //
-// Build Verification:
-//   - gcc -fsyntax-only -Wall -Wextra [header].h (syntax check)
-//   - gcc -c -Wall -Wextra [source].c (compiles with header)
-//   - clang -fsyntax-only -Wall -Wextra [header].h (alternative)
-//   - cppcheck --enable=all [header].h (static analysis)
-//
-// Self-Containment Test:
-//   // Create test file that only includes this header
+//   // test.c — must compile without errors
 //   #include "[header].h"
 //   int main(void) { return 0; }
-//   // Must compile without errors
+
+// # X.1d Memory Checks [MEMORY]
 //
-// Integration Testing:
-//   - Test with actual consuming code
-//   - Verify declarations match implementations
-//   - Check ABI compatibility if shared library
-//   - valgrind --leak-check=full ./test (memory check)
+//   valgrind --leak-check=full ./test             // memory check
+//   valgrind --track-origins=yes ./test           // uninitialized values
 //
-// ────────────────────────────────────────────────────────────────
-// Code Execution: None (Header)
-// ────────────────────────────────────────────────────────────────
-// For Code Execution section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-002-code-execution.md
+// # X.2 Execution [EXECUTION]
 //
-// This is a HEADER file - declarations only, no execution.
-// All function implementations are in the corresponding .c file.
-// Headers are included by other files, not executed directly.
+//   Purpose:  Execution — usage patterns (headers), entry point and flow (sources)
+//   Contains: Include/Usage (headers), Exit Codes/Signals/Entry (sources)
 //
-// Usage: #include "[header].h"
+//   Note: Headers declare, .c files implement. No code executes at include time.
+
+// # X.2a Include [INCLUDE]
 //
-// The header is included by source files, making all declared types,
-// functions, and constants available. No code executes at include time -
-// only declarations are processed by the preprocessor.
+//   #include "[header].h"
+
+// # X.2b Exit Codes [EXIT_CODES]
 //
-// Example include and usage:
+//   0 - Success
+//   1 - General error
+//   2 - Usage/argument error
+//   [N] - [Specific error meaning]
+
+// # X.2c Usage Example [USAGE]
 //
-//     #include "[header].h"
-//
-//     int main(void) {
-//         // Use types from header
-//         [TypeName] instance;
-//         [type]_init(&instance);
-//
-//         // Call functions declared in header
-//         int result = [PublicFunction](&instance, params);
-//         if ([component]_is_error(result)) {
-//             fprintf(stderr, "Error: %s\n", [component]_get_error_string(result));
-//             return 1;
-//         }
-//
-//         // Cleanup
-//         [type]_destroy(&instance);
-//         return 0;
-//     }
-//
-// ────────────────────────────────────────────────────────────────
-// Code Cleanup: None (Header)
-// ────────────────────────────────────────────────────────────────
-// For Code Cleanup section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-003-code-cleanup.md
-//
-// Resource Management (documented for implementers):
-//   - [Resource type 1]: [How it's managed - malloc/free pattern]
-//   - [Resource type 2]: [Management strategy]
-//   - [Resource type 3]: [Cleanup approach]
-//
-// Ownership Convention:
-//   - Functions returning pointers: Caller owns, must free
-//   - Functions taking pointers: Caller retains ownership unless documented
-//   - _create() functions: Return owned pointer, use _destroy() to free
-//   - _init() functions: Initialize caller-owned memory, use _destroy() to cleanup
-//
-// Memory Management:
-//   - C requires manual memory management
-//   - All malloc() must have corresponding free()
-//   - Document ownership transfer in function comments
-//   - Use valgrind to verify no leaks
-//
-// Example cleanup pattern:
-//
-//     // Stack allocation (automatic cleanup)
-//     [TypeName] local;
-//     [type]_init(&local);
-//     // ... use local ...
-//     [type]_destroy(&local);  // Cleanup internal resources
-//
-//     // Heap allocation (manual cleanup)
-//     [TypeName]* ptr = [type]_create();
-//     // ... use ptr ...
-//     [type]_destroy(ptr);  // Frees ptr and internal resources
-//
-// ════════════════════════════════════════════════════════════════
-// FINAL DOCUMENTATION
-// ════════════════════════════════════════════════════════════════
-//
-// ────────────────────────────────────────────────────────────────
-// Library Overview & Integration Summary
-// ────────────────────────────────────────────────────────────────
-// For Library Overview section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-004-library-overview.md
-//
-// Purpose: See METADATA "Purpose & Function" section above
-//
-// Provides: See METADATA "Key Features" list above for comprehensive capabilities
-//
-// Quick summary (high-level only - details in METADATA):
-//   - [1-2 sentence overview of what this library does]
-//   - [Feature 5]: [What it does]
-//
-// Integration Pattern: See METADATA "Usage & Integration" section above for
-// complete step-by-step integration guide
-//
-// Public API: See METADATA "Usage & Integration" section above for complete
-// public API list organized by category in typical usage order
-//
-// Architecture: See METADATA "CPI-SI Identity" section above for complete
-// architectural role (Rails/Ladder/Baton) explanation
-//
-// ────────────────────────────────────────────────────────────────
-// Modification Policy
-// ────────────────────────────────────────────────────────────────
-// For Modification Policy section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-005-modification-policy.md
-//
-// Safe to Modify (Extension Points):
-//   ✅ Add new [functions/types/constants] (follow existing patterns)
-//   ✅ Add new [helper functions] in appropriate groups
-//   ✅ Extend [specific feature] (add more [specific thing])
-//   ✅ [Other safe modification]
-//   ✅ [Other safe modification]
-//
-// Modify with Extreme Care (Breaking Changes):
-//   ⚠️ Public API function signatures - breaks all calling code
-//   ⚠️ [Exported struct] fields - breaks code accessing fields directly
-//   ⚠️ [Critical system behavior] - affects all users
-//   ⚠️ [Data format/protocol] - breaks parsing tools
-//   ⚠️ [Core algorithm] - affects correctness
-//
-// NEVER Modify (Foundational Rails):
-//   ❌ 4-block structure (METADATA, SETUP, BODY, CLOSING)
-//   ❌ [Fundamental principle 1]
-//   ❌ [Fundamental principle 2]
-//   ❌ [Architectural pattern - Rails/etc]
-//   ❌ [Core design invariant]
-//
-// Validation After Modifications:
-//   See "Code Validation" section in GROUP 1: CODING above for comprehensive
-//   testing requirements, build verification, and integration testing procedures.
-//
-// ────────────────────────────────────────────────────────────────
-// Ladder and Baton Flow
-// ────────────────────────────────────────────────────────────────
-// For Ladder and Baton Flow section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-006-ladder-baton-flow.md
-//
-// See BODY "Organizational Chart - Internal Structure" section above for
-// complete ladder structure (dependencies) and baton flow (execution paths).
-//
-// The Organizational Chart in BODY provides the detailed map showing:
-// - All functions and their dependencies (ladder)
-// - Complete execution flow paths (baton)
-// - APU count (Available Processing Units)
-//
-// Quick architectural summary (details in BODY Organizational Chart):
-// - [X] public APIs orchestrate [Y] core operations using [Z] helpers
-// - Ladder: [Brief dependency summary]
-// - Baton: [Brief execution flow summary]
-//
-// ────────────────────────────────────────────────────────────────
-// Surgical Update Points (Extension Guide)
-// ────────────────────────────────────────────────────────────────
-// For Surgical Update Points section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-007-surgical-update-points.md
-//
-// See BODY "Core Operations" subsection header comments above for detailed
-// extension points. Each subsection includes "Extension Point" guidance showing:
-// - Where to add new functionality
-// - What naming pattern to follow
-// - How to integrate with existing code
-// - What tests to update
-//
-// Quick reference (details in BODY subsection comments):
-// - Adding [Feature Type 1]: See BODY "[Subsection Name]" extension point
-// - Adding [Feature Type 2]: See BODY "[Another Subsection]" extension point
-// - Adding helpers: See BODY "Helpers/Utilities" section organization
-//
-// ────────────────────────────────────────────────────────────────
-// Performance Considerations
-// ────────────────────────────────────────────────────────────────
-// For Performance Considerations section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-008-performance-considerations.md
-//
-// See SETUP section above for performance characteristics:
-// - Constants: Performance notes on configuration values (memory per operation, etc.)
-// - Types: Memory usage and complexity analysis for data structures
-//
-// See BODY function docstrings above for operation-specific performance notes.
-//
-// Quick summary (details in SETUP/BODY above):
-// - [Most expensive operation]: [Brief cost summary - see BODY docstring for details]
-// - [Memory characteristics]: [Brief summary - see SETUP types for details]
-// - Key optimization: [1-2 sentence tip]
-//
-// ────────────────────────────────────────────────────────────────
-// Troubleshooting Guide
-// ────────────────────────────────────────────────────────────────
-// For Troubleshooting Guide section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-009-troubleshooting-guide.md
-//
-// See BODY function docstrings above for operation-specific troubleshooting.
-// Functions that commonly have issues include "Troubleshooting" sections in
-// their docstrings with problem/check/solution patterns.
-//
-// Quick reference (details in BODY function docstrings above):
-// - [Common Problem 1]: See [FunctionName] docstring troubleshooting section
-// - [Common Problem 2]: See [AnotherFunction] docstring troubleshooting section
-//   - Expected: [If this is normal behavior]
-//   - Note: [Design decision explanation]
-//
-// Problem: [Common problem 5]
-//   - Cause: [Root cause]
-//   - Solution: [How to fix]
-//   - Note: [Additional context]
-//
-// ────────────────────────────────────────────────────────────────
-// Related Components & Dependencies
-// ────────────────────────────────────────────────────────────────
-// For Related Components section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-010-related-components.md
-//
-// See METADATA "Dependencies" section above for complete dependency information:
-// - Dependencies (What This Needs): Standard Library, External, Internal
-// - Dependents (What Uses This): Commands, Libraries, Tools that depend on this
-// - Integration Points: How other systems connect and interact
-//
-// Quick summary (details in METADATA Dependencies section above):
-// - Key dependencies: [1-2 most critical dependencies]
-// - Primary consumers: [Who uses this most]
-//
-// Parallel Implementation (if applicable):
-//   - [Language 1] version: [path to parallel implementation]
-//   - [Language 2] version: [path to this or related implementation]
-//   - Shared [format/protocol/philosophy]: [What's consistent across implementations]
-//
-// ────────────────────────────────────────────────────────────────
-// Future Expansions & Roadmap
-// ────────────────────────────────────────────────────────────────
-// For Future Expansions section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-011-future-expansions.md
-//
-// Planned Features:
-//   ✓ [Completed feature] - COMPLETED
-//   ✓ [Another completed feature] - COMPLETED
-//   ⏳ [Planned feature 1]
-//   ⏳ [Planned feature 2]
-//   ⏳ [Planned feature 3]
-//   ⏳ [Planned feature 4]
-//
-// Research Areas:
-//   - [Research direction 1]
-//   - [Research direction 2]
-//   - [Research direction 3]
-//   - [Research direction 4]
-//   - [Research direction 5]
-//
-// Integration Targets:
-//   - [System/language to integrate with]
-//   - [Another integration target]
-//   - [Cross-system correlation or bridging]
-//   - [Centralized or distributed capability]
-//   - [Monitoring or analysis system]
-//   - [Performance or profiling integration]
-//
-// Known Limitations to Address:
-//   - [Limitation 1 - description]
-//   - [Limitation 2 - description]
-//   - [Limitation 3 - description]
-//   - [Limitation 4 - description]
-//   - [Limitation 5 - description]
-//   - [Limitation 6 - description]
-//
-// Version History:
-//
-// See METADATA "Authorship & Lineage" section above for brief version changelog.
-// Comprehensive version history with full context below:
-//
-//   [X.Y.Z] ([Date]) - [Version description]
-//         - [Major feature or change]
-//         - [Another feature or change]
-//         - [Another feature or change]
-//         - [Design decision or principle established]
-//
-// ────────────────────────────────────────────────────────────────
-// Closing Note
-// ────────────────────────────────────────────────────────────────
-// For Closing Note section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-012-closing-note.md
-//
-// This header is [architectural role - RAILS/LADDER/BATON description].
-// [Explain its place in the ecosystem and what depends on it].
-//
-// Modify thoughtfully - changes here affect [scope of impact]. Header changes
-// break ABI compatibility for all consumers.
-//
-// For questions, issues, or contributions:
-//   - Review the modification policy above
-//   - Follow the 4-block structure pattern
-//   - Test thoroughly before committing:
-//     gcc -fsyntax-only -Wall -Wextra [header].h
-//     gcc -c -Wall -Wextra [source].c
-//     valgrind --leak-check=full ./test
-//   - Document all changes comprehensively (What/Why/How pattern)
-//   - Ensure include guards remain unique
-//
-// "[Relevant Scripture verse]" - [Reference]
-//
-// ────────────────────────────────────────────────────────────────
-// Quick Reference: Usage Examples
-// ────────────────────────────────────────────────────────────────
-// For Quick Reference section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-013-quick-reference.md
-//
-// Basic Include:
 //   #include "[header].h"
 //
-// Type Declaration:
-//   [TypeName] instance;
-//   [type]_init(&instance);
-//   // ... use instance ...
-//   [type]_destroy(&instance);
+//   int main(void) {
+//       [TypeName] instance;
+//       [type]_init(&instance);
 //
-// Heap Allocation:
-//   [TypeName]* ptr = [type]_create();
-//   if (ptr == NULL) { /* handle error */ }
-//   // ... use ptr ...
-//   [type]_destroy(ptr);
+//       int result = [type]_[operation](&instance);
+//       if ([prefix]_is_error(result)) {
+//           fprintf(stderr, "%s\n", [prefix]_get_error_string(result));
+//           return 1;
+//       }
 //
-// Error Checking:
-//   int result = [function](params);
-//   if ([component]_is_error(result)) {
-//       const char* msg = [component]_get_error_string(result);
-//       fprintf(stderr, "Error: %s\n", msg);
+//       [type]_destroy(&instance);
+//       return 0;
 //   }
 //
-// Compile Commands:
-//   gcc -c -Wall -Wextra -std=c11 [source].c
-//   gcc -o [program] [source].o -l[library]
+// # X.3 Cleanup [CLEANUP]
 //
-// -----------------------------------------------------------------------------
-// CLOSING Omission Guide
-// -----------------------------------------------------------------------------
-//
-// ALL thirteen sections MUST be present. Content may be reserved with reason:
-//
-// GROUP 1: CODING
-//   - Code Validation: Include guard and declaration verification
-//   - Code Execution: [Reserved: Headers don't execute - they're included]
-//   - Code Cleanup: Include order and dependency management
-//
-// GROUP 2: FINAL DOCUMENTATION (mostly back-references)
-//   - Header Overview: Summary of interface this header provides
-//   - Modification Policy: ABI stability considerations
-//   - Ladder and Baton Flow: Back-reference to BODY interface structure
-//   - Surgical Update Points: Back-reference to BODY declaration sections
-//   - Performance Considerations: Type sizes and memory layout
-//   - Troubleshooting Guide: Common include problems
-//   - Related Components: Implementation files (.c)
-//   - Future Expansions: [Reserved: Interface stable, no planned changes]
-//   - Contribution Guidelines: How to add declarations
-//   - Quick Reference: Include patterns
-//
-// Unlike BODY (which uses [Reserved:] inline), CLOSING sections can be
-// entirely replaced with back-references to avoid duplication.
-//
-// The key principle: CLOSING synthesizes, METADATA/SETUP/BODY contain details.
-// Don't repeat - reference back to where the information lives.
+//   Purpose:  Cleanup — ownership patterns (headers), memory and shutdown (sources)
+//   Contains: Ownership, Memory Management, Graceful Shutdown
 
-// ============================================================================
+// # X.3a Ownership [OWNERSHIP]
+//
+//   _create() returns:   Caller owns, use _destroy() to free
+//   _init() initializes: Caller-owned memory, use _destroy() to cleanup
+//   Pointer params:      Caller retains ownership unless documented
+//   Pointer returns:     Caller owns, must free
+
+// # X.3b Memory Patterns [MEMORY]
+//
+//   // Stack allocation
+//   [TypeName] local;
+//   [type]_init(&local);
+//   // ... use ...
+//   [type]_destroy(&local);
+//
+//   // Heap allocation
+//   [TypeName]* ptr = [type]_create();
+//   // ... use ...
+//   [type]_destroy(ptr);
+
+// # X.3c Graceful Shutdown [SHUTDOWN]
+//
+//   - Signal handler catches SIGINT/SIGTERM
+//   - In-progress operations complete or rollback
+//   - Resources released in reverse order
+//   - Exit with appropriate code
+
+// ───────────────────────────────────────────────────────────────────────────────
+// END CODE SECTIONS
+// ───────────────────────────────────────────────────────────────────────────────
+
+// # X.4 Policy [POLICY]
+//
+//   Purpose:  Guide future maintainers — what's safe to change (headers and sources)
+//   Contains: Safe / Careful / Never modification levels
+//
+// Safe to Modify:
+//   ✅ Add new functions/types/constants (follow existing patterns)
+//   ✅ Add new helper functions in appropriate groups
+//   ✅ Extend existing features
+//
+// Modify with Care:
+//   ⚠️ Public API signatures — breaks all calling code
+//   ⚠️ Struct fields — breaks code accessing fields directly
+//   ⚠️ Core behavior — affects all consumers
+//
+// NEVER Modify:
+//   ❌ 4-block structure (METADATA, SETUP, BODY, CLOSING)
+//   ❌ Include guard pattern
+//   ❌ Ownership conventions (_create/_destroy)
+//
+// Validation: See X.1 for build, runtime, and memory checks.
+//
+// # X.5 Extension [EXTENSION]
+//
+//   Purpose:  How to expand this component — mirrors M.10 Roadmap (headers and sources)
+//   Contains: Extension patterns, planned features
+//
+// Adding Functions:
+//   - Declaration here, implementation in .c file
+//   - Follow lifecycle pattern: _create/_init/_destroy
+//   - Add to BODY B.3 Core Operations with Health Impact
+//   - Update BODY B.1 Organizational Chart
+//
+// Adding Types:
+//   - Follow existing naming conventions
+//   - Add to SETUP S.3 Types with documentation
+//
+// Architecture: See BODY B.1 for Ladder/Baton structure.
+// Roadmap: See M.10 for planned features and research areas.
+
+// # X.6 Troubleshooting [TROUBLESHOOTING]
+//
+//   Purpose:  Common problems and solutions — header issues (headers), runtime issues (sources)
+//
+// "Redefinition of [type]":
+//   → Check include guards are unique and correct
+//
+// "Incomplete type":
+//   → Add forward declaration or include required header
+//
+// "Undefined reference to [function]":
+//   → Implementation missing in .c file, or not linked
+//
+// Function-specific troubleshooting in BODY B.3 function docstrings.
+
+// # X.7 Reference [REFERENCE]
+//
+//   Purpose:  Quick lookup — copy-paste ready (headers and sources)
+//
+// Basic Setup:
+//   #include "[header].h"
+//   [TypeName] instance;
+//   [type]_init(&instance);
+//   // ... use ...
+//   [type]_destroy(&instance);
+//
+// Error Handling:
+//   int result = [function]([params], &output);
+//   if (result != 0) {
+//       fprintf(stderr, "Error: %s\n", [prefix]_get_error_string(result));
+//       return result;
+//   }
+//
+// Health Tracking:
+//   if ([success]) {
+//       logger_success(component_logger, "[op] complete", +10);
+//   } else {
+//       logger_failure(component_logger, "[op] failed", "reason", -10);
+//   }
+//
+// Compile:
+//   gcc -c -Wall -Wextra -std=c11 [source].c
+
+// # X.8 Closing Note [NOTE]
+//
+//   Purpose:  Final guidance and grounding — echoes M.8 (headers and sources)
+//   Verse:    Proverbs 24:27
+//
+// This header declares the interface for [component].
+// Modify thoughtfully — changes affect all consumers.
+//
+// "Prepare thy work without, and make it fit for thyself in the field."
+//   — Proverbs 24:27
+//
+// Establish foundations before building.
+
+// # X.9 Template Guidance [TEMPLATE]
+//
+//   Purpose:  How to use this template — remove when instantiating (headers and sources)
+//   Usage:    cp header.h dest.h → update pragma → fill sections
+//
+// Update on instantiation:
+//   - M.1: Key, Title
+//   - M.2: Created/Updated dates
+//   - M.4: Path
+//   - M.5: Derives_from (point to this template)
+//   - M.9: Dependencies
+//   - M.10: Roadmap
+//   - Include guard: [HEADER_GUARD_NAME]_H
+//
+// Remove this section (X.9) when instantiating.
+
+// # X.10 Omission Guide [OMISSION]
+//
+//   Purpose:  What can be reserved and why — guidance for CLOSING sections (headers and sources)
+//
+//   All sections must be present. Empty sections use: [Reserved: reason]
+//
+//   X.1 Validation:     Rarely reserved — all code needs verification
+//   X.2 Execution:      Usage examples — rarely reserved
+//   X.3 Cleanup:        Rarely reserved — ownership rules critical
+//   X.4 Policy:         Rarely reserved — always guides maintainers
+//   X.5 Extension:      Reference back to M.10 Roadmap
+//   X.6 Troubleshooting: Add issues as they emerge
+//   X.7 Reference:      Rarely reserved — examples help users
+//   X.8 Closing Note:   Rarely reserved — grounding matters
+//   X.9 Template:       Remove when instantiating
+//
+//   Key principle: CLOSING synthesizes, METADATA/SETUP/BODY contain details.
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // END CLOSING
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════════
 
 #endif // [HEADER_GUARD_NAME]_H
 

@@ -1,0 +1,241 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cpi-si.org/schemas/config/project.schema.json",
+  "title": "Project Configuration",
+  "description": "Schema for project identity and configuration",
+  "type": "object",
+  "required": [
+    "identity",
+    "description",
+    "organization",
+    "technology",
+    "repository",
+    "team",
+    "metadata"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "identity": {
+      "type": "object",
+      "required": ["name", "slug", "display_name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full project name"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$",
+          "description": "URL-safe project identifier (lowercase, hyphens)"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Display name for UI"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version"
+        },
+        "created": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Project creation date (YYYY-MM-DD)"
+        }
+      }
+    },
+    "description": {
+      "type": "object",
+      "required": ["short", "purpose"],
+      "properties": {
+        "short": {
+          "type": "string",
+          "description": "Short project description"
+        },
+        "long": {
+          "type": "string",
+          "description": "Extended project description"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Project purpose and mission"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Project tags/keywords"
+        }
+      }
+    },
+    "organization": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Organization name"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["personal", "open-source", "commercial", "nonprofit", "research"],
+          "description": "Project type"
+        },
+        "license": {
+          "type": "string",
+          "description": "Software license"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri",
+          "description": "Project website URL"
+        }
+      }
+    },
+    "technology": {
+      "type": "object",
+      "required": ["languages", "frameworks"],
+      "properties": {
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Programming languages used"
+        },
+        "frameworks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Frameworks and libraries"
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Target platforms"
+        },
+        "build_system": {
+          "type": "string",
+          "description": "Build system or tool"
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "required": ["type", "url"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["git", "mercurial", "svn"],
+          "description": "Version control system"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Repository URL"
+        },
+        "default_branch": {
+          "type": "string",
+          "description": "Default branch name (e.g., main, master)"
+        },
+        "hosting": {
+          "type": "string",
+          "enum": ["github", "gitlab", "bitbucket", "self-hosted", "other"],
+          "description": "Repository hosting service"
+        }
+      }
+    },
+    "team": {
+      "type": "object",
+      "required": ["members"],
+      "properties": {
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["username", "role"],
+            "properties": {
+              "username": {
+                "type": "string",
+                "description": "Team member username"
+              },
+              "name": {
+                "type": "string",
+                "description": "Team member display name"
+              },
+              "role": {
+                "type": "string",
+                "description": "Role in project"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "description": "Contact email"
+              }
+            }
+          }
+        },
+        "contributors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional contributors (usernames)"
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "description": "Project-specific path configuration",
+      "properties": {
+        "root": {
+          "type": "string",
+          "description": "Project root directory"
+        },
+        "source": {
+          "type": "string",
+          "description": "Source code directory"
+        },
+        "build": {
+          "type": "string",
+          "description": "Build output directory"
+        },
+        "docs": {
+          "type": "string",
+          "description": "Documentation directory"
+        },
+        "tests": {
+          "type": "string",
+          "description": "Tests directory"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["last_updated"],
+      "properties": {
+        "last_updated": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Last update date (YYYY-MM-DD)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["planning", "active", "maintenance", "archived"],
+          "description": "Project status"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes"
+        }
+      }
+    }
+  }
+}

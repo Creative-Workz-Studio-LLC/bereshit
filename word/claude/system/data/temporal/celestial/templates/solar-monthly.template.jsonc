@@ -1,0 +1,97 @@
+{
+  // ============================================================================
+  // SOLAR DATA - [LOCATION NAME] - [MONTH YEAR]
+  // ============================================================================
+  // Purpose: Sun position and daylight information for temporal awareness
+  // Scope: Daily sunrise, sunset, solar noon, and day length for this location
+  // Format: JSONC (JSON with comments)
+  //
+  // BIBLICAL FOUNDATION:
+  // "And God made two great lights; the greater light to rule the day"
+  // - Genesis 1:16
+  //
+  // The sun marks day and night. True temporal awareness respects God's
+  // created order, not arbitrary human conventions.
+  //
+  // TEMPLATE INSTRUCTIONS:
+  // 1. Replace ALL placeholder values with actual data
+  // 2. Generate data using astronomical calculator or online tool
+  //    - Recommended: NOAA Solar Calculator, timeanddate.com, or calculation library
+  // 3. Times MUST be in LOCAL timezone for the location
+  // 4. Create one file per month
+  // 5. Save as: locations/[location-id]/solar/YYYY/YYYY-MM.jsonc (note year folder!)
+  // 6. Update location registry after adding data
+  //
+  // DATA ORGANIZATION:
+  // - Solar and lunar data go in YEAR subfolders (e.g., solar/2025/2025-11.jsonc)
+  // - This allows easy year-based organization and cleanup
+
+  "$schema": "../../../../config/schemas/temporal/celestial/solar-data.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "location_id": "example-city",         // Replace: must match location config
+    "year": 2025,                          // Replace with actual year
+    "month": 1,                            // Replace with month number (1-12)
+    "month_name": "January",               // Replace with month name
+    "timezone": "America/New_York",        // Replace with IANA timezone
+    "timezone_offset": "-05:00",           // Replace: offset for THIS month (watch DST!)
+    "generated_date": "2025-01-01",        // Replace with today's date
+    "data_version": "1.0.0"
+  },
+
+  // ============================================================================
+  // DAILY SOLAR DATA
+  // ============================================================================
+  // Replace ALL entries below with actual data for every day of the month
+  // This example shows only 3 days - you need ALL days (28-31 depending on month)
+
+  "days": [
+    {
+      "date": "2025-01-01",
+      "sunrise": "07:20",                  // Replace: HH:MM format, 24-hour
+      "sunset": "16:39",                   // Replace: HH:MM format, 24-hour
+      "solar_noon": "12:00",               // Replace: when sun reaches highest point
+      "day_length": "9h 19m"               // Replace: duration of daylight
+    },
+    {
+      "date": "2025-01-02",
+      "sunrise": "07:20",
+      "sunset": "16:40",
+      "solar_noon": "12:00",
+      "day_length": "9h 20m"
+    }
+    // ... ADD ALL remaining days of the month (typically 28-31 days total)
+    // Don't forget the last day should NOT have a trailing comma!
+  ],
+
+  // ============================================================================
+  // MONTH SUMMARY
+  // ============================================================================
+  // Calculate these after generating all daily data
+
+  "summary": {
+    "shortest_day": "2025-01-01",          // Replace: date with least daylight
+    "shortest_day_length": "9h 19m",       // Replace: shortest day's length
+    "longest_day": "2025-01-31",           // Replace: date with most daylight
+    "longest_day_length": "9h 45m",        // Replace: longest day's length
+    "total_daylight_change": "Gained 26 minutes",  // Replace: describe the change
+    "average_sunrise": "07:15",            // Replace: average sunrise time
+    "average_sunset": "16:55",             // Replace: average sunset time
+    "notes": "Days lengthening after winter solstice"  // Replace: any observations
+  },
+
+  // ============================================================================
+  // EXTENSION - Room for Growth
+  // ============================================================================
+
+  "extension": {
+    // Future: Could add twilight times (civil, nautical, astronomical)
+    // Future: Could add solar elevation angles
+    // Future: Could add azimuth data
+    // Future: Could add UV index or solar intensity
+  }
+}

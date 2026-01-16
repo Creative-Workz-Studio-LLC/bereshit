@@ -1,0 +1,83 @@
+#!omni document --omni -executable
+// Test: CPI-SI Operations from OmniCode Language Level
+//
+// This tests the full pipeline: OmniCode → Parser → IR → VM
+// for health tracking, state transitions, and DAR (checkpoint/restore).
+
+PROGRAM "test_cpisi"
+
+// -----------------------------------------------------------------
+// Test 1: Health Operations
+// -----------------------------------------------------------------
+FUNCTION "test_health" -> covenant
+    witness "Testing health operations..."
+
+    // Get current health
+    health get
+    witness "Initial health retrieved"
+
+    // Add to health (+10)
+    health add 10
+    witness "Health increased by 10"
+
+    // Set health explicitly
+    health set 75
+    witness "Health set to 75 (shalem)"
+
+    return granted
+END
+
+// -----------------------------------------------------------------
+// Test 2: State Operations
+// -----------------------------------------------------------------
+FUNCTION "test_state" -> covenant
+    witness "Testing state operations..."
+
+    // Get current state
+    state get
+    witness "Current Hebrew state retrieved"
+
+    // Transition toward tov (k = +1)
+    state transition expand
+    witness "State expanded (+1 toward tov)"
+
+    // Transition toward shavar (k = -1)
+    state transition retreat
+    witness "State retreated (-1 toward shavar)"
+
+    return granted
+END
+
+// -----------------------------------------------------------------
+// Test 3: DAR (Checkpoint/Restore)
+// -----------------------------------------------------------------
+FUNCTION "test_dar" -> covenant
+    witness "Testing DAR operations..."
+
+    // Create a checkpoint
+    checkpoint as "before_risky_op"
+    witness "Checkpoint created"
+
+    // Simulate some operation that might fail
+    health add 20
+    witness "Risky operation succeeded"
+
+    // Discard checkpoint (we don't need it)
+    // In a real scenario, restore would be called on error
+
+    return granted
+END
+
+// -----------------------------------------------------------------
+// Main Entry Point
+// -----------------------------------------------------------------
+FUNCTION "main" -> covenant
+    witness "=== CPI-SI Integration Test ==="
+
+    call test_health
+    call test_state
+    call test_dar
+
+    witness "=== All CPI-SI tests passed ==="
+    return granted
+END

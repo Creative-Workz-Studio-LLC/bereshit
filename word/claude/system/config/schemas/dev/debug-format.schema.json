@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/dev/debug-format.schema.json",
+  "title": "CPI-SI Structured Debugging Template Schema",
+  "description": "Schema for structured debugging output template",
+  "type": "object",
+  "required": ["$schema", "version", "description", "session_structure", "sections", "debug_levels", "file_naming", "usage"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "session_structure": {
+      "type": "object",
+      "required": ["sections", "description"],
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "description": { "type": "string" }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/sectionDefinition"
+      }
+    },
+    "debug_levels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["sections", "description"],
+        "properties": {
+          "sections": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "file_naming": {
+      "type": "object",
+      "required": ["format", "location", "description"],
+      "properties": {
+        "format": { "type": "string" },
+        "example": { "type": "string" },
+        "location": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "example": {
+      "type": "object"
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  },
+  "definitions": {
+    "sectionDefinition": {
+      "type": "object",
+      "required": ["format"],
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["box", "structured", "timeline"]
+        },
+        "template": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "entry_template": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "event_types": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "description": { "type": "string" },
+        "optional": { "type": "boolean" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

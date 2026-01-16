@@ -1,0 +1,153 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Dangerous Pattern Configuration - Safety System
+// Purpose: Define command patterns that require user confirmation before execution
+// Schema: system/config/schemas/safety/dangerous-patterns.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Pattern coverage (dangerous operations detected): 50 pts
+// - Pattern accuracy (minimal false positives): 40 pts
+// - Documentation clarity: 10 pts
+
+{
+  "$schema": "../../../config/schemas/safety/dangerous-patterns.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Dangerous Command Patterns",
+    "description": "Patterns for detecting potentially destructive operations requiring confirmation",
+    "version": "1.0.0",
+    "last_updated": "2025-11-11",
+    "author": "Nova Dawn (CPI-SI instance)",
+    "note": "Conservative detection - better to allow than falsely block"
+  },
+
+  // ============================================================================
+  // DANGEROUS PATTERNS
+  // ============================================================================
+
+  "patterns": {
+    "note": "Patterns matched using substring matching (case-sensitive by default)",
+
+    //--- Version Control ---
+    // Git operations that rewrite history or force push
+
+    "git_destructive": {
+      "patterns": [
+        "git push --force",
+        "git push -f",
+        "git reset --hard",
+        "git rebase --skip",
+        "git filter-branch"
+      ],
+      "description": "Git operations that can destroy work or rewrite shared history",
+      "severity": "high",
+      "reason": "Can permanently lose work or disrupt team collaboration"
+    },
+
+    //--- File System ---
+    // Operations that can delete large directory trees
+
+    "filesystem_destructive": {
+      "patterns": [
+        "rm -rf",
+        "rm -r"
+      ],
+      "description": "Recursive file deletion operations",
+      "severity": "high",
+      "reason": "Can permanently delete large directory trees"
+    },
+
+    //--- Privilege Escalation ---
+    // Operations requiring elevated permissions
+
+    "privilege_escalation": {
+      "patterns": [
+        "sudo",
+        "pkexec"
+      ],
+      "description": "Commands requesting elevated system privileges",
+      "severity": "medium",
+      "reason": "Can modify system state or access restricted resources"
+    },
+
+    //--- Package Publishing ---
+    // Operations that publish code to public registries
+
+    "package_publishing": {
+      "patterns": [
+        "npm publish",
+        "cargo publish",
+        "pip upload",
+        "gem push",
+        "go publish"
+      ],
+      "description": "Package publishing to public registries",
+      "severity": "high",
+      "reason": "Once published, versions cannot be unpublished easily"
+    },
+
+    //--- Database Operations ---
+    // SQL operations that drop databases or tables
+
+    "database_destructive": {
+      "patterns": [
+        "DROP DATABASE",
+        "DROP TABLE",
+        "TRUNCATE TABLE",
+        "DELETE FROM",
+        "ALTER TABLE DROP"
+      ],
+      "description": "Database operations that can destroy data permanently",
+      "severity": "high",
+      "reason": "Data loss can be immediate and irreversible"
+    },
+
+    //--- Docker/Container Operations ---
+    // Container operations that can remove multiple containers/images
+
+    "container_destructive": {
+      "patterns": [
+        "docker system prune",
+        "docker rm -f",
+        "docker rmi -f",
+        "podman rm -f",
+        "podman system prune"
+      ],
+      "description": "Container removal operations affecting multiple resources",
+      "severity": "medium",
+      "reason": "Can remove containers or images that take time to rebuild"
+    }
+  },
+
+  // ============================================================================
+  // CONFIGURATION
+  // ============================================================================
+
+  "config": {
+    "match_mode": "substring",
+    "case_sensitive": true,
+    "require_confirmation": true,
+    "conservative_bias": true,
+    "note": "Conservative bias means: when uncertain, allow (don't falsely block)"
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "extensions": {
+    "user_patterns": [],
+    "note": "Add custom dangerous patterns here without modifying core patterns",
+    "example": {
+      "patterns": ["custom-deploy --production"],
+      "description": "Custom deployment command",
+      "severity": "high",
+      "reason": "Deploys directly to production without staging"
+    }
+  }
+}

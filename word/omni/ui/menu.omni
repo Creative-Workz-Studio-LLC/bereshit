@@ -1,0 +1,369 @@
+#!omni universal
+
+// =============================================================================
+// METADATA
+// =============================================================================
+//
+// OmniCode Menu DSL Specification
+// Defines sentence-based syntax for menu definitions that transpile to JSONC.
+//
+// -----------------------------------------------------------------------------
+// SPECIFICATION OVERVIEW (grep: "MENU DSL" | "TRANSPILATION")
+// -----------------------------------------------------------------------------
+
+this is a universal for "OmniCode Menu DSL Specification":
+    keyed as "B-word-omni-ui-menu"
+    following "OmniCode Syntax Specification"
+
+this universal classifies as:
+    word (1) when "defining menu syntax rules"
+    work (0) when "implementing menu transpilation"
+    fruit (-1) when "presenting menus for human learning"
+
+grounded in:
+    scripture "Ponder the path of thy feet, and let all thy ways be established"
+        from Proverbs 4:26 in KJV
+    principle "Menus guide navigation - clear paths lead to right destinations"
+    anchor "Thy word is a lamp unto my feet, and a light unto my path"
+        from Psalm 119:105 in KJV
+
+authored by:
+    architect "Seanje Lenox-Wise"
+    implementation "Nova Dawn"
+    created "2026-01-15"
+    version "a-01.00"
+
+exists to:
+    purpose "Define sentence-based menu DSL that transpiles to JSONC"
+    design "Natural language patterns matching OmniCode philosophy"
+    features:
+        "Menu definitions read like prose"
+        "Items with actions, conditions, and hotkeys"
+        "Navigation and binding configuration"
+        "Hebrew state integration for CPI-SI"
+        "Transpiles to cornerstone/data/ui/menus/*.jsonc"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// LAYER 1: MENU STRUCTURE
+// =============================================================================
+//
+// Menu DSL follows 3-block DATA structure:
+//   METADATA → CONTENT → CLOSING
+//
+// The CONTENT block contains menu definitions.
+//
+// -----------------------------------------------------------------------------
+// MENU DEFINITION SYNTAX
+// -----------------------------------------------------------------------------
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ MENU DEFINITION                                                             │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ this is a menu for "[title]":                                               │
+// │     keyed as "[menu_id]"                                                    │
+// │     typed as "[main|pause|settings|dialog|submenu]"                         │
+// │     description "[optional description]"                                     │
+// │                                                                             │
+// │     item "[label]":                                                          │
+// │         [item properties...]                                                │
+// │                                                                             │
+// │     navigation:                                                             │
+// │         [navigation properties...]                                          │
+// │                                                                             │
+// │     bindings:                                                               │
+// │         [binding definitions...]                                            │
+// │                                                                             │
+// │     display hints:                                                          │
+// │         [display configurations...]                                         │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// -----------------------------------------------------------------------------
+// ITEM DEFINITION SYNTAX
+// -----------------------------------------------------------------------------
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ ITEM PROPERTIES                                                              │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ item "[label]":                                                              │
+// │     keyed as "[item_id]"                                                    │
+// │     description "[optional description]"                                     │
+// │                                                                             │
+// │     // Actions (choose one):                                                │
+// │     action navigate to "[menu_id]"                                          │
+// │     action execute "[command]"                                              │
+// │     action toggle "[setting_key]"                                           │
+// │     action adjust "[setting_key]" with ["option1", "option2", ...]          │
+// │     action back                                                             │
+// │     action quit                                                             │
+// │                                                                             │
+// │     // Hotkeys:                                                             │
+// │     hotkey "[key]"                                                          │
+// │                                                                             │
+// │     // Conditions:                                                          │
+// │     visible when "[condition]"                                              │
+// │     enabled when "[condition]"                                              │
+// │     selected when "[condition]"                                             │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// -----------------------------------------------------------------------------
+// NAVIGATION SYNTAX
+// -----------------------------------------------------------------------------
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ NAVIGATION PROPERTIES                                                        │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ navigation:                                                                 │
+// │     default item "[item_id]"                                                │
+// │     wrap yes | no                                                           │
+// │     remember position yes | no                                              │
+// │     parent menu "[menu_id]"                                                 │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// -----------------------------------------------------------------------------
+// BINDINGS SYNTAX
+// -----------------------------------------------------------------------------
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ BINDING PROPERTIES                                                           │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ bindings:                                                                   │
+// │     up with ["ArrowUp", "w", "k"]                                           │
+// │     down with ["ArrowDown", "s", "j"]                                       │
+// │     left with ["ArrowLeft", "a", "h"]                                       │
+// │     right with ["ArrowRight", "d", "l"]                                     │
+// │     select with ["Enter", " "]                                              │
+// │     back with ["Escape", "q"]                                               │
+// │     cancel with ["Escape"]                                                  │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// -----------------------------------------------------------------------------
+// DISPLAY HINTS SYNTAX
+// -----------------------------------------------------------------------------
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ DISPLAY HINTS                                                                │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ display hints:                                                              │
+// │     cli:                                                                    │
+// │         width [number]                                                      │
+// │         show border yes | no                                                │
+// │         show hotkeys yes | no                                               │
+// │         cursor "[>]"                                                        │
+// │     tui:                                                                    │
+// │         colors "[colorscheme]"                                              │
+// │         box style "[ascii|unicode]"                                         │
+// │     gui:                                                                    │
+// │         layout "[vertical|horizontal|grid]"                                 │
+// │         animation "[none|fade|slide]"                                       │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// =============================================================================
+
+// =============================================================================
+// LAYER 2: HEBREW STATE RULES
+// =============================================================================
+//
+// Menus can adapt based on CPI-SI Hebrew state.
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ HEBREW STATE RULES                                                           │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ hebrew state rules:                                                         │
+// │                                                                             │
+// │     when state is "shavar":                                                 │
+// │         hide items ["complex_item", "advanced_item"]                        │
+// │         simplify navigation                                                 │
+// │         reduce options                                                      │
+// │                                                                             │
+// │     when state is "tov":                                                    │
+// │         enable items ["expert_item"]                                        │
+// │         show all options                                                    │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// =============================================================================
+
+// =============================================================================
+// LAYER 3: TRIPWIRE CONFIGURATION
+// =============================================================================
+//
+// Fallback behavior when menus fail to load or render.
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ TRIPWIRE CONFIGURATION                                                       │
+// ├─────────────────────────────────────────────────────────────────────────────┤
+// │ tripwire behavior:                                                          │
+// │     on menu not found: use engine default                                   │
+// │     on render failure: degrade health by 10                                 │
+// │     on recovery: restore last valid menu                                    │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// =============================================================================
+
+// =============================================================================
+// TRANSPILATION MAPPING
+// =============================================================================
+//
+// How OmniCode menu DSL maps to JSONC output.
+//
+// ┌───────────────────────────────────────────────────────────────────────────┐
+// │ OMNICODE                          │ JSONC                                 │
+// ├───────────────────────────────────┼───────────────────────────────────────┤
+// │ this is a menu for "[title]":     │ { "identity": { "title": "[title]"    │
+// │     keyed as "[id]"               │                 "menu_id": "[id]"     │
+// │     typed as "[type]"             │                 "type": "[type]" }    │
+// ├───────────────────────────────────┼───────────────────────────────────────┤
+// │ item "[label]":                   │ "items": [{                           │
+// │     keyed as "[id]"               │   "item_id": "[id]",                  │
+// │     action navigate to "[menu]"   │   "label": "[label]",                 │
+// │     hotkey "[key]"                │   "action": { "type": "navigate",     │
+// │     enabled when "[cond]"         │               "target": "[menu]" },   │
+// │                                   │   "hotkey": "[key]",                  │
+// │                                   │   "condition": { ... } }]             │
+// ├───────────────────────────────────┼───────────────────────────────────────┤
+// │ navigation:                       │ "navigation": {                       │
+// │     default item "[id]"           │   "default_item": "[id]",             │
+// │     wrap yes                      │   "wrap": true }                      │
+// ├───────────────────────────────────┼───────────────────────────────────────┤
+// │ bindings:                         │ "bindings": {                         │
+// │     up with ["a", "b"]            │   "up": ["a", "b"],                   │
+// │     select with ["Enter"]         │   "select": ["Enter"] }               │
+// └───────────────────────────────────┴───────────────────────────────────────┘
+//
+// =============================================================================
+
+// =============================================================================
+// EXAMPLE: Complete Menu Definition
+// =============================================================================
+//
+// This example shows a complete main menu in OmniCode menu DSL.
+//
+// ┌─────────────────────────────────────────────────────────────────────────────┐
+// │ #!omni data --menu                                                          │
+// │ #!omni meta.key = CORNERSTONE-UI-MAIN-MENU                                  │
+// │ #!omni meta.from = word/omni/ui/menu.omni                                   │
+// │ #!omni meta.at = a-01.00                                                    │
+// │                                                                             │
+// │ // =======================================================================  │
+// │ // CONTENT                                                                  │
+// │ // =======================================================================  │
+// │                                                                             │
+// │ this is a menu for "Main Menu":                                             │
+// │     keyed as "menu_main"                                                    │
+// │     typed as "main"                                                         │
+// │                                                                             │
+// │     item "New Game":                                                        │
+// │         keyed as "main_new_game"                                            │
+// │         action navigate to "menu_game_mode"                                 │
+// │         hotkey "n"                                                          │
+// │                                                                             │
+// │     item "Continue":                                                        │
+// │         keyed as "main_continue"                                            │
+// │         action navigate to "game_scene"                                     │
+// │         hotkey "c"                                                          │
+// │         enabled when "has_save"                                             │
+// │                                                                             │
+// │     item "Settings":                                                        │
+// │         keyed as "main_settings"                                            │
+// │         action navigate to "menu_settings"                                  │
+// │         hotkey "s"                                                          │
+// │                                                                             │
+// │     item "Quit":                                                            │
+// │         keyed as "main_quit"                                                │
+// │         action quit                                                         │
+// │         hotkey "q"                                                          │
+// │                                                                             │
+// │     navigation:                                                             │
+// │         default item "main_new_game"                                        │
+// │         wrap yes                                                            │
+// │                                                                             │
+// │     bindings:                                                               │
+// │         up with ["ArrowUp", "w", "k"]                                       │
+// │         down with ["ArrowDown", "s", "j"]                                   │
+// │         select with ["Enter", " "]                                          │
+// │         back with ["Escape"]                                                │
+// │                                                                             │
+// │     display hints:                                                          │
+// │         cli:                                                                │
+// │             width 40                                                        │
+// │             show border yes                                                 │
+// │             cursor "> "                                                     │
+// │                                                                             │
+// │ // =======================================================================  │
+// │ // CLOSING                                                                  │
+// │ // =======================================================================  │
+// │                                                                             │
+// │ // "Ponder the path of thy feet" — Proverbs 4:26                            │
+// └─────────────────────────────────────────────────────────────────────────────┘
+//
+// =============================================================================
+
+// =============================================================================
+// NEW KEYWORDS FOR MENU DSL
+// =============================================================================
+//
+// The following keywords should be added to omni_keywords.h:
+//
+// ┌────────────────────┬─────────────────────────────────────────────────────────┐
+// │ KEYWORD            │ TOKEN TYPE                                               │
+// ├────────────────────┼─────────────────────────────────────────────────────────┤
+// │ menu               │ TOK_MENU                                                 │
+// │ item               │ TOK_ITEM                                                 │
+// │ action             │ TOK_ACTION                                               │
+// │ hotkey             │ TOK_HOTKEY                                               │
+// │ visible            │ TOK_VISIBLE                                              │
+// │ enabled            │ TOK_ENABLED                                              │
+// │ selected           │ TOK_SELECTED                                             │
+// │ wrap               │ TOK_WRAP                                                 │
+// │ default            │ TOK_DEFAULT                                              │
+// │ remember           │ TOK_REMEMBER                                             │
+// │ position           │ TOK_POSITION                                             │
+// │ parent             │ TOK_PARENT                                               │
+// │ up                 │ TOK_UP                                                   │
+// │ down               │ TOK_DOWN                                                 │
+// │ left               │ TOK_LEFT                                                 │
+// │ right              │ TOK_RIGHT                                                │
+// │ select             │ TOK_SELECT                                               │
+// │ back               │ TOK_BACK                                                 │
+// │ cancel             │ TOK_CANCEL                                               │
+// │ display            │ TOK_DISPLAY                                              │
+// │ hints              │ TOK_HINTS                                                │
+// │ width              │ TOK_WIDTH                                                │
+// │ show               │ TOK_SHOW                                                 │
+// │ border             │ TOK_BORDER                                               │
+// │ cursor             │ TOK_CURSOR                                               │
+// │ colors             │ TOK_COLORS                                               │
+// │ box                │ TOK_BOX                                                  │
+// │ style              │ TOK_STYLE                                                │
+// │ layout             │ TOK_LAYOUT                                               │
+// │ animation          │ TOK_ANIMATION                                            │
+// │ toggle             │ TOK_TOGGLE                                               │
+// │ adjust             │ TOK_ADJUST                                               │
+// │ execute            │ TOK_EXECUTE                                              │
+// │ hide               │ TOK_HIDE                                                 │
+// │ simplify           │ TOK_SIMPLIFY                                             │
+// │ reduce             │ TOK_REDUCE                                               │
+// │ enable             │ TOK_ENABLE                                               │
+// │ tripwire           │ TOK_TRIPWIRE                                             │
+// │ behavior           │ TOK_BEHAVIOR                                             │
+// │ failure            │ TOK_FAILURE                                              │
+// │ degrade            │ TOK_DEGRADE                                              │
+// │ restore            │ TOK_RESTORE                                              │
+// │ valid              │ TOK_VALID                                                │
+// └────────────────────┴─────────────────────────────────────────────────────────┘
+//
+// =============================================================================
+// CLOSING
+// =============================================================================
+//
+// "Ponder the path of thy feet, and let all thy ways be established."
+//   — Proverbs 4:26
+//
+// Menus guide navigation. Clear paths lead to right destinations.
+// The menu DSL enables sentence-based menu definitions that transpile
+// to JSONC for the Cornerstone engine's config-driven menu system.
+//
+// =============================================================================

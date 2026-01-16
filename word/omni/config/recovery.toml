@@ -1,0 +1,332 @@
+# =============================================================================
+# OmniCode Recovery Templates
+# Key: B-word-omni-config-recovery
+# =============================================================================
+#
+# Templates and suggestions for the RECOVER phase.
+# "A just man falleth seven times, and riseth up again." — Proverbs 24:16
+#
+# =============================================================================
+
+[metadata]
+key = "B-word-omni-config-recovery"
+title = "OmniCode Recovery Templates"
+version = "a-01.00"
+purpose = "Templates for automatic and suggested recovery"
+
+# =============================================================================
+# Recovery Modes
+# =============================================================================
+
+[modes]
+# How aggressively to recover
+auto = "automatic"      # Apply fixes without asking
+suggest = "suggest"     # Show suggestion, don't apply
+manual = "manual"       # Just report, user fixes
+
+# Default mode for each severity
+error_mode = "suggest"
+warning_mode = "suggest"
+info_mode = "manual"
+
+# =============================================================================
+# Pragma Templates
+# =============================================================================
+
+[templates.pragma]
+
+[templates.pragma.folder]
+template = """
+#!omni folder
+#!omni meta.key = {key}
+#!omni meta.from = word/omni/seed/folder.omni
+#!omni meta.at = a-01.00
+"""
+
+[templates.pragma.code]
+template = """
+#!omni code --{lang}
+#!omni meta.key = {key}
+#!omni meta.from = word/seed/code/{lang}/{template}
+#!omni meta.at = a-01.00
+"""
+
+[templates.pragma.document]
+template = """
+#!omni document --{format}
+#!omni meta.key = {key}
+#!omni meta.from = word/seed/documentation/{format}/{template}
+#!omni meta.at = a-01.00
+"""
+
+[templates.pragma.data]
+template = """
+#!omni data --{format}
+#!omni meta.key = {key}
+#!omni meta.from = word/seed/data/{format}/{template}
+#!omni meta.at = a-01.00
+"""
+
+# =============================================================================
+# Block Templates
+# =============================================================================
+
+[templates.blocks]
+
+[templates.blocks.METADATA]
+template = """
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+// # M.1 Core Identity [IDENTITY]
+//
+// Key: {key}
+// Title: {title}
+// Type: {type}
+// Role: {role}
+
+// # M.8 Grounding [GROUNDING]
+//
+// Scripture: {scripture}
+// Principle: {principle}
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+"""
+
+[templates.blocks.SETUP]
+template = """
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # S.1 Imports [IMPORTS]
+
+// # S.2 Constants [CONSTANTS]
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+"""
+
+[templates.blocks.BODY]
+template = """
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # B.1 Main Logic [MAIN]
+
+// =============================================================================
+// END BODY
+// =============================================================================
+"""
+
+[templates.blocks.CONTENT]
+template = """
+// =============================================================================
+// CONTENT [CONTENT]
+// =============================================================================
+
+// Content goes here
+
+// =============================================================================
+// END CONTENT
+// =============================================================================
+"""
+
+[templates.blocks.CLOSING]
+template = """
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// # X.1 Usage [USAGE]
+//
+// Usage examples here
+
+// =============================================================================
+// END CLOSING
+// =============================================================================
+"""
+
+[templates.blocks.HEADER]
+template = """
+<!-- HEADER -->
+
+# {title}
+
+> *"{scripture}"* — {reference}
+
+**Navigation:**
+
+| Section | Purpose |
+|---------|---------|
+| [Section 1](#section-1) | Description |
+
+---
+"""
+
+[templates.blocks.CONTEXT]
+template = """
+<!-- CONTEXT -->
+
+## Orientation
+
+### Scope
+
+| In Scope | Out of Scope |
+|----------|--------------|
+| Item | Item |
+
+### Prerequisites
+
+| Requirement | Why Needed |
+|-------------|------------|
+| Item | Reason |
+
+---
+"""
+
+[templates.blocks.FOOTER]
+template = """
+<!-- FOOTER -->
+
+---
+
+## Related Documents
+
+| Document | Relationship |
+|----------|--------------|
+| Doc | Relation |
+
+---
+
+> *"{closing_scripture}"* — {closing_reference}
+"""
+
+# =============================================================================
+# Section Templates
+# =============================================================================
+
+[templates.sections]
+
+[templates.sections.identity]
+template = """
+// # M.1 Core Identity [IDENTITY]
+//
+// Key: {key}
+// Title: {title}
+// Type: {type}
+// Role: {role}
+"""
+
+[templates.sections.grounding]
+template = """
+// # M.8 Grounding [GROUNDING]
+//
+// Scripture: {scripture}
+// Principle: {principle}
+// Anchor: {anchor}
+"""
+
+[templates.sections.attribution]
+template = """
+// # M.9 Attribution [ATTRIBUTION]
+//
+// Architect: {architect}
+// Implementation: {implementation}
+// Created: {date}
+// Version: {version}
+"""
+
+# =============================================================================
+# Field Templates
+# =============================================================================
+
+[templates.fields]
+
+[templates.fields.key]
+template = 'keyed as "{key}"'
+suggestion = "Key format: B-zone-path-name (e.g., B-word-omni-config)"
+
+[templates.fields.grounding_scripture]
+template = """
+grounded in:
+    scripture "{verse}" from {book} {chapter}:{verse_num} in KJV
+    principle "{principle}"
+"""
+
+[templates.fields.role]
+template = """
+serves as {zone}:
+    role "{role_description}"
+"""
+
+# =============================================================================
+# Recovery Actions
+# =============================================================================
+
+[actions]
+# What to do for each recovery type
+
+[actions.pragma_template]
+action = "insert_at_start"
+template = "templates.pragma"
+
+[actions.block_template]
+action = "insert_at_position"
+template = "templates.blocks"
+
+[actions.identity_template]
+action = "insert_in_block"
+block = "METADATA"
+template = "templates.sections.identity"
+
+[actions.grounding_template]
+action = "insert_in_block"
+block = "METADATA"
+template = "templates.sections.grounding"
+
+[actions.attribution_template]
+action = "insert_in_block"
+block = "METADATA"
+template = "templates.sections.attribution"
+
+[actions.close_block]
+action = "insert_at_position"
+template = "// END {block_name}"
+
+[actions.close_string]
+action = "insert_at_position"
+template = '"'
+
+[actions.reorder_suggestion]
+action = "suggest"
+message = "Move {block_name} block to position {correct_position}"
+
+[actions.merge_suggestion]
+action = "suggest"
+message = "Merge duplicate {block_name} blocks (keep content from both)"
+
+# =============================================================================
+# Partial Parsing
+# =============================================================================
+
+[partial]
+# How to handle partial/broken files
+
+# Continue parsing after error
+continue_after_error = true
+
+# Maximum errors before giving up
+max_errors = 10
+
+# Create placeholder for missing required blocks
+create_placeholders = true
+
+# Mark recovered sections
+mark_recovered = true
+recovered_marker = "// [RECOVERED]"

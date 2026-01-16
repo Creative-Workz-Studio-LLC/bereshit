@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/celestial/solar-data.json",
+  "title": "Solar Data - Monthly",
+  "description": "Sun position and daylight information for a specific location and month",
+  "type": "object",
+  "required": [
+    "$schema",
+    "metadata",
+    "days",
+    "summary"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "location_id",
+        "year",
+        "month",
+        "month_name",
+        "timezone",
+        "timezone_offset",
+        "generated_date",
+        "data_version"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string",
+          "description": "Location identifier matching location config"
+        },
+        "year": {
+          "type": "integer",
+          "description": "Year (YYYY)"
+        },
+        "month": {
+          "type": "integer",
+          "description": "Month number (1-12)",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "month_name": {
+          "type": "string",
+          "description": "Month name in English"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone identifier"
+        },
+        "timezone_offset": {
+          "type": "string",
+          "description": "UTC offset for this month (accounts for DST)",
+          "pattern": "^[+-]\\d{2}:\\d{2}$"
+        },
+        "generated_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date this data was generated"
+        },
+        "data_version": {
+          "type": "string",
+          "description": "Version of this data"
+        }
+      },
+      "additionalProperties": false
+    },
+    "days": {
+      "type": "array",
+      "description": "Daily solar data for each day of the month",
+      "items": {
+        "type": "object",
+        "required": [
+          "date",
+          "sunrise",
+          "sunset",
+          "solar_noon",
+          "day_length"
+        ],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "ISO 8601 date (YYYY-MM-DD)"
+          },
+          "sunrise": {
+            "type": "string",
+            "description": "Local time when sun crosses horizon (HH:MM, 24-hour)",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "sunset": {
+            "type": "string",
+            "description": "Local time when sun crosses horizon (HH:MM, 24-hour)",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "solar_noon": {
+            "type": "string",
+            "description": "Local time when sun reaches highest point (HH:MM, 24-hour)",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "day_length": {
+            "type": "string",
+            "description": "Duration of daylight (Xh XXm format)",
+            "pattern": "^\\d{1,2}h \\d{2}m$"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional notes about this day (solstices, equinoxes, holidays, etc.)"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "shortest_day",
+        "shortest_day_length",
+        "longest_day",
+        "longest_day_length"
+      ],
+      "properties": {
+        "shortest_day": {
+          "type": "string",
+          "format": "date",
+          "description": "Date with least daylight this month"
+        },
+        "shortest_day_length": {
+          "type": "string",
+          "description": "Shortest day length (Xh XXm format)"
+        },
+        "longest_day": {
+          "type": "string",
+          "format": "date",
+          "description": "Date with most daylight this month"
+        },
+        "longest_day_length": {
+          "type": "string",
+          "description": "Longest day length (Xh XXm format)"
+        },
+        "total_daylight_change": {
+          "type": "string",
+          "description": "Description of daylight change from start to end of month"
+        },
+        "total_daylight_loss": {
+          "type": "string",
+          "description": "Amount of daylight lost from start to end of month (if days are shortening)"
+        },
+        "average_sunrise": {
+          "type": "string",
+          "description": "Average sunrise time for the month (HH:MM)"
+        },
+        "average_sunset": {
+          "type": "string",
+          "description": "Average sunset time for the month (HH:MM)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any observations about this month's solar patterns"
+        }
+      },
+      "additionalProperties": false
+    },
+    "extension": {
+      "type": "object",
+      "description": "Extension point for future solar data (twilight, angles, etc.)",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

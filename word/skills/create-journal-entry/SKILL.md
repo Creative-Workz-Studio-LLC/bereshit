@@ -68,9 +68,12 @@ Use this skill when Nova Dawn needs to:
 
 | Requirement | Location |
 |-------------|----------|
-| Knowledge Base | `divisions/tech/cpi-si/knowledge-base/journals/` |
+| **Bereshit Repo** | `/media/seanje-lenox-wise/Project/Bereshit` (the repo, not a folder) |
+| Journals Directory | `word/journals/` (relative to Bereshit repo root) |
 | Config | `config/journal-config.toml` |
 | Go 1.23+ | For building CLI tool |
+
+> **Important:** Bereshit is a REPOSITORY at `Project/Bereshit`, not a folder within another repo. Always navigate to the repo root when working with journals.
 
 ---
 
@@ -202,13 +205,18 @@ Future work informed by learning
 If CLI tool not available:
 
 ```bash
-# Navigate to journal directory
-cd divisions/tech/cpi-si/knowledge-base/journals/
+# Navigate to Bereshit repo (NOT a subfolder — the actual repo)
+cd /media/seanje-lenox-wise/Project/Bereshit
+
+# Navigate to journals directory
+cd word/journals/
 
 # Create entry with today's date
-touch bible-study/2025-12-09_genesis-1-study.md
+touch instance/2026-01-06_my-insight.md
 
-# Open and add content with proper sections
+# Or for other types:
+touch bible-study/2026-01-06_scripture-study.md
+touch universal/2026-01-06_paradigm-wisdom.md
 ```
 
 ---

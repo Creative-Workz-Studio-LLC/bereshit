@@ -1,0 +1,350 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/project.schema.json",
+  "title": "CPI-SI Project",
+  "description": "Project tracking schema with agency within constraints - required core, optional standard fields, structured extension space",
+  "version": "1.0.0",
+
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "schema_version",
+    "project_id",
+    "name",
+    "level",
+    "parent_id",
+    "status",
+    "biblical_foundation",
+    "identity"
+  ],
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version for tracking evolution",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["1.0.0"]
+    },
+
+    "project_id": {
+      "type": "string",
+      "description": "Unique identifier (kebab-case)",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 3,
+      "examples": ["cpsi-model", "align-claude-global", "data-layer-organization"]
+    },
+
+    "name": {
+      "type": "string",
+      "description": "Human-readable project name",
+      "minLength": 1,
+      "examples": ["CPI-SI Model", "Align Claude Global Folder"]
+    },
+
+    "identity": {
+      "type": "object",
+      "description": "REQUIRED: Config inheritance - who owns and works on this project",
+      "required": ["primary_user_id", "primary_instance_id"],
+      "properties": {
+        "primary_user_id": {
+          "type": "string",
+          "description": "Primary user (inherits from user config)",
+          "minLength": 1
+        },
+        "primary_instance_id": {
+          "type": "string",
+          "description": "Primary instance (inherits from instance config)",
+          "minLength": 1
+        },
+        "collaborators": {
+          "type": "array",
+          "description": "Additional users/instances",
+          "items": {
+            "type": "object",
+            "required": ["id", "type"],
+            "properties": {
+              "id": {"type": "string"},
+              "type": {"type": "string", "enum": ["user", "instance"]},
+              "role": {"type": "string"}
+            }
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "level": {
+      "type": "string",
+      "description": "Project scope level",
+      "enum": ["high", "mid", "low"]
+    },
+
+    "parent_id": {
+      "description": "Parent project ID (null for top-level)",
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        }
+      ]
+    },
+
+    "status": {
+      "type": "string",
+      "description": "Current project status",
+      "enum": ["planned", "active", "paused", "completed"]
+    },
+
+    "biblical_foundation": {
+      "type": "object",
+      "description": "Biblical grounding for this specific work",
+      "required": ["scripture", "text", "principle"],
+      "properties": {
+        "scripture": {
+          "type": "string",
+          "description": "Scripture reference (e.g., 'Genesis 1:1')",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "description": "Actual Scripture text",
+          "minLength": 1
+        },
+        "principle": {
+          "type": "string",
+          "description": "How this Scripture illuminates THIS specific work - not decoration, but genuine connection",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "workspace": {
+      "type": "object",
+      "description": "Optional: Project workspace context",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Primary workspace path"
+        },
+        "repository_url": {
+          "type": ["string", "null"],
+          "description": "Git repository URL (null if not in git repo)"
+        },
+        "branch": {
+          "type": "string",
+          "description": "Primary branch"
+        }
+      }
+    },
+
+    "inherited_preferences": {
+      "type": "object",
+      "description": "Optional: Preferences inherited from user/instance configs",
+      "properties": {
+        "workflow": {
+          "type": "string",
+          "description": "Preferred workflow pattern (from instance config)",
+          "examples": ["build-first", "plan-then-build", "iterative"]
+        },
+        "thinking_style": {
+          "type": "string",
+          "description": "Thinking approach (from instance config)",
+          "examples": ["building-blocks", "systems-thinking", "sequential"]
+        },
+        "session_defaults": {
+          "type": "object",
+          "description": "Default session preferences",
+          "properties": {
+            "thinking_enabled": {"type": "boolean"},
+            "plan_mode": {"type": "boolean"},
+            "auto_accept": {"type": "boolean"}
+          }
+        },
+        "work_hours": {
+          "type": "object",
+          "description": "Typical work hours for this project (from user config)",
+          "properties": {
+            "timezone": {"type": "string"},
+            "preferred_times": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+
+    "project_type": {
+      "type": "string",
+      "description": "Optional: Type of project (relates to instance domain_expertise)",
+      "examples": ["game_development", "system_architecture", "documentation", "research"]
+    },
+
+    "technical_context": {
+      "type": "object",
+      "description": "Optional: Technical stack and preferences",
+      "properties": {
+        "languages": {
+          "type": "array",
+          "description": "Programming languages used",
+          "items": {"type": "string"}
+        },
+        "frameworks": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "tools": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+
+    "scope": {
+      "type": "object",
+      "description": "Optional: What this project accomplishes",
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "deliverables": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "impact": {
+          "type": "string"
+        }
+      }
+    },
+
+    "dates": {
+      "type": "object",
+      "description": "Optional: Timeline information",
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "estimated_end_date": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "string", "format": "date"}
+          ]
+        },
+        "actual_end_date": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "string", "format": "date"}
+          ]
+        }
+      }
+    },
+
+    "estimates": {
+      "type": "object",
+      "description": "Optional: Planned effort",
+      "properties": {
+        "total_days": {"type": ["number", "null"]},
+        "total_sessions": {"type": ["number", "null"]},
+        "total_uptime_hours": {"type": ["number", "null"]},
+        "avg_session_uptime_minutes": {"type": ["number", "null"]}
+      }
+    },
+
+    "progress": {
+      "type": "object",
+      "description": "Optional: Actual progress",
+      "properties": {
+        "phase": {"type": "string"},
+        "current_focus": {"type": "string"},
+        "days_elapsed": {"type": "number"},
+        "sessions_completed": {"type": "number"},
+        "uptime_hours_actual": {"type": "number"},
+        "current_session_number": {"type": "number"},
+        "completion_percentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+
+    "milestones": {
+      "type": "array",
+      "description": "Optional: Key deliverables",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "properties": {
+          "name": {"type": "string"},
+          "target_date": {
+            "oneOf": [
+              {"type": "null"},
+              {"type": "string", "format": "date"}
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["planned", "pending", "in_progress", "completed"]
+          },
+          "description": {"type": "string"}
+        }
+      }
+    },
+
+    "subprojects": {
+      "type": "array",
+      "description": "Optional: Child project IDs",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      }
+    },
+
+    "dependencies": {
+      "type": "array",
+      "description": "Optional: Projects that must complete first",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      }
+    },
+
+    "velocity": {
+      "type": "object",
+      "description": "Optional: Rate of work metrics",
+      "properties": {
+        "planned_sessions_per_week": {"type": ["number", "null"]},
+        "actual_sessions_per_week": {"type": ["number", "null"]},
+        "planned_uptime_per_session": {"type": ["number", "null"]},
+        "actual_uptime_per_session": {"type": ["number", "null"]},
+        "trend": {
+          "type": ["string", "null"],
+          "enum": [null, "on_track", "ahead", "behind", "learning", "steady_progress"]
+        }
+      }
+    },
+
+    "notes": {
+      "type": "array",
+      "description": "Optional: Context and observations",
+      "items": {"type": "string"}
+    },
+
+    "extensions": {
+      "type": "object",
+      "description": "Structured discovery space - fields that don't fit standard structure yet. Promotes to optional standard fields in next schema version when validated.",
+      "additionalProperties": true
+    }
+  }
+}

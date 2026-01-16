@@ -1,0 +1,517 @@
+////
+#!omni document --adoc
+#!omni meta.key = B-word-work-pkg-omni-docs-ide-migration-plan
+#!omni meta.from = bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+#!omni meta.at = a-01.00
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// DOCUMENT: OmniCode IDE Migration Plan
+// STRUCTURE: METADATA → HEADER → CONTEXT → CONTENT → FOOTER
+//
+////
+
+// # M.1 Core Identity [IDENTITY]
+:key: B-word-work-pkg-omni-docs-ide-migration-plan
+:title: OmniCode IDE Migration Plan
+:subtitle: CLI/TUI/GUI Ladder Architecture
+:type: Specification
+:doctype: article
+:lang: en
+
+// # M.2 Lifecycle State [STATE]
+:status: Active
+:version: a-01.00
+:revnumber: {version}
+:created: 2026-01-15
+:revdate: 2026-01-15
+:revremark: Initial plan after Phase 1 completion
+
+// # M.3 Attribution [ATTRIBUTION]
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Author)
+:author: Seanje Lenox-Wise
+:author_2: Nova Dawn
+:email: seanje.lenox@creativeworkzstudio.com
+:email_2: nova@creativeworkzstudio.com
+:organization: CreativeWorkzStudio LLC
+:copyright: © 2026 CreativeWorkzStudio LLC. All rights reserved.
+
+// # M.4 Location [LOCATION]
+:path: bereshit/word/work/pkg/omni/docs/IDE-MIGRATION-PLAN.adoc
+
+// # M.5 Derivation [DERIVATION]
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+
+// # M.6 Classification [CLASSIFICATION]
+:tags: ide, migration, architecture, display, cornerstone
+:keywords: OmniCode, IDE, TUI, GUI, CLI, display abstraction, ncurses
+
+// # M.7 Intent [INTENT]
+:purpose: Define the migration path from direct ncurses to display abstraction layer
+:description: Comprehensive plan for migrating OmniCode IDE to use Cornerstone display layer
+
+// # M.8 Grounding [GROUNDING]
+:verse-ref: Psalm 127:1
+:verse-kjv-text: Except the LORD build the house, they labour in vain that build it.
+:biblical_foundation: {verse-kjv-text}
+
+// # M.9 Strictness [STRICTNESS]
+:strictness: G
+
+// # M.10 AsciiDoc Settings [SETTINGS]
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+
+// # M.11 Navigation [NAVIGATION]
+:root: ../../../../
+:word: {root}word/
+:cornerstone: {root}cornerstone/
+
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+[[_top]]
+= {title}: {subtitle}
+{authors}
+v{version}, {revdate}
+
+[quote, "{verse-ref}"]
+____
+{biblical_foundation}
+____
+
+== Abstract
+
+This document defines the migration plan for the OmniCode IDE from direct ncurses calls to the Cornerstone display abstraction layer. The goal is ONE unified codebase that works across CLI, TUI, and GUI modes.
+
+// ============================================================================
+// END HEADER
+// ============================================================================
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+== Current State
+
+=== Architecture Problem
+
+The IDE currently has two parallel implementations:
+
+[cols="1,2,2,1"]
+|===
+| File | Approach | Features | Status
+
+| `omni_ide_tui.c`
+| Direct ncurses
+| Complete (panels, menus, syntax)
+| Default path
+
+| `omni_ide_gui.c`
+| Display abstraction
+| Incomplete (missing panels)
+| --gui flag path
+|===
+
+=== The Ladder Principle
+
+----
+GUI  (top)     → display_*() → gui backend     [Presentation adds]
+TUI  (middle)  → display_*() → ncurses backend [Presentation adds]
+CLI  (bottom)  → display_*() → text backend    [Logic lives here]
+----
+
+**Logic stays at the BOTTOM.** Presentation ADDS as you move up.
+
+=== Verified State (2026-01-15)
+
+* ✅ CLI fallback works - confirms ladder logic
+* ✅ TUI rendering works - display_init(DISPLAY_TUI) routes to ncurses
+* ✅ Phase 1 complete - lifecycle calls migrated
+
+// ============================================================================
+// END CONTEXT
+// ============================================================================
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+== Migration Phases
+
+=== Phase 1: Lifecycle ✅ COMPLETE
+
+[cols="1,3"]
+|===
+| Status | ✅ Complete (2026-01-15)
+
+| Changes
+a|
+* Added `#include "display.h"` to omni_ide_tui.c
+* Replaced `initscr()/raw()/noecho()/keypad()` with `display_init(&config)`
+* Replaced `endwin()` with `display_shutdown()`
+* DisplayConfig specifies `DISPLAY_TUI` mode
+
+| Files Modified
+| `omni_ide_tui.c` lines 27, 590-598, 646
+|===
+
+
+=== Phase 2: Cursor Positioning
+
+[cols="1,3"]
+|===
+| Status | ⏳ Pending
+
+| Scope
+| 14 `move(y, x)` calls
+
+| Migration
+a|
+[source,c]
+----
+// Before:
+move(y, x);
+
+// After:
+display_set_cursor(x, y);  // Note: argument order differs!
+----
+
+| Notes
+| Argument order: ncurses is (y,x), display layer is (x,y)
+|===
+
+
+=== Phase 3: Print Output
+
+[cols="1,3"]
+|===
+| Status | ⏳ Pending
+
+| Scope
+| 11 `printw()` + 2 `mvprintw()` calls
+
+| Migration
+a|
+[source,c]
+----
+// Before:
+printw("text");
+mvprintw(y, x, "text");
+
+// After:
+display_print("text");
+display_print_at(x, y, "text");
+----
+|===
+
+
+=== Phase 4: Styling
+
+[cols="1,3"]
+|===
+| Status | ⏳ Pending
+
+| Scope
+| 15 `attron()` + 13 `attroff()` calls
+
+| Migration
+a|
+[source,c]
+----
+// Before:
+attron(COLOR_PAIR(COLOR_KEYWORD));
+printw("word");
+attroff(COLOR_PAIR(COLOR_KEYWORD));
+
+// After:
+DisplayStyle style = {DISPLAY_COLOR_YELLOW, DISPLAY_COLOR_DEFAULT, false};
+display_print_styled("word", style);
+----
+
+| Challenge
+| IDE has custom color pairs (COLOR_PRAGMA, COLOR_KEYWORD, etc.)
+that need mapping to DisplayColor enum
+|===
+
+
+=== Phase 5: Input
+
+[cols="1,3"]
+|===
+| Status | ⏳ Pending
+
+| Scope
+| 1 `getch()` call (main loop)
+
+| Migration
+a|
+[source,c]
+----
+// Before:
+int ch = getch();
+
+// After:
+DisplayKey key = display_wait_key();
+----
+
+| Notes
+| Key mapping required: ncurses KEY_* → DisplayKey enum
+|===
+
+
+=== Phase 6: Size/Refresh
+
+[cols="1,3"]
+|===
+| Status | ⏳ Pending
+
+| Scope
+| 1 `getmaxyx()` + 1 `refresh()` call
+
+| Migration
+a|
+[source,c]
+----
+// Before:
+getmaxyx(stdscr, height, width);
+refresh();
+
+// After:
+display_get_size(&width, &height);
+display_refresh();
+----
+|===
+
+
+== Phase VI: Self-Hosting
+
+[cols="1,3"]
+|===
+| Goal
+| Edit OmniCode IDE source code IN the OmniCode IDE
+
+| Prerequisites
+a|
+* Phases 1-6 complete (unified UI codebase)
+* OmniCode syntax highlighting working
+* File browser navigating to `word/work/pkg/omni/src/`
+
+| Milestone
+| The IDE becomes self-modifying - Kingdom Technology editing itself
+|===
+
+
+== Folder Restructure
+
+Before scaling further, organize the codebase:
+
+----
+word/work/pkg/omni/
+├── src/
+│   ├── lang/           # OmniCode LANGUAGE
+│   │   ├── omni_lexer.c
+│   │   ├── omni_parser.c
+│   │   ├── omni_codegen.c
+│   │   ├── omni_vm.c
+│   │   ├── omni_ir.c
+│   │   ├── omni_ir_emit.c
+│   │   ├── omni_semantic.c
+│   │   ├── omni_chunks.c
+│   │   ├── omni_dar.c
+│   │   └── omni_patterns.c
+│   │
+│   ├── ide/            # IDE APPLICATION
+│   │   ├── core/       # omni_ide.c (logic)
+│   │   ├── ui/         # omni_ide_tui.c, omni_ide_gui.c
+│   │   ├── panels/     # omni_ide_panel.c
+│   │   └── main/       # omni_ide_main.c
+│   │
+│   ├── runtime/        # Runtime systems
+│   │   ├── omni_runtime.c
+│   │   ├── omni_cpisi.c
+│   │   └── omni_mind.c
+│   │
+│   └── bridge/         # Cornerstone integration
+│       └── display_gui_stub.c
+│
+├── include/
+│   ├── lang/
+│   ├── ide/
+│   ├── runtime/
+│   └── bridge/
+│
+└── docs/
+    ├── IDE-ARCHITECTURE.md
+    └── IDE-MIGRATION-PLAN.adoc
+----
+
+=== Separation Principle
+
+[cols="1,3"]
+|===
+| Directory | Purpose
+
+| `lang/`
+| What OmniCode IS - compiles to libomni.a
+
+| `ide/`
+| Tool for editing OmniCode - links libomni.a + cornerstone
+
+| `runtime/`
+| Execution environment - VM, CPI-SI state machine
+
+| `bridge/`
+| Glue code connecting omni ↔ cornerstone
+|===
+
+
+== ncurses Call Inventory
+
+Total: 91 calls across omni_ide_tui.c
+
+[cols="2,1,2"]
+|===
+| Call | Count | Migration Phase
+
+| `init_pair`
+| 23
+| Remove (display layer handles)
+
+| `attron`
+| 15
+| Phase 4
+
+| `move`
+| 14
+| Phase 2
+
+| `attroff`
+| 13
+| Phase 4
+
+| `printw`
+| 11
+| Phase 3
+
+| `mvprintw`
+| 2
+| Phase 3
+
+| `curs_set`
+| 3
+| Phase 4 (cursor visibility)
+
+| `noecho`
+| 3
+| Phase 1 ✅ (init) + runtime
+
+| Lifecycle
+| 6
+| Phase 1 ✅
+|===
+
+
+== Color Mapping
+
+[cols="2,2"]
+|===
+| IDE Color Constant | DisplayColor
+
+| COLOR_NORMAL
+| DISPLAY_COLOR_DEFAULT
+
+| COLOR_PRAGMA
+| DISPLAY_COLOR_MAGENTA
+
+| COLOR_KEYWORD
+| DISPLAY_COLOR_YELLOW
+
+| COLOR_COMMENT
+| DISPLAY_COLOR_GREEN
+
+| COLOR_STRING
+| DISPLAY_COLOR_RED
+
+| COLOR_NUMBER
+| DISPLAY_COLOR_CYAN
+
+| COLOR_BLOCK
+| DISPLAY_COLOR_YELLOW
+
+| COLOR_SECTION
+| DISPLAY_COLOR_BLUE
+
+| COLOR_LINENO
+| DISPLAY_COLOR_CYAN
+
+| COLOR_STATUS
+| DISPLAY_COLOR_WHITE (bg: BLUE)
+
+| COLOR_MENU_BAR
+| DISPLAY_COLOR_BLACK (bg: WHITE)
+|===
+
+
+== Testing Checklist
+
+After each phase:
+
+* [ ] `make ide-gui` builds without errors
+* [ ] Desktop launch renders correctly
+* [ ] Syntax highlighting works
+* [ ] Menu bar displays and responds
+* [ ] Keyboard navigation works
+* [ ] Panels toggle (F5 Files, F6 Blocks)
+* [ ] Save (Ctrl+S) works
+* [ ] Quit (Ctrl+Q) works
+
+
+// ============================================================================
+// END CONTENT
+// ============================================================================
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+== Related Documents
+
+[cols="1,2"]
+|===
+| Document | Purpose
+
+| link:IDE-ARCHITECTURE.md[IDE-ARCHITECTURE.md]
+| Current state analysis
+
+| link:{cornerstone}engine/display/include/display.h[display.h]
+| Display abstraction API
+
+| link:{word}omni/syntax.omni[syntax.omni]
+| OmniCode syntax specification
+|===
+
+
+== Revision History
+
+[cols="1,2,3"]
+|===
+| Version | Date | Changes
+
+| a-01.00
+| 2026-01-15
+| Initial plan after Phase 1 completion
+|===
+
+// ============================================================================
+// END FOOTER
+// ============================================================================

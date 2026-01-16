@@ -1,0 +1,162 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Chain Configuration
+# Source: bereshit/word/omni/seed/, bereshit/word/seed/
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Defines the template hierarchy and propagation rules.
+# Used by propagate-change to trace derives_from chains.
+#
+# Biblical: Galatians 5:9 - "A little leaven leaveneth the whole lump"
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CHAIN HIERARCHY
+# Changes at higher levels propagate to all lower levels
+# ═══════════════════════════════════════════════════════════════════════════
+
+[hierarchy]
+# Order matters: changes flow DOWN this list
+levels = [
+    "syntax-spec",      # Master OmniCode syntax specification
+    "universal",        # Universal template (all types)
+    "specialized",      # Type-specific templates (code, documentation, etc.)
+    "format",           # Format-specific templates (go, adoc, md, etc.)
+    "document"          # Actual files using templates
+]
+
+[hierarchy.descriptions]
+syntax-spec = "Master specification - changes affect EVERYTHING"
+universal = "Universal template - changes affect all specialized templates"
+specialized = "Type templates (code, documentation, interface, folder, data)"
+format = "Format templates (go, adoc, md, c, rs, sh)"
+document = "Actual files - leaf nodes, no descendants"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TEMPLATE LOCATIONS
+# Where to find templates at each level
+# ═══════════════════════════════════════════════════════════════════════════
+
+[locations]
+# OmniCode master templates
+omni_seed = "bereshit/word/omni/seed/"
+
+# Format-specific templates
+format_seed = "bereshit/word/seed/"
+
+# Search paths for documents
+search_paths = [
+    "bereshit/",
+    "divisions/",
+    "standards/"
+]
+
+# File patterns to search
+file_patterns = ["*.omni", "*.adoc", "*.md", "*.go", "*.c", "*.rs", "*.sh"]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SPECIALIZED TEMPLATES
+# Templates for each document type
+# ═══════════════════════════════════════════════════════════════════════════
+
+[templates.code]
+path = "bereshit/word/omni/seed/code.omni"
+block_count = 4
+formats = ["go", "c", "rs", "sh"]
+format_templates = [
+    "bereshit/word/seed/code/go/executable.go",
+    "bereshit/word/seed/code/go/library.go",
+    "bereshit/word/seed/code/c/executable.c",
+    "bereshit/word/seed/code/c/library.c"
+]
+
+[templates.documentation]
+path = "bereshit/word/omni/seed/documentation.omni"
+block_count = 5
+formats = ["adoc", "md"]
+format_templates = [
+    "bereshit/word/seed/documentation/adoc/asciidoc-base.adoc",
+    "bereshit/word/seed/documentation/md/"
+]
+
+[templates.interface]
+path = "bereshit/word/omni/seed/interface.omni"
+block_count = 3
+formats = []
+format_templates = []
+
+[templates.folder]
+path = "bereshit/word/omni/seed/folder.omni"
+block_count = 3
+formats = []
+format_templates = []
+
+[templates.data]
+path = "bereshit/word/omni/seed/data.omni"
+block_count = 3
+formats = ["toml", "yaml", "json"]
+format_templates = [
+    "bereshit/word/seed/data/"
+]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DERIVES_FROM PATTERNS
+# Regex patterns for detecting derives_from references
+# ═══════════════════════════════════════════════════════════════════════════
+
+[patterns]
+# Patterns that indicate a derives_from relationship
+derives_from = [
+    "derives from:",
+    "derives_from:",
+    ":derives_from:",
+    "// Derives from:"
+]
+
+# Special markers indicating root of chain
+root_markers = [
+    "original",
+    "ORIGINAL",
+    "none",
+    ""
+]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PROPAGATION RULES
+# What to check when a template changes
+# ═══════════════════════════════════════════════════════════════════════════
+
+[propagation]
+# When syntax-spec changes, check all templates
+syntax_spec_affects = ["universal", "specialized", "format", "document"]
+
+# When universal changes, check type templates and below
+universal_affects = ["specialized", "format", "document"]
+
+# When specialized changes, check format templates and documents
+specialized_affects = ["format", "document"]
+
+# When format changes, check only documents
+format_affects = ["document"]
+
+# Documents are leaf nodes - no propagation needed
+document_affects = []
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OUTPUT FORMAT
+# How to format propagation reports
+# ═══════════════════════════════════════════════════════════════════════════
+
+[output]
+# Report sections
+sections = [
+    "changed_file",
+    "direct_descendants",
+    "indirect_descendants",
+    "total_impact",
+    "recommended_order"
+]
+
+# Limit results to prevent overwhelming output
+max_direct = 50
+max_indirect = 100

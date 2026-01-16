@@ -1,0 +1,249 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# Claude Global Configuration (3-Block Data Structure)
+# Key: claude-global-config
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# "In all thy ways acknowledge him, and he shall direct thy paths"
+# — Proverbs 3:6
+#
+# Single source of truth for all claude-global paths and settings.
+# All code reads from here. Tripwire pattern: loud warning if missing.
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     claude-global
+# File:        config.toml
+# Key:         claude-global-config
+#
+# Purpose:     Central configuration — all paths flow from here
+#              Public users: clone and it works standalone
+#              Private users: enable bereshit integration
+#
+# Architect:   Seanje Lenox-Wise
+# Implementation: Nova Dawn
+# Created:     2025-12-15
+# Version:     a-01.00
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# Systems load in dependency order (0 = foundation, higher = builds on lower)
+# Within each system, paths are relative to claude-global root
+#
+# DEPENDENCY NOTATION:
+#   depends_on = [] means ANCHOR — Claude Code expects this, cannot rename
+#   depends_on = ["anchors"] means CPI-SI extension, builds on anchors
+#   System order enforces loading order, depends_on documents WHY
+#
+# =============================================================================
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 0: ANCHORS — Claude Code fixed directories (cannot rename)
+# ─────────────────────────────────────────────────────────────────────────────
+# "Upon this rock I will build my church" — Matthew 16:18
+
+[[systems]]
+name = "anchors"
+path = ""
+order = 0
+description = "Claude Code anchor directories — fixed names, foundation"
+depends_on = []  # ANCHOR — Claude Code expects these
+
+[[systems.paths]]
+name = "agents"
+path = "agents"
+description = "Subagent definitions"
+
+[[systems.paths]]
+name = "commands"
+path = "commands"
+description = "Slash command definitions"
+
+[[systems.paths]]
+name = "hooks"
+path = "hooks"
+description = "Event hook handlers"
+
+[[systems.paths]]
+name = "output-styles"
+path = "output-styles"
+description = "Output style definitions"
+
+[[systems.paths]]
+name = "rules"
+path = "rules"
+description = "Modular rules"
+
+[[systems.paths]]
+name = "skills"
+path = "skills"
+description = "Skill definitions"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 1: EXTENSIONS — CPI-SI extension directories
+# ─────────────────────────────────────────────────────────────────────────────
+# "The stone which the builders refused is become the head stone" — Psalm 118:22
+
+[[systems]]
+name = "extensions"
+path = ""
+order = 1
+description = "CPI-SI extension directories — build on anchors"
+depends_on = ["anchors"]  # Extensions build on Claude Code anchors
+
+[[systems.paths]]
+name = "bin"
+path = "bin"
+description = "Compiled binaries"
+
+[[systems.paths]]
+name = "config"
+path = "config"
+description = "Instance and user configuration"
+
+[[systems.paths]]
+name = "docs"
+path = "docs"
+description = "Documentation"
+
+[[systems.paths]]
+name = "pkg"
+path = "pkg"
+description = "Shared Go packages"
+
+[[systems.paths]]
+name = "statusline"
+path = "statusline"
+description = "Custom status line"
+
+[[systems.paths]]
+name = "system"
+path = "system"
+description = "System schemas and runtime"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 2: SESSION — Session management configuration
+# ─────────────────────────────────────────────────────────────────────────────
+# "His compassions fail not. They are new every morning" — Lamentations 3:22-23
+
+[[systems]]
+name = "session"
+path = ""
+order = 2
+description = "Session management — time awareness, patterns, renewal"
+depends_on = ["anchors"]  # Session uses anchor paths
+
+[systems.paths]
+session_dir = ".session"
+current_session = "current.json"
+session_log = "session.log"
+pattern_file = "patterns.json"
+
+[systems.duration]
+quick_check_max = 30
+normal_work_max = 120
+deep_work_max = 240
+
+[systems.idle]
+threshold_minutes = 30
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 3: BERESHIT — Optional Bereshit integration
+# ─────────────────────────────────────────────────────────────────────────────
+# "In the beginning God created the heaven and the earth" — Genesis 1:1
+
+[[systems]]
+name = "bereshit"
+path = ""
+order = 3
+description = "Bereshit integration — optional, for private use"
+depends_on = ["anchors", "extensions"]  # Bereshit builds on both
+
+[systems.enabled]
+# Set to true if bereshit is available
+value = false
+
+[systems.root]
+# Path to bereshit root (leave empty for auto-detect)
+path = ""
+
+[systems.auto_detect]
+# Tried in order when root is empty
+paths = [
+    "../bereshit",
+    "bereshit",
+    "/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC/bereshit"
+]
+
+[systems.bereshit_paths]
+word = "word"
+void = "void"
+tov = "tov"
+seed = "word/seed"
+glossary = "word/glossary"
+scripture = "word/scripture"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM 4: LOGGING — Log configuration
+# ─────────────────────────────────────────────────────────────────────────────
+# "A word fitly spoken is like apples of gold" — Proverbs 25:11
+
+[[systems]]
+name = "logging"
+path = ""
+order = 4
+description = "Logging configuration — levels, destinations, health"
+depends_on = ["anchors"]
+
+[systems.logging]
+level = "info"
+stdout = true
+file = false
+file_path = "logs/claude-global.log"
+include_health = true
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# This config is read by:
+#   - pkg/config/loader.go (central loader)
+#   - All hooks, skills, statusline via pkg import
+#
+# TRIPWIRE PATTERN:
+#   If config.toml is missing, loader falls back to hardcoded paths
+#   with LOUD warning. This is degraded mode — config should exist.
+#
+# Systems load in order 0→4:
+#   0: ANCHORS   — Claude Code fixed directories (cannot rename)
+#   1: EXTENSIONS — CPI-SI directories (pkg, bin, statusline, etc.)
+#   2: SESSION    — Session management config
+#   3: BERESHIT   — Optional integration (disabled by default)
+#   4: LOGGING    — Log configuration
+#
+# "For precept must be upon precept, precept upon precept;
+#  line upon line, line upon line; here a little, and there a little"
+# — Isaiah 28:10
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

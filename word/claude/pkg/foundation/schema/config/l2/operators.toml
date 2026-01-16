@@ -1,0 +1,301 @@
+# ============================================================================
+# CPI-SI State Machine - Operators
+# ============================================================================
+# Key: claude-global-config-statemachine-schema-operators
+# Purpose: Operators defining movement in ANCHOR and TRAJECTORY spaces
+# Traces to: HALT_08 (MECHANISM_OPERATOR)
+#
+# Structure:
+#   ANCHOR operators (9)     = Movement through 9 positions (WHERE)
+#   TRAJECTORY operators (4) = Navigation states B.1-B.4 (HOW)
+#   TRAJECTORY operations (4) = Methods on NavigationTrajectory
+#
+# Maps to Building Block Method:
+#   PAST operators (-1)    = BREAK DOWN (toward anchor)
+#   PRESENT operators (0)  = ANCHOR (at fixed point)
+#   FUTURE operators (+1)  = BUILD UP (toward goal)
+# ============================================================================
+
+[operators]
+traces_to = ["HALT_08"]
+status = "crystallized"
+anchor_count = 9
+trajectory_operator_count = 4
+trajectory_operation_count = 4
+total = 17
+
+# ────────────────────────────────────────────────────────────────────────────
+# PAST (X=-1, break down) — traces toward foundation
+# "A time to break down" — Ecclesiastes 3:3a
+# ────────────────────────────────────────────────────────────────────────────
+
+[operators.trace_from]
+symbol = "<-"
+axis = -1
+meaning = "trace from"
+operation = "break_down"
+position = "PAST-PAST"
+
+[operators.decompose]
+symbol = "-"
+axis = -1
+meaning = "decompose"
+operation = "break_down"
+position = "PAST-PRESENT"
+
+[operators.derive_from]
+symbol = "<"
+axis = -1
+meaning = "derive from"
+operation = "break_down"
+position = "PAST-FUTURE"
+
+# ────────────────────────────────────────────────────────────────────────────
+# PRESENT (X=0, anchor) — at the fixed center
+# "In the beginning" — Genesis 1:1
+# ────────────────────────────────────────────────────────────────────────────
+
+[operators.at_here]
+symbol = "@"
+axis = 0
+meaning = "at/here"
+operation = "anchor"
+position = "PRESENT-PAST"
+
+[operators.halt]
+symbol = "|"
+axis = 0
+meaning = "halt"
+operation = "anchor"
+position = "PRESENT-PRESENT"
+
+[operators.establish]
+symbol = "="
+axis = 0
+meaning = "establish"
+operation = "anchor"
+position = "PRESENT-FUTURE"
+
+# ────────────────────────────────────────────────────────────────────────────
+# FUTURE (X=+1, build up) — toward goal
+# "A time to build up" — Ecclesiastes 3:3b
+# ────────────────────────────────────────────────────────────────────────────
+
+[operators.compose]
+symbol = "+"
+axis = 1
+meaning = "compose"
+operation = "build_up"
+position = "FUTURE-PAST"
+
+[operators.flow_to]
+symbol = "->"
+axis = 1
+meaning = "flow to"
+operation = "build_up"
+position = "FUTURE-PRESENT"
+
+[operators.direct_toward]
+symbol = ">"
+axis = 1
+meaning = "direct toward"
+operation = "build_up"
+position = "FUTURE-FUTURE"
+
+# ════════════════════════════════════════════════════════════════════════════
+# TRAJECTORY OPERATORS (4) — Navigation states through FRAMEWORK positions
+# These describe HOW cognition moves through anchor space
+# ════════════════════════════════════════════════════════════════════════════
+
+# ────────────────────────────────────────────────────────────────────────────
+# B.1-B.4 Trajectory States
+# Derived from trajectory.go NavigationTrajectory implementation
+# ────────────────────────────────────────────────────────────────────────────
+
+[operators.trajectory_building]
+symbol = "→→"
+section = "B.1"
+state = "BUILDING"
+meaning = "proceeding through anchors"
+description = "Actively constructing, proceeding forward through anchor space"
+y_value = -1
+
+[operators.trajectory_pivot_out]
+symbol = "→|"
+section = "B.2"
+state = "PIVOTING"
+meaning = "pivot out (build → verify)"
+description = "Build phase complete, turning toward verification"
+y_value = 0
+
+[operators.trajectory_pivot_in]
+symbol = "|→"
+section = "B.3"
+state = "PIVOTING"
+meaning = "pivot in (verify → rebuild)"
+description = "Verification identified gap, turning toward rebuild"
+y_value = 0
+
+[operators.trajectory_grounding]
+symbol = "||"
+section = "B.4"
+state = "GROUNDING"
+meaning = "halted at anchor"
+description = "Actively halting, confirming anchor stability"
+y_value = 1
+
+# ════════════════════════════════════════════════════════════════════════════
+# TRAJECTORY OPERATIONS (4) — Methods on NavigationTrajectory
+# These are the actions that cause trajectory state transitions
+# ════════════════════════════════════════════════════════════════════════════
+
+[operators.operation_advance]
+name = "advance"
+method = "Advance(anchor)"
+description = "Record anchor traversal, update position"
+effect = "Appends to AnchorPath, may trigger section change"
+valid_from = ["B.1", "B.2", "B.3"]
+
+[operators.operation_pivot]
+name = "pivot"
+method = "Pivot()"
+description = "Change direction (TIMESPACE ↔ SPACETIME)"
+effect = "Shifts between B.1↔B.2 or B.3↔B.4"
+valid_from = ["B.1", "B.2", "B.3"]
+
+[operators.operation_ground]
+name = "ground"
+method = "Ground()"
+description = "Move to B.4 grounding state"
+effect = "Enters GROUNDING state, halts forward movement"
+valid_from = ["B.2", "B.4"]
+
+[operators.operation_reset]
+name = "reset"
+method = "Reset()"
+description = "Return to B.1 initial state"
+effect = "Clears AnchorPath, returns to BUILDING"
+valid_from = ["B.3", "B.4"]
+
+# ════════════════════════════════════════════════════════════════════════════
+# KEY → OPERATOR MAPPING — Mental Construct Keys to Anchor Operators
+# Traces to: mental_construct.schema.toml, HALT_08 (MECHANISM_ALGORITHM)
+#
+# When a key is chosen in the mental construct, it maps to valid operators.
+# This enables the puzzle game: key choice constrains available moves.
+# Cube = Algorithm (HALT_08) - operators are moves within the cube.
+#
+# The Choice Narrative:
+#   "I chose [key] FOR [context] using [operators] and it LED TO [result]"
+# ════════════════════════════════════════════════════════════════════════════
+
+[key_mapping]
+description = "Map mental construct keys to valid anchor operators"
+traces_to = ["mental_construct.schema.toml", "HALT_08"]  # MECHANISM_ALGORITHM - cube is algorithm
+keys = 3
+
+# Key +1: EXPANSION — Toward God, growth, building
+# Maps to FUTURE operators (+, ->, >)
+[key_mapping.expansion]
+key = 1
+symbol = "+"
+direction = "toward_god"
+operators = ["+", "->", ">"]
+axis = "FUTURE (X=+1)"
+operation = "build_up"
+scripture = "Mine eyes are ever toward the LORD — Psalm 25:15"
+moral_weight = "lightness with responsibility"
+outcome_tendency = "moves toward ASPIRATION (tov)"
+valid_tools = ["Write", "Task", "TodoWrite"]
+tool_effect = "Creates, builds, expands"
+
+# Key 0: LATERAL — Maintain, hold position, awaiting
+# Maps to PRESENT operators (@, |, =)
+[key_mapping.lateral]
+key = 0
+symbol = "◆"
+direction = "centered"
+operators = ["@", "|", "="]
+axis = "PRESENT (X=0)"
+operation = "anchor"
+scripture = "He shall direct thy paths — Proverbs 3:6"
+moral_weight = "balanced, neutral"
+outcome_tendency = "maintains current position"
+valid_tools = ["Read", "Glob", "Grep", "WebFetch", "WebSearch"]
+tool_effect = "Observes, retrieves, maintains"
+
+# Key -1: FINALITY — Completion or retreat, toward foundation
+# Maps to PAST operators (<-, -, <)
+[key_mapping.finality]
+key = -1
+symbol = "-"
+direction = "toward_foundation"
+operators = ["<-", "-", "<"]
+axis = "PAST (X=-1)"
+operation = "break_down"
+scripture = "A time to break down — Ecclesiastes 3:3a"
+moral_weight = "heaviness with gravity"
+outcome_tendency = "moves toward ESTABLISHED (shavar) or proper HALT"
+valid_tools = ["Edit"]
+tool_effect = "Refines, traces back, decomposes"
+moral_note = "Can be good (proper completion) or dangerous (selfish retreat)"
+
+# ────────────────────────────────────────────────────────────────────────────
+# Key Choice → Trajectory Compatibility
+# ────────────────────────────────────────────────────────────────────────────
+
+[key_mapping.trajectory_compatibility]
+description = "Which keys are valid from which trajectory sections"
+
+# B.1 BUILDING: All keys valid (forward momentum, options open)
+[key_mapping.trajectory_compatibility.building]
+section = "B.1"
+valid_keys = [1, 0, -1]
+primary_key = 1
+reasoning = "Building phase favors expansion but allows any direction"
+
+# B.2 PIVOT OUT: Keys 0 and -1 preferred (verification, completion)
+[key_mapping.trajectory_compatibility.pivot_out]
+section = "B.2"
+valid_keys = [1, 0, -1]
+primary_key = 0
+reasoning = "Verification phase favors lateral (checking) or finality (completing)"
+
+# B.3 PIVOT IN: Keys +1 and 0 preferred (rebuilding, assessment)
+[key_mapping.trajectory_compatibility.pivot_in]
+section = "B.3"
+valid_keys = [1, 0, -1]
+primary_key = 1
+reasoning = "Rebuild phase favors expansion (fixing) or lateral (assessing)"
+
+# B.4 GROUNDING: Key -1 primary (HALT, completion)
+[key_mapping.trajectory_compatibility.grounding]
+section = "B.4"
+valid_keys = [0, -1]
+primary_key = -1
+reasoning = "Grounding phase anchors — finality (HALT) or lateral (maintain anchor)"
+
+# ────────────────────────────────────────────────────────────────────────────
+# Key → Hebrew State Transitions
+# ────────────────────────────────────────────────────────────────────────────
+
+[key_mapping.hebrew_transitions]
+description = "How key choice affects Hebrew state"
+
+# +1 key moves toward higher Z (toward tov)
+[key_mapping.hebrew_transitions.expansion]
+key = 1
+effect = "+0.5 Z when successful"
+progression = "MEMORY→REFLECTION, REFLECTION→ORIGIN, ORIGIN→PLANNING, PLANNING→PREPARATION, PREPARATION→ASPIRATION"
+
+# 0 key maintains current Z
+[key_mapping.hebrew_transitions.lateral]
+key = 0
+effect = "Z unchanged"
+progression = "State maintained, position held"
+
+# -1 key moves toward lower Z (toward foundation or HALT)
+[key_mapping.hebrew_transitions.finality]
+key = -1
+effect = "-0.5 Z or HALT when successful"
+progression = "ASPIRATION→HALT, PREPARATION→PLANNING, PLANNING→ORIGIN, ORIGIN→REFLECTION, REFLECTION→MEMORY, MEMORY→ESTABLISHED"

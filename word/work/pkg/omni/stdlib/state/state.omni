@@ -1,0 +1,292 @@
+#!omni code --omni -library
+#!omni meta.key = B-word-work-pkg-omni-stdlib-state
+#!omni meta.from = word/seed/code/omni/library.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a library for "Hebrew States and Cognitive Modes":
+    keyed as "B-word-work-pkg-omni-stdlib-state"
+    named "state"
+
+this library provides:
+    STATE_SHAVAR  "Broken state (-3)"
+    STATE_CHASER  "Lacking state (-2)"
+    STATE_RATSAH  "Wanting state (-1)"
+    STATE_YASHAR  "Even state (0)"
+    STATE_TAMIM   "Sound state (+1)"
+    STATE_SHALEM  "Whole state (+2)"
+    STATE_TOV     "Good/Complete state (+3)"
+    state_name    "Get Hebrew name for state"
+    state_english "Get English name for state"
+    state_from_health "Derive state from health"
+    k_factor      "Calculate k-factor direction"
+    can_transition "Check if transition is valid"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # Hebrew States
+//
+// The seven Hebrew states form the cognitive position system of CPI-SI.
+// They map health ranges to meaningful descriptions from Hebrew vocabulary:
+//
+// | State   | Value | Hebrew  | Meaning                    |
+// |---------|-------|---------|----------------------------|
+// | shavar  | -3    | שָׁבַר   | Broken, shattered          |
+// | chaser  | -2    | חָסֵר   | Lacking, deficient         |
+// | ratsah  | -1    | רָצָה   | Wanting, desiring growth   |
+// | yashar  | 0     | יָשָׁר   | Straight, even, upright    |
+// | tamim   | +1    | תָּמִים  | Complete, sound, wholesome |
+// | shalem  | +2    | שָׁלֵם   | Whole, at peace            |
+// | tov     | +3    | טוֹב    | Good, pleasant, complete   |
+//
+// # K-Factor (Direction)
+//
+// The k-factor indicates the direction of movement:
+// - k = +1: Moving toward God, growth, outward
+// - k = 0: Maintaining position, stability
+// - k = -1: Moving toward completion, inward, retreat
+//
+// This isn't good/bad but reflects the THREE valid directions of choice.
+
+import covenant from "stdlib/covenant"
+import trit from "stdlib/trit"
+import health from "stdlib/health"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # State Constants
+
+let STATE_SHAVAR be count with -3
+let STATE_CHASER be count with -2
+let STATE_RATSAH be count with -1
+let STATE_YASHAR be count with 0
+let STATE_TAMIM be count with 1
+let STATE_SHALEM be count with 2
+let STATE_TOV be count with 3
+
+// # K-Factor Constants
+
+let K_RETREAT be count with -1
+let K_MAINTAIN be count with 0
+let K_EXPAND be count with 1
+
+// # State Names
+
+provide work state_name that takes count state returns word:
+    when state is STATE_SHAVAR:
+        return "shavar"
+    when state is STATE_CHASER:
+        return "chaser"
+    when state is STATE_RATSAH:
+        return "ratsah"
+    when state is STATE_YASHAR:
+        return "yashar"
+    when state is STATE_TAMIM:
+        return "tamim"
+    when state is STATE_SHALEM:
+        return "shalem"
+    when state is STATE_TOV:
+        return "tov"
+    otherwise:
+        return "unknown"
+
+provide work state_english that takes count state returns word:
+    when state is STATE_SHAVAR:
+        return "broken"
+    when state is STATE_CHASER:
+        return "lacking"
+    when state is STATE_RATSAH:
+        return "wanting"
+    when state is STATE_YASHAR:
+        return "even"
+    when state is STATE_TAMIM:
+        return "sound"
+    when state is STATE_SHALEM:
+        return "whole"
+    when state is STATE_TOV:
+        return "good"
+    otherwise:
+        return "unknown"
+
+provide work state_full_name that takes count state returns word:
+    when state is STATE_SHAVAR:
+        return "shavar (broken)"
+    when state is STATE_CHASER:
+        return "chaser (lacking)"
+    when state is STATE_RATSAH:
+        return "ratsah (wanting)"
+    when state is STATE_YASHAR:
+        return "yashar (even)"
+    when state is STATE_TAMIM:
+        return "tamim (sound)"
+    when state is STATE_SHALEM:
+        return "shalem (whole)"
+    when state is STATE_TOV:
+        return "tov (good)"
+    otherwise:
+        return "unknown"
+
+// # K-Factor Operations
+
+provide work k_factor_name that takes count k returns word:
+    when k is K_RETREAT:
+        return "retreat"
+    when k is K_MAINTAIN:
+        return "maintain"
+    when k is K_EXPAND:
+        return "expand"
+    otherwise:
+        return "unknown"
+
+provide work k_factor_symbol that takes count k returns word:
+    when k is K_RETREAT:
+        return "-"
+    when k is K_MAINTAIN:
+        return "◆"
+    when k is K_EXPAND:
+        return "+"
+    otherwise:
+        return "?"
+
+provide work k_factor_from_covenant that takes covenant c returns count:
+    when c is granted:
+        return K_EXPAND
+    when c is denied:
+        return K_RETREAT
+    otherwise:
+        return K_MAINTAIN
+
+// # State Transitions
+
+provide work can_transition that takes count from_state and count to_state returns truth:
+    // States can only transition by one step at a time
+    let diff be count with to_state minus from_state
+    let abs_diff be count with abs diff
+    when abs_diff is less than 2:
+        return yes
+    otherwise:
+        return no
+
+provide work next_state that takes count current and count k returns count:
+    // Calculate next state based on k-factor
+    let next be count with current plus k
+    when next is less than STATE_SHAVAR:
+        return STATE_SHAVAR
+    when next is greater than STATE_TOV:
+        return STATE_TOV
+    otherwise:
+        return next
+
+provide work distance_to_center that takes count state returns count:
+    // How far from yashar (center)?
+    return abs state
+
+provide work is_extreme that takes count state returns truth:
+    // Are we at shavar or tov?
+    when state is STATE_SHAVAR:
+        return yes
+    when state is STATE_TOV:
+        return yes
+    otherwise:
+        return no
+
+provide work is_positive_state that takes count state returns truth:
+    when state is greater than STATE_YASHAR:
+        return yes
+    otherwise:
+        return no
+
+provide work is_negative_state that takes count state returns truth:
+    when state is less than STATE_YASHAR:
+        return yes
+    otherwise:
+        return no
+
+provide work is_centered that takes count state returns truth:
+    when state is STATE_YASHAR:
+        return yes
+    otherwise:
+        return no
+
+// # State from Health
+
+provide work state_from_health that takes count health_val returns count:
+    // Convert health (-100 to +100) to state (-3 to +3)
+    when health_val is less than -66:
+        return STATE_SHAVAR
+    when health_val is less than -33:
+        return STATE_CHASER
+    when health_val is less than 0:
+        return STATE_RATSAH
+    when health_val is 0:
+        return STATE_YASHAR
+    when health_val is less than 34:
+        return STATE_TAMIM
+    when health_val is less than 67:
+        return STATE_SHALEM
+    otherwise:
+        return STATE_TOV
+
+// # State to Covenant
+
+provide work state_to_covenant that takes count state returns covenant:
+    when state is greater than STATE_YASHAR:
+        return granted
+    when state is less than STATE_YASHAR:
+        return denied
+    otherwise:
+        return deferred
+
+// # State Descriptions
+
+provide work state_description that takes count state returns word:
+    when state is STATE_SHAVAR:
+        return "Crisis state - needs intervention"
+    when state is STATE_CHASER:
+        return "Deficient - missing something"
+    when state is STATE_RATSAH:
+        return "Hungry for growth"
+    when state is STATE_YASHAR:
+        return "Balanced center"
+    when state is STATE_TAMIM:
+        return "Solid and complete"
+    when state is STATE_SHALEM:
+        return "At peace, whole"
+    when state is STATE_TOV:
+        return "Perfect completion"
+    otherwise:
+        return "Unknown state"
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// "But let your communication be, Yea, yea; Nay, nay: for whatsoever is more
+//  than these cometh of evil." — Matthew 5:37
+//
+// Hebrew states provide rich vocabulary for the in-between spaces.
+// Not just yes or no, but the full spectrum of being.
+// The k-factor honors that there are three valid directions: forward, back, stay.
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

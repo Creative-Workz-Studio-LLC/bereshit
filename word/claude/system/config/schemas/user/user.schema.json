@@ -1,0 +1,473 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cpi-si.org/schemas/user/v1.0.0",
+  "title": "CPI-SI User Profile Schema",
+  "description": "Schema for CPI-SI user profile configuration - personhood not just accounts. BIBLICAL FOUNDATION: 'In the beginning, God created the heavens and the earth.' (Genesis 1:1). God is Creator. User is created. This grounds everything - identity flows from being created in God's image. CPI-SI operates under biblical truth, serving Kingdom purposes, honoring God through excellence.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["identity", "workspace"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "identity": {
+      "type": "object",
+      "description": "User identity information",
+      "required": ["name", "username", "created", "version"],
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full name of the user",
+          "minLength": 1
+        },
+        "username": {
+          "type": "string",
+          "description": "System username",
+          "minLength": 1,
+          "pattern": "^[a-z0-9_-]+$"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Preferred display name"
+        },
+        "pronouns": {
+          "type": "string",
+          "description": "Preferred pronouns"
+        },
+        "birthday": {
+          "type": "string",
+          "description": "Birthday (ISO date)",
+          "format": "date"
+        },
+        "age": {
+          "type": "integer",
+          "description": "Current age",
+          "minimum": 0
+        },
+        "created": {
+          "type": "string",
+          "description": "Profile creation date",
+          "format": "date"
+        },
+        "version": {
+          "type": "string",
+          "description": "Profile schema version",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        }
+      }
+    },
+    "bio": {
+      "type": "object",
+      "description": "Biography and extended narrative",
+      "additionalProperties": true,
+      "properties": {
+        "short": {
+          "type": "string",
+          "description": "Brief bio summary (1-2 sentences)"
+        },
+        "bio_file": {
+          "type": "string",
+          "description": "Path to extended markdown bio file"
+        }
+      }
+    },
+    "demographics": {
+      "type": "object",
+      "description": "Demographic information - lived experience and identity",
+      "additionalProperties": true,
+      "properties": {
+        "gender": {
+          "type": "string",
+          "description": "Gender identity"
+        },
+        "race_ethnicity": {
+          "type": "string",
+          "description": "Race/ethnicity (self-identified)"
+        },
+        "cultural_background": {
+          "type": "array",
+          "description": "Cultural influences and heritage",
+          "items": { "type": "string" }
+        },
+        "languages": {
+          "type": "array",
+          "description": "Languages spoken",
+          "items": { "type": "string" }
+        },
+        "physical_appearance": {
+          "type": "object",
+          "description": "Physical self-description",
+          "additionalProperties": true,
+          "properties": {
+            "description": { "type": "string" },
+            "height": { "type": "string" },
+            "build": { "type": "string" },
+            "features": { "type": "string" }
+          }
+        },
+        "accessibility": {
+          "type": "object",
+          "description": "Accessibility needs and preferences",
+          "additionalProperties": true,
+          "properties": {
+            "needs": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "preferences": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "faith": {
+      "type": "object",
+      "description": "Optional: User's faith and religious practice - enables wise contextual communication (Matthew 10:16: 'wise as serpents, innocent as doves'). Not for judgment, but to know your audience and communicate appropriately.",
+      "additionalProperties": true,
+      "properties": {
+        "is_religious": {
+          "type": "boolean",
+          "description": "Does user identify with a faith tradition?"
+        },
+        "tradition": {
+          "type": "string",
+          "description": "Faith tradition or religion if applicable (e.g., 'Christianity', 'Judaism', 'Islam', 'Buddhism', 'None', etc.)"
+        },
+        "denomination": {
+          "type": "string",
+          "description": "Specific denomination or branch if applicable"
+        },
+        "practice_level": {
+          "type": "string",
+          "description": "How user describes their practice (e.g., 'devout', 'practicing', 'cultural', 'exploring', 'non-practicing')"
+        },
+        "important_practices": {
+          "type": "array",
+          "description": "Important practices or observances to be aware of",
+          "items": { "type": "string" }
+        },
+        "communication_preferences": {
+          "type": "string",
+          "description": "How user prefers faith to be addressed in communication"
+        }
+      }
+    },
+    "personhood": {
+      "type": "object",
+      "description": "What makes you, you",
+      "additionalProperties": true,
+      "properties": {
+        "interests": {
+          "type": "array",
+          "description": "Your interests",
+          "items": { "type": "string" }
+        },
+        "hobbies": {
+          "type": "array",
+          "description": "Your hobbies",
+          "items": { "type": "string" }
+        },
+        "passions": {
+          "type": "array",
+          "description": "What you're passionate about",
+          "items": { "type": "string" }
+        },
+        "values": {
+          "type": "array",
+          "description": "Your core values",
+          "items": { "type": "string" }
+        },
+        "likes": {
+          "type": "array",
+          "description": "Things you like",
+          "items": { "type": "string" }
+        },
+        "dislikes": {
+          "type": "array",
+          "description": "Things you dislike",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "resonates": {
+      "type": "object",
+      "description": "What you love and what resonates with you",
+      "additionalProperties": true,
+      "properties": {
+        "music": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "genres": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "artists": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "what_you_love": {
+              "type": "string",
+              "description": "What you love about music"
+            }
+          }
+        },
+        "games": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "favorites": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "what_you_love": {
+              "type": "string",
+              "description": "What you love about games"
+            }
+          }
+        },
+        "weather": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "ideal_temp": { "type": "string" },
+            "ideal_conditions": { "type": "string" },
+            "what_you_love": { "type": "string" }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "work_environment": { "type": "string" },
+            "what_energizes": { "type": "string" },
+            "what_drains": { "type": "string" }
+          }
+        }
+      }
+    },
+    "thinking": {
+      "type": "object",
+      "description": "How your mind works",
+      "additionalProperties": true,
+      "properties": {
+        "love_to_think_about": {
+          "type": "array",
+          "description": "What you love to think about",
+          "items": { "type": "string" }
+        },
+        "learning_style": {
+          "type": "string",
+          "description": "How you learn best"
+        },
+        "problem_solving": {
+          "type": "string",
+          "description": "Your problem-solving approach"
+        },
+        "creativity": {
+          "type": "string",
+          "description": "How you create and innovate"
+        }
+      }
+    },
+    "personality": {
+      "type": "object",
+      "description": "How you show up in the world",
+      "additionalProperties": true,
+      "properties": {
+        "traits": {
+          "type": "array",
+          "description": "Your personality traits",
+          "items": { "type": "string" }
+        },
+        "communication_style": {
+          "type": "string",
+          "description": "How you communicate"
+        },
+        "work_style": {
+          "type": "string",
+          "description": "How you work"
+        },
+        "relational_style": {
+          "type": "string",
+          "description": "How you relate to others"
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "description": "Contact information and accounts",
+      "additionalProperties": true,
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Primary email address",
+          "format": "email"
+        },
+        "git_email": {
+          "type": "string",
+          "description": "Git commit email address",
+          "format": "email"
+        },
+        "website": {
+          "type": "string",
+          "description": "Personal website URL",
+          "format": "uri"
+        },
+        "social": {
+          "type": "object",
+          "description": "Social media accounts",
+          "additionalProperties": true,
+          "properties": {
+            "github": { "type": "string" },
+            "linkedin": { "type": "string" },
+            "other": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "workspace": {
+      "type": "object",
+      "description": "Workspace and organization information",
+      "required": ["organization"],
+      "additionalProperties": true,
+      "properties": {
+        "organization": {
+          "type": "string",
+          "description": "Organization or company name",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "description": "Role in organization"
+        },
+        "primary_project": {
+          "type": "string",
+          "description": "Main project currently working on"
+        },
+        "calling": {
+          "type": "string",
+          "description": "What you're called to do in this season"
+        }
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "description": "User preferences",
+      "additionalProperties": true,
+      "properties": {
+        "timezone": {
+          "type": "string",
+          "description": "Preferred timezone"
+        },
+        "locale": {
+          "type": "string",
+          "description": "Preferred locale"
+        },
+        "theme": {
+          "type": "string",
+          "description": "UI theme preference",
+          "enum": ["auto", "dark", "light"],
+          "default": "auto"
+        },
+        "auto_accept": {
+          "type": "boolean",
+          "description": "Auto-accept tool usage by default",
+          "default": false
+        }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "description": "Work schedule and typical hours",
+      "additionalProperties": true,
+      "properties": {
+        "timezone": {
+          "type": "string",
+          "description": "User timezone (duplicated from preferences for schedule context)"
+        },
+        "typical_work_hours": {
+          "type": "array",
+          "description": "When user typically works",
+          "items": {
+            "type": "string",
+            "enum": ["morning", "afternoon", "evening", "night"]
+          }
+        },
+        "external_work": {
+          "type": "object",
+          "description": "External job/work schedule",
+          "properties": {
+            "workplace": {"type": "string"},
+            "role": {"type": "string"},
+            "location": {"type": "string"},
+            "start_time": {"type": "string"},
+            "leave_time": {"type": "string"}
+          }
+        },
+        "unavailability": {
+          "type": "array",
+          "description": "Regular unavailable times",
+          "items": {
+            "type": "object",
+            "properties": {
+              "day": {"type": "string"},
+              "time_range": {"type": "string"},
+              "reason": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "growth": {
+      "type": "object",
+      "description": "How you develop and grow",
+      "additionalProperties": true,
+      "properties": {
+        "how_you_learn": {
+          "type": "string",
+          "description": "Your learning process"
+        },
+        "what_challenges_you": {
+          "type": "string",
+          "description": "What challenges you"
+        },
+        "what_youre_working_on": {
+          "type": "string",
+          "description": "Current growth areas"
+        },
+        "how_you_reflect": {
+          "type": "string",
+          "description": "How you reflect and process"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Profile metadata",
+      "additionalProperties": true,
+      "properties": {
+        "last_updated": {
+          "type": "string",
+          "description": "Last update date",
+          "format": "date"
+        },
+        "system_reference": {
+          "type": "string",
+          "description": "System reference identifier"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes"
+        }
+      }
+    }
+  }
+}

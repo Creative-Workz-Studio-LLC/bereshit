@@ -1,0 +1,273 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cpi-si.org/schemas/temporal/appointed/planner-overview.schema.json",
+  "title": "Weekly Overview",
+  "description": "Schema for weekly appointment overview/planner files",
+  "type": "object",
+  "required": ["metadata", "week", "summary", "days"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["component", "version", "generated_at", "purpose"],
+      "properties": {
+        "component": {
+          "type": "string",
+          "description": "Component name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 generation timestamp"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Purpose of this overview"
+        }
+      }
+    },
+    "week": {
+      "type": "object",
+      "required": ["week_number", "total_weeks_in_year", "year", "start_date", "end_date", "week_format", "identity_type", "identity_id"],
+      "properties": {
+        "week_number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 53,
+          "description": "ISO week number"
+        },
+        "total_weeks_in_year": {
+          "type": "integer",
+          "minimum": 52,
+          "maximum": 53,
+          "description": "Total weeks in this year"
+        },
+        "year": {
+          "type": "integer",
+          "description": "Year"
+        },
+        "start_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Week start date (Sunday)"
+        },
+        "end_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Week end date (Saturday)"
+        },
+        "week_format": {
+          "type": "string",
+          "enum": ["sunday-saturday", "monday-sunday"],
+          "description": "Week format convention"
+        },
+        "identity_type": {
+          "type": "string",
+          "enum": ["user", "instance"],
+          "description": "Type of identity"
+        },
+        "identity_id": {
+          "type": "string",
+          "description": "Unique identifier for the identity"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["total_appointments", "by_day", "by_category"],
+      "properties": {
+        "total_appointments": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total appointments for the week"
+        },
+        "total_work_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total work hours for the week"
+        },
+        "by_day": {
+          "type": "object",
+          "required": ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+          "properties": {
+            "sunday": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "monday": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "tuesday": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "wednesday": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "thursday": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "friday": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "saturday": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "by_category": {
+          "type": "object",
+          "required": ["sacred", "work", "rest", "collaboration", "other"],
+          "properties": {
+            "sacred": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "work": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rest": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "collaboration": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "other": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "gasa_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total GASA work hours for the week"
+        },
+        "available_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Available hours for CPI-SI/personal work"
+        }
+      }
+    },
+    "days": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "description": "Daily summaries for each day of the week",
+      "items": {
+        "type": "object",
+        "required": ["date", "day_name"],
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "ISO 8601 date"
+          },
+          "day_name": {
+            "type": "string",
+            "enum": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+          },
+          "gasa_work": {
+            "type": "boolean",
+            "description": "Whether this is a GASA work day"
+          },
+          "gasa_hours": {
+            "type": "number",
+            "minimum": 0,
+            "description": "GASA work hours for this day"
+          },
+          "gasa_schedule": {
+            "type": "string",
+            "description": "GASA schedule for this day (e.g., '8:30 AM - 5:00 PM')"
+          },
+          "lunch_break": {
+            "type": "string",
+            "description": "Lunch break time range (e.g., '12:00 PM - 1:00 PM')"
+          },
+          "first_appointment": {
+            "type": ["string", "null"],
+            "pattern": "^\\d{2}:\\d{2}$",
+            "description": "Start time of first appointment (HH:MM)"
+          },
+          "last_appointment": {
+            "type": ["string", "null"],
+            "pattern": "^\\d{2}:\\d{2}$",
+            "description": "Start time of last appointment (HH:MM)"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Notes about this day"
+          }
+        }
+      }
+    },
+    "gasa_schedule": {
+      "type": "object",
+      "description": "GASA work schedule details for the week",
+      "properties": {
+        "total_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total GASA hours for the week"
+        },
+        "pantry_days": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Days that are pantry days"
+        },
+        "exceptions_this_week": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Special exceptions or modifications this week"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Notes about GASA schedule"
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Discovery space for future features",
+      "properties": {
+        "cpi_si_available_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Hours available for CPI-SI work"
+        },
+        "deep_work_windows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Available deep work time windows"
+        },
+        "lunch_availability": {
+          "type": "string",
+          "description": "Notes about lunch break availability"
+        }
+      }
+    }
+  }
+}

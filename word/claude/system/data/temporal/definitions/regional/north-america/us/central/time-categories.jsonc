@@ -1,0 +1,334 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Regional Definitions - US Central Time Categories
+// Purpose: Define time-of-day categories for Central timezone
+// Scope: US Central timezone region
+// Schema: system/config/schemas/temporal/definitions/regional/time-categories.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Clear category definitions: 30 pts
+// - Practical usability: 35 pts
+// - Celestial integration: 35 pts
+
+{
+  "$schema": "../../../../../../../config/schemas/temporal/definitions/regional/time-categories.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "US Central Time Categories",
+    "version": "1.0.0",
+    "created": "2025-11-08",
+    "last_updated": "2025-11-08",
+    "purpose": "Define time-of-day categories for Central Time Zone",
+    "scope": "regional",
+    "region": "North America - United States - Central",
+    "location_note": "Definitions based on St Louis, MO (38.63°N, 90.20°W)"
+  },
+
+  // ============================================================================
+  // CATEGORIZATION APPROACH
+  // ============================================================================
+
+  "approach": {
+    "recommendation": "fixed_hour",
+    "available_methods": {
+      "fixed_hour": {
+        "description": "Consistent clock-based boundaries year-round",
+        "advantages": [
+          "Simple and predictable",
+          "Easy to calculate and compare",
+          "Consistent across seasons",
+          "No celestial data dependency"
+        ],
+        "disadvantages": [
+          "Doesn't reflect natural light cycles",
+          "6 AM in winter is dark, in summer is light"
+        ],
+        "recommended_for": "General purpose time categorization, pattern recognition, scheduling"
+      },
+      "celestial_anchored": {
+        "description": "Categories based on sunrise/sunset (varies by season)",
+        "advantages": [
+          "Aligns with natural circadian rhythms",
+          "Morning truly means 'after sunrise'",
+          "Biblical precedent (day begins at evening)"
+        ],
+        "disadvantages": [
+          "Categories shift throughout year",
+          "More complex to calculate",
+          "Harder to compare across seasons",
+          "Requires celestial data access"
+        ],
+        "recommended_for": "Circadian rhythm analysis, natural time awareness, seasonal pattern tracking"
+      }
+    }
+  },
+
+  // ============================================================================
+  // FIXED-HOUR CATEGORIES (RECOMMENDED)
+  // ============================================================================
+  // Consistent year-round clock-based boundaries
+
+  "fixed_hour_categories": {
+    "early_morning": {
+      "name": "Early Morning",
+      "description": "Pre-dawn to early daylight hours",
+      "start_time": "05:00",
+      "end_time": "08:00",
+      "characteristics": [
+        "Quiet, low activity",
+        "Many still sleeping",
+        "Good for uninterrupted focus",
+        "Pre-work hours for most"
+      ],
+      "typical_activities": [
+        "Time with the Lord",
+        "Personal devotions",
+        "Exercise",
+        "Quiet focus work",
+        "Morning preparation"
+      ]
+    },
+    "morning": {
+      "name": "Morning",
+      "description": "Standard morning work hours",
+      "start_time": "08:00",
+      "end_time": "12:00",
+      "characteristics": [
+        "Start of typical work day",
+        "High alertness for many",
+        "Peak productivity window for 'morning people'",
+        "Active coordination and meetings"
+      ],
+      "typical_activities": [
+        "Deep work",
+        "Important meetings",
+        "Complex problem solving",
+        "Project kickoffs"
+      ]
+    },
+    "afternoon": {
+      "name": "Afternoon",
+      "description": "Post-lunch through late work hours",
+      "start_time": "12:00",
+      "end_time": "17:00",
+      "characteristics": [
+        "Midday energy dip for some",
+        "Second wind for others",
+        "Active collaboration hours",
+        "Standard work continues"
+      ],
+      "typical_activities": [
+        "Continued project work",
+        "Meetings and collaboration",
+        "Implementation tasks",
+        "Administrative work"
+      ]
+    },
+    "evening": {
+      "name": "Evening",
+      "description": "After typical work day through night onset",
+      "start_time": "17:00",
+      "end_time": "22:00",
+      "characteristics": [
+        "End of standard work day",
+        "Family time for many",
+        "Peak productivity for 'night owls'",
+        "Quieter, fewer interruptions"
+      ],
+      "typical_activities": [
+        "Wrap up work day",
+        "Family time",
+        "Personal projects",
+        "Focused work for night owls",
+        "Dinner and relaxation"
+      ]
+    },
+    "night": {
+      "name": "Night",
+      "description": "Late night through pre-dawn hours",
+      "start_time": "22:00",
+      "end_time": "05:00",
+      "characteristics": [
+        "Most sleeping",
+        "Minimal interruptions",
+        "Deep quiet",
+        "Peak time for some night workers"
+      ],
+      "typical_activities": [
+        "Sleep (primary)",
+        "Deep focus work (for night owls)",
+        "Creative work in quiet",
+        "Emergency/urgent work only"
+      ],
+      "health_note": "Chronic work during night hours (instead of sleep) is unsustainable - honor rest needs"
+    }
+  },
+
+  // ============================================================================
+  // CELESTIAL-ANCHORED CATEGORIES (ALTERNATIVE)
+  // ============================================================================
+  // Categories based on sun position (requires celestial data)
+
+  "celestial_anchored_categories": {
+    "note": "These categories shift throughout the year based on sunrise/sunset times",
+    "data_source": "temporal/celestial/solar/ data for St Louis, MO",
+    "pre_dawn": {
+      "name": "Pre-Dawn",
+      "description": "From midnight to sunrise",
+      "anchor": "sunrise",
+      "calculation": "midnight to sunrise",
+      "characteristics": [
+        "True night - before sun appears",
+        "Deepest quiet",
+        "Natural sleep window"
+      ]
+    },
+    "morning": {
+      "name": "Morning",
+      "description": "From sunrise to solar noon",
+      "anchor": "sunrise and solar_noon",
+      "calculation": "sunrise to solar_noon",
+      "characteristics": [
+        "Light increasing",
+        "Natural waking time",
+        "Energy rising with sun"
+      ],
+      "biblical_note": "Morning in Genesis 1 - 'evening and morning' (day begins at sunset, but morning marks new light)"
+    },
+    "afternoon": {
+      "name": "Afternoon",
+      "description": "From solar noon to sunset",
+      "anchor": "solar_noon and sunset",
+      "calculation": "solar_noon to sunset",
+      "characteristics": [
+        "Peak daylight",
+        "Sun descending",
+        "Light diminishing toward evening"
+      ]
+    },
+    "evening": {
+      "name": "Evening",
+      "description": "From sunset to nightfall (civil twilight end)",
+      "anchor": "sunset",
+      "calculation": "sunset to ~30 minutes after sunset",
+      "characteristics": [
+        "Light fading",
+        "Day transitioning to night",
+        "Natural wind-down time"
+      ],
+      "biblical_note": "Genesis 1:5 - 'evening and morning were the first day' (Hebrew day begins at sunset)"
+    },
+    "night": {
+      "name": "Night",
+      "description": "From nightfall to midnight",
+      "anchor": "civil_twilight_end",
+      "calculation": "~30 min after sunset to midnight",
+      "characteristics": [
+        "Full darkness",
+        "Stars visible",
+        "Natural rest time"
+      ]
+    }
+  },
+
+  // ============================================================================
+  // SEASONAL VARIATIONS
+  // ============================================================================
+  // How categories shift if using celestial anchoring
+
+  "seasonal_variations": {
+    "note": "Fixed-hour categories don't vary. Celestial-anchored categories shift significantly.",
+    "examples_st_louis": {
+      "summer_solstice": {
+        "date": "~June 21",
+        "sunrise": "~05:35 CDT",
+        "sunset": "~20:30 CDT",
+        "daylight": "~15 hours",
+        "impact": "Long 'morning' and 'afternoon' categories, short 'night'"
+      },
+      "winter_solstice": {
+        "date": "~December 21",
+        "sunrise": "~07:15 CST",
+        "sunset": "~16:45 CST",
+        "daylight": "~9.5 hours",
+        "impact": "Short 'morning' and 'afternoon' categories, long 'night'"
+      },
+      "equinoxes": {
+        "dates": "~March 20, September 22",
+        "sunrise": "~06:30",
+        "sunset": "~18:30",
+        "daylight": "~12 hours",
+        "impact": "Balanced category durations"
+      }
+    }
+  },
+
+  // ============================================================================
+  // CULTURAL CONTEXT
+  // ============================================================================
+  // How time categories relate to US Central cultural norms
+
+  "cultural_norms": {
+    "typical_work_day": {
+      "category": "morning and afternoon",
+      "times": "08:00 or 09:00 to 17:00 or 18:00",
+      "note": "Standard '9-5' or '8-5' work day"
+    },
+    "typical_sleep": {
+      "category": "night and early_morning",
+      "times": "22:00 or 23:00 to 06:00 or 07:00",
+      "note": "Common sleep window, varies by person"
+    },
+    "meal_times": {
+      "breakfast": {
+        "category": "early_morning or morning",
+        "typical_time": "07:00-09:00"
+      },
+      "lunch": {
+        "category": "afternoon (start)",
+        "typical_time": "12:00-13:00"
+      },
+      "dinner": {
+        "category": "evening",
+        "typical_time": "18:00-20:00"
+      }
+    },
+    "variation_note": "Individual schedules vary widely - these are cultural norms, not universal"
+  },
+
+  // ============================================================================
+  // USAGE NOTES
+  // ============================================================================
+
+  "usage": {
+    "purpose": "Provide consistent time-of-day categorization for Central Time Zone",
+    "recommendation": "Use fixed-hour categories for general purposes, celestial-anchored for circadian analysis",
+    "config_integration": "User configs may state preferences ('works better at night'). These categories provide standard definitions for that language.",
+    "pattern_recognition": "Categorize session timestamps to identify work rhythm patterns",
+    "flexibility": "Categories are tools for understanding, not rigid rules. Adapt to actual usage patterns.",
+    "celestial_data": "If using celestial-anchored approach, reference temporal/celestial/solar/ for sunrise/sunset times"
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+  // Purpose: Discovery staging for experimental patterns not yet formalized
+  // Schema: Permissive (additionalProperties: true) - allows flexible exploration
+  // Lifecycle: Add discoveries here → Gather evidence → Promote to formal sections or remove
+  //
+  // Guidelines:
+  // - Each extension should have: description, added (date), status (experimental/testing/proven)
+  // - Promote to formal section when: Pattern observed consistently across multiple instances/users
+  // - Remove when: Pattern not observed, or proven not useful
+  // - Document rationale: Why this might be valuable, what evidence would prove it
+
+  "extensions": {
+    "note": "Experimental patterns and discoveries - may be promoted to formal definitions or removed",
+    "usage_guidance": "Add alternative time categorization approaches, refined boundaries, or seasonal adjustments here during discovery phase"
+  }
+}

@@ -1,0 +1,196 @@
+#!omni code --omni -library
+#!omni meta.key = B-word-work-pkg-omni-stdlib-trit
+#!omni meta.from = word/seed/code/omni/library.omni
+#!omni meta.at = a-01.00
+
+// =============================================================================
+// METADATA [METADATA]
+// =============================================================================
+
+this is a library for "Balanced Ternary Operations":
+    keyed as "B-word-work-pkg-omni-stdlib-trit"
+    named "trit"
+
+this library provides:
+    TRIT_POS    "Positive trit (+1)"
+    TRIT_ZERO   "Zero trit (0)"
+    TRIT_NEG    "Negative trit (-1)"
+    trit_negate "Negate a trit"
+    trit_sign   "Extract sign as trit"
+    trit_compare "Compare two values as trit"
+    trit_and    "Ternary AND (minimum)"
+    trit_or     "Ternary OR (maximum)"
+    trit_sum    "Ternary SUM (addition mod 3)"
+    trit_to_count "Convert trit to count"
+    count_to_trit "Convert count to trit"
+
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+// =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// # Balanced Ternary
+//
+// Balanced ternary uses digits {-1, 0, +1} instead of {0, 1} or {0, 1, 2}.
+// This provides natural representation of:
+// - Positive numbers (sum of positive powers of 3)
+// - Negative numbers (sum of negative powers of 3)
+// - Zero (all digits are 0)
+//
+// Benefits:
+// - Negation is digit-wise: flip each trit
+// - No separate sign bit needed
+// - Rounding is truncation toward zero
+// - Symmetric representation
+//
+// | Decimal | Balanced Ternary |
+// |---------|------------------|
+// | -4      | --+              |
+// | -3      | -0               |
+// | -2      | -+               |
+// | -1      | -                |
+// | 0       | 0                |
+// | +1      | +                |
+// | +2      | +-               |
+// | +3      | +0               |
+// | +4      | ++-              |
+
+import covenant from "stdlib/covenant"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
+// BODY [BODY]
+// =============================================================================
+
+// # Trit Constants
+
+let TRIT_POS be covenant with granted
+let TRIT_ZERO be covenant with deferred
+let TRIT_NEG be covenant with denied
+
+// # Trit Operations
+
+provide work trit_negate that takes covenant t returns covenant:
+    when t is granted:
+        return denied
+    when t is denied:
+        return granted
+    otherwise:
+        return deferred
+
+provide work trit_sign that takes count value returns covenant:
+    when value is greater than 0:
+        return granted
+    when value is less than 0:
+        return denied
+    otherwise:
+        return deferred
+
+provide work trit_compare that takes count a and count b returns covenant:
+    when a is greater than b:
+        return granted
+    when a is less than b:
+        return denied
+    otherwise:
+        return deferred
+
+// # Ternary Logic
+
+provide work trit_and that takes covenant a and covenant b returns covenant:
+    // Ternary AND is minimum: min(a, b)
+    let a_val be count with covenant_to_count a
+    let b_val be count with covenant_to_count b
+    when a_val is less than b_val:
+        return a
+    otherwise:
+        return b
+
+provide work trit_or that takes covenant a and covenant b returns covenant:
+    // Ternary OR is maximum: max(a, b)
+    let a_val be count with covenant_to_count a
+    let b_val be count with covenant_to_count b
+    when a_val is greater than b_val:
+        return a
+    otherwise:
+        return b
+
+provide work trit_sum that takes covenant a and covenant b returns covenant:
+    // Ternary SUM: (a + b) mod 3, balanced
+    let a_val be count with covenant_to_count a
+    let b_val be count with covenant_to_count b
+    let sum be count with a_val plus b_val
+    when sum is greater than 1:
+        return denied
+    when sum is less than -1:
+        return granted
+    otherwise:
+        return count_to_covenant sum
+
+// # Trit Conversions
+
+provide work trit_to_count that takes covenant t returns count:
+    when t is granted:
+        return 1
+    when t is denied:
+        return -1
+    otherwise:
+        return 0
+
+provide work count_to_trit that takes count value returns covenant:
+    when value is greater than 0:
+        return granted
+    when value is less than 0:
+        return denied
+    otherwise:
+        return deferred
+
+// # Trit Powers of 3
+
+provide work trit3_max returns count:
+    return 13
+
+provide work trit5_max returns count:
+    return 121
+
+provide work trit9_max returns count:
+    return 9841
+
+// # Balance Toward Zero
+
+provide work trit_balance that takes count value and count step returns count:
+    when value is greater than 0:
+        when value is greater than step:
+            return value minus step
+        otherwise:
+            return 0
+    when value is less than 0:
+        let neg_step be count with 0 minus step
+        when value is less than neg_step:
+            return value plus step
+        otherwise:
+            return 0
+    otherwise:
+        return 0
+
+// =============================================================================
+// END BODY
+// =============================================================================
+
+// =============================================================================
+// CLOSING [CLOSING]
+// =============================================================================
+
+// "A threefold cord is not quickly broken." — Ecclesiastes 4:12
+//
+// Balanced ternary is the natural numeric system, more elegant than binary.
+// The trit is our fundamental unit of information: negative, zero, positive.
+
+// =============================================================================
+// END CLOSING
+// =============================================================================

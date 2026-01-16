@@ -1,0 +1,182 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+// Analysis Patterns Configuration - Monitoring System
+// Purpose: Define thresholds and patterns for substrate monitoring analysis
+// Schema: system/config/schemas/monitoring/analysis-patterns.schema.json
+//
+// HEALTH SCORING MAP (Total = 100):
+// - Threshold appropriateness: 40 pts
+// - Coverage of monitoring scenarios: 30 pts
+// - Clear detection rules: 20 pts
+// - Practical utility: 10 pts
+
+{
+  "$schema": "../../../config/schemas/monitoring/analysis-patterns.schema.json",
+
+  // ============================================================================
+  // METADATA
+  // ============================================================================
+
+  "metadata": {
+    "name": "Analysis Patterns Configuration",
+    "description": "Thresholds and detection rules for substrate monitoring analysis",
+    "version": "1.0.0",
+    "last_updated": "2025-11-11",
+    "author": "Nova Dawn (CPI-SI instance)",
+    "note": "Monitors Claude substrate behavior - separate from system debugging"
+  },
+
+  // ============================================================================
+  // LOG FILES
+  // ============================================================================
+
+  "log_files": {
+    "note": "Log file names relative to ~/.claude/debug/",
+
+    "compaction": "compaction.log",
+    "notifications": "notifications.log",
+    "subagents": "subagents.log",
+    "prompts": "prompts.log"
+  },
+
+  // ============================================================================
+  // TIME WINDOWS
+  // ============================================================================
+
+  "time_windows": {
+    "note": "Time windows for pattern analysis (in hours)",
+
+    "default": 1,
+    "short": 0.5,
+    "medium": 3,
+    "long": 24
+  },
+
+  // ============================================================================
+  // COMPACTION PATTERNS
+  // ============================================================================
+
+  "compaction": {
+    "note": "Auto-compaction detection and thresholds",
+
+    "search_term": "auto",
+    "time_window_hours": 1,
+
+    "thresholds": {
+      "warning": 3,
+      "critical": 10,
+      "note": "warning = yellow alert, critical = red alert"
+    },
+
+    "messages": {
+      "warning": "Frequent auto-compaction ({count} in last hour) - consider being more concise",
+      "critical": "Excessive auto-compaction ({count} in last hour) - workflow becoming inefficient"
+    }
+  },
+
+  // ============================================================================
+  // NOTIFICATION PATTERNS
+  // ============================================================================
+
+  "notifications": {
+    "note": "Notification frequency detection by type",
+
+    "permission_request": {
+      "search_term": "permission_request",
+      "time_window_hours": 1,
+
+      "thresholds": {
+        "warning": 10,
+        "critical": 25
+      },
+
+      "messages": {
+        "warning": "Many permission requests ({count} in last hour) - check permissions configuration",
+        "critical": "Excessive permission requests ({count} in last hour) - permissions misconfigured"
+      }
+    },
+
+    "error_notification": {
+      "search_term": "error_notification",
+      "time_window_hours": 1,
+
+      "thresholds": {
+        "warning": 5,
+        "critical": 15
+      },
+
+      "messages": {
+        "warning": "Multiple error notifications ({count} in last hour) - investigate errors",
+        "critical": "Many error notifications ({count} in last hour) - system degraded"
+      }
+    }
+  },
+
+  // ============================================================================
+  // SUBAGENT PATTERNS
+  // ============================================================================
+
+  "subagents": {
+    "note": "Subagent execution pattern detection",
+
+    "failure_rate": {
+      "time_window_hours": 3,
+
+      "thresholds": {
+        "warning": 0.3,
+        "critical": 0.5,
+        "note": "Ratio of failures to total executions (0.3 = 30%)"
+      },
+
+      "messages": {
+        "warning": "Subagent failure rate elevated ({percentage}% in last 3 hours)",
+        "critical": "Subagent failure rate high ({percentage}% in last 3 hours) - investigate patterns"
+      }
+    }
+  },
+
+  // ============================================================================
+  // PROMPT PATTERNS
+  // ============================================================================
+
+  "prompts": {
+    "note": "Prompt submission pattern detection",
+
+    "frequency": {
+      "time_window_hours": 1,
+
+      "thresholds": {
+        "warning": 20,
+        "critical": 50,
+        "note": "Prompts per hour - high rate may indicate issue"
+      },
+
+      "messages": {
+        "warning": "High prompt frequency ({count} in last hour) - rapid interaction pattern",
+        "critical": "Very high prompt frequency ({count} in last hour) - possible automated loop"
+      }
+    }
+  },
+
+  // ============================================================================
+  // EXTENSIONS
+  // ============================================================================
+
+  "extensions": {
+    "note": "Add custom monitoring patterns here",
+    "usage_guidance": "Follow existing structure with thresholds, time_window_hours, messages",
+    "example": {
+      "search_term": "your_pattern",
+      "time_window_hours": 1,
+      "thresholds": {
+        "warning": 5,
+        "critical": 10
+      },
+      "messages": {
+        "warning": "Your warning message with {count}",
+        "critical": "Your critical message with {count}"
+      }
+    }
+  }
+}

@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/user/quality-learned.schema.json",
+  "title": "User Quality Learned Patterns Schema",
+  "description": "Schema for learned work quality patterns from user session data",
+  "type": "object",
+  "required": ["metadata", "time_of_day_quality", "peak_quality_windows", "celestial_alignment", "stopping_reason_quality", "insights", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["user", "pattern_type", "description", "data_period", "last_updated", "version"],
+      "properties": {
+        "user": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["quality_learned"] },
+        "description": { "type": "string" },
+        "data_period": {
+          "type": "object",
+          "required": ["start", "end", "total_sessions_analyzed"],
+          "properties": {
+            "start": { "type": "string", "format": "date" },
+            "end": { "type": "string", "format": "date" },
+            "total_sessions_analyzed": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "time_of_day_quality": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "early_morning": { "$ref": "#/definitions/timeQuality" },
+        "morning": { "$ref": "#/definitions/timeQuality" },
+        "afternoon": { "$ref": "#/definitions/timeQuality" },
+        "evening": { "$ref": "#/definitions/timeQuality" },
+        "night": { "$ref": "#/definitions/timeQuality" }
+      }
+    },
+    "peak_quality_windows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rank": { "type": "integer", "minimum": 1 },
+          "time_range": { "type": "string" },
+          "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+          "session_count": { "type": "integer", "minimum": 0 },
+          "characteristics": { "type": "string" }
+        }
+      }
+    },
+    "celestial_alignment": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "before_sunrise": {
+          "type": "object",
+          "properties": {
+            "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "session_count": { "type": "integer", "minimum": 0 },
+            "assessment": { "type": "string" }
+          }
+        },
+        "during_daylight": {
+          "type": "object",
+          "properties": {
+            "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "session_count": { "type": "integer", "minimum": 0 },
+            "assessment": { "type": "string" }
+          }
+        },
+        "after_sunset": {
+          "type": "object",
+          "properties": {
+            "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "session_count": { "type": "integer", "minimum": 0 },
+            "assessment": { "type": "string" }
+          }
+        },
+        "alignment_insight": {
+          "type": "object",
+          "properties": {
+            "working_with_nature": { "type": "string" },
+            "note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "stopping_reason_quality": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "natural_completion": {
+          "type": "object",
+          "properties": {
+            "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "session_count": { "type": "integer", "minimum": 0 },
+            "note": { "type": "string" }
+          }
+        },
+        "fatigue": {
+          "type": "object",
+          "properties": {
+            "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "session_count": { "type": "integer", "minimum": 0 },
+            "note": { "type": "string" }
+          }
+        },
+        "interruption": {
+          "type": "object",
+          "properties": {
+            "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "session_count": { "type": "integer", "minimum": 0 },
+            "note": { "type": "string" }
+          }
+        },
+        "time_constraint": {
+          "type": "object",
+          "properties": {
+            "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "session_count": { "type": "integer", "minimum": 0 },
+            "note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "insights": {
+      "type": "object",
+      "properties": {
+        "optimal_conditions": { "type": "string" },
+        "quality_degradation_factors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "quality_enhancement_factors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "recommendations": { "type": "string" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "definitions": {
+    "timeQuality": {
+      "type": "object",
+      "required": ["range", "avg_health_score", "session_count", "quality_assessment"],
+      "properties": {
+        "range": { "type": "string" },
+        "avg_health_score": { "type": "number", "minimum": -100, "maximum": 100 },
+        "session_count": { "type": "integer", "minimum": 0 },
+        "quality_assessment": { "type": "string" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

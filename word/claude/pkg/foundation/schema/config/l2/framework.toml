@@ -1,0 +1,167 @@
+# ============================================================================
+# CPI-SI State Machine - FRAMEWORK Positions
+# ============================================================================
+# Key: claude-global-config-statemachine-schema-framework
+# Purpose: 4 FRAMEWORK positions (HOW you move through anchor space)
+# Traces to: L1c (state.schema.toml) — FRAMEWORK layer
+#
+# Formula: Y = X + Z
+# Domain: B × B where B = {-0.5, +0.5} (boundary domain)
+#
+# FRAMEWORK IS the navigation — not rules about navigation.
+# It's the active cognitive movement through anchor space.
+#
+# Navigation modes:
+#   TIMESPACE (-0.5) = moving toward build (+1 direction)
+#   SPACETIME (+0.5) = moving toward anchor (0 direction)
+#
+# The 4 positions = trajectory states (not modes you select):
+#   B.1 = BUILDING — actively constructing, proceeding forward
+#   B.2 = PIVOT OUT — build phase complete, turning toward verification
+#   B.3 = PIVOT IN — verification identified gap, turning toward rebuild
+#   B.4 = GROUNDING — actively halting, confirming anchor stability
+# ============================================================================
+
+[framework]
+traces_to = ["HALT_07", "L1c_state_schema"]
+status = "crystallized"
+count = 4
+formula = "Y = X + Z"
+domain = "B × B where B = {-0.5, +0.5}"
+
+# ════════════════════════════════════════════════════════════════════════════
+# FRAMEWORK POSITIONS (4) — Trajectory states through anchor space
+# ════════════════════════════════════════════════════════════════════════════
+
+# B.1 TIMESPACE-TIMESPACE | (-0.5,-1,-0.5) | PROCEED | "Foundation Rules"
+# BUILDING state — actively constructing, proceeding forward through anchors
+[framework.timespace_timespace]
+name = "TIMESPACE-TIMESPACE"
+section = "B.1"
+x = -0.5
+y = -1.0
+z = -0.5
+type = "PURE"
+command = "proceed"
+trajectory_operator = "→→"
+trajectory_state = "BUILDING"
+meaning = "Foundation Rules"
+operation = "BUILD on BUILD — deep methodology, fundamental construction rules"
+flow = "Strong forward momentum, building upon building"
+content = ["vocabulary", "building_blocks", "position_terms", "state_terms", "movement_terms"]
+keywords = ["[DEFINE:]", "[TERM:]", "[VOCAB:]"]
+valid_operations = ["advance", "pivot"]
+
+# B.2 TIMESPACE-SPACETIME | (-0.5,0,+0.5) | AWAIT | "Method→Verify"
+# PIVOT OUT state — build phase complete, turning toward verification
+[framework.timespace_spacetime]
+name = "TIMESPACE-SPACETIME"
+section = "B.2"
+x = -0.5
+y = 0.0
+z = 0.5
+type = "COMPOUND"
+command = "await"
+trajectory_operator = "→|"
+trajectory_state = "PIVOTING"
+meaning = "Method to Verify"
+operation = "BUILD then VERIFY — pivot point, method applied, ready to verify"
+flow = "Forward then halt, transition state"
+content = ["method", "hooks", "statusline", "anti_patterns", "cycle_phases"]
+keywords = ["[METHOD:]", "[HOOK:]", "[CYCLE:]"]
+valid_operations = ["advance", "ground", "pivot"]
+
+# B.3 SPACETIME-TIMESPACE | (+0.5,0,-0.5) | AWAIT | "Verify→Method"
+# PIVOT IN state — verification identified gap, turning toward rebuild
+[framework.spacetime_timespace]
+name = "SPACETIME-TIMESPACE"
+section = "B.3"
+x = 0.5
+y = 0.0
+z = -0.5
+type = "COMPOUND"
+command = "await"
+trajectory_operator = "|→"
+trajectory_state = "PIVOTING"
+meaning = "Verify to Method"
+operation = "VERIFY then BUILD — correction point, verified, ready to rebuild"
+flow = "Halt then forward, transition state"
+content = ["grammar", "operators", "transitions", "sentences", "grep_patterns", "rules"]
+keywords = ["[SYNTAX:]", "[RULE:]", "[TRANS:]"]
+valid_operations = ["advance", "reset"]
+
+# B.4 SPACETIME-SPACETIME | (+0.5,+1,+0.5) | HALT | "Grounding Rules"
+# GROUNDING state — actively halting, confirming anchor stability
+[framework.spacetime_spacetime]
+name = "SPACETIME-SPACETIME"
+section = "B.4"
+x = 0.5
+y = 1.0
+z = 0.5
+type = "PURE"
+command = "halt"
+trajectory_operator = "||"
+trajectory_state = "GROUNDING"
+meaning = "Grounding Rules"
+operation = "VERIFY on VERIFY — full verification, rules that ground everything"
+flow = "None (terminal verification anchor)"
+content = ["verification_questions", "grounding_principles", "biblical_anchors", "halt_conditions"]
+keywords = ["[VERIFY:]", "[GROUND:]", "[WHY:]"]
+valid_operations = ["ground", "reset"]
+
+# ════════════════════════════════════════════════════════════════════════════
+# TRAJECTORY TRANSITION RULES
+# Defines valid state transitions between FRAMEWORK positions
+# ════════════════════════════════════════════════════════════════════════════
+
+[framework.transitions]
+description = "Valid trajectory state transitions"
+
+# B.1 → B.2: Natural completion of build phase
+[[framework.transitions.rules]]
+from = "B.1"
+to = "B.2"
+trigger = "pivot"
+condition = "Build phase indicates verification needed"
+
+# B.2 → B.4: Verification succeeded
+[[framework.transitions.rules]]
+from = "B.2"
+to = "B.4"
+trigger = "ground"
+condition = "Verification passed, ready to ground"
+
+# B.2 → B.3: Verification failed
+[[framework.transitions.rules]]
+from = "B.2"
+to = "B.3"
+trigger = "pivot"
+condition = "Verification identified gap, need rebuild"
+
+# B.3 → B.1: Gap identified, restart build
+[[framework.transitions.rules]]
+from = "B.3"
+to = "B.1"
+trigger = "reset"
+condition = "Anchor found, restart building from there"
+
+# B.4 → B.1: Grounding complete, new cycle
+[[framework.transitions.rules]]
+from = "B.4"
+to = "B.1"
+trigger = "reset"
+condition = "Grounding complete, begin new trajectory"
+
+# ════════════════════════════════════════════════════════════════════════════
+# TRAJECTORY FLOW DIAGRAM
+# ════════════════════════════════════════════════════════════════════════════
+#
+#                B.1 (Building) →→
+#                    ↓ pivot
+#     B.3 ←───── B.2 (Pivot) →|
+#    |→           ↓ ground
+#     └──reset──→ B.4 (Grounding) ||
+#                    ↓ reset
+#                 (new cycle)
+#
+# ════════════════════════════════════════════════════════════════════════════

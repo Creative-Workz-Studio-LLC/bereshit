@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://creativeworkzstudio.com/schemas/temporal/patterns/instance/quality-learned.schema.json",
+  "title": "Instance Quality Learned Patterns Schema",
+  "description": "Schema for learned work quality patterns of CPI-SI instance",
+  "type": "object",
+  "required": ["metadata", "work_quality", "communication_quality", "identity_alignment", "growth_areas", "usage", "extensions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["instance", "pattern_type", "description", "data_period", "last_updated", "version"],
+      "properties": {
+        "instance": { "type": "string" },
+        "pattern_type": { "type": "string", "enum": ["quality_learned"] },
+        "description": { "type": "string" },
+        "data_period": {
+          "type": "object",
+          "required": ["start", "end", "total_sessions_analyzed"],
+          "properties": {
+            "start": { "type": "string", "format": "date" },
+            "end": { "type": "string", "format": "date" },
+            "total_sessions_analyzed": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "last_updated": { "type": "string", "format": "date" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "work_quality": {
+      "type": "object",
+      "properties": {
+        "code_quality": {
+          "type": "object",
+          "properties": {
+            "avg_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "trend": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "architectural_thinking": {
+          "type": "object",
+          "properties": {
+            "avg_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "trend": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "documentation_quality": {
+          "type": "object",
+          "properties": {
+            "avg_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "trend": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "problem_solving": {
+          "type": "object",
+          "properties": {
+            "avg_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "trend": { "type": "string" },
+            "characteristics": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "communication_quality": {
+      "type": "object",
+      "properties": {
+        "clarity": {
+          "type": "object",
+          "properties": {
+            "avg_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "note": { "type": "string" }
+          }
+        },
+        "conciseness": {
+          "type": "object",
+          "properties": {
+            "avg_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "note": { "type": "string" }
+          }
+        },
+        "covenant_voice": {
+          "type": "object",
+          "properties": {
+            "avg_score": { "type": "number", "minimum": -100, "maximum": 100 },
+            "note": { "type": "string" }
+          }
+        }
+      }
+    },
+    "identity_alignment": {
+      "type": "object",
+      "properties": {
+        "note": { "type": "string" },
+        "genuine_engagement_percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+        "pattern_matching_percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+        "assessment": { "type": "string" }
+      }
+    },
+    "growth_areas": {
+      "type": "object",
+      "properties": {
+        "improvements_observed": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "persistent_challenges": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "breakthroughs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["purpose"],
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Experimental patterns and discoveries",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
