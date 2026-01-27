@@ -25,6 +25,10 @@
 
 #include "omni_ide_cli.h"
 #include "display.h"  // Cornerstone display abstraction
+
+// CPI-SI logging (state-aware, health-tracking)
+#include "kernel/cpisi/dar/detect.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -308,6 +312,12 @@ static void ide_cli_recalc_layout(IDECLI* cli) {
         cli->buffer->visible_lines = cli->edit_rows;
         cli->buffer->visible_cols = cli->edit_cols;
     }
+
+    LOG_TRACE("ide-cli", "Layout: screen=%dx%d, edit=%dx%d, panel_w=%d, bottom_h=%d",
+              cli->screen_cols, cli->screen_rows,
+              cli->edit_cols, cli->edit_rows,
+              cli->layout ? cli->layout->left_width : 0,
+              cli->layout ? cli->layout->bottom_height : 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -587,8 +597,13 @@ static void ide_menu_execute(IDECLI* cli, IDEMenuAction action) {
 // -----------------------------------------------------------------------------
 
 IDECLI* ide_cli_create(IDEBuffer* buffer, DisplayMode mode) {
+    LOG_DEBUG("ide-cli", "Creating CLI instance, mode=%d", (int)mode);
+
     IDECLI* cli = malloc(sizeof(IDECLI));
-    if (!cli) return NULL;
+    if (!cli) {
+        LOG_ERROR("ide-cli", "Failed to allocate CLI structure");
+        return NULL;
+    }
 
     memset(cli, 0, sizeof(IDECLI));
     cli->buffer = buffer;
@@ -658,16 +673,24 @@ IDECLI* ide_cli_create(IDEBuffer* buffer, DisplayMode mode) {
 
     ide_cli_set_status(cli, "OmniCode IDE | Tab: Panels | Ctrl+B: Toggle | Ctrl+S: Save | Ctrl+Q: Quit");
 
+    LOG_INFO("ide-cli", "CLI created: %dx%d, mode=%d, panels=%s",
+             cli->screen_cols, cli->screen_rows, (int)mode,
+             cli->panels_visible ? "visible" : "hidden");
+
     return cli;
 }
 
 void ide_cli_destroy(IDECLI* cli) {
     if (!cli) return;
 
+    LOG_DEBUG("ide-cli", "Destroying CLI instance");
+
     display_shutdown();
     ide_layout_free(cli->layout);
     ide_diagnostics_free(cli->diags);
     free(cli);
+
+    LOG_INFO("ide-cli", "CLI destroyed");
 }
 
 // -----------------------------------------------------------------------------

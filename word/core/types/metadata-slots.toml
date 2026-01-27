@@ -1,0 +1,166 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Metadata Slot Types (3-Block Data Structure)
+# Key: B-word-core-types-metadata-slots
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on primitives, used by error system)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/types/primitives.toml, word/core/math/ternary.toml
+# Implements: cornerstone/engine/core/include/cpisi/types/domain/composite/metadata.h
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/types
+# File:        metadata-slots.toml
+# Key:         B-word-core-types-metadata-slots
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "And thou shalt put the mercy seat above upon the ark; and in
+#            the ark thou shalt put the testimony that I shall give thee."
+#            — Exodus 25:21 KJV
+#
+# Principle: The 13 metadata slots complete the BRIDGE equation (243 + 13 = 256).
+#            Like the mercy seat covering the ark, metadata covers the data.
+#            Slot 0 is reserved (the anchor), slots 1-12 are working slots.
+#
+# Anchor: "And there I will meet with thee" — Exodus 25:22 KJV
+#         Metadata is where we meet the data — the interface layer.
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (defines metadata slots for BRIDGE encoding)
+#
+# Role: Metadata slot definitions — 13 slots completing BRIDGE equation.
+#       4 categories: Reserved, Config, Resource, System.
+#
+# Paradigm: CPI-SI framework component — metadata as data description
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2026-01-25
+#   Version: a-01.00
+#
+# # Purpose & Function
+#
+# Purpose: Define the 13 metadata slots in the BRIDGE equation
+#
+# Core Design: THE BRIDGE EQUATION: 243 (PENTERACT) + 13 (BRIDGE) = 256
+#
+# Key Features:
+#
+#   - 13 total slots (0-12)
+#   - Slot 0: Reserved (anchor)
+#   - Slots 1-4: CONFIG category (version, config, state, init)
+#   - Slots 5-8: RESOURCE category (memory, timeout, permission, resource)
+#   - Slots 9-12: SYSTEM category (assert, overflow, underflow, format)
+#
+# Philosophy: 243 + 13 = 256. The BRIDGE completes the byte. Metadata bridges
+#             raw data to meaningful interpretation.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   Internal: word/core/types/primitives.toml (uint8_t)
+#   Internal: word/core/math/ternary.toml (PENTERACT = 243)
+#
+# What Uses This:
+#
+#   - Error encoding uses metadata slots
+#   - Config system uses slots 1-4
+#   - Resource tracking uses slots 5-8
+#   - System errors use slots 9-12
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+
+[metadata]
+description = "13 metadata slots completing BRIDGE equation"
+count = 13
+reserved = 1
+working = 12
+
+# The BRIDGE equation
+[metadata.bridge]
+penteract = 243
+bridge = 13
+total = 256
+description = "243 + 13 = 256 — BRIDGE completes the byte"
+
+# Categories (4 slots each after reserved)
+[metadata.categories]
+description = "4 categories organizing the 12 working slots"
+
+RESERVED = { slots = [0], description = "Anchor slot (fallback)" }
+CONFIG   = { slots = [1, 2, 3, 4], description = "Configuration metadata" }
+RESOURCE = { slots = [5, 6, 7, 8], description = "Resource metadata" }
+SYSTEM   = { slots = [9, 10, 11, 12], description = "System metadata" }
+
+# Individual slot definitions
+[metadata.slots]
+description = "13 slots with ordinal values (243 + slot)"
+
+RESERVED   = { slot = 0,  ordinal = 243, description = "Fallback/anchor" }
+VERSION    = { slot = 1,  ordinal = 244, category = "CONFIG", description = "Version mismatch" }
+CONFIG     = { slot = 2,  ordinal = 245, category = "CONFIG", description = "Configuration error" }
+STATE      = { slot = 3,  ordinal = 246, category = "CONFIG", description = "Invalid state" }
+INIT       = { slot = 4,  ordinal = 247, category = "CONFIG", description = "Initialization failed" }
+MEMORY     = { slot = 5,  ordinal = 248, category = "RESOURCE", description = "Memory allocation" }
+TIMEOUT    = { slot = 6,  ordinal = 249, category = "RESOURCE", description = "Operation timeout" }
+PERMISSION = { slot = 7,  ordinal = 250, category = "RESOURCE", description = "Permission denied" }
+RESOURCE   = { slot = 8,  ordinal = 251, category = "RESOURCE", description = "Resource unavailable" }
+ASSERT     = { slot = 9,  ordinal = 252, category = "SYSTEM", description = "Assertion failed" }
+OVERFLOW   = { slot = 10, ordinal = 253, category = "SYSTEM", description = "Numeric overflow" }
+UNDERFLOW  = { slot = 11, ordinal = 254, category = "SYSTEM", description = "Numeric underflow" }
+FORMAT     = { slot = 12, ordinal = 255, category = "SYSTEM", description = "Format error (MAX)" }
+
+# Bounds
+[metadata.bounds]
+slot_min = 0
+slot_max = 12
+ordinal_min = 243
+ordinal_max = 255
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# This specification defines metadata slots for the CPI-SI system.
+#
+# To use this specification:
+#   1. Load via Go config loader: pkg/config/loader.go
+#   2. Generate C header: generates = true in index.toml
+#   3. Reference in headers: cornerstone/engine/core/include/cpisi/types/domain/composite/metadata.h
+#
+# "And the Word was made flesh, and dwelt among us"
+# — John 1:14
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

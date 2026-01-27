@@ -74,7 +74,11 @@
 # ============================================================================
 
 .PHONY: all libomni.a assets test test-lexer test-chunks test-dar test-parser \
-        test-codegen test-conversation clean help info install install-desktop uninstall ide
+        test-codegen test-conversation clean help info install install-desktop \
+        install-system uninstall uninstall-system ide
+
+# Set default goal explicitly (pattern rules appear before entry points)
+.DEFAULT_GOAL := all
 
 # Installation paths
 PREFIX ?= /usr/local
@@ -169,14 +173,22 @@ CFLAGS = $(CFLAGS_DEV)
 LDFLAGS_MODE =
 endif
 
-# Include paths (omni headers + trit headers + cornerstone)
-# Organized includes mirror source structure
+# Include paths (omni headers + trit headers + cornerstone engine)
+#
+# Cornerstone structure (reorganized):
+#   engine/include/
+#     ├── app/        - Application layer (game-specific)
+#     ├── framework/  - Framework layer (scene, service, display)
+#     ├── hal/        - Hardware abstraction (graphics, audio, input)
+#     ├── kernel/     - Kernel layer (cpisi, ipc, platform, service, types)
+#     └── services/   - Service definitions
+#
 INCLUDES = -I$(INC_DIR) \
            -I$(INC_DIR)/lang/frontend -I$(INC_DIR)/lang/backend -I$(INC_DIR)/lang/core \
            -I$(INC_DIR)/runtime/vm -I$(INC_DIR)/runtime/cpisi -I$(INC_DIR)/runtime/tools \
            -I$(INC_DIR)/ide/core -I$(INC_DIR)/ide/ui -I$(INC_DIR)/ide/panels \
-           -I$(TRIT_INC) -I$(CORNERSTONE_INC) \
-           -I$(CORNERSTONE_INC)/engine/core/include/util
+           -I$(TRIT_INC) \
+           -I$(CORNERSTONE_INC)/engine/include
 
 # Source directories (organized structure)
 LANG_DIR = $(SRC_DIR)/lang
@@ -446,6 +458,9 @@ CORNERSTONE_CORE_SRC = $(CORNERSTONE_DIR)/engine/core/src
 CORNERSTONE_PLATFORM_SRC = $(CORNERSTONE_DIR)/engine/platform/linux
 CORNERSTONE_GRAPHICS_INC = $(CORNERSTONE_DIR)/engine/graphics/include
 CORNERSTONE_GRAPHICS_SRC = $(CORNERSTONE_DIR)/engine/graphics/src
+CORNERSTONE_CONFIG_SRC = $(CORNERSTONE_DIR)/engine/config/src
+CORNERSTONE_UI_SRC = $(CORNERSTONE_DIR)/engine/ui/src
+CORNERSTONE_SESSION_SRC = $(CORNERSTONE_DIR)/engine/session/src
 
 # Base CFLAGS (always needed for IDE)
 IDE_CFLAGS_BASE = $(CFLAGS) $(INCLUDES) \
@@ -479,7 +494,7 @@ endif
 ## Always outputs: build/omni-ide
 ide: libomni.a assets
 	$(ECHO) "Building OmniCode IDE [$(IDE_MODE_DESC)]..."
-	$(Q)mkdir -p $(BUILD_DIR)/ide
+	$(Q)rm -rf $(BUILD_DIR)/ide && mkdir -p $(BUILD_DIR)/ide
 	$(ECHO) "  [Core] omni_ide_main.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/main.o $(IDE_DIR)/main/omni_ide_main.c
 	$(ECHO) "  [Core] omni_ide.c"
@@ -495,16 +510,20 @@ endif
 ifeq ($(IDE_MODE),gui)
 	$(ECHO) "  [UI] omni_ide_gui.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/gui_ui.o $(IDE_DIR)/ui/omni_ide_gui.c
-	$(ECHO) "  [Core] omni_screenshot.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/screenshot.o $(IDE_DIR)/core/omni_screenshot.c
+	$(ECHO) "  [Util] screenshot.c (shared, GUI)"
+	$(Q)$(CC) $(IDE_CFLAGS) -DSCREENSHOT_GUI_ENABLED -c -o $(BUILD_DIR)/ide/screenshot.o $(CORNERSTONE_CORE_SRC)/util/screenshot.c
+endif
+ifeq ($(IDE_MODE),tui)
+	$(ECHO) "  [Util] screenshot.c (shared, TUI)"
+	$(Q)$(CC) $(IDE_CFLAGS) -DSCREENSHOT_TUI_ENABLED -c -o $(BUILD_DIR)/ide/screenshot.o $(CORNERSTONE_CORE_SRC)/util/screenshot.c
 endif
 ifeq ($(IDE_MODE),full)
 	$(ECHO) "  [UI] omni_ide_tui.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/tui_ui.o $(IDE_DIR)/ui/omni_ide_tui.c
 	$(ECHO) "  [UI] omni_ide_gui.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/gui_ui.o $(IDE_DIR)/ui/omni_ide_gui.c
-	$(ECHO) "  [Core] omni_screenshot.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/screenshot.o $(IDE_DIR)/core/omni_screenshot.c
+	$(ECHO) "  [Util] screenshot.c (shared, TUI+GUI)"
+	$(Q)$(CC) $(IDE_CFLAGS) -DSCREENSHOT_TUI_ENABLED -DSCREENSHOT_GUI_ENABLED -c -o $(BUILD_DIR)/ide/screenshot.o $(CORNERSTONE_CORE_SRC)/util/screenshot.c
 endif
 	$(ECHO) "  [Display] display.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/display.o $(CORNERSTONE_DISPLAY_SRC)/display.c
@@ -550,8 +569,26 @@ ifeq ($(IDE_MODE),full)
 endif
 	$(ECHO) "  [Util] cpisi_log.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi_log.o $(CORNERSTONE_CORE_SRC)/util/cpisi_log.c
+	$(ECHO) "  [Util] cpisi_debug.c"
+	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi_debug.o $(CORNERSTONE_CORE_SRC)/util/cpisi_debug.c
+	$(ECHO) "  [Util] cpisi_restore.c"
+	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi_restore.o $(CORNERSTONE_CORE_SRC)/util/cpisi_restore.c
+	$(ECHO) "  [Util] cpisi_config.c"
+	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi_config.o $(CORNERSTONE_CORE_SRC)/util/cpisi_config.c
+	$(ECHO) "  [Util] cpisi_log_rotation.c"
+	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi_log_rotation.o $(CORNERSTONE_CORE_SRC)/util/cpisi_log_rotation.c
+	$(ECHO) "  [Util] cpisi.c"
+	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi.o $(CORNERSTONE_CORE_SRC)/util/cpisi.c
+	$(ECHO) "  [Util] signals.c"
+	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/signals.o $(CORNERSTONE_CORE_SRC)/util/signals.c
 	$(ECHO) "  [Util] jsonc.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/jsonc.o $(CORNERSTONE_CORE_SRC)/util/jsonc.c
+	$(ECHO) "  [Engine] engine_config.c"
+	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/engine_config.o $(CORNERSTONE_CONFIG_SRC)/engine_config.c
+	$(ECHO) "  [UI] log_panel.c"
+	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/log_panel.o $(CORNERSTONE_UI_SRC)/log_panel.c
+	$(ECHO) "  [Session] session.c"
+	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/session.o $(CORNERSTONE_SESSION_SRC)/session.c
 	$(ECHO) "  [Config] config.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/config.o $(TRIT_DIR)/src/config.c
 	$(ECHO) "  [Config] toml.c"
@@ -582,7 +619,7 @@ endif
 	$(ECHO) ""
 	$(ECHO) "Usage: ./build/omni-ide [options] <file>"
 
-## install: Install omni-ide to system with all assets (requires sudo)
+## install: Install omni-ide (use PREFIX=~/.local for user-local, or install-system for system-wide)
 ## Uses IDE_MODE=full by default for maximum compatibility
 install:
 	$(Q)$(MAKE) ide IDE_MODE=full
@@ -599,7 +636,10 @@ install:
 	$(Q)cp -rf $(ASSETS_DIR)/fonts/* $(DATADIR)/fonts/ 2>/dev/null || true
 	$(ECHO) "  [3/5] Installing desktop entry..."
 	$(Q)install -d $(DESKTOPDIR)
-	$(Q)install -m 644 $(SRC_DIR)/ide/assets/omni-ide.desktop $(DESKTOPDIR)/omni-ide.desktop
+	$(Q)sed -e 's|@BINDIR@|$(BINDIR)|g' \
+	        -e 's|@DATADIR@|$(DATADIR)|g' \
+	        $(SRC_DIR)/ide/assets/omni-ide.desktop.in > $(DESKTOPDIR)/omni-ide.desktop
+	$(Q)chmod 644 $(DESKTOPDIR)/omni-ide.desktop
 	$(ECHO) "  [4/5] Installing icon..."
 	$(Q)install -d $(ICONDIR)
 	$(Q)install -d $(PREFIX)/share/icons/hicolor/scalable/apps
@@ -630,7 +670,10 @@ install:
 install-desktop:
 	$(ECHO) "Installing desktop integration..."
 	$(Q)install -d $(DESKTOPDIR)
-	$(Q)install -m 644 $(SRC_DIR)/ide/assets/omni-ide.desktop $(DESKTOPDIR)/omni-ide.desktop
+	$(Q)sed -e 's|@BINDIR@|$(BINDIR)|g' \
+	        -e 's|@DATADIR@|$(DATADIR)|g' \
+	        $(SRC_DIR)/ide/assets/omni-ide.desktop.in > $(DESKTOPDIR)/omni-ide.desktop
+	$(Q)chmod 644 $(DESKTOPDIR)/omni-ide.desktop
 	$(Q)install -d $(ICONDIR)
 	$(Q)if [ -f $(SRC_DIR)/ide/assets/omni-ide.png ]; then \
 		install -m 644 $(SRC_DIR)/ide/assets/omni-ide.png $(ICONDIR)/omni-ide.png; \
@@ -638,6 +681,72 @@ install-desktop:
 	$(Q)update-desktop-database $(DESKTOPDIR) 2>/dev/null || true
 	$(Q)gtk-update-icon-cache -f -t $(PREFIX)/share/icons/hicolor 2>/dev/null || true
 	$(ECHO) "✓ Desktop integration installed"
+
+## install-system: Install omni-ide system-wide with graphical password prompt (pkexec)
+## Builds as user, then uses pkexec for privileged installation
+install-system:
+	$(Q)$(MAKE) ide IDE_MODE=full
+	$(ECHO) "Installing OmniCode IDE system-wide (will prompt for password)..."
+	$(ECHO) ""
+	$(Q)pkexec env \
+		BUILD_DIR="$(CURDIR)/$(BUILD_DIR)" \
+		SRC_DIR="$(CURDIR)/$(SRC_DIR)" \
+		ASSETS_DIR="$(CURDIR)/$(ASSETS_DIR)" \
+		sh -c '\
+		echo "  [1/5] Installing binary..."; \
+		install -d /usr/local/bin; \
+		install -m 755 $$BUILD_DIR/omni-ide /usr/local/bin/omni-ide; \
+		echo "  [2/5] Installing assets..."; \
+		install -d /usr/local/share/omni-ide; \
+		install -d /usr/local/share/omni-ide/fonts/block; \
+		install -d /usr/local/share/omni-ide/fonts/generated; \
+		install -d /usr/local/share/omni-ide/fonts/bitmap; \
+		cp -rf $$ASSETS_DIR/fonts/* /usr/local/share/omni-ide/fonts/ 2>/dev/null || true; \
+		echo "  [3/5] Installing desktop entry..."; \
+		install -d /usr/local/share/applications; \
+		sed -e "s|@BINDIR@|/usr/local/bin|g" \
+		    -e "s|@DATADIR@|/usr/local/share/omni-ide|g" \
+		    $$SRC_DIR/ide/assets/omni-ide.desktop.in > /usr/local/share/applications/omni-ide.desktop; \
+		chmod 644 /usr/local/share/applications/omni-ide.desktop; \
+		echo "  [4/5] Installing icons..."; \
+		for size in 16 24 32 48 64 128 256; do \
+			install -d /usr/share/icons/hicolor/$${size}x$${size}/apps; \
+			if [ -f $$SRC_DIR/ide/assets/icons/omni-ide-$${size}.png ]; then \
+				install -m 644 $$SRC_DIR/ide/assets/icons/omni-ide-$${size}.png /usr/share/icons/hicolor/$${size}x$${size}/apps/omni-ide.png; \
+			fi; \
+		done; \
+		if [ -f $$SRC_DIR/ide/assets/omni-ide.svg ]; then \
+			install -d /usr/share/icons/hicolor/scalable/apps; \
+			install -m 644 $$SRC_DIR/ide/assets/omni-ide.svg /usr/share/icons/hicolor/scalable/apps/omni-ide.svg; \
+		fi; \
+		echo "  [5/5] Updating desktop database..."; \
+		update-desktop-database /usr/local/share/applications 2>/dev/null || true; \
+		gtk-update-icon-cache -f -t /usr/share/icons/hicolor 2>/dev/null || true; \
+	'
+	$(ECHO) ""
+	$(ECHO) "✓ OmniCode IDE installed system-wide"
+	$(ECHO) ""
+	$(ECHO) "  Binary:  /usr/local/bin/omni-ide"
+	$(ECHO) "  Assets:  /usr/local/share/omni-ide/"
+	$(ECHO) "  Desktop: /usr/local/share/applications/omni-ide.desktop"
+	$(ECHO) ""
+	$(ECHO) "Usage: omni-ide [--cli|--tui|--gui] <file>"
+
+## uninstall-system: Remove omni-ide from system-wide installation (pkexec)
+uninstall-system:
+	$(ECHO) "Removing OmniCode IDE system-wide (will prompt for password)..."
+	$(Q)pkexec sh -c '\
+		rm -f /usr/local/bin/omni-ide; \
+		rm -rf /usr/local/share/omni-ide; \
+		rm -f /usr/local/share/applications/omni-ide.desktop; \
+		for size in 16 24 32 48 64 128 256; do \
+			rm -f /usr/share/icons/hicolor/$${size}x$${size}/apps/omni-ide.png; \
+		done; \
+		rm -f /usr/share/icons/hicolor/scalable/apps/omni-ide.svg; \
+		update-desktop-database /usr/local/share/applications 2>/dev/null || true; \
+		gtk-update-icon-cache -f -t /usr/share/icons/hicolor 2>/dev/null || true; \
+	'
+	$(ECHO) "✓ OmniCode IDE uninstalled from system"
 
 ## uninstall: Remove omni-ide from system completely
 uninstall:
@@ -697,9 +806,11 @@ help:
 	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
 	$(ECHO) "INSTALL TARGETS"
 	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) "  install          Install omni-ide to system (IDE_MODE=full)"
+	$(ECHO) "  install          Install to PREFIX (default: /usr/local or ~/.local)"
+	$(ECHO) "  install-system   System-wide install with pkexec (graphical password prompt)"
 	$(ECHO) "  install-desktop  Install desktop entry and icon only"
-	$(ECHO) "  uninstall        Remove from system"
+	$(ECHO) "  uninstall        Remove from PREFIX location"
+	$(ECHO) "  uninstall-system Remove system-wide install with pkexec"
 	$(ECHO) ""
 	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
 	$(ECHO) "MAINTENANCE TARGETS"

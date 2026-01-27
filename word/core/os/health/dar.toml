@@ -1,0 +1,183 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode DAR Phase Types (3-Block Data Structure)
+# Key: B-word-core-os-health-dar
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on health, used by error recovery)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/os/health/score.toml, word/core/types/primitives.toml
+# Implements: cornerstone/engine/core/include/cpisi/types/domain/composite/phase.h
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/os/health
+# File:        dar.toml
+# Key:         B-word-core-os-health-dar
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "Let us search and try our ways, and turn again to the LORD."
+#            — Lamentations 3:40 KJV
+#
+# Principle: DAR embodies this verse:
+#            - DETECT = "search" — witness the problem
+#            - ASSESS = "try our ways" — evaluate the situation
+#            - RESTORE = "turn again" — recover to health
+#
+# Anchor: "He restoreth my soul: he leadeth me in the paths of righteousness"
+#         — Psalm 23:3 KJV
+#         Restoration follows detection and assessment.
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (defines DAR phase system for error recovery)
+#
+# Role: DAR phases — Detect, Assess, Restore paradigm for health recovery.
+#       3 phases × 3 aspects × 3 severities = 27-cube structure.
+#
+# Paradigm: CPI-SI framework component — orderly error recovery
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2026-01-25
+#   Version: a-01.00
+#
+# # Purpose & Function
+#
+# Purpose: Define the DAR phase system for health monitoring and recovery
+#
+# Core Design: 3-phase witness system: DETECT → ASSESS → RESTORE
+#
+# Key Features:
+#
+#   - 3 DAR phases: DETECT (witness), ASSESS (evaluate), RESTORE (recover)
+#   - 3 aspects per phase: ENTRY (init), PROCESS (handle), EXIT (cleanup)
+#   - 3 severity levels: MILD (warning), MEDIUM (degraded), CRITICAL (fatal)
+#   - 27-cube: phase × aspect × severity = complete error space
+#
+# Philosophy: Orderly phases enable proper recovery. Don't restore before
+#             assessing. Don't assess before detecting. The order matters.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   Internal: word/core/os/health/score.toml (health levels)
+#   Internal: word/core/types/primitives.toml (base types)
+#   Internal: word/core/math/ternary.toml (ternary constants)
+#
+# What Uses This:
+#
+#   - Error recovery uses DAR phases
+#   - Health monitoring uses phase transitions
+#   - Diagnostics uses severity matrix
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+
+[dar]
+description = "Detect-Assess-Restore phase system"
+phase_count = 3
+aspect_count = 3
+severity_count = 3
+total_positions = 27
+
+# DAR Phases
+[dar.phases]
+description = "3 DAR phases: witness system"
+
+DETECT  = { index = 0, balanced = -1, description = "Witness — detect the problem" }
+ASSESS  = { index = 1, balanced =  0, description = "Evaluate — assess the situation (CENTER)" }
+RESTORE = { index = 2, balanced = +1, description = "Recover — restore to health" }
+
+# Aspects (within each phase)
+[dar.aspects]
+description = "3 aspects per phase: lifecycle"
+
+ENTRY   = { index = 0, balanced = -1, description = "Init — enter the phase" }
+PROCESS = { index = 1, balanced =  0, description = "Handle — process in phase (CENTER)" }
+EXIT    = { index = 2, balanced = +1, description = "Cleanup — exit the phase" }
+
+# Severity levels
+[dar.severity]
+description = "3 severity levels: impact"
+
+MILD     = { index = 0, balanced = -1, description = "Warning — continue with caution" }
+MEDIUM   = { index = 1, balanced =  0, description = "Degraded — reduced functionality (CENTER)" }
+CRITICAL = { index = 2, balanced = +1, description = "Fatal — immediate action required" }
+
+# Restore results
+[dar.restore_result]
+description = "7 possible restore outcomes"
+
+SUCCESS        = { value = 0, description = "Fully restored" }
+PARTIAL        = { value = 1, description = "Partially restored" }
+DEGRADED       = { value = 2, description = "Running degraded" }
+DEFERRED       = { value = 3, description = "Deferred for later" }
+BLOCKED        = { value = 4, description = "Blocked by dependency" }
+FAILED         = { value = 5, description = "Restore failed" }
+FATAL          = { value = 6, description = "Unrecoverable" }
+
+# Restore strategies (from flags.toml)
+[dar.restore_strategy]
+description = "Strategy flags for restore operations"
+reference = "types/flags.toml"
+
+NONE          = { value = "0x00", description = "No strategy" }
+FILL_DEFAULTS = { value = "0x01", description = "Fill missing with defaults" }
+LOCATE_FILES  = { value = "0x02", description = "Search for files" }
+CREATE_DIRS   = { value = "0x04", description = "Create directories" }
+CLAMP_VALUES  = { value = "0x08", description = "Clamp out-of-range" }
+FALLBACK      = { value = "0x10", description = "Use fallback" }
+DEGRADE       = { value = "0x20", description = "Graceful degradation" }
+
+# Offset encoding (27-cube navigation)
+[dar.offset]
+description = "27-position offset encoding"
+formula = "offset = phase * 9 + severity * 3 + aspect"
+min = 0
+max = 26
+face = 9
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# This specification defines the DAR phase system for the CPI-SI system.
+#
+# To use this specification:
+#   1. Load via Go config loader: pkg/config/loader.go
+#   2. Generate C header: generates = true in index.toml
+#   3. Reference in headers: cornerstone/engine/core/include/cpisi/types/domain/composite/phase.h
+#
+# "He healeth the broken in heart, and bindeth up their wounds."
+# — Psalm 147:3
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

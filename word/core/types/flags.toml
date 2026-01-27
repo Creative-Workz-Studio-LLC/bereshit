@@ -1,0 +1,147 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Flag Types (3-Block Data Structure)
+# Key: B-word-core-types-flags
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on primitives, used by restore system)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/types/primitives.toml
+# Implements: cornerstone/engine/core/include/cpisi/types/domain/core/flags.h
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/types
+# File:        flags.toml
+# Key:         B-word-core-types-flags
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "Thou shalt set bounds unto the people round about"
+#            — Exodus 19:12 KJV
+#
+# Principle: Flags set bounds — each bit is a boundary marker that defines
+#            what actions are permitted. Just as God set bounds on Sinai,
+#            flags set bounds on restore strategies.
+#
+# Anchor: "Thus far shalt thou come, but no further" — Job 38:11 KJV
+#         Each flag limits or enables specific recovery actions.
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (defines flag manipulation patterns)
+#
+# Role: Bit-field flags — restore strategy flags and manipulation macros.
+#       6 individual flags (bits 0-5), mask = 0x3F.
+#
+# Paradigm: CPI-SI framework component — flags as action boundaries
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2026-01-25
+#   Version: a-01.00
+#
+# # Purpose & Function
+#
+# Purpose: Define restore strategy flags and manipulation operations
+#
+# Core Design: 6 flags (bits 0-5), bitmask operations, composable strategies
+#
+# Key Features:
+#
+#   - FILL_DEFAULTS  (bit 0) — Fill missing values with defaults
+#   - LOCATE_FILES   (bit 1) — Search for misplaced files
+#   - CREATE_DIRS    (bit 2) — Create missing directories
+#   - CLAMP_VALUES   (bit 3) — Clamp out-of-range values
+#   - FALLBACK       (bit 4) — Use fallback resources
+#   - DEGRADE        (bit 5) — Graceful degradation
+#
+# Philosophy: Flags compose to form strategies. BASIC = FILL + CLAMP.
+#             FULL = all 6 flags. Each flag is a specific recovery action.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   Internal: word/core/types/primitives.toml (uint8_t for bitmask)
+#
+# What Uses This:
+#
+#   - Restore system uses strategy flags
+#   - Health recovery uses flag composition
+#   - DAR restore phase uses flag testing
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+
+[flags]
+description = "Restore strategy bit flags"
+count = 6
+max_bit = 5
+mask = "0x3F"
+
+# Individual flags
+[flags.restore_strategy]
+description = "6 restore strategy flags (bits 0-5)"
+
+NONE           = { bit = -1, value = "0x00", description = "No recovery" }
+FILL_DEFAULTS  = { bit = 0,  value = "0x01", description = "Fill missing with defaults" }
+LOCATE_FILES   = { bit = 1,  value = "0x02", description = "Search for misplaced files" }
+CREATE_DIRS    = { bit = 2,  value = "0x04", description = "Create missing directories" }
+CLAMP_VALUES   = { bit = 3,  value = "0x08", description = "Clamp out-of-range values" }
+FALLBACK       = { bit = 4,  value = "0x10", description = "Use fallback resources" }
+DEGRADE        = { bit = 5,  value = "0x20", description = "Graceful degradation" }
+
+# Composite strategies
+[flags.composites]
+BASIC = { flags = ["FILL_DEFAULTS", "CLAMP_VALUES"], description = "Minimal safe recovery" }
+FULL  = { flags = ["FILL_DEFAULTS", "LOCATE_FILES", "CREATE_DIRS", "CLAMP_VALUES", "FALLBACK", "DEGRADE"], description = "Maximum recovery effort" }
+
+# Operations
+[flags.operations]
+HAS_FLAG   = { signature = "(flags, flag) -> bool", description = "Test if flag is set" }
+SET_FLAG   = { signature = "(flags, flag) -> flags", description = "Set a flag" }
+CLEAR_FLAG = { signature = "(flags, flag) -> flags", description = "Clear a flag" }
+IS_VALID   = { signature = "(flags) -> bool", description = "Check flags are within mask" }
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# This specification defines restore strategy flags for the CPI-SI system.
+#
+# To use this specification:
+#   1. Load via Go config loader: pkg/config/loader.go
+#   2. Generate C header: generates = true in index.toml
+#   3. Reference in headers: cornerstone/engine/core/include/cpisi/types/domain/core/flags.h
+#
+# "Thy word is a lamp unto my feet, and a light unto my path."
+# — Psalm 119:105
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

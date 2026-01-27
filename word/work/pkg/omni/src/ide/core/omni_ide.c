@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "kernel/cpisi/dar/detect.h"  // CPI-SI state-aware logging
 
 // =============================================================================
 // END SETUP
@@ -44,7 +45,7 @@
 static void* safe_malloc(size_t size) {
     void* ptr = malloc(size);
     if (!ptr && size > 0) {
-        fprintf(stderr, "[IDE] Memory allocation failed\n");
+        LOG_ERROR("ide", "Memory allocation failed");
         exit(1);
     }
     return ptr;
@@ -53,7 +54,7 @@ static void* safe_malloc(size_t size) {
 static void* safe_realloc(void* ptr, size_t size) {
     void* new_ptr = realloc(ptr, size);
     if (!new_ptr && size > 0) {
-        fprintf(stderr, "[IDE] Memory reallocation failed\n");
+        LOG_ERROR("ide", "Memory reallocation failed");
         exit(1);
     }
     return new_ptr;
@@ -156,7 +157,7 @@ IDEBuffer* ide_buffer_create(void) {
 IDEBuffer* ide_buffer_load(const char* filepath) {
     FILE* f = fopen(filepath, "r");
     if (!f) {
-        fprintf(stderr, "[IDE] Failed to open: %s\n", filepath);
+        LOG_ERROR("ide", "Failed to open: %s", filepath);
         return NULL;
     }
 
@@ -197,7 +198,7 @@ IDEBuffer* ide_buffer_load(const char* filepath) {
     ide_detect_structure(buffer);
     ide_tokenize_all(buffer);
 
-    fprintf(stderr, "[IDE] Loaded: %s (%u lines)\n", filepath, buffer->line_count);
+    LOG_INFO("ide", "Loaded: %s (%u lines)", filepath, buffer->line_count);
     return buffer;
 }
 
@@ -211,7 +212,7 @@ bool ide_buffer_save_as(IDEBuffer* buffer, const char* filepath) {
 
     FILE* f = fopen(filepath, "w");
     if (!f) {
-        fprintf(stderr, "[IDE] Failed to save: %s\n", filepath);
+        LOG_ERROR("ide", "Failed to save: %s", filepath);
         return false;
     }
 
@@ -228,7 +229,7 @@ bool ide_buffer_save_as(IDEBuffer* buffer, const char* filepath) {
     }
 
     buffer->modified = false;
-    fprintf(stderr, "[IDE] Saved: %s (%u lines)\n", filepath, buffer->line_count);
+    LOG_INFO("ide", "Saved: %s (%u lines)", filepath, buffer->line_count);
     return true;
 }
 

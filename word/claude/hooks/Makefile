@@ -51,10 +51,10 @@ HOOKS_FROM_CONFIG := $(shell sed 's|//.*||' $(CONFIG) 2>/dev/null | jq -r '.buil
 
 # Fallback if jq not available or config parsing fails
 ifeq ($(HOOKS_FROM_CONFIG),)
-  SESSION_HOOKS := start end stop subagent-stop notification pre-compact
+  SESSION_HOOKS := start end stop subagent-stop subagent-start setup notification pre-compact
   TOOL_HOOKS := pre-use post-use
   PROMPT_HOOKS := submit
-  PERMISSION_HOOKS := request
+  PERMISSION_HOOKS := permission-request
   ALL_HOOKS := $(SESSION_HOOKS) $(TOOL_HOOKS) $(PROMPT_HOOKS) $(PERMISSION_HOOKS)
   CONFIG_STATUS := (fallback - jq unavailable)
 else

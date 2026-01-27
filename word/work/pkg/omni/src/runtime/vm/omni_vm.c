@@ -37,6 +37,9 @@
 #include "omni_vm.h"
 #include "omni_runtime.h"
 
+// CPI-SI state-aware logging
+#include "kernel/cpisi/dar/detect.h"
+
 // # S.1 Internal Helpers [HELPERS]
 
 static void safe_strcpy(char* dst, size_t dst_size, const char* src) {
@@ -626,7 +629,7 @@ OmniVMResult omni_vm_step(OmniVM* vm) {
             // operand1 = module index
             // operand2,3 = function index in module
             // For now, external calls are not yet implemented
-            fprintf(stderr, "VM: External function calls not yet implemented\n");
+            LOG_WARN("vm", "External function calls not yet implemented");
             vm->ip++;
             break;
         }
@@ -636,7 +639,7 @@ OmniVMResult omni_vm_step(OmniVM* vm) {
             // operand1 = module index
             // operand2,3 = export name index
             // For now, exports are not yet implemented
-            fprintf(stderr, "VM: Module exports not yet implemented\n");
+            LOG_WARN("vm", "Module exports not yet implemented");
             vm->ip++;
             break;
         }

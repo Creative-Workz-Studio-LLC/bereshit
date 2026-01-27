@@ -4,20 +4,21 @@
 # Purpose: Build, test, and manage all claude-global modules
 # Biblical: Ecclesiastes 3:3 - "A time to break down, and a time to build up"
 #
-# Structure (2025-12-22):
-#   bin/              - Compiled binaries (cpisi, statusline)
+# Structure (2026-01-16):
+#   bin/              - Compiled binaries (statusline)
 #   config/           - Human-readable configuration
 #   docs/             - Documentation
-#   entrypoints/      - Go main() packages
-#   hooks/            - Session and tool lifecycle hooks
+#   hooks/            - Session and tool lifecycle hooks (with cmd/ entrypoints)
 #   pkg/              - Shared Go packages
 #   skills/           - Skill implementations
 #   statusline/       - Status line implementation
 #
+# Note: cpisi CLI is in word/work/cmd/cpisi (separate module)
+#
 # Usage:
 #   make          - Build all modules
 #   make build    - Build all modules
-#   make bin      - Build binaries (cpisi, statusline) to bin/
+#   make bin      - Build binaries (statusline) to bin/
 #   make test     - Run all tests
 #   make clean    - Clean build artifacts
 #   make pkg      - Build shared pkg module
@@ -51,12 +52,12 @@ build: pkg hooks statusline skills bin
 	@echo "=== All modules built successfully ==="
 
 # Build binaries to bin/
+# Note: cpisi is in word/work/cmd/cpisi (separate module)
 bin:
 	@echo "=== Building binaries to bin/ ==="
 	@mkdir -p bin
-	@$(GO) build -o bin/cpisi ./entrypoints/cpisi
 	@$(GO) build -o bin/statusline ./statusline/cmd/statusline
-	@echo "Built: bin/cpisi, bin/statusline"
+	@echo "Built: bin/statusline"
 
 # Build shared pkg module
 pkg:

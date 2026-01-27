@@ -2,23 +2,24 @@
 // METADATA
 // ============================================================================
 // Hook: PermissionRequest
-// Fires: When user is shown a permission dialog
-// Added: Claude Code v2.0.45
+// Fires: When user is shown a permission dialog (after PreToolUse returns "ask")
 // Matchers: Same as PreToolUse tools
 //
-// Output options:
-//   - {"decision": "allow"} - Approve the request
-//   - {"decision": "deny", "reason": "..."} - Deny with reason
-//   - {} or no output - Let user decide (default behavior)
+// State Machine Integration:
+//   - GATE: This is a decision point for authority
+//   - Fires AFTER PreToolUse when PreToolUse returns "ask"
+//   - Can auto-allow, auto-deny, or pass through to user
 //
-// New in v2.0.54: Can also apply permission updates (always allow suggestions)
-// Traces to: settings.json hooks.PermissionRequest
+// "Every way of a man is right in his own eyes: but the LORD pondereth the hearts"
+// — Proverbs 21:2
 
 package permission
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/logging"
 )
@@ -52,50 +53,142 @@ type RequestOutput struct {
 
 // Request handles the PermissionRequest hook
 func Request() {
-	log := logging.New("permission")
-	log.SetMode(logging.ModeCompact)
-
 	var input RequestInput
 	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
-		log.Error("Failed to decode PermissionRequest input", map[string]string{"error": err.Error()})
+		fmt.Fprintf(os.Stderr, "Failed to decode input: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Create CategoryLogger for file output
-	catLog, catErr := logging.NewCategoryLogger(logging.CategorySession, input.SessionID)
-	if catErr != nil {
-		log.Warn("CategoryLogger unavailable", map[string]string{
-			"error": catErr.Error(),
-		})
-	}
-	defer func() {
-		if catLog != nil {
-			catLog.Close()
+	// Initialize logging
+	log := logging.New("permission")
+	catLog, _ := logging.NewCategoryLogger(logging.CategorySession, input.SessionID)
+
+	// Check for auto-deny patterns first (safety)
+	if reason := checkAutoDeny(input); reason != "" {
+		output := RequestOutput{
+			Decision: "deny",
+			Reason:   reason,
 		}
-	}()
-
-	// Log the permission request
-	logFields := map[string]string{
-		"session_id": input.SessionID,
-		"tool_name":  input.ToolName,
-	}
-	if input.ToolUseID != "" {
-		logFields["tool_use_id"] = input.ToolUseID
-	}
-
-	log.Info("Permission requested", logFields)
-	if catLog != nil {
-		catLog.Info("permission_request", "Permission requested", logFields)
+		if catLog != nil {
+			catLog.Warn("auto_deny", "Permission auto-denied", map[string]string{
+				"tool":   input.ToolName,
+				"reason": reason,
+			})
+		}
+		json.NewEncoder(os.Stdout).Encode(output)
+		return
 	}
 
-	// TODO: Implement permission request logic
-	// - Auto-allow safe operations
-	// - Auto-deny dangerous operations
-	// - Modify input when allowing
-	// - Custom deny messages
+	// Check for auto-allow patterns (convenience)
+	if checkAutoAllow(input) {
+		output := RequestOutput{
+			Decision: "allow",
+		}
+		log.Debug("Auto-allowing", map[string]string{"tool": input.ToolName})
+		json.NewEncoder(os.Stdout).Encode(output)
+		return
+	}
 
-	// Default: don't intercept (let user decide)
-	// Return empty to pass through to user
+	// Default: pass through to user (return empty)
+	// This lets the user see and decide on the permission prompt
+	log.Debug("Passing to user", map[string]string{"tool": input.ToolName})
+}
+
+// checkAutoDeny returns a reason string if the operation should be auto-denied
+// Empty string means no auto-deny
+func checkAutoDeny(input RequestInput) string {
+	switch input.ToolName {
+	case "Bash":
+		cmd, _ := input.ToolInput["command"].(string)
+		cmd = strings.ToLower(cmd)
+
+		// Dangerous system commands
+		dangerousPatterns := []struct {
+			pattern string
+			reason  string
+		}{
+			{"rm -rf /", "Attempting to delete root filesystem"},
+			{"rm -rf /*", "Attempting to delete root filesystem"},
+			{":(){:|:&};:", "Fork bomb detected"},
+			{"mkfs.", "Filesystem format command detected"},
+			{"dd if=/dev/zero of=/dev/sd", "Disk wipe command detected"},
+			{"> /dev/sd", "Direct disk write detected"},
+			{"chmod -r 777 /", "Dangerous permission change on root"},
+			{"wget http", "Downloading from insecure HTTP source"},
+			{"curl http", "Downloading from insecure HTTP source"},
+			{"| bash", "Piping to bash (potential code injection)"},
+			{"| sh", "Piping to shell (potential code injection)"},
+			{"eval \"$(curl", "Remote code execution pattern"},
+			{"eval \"$(wget", "Remote code execution pattern"},
+		}
+
+		for _, dp := range dangerousPatterns {
+			if strings.Contains(cmd, dp.pattern) {
+				return dp.reason
+			}
+		}
+
+	case "Write", "Edit":
+		filePath, _ := input.ToolInput["file_path"].(string)
+
+		// Protected system files
+		protectedPaths := []string{
+			"/etc/passwd",
+			"/etc/shadow",
+			"/etc/sudoers",
+			"/etc/hosts",
+			"/boot/",
+			"/sys/",
+			"/proc/",
+		}
+
+		for _, protected := range protectedPaths {
+			if strings.HasPrefix(filePath, protected) {
+				return fmt.Sprintf("Protected system file: %s", protected)
+			}
+		}
+
+		// Credentials files
+		if strings.Contains(filePath, ".ssh/") && strings.HasSuffix(filePath, "_rsa") {
+			return "SSH private key modification"
+		}
+	}
+
+	return ""
+}
+
+// checkAutoAllow returns true if the operation should be auto-allowed
+func checkAutoAllow(input RequestInput) bool {
+	switch input.ToolName {
+	case "Read", "Glob", "Grep":
+		// Read operations in workspace are generally safe
+		return true
+
+	case "WebSearch", "WebFetch":
+		// Information gathering is safe
+		return true
+
+	case "Bash":
+		cmd, _ := input.ToolInput["command"].(string)
+
+		// Safe informational commands
+		safeCommands := []string{
+			"ls ", "pwd", "whoami", "date", "echo ",
+			"cat ", "head ", "tail ", "wc ",
+			"git status", "git log", "git diff", "git branch",
+			"go version", "node --version", "npm --version",
+			"which ", "type ", "file ",
+		}
+
+		cmdLower := strings.ToLower(cmd)
+		for _, safe := range safeCommands {
+			if strings.HasPrefix(cmdLower, safe) {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // ============================================================================

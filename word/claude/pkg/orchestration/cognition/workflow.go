@@ -53,8 +53,9 @@ func WorkflowContext(runtime *types.RuntimeState) string {
 // formatWorkflowState returns basic workflow state when definition unavailable
 func formatWorkflowState(wf types.RuntimeWorkflow) string {
 	opName := workflowOperationName(wf.Operation)
-	return fmt.Sprintf("**Active Workflow:** %s (Step %d/%d)",
-		opName, wf.CurrentStep, wf.TotalSteps)
+	opDesc := workflowOperationDescription(wf.Operation)
+	return fmt.Sprintf("**%s** — Step %d/%d\n*%s*",
+		opName, wf.CurrentStep, wf.TotalSteps, opDesc)
 }
 
 // formatWorkflowFull returns comprehensive workflow context
@@ -63,27 +64,27 @@ func formatWorkflowFull(wf types.RuntimeWorkflow, def *statemachine.WorkflowDefi
 
 	opName := workflowOperationName(wf.Operation)
 
-	// Header with current position
-	parts = append(parts, fmt.Sprintf("**Workflow:** %s [%d/%d]",
+	// Header with what we're doing and progress
+	// Format: ✏️ Editing Blocks — Step 3/8
+	parts = append(parts, fmt.Sprintf("**%s** — Step %d/%d",
 		opName, wf.CurrentStep, wf.TotalSteps))
 
-	// Current step (what to do NOW)
+	// Current step (what to do NOW) - make it prominent
 	if wf.CurrentStep > 0 && wf.CurrentStep <= len(wf.Steps) {
 		currentStep := wf.Steps[wf.CurrentStep-1]
-		parts = append(parts, fmt.Sprintf("**Current Step:** %s", currentStep.Description))
+		parts = append(parts, fmt.Sprintf("**NOW:** %s", currentStep.Description))
 	}
 
-	// Next 2 upcoming steps (what's coming)
-	upcoming := getUpcomingSteps(wf, 2)
+	// Next step only (keep it focused)
+	upcoming := getUpcomingSteps(wf, 1)
 	if len(upcoming) > 0 {
-		parts = append(parts, fmt.Sprintf("**Next:** %s", strings.Join(upcoming, " → ")))
+		parts = append(parts, fmt.Sprintf("**NEXT:** %s", upcoming[0]))
 	}
 
-	// Key principle for this workflow (first one, brief)
+	// Key principle (if relevant)
 	if len(def.KeyPrinciples) > 0 {
 		for key, value := range def.KeyPrinciples {
-			// Just include first principle to avoid context bloat
-			parts = append(parts, fmt.Sprintf("**Principle (%s):** %s", key, value))
+			parts = append(parts, fmt.Sprintf("*(%s: %s)*", key, value))
 			break
 		}
 	}
@@ -107,19 +108,35 @@ func getUpcomingSteps(wf types.RuntimeWorkflow, count int) []string {
 	return upcoming
 }
 
-// workflowOperationName returns human-readable workflow name
+// workflowOperationName returns human-readable workflow name with description
 func workflowOperationName(op types.WorkflowOperation) string {
 	switch op {
 	case types.WorkflowFileCreation:
-		return "File Creation"
+		return "📄 Creating File"
 	case types.WorkflowAlignment:
-		return "Alignment"
+		return "🎯 Aligning"
 	case types.WorkflowBlockUpdate:
-		return "Block Update"
+		return "✏️ Editing Blocks"
 	case types.WorkflowCommit:
-		return "Commit"
+		return "📦 Committing"
 	default:
-		return "Unknown"
+		return "⚙️ Working"
+	}
+}
+
+// workflowOperationDescription returns what the workflow means
+func workflowOperationDescription(op types.WorkflowOperation) string {
+	switch op {
+	case types.WorkflowFileCreation:
+		return "Creating a new file from template"
+	case types.WorkflowAlignment:
+		return "Aligning code/docs with standards"
+	case types.WorkflowBlockUpdate:
+		return "Editing file block-by-block"
+	case types.WorkflowCommit:
+		return "Preparing git commit"
+	default:
+		return "Processing..."
 	}
 }
 

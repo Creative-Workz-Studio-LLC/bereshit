@@ -6,7 +6,9 @@
 // omni_patterns.c — Response Pattern Templates Implementation
 // Sentence structures with slots - not tokens, but meaning units
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 // =============================================================================
 // METADATA [METADATA]

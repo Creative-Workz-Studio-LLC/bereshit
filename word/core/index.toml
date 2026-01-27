@@ -98,6 +98,48 @@ output = "validation.gen.h"
 description = "Validation constants — error severity, exit codes"
 depends_on = ["types/primitives.toml", "types/composition.toml"]  # Validates both
 
+[[systems.specs]]
+file = "error-system.toml"
+generates = true
+output = "error_system.gen.h"
+description = "Error handling system — DAR phases, severity codes, recovery patterns"
+depends_on = ["types/primitives.toml", "types/validation.toml"]  # Errors use primitives and validation
+
+[[systems.specs]]
+file = "error-codes.toml"
+generates = true
+output = "error_codes.gen.h"
+description = "Error code definitions — categorized by subsystem and severity"
+depends_on = ["types/error-system.toml"]  # Codes implement the error system
+
+[[systems.specs]]
+file = "layer.toml"
+generates = true
+output = "layer.gen.h"
+description = "9-layer architecture — KERNEL to APP with HEALTH at center"
+depends_on = ["types/primitives.toml", "math/ternary.toml"]  # Layers use ternary balanced values
+
+[[systems.specs]]
+file = "flags.toml"
+generates = true
+output = "flags.gen.h"
+description = "Restore strategy bit flags — 6 flags for recovery operations"
+depends_on = ["types/primitives.toml"]  # Flags use uint8_t bitmask
+
+[[systems.specs]]
+file = "timing.toml"
+generates = true
+output = "timing.gen.h"
+description = "Timing intervals — 5 intervals derived from POLL anchor (1000ms)"
+depends_on = ["types/primitives.toml", "math/ternary.toml"]  # Timing uses ternary math
+
+[[systems.specs]]
+file = "metadata-slots.toml"
+generates = true
+output = "metadata_slots.gen.h"
+description = "Metadata slots — 13 BRIDGE slots completing 243 + 13 = 256"
+depends_on = ["types/primitives.toml", "math/ternary.toml"]  # Uses PENTERACT = 243
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SYSTEM 2: LANGUAGE — Keywords and Syntax
@@ -219,6 +261,20 @@ file = "provider.toml"
 generates = false
 description = "Health provider interface contract"
 depends_on = ["os/health/score.toml"]  # Providers return scores
+
+[[systems.specs]]
+file = "restore.toml"
+generates = true
+output = "health_restore.gen.h"
+description = "Health restoration — DAR restore phase, recovery strategies"
+depends_on = ["os/health/diagnostics.toml", "types/error-system.toml"]  # Restore uses diagnostics and error system
+
+[[systems.specs]]
+file = "dar.toml"
+generates = true
+output = "health_dar.gen.h"
+description = "DAR phases — Detect, Assess, Restore paradigm (3×3×3 = 27-cube)"
+depends_on = ["os/health/score.toml", "os/health/diagnostics.toml", "os/health/restore.toml"]  # DAR orchestrates health
 
 
 # ─────────────────────────────────────────────────────────────────────────────

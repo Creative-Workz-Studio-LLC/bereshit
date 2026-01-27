@@ -55,6 +55,15 @@ CREATE TABLE IF NOT EXISTS sessions (
     day_of_week INTEGER,  -- 0=Sunday, 6=Saturday
     hour_of_day INTEGER,  -- 0-23
 
+    -- CPI Tracking (Covenant Partnership Intelligence)
+    exchange_count INTEGER DEFAULT 0,
+    insight_count INTEGER DEFAULT 0,
+    cpi_score REAL DEFAULT 0.5,
+    dominant_exchange_type TEXT,
+    session_arc TEXT,
+    narrative_summary TEXT,
+    quality_rating REAL DEFAULT 0.5,
+
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -250,6 +259,122 @@ SELECT
 FROM sessions
 GROUP BY day_of_week, hour_of_day
 ORDER BY session_count DESC;
+
+-- ============================================================================
+-- BODY - CPI Tracking (Covenant Partnership Intelligence)
+-- ============================================================================
+-- "By their fruits ye shall know them" — Matthew 7:20
+
+-- Exchanges: CPI exchange tracking per prompt
+CREATE TABLE IF NOT EXISTS exchanges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    sequence_num INTEGER NOT NULL,
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- Exchange classification
+    exchange_type TEXT NOT NULL,  -- 'directive', 'collaborative', 'check_in', 'pushback', 'affirmation', 'question', 'context', 'unknown'
+
+    -- CPI signals
+    feedback_polarity TEXT,       -- 'positive', 'negative', 'neutral', NULL
+    insight_detected INTEGER DEFAULT 0,
+    value_contribution REAL DEFAULT 0.5,  -- 0.0 to 1.0
+
+    -- Context
+    trajectory_section TEXT,      -- B.1, B.2, B.3, B.4
+    hebrew_state TEXT,            -- State at exchange time
+    k_moral_direction INTEGER,    -- +1 toward God, -1 toward self, 0 neutral
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE(session_id, sequence_num)
+);
+
+CREATE INDEX IF NOT EXISTS idx_exchanges_session ON exchanges(session_id);
+CREATE INDEX IF NOT EXISTS idx_exchanges_type ON exchanges(exchange_type);
+CREATE INDEX IF NOT EXISTS idx_exchanges_insight ON exchanges(insight_detected);
+
+-- Insights: Moments of understanding transfer
+CREATE TABLE IF NOT EXISTS insights (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    exchange_id INTEGER REFERENCES exchanges(id) ON DELETE SET NULL,
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- Classification
+    insight_type TEXT NOT NULL,   -- 'breakthrough', 'correction', 'clarification', 'synthesis'
+    confidence REAL DEFAULT 0.5,  -- 0.0 to 1.0
+
+    -- Context
+    topic_area TEXT,              -- What domain (optional)
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_insights_session ON insights(session_id);
+CREATE INDEX IF NOT EXISTS idx_insights_type ON insights(insight_type);
+
+-- Key Context: 3-key (trit) context per exchange
+CREATE TABLE IF NOT EXISTS key_context (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    exchange_id INTEGER REFERENCES exchanges(id) ON DELETE SET NULL,
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 3-key values
+    k_toward_god INTEGER DEFAULT 0,
+    k_toward_self INTEGER DEFAULT 0,
+    k_selector INTEGER DEFAULT 0,
+
+    -- Computed
+    k_moral REAL,                 -- (toward_god - toward_self) / max
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_key_context_session ON key_context(session_id);
+
+-- ============================================================================
+-- BODY - Learnings (Pattern → Knowledge Integration)
+-- ============================================================================
+-- "Line upon line, precept upon precept" — Isaiah 28:10
+
+-- Learnings: patterns that have been integrated into knowledge
+CREATE TABLE IF NOT EXISTS learnings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    -- Source patterns that led to this learning
+    source_patterns TEXT,  -- JSON array of pattern_ids
+    source_type TEXT NOT NULL,  -- 'pattern', 'session', 'insight', 'manual'
+
+    -- The learning itself
+    learning_type TEXT NOT NULL,  -- 'preference', 'workflow', 'communication', 'technical', 'identity'
+    learning_key TEXT NOT NULL,   -- Unique key for this learning
+    learning_content TEXT NOT NULL,  -- The actual learning/insight
+
+    -- Confidence and weight
+    confidence REAL DEFAULT 0.5,  -- 0.0 to 1.0
+    weight REAL DEFAULT 1.0,      -- Weight for influence (decays over time)
+
+    -- Integration status
+    integrated INTEGER DEFAULT 0,  -- Has this been integrated into identity?
+    integrated_at DATETIME,
+    integration_target TEXT,       -- Where it was integrated (CLAUDE.md, bio.md, etc.)
+
+    -- Lifecycle
+    first_seen DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_reinforced DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    reinforcement_count INTEGER DEFAULT 1,
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE(learning_type, learning_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_learnings_type ON learnings(learning_type);
+CREATE INDEX IF NOT EXISTS idx_learnings_integrated ON learnings(integrated);
+CREATE INDEX IF NOT EXISTS idx_learnings_confidence ON learnings(confidence DESC);
 
 -- ============================================================================
 -- CLOSING - Schema Version

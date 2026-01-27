@@ -122,7 +122,7 @@
 
 //--- Project Headers ---
 #include "trit.h"   // MATTER layer: trit types
-#include "math.h"   // Math operations: 5 families
+#include "trit_math.h"   // Math operations: 5 families
 
 // ────────────────────────────────────────────────────────────────
 // Defines

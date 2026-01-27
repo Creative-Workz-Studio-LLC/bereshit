@@ -31,30 +31,52 @@
 // =============================================================================
 
 // =============================================================================
+// SETUP [SETUP]
+// =============================================================================
+
+// Single source of truth: Cornerstone's domain types
+#include "kernel/types/types.h"
+
+// =============================================================================
+// END SETUP
+// =============================================================================
+
+// =============================================================================
 // BODY [BODY]
 // =============================================================================
 
-// # B.1 Hebrew State Enum [STATES]
+// # B.1 Hebrew State — Using Cornerstone's Canonical Types [STATES]
 //
 // The 7 Hebrew states form a spectrum from broken to complete.
-// Encoded as trit-like values: -3 to +3
+// HebrewState is defined in Cornerstone's types.h (0-indexed for array access):
 //
-// shavar(-1) ←── chaser/ratsah(-0.5) ←── yashar(0) ──→ tamim/shalem(+0.5) ──→ tov(+1)
-//      ↑                                     ↑                                    ↑
-//   crisis                                center                              completion
+//   HEBREW_SHAVAR (0) ← HEBREW_CHASER/RATSAH (1,2) ← HEBREW_YASHAR (3) → ...
+//        ↑                                              ↑
+//     crisis                                         center
+//
+// Old DARHebrewState (-3 to +3) is DEPRECATED. Use HebrewState (0-6) directly.
 
-// DAR (Detect-Assess-Recover) Hebrew States
-// Extended 7-state system for fine-grained cognitive positioning
-// These use DAR_ prefix to avoid conflict with simpler 5-state HebrewState in cpisi_log.h
-typedef enum {
-    DAR_SHAVAR  = -3,    // Broken (crisis)
-    DAR_CHASER  = -2,    // Lacking (regressing, k=-1)
-    DAR_RATSAH  = -1,    // Wanting (hungry for growth, k=+1)
-    DAR_YASHAR  =  0,    // Even (center/default)
-    DAR_TAMIM   = +1,    // Sound (consolidating, k=-1)
-    DAR_SHALEM  = +2,    // Whole (expanding, k=+1)
-    DAR_TOV     = +3     // Perfect (completion)
-} DARHebrewState;  // 7-state system for DAR compatibility
+// # B.2 Backward Compatibility Aliases [COMPAT]
+//
+// These aliases exist for code that still uses DAR_ prefixed names.
+// New code should use HebrewState and HEBREW_* constants directly.
+
+#ifndef DAR_HEBREW_COMPAT_DEFINED
+#define DAR_HEBREW_COMPAT_DEFINED
+
+// Alias the canonical type
+typedef HebrewState DARHebrewState;
+
+// Alias the constants (maps DAR_* to HEBREW_*)
+#define DAR_SHAVAR  HEBREW_SHAVAR   // 0
+#define DAR_CHASER  HEBREW_CHASER   // 1
+#define DAR_RATSAH  HEBREW_RATSAH   // 2
+#define DAR_YASHAR  HEBREW_YASHAR   // 3
+#define DAR_TAMIM   HEBREW_TAMIM    // 4
+#define DAR_SHALEM  HEBREW_SHALEM   // 5
+#define DAR_TOV     HEBREW_TOV      // 6
+
+#endif // DAR_HEBREW_COMPAT_DEFINED
 
 // =============================================================================
 // END BODY

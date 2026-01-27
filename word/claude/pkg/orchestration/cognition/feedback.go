@@ -17,6 +17,7 @@ package cognition
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
@@ -145,6 +146,55 @@ func TrajectoryGuidance(runtime *types.RuntimeState) string {
 	default:
 		return ""
 	}
+}
+
+// MCPFeedback returns context after MCP tool execution
+// Tracks MCP tool usage for learning and provides provider-specific guidance
+// "Prove all things; hold fast that which is good" - 1 Thessalonians 5:21
+func MCPFeedback(toolName string, outcome ToolOutcome, runtime *types.RuntimeState) string {
+	builder := NewBuilder()
+
+	// Extract provider from tool name (mcp__plugin_PROVIDER_PROVIDER__action)
+	parts := strings.Split(toolName, "__")
+	provider := "unknown"
+	action := toolName
+	if len(parts) >= 3 {
+		// mcp__plugin_greptile_greptile__list_pull_requests -> greptile
+		providerParts := strings.Split(parts[1], "_")
+		if len(providerParts) >= 2 {
+			provider = providerParts[len(providerParts)-1]
+		}
+		action = parts[len(parts)-1]
+	}
+
+	// Outcome feedback
+	if outcome == ToolSuccess {
+		builder.Add(fmt.Sprintf("MCP %s:%s ✓", provider, action))
+	} else {
+		builder.Add(fmt.Sprintf("MCP %s:%s ✗ - verify tool input", provider, action))
+	}
+
+	// Provider-specific guidance
+	switch provider {
+	case "greptile":
+		if outcome == ToolError {
+			builder.Add("Greptile: Check repository access and PR number format.")
+		}
+	case "playwright":
+		if outcome == ToolError {
+			builder.Add("Playwright: Verify browser context and selector validity.")
+		}
+	case "stripe":
+		if outcome == ToolError {
+			builder.Add("Stripe: Check API key permissions and request format.")
+		}
+	case "linear":
+		if outcome == ToolError {
+			builder.Add("Linear: Verify team/project context and issue format.")
+		}
+	}
+
+	return builder.Build()
 }
 
 // ============================================================================

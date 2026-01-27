@@ -397,6 +397,56 @@ archive_path = ".health-log.archive"
 compress = true
 
 
+# -----------------------------------------------------------------------------
+# 7. System Limits - C Implementation Constants
+# -----------------------------------------------------------------------------
+# These limits define buffer sizes and timing for C implementations.
+# C code derives #define constants from these values.
+#
+# Scripture: "For which of you, intending to build a tower, sitteth not down
+#             first, and counteth the cost" — Luke 14:28 KJV
+
+[system]
+description = "System limits for C implementation - source of truth for cpisi_types.h"
+
+[system.buffers]
+# Buffer sizes for log entry fields (in bytes/characters)
+# Sized for real-world usage: stack traces, error messages, paths
+msg_max        = 2048  # Maximum log message length (room for stack traces)
+source_max     = 256   # Maximum source identifier (file:line:func)
+component_max  = 64    # Maximum component name length
+detail_max     = 512   # Maximum detail field length
+format_max     = 512   # Maximum format string length
+path_max       = 4096  # Maximum file path (matches PATH_MAX on Linux)
+name_max       = 256   # Maximum file/entry name length
+error_max      = 256   # Maximum short error string
+
+[system.history]
+# History tracking limits
+log_history_max     = 1000  # Maximum log entries to keep in memory
+event_history_max   = 100   # Maximum recent events to track
+search_paths_max    = 8     # Maximum search paths for file location
+
+[system.rotation]
+# File rotation settings (used by cpisi_dar_rotation)
+size_kb        = 1024  # Rotate when file exceeds this size (1MB)
+check_hours    = 1     # Check for rotation every N hours
+recent_days    = 90    # Keep detailed logs for N days
+archive_days   = 180   # Keep archived logs for N days
+
+[system.timing]
+# Timing intervals (in milliseconds)
+poll_interval_ms   = 1000   # Default polling interval (1 second)
+debounce_ms        = 100    # Debounce time for rapid events
+timeout_ms         = 5000   # Default operation timeout (5 seconds)
+flush_interval_ms  = 1000   # Flush log buffer interval
+
+[system.type_counts]
+# Enum counts for array sizing and validation
+log_level_count    = 9   # Number of log levels (CRISIS through INSIGHT)
+action_type_count  = 5   # Number of action types (success, failure, neutral, recovery, reset)
+
+
 # =============================================================================
 # END CONTENT
 # =============================================================================

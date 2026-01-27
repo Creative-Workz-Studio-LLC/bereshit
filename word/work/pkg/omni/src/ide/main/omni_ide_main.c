@@ -43,29 +43,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
 
-// Use the display layer's global shutdown flag (signal-safe)
-#include "display.h"  // For g_display_shutdown_requested
+// Shared signal handling (full suite - shared with cornerstone engine)
+#include "signals.h"  // signals_init, signals_is_running
 
-// Signal handling for clean shutdown (enables screenshot capture)
-volatile sig_atomic_t g_shutdown_requested = 0;
+// Display layer access
+#include "display.h"
 
-static void signal_handler(int sig) {
-    (void)sig;
-    g_shutdown_requested = 1;
-    // Also set the display layer's shutdown flag (signal-safe atomic write)
-    g_display_shutdown_requested = 1;
-}
-
-static void setup_signal_handlers(void) {
-    struct sigaction sa;
-    sa.sa_handler = signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    sigaction(SIGTERM, &sa, NULL);
-    sigaction(SIGINT, &sa, NULL);
-}
+// CPI-SI unified system (log, debug, restore)
+#include "cpisi.h"
 
 // Display mode selection
 typedef enum {
@@ -127,8 +113,18 @@ static void print_version(void) {
 }
 
 int main(int argc, char* argv[]) {
-    // Set up signal handlers for clean shutdown (SIGTERM, SIGINT)
-    setup_signal_handlers();
+    // Initialize unified CPI-SI system (log, debug, restore)
+    CpisiConfig cpisi_cfg = CPISI_CONFIG_DEFAULT;
+    cpisi_cfg.log_level = LOG_INFO;
+    cpisi_cfg.debug_level = DEBUG_LEVEL_BASIC;
+    cpisi_cfg.restore_strategy = RESTORE_STRATEGY_FULL;
+    if (cpisi_orch_init(NULL, &cpisi_cfg) != 0) {
+        fprintf(stderr, "FATAL: CPI-SI initialization failed\n");
+        return 1;
+    }
+
+    // Set up signal handlers for clean shutdown (full suite - shared with engine)
+    signals_init();
 
     const char* filepath = NULL;
 #ifdef IDE_GUI_ENABLED
@@ -155,7 +151,7 @@ int main(int argc, char* argv[]) {
 #ifdef IDE_GUI_ENABLED
             mode = MODE_GUI;
 #else
-            fprintf(stderr, "Warning: GUI mode not available, using TUI\n");
+            LOG_WARN("ide", "GUI mode not available, using TUI");
             mode = MODE_TUI;
 #endif
             continue;
@@ -173,13 +169,13 @@ int main(int argc, char* argv[]) {
     if (filepath) {
         buffer = ide_buffer_load(filepath);
         if (!buffer) {
-            fprintf(stderr, "Error: Could not open file: %s\n", filepath);
+            LOG_ERROR("ide", "Could not open file: %s", filepath);
             return 1;
         }
     } else {
         buffer = ide_buffer_create();
         if (!buffer) {
-            fprintf(stderr, "Error: Could not create buffer\n");
+            LOG_ERROR("ide", "Could not create buffer");
             return 1;
         }
     }
@@ -210,13 +206,13 @@ int main(int argc, char* argv[]) {
             .app_id = "omni-ide"
         };
         if (platform_init(&pconfig) != PLATFORM_OK) {
-            fprintf(stderr, "Warning: Platform init failed, falling back to TUI\n");
+            LOG_WARN("ide", "Platform init failed, falling back to TUI");
             display_mode = DISPLAY_TUI;
         } else {
             // Initialize renderer (required for GUI display layer)
             RendererError rerr = renderer_init(pconfig.width, pconfig.height);
             if (rerr != RENDERER_OK) {
-                fprintf(stderr, "Warning: Renderer init failed, falling back to TUI\n");
+                LOG_WARN("ide", "Renderer init failed, falling back to TUI");
                 platform_shutdown();
                 display_mode = DISPLAY_TUI;
             } else {
@@ -228,7 +224,7 @@ int main(int argc, char* argv[]) {
 
     IDECLI* cli = ide_cli_create(buffer, display_mode);
     if (!cli) {
-        fprintf(stderr, "Error: Could not initialize IDE\n");
+        LOG_ERROR("ide", "Could not initialize IDE");
 #ifdef IDE_GUI_ENABLED
         if (platform_initialized) {
             renderer_shutdown();
@@ -254,7 +250,7 @@ int main(int argc, char* argv[]) {
         // TUI Mode (ncurses) - also handles CLI mode in traditional build
         IDETUI* tui = ide_tui_create(buffer);
         if (!tui) {
-            fprintf(stderr, "Error: Could not initialize TUI\n");
+            LOG_ERROR("ide", "Could not initialize TUI");
             ide_buffer_free(buffer);
             return 1;
         }
@@ -267,12 +263,12 @@ int main(int argc, char* argv[]) {
         // GUI Mode (Cornerstone)
         IDEGUI* gui = ide_gui_create(buffer);
         if (!gui) {
-            fprintf(stderr, "Error: Could not initialize GUI, trying TUI...\n");
+            LOG_WARN("ide", "Could not initialize GUI, trying TUI...");
 
             // Fallback to TUI
             IDETUI* tui = ide_tui_create(buffer);
             if (!tui) {
-                fprintf(stderr, "Error: Could not initialize TUI either\n");
+                LOG_ERROR("ide", "Could not initialize TUI either");
                 ide_buffer_free(buffer);
                 return 1;
             }
@@ -288,6 +284,9 @@ int main(int argc, char* argv[]) {
 
     // Clean up
     ide_buffer_free(buffer);
+
+    // Shutdown CPI-SI (logs final status, cleans up subsystems)
+    cpisi_orch_shutdown(NULL);
 
     return result;
 }

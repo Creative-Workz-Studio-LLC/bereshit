@@ -118,7 +118,7 @@ CPISICube* cpisi_cube_create(void) {
     return cube;
 }
 
-CPISICube* cpisi_cube_create_with_dar(DARContext* dar) {
+CPISICube* cpisi_cube_create_with_dar(DAROrchestrator* dar) {
     CPISICube* cube = cpisi_cube_create();
     if (!cube) return NULL;
 
@@ -372,19 +372,7 @@ void cpisi_calculate_modifiers(CPISICube* cube) {
 }
 
 // # B.5a Response Style [STYLE]
-
-static const char* hebrew_state_name(DARHebrewState state) {
-    switch (state) {
-        case DAR_SHAVAR: return "shavar (broken)";
-        case DAR_CHASER: return "chaser (lacking)";
-        case DAR_RATSAH: return "ratsah (wanting)";
-        case DAR_YASHAR: return "yashar (even)";
-        case DAR_TAMIM:  return "tamim (sound)";
-        case DAR_SHALEM: return "shalem (whole)";
-        case DAR_TOV:    return "tov (perfect)";
-        default:            return "unknown";
-    }
-}
+// Uses dar_hebrew_state_name() from omni_dar.h
 
 CPISIResponseStyle cpisi_response_style(CPISICube* cube) {
     CPISIResponseStyle style = {0};
@@ -413,7 +401,7 @@ CPISIResponseStyle cpisi_response_style(CPISICube* cube) {
     style.verbosity = clamp_modifier(cube->position.y * 35 + cube->position.z * 15);
 
     // State name
-    style.state_name = hebrew_state_name(cpisi_hebrew_state(cube));
+    style.state_name = dar_hebrew_state_name(cpisi_hebrew_state(cube));
 
     return style;
 }
@@ -501,37 +489,37 @@ const char* cpisi_position_name(CPISIPosition pos) {
 void cpisi_sync_with_dar(CPISICube* cube) {
     if (!cube || !cube->dar) return;
 
-    // Sync cube position from DAR Hebrew state
-    DARHebrewState state = dar_hebrew_state(cube->dar);
-    int8_t health = dar_health_get(cube->dar);
+    // Access orchestrator state directly (Cornerstone's DAROrchestrator)
+    HebrewState state = cube->dar->hebrew_state;
+    HealthScore health = cube->dar->health;
 
     // Map Hebrew state back to approximate cube position
     switch (state) {
-        case DAR_SHAVAR:
+        case HEBREW_SHAVAR:
             cube->position.z = -1;
             cube->position.x = -1;
             break;
-        case DAR_CHASER:
+        case HEBREW_CHASER:
             cube->position.z = health < 0 ? -1 : 0;
             cube->position.x = -1;
             break;
-        case DAR_RATSAH:
+        case HEBREW_RATSAH:
             cube->position.z = 0;
             cube->position.x = 1;
             break;
-        case DAR_YASHAR:
+        case HEBREW_YASHAR:
             cube->position.z = 0;
             cube->position.x = 0;
             break;
-        case DAR_TAMIM:
+        case HEBREW_TAMIM:
             cube->position.z = 1;
             cube->position.x = -1;
             break;
-        case DAR_SHALEM:
+        case HEBREW_SHALEM:
             cube->position.z = 1;
             cube->position.x = 0;
             break;
-        case DAR_TOV:
+        case HEBREW_TOV:
             cube->position.z = 1;
             cube->position.x = 1;
             break;
@@ -549,18 +537,35 @@ void cpisi_sync_with_dar(CPISICube* cube) {
 void cpisi_update_dar(CPISICube* cube) {
     if (!cube || !cube->dar) return;
 
-    // Update DAR with current cube state
-    dar_hebrew_transition(cube->dar, cube->position.x);
+    // Update Hebrew state based on cube x-position (k-factor direction)
+    // Uses Cornerstone's cpisi_dar_set_hebrew_state()
+    HebrewState current = cube->dar->hebrew_state;
+    HebrewState new_state = current;
+
+    if (cube->position.x > 0 && current < HEBREW_TOV) {
+        new_state = (HebrewState)(current + 1);  // Expand toward tov
+    } else if (cube->position.x < 0 && current > HEBREW_SHAVAR) {
+        new_state = (HebrewState)(current - 1);  // Retreat toward shavar
+    }
+
+    if (new_state != current) {
+        cpisi_dar_set_hebrew_state(cube->dar, new_state);
+    }
 
     // Adjust health based on position
-    int8_t health_delta = 0;
+    int16_t health_delta = 0;
     if (cube->position.z > 0) health_delta += 10;  // Toward completion
     if (cube->position.z < 0) health_delta -= 10;  // Toward void
     if (cube->position.x > 0) health_delta += 5;   // Expanding
     if (cube->position.x < 0) health_delta -= 5;   // Retreating
 
     if (health_delta != 0) {
-        dar_health_add(cube->dar, health_delta);
+        HealthScore current_health = cube->dar->health;
+        int16_t new_health = current_health + health_delta;
+        // Clamp to valid range
+        if (new_health < -100) new_health = -100;
+        if (new_health > 100) new_health = 100;
+        cpisi_dar_set_health(cube->dar, (HealthScore)new_health);
     }
 }
 

@@ -6,7 +6,9 @@
 // omni_mind.c — CPI-SI Mind Layer Implementation
 // The synapses: input → cube → output
 
-#define _GNU_SOURCE  // Must be before any includes for strcasestr
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE  /* Must be before any includes for strcasestr */
+#endif
 
 // =============================================================================
 // METADATA [METADATA]
@@ -28,7 +30,7 @@
 // =============================================================================
 
 #include "omni_mind.h"
-#include "cpisi_log.h"
+#include "kernel/cpisi/dar/detect.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>

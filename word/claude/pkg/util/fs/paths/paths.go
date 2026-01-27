@@ -102,6 +102,18 @@ func BereshitOmniSeed() string {
 	return filepath.Join(BereshitWord(), "omni", "seed")
 }
 
+// BereshitCore returns bereshit/word/core/ path - the canonical TOML specs
+// This is the SOURCE OF TRUTH for all CPI-SI configuration schemas
+// Cornerstone pattern: Read from canonical specs at runtime
+func BereshitCore() string {
+	return filepath.Join(BereshitWord(), "core")
+}
+
+// BereshitCoreHealth returns bereshit/word/core/os/health/ path
+func BereshitCoreHealth() string {
+	return filepath.Join(BereshitCore(), "os", "health")
+}
+
 // --- Claude Paths ---
 
 // ClaudeHome returns the .claude directory path
@@ -175,8 +187,22 @@ func ClaudeGlobalConfig() string {
 
 // CPISISchemaConfig returns the base schema config directory
 // This is the ANCHOR for all CPI-SI configuration schemas
+// Config-driven pattern: Falls back to Bereshit/word/core/ (canonical TOML specs)
 func CPISISchemaConfig() string {
-	return filepath.Join(ClaudeGlobalRoot(), "pkg", "cpisi", "schema", "config")
+	// Priority 1: Local schema (if exists)
+	localSchema := filepath.Join(ClaudeGlobalRoot(), "pkg", "cpisi", "schema", "config")
+	if _, err := os.Stat(localSchema); err == nil {
+		return localSchema
+	}
+
+	// Priority 2: Bereshit word/core (canonical TOML specs - Cornerstone pattern)
+	bereshitCore := BereshitCore()
+	if _, err := os.Stat(bereshitCore); err == nil {
+		return bereshitCore
+	}
+
+	// Fallback to local (will fail gracefully on load)
+	return localSchema
 }
 
 // --- State Machine Runtime Paths ---

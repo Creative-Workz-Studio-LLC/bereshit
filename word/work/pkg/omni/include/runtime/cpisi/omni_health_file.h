@@ -43,10 +43,17 @@
 #define HEALTH_FILE_NAME       ".health"
 #define HEALTH_FILE_PATH_MAX   1024  // OS-level path support
 
-// Health value range
-#define HEALTH_MIN             (-99)
-#define HEALTH_MAX             (+99)
+// Health value range (Base100: -100 to +100)
+// Guard against redefinition if cpisi_log.h is included first
+#ifndef HEALTH_MIN
+#define HEALTH_MIN             (-100)
+#endif
+#ifndef HEALTH_MAX
+#define HEALTH_MAX             (+100)
+#endif
+#ifndef HEALTH_BALANCED
 #define HEALTH_BALANCED        (0)
+#endif
 
 // Zone identifiers
 #define HEALTH_ZONE_VOID       (-1)      // Entry gate

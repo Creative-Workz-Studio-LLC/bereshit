@@ -76,7 +76,7 @@
 
 #include "config.h"
 #include "toml.h"
-#include "engine/core/include/util/jsonc.h"  // JSONC DOM parser for display config
+#include "framework/util/format/jsonc.h"  // JSONC DOM parser for display config
 
 // # S.1c External Libraries [EXTERNAL]
 

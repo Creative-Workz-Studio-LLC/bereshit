@@ -6,7 +6,9 @@
 // omni_retrieval.c — Knowledge Retrieval Layer Implementation
 // Connect mind to filesystem - Scripture, glossary, knowledge
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 // =============================================================================
 // METADATA [METADATA]
@@ -24,13 +26,16 @@
 // =============================================================================
 
 #include "omni_retrieval.h"
-#include "jsonc.h"  // Cornerstone util
+#include "framework/util/format/jsonc.h"  // Cornerstone util
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <sys/stat.h>
+
+// CPI-SI state-aware logging
+#include "kernel/cpisi/dar/detect.h"
 
 // Scripture index cache (loaded once, used many times)
 static ScriptureEntry* g_kjv_index = NULL;
@@ -127,14 +132,14 @@ ScriptureEntry* scripture_index_load(const char* bereshit_root, const char* vers
     // Load JSON file (new DOM API)
     JsonValue* root = jsonc_load(path);
     if (!root) {
-        fprintf(stderr, "[RETRIEVAL] Failed to load scripture index: %s\n", path);
+        LOG_ERROR("retrieval", "Failed to load scripture index: %s", path);
         return NULL;
     }
 
     // Find entries array
     JsonValue* entries = jsonc_object_get(root, "entries");
     if (!entries) {
-        fprintf(stderr, "[RETRIEVAL] No 'entries' array in scripture index\n");
+        LOG_ERROR("retrieval", "No 'entries' array in scripture index");
         jsonc_free(root);
         return NULL;
     }
@@ -169,7 +174,7 @@ ScriptureEntry* scripture_index_load(const char* bereshit_root, const char* vers
 
     jsonc_free(root);
     *count = entry_count;
-    fprintf(stderr, "[RETRIEVAL] Loaded %d entries from %s\n", entry_count, path);
+    LOG_INFO("retrieval", "Loaded %d entries from %s", entry_count, path);
     return index;
 }
 
@@ -689,7 +694,7 @@ CubeIndex* cube_index_load(const char* bereshit_root, const char* version) {
     // Load JSON file (new DOM API)
     JsonValue* root = jsonc_load(path);
     if (!root) {
-        fprintf(stderr, "[RETRIEVAL] Failed to load cube index: %s\n", path);
+        LOG_ERROR("retrieval", "Failed to load cube index: %s", path);
         free(idx);
         return NULL;
     }
@@ -697,7 +702,7 @@ CubeIndex* cube_index_load(const char* bereshit_root, const char* version) {
     // Find cube array (3D array structure)
     JsonValue* cube_arr = jsonc_object_get(root, "cube");
     if (!cube_arr) {
-        fprintf(stderr, "[RETRIEVAL] No 'cube' array in cube index\n");
+        LOG_ERROR("retrieval", "No 'cube' array in cube index");
         jsonc_free(root);
         free(idx);
         return NULL;
@@ -751,7 +756,7 @@ CubeIndex* cube_index_load(const char* bereshit_root, const char* version) {
 
     jsonc_free(root);
     idx->loaded = true;
-    fprintf(stderr, "[RETRIEVAL] Loaded cube index: %s (%d positions)\n", version, pos);
+    LOG_INFO("retrieval", "Loaded cube index: %s (%d positions)", version, pos);
     return idx;
 }
 
@@ -807,7 +812,7 @@ AsciiIndex* ascii_index_load(const char* bereshit_root) {
     // Load JSON file (new DOM API)
     JsonValue* root = jsonc_load(path);
     if (!root) {
-        fprintf(stderr, "[RETRIEVAL] Failed to load ASCII index: %s\n", path);
+        LOG_ERROR("retrieval", "Failed to load ASCII index: %s", path);
         free(idx);
         return NULL;
     }
@@ -815,7 +820,7 @@ AsciiIndex* ascii_index_load(const char* bereshit_root) {
     // Find entries array
     JsonValue* entries = jsonc_object_get(root, "entries");
     if (!entries) {
-        fprintf(stderr, "[RETRIEVAL] No 'entries' array in ASCII index\n");
+        LOG_ERROR("retrieval", "No 'entries' array in ASCII index");
         jsonc_free(root);
         free(idx);
         return NULL;
@@ -847,7 +852,7 @@ AsciiIndex* ascii_index_load(const char* bereshit_root) {
 
     jsonc_free(root);
     idx->loaded = true;
-    fprintf(stderr, "[RETRIEVAL] Loaded ASCII index: %d entries\n", entry_count);
+    LOG_INFO("retrieval", "Loaded ASCII index: %d entries", entry_count);
     return idx;
 }
 
@@ -942,7 +947,7 @@ GlossaryIndex* glossary_index_load(const char* bereshit_root) {
         return NULL;
     }
 
-    fprintf(stderr, "[RETRIEVAL] Loading glossary index...\n");
+    LOG_INFO("retrieval", "Loading glossary index...");
 
     // Load index.jsonc to get categories and terms
     char index_path[MAX_PATH_LENGTH];
@@ -950,7 +955,7 @@ GlossaryIndex* glossary_index_load(const char* bereshit_root) {
 
     JsonValue* root = jsonc_load(index_path);
     if (!root) {
-        fprintf(stderr, "[RETRIEVAL] Failed to load glossary index\n");
+        LOG_ERROR("retrieval", "Failed to load glossary index");
         free(idx->entries);
         free(idx);
         return NULL;
@@ -1002,7 +1007,7 @@ GlossaryIndex* glossary_index_load(const char* bereshit_root) {
 
     jsonc_free(root);
     idx->loaded = true;
-    fprintf(stderr, "[RETRIEVAL] Loaded glossary: %d terms\n", idx->count);
+    LOG_INFO("retrieval", "Loaded glossary: %d terms", idx->count);
     return idx;
 }
 
@@ -1069,7 +1074,7 @@ KnowledgeSystem* knowledge_system_init(const char* bereshit_root) {
     KnowledgeSystem* sys = calloc(1, sizeof(KnowledgeSystem));
     if (!sys) return NULL;
 
-    fprintf(stderr, "[RETRIEVAL] Initializing Knowledge System...\n");
+    LOG_INFO("retrieval", "Initializing Knowledge System...");
 
     // Load KJV entries
     sys->kjv_entries = scripture_index_load(bereshit_root, "KJV", &sys->kjv_count);
@@ -1088,7 +1093,7 @@ KnowledgeSystem* knowledge_system_init(const char* bereshit_root) {
     sys->glossary = glossary_index_load(bereshit_root);
 
     sys->initialized = true;
-    fprintf(stderr, "[RETRIEVAL] Knowledge System initialized: KJV=%d, WEB=%d verses, %d glossary terms\n",
+    LOG_INFO("retrieval", "Knowledge System initialized: KJV=%d, WEB=%d verses, %d glossary terms",
             sys->kjv_count, sys->web_count, sys->glossary ? sys->glossary->count : 0);
     return sys;
 }
@@ -1105,7 +1110,7 @@ void knowledge_system_shutdown(KnowledgeSystem* sys) {
     glossary_index_free(sys->glossary);
 
     free(sys);
-    fprintf(stderr, "[RETRIEVAL] Knowledge System shutdown complete\n");
+    LOG_INFO("retrieval", "Knowledge System shutdown complete");
 }
 
 // Get scripture at current mind position

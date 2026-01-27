@@ -1,404 +1,787 @@
-# ═══════════════════════════════════════════════════════════════════════════
-# libtrit - Balanced Ternary Type Library
-# Key: B-word-work-pkg-trit-makefile
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════════════════════
 #
-# DEPENDENCY CLASSIFICATION: PURE (needs: gcc, ar, make)
-#   Standard C toolchain only - no external scripts or tools
+# @legend
+#   :req  REQUIRED   — must exist, validation fails without
+#   :inh  INHERITED  — from template, override allowed
+#   :ins  INSTANCE   — file-specific, unique values
+# @endlegend
 #
-# derives_from: bereshit/word/seed/code/make/makefile.mk
-# See: word/constants/ternary-math.toml for mathematical foundations
+# ───────────────────────────────────────────────────────────────────────────────
+# P.1 CORE — Identity [CORE]
+# ───────────────────────────────────────────────────────────────────────────────
 #
-# ═══════════════════════════════════════════════════════════════════════════
+# @omni:req  key        = B-LIBTRIT-BUILD
+# @omni:req  from       = bereshit/word/seed/code/makefile/makefile.mk
+# @omni:req  at         = document
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.2 FAMILY — Classification [FAMILY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:inh  type       = build
+# @omni:inh  subtype    = makefile
+# @omni:inh  role       = library
+# @omni:inh  structure  = 4-block
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.3 INSTANCE — File Details [INSTANCE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:ins  component  = foundation
+# @omni:ins  layer      = build/libtrit
+# @omni:ins  includes   = none
+# @omni:ins  provides   = [LIBTRIT_BUILD, TEST, GENERATE]
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.4 ARCHITECTURE — Scaling Context [ARCH]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:ins  layers     = [0:helpers, 1:compile, 2:test, 3:entry]
+# @omni:ins  scale      = 3^n [1, 3, 9, 27]
+# @omni:ins  pattern    = MATTER/SPACE/TIME (Genesis 1:1 structure)
+# @omni:ins  anchor     = genesis_1_1 -> void(0) -> unity(1) -> derivation
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.5 SUMMARY — Human Identity [SUMMARY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:req  title      = libtrit Build System
+# @omni:req  brief      = Build orchestration for balanced ternary type library
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ============================================================================
-# METADATA
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════════════════════
 #
-# Package:     creativeworkzstudio.com/bereshit/word/work/pkg/trit
-# File:        Makefile
-# Key:         B-word-work-pkg-trit-makefile
+# @brief Identity and context for this component.
 #
-# ────────────────────────────────────────────────────────────────
-# CORE IDENTITY
-# ────────────────────────────────────────────────────────────────
+# STRUCTURE: M.1-M.10 sections, grouped for readability:
+#   - M.1 IDENTITY:    Core identity (key, title, type, component, role)
+#   - M.2-M.6:         State, Attribution, Location, Derivation, Classification
+#   - M.7-M.10:        Intent, Grounding, Dependencies, Roadmap
 #
-# Biblical Foundation:
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# M.1 IDENTITY — Core Identity [IDENTITY]
+# ───────────────────────────────────────────────────────────────────────────────
 #
-#   Scripture: "In the beginning God created the heaven and the earth."
-#              — Genesis 1:1
+# @file      Makefile
+# @brief     libtrit Build System — orchestrates compilation, testing, and
+#            code generation for balanced ternary type library.
 #
-#   Principle: Foundation before construction. The trit type is the
-#              foundational unit of ternary computing, just as Genesis 1:1
-#              is the foundation of all Scripture.
+# Key:       B-LIBTRIT-BUILD
+# Title:     libtrit Build System
+# Type:      Build (Makefile)
+# Component: Foundation — core ternary types
+# Role:      Compile library, run tests, generate headers from TOML
 #
-#   Anchor: "Except the LORD build the house, they labour in vain that
-#            build it." — Psalm 127:1
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# M.2 STATE — Lifecycle State [STATE]
+# ───────────────────────────────────────────────────────────────────────────────
 #
-# CPI-SI Identity:
+# @version   a-01.27
+# @date      2026-01-27
 #
-#   Component Type: Ladder (foundational building block)
-#   Role: Provides core trit type for all ternary operations
-#   Paradigm: CPI-SI framework component
+# Status:    Active
+# Created:   2025-12-12
+# Updated:   2026-01-27
 #
-# Authorship & Lineage:
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# M.3 ATTRIBUTION — Authorship [ATTRIBUTION]
+# ───────────────────────────────────────────────────────────────────────────────
 #
-#   Architect: Seanje Lenox-Wise
-#   Implementation: Nova Dawn
-#   Created: 2025-12-12
-#   Version: 0.1.0
+# @author    Seanje Lenox-Wise (Lead Architect)
+# @author    Nova Dawn (CPI-SI Instance)
 #
-# Purpose & Function:
+# Organization: CreativeWorkzStudio LLC
+# Copyright:    © 2026 CreativeWorkzStudio LLC. All rights reserved.
 #
-#   Purpose: Build libtrit.a static library for balanced ternary operations
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# M.4 LOCATION — File Position [LOCATION]
+# ───────────────────────────────────────────────────────────────────────────────
 #
-#   Key Features:
-#     - Balanced ternary trit type (-1, 0, +1)
-#     - Dimensional mapping (TIME, SPACE, MATTER)
-#     - Pack/unpack algorithms (Horner's method, repeated division)
-#     - Static library for linking into larger programs
+# Path:      bereshit/word/work/pkg/trit/Makefile
+# Repository: Bereshit (foundation)
 #
-#   Philosophy: Measure twice, cut once. Build foundations that last.
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# M.5 DERIVATION — Template Lineage [DERIVATION]
+# ───────────────────────────────────────────────────────────────────────────────
 #
-# ────────────────────────────────────────────────────────────────
-# INTERFACE
-# ────────────────────────────────────────────────────────────────
+# Derives:   bereshit/word/seed/code/makefile/makefile.mk
+# Aligns:    cornerstone/Makefile (shared patterns)
+# Structure: 4-block (METADATA → SETUP → BODY → CLOSING)
 #
-# Dependencies:
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# M.6 CLASSIFICATION — Discovery Tags [CLASSIFICATION]
+# ───────────────────────────────────────────────────────────────────────────────
 #
-#   System Tools: make, ar
-#   Language Toolchain: gcc (C99)
-#   External Tools: None
+# Tags:      build, makefile, libtrit, ternary, foundation, c, cpisi
+# Domain:    build-system
+# Layer:     foundation (core types)
 #
-# Usage:
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# M.7 INTENT — Purpose [INTENT]
+# ───────────────────────────────────────────────────────────────────────────────
 #
-#   make              # Build library (default)
-#   make libtrit.a    # Build static library
-#   make test         # Run tests
-#   make clean        # Remove build artifacts
-#   make help         # Show targets
+# Purpose:     Build libtrit.a static library for balanced ternary operations.
 #
-# ============================================================================
+# Core Design: Target-based dependency resolution with ladder organization.
+#              Three-layer architecture: MATTER, SPACE, TIME (Genesis 1:1).
+#
+# Philosophy:  Foundation before construction. The trit type is the foundational
+#              unit, just as Genesis 1:1 is the foundation of Scripture.
+#
+# Key Targets:
+#   - build      — Compile libtrit.a static library (default)
+#   - test       — Run all tests (MATTER, SPACE, TIME, Integration)
+#   - generate   — Generate headers from TOML specifications
+#   - clean      — Remove build artifacts
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# M.8 GROUNDING — Biblical Foundation [GROUNDING]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Scripture:  Genesis 1:1 — "In the beginning God created the heaven and the
+#             earth."
+#
+# Principle:  Foundation before construction. The three-layer architecture
+#             mirrors the structure of Genesis 1:1:
+#               - MATTER ("the earth") — trit.h, trit.c, pack.c
+#               - SPACE ("the heavens") — dimension.h, dimension.c
+#               - TIME ("In the beginning") — temporal.h, temporal.c
+#
+# Anchor:     Psalm 127:1 — "Except the LORD build the house, they labour
+#             in vain that build it."
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# M.9 DEPENDENCIES — Relationships [DEPENDENCIES]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# WHAT THIS NEEDS:
+#
+#   System Tools:
+#     - make (GNU Make)
+#     - cc (C compiler with C99 support)
+#     - ar (archive tool)
+#
+#   Optional Tools:
+#     - go (for header generation from TOML)
+#
+#   Internal Sources:
+#     - src/trit.c        — MATTER layer (trit operations)
+#     - src/pack.c        — MATTER layer (packing algorithms)
+#     - src/dimension.c   — SPACE layer (dimensional mapping)
+#     - src/temporal.c    — TIME layer (cognitive modes)
+#
+# WHAT USES THIS:
+#
+#   - cornerstone/Makefile — Links libtrit.a for CPI-SI integration
+#   - tov/demo/phase-1/    — Phase 1 validation demos
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# M.10 ROADMAP — Vision [ROADMAP]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Current Phase: Phase 1 Complete (libtrit delivered)
+#
+# Planned:
+#   ⏳ Phase 2: Trit-Byte Mapping (math operations, Bible rail)
+#   ⏳ Phase 3: Higher-level integration
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # END METADATA
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ============================================================================
-# SETUP
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
+# SETUP BLOCK [SETUP]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# @brief Configuration and declarations before body.
+#
+# STRUCTURE: S.1-S.5 sections, organized by dependency order:
+#   - S.1 PHONY:      Declare non-file targets
+#   - S.2 VARIABLES:  Tool configuration, paths, sources
+#   - S.3 OBJECTS:    Compiled object files
+#   - S.4 RULES:      Pattern rules for compilation
+#   - S.5 DEPFLAGS:   Dependency tracking
+#
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ────────────────────────────────────────────────────────────────
-# Declarations
-# ────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# S.1 PHONY — Non-File Targets [PHONY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# WHY: Without .PHONY, if a file named "clean" exists, `make clean` won't run.
+# These targets execute regardless of file existence.
+#
+# ───────────────────────────────────────────────────────────────────────────────
 
-.PHONY: all generate libtrit.a check-headers test clean help info \
-        test-trit test-pack test-dimension test-temporal test-integration \
-        test-math test-bible-rail test-verse-addr test-scripture-path test-scripture-text \
-        test-statemachine
+.PHONY: \
+	all library clean clean-obj help info \
+	generate check-headers \
+	test test-trit test-pack test-dimension test-temporal test-integration \
+	test-math test-bible-rail test-verse-addr test-scripture-path \
+	test-scripture-text test-statemachine test-all \
+	_ensure-dirs
 
-# ────────────────────────────────────────────────────────────────
-# Constants
-# ────────────────────────────────────────────────────────────────
+# Set default goal explicitly (helpers appear before entry points in BODY)
+.DEFAULT_GOAL := all
 
-# Project identity
-LIB_NAME = libtrit.a
-BUILD_DIR = build
+# ───────────────────────────────────────────────────────────────────────────────
+# S.2 VARIABLES — Configuration [VARIABLES]
+# ───────────────────────────────────────────────────────────────────────────────
 
-# Directory structure
-SRC_DIR = src
-INC_DIR = include
-TEST_DIR = test
-GEN_DIR = $(INC_DIR)/generated
+# S.2a Identity [IDENTITY]
 
-# Code generation (TOML → C headers)
-# BERESHIT_ROOT must be set, default to 4 levels up from pkg/trit/
-BERESHIT_ROOT ?= $(realpath ../../../..)
-GENERATOR_PKG = $(BERESHIT_ROOT)/word/work/cmd/generate-config
+LIB_NAME     := libtrit.a
+BUILD_DIR    := build
+OBJ_DIR      := $(BUILD_DIR)/obj
 
-# ────────────────────────────────────────────────────────────────
-# Variables
-# ────────────────────────────────────────────────────────────────
+# S.2b Directories [DIRS]
 
-# Tool configuration (overridable)
-CC ?= gcc
-AR ?= ar
-CFLAGS ?= -std=c99 -Wall -Wextra -Werror -pedantic -O2
-ARFLAGS ?= rcs
+SRC_DIR      := src
+INC_DIR      := include
+TEST_DIR     := test
+GEN_DIR      := $(INC_DIR)/generated
 
-# Include paths
-INCLUDES = -I$(INC_DIR)
+# S.2c Bereshit Integration [BERESHIT]
 
-# Source and object files (will be populated in Phase 2)
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
+# BERESHIT_ROOT: Root of Bereshit repository (4 levels up from pkg/trit/)
+BERESHIT_ROOT    ?= $(realpath ../../../..)
+GENERATOR_PKG    := $(BERESHIT_ROOT)/word/work/cmd/generate-config
 
-# ────────────────────────────────────────────────────────────────
-# Pattern Rules
-# ────────────────────────────────────────────────────────────────
+# S.2d Toolchain [TOOLCHAIN]
 
-# Compile C source to object file
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
-	@echo "  CC    $<"
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+CC           ?= cc
+AR           ?= ar
+CFLAGS       := -std=c99 -Wall -Wextra -Werror -pedantic
+ARFLAGS      := rcs
 
-# ────────────────────────────────────────────────────────────────
-# Default Target
-# ────────────────────────────────────────────────────────────────
+# S.2e Build Modes [MODES]
+#
+# BUILD_MODE controls optimization:
+#   dev     — Fast iteration (default): -O1 -g
+#   debug   — Full debugging: -O0 -g3
+#   release — Production: -O2 -DNDEBUG
 
-all: libtrit.a
+BUILD_MODE   ?= dev
 
-# ============================================================================
+ifeq ($(BUILD_MODE),debug)
+    CFLAGS   += -O0 -g3 -DDEBUG
+else ifeq ($(BUILD_MODE),release)
+    CFLAGS   += -O2 -DNDEBUG
+else
+    # dev mode (default)
+    CFLAGS   += -O1 -g -DDEBUG
+endif
+
+# S.2f Includes [INCLUDES]
+
+INCLUDES     := -I$(INC_DIR)
+
+# S.2g Quiet Mode [QUIET]
+#
+# Q prefix for quiet commands. Use VERBOSE=1 to see full commands.
+
+Q            := $(if $(VERBOSE),,@)
+ECHO         := @echo
+
+# ───────────────────────────────────────────────────────────────────────────────
+# S.3 SOURCES & OBJECTS [SOURCES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+# Source files (organized by layer)
+MATTER_SRCS  := $(SRC_DIR)/trit.c $(SRC_DIR)/pack.c
+SPACE_SRCS   := $(SRC_DIR)/dimension.c
+TIME_SRCS    := $(SRC_DIR)/temporal.c
+
+SOURCES      := $(MATTER_SRCS) $(SPACE_SRCS) $(TIME_SRCS)
+OBJECTS      := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCES))
+DEPS         := $(OBJECTS:.o=.d)
+
+# ───────────────────────────────────────────────────────────────────────────────
+# S.4 PATTERN RULES [RULES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+# S.4a Dependency Tracking [DEPFLAGS]
+#
+# -MMD generates .d files listing header dependencies
+# -MP adds phony targets for headers (prevents errors if header deleted)
+# Include .d files to rebuild when headers change
+
+DEPFLAGS     = -MMD -MP -MF $(@:.o=.d)
+
+# S.4b Compilation Rule [COMPILE]
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | _ensure-dirs
+	$(ECHO) "  CC      $<"
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) $(DEPFLAGS) -c $< -o $@
+
+# Include generated dependency files (if they exist)
+-include $(DEPS)
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # END SETUP
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ============================================================================
-# BODY
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
+# BODY BLOCK [BODY]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# @brief The actual work — target implementations.
+#
+# STRUCTURE: B.1-B.5 sections, organized by ladder level:
+#   - B.1 HELPERS (L0):    Internal support targets
+#   - B.2 BUILD (L1):      Compilation targets
+#   - B.3 TEST (L2):       Test targets
+#   - B.4 ENTRY (L3):      User-facing entry points
+#   - B.5 INFO (L4):       Diagnostics and help
+#
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ────────────────────────────────────────────────────────────────
-# Target Dependency Graph
-# ────────────────────────────────────────────────────────────────
-#
-# Ladder Structure:
-#
-#   User-Facing (Top):
-#   ├── all → libtrit.a
-#   ├── generate → $(GEN_DIR)
-#   ├── test → libtrit.a
-#   ├── clean → (standalone)
-#   └── help → (standalone)
-#
-#   Build Operations (Middle):
-#   ├── libtrit.a → generate → $(OBJS) → $(BUILD_DIR)
-#   └── $(BUILD_DIR)/%.o → $(SRC_DIR)/%.c
-#
-#   Code Generation:
-#   └── generate → go run generate-config → .gen.h files
-#
-#   Internal Helpers (Bottom):
-#   ├── $(BUILD_DIR) → (creates directory)
-#   └── $(GEN_DIR) → (creates directory)
-#
-# Baton Flow:
-#   make → all → libtrit.a → generate → $(OBJS) → $(BUILD_DIR) → exit
-#
+# ───────────────────────────────────────────────────────────────────────────────
+# B.1 HELPERS (L0) — Internal Support [HELPERS]
+# ───────────────────────────────────────────────────────────────────────────────
 
-# ────────────────────────────────────────────────────────────────
-# Internal Helpers
-# ────────────────────────────────────────────────────────────────
+## _ensure-dirs: Create build directories
+_ensure-dirs:
+	$(Q)mkdir -p $(BUILD_DIR) $(OBJ_DIR) $(GEN_DIR)
 
-# Create build directory
-$(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)
+# ───────────────────────────────────────────────────────────────────────────────
+# B.2 BUILD (L1) — Compilation [BUILD]
+# ───────────────────────────────────────────────────────────────────────────────
 
-# ────────────────────────────────────────────────────────────────
-# Build Operations
-# ────────────────────────────────────────────────────────────────
+## all: Build library (default target)
+all: library
+
+## library: Build libtrit.a static library
+library: _ensure-dirs $(BUILD_DIR)/$(LIB_NAME)
+	$(ECHO) ""
+	$(ECHO) "✓ Built $(BUILD_DIR)/$(LIB_NAME)"
+	$(ECHO) "  Test:  make test"
+	$(ECHO) "  Clean: make clean"
+
+## $(BUILD_DIR)/$(LIB_NAME): Link objects into static library
+$(BUILD_DIR)/$(LIB_NAME): $(OBJECTS)
+	$(ECHO) "  AR      $(LIB_NAME)"
+	$(Q)$(AR) $(ARFLAGS) $@ $(OBJECTS)
 
 ## generate: Generate C headers from TOML specs
-generate: | $(GEN_DIR)
-	@echo "Generating headers from TOML specs..."
-	@cd $(BERESHIT_ROOT) && go run $(GENERATOR_PKG)/...
-	@echo "✓ Headers generated"
+generate: | _ensure-dirs
+	$(ECHO) "Generating headers from TOML specs..."
+	$(Q)cd $(BERESHIT_ROOT) && go run $(GENERATOR_PKG)/...
+	$(ECHO) "✓ Headers generated in $(GEN_DIR)"
 
-$(GEN_DIR):
-	@mkdir -p $(GEN_DIR)
-
-## libtrit.a: Build the static library
-libtrit.a: generate $(BUILD_DIR)/$(LIB_NAME)
-
-$(BUILD_DIR)/$(LIB_NAME): $(OBJS) | $(BUILD_DIR)
-	@if [ -z "$(OBJS)" ]; then \
-		echo "⚠ No source files yet (Phase 1: structure only)"; \
-		echo "  Add .c files to src/ in Phase 2"; \
-		touch $(BUILD_DIR)/$(LIB_NAME); \
-	else \
-		echo "  AR    $(LIB_NAME)"; \
-		$(AR) $(ARFLAGS) $@ $(OBJS); \
-		echo "✓ Built $(BUILD_DIR)/$(LIB_NAME)"; \
-	fi
-
-## check-headers: Validate headers compile (no source needed)
-check-headers: | $(BUILD_DIR)
-	@echo "Checking headers..."
-	@echo '#include "trit.h"' > $(BUILD_DIR)/_check.c
-	@echo 'int main(void) { return 0; }' >> $(BUILD_DIR)/_check.c
-	@$(CC) $(CFLAGS) $(INCLUDES) -fsyntax-only $(BUILD_DIR)/_check.c && \
+## check-headers: Validate headers compile (syntax check only)
+check-headers: | _ensure-dirs
+	$(ECHO) "Checking headers..."
+	$(Q)echo '#include "trit.h"' > $(BUILD_DIR)/_check.c
+	$(Q)echo 'int main(void) { return 0; }' >> $(BUILD_DIR)/_check.c
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -fsyntax-only $(BUILD_DIR)/_check.c && \
 		echo "✓ Headers valid" || \
-		(echo "✗ Header errors"; exit 1)
-	@rm -f $(BUILD_DIR)/_check.c
+		(echo "✗ Header errors"; rm -f $(BUILD_DIR)/_check.c; exit 1)
+	$(Q)rm -f $(BUILD_DIR)/_check.c
 
-## test: Run all tests (MATTER, SPACE, TIME, Integration, Math, Bible Rail, Verse Address, Scripture Path, Scripture Text, State Machine)
-test: test-trit test-pack test-dimension test-temporal test-integration test-math test-bible-rail test-verse-addr test-scripture-path test-scripture-text test-statemachine
-	@echo ""
-	@echo "════════════════════════════════════════════════════════════════"
-	@echo "All tests complete. Run individual tests with: make test-<layer>"
-	@echo "════════════════════════════════════════════════════════════════"
+# ───────────────────────────────────────────────────────────────────────────────
+# B.3 TEST (L2) — Testing [TEST]
+# ───────────────────────────────────────────────────────────────────────────────
+
+## test: Run core tests (MATTER, SPACE, TIME, Integration)
+test: test-trit test-pack test-dimension test-temporal test-integration
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  Core tests complete. Run 'make test-all' for full suite."
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+
+## test-all: Run all tests (core + Phase 2 + state machine)
+test-all: test test-math test-bible-rail test-verse-addr test-scripture-path test-scripture-text test-statemachine
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  All tests complete!"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
 
 ## test-trit: Run MATTER layer tests (trit.c)
-test-trit: libtrit.a
-	@echo "Testing MATTER layer (trit.c)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_trit $(TEST_DIR)/trit_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/test_trit
+test-trit: build
+	$(ECHO) "Testing MATTER layer (trit.c)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_trit $(TEST_DIR)/trit_test.c $(BUILD_DIR)/$(LIB_NAME)
+	$(Q)./$(BUILD_DIR)/test_trit
 
 ## test-pack: Run MATTER packing tests (pack.c)
-test-pack: libtrit.a
-	@echo "Testing MATTER packing (pack.c)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_pack $(TEST_DIR)/pack_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/test_pack
+test-pack: build
+	$(ECHO) "Testing MATTER packing (pack.c)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_pack $(TEST_DIR)/pack_test.c $(BUILD_DIR)/$(LIB_NAME)
+	$(Q)./$(BUILD_DIR)/test_pack
 
 ## test-dimension: Run SPACE layer tests (dimension.c)
-test-dimension: libtrit.a
-	@echo "Testing SPACE layer (dimension.c)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_dimension $(TEST_DIR)/dimension_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/test_dimension
+test-dimension: build
+	$(ECHO) "Testing SPACE layer (dimension.c)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_dimension $(TEST_DIR)/dimension_test.c $(BUILD_DIR)/$(LIB_NAME)
+	$(Q)./$(BUILD_DIR)/test_dimension
 
 ## test-temporal: Run TIME layer tests (temporal.c)
-test-temporal: libtrit.a
-	@echo "Testing TIME layer (temporal.c)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_temporal $(TEST_DIR)/temporal_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/test_temporal
+test-temporal: build
+	$(ECHO) "Testing TIME layer (temporal.c)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_temporal $(TEST_DIR)/temporal_test.c $(BUILD_DIR)/$(LIB_NAME)
+	$(Q)./$(BUILD_DIR)/test_temporal
 
 ## test-integration: Run integration tests (all layers)
-test-integration: libtrit.a
-	@echo "Testing Integration (all layers)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_integration $(TEST_DIR)/integration_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/test_integration
+test-integration: build
+	$(ECHO) "Testing Integration (all layers)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/test_integration $(TEST_DIR)/integration_test.c $(BUILD_DIR)/$(LIB_NAME)
+	$(Q)./$(BUILD_DIR)/test_integration
 
 ## test-math: Run math operations tests (Phase 2)
-test-math: libtrit.a
-	@echo "Testing Math Operations (5 families)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/math_test $(TEST_DIR)/math_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/math_test
+test-math: build
+	$(ECHO) "Testing Math Operations (5 families)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/math_test $(TEST_DIR)/math_test.c $(BUILD_DIR)/$(LIB_NAME)
+	$(Q)./$(BUILD_DIR)/math_test
 
 ## test-bible-rail: Run Bible Rail encoding tests (Phase 2)
-test-bible-rail: libtrit.a
-	@echo "Testing Bible Rail Encoding (13 variants)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/bible_rail_test $(TEST_DIR)/bible_rail_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/bible_rail_test
+test-bible-rail: build
+	$(ECHO) "Testing Bible Rail Encoding (13 variants)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/bible_rail_test $(TEST_DIR)/bible_rail_test.c $(BUILD_DIR)/$(LIB_NAME)
+	$(Q)./$(BUILD_DIR)/bible_rail_test
 
 ## test-verse-addr: Run Verse Address encoding tests (Phase 2)
-test-verse-addr: libtrit.a
-	@echo "Testing Verse Address Encoding (31,102 verses)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/verse_addr_test $(TEST_DIR)/verse_addr_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/verse_addr_test
+test-verse-addr: build
+	$(ECHO) "Testing Verse Address Encoding (31,102 verses)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/verse_addr_test $(TEST_DIR)/verse_addr_test.c $(BUILD_DIR)/$(LIB_NAME)
+	$(Q)./$(BUILD_DIR)/verse_addr_test
 
 ## test-scripture-path: Run Scripture Path resolution tests (Phase 2)
-test-scripture-path: libtrit.a
-	@echo "Testing Scripture Path Resolution (31,115 entries)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/scripture_path_test $(TEST_DIR)/scripture_path_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/scripture_path_test
+test-scripture-path: build
+	$(ECHO) "Testing Scripture Path Resolution (31,115 entries)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/scripture_path_test $(TEST_DIR)/scripture_path_test.c $(BUILD_DIR)/$(LIB_NAME)
+	$(Q)./$(BUILD_DIR)/scripture_path_test
 
 ## test-scripture-text: Run Scripture Text encoding tests (Phase 2)
-test-scripture-text: libtrit.a
-	@echo "Testing Scripture Text Encoding (243 values)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/scripture_text_test $(TEST_DIR)/scripture_text_test.c $(BUILD_DIR)/$(LIB_NAME)
-	@./$(BUILD_DIR)/scripture_text_test
+test-scripture-text: build
+	$(ECHO) "Testing Scripture Text Encoding (243 values)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/scripture_text_test $(TEST_DIR)/scripture_text_test.c $(BUILD_DIR)/$(LIB_NAME)
+	$(Q)./$(BUILD_DIR)/scripture_text_test
 
-## test-statemachine: Run CPI-SI State Machine tests (Hebrew, Cube, K:ALIGN, Trajectory, Unified)
-test-statemachine: libtrit.a
-	@echo "Testing CPI-SI State Machine (25 tests)..."
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/statemachine_test $(TEST_DIR)/statemachine_test.c $(BUILD_DIR)/$(LIB_NAME) -lm
-	@./$(BUILD_DIR)/statemachine_test
+## test-statemachine: Run CPI-SI State Machine tests
+test-statemachine: build
+	$(ECHO) "Testing CPI-SI State Machine (25 tests)..."
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $(BUILD_DIR)/statemachine_test $(TEST_DIR)/statemachine_test.c $(BUILD_DIR)/$(LIB_NAME) -lm
+	$(Q)./$(BUILD_DIR)/statemachine_test
 
-## clean: Remove build artifacts
+# ───────────────────────────────────────────────────────────────────────────────
+# B.4 ENTRY (L3) — User-Facing Entry Points [ENTRY]
+# ───────────────────────────────────────────────────────────────────────────────
+
+## clean: Remove all build artifacts
 clean:
-	@echo "Cleaning..."
-	@rm -rf $(BUILD_DIR)
-	@echo "✓ Clean complete"
+	$(ECHO) "Cleaning build artifacts..."
+	$(Q)rm -rf $(BUILD_DIR)
+	$(ECHO) "✓ Clean complete"
 
-## help: Show available targets
+## clean-obj: Remove objects only (force recompile)
+clean-obj:
+	$(ECHO) "Cleaning object files..."
+	$(Q)rm -rf $(OBJ_DIR)
+	$(ECHO) "✓ Object files removed (next build will recompile)"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# B.5 INFO (L4) — Diagnostics and Help [INFO]
+# ───────────────────────────────────────────────────────────────────────────────
+
+## help: Show this help message
 help:
-	@echo "libtrit - Balanced Ternary Type Library"
-	@echo ""
-	@echo "Usage: make [target]"
-	@echo ""
-	@echo "Targets:"
-	@sed -n 's/^## //p' Makefile | column -t -s ':' | sed -e 's/^/  /'
-	@echo ""
-	@echo "Configuration:"
-	@echo "  CC=$(CC)  AR=$(AR)"
-	@echo "  CFLAGS=$(CFLAGS)"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  libtrit - Balanced Ternary Type Library"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+	$(ECHO) "QUICK START"
+	$(ECHO) "  make                 Build library (dev mode)"
+	$(ECHO) "  make test            Run core tests"
+	$(ECHO) "  make info            Check build configuration"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "TARGETS"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  Build:"
+	$(ECHO) "    make                     Build libtrit.a (default)"
+	$(ECHO) "    make BUILD_MODE=debug    Build with debug symbols"
+	$(ECHO) "    make BUILD_MODE=release  Build optimized"
+	$(ECHO) "    make generate            Generate headers from TOML"
+	$(ECHO) "    make check-headers       Validate headers compile"
+	$(ECHO) ""
+	$(ECHO) "  Test:"
+	$(ECHO) "    make test                Core tests (MATTER, SPACE, TIME)"
+	$(ECHO) "    make test-all            All tests (core + Phase 2)"
+	$(ECHO) "    make test-trit           MATTER layer (trit.c)"
+	$(ECHO) "    make test-pack           MATTER packing (pack.c)"
+	$(ECHO) "    make test-dimension      SPACE layer (dimension.c)"
+	$(ECHO) "    make test-temporal       TIME layer (temporal.c)"
+	$(ECHO) "    make test-integration    Integration (all layers)"
+	$(ECHO) "    make test-statemachine   CPI-SI state machine"
+	$(ECHO) ""
+	$(ECHO) "  Maintain:"
+	$(ECHO) "    make clean               Remove all build artifacts"
+	$(ECHO) "    make clean-obj           Remove objects (force recompile)"
+	$(ECHO) "    make info                Show configuration"
+	$(ECHO) "    make help                This message"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "BUILD OPTIONS"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  BUILD_MODE=   dev      Fast iteration (default) — -O1 -g"
+	$(ECHO) "                debug    Full debugging — -O0 -g3"
+	$(ECHO) "                release  Production — -O2 -DNDEBUG"
+	$(ECHO) ""
+	$(ECHO) "  VERBOSE=1     Show full compilation commands"
+	$(ECHO) "  CC=clang      Use alternative compiler"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "ARCHITECTURE (Genesis 1:1)"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  MATTER (\"the earth\"):   trit.c, pack.c      — Core types"
+	$(ECHO) "  SPACE (\"the heavens\"):  dimension.c        — Navigation"
+	$(ECHO) "  TIME (\"In beginning\"): temporal.c         — Cognitive modes"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "CURRENT CONFIGURATION"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  BUILD_MODE=$(BUILD_MODE)  VERBOSE=$(VERBOSE)  CC=$(CC)"
+	$(ECHO) ""
+	$(ECHO) "  Run 'make info' for full diagnostics."
+	$(ECHO) ""
 
-## info: Show build configuration
+## info: Show build configuration and diagnostics
 info:
-	@echo "Build Configuration:"
-	@echo "  LIB_NAME:   $(LIB_NAME)"
-	@echo "  BUILD_DIR:  $(BUILD_DIR)"
-	@echo "  SRC_DIR:    $(SRC_DIR)"
-	@echo "  INC_DIR:    $(INC_DIR)"
-	@echo "  CC:         $(CC)"
-	@echo "  CFLAGS:     $(CFLAGS)"
-	@echo ""
-	@echo "Source files: $(SRCS)"
-	@echo "Object files: $(OBJS)"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  libtrit - Build Diagnostics"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+	$(ECHO) "QUICK STATUS"
+	@if [ -f "$(BUILD_DIR)/$(LIB_NAME)" ]; then \
+		BUILT_TIME=$$(stat -c %y "$(BUILD_DIR)/$(LIB_NAME)" 2>/dev/null | cut -d. -f1); \
+		echo "  Library:     ✓ built ($$BUILT_TIME)"; \
+	else \
+		echo "  Library:     ⚠ not built (run 'make')"; \
+	fi
+	@if command -v $(CC) >/dev/null 2>&1; then \
+		echo "  Toolchain:   $(CC) [✓]"; \
+	else \
+		echo "  Toolchain:   $(CC) [✗ NOT FOUND]"; \
+	fi
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "SETTINGS"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  Build:       BUILD_MODE=$(BUILD_MODE)  VERBOSE=$(VERBOSE)"
+	$(ECHO) "  Output:      $(BUILD_DIR)/$(LIB_NAME)"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "TOOLCHAIN"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  CC:          $(CC)"
+	@$(CC) --version 2>/dev/null | head -1 | sed 's/^/  Version:     /' || echo "  Version:     unknown"
+	$(ECHO) ""
+	$(ECHO) "  CFLAGS:      $(CFLAGS)"
+	$(ECHO) "  INCLUDES:    $(INCLUDES)"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "SOURCE FILES"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  MATTER:      $(words $(MATTER_SRCS)) files (trit.c, pack.c)"
+	$(ECHO) "  SPACE:       $(words $(SPACE_SRCS)) files (dimension.c)"
+	$(ECHO) "  TIME:        $(words $(TIME_SRCS)) files (temporal.c)"
+	$(ECHO) "  Total:       $(words $(SOURCES)) source files"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "BERESHIT INTEGRATION"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  Root:        $(BERESHIT_ROOT)"
+	@if [ -d "$(BERESHIT_ROOT)" ]; then \
+		echo "               ✓ Bereshit repository found"; \
+	else \
+		echo "               ⚠ not found"; \
+	fi
+	$(ECHO) ""
 
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 # END BODY
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ============================================================================
-# CLOSING
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════════════════════
 #
-# ────────────────────────────────────────────────────────────────
-# Validation
-# ────────────────────────────────────────────────────────────────
+# @brief Operational guidance and closing notes.
+#
+# STRUCTURE: X.1-X.8 sections:
+#   - X.1 VALIDATION:     Build commands, runtime tests
+#   - X.2 EXECUTION:      How to run
+#   - X.3 CLEANUP:        Resource management
+#   - X.4 POLICY:         Modification guidelines
+#   - X.5 EXTENSION:      How to extend
+#   - X.6 TROUBLESHOOTING: Common issues
+#   - X.7 REFERENCE:      Quick reference
+#   - X.8 NOTE:           Closing thought
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.1 VALIDATION — Test Sequence [VALIDATION]
+# ───────────────────────────────────────────────────────────────────────────────
 #
 # Test sequence:
 #   make clean && make        # Fresh build
-#   make test                 # Run tests
+#   make test                 # Run core tests
+#   make test-all             # Run all tests
 #   make help                 # Verify documentation
 #
-# ────────────────────────────────────────────────────────────────
-# Modification Policy
-# ────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.2 EXECUTION — How to Run [EXECUTION]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Link libtrit.a into your program:
+#   gcc -I/path/to/include myprogram.c -L/path/to/build -ltrit -o myprogram
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.3 CLEANUP — Resource Management [CLEANUP]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Build artifacts are in $(BUILD_DIR) only.
+# `make clean` removes everything safely.
+# No system files are modified.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.4 POLICY — Modification Guidelines [POLICY]
+# ───────────────────────────────────────────────────────────────────────────────
 #
 # Safe to Modify:
-#   ✅ CFLAGS optimization flags
-#   ✅ Add new source files to src/
-#   ✅ Add new test files to test/
+#   ✅ BUILD_MODE defaults
+#   ✅ Add new source files to MATTER/SPACE/TIME_SRCS
+#   ✅ Add new test targets
 #
 # Modify with Care:
 #   ⚠️ Pattern rules (affect all compilations)
 #   ⚠️ Library name (breaks linking)
+#   ⚠️ CFLAGS (affects all builds)
 #
 # Never Modify:
 #   ❌ 4-block structure
 #   ❌ Remove clean target
 #   ❌ Add rm -rf without constraints
 #
-# ────────────────────────────────────────────────────────────────
-# Related Components
-# ────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.5 EXTENSION — How to Extend [EXTENSION]
+# ───────────────────────────────────────────────────────────────────────────────
 #
-# Specifications:
-#   - word/constants/ternary-math.toml (powers, algorithms, dimensions)
-#   - word/core/primitives.toml (trit type definition)
+# Adding New Source Files:
+#   1. Add to appropriate layer variable (MATTER_SRCS, SPACE_SRCS, TIME_SRCS)
+#   2. Run `make clean-obj && make` to compile
 #
-# Documentation:
-#   - word/research/trit-foundations.adoc
-#   - word/research/ternary-theological-foundations.adoc
+# Adding New Tests:
+#   1. Create test file in $(TEST_DIR)
+#   2. Add new target following test-* pattern
+#   3. Add to .PHONY list
+#   4. Optionally add to test-all dependencies
 #
-# Demo:
-#   - tov/demo/phase-1/demo-trit/
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.6 TROUBLESHOOTING — Common Issues [TROUBLESHOOTING]
+# ───────────────────────────────────────────────────────────────────────────────
 #
-# ────────────────────────────────────────────────────────────────
-# Quick Reference
-# ────────────────────────────────────────────────────────────────
+# "No rule to make target":
+#   → Check source file exists in src/
+#   → Run `make info` to see detected sources
 #
-# Basic:
-#   make              # Build library (regenerates headers first)
-#   make generate     # Generate .gen.h from TOML specs
-#   make test         # Run tests
-#   make clean        # Clean artifacts
+# "Undefined reference":
+#   → Library may not be linked: add -ltrit
+#   → Check link order (library after objects)
 #
-# Debug:
-#   make -n all       # Dry-run
-#   make info         # Show config
-#   make CC=clang     # Use clang
+# "Headers not found":
+#   → Check INCLUDES path: make info
+#   → Run `make generate` if using generated headers
 #
-# "Except the LORD build the house, they labour in vain." — Psalm 127:1
+# "up to date" but files changed:
+#   → Run `make clean-obj && make` to force recompile
+#   → Dependency tracking uses .d files in OBJ_DIR
 #
-# ============================================================================
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.7 REFERENCE — Quick Reference [REFERENCE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Common Workflows:
+#
+#   Development:
+#     make && make test              # Build and test
+#     make clean-obj && make         # Force recompile
+#     make BUILD_MODE=debug          # Debug build
+#
+#   Release:
+#     make BUILD_MODE=release        # Optimized build
+#     make clean && make test-all    # Full validation
+#
+#   Debugging:
+#     make -n                        # Dry-run (show commands)
+#     make VERBOSE=1                 # Show full commands
+#     make info                      # Show configuration
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.8 NOTE — Closing Thought [NOTE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "In the beginning God created the heaven and the earth." — Genesis 1:1
+#
+# The three-layer architecture (MATTER, SPACE, TIME) mirrors the structure
+# of Genesis 1:1. The trit type is the foundational unit of ternary computing,
+# just as Genesis 1:1 is the foundation of all Scripture.
+#
+# "Except the LORD build the house, they labour in vain that build it."
+#   — Psalm 127:1
+#
+# ═══════════════════════════════════════════════════════════════════════════════
 # END CLOSING
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════

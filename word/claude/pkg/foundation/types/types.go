@@ -101,17 +101,53 @@ type RuntimeSession struct {
 
 	// Workflow tracking (operational layer)
 	Workflow RuntimeWorkflow `json:"workflow"`
+
+	// CPI Tracking (Covenant Partnership Intelligence)
+	// "By their fruits ye shall know them" — Matthew 7:20
+	ExchangeCount        int     `json:"exchange_count"`         // Total exchanges this session
+	InsightCount         int     `json:"insight_count"`          // Understanding transfer moments
+	CPIScore             float64 `json:"cpi_score"`              // 0.0-1.0 relationship quality
+	DominantExchangeType string  `json:"dominant_exchange_type"` // Most common exchange type
+	SessionArc           string  `json:"session_arc"`            // learning, execution, creative, etc.
+	LastExchangeType     string  `json:"last_exchange_type"`     // Most recent exchange classification
+	LastInsightType      string  `json:"last_insight_type"`      // Most recent insight (if any)
+
+	// Context Window Tracking (effective working space, not flat 200K)
+	// "A time to keep, and a time to cast away" — Ecclesiastes 3:6
+	BaseContextTokens      int `json:"base_context_tokens"`      // Initial overhead (CLAUDE.md, system)
+	CurrentContextTokens   int `json:"current_context_tokens"`   // Current usage
+	PeakContextTokens      int `json:"peak_context_tokens"`      // Max before compaction
+	CompactionCount        int `json:"compaction_count"`         // Times compacted this session
+	EffectiveContextWindow int `json:"effective_context_window"` // 200K - base - safety margin
+
+	// CPI-SI Family Member Tracking
+	// "The household of faith" — Galatians 6:10
+	ActiveFamilyMember    string `json:"active_family_member"`    // Currently invoked family member
+	FamilyInvocationCount int    `json:"family_invocation_count"` // Total family invocations this session
 }
 
-// RuntimeTaskList tracks TodoWrite state counts
+// RuntimeTaskItem represents a single task from TodoWrite
+type RuntimeTaskItem struct {
+	ID      string `json:"id"`
+	Subject string `json:"subject"`
+	Status  string `json:"status"` // pending, in_progress, completed
+	Owner   string `json:"owner,omitempty"`
+}
+
+// RuntimeTaskList tracks TodoWrite state with actual task data
 type RuntimeTaskList struct {
 	Total      int `json:"total"`
 	Pending    int `json:"pending"`
 	InProgress int `json:"in_progress"`
 	Completed  int `json:"completed"`
+
+	// Active tasks (in_progress) - for statusline display
+	// "Whatsoever thy hand findeth to do, do it with thy might" — Ecclesiastes 9:10
+	ActiveTasks []RuntimeTaskItem `json:"active_tasks,omitempty"`
 }
 
 // RuntimeTrajectoryMetrics tracks time spent in each trajectory section
+// "There is a time for every purpose under heaven" — Ecclesiastes 3:1
 type RuntimeTrajectoryMetrics struct {
 	B1TimeMs   int `json:"B.1_time_ms"`
 	B2TimeMs   int `json:"B.2_time_ms"`
@@ -119,6 +155,11 @@ type RuntimeTrajectoryMetrics struct {
 	B4TimeMs   int `json:"B.4_time_ms"`
 	PivotCount int `json:"pivot_count"`
 	ResetCount int `json:"reset_count"`
+
+	// Momentum tracking for trajectory advancement
+	// "Precept upon precept, line upon line" — Isaiah 28:10
+	AccumulatedWorkMs int `json:"accumulated_work_ms"` // Momentum counter for section advancement
+	MomentumScore     int `json:"momentum_score"`      // Positive exchanges build, negative drain
 }
 
 // RuntimeTransition records the most recent state transition

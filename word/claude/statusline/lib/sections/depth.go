@@ -32,7 +32,13 @@ func BuildDepth(ctx types.SessionContext) SectionResult {
 	var parts []string
 
 	// Context Window (primary depth indicator)
-	ctxPct := ctx.ContextPercentage()
+	// Use Claude Code's pre-calculated percentage when available (most accurate)
+	ctxPct := float64(ctx.ContextWindow.UsedPercentage)
+	if ctxPct == 0 {
+		// Fallback to our calculation
+		ctxPct = ctx.ContextPercentage()
+	}
+
 	if ctx.ContextWindow.ContextWindowSize > 0 {
 		// Color based on usage: green < 50%, yellow 50-80%, red > 80%
 		ctxColor := display.Green
@@ -42,10 +48,15 @@ func BuildDepth(ctx types.SessionContext) SectionResult {
 			ctxColor = display.Yellow
 		}
 
-		// Format tokens in K
-		tokens := ctx.CurrentContextTokens()
+		// Calculate actual current context tokens from current_usage
+		// This is the real context window content, not cumulative session totals
+		tokens := ctx.ContextWindow.CurrentUsage.InputTokens +
+			ctx.ContextWindow.CurrentUsage.OutputTokens +
+			ctx.ContextWindow.CurrentUsage.CacheCreationInputTokens +
+			ctx.ContextWindow.CurrentUsage.CacheReadInputTokens
 		if tokens == 0 {
-			tokens = ctx.ContextWindow.TotalInputTokens + ctx.ContextWindow.TotalOutputTokens
+			// Fallback: estimate from percentage
+			tokens = int(ctxPct / 100 * float64(ctx.ContextWindow.ContextWindowSize))
 		}
 		tokensK := float64(tokens) / 1000
 		maxK := float64(ctx.ContextWindow.ContextWindowSize) / 1000

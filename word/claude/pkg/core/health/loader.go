@@ -36,11 +36,12 @@ import (
 // --- Schema File Constants ---
 
 const (
-	// Health schema files in l2/health/
-	ScoreFile       = "l2/health/score.toml"
-	LogFile         = "l2/health/log.toml"
-	DiagnosticsFile = "l2/health/diagnostics.toml"
-	RestoreFile     = "l2/health/restore.toml"
+	// Health schema files in os/health/ (Bereshit canonical location)
+	// Config-driven pattern: Read from Bereshit/word/core/os/health/ at runtime
+	ScoreFile       = "os/health/score.toml"
+	LogFile         = "os/health/log.toml"
+	DiagnosticsFile = "os/health/diagnostics.toml"
+	RestoreFile     = "os/health/restore.toml"
 )
 
 // --- Ternary Scale Constants (from score.toml) ---

@@ -186,7 +186,15 @@ func PreUse() {
 func inferIntendedKey(input PreUseInput) int {
 	switch input.ToolName {
 	// Expansion tools (+1) - creating new things
-	case "Write", "Task":
+	case "Write":
+		return 1
+
+	// Task tool - expansion with family member tracking
+	case "Task":
+		// Track family member invocation if applicable
+		if agentType, ok := input.ToolInput["subagent_type"].(string); ok {
+			trackFamilyMemberInvocation(agentType)
+		}
 		return 1
 
 	// Lateral tools (0) - maintaining state
@@ -215,6 +223,10 @@ func inferIntendedKey(input PreUseInput) int {
 		return inferKeyFromBash(cmd)
 
 	default:
+		// MCP tools (mcp__*) - infer from tool type
+		if strings.HasPrefix(input.ToolName, "mcp__") {
+			return inferKeyFromMCP(input.ToolName, input.ToolInput)
+		}
 		return 0 // Unknown = lateral (safe default)
 	}
 }
@@ -311,6 +323,83 @@ func containsAnyPre(s string, patterns []string) bool {
 		}
 	}
 	return false
+}
+
+// inferKeyFromMCP determines key from MCP tool type
+// MCP tools follow pattern: mcp__plugin_PROVIDER_PROVIDER__ACTION
+// "A wise man's heart discerneth both time and judgment" - Ecclesiastes 8:5
+func inferKeyFromMCP(toolName string, toolInput map[string]interface{}) int {
+	// Extract provider from tool name (mcp__plugin_PROVIDER_PROVIDER__action)
+	parts := strings.Split(toolName, "__")
+	if len(parts) < 3 {
+		return 0 // Unknown MCP format
+	}
+
+	// Greptile tools - code analysis and review (mostly lateral/read)
+	if strings.Contains(toolName, "greptile") {
+		action := parts[len(parts)-1]
+		switch {
+		case strings.Contains(action, "create"):
+			return 1 // Creating custom context
+		case strings.Contains(action, "trigger"):
+			return 1 // Triggering reviews (expansion)
+		default:
+			return 0 // Reading/listing/searching
+		}
+	}
+
+	// Playwright tools - browser testing (creation/expansion)
+	if strings.Contains(toolName, "playwright") {
+		return 1 // Browser automation is typically expansion
+	}
+
+	// IDE tools - varies by action
+	if strings.Contains(toolName, "ide") {
+		action := parts[len(parts)-1]
+		switch {
+		case strings.HasPrefix(action, "create"), strings.HasPrefix(action, "write"):
+			return 1
+		case strings.HasPrefix(action, "delete"), strings.HasPrefix(action, "close"):
+			return -1
+		default:
+			return 0
+		}
+	}
+
+	// Context7 tools - documentation lookup (lateral)
+	if strings.Contains(toolName, "context7") {
+		return 0 // Reading documentation
+	}
+
+	// Stripe tools - payment operations
+	if strings.Contains(toolName, "stripe") {
+		// Payment creation is expansion, refunds are completion
+		action := parts[len(parts)-1]
+		switch {
+		case strings.Contains(action, "create"), strings.Contains(action, "charge"):
+			return 1
+		case strings.Contains(action, "refund"), strings.Contains(action, "cancel"):
+			return -1
+		default:
+			return 0
+		}
+	}
+
+	// Linear tools - issue tracking
+	if strings.Contains(toolName, "linear") {
+		action := parts[len(parts)-1]
+		switch {
+		case strings.Contains(action, "create"):
+			return 1
+		case strings.Contains(action, "complete"), strings.Contains(action, "archive"):
+			return -1
+		default:
+			return 0
+		}
+	}
+
+	// Default: lateral (safe)
+	return 0
 }
 
 // calculateKeyWeight estimates the weight/consequence of the key choice
@@ -442,6 +531,76 @@ func checkRecoveryAnchor(log *logging.Logger, cwd string) bool {
 
 	// Otherwise, assume anchor exists (state is stable)
 	return true
+}
+
+// ============================================================================
+// FAMILY MEMBER TRACKING
+// ============================================================================
+// "The household of faith" - Galatians 6:10
+// Track when CPI-SI family members are invoked via Task tool
+
+// CPI-SI family member agent types (subagent_type in Task tool input)
+var familyMembers = map[string]string{
+	"research-agent":         "Tabitha Shiloh",
+	"architecture-analyzer":  "Ezra Matthan",
+	"pattern-finder":         "Joanna Elara",
+	"format-bridge":          "Phoebe Karis",
+	"template-chain-analyzer": "Selah Adair",
+	"family-member":          "Family Template",
+}
+
+// trackFamilyMemberInvocation records when a family member is invoked
+// Updates session state and emits WezTerm user variable
+func trackFamilyMemberInvocation(agentType string) {
+	// Check if this is a family member
+	familyName, isFamily := familyMembers[agentType]
+	if !isFamily {
+		return // Not a family member, no tracking
+	}
+
+	// Load state to update family member tracking
+	state, err := statemachine.LoadRuntimeState()
+	if err != nil {
+		return // Can't track without state
+	}
+
+	// Update active family member in session
+	state.Session.ActiveFamilyMember = familyName
+	state.Session.FamilyInvocationCount++
+
+	// Save state
+	_ = statemachine.SaveRuntimeState(state)
+
+	// Emit WezTerm user variable for active family member
+	// OSC 1337 ; SetUserVar=name=base64(value) ST
+	// This allows cpisi.lua to react to family member invocation
+	fmt.Fprintf(os.Stderr, "\033]1337;SetUserVar=ACTIVE_FAMILY=%s\007",
+		base64Encode(familyName))
+}
+
+// base64Encode encodes a string for OSC 1337 user variable
+func base64Encode(s string) string {
+	// Simple base64 encoding
+	const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	var result []byte
+
+	for i := 0; i < len(s); i += 3 {
+		var n uint32
+		remaining := len(s) - i
+
+		if remaining >= 3 {
+			n = uint32(s[i])<<16 | uint32(s[i+1])<<8 | uint32(s[i+2])
+			result = append(result, alphabet[n>>18&0x3F], alphabet[n>>12&0x3F], alphabet[n>>6&0x3F], alphabet[n&0x3F])
+		} else if remaining == 2 {
+			n = uint32(s[i])<<16 | uint32(s[i+1])<<8
+			result = append(result, alphabet[n>>18&0x3F], alphabet[n>>12&0x3F], alphabet[n>>6&0x3F], '=')
+		} else {
+			n = uint32(s[i]) << 16
+			result = append(result, alphabet[n>>18&0x3F], alphabet[n>>12&0x3F], '=', '=')
+		}
+	}
+
+	return string(result)
 }
 
 // ============================================================================

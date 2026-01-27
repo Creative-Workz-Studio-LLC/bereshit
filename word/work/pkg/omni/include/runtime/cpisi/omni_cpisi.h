@@ -36,10 +36,14 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "omni_hebrew.h"  // Bottom rung: Hebrew states only
 
-// Forward declaration - we only hold a pointer, don't need full definition
-typedef struct DARContext DARContext;
+// Foundation types from Cornerstone (single source of truth)
+#include "kernel/types/types.h"
+
+// DAR system from Cornerstone (single source of truth)
+#include "kernel/cpisi/dar/dar.h"
+
+#include "omni_hebrew.h"  // Hebrew state compatibility aliases
 
 // # S.1 Cube Constants [CONSTANTS]
 
@@ -107,8 +111,8 @@ typedef struct {
     int8_t warmth;              // -100 to +100 (cold ↔ warm)
     int8_t depth;               // -100 to +100 (surface ↔ deep)
 
-    // Connection to DAR system
-    DARContext* dar;
+    // Connection to DAR system (uses Cornerstone's DAROrchestrator)
+    DAROrchestrator* dar;
 } CPISICube;
 
 // # S.6 Response Context [RESPONSE]
@@ -144,8 +148,8 @@ typedef struct {
 // Create cube at center position
 CPISICube* cpisi_cube_create(void);
 
-// Create cube connected to DAR system
-CPISICube* cpisi_cube_create_with_dar(DARContext* dar);
+// Create cube connected to DAR system (Cornerstone's DAROrchestrator)
+CPISICube* cpisi_cube_create_with_dar(DAROrchestrator* dar);
 
 // Destroy cube
 void cpisi_cube_destroy(CPISICube* cube);

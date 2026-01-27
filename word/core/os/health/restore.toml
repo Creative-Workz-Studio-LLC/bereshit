@@ -521,6 +521,65 @@ Over 10 recovery sessions:
 Recommendation: Focus on test coverage to reduce test_fail frequency
 """
 
+
+# -----------------------------------------------------------------------------
+# 9. System Limits - C Implementation Constants
+# -----------------------------------------------------------------------------
+# These limits define history tracking, strategy settings, and progress tracking.
+# C code derives #define constants from these values.
+#
+# Scripture: "He restoreth my soul" — Psalm 23:3
+
+[system]
+description = "System limits for C implementation - source of truth for cpisi_types.h"
+
+[system.history]
+# Recovery history tracking limits
+restore_history_max = 100   # Maximum recovery history entries to keep
+engram_history_max  = 50    # Maximum engram pattern entries
+action_sequence_max = 256   # Maximum actions in a recovery plan
+
+[system.strategy]
+# Recovery strategy bitfield values
+#   1 = fill_defaults  — Fill missing values with defaults
+#   2 = locate_files   — Search for missing files
+#   4 = create_dirs    — Create missing directories
+#   8 = clamp_values   — Clamp out-of-range values
+#  16 = fallback       — Use fallback configurations
+fill_defaults = 1
+locate_files  = 2
+create_dirs   = 4
+clamp_values  = 8
+fallback      = 16
+full          = 31   # All strategies enabled (1+2+4+8+16)
+strategy_count = 5   # Number of individual strategies
+
+[system.progress]
+# Progress milestone thresholds (percentage)
+milestone_quarter        = 25
+milestone_half           = 50
+milestone_three_quarters = 75
+milestone_complete       = 100
+
+[system.search]
+# File search settings for locate_files strategy
+search_paths_max     = 8      # Maximum search paths
+search_depth_max     = 5      # Maximum directory depth to search
+search_timeout_ms    = 3000   # Timeout for file search (3 seconds)
+
+[system.type_counts]
+# Enum counts for array sizing and validation
+restore_result_count  = 6   # Number of restore results (success, partial, failed, etc.)
+prescription_count    = 5   # Number of prescription types
+milestone_count       = 6   # Number of milestone levels
+
+[system.buffers]
+# Buffer sizes for restoration tracking
+plan_name_max     = 64    # Maximum plan name length
+action_desc_max   = 128   # Maximum action description length
+progress_msg_max  = 256   # Maximum progress message length
+
+
 # =============================================================================
 # END CONTENT
 # =============================================================================

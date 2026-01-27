@@ -106,6 +106,10 @@ type SessionContext struct {
 			CacheCreationInputTokens int `json:"cache_creation_input_tokens"` // Cache creation tokens
 			CacheReadInputTokens     int `json:"cache_read_input_tokens"`     // Cache read tokens
 		} `json:"current_usage"`
+
+		// Pre-calculated percentages from Claude Code (use these for accuracy!)
+		UsedPercentage      int `json:"used_percentage"`      // Current context usage %
+		RemainingPercentage int `json:"remaining_percentage"` // Remaining context %
 	} `json:"context_window"`
 }
 

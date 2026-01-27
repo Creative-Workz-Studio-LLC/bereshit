@@ -1,148 +1,319 @@
-# ============================================================================
-# METADATA
-# ============================================================================
-# Key: B-word-work-Makefile
-# Purpose: Build and run config loader/generator tools
-# Biblical: "Except the LORD build the house, they labour in vain" — Psalm 127:1
+# ═══════════════════════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════════════════════
 #
-# ============================================================================
+#!omni makefile
+#
+# @omni:req  make >= 4.0
+# @omni:req  go >= 1.21
+# @omni:req  gcc|clang (C11)
+#
+# @omni:inh  bereshit/word/seed/code/make/makefile.mk
+#
+# @omni:ins  This is the root coordination Makefile for word/work/
+#            It orchestrates building sub-packages: libtrit, libomni, Go tools
+#
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# ============================================================================
-# SETUP
-# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# M.1 IDENTITY — What This Is [IDENTITY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Key:         B-word-work-Makefile
+# Package:     bereshit/word/work
+# Purpose:     Root coordination Makefile — orchestrates sub-package builds
+# Type:        Orchestrator (coordinates, doesn't build directly)
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# M.2 LINEAGE — Where This Comes From [LINEAGE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# derives_from: bereshit/word/seed/code/make/makefile.mk
+# modeled_on:   cornerstone/Makefile (orchestrator pattern)
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# M.3 BIBLICAL FOUNDATION [BIBLICAL]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Scripture: "Except the LORD build the house, they labour in vain that build it"
+#            — Psalm 127:1
+#
+# Principle: Coordination enables the parts to become the whole.
+#            Each sub-package has its own Makefile; this orchestrates them.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# M.4 BUILD CHAIN — Dependency Order [CHAIN]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+#   ┌─────────────────────────────────────────────────────────────────────────┐
+#   │  BUILD CHAIN (dependency order)                                         │
+#   ├─────────────────────────────────────────────────────────────────────────┤
+#   │                                                                         │
+#   │  Level 0 (Foundation):                                                  │
+#   │    pkg/trit/          libtrit.a — Balanced ternary types                │
+#   │                                                                         │
+#   │  Level 1 (Depends on L0):                                               │
+#   │    pkg/omni/          libomni.a — OmniCode language library             │
+#   │                                                                         │
+#   │  Level 2 (Go tools):                                                    │
+#   │    cmd/generate-config/   TOML → C header generator                     │
+#   │    cmd/cpisi/             CPI-SI CLI tool                               │
+#   │                                                                         │
+#   │  Dependency Flow:                                                       │
+#   │    libtrit.a ← libomni.a ← IDE binaries                                 │
+#   │                                                                         │
+#   └─────────────────────────────────────────────────────────────────────────┘
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# M.5 TARGETS OVERVIEW [TARGETS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Build:
+#   make                Build all libraries (libtrit + libomni)
+#   make libs           Build all libraries
+#   make libtrit        Build libtrit.a only
+#   make libomni        Build libomni.a (depends on libtrit)
+#   make tools          Build Go tools
+#
+# Test:
+#   make test           Run all tests
+#   make test-trit      Test libtrit only
+#   make test-omni      Test libomni only
+#   make test-go        Test Go packages
+#
+# Generate:
+#   make generate       Generate C headers from TOML specs
+#
+# Maintain:
+#   make clean          Clean all build artifacts
+#   make info           Show configuration
+#   make help           This message
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# END METADATA
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Paths
+# ═══════════════════════════════════════════════════════════════════════════════
+# SETUP BLOCK [SETUP]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# S.1 PHONY — Non-File Targets [PHONY]
+# ───────────────────────────────────────────────────────────────────────────────
+
+.PHONY: all libs libtrit libomni tools \
+        test test-trit test-omni test-go \
+        generate clean clean-all status info help
+
+# Set default goal explicitly
+.DEFAULT_GOAL := all
+
+# ───────────────────────────────────────────────────────────────────────────────
+# S.2 VARIABLES — Configuration [VARIABLES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+# S.2a Paths [PATHS]
+
 BERESHIT_ROOT := $(shell cd ../.. && pwd)
-CMD_DIR := cmd
-PKG_DIR := pkg
-BIN_DIR := bin
-GENERATED_DIR := pkg/trit/include/generated
+PKG_DIR       := pkg
+CMD_DIR       := cmd
+BIN_DIR       := bin
 
-# Go settings
-GO := go
-GOFLAGS := -v
+# S.2b Sub-package Locations [PACKAGES]
 
-# Tools
-GENERATOR := generate-config
-LOADER_TEST := loader-test
+TRIT_DIR      := $(PKG_DIR)/trit
+OMNI_DIR      := $(PKG_DIR)/omni
+CONFIG_DIR    := $(PKG_DIR)/config
 
-# ============================================================================
-# BODY
-# ============================================================================
+# S.2c Generated Output [OUTPUT]
 
-.PHONY: all build clean generate test help
+GENERATED_DIR := $(TRIT_DIR)/include/generated
 
-# Default target
-all: build
+# S.2d Go Settings [GO]
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Build Targets
-# ─────────────────────────────────────────────────────────────────────────────
+GO            := go
+GOFLAGS       := -v
 
-## build: Build all tools to bin/
-build: $(BIN_DIR)/$(GENERATOR)
+# S.2e Tools [TOOLS]
 
-## $(GENERATOR): Build the config generator
-$(BIN_DIR)/$(GENERATOR): $(CMD_DIR)/$(GENERATOR)/main.go $(PKG_DIR)/config/loader.go | $(BIN_DIR)
-	@echo "═══════════════════════════════════════════════════════════════"
-	@echo "Building $(GENERATOR)..."
-	@echo "═══════════════════════════════════════════════════════════════"
-	$(GO) build $(GOFLAGS) -o $@ ./$(CMD_DIR)/$(GENERATOR)
-	@echo "✓ Built: $@"
+GENERATOR     := generate-config
+CPISI_CLI     := cpisi
 
-## $(BIN_DIR): Create bin directory
+# S.2f Build Mode (passed to sub-Makefiles) [MODE]
+
+BUILD_MODE    ?= dev
+export BUILD_MODE
+
+# S.2g Verbose Mode [VERBOSE]
+
+VERBOSE       ?=
+export VERBOSE
+
+# S.2h Output Control [OUTPUT_CONTROL]
+
+Q             := $(if $(VERBOSE),,@)
+ECHO          := @echo
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END SETUP
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BODY BLOCK [BODY]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# B.1 ENTRY POINTS (L0) — User-Facing Targets [ENTRY]
+# ───────────────────────────────────────────────────────────────────────────────
+
+## all: Build all libraries (default)
+all: libs
+	$(ECHO) ""
+	$(ECHO) "✓ All libraries built"
+	$(ECHO) "  Test:  make test"
+	$(ECHO) "  Clean: make clean"
+
+## libs: Build all C libraries (libtrit + libomni)
+libs: libtrit libomni
+
+## tools: Build Go tools
+tools: $(BIN_DIR)/$(GENERATOR)
+
+# ───────────────────────────────────────────────────────────────────────────────
+# B.2 LIBRARY TARGETS (L1) — Sub-Package Builds [LIBRARIES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+## libtrit: Build libtrit.a (balanced ternary types)
+libtrit:
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(ECHO) "  Building libtrit..."
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(Q)$(MAKE) -C $(TRIT_DIR)
+
+## libomni: Build libomni.a (depends on libtrit)
+libomni: libtrit
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(ECHO) "  Building libomni..."
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(Q)$(MAKE) -C $(OMNI_DIR)
+
+# ───────────────────────────────────────────────────────────────────────────────
+# B.3 GO TOOL TARGETS (L2) — Go Build [GO_TOOLS]
+# ───────────────────────────────────────────────────────────────────────────────
+
+## $(BIN_DIR)/$(GENERATOR): Build config generator
+$(BIN_DIR)/$(GENERATOR): $(CMD_DIR)/$(GENERATOR)/main.go $(CONFIG_DIR)/loader.go | $(BIN_DIR)
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(ECHO) "  Building $(GENERATOR)..."
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(Q)$(GO) build $(GOFLAGS) -o $@ ./$(CMD_DIR)/$(GENERATOR)
+	$(ECHO) "✓ Built: $@"
+
 $(BIN_DIR):
-	@mkdir -p $(BIN_DIR)
+	$(Q)mkdir -p $(BIN_DIR)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Generation Targets
-# ─────────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# B.4 GENERATION TARGETS — TOML → C Headers [GENERATE]
+# ───────────────────────────────────────────────────────────────────────────────
 
-## generate: Run the config generator (TOML → C headers)
+## generate: Generate C headers from TOML specs
 generate: $(BIN_DIR)/$(GENERATOR)
-	@echo ""
-	@echo "═══════════════════════════════════════════════════════════════"
-	@echo "Generating C headers from TOML specs..."
-	@echo "═══════════════════════════════════════════════════════════════"
-	BERESHIT_ROOT=$(BERESHIT_ROOT) ./$(BIN_DIR)/$(GENERATOR)
-	@echo ""
-	@echo "Generated files:"
-	@ls -la $(GENERATED_DIR)/*.gen.h 2>/dev/null || echo "  (none found)"
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(ECHO) "  Generating C headers from TOML specs..."
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(Q)BERESHIT_ROOT=$(BERESHIT_ROOT) ./$(BIN_DIR)/$(GENERATOR)
+	$(ECHO) ""
+	$(ECHO) "Generated files:"
+	$(Q)ls -la $(GENERATED_DIR)/*.gen.h 2>/dev/null || echo "  (none found)"
 
-## generate-clean: Remove generated headers and regenerate
-generate-clean: clean-generated generate
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Test Targets
-# ─────────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
+# B.5 TEST TARGETS — Testing [TEST]
+# ───────────────────────────────────────────────────────────────────────────────
 
 ## test: Run all tests
-test: test-loader test-generator
+test: test-trit test-omni test-go
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(ECHO) "  All tests complete!"
+	$(ECHO) "════════════════════════════════════════════════════════════════"
 
-## test-loader: Run loader package tests
-test-loader:
-	@echo "═══════════════════════════════════════════════════════════════"
-	@echo "Testing config loader..."
-	@echo "═══════════════════════════════════════════════════════════════"
-	BERESHIT_ROOT=$(BERESHIT_ROOT) $(GO) test $(GOFLAGS) ./$(PKG_DIR)/config/...
+## test-trit: Test libtrit
+test-trit:
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(ECHO) "  Testing libtrit..."
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(Q)$(MAKE) -C $(TRIT_DIR) test
 
-## test-generator: Run generator and verify output
-test-generator: generate
-	@echo ""
-	@echo "═══════════════════════════════════════════════════════════════"
-	@echo "Verifying generated headers..."
-	@echo "═══════════════════════════════════════════════════════════════"
-	@for f in $(GENERATED_DIR)/*.gen.h; do \
-		echo "  Checking: $$f"; \
-		if grep -q "#ifndef" "$$f" && grep -q "#endif" "$$f"; then \
-			echo "    ✓ Valid header guards"; \
-		else \
-			echo "    ✗ Missing header guards"; \
-			exit 1; \
-		fi \
-	done
-	@echo ""
-	@echo "✓ All generated headers valid"
+## test-omni: Test libomni
+test-omni:
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(ECHO) "  Testing libomni..."
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(Q)$(MAKE) -C $(OMNI_DIR) test
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Clean Targets
-# ─────────────────────────────────────────────────────────────────────────────
+## test-go: Test Go packages
+test-go:
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(ECHO) "  Testing Go packages..."
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(Q)BERESHIT_ROOT=$(BERESHIT_ROOT) $(GO) test $(GOFLAGS) ./$(CONFIG_DIR)/...
 
-## clean: Remove built binaries
+# ───────────────────────────────────────────────────────────────────────────────
+# B.6 CLEAN TARGETS — Maintenance [CLEAN]
+# ───────────────────────────────────────────────────────────────────────────────
+
+## clean: Clean all build artifacts
 clean:
-	@echo "Cleaning binaries..."
-	rm -rf $(BIN_DIR)
-	@echo "✓ Clean"
+	$(ECHO) "Cleaning all build artifacts..."
+	$(Q)$(MAKE) -C $(TRIT_DIR) clean
+	$(Q)$(MAKE) -C $(OMNI_DIR) clean
+	$(Q)rm -rf $(BIN_DIR)
+	$(ECHO) "✓ Clean complete"
 
-## clean-generated: Remove generated headers
-clean-generated:
-	@echo "Cleaning generated headers..."
-	rm -f $(GENERATED_DIR)/*.gen.h
-	@echo "✓ Generated headers removed"
+## clean-all: Clean everything including generated headers
+clean-all: clean
+	$(ECHO) "Cleaning generated headers..."
+	$(Q)rm -f $(GENERATED_DIR)/*.gen.h
+	$(ECHO) "✓ Full clean complete"
 
-## clean-all: Remove everything (binaries + generated)
-clean-all: clean clean-generated
+# ───────────────────────────────────────────────────────────────────────────────
+# B.7 INFO TARGETS — Diagnostics [INFO]
+# ───────────────────────────────────────────────────────────────────────────────
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Info Targets
-# ─────────────────────────────────────────────────────────────────────────────
-
-## status: Show current state
+## status: Show current build state
 status:
-	@echo "═══════════════════════════════════════════════════════════════"
-	@echo "Config System Status"
-	@echo "═══════════════════════════════════════════════════════════════"
-	@echo ""
-	@echo "BERESHIT_ROOT: $(BERESHIT_ROOT)"
-	@echo ""
-	@echo "Binary ($(BIN_DIR)/):"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  word/work - Build Status"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+	$(ECHO) "BERESHIT_ROOT: $(BERESHIT_ROOT)"
+	$(ECHO) "BUILD_MODE:    $(BUILD_MODE)"
+	$(ECHO) ""
+	$(ECHO) "Libraries:"
+	@if [ -f $(TRIT_DIR)/build/libtrit.a ]; then \
+		echo "  ✓ libtrit.a (built)"; \
+	else \
+		echo "  ○ libtrit.a (not built)"; \
+	fi
+	@if [ -f $(OMNI_DIR)/build/libomni.a ]; then \
+		echo "  ✓ libomni.a (built)"; \
+	else \
+		echo "  ○ libomni.a (not built)"; \
+	fi
+	$(ECHO) ""
+	$(ECHO) "Go Tools:"
 	@if [ -f $(BIN_DIR)/$(GENERATOR) ]; then \
 		echo "  ✓ $(GENERATOR) (built)"; \
 	else \
 		echo "  ○ $(GENERATOR) (not built)"; \
 	fi
-	@echo ""
-	@echo "Generated Headers:"
+	$(ECHO) ""
+	$(ECHO) "Generated Headers:"
 	@if ls $(GENERATED_DIR)/*.gen.h 1>/dev/null 2>&1; then \
 		for f in $(GENERATED_DIR)/*.gen.h; do \
 			echo "  ✓ $$(basename $$f)"; \
@@ -150,39 +321,131 @@ status:
 	else \
 		echo "  (none)"; \
 	fi
-	@echo ""
-	@echo "TOML Specs with [_generate]:"
-	@grep -l "\[_generate\]" $(BERESHIT_ROOT)/word/core/**/*.toml 2>/dev/null | \
-		while read f; do echo "  ✓ $$(basename $$f)"; done || echo "  (none found)"
 
-## help: Show this help
+## info: Show configuration
+info:
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  word/work - Configuration"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+	$(ECHO) "Paths:"
+	$(ECHO) "  BERESHIT_ROOT:  $(BERESHIT_ROOT)"
+	$(ECHO) "  PKG_DIR:        $(PKG_DIR)"
+	$(ECHO) "  CMD_DIR:        $(CMD_DIR)"
+	$(ECHO) "  BIN_DIR:        $(BIN_DIR)"
+	$(ECHO) ""
+	$(ECHO) "Sub-packages:"
+	$(ECHO) "  TRIT_DIR:       $(TRIT_DIR)"
+	$(ECHO) "  OMNI_DIR:       $(OMNI_DIR)"
+	$(ECHO) "  CONFIG_DIR:     $(CONFIG_DIR)"
+	$(ECHO) ""
+	$(ECHO) "Settings:"
+	$(ECHO) "  BUILD_MODE:     $(BUILD_MODE)"
+	$(ECHO) "  GO:             $(GO)"
+	$(ECHO) ""
+	$(ECHO) "Sub-Makefile Status:"
+	@$(MAKE) -C $(TRIT_DIR) info 2>/dev/null | head -5 || echo "  (libtrit info unavailable)"
+
+## help: Show this help message
 help:
-	@echo "═══════════════════════════════════════════════════════════════"
-	@echo "Bereshit Config Tools - Makefile Help"
-	@echo "═══════════════════════════════════════════════════════════════"
-	@echo ""
-	@echo "Usage: make [target]"
-	@echo ""
-	@echo "Targets:"
-	@grep -E '^## ' $(MAKEFILE_LIST) | sed 's/## /  /'
-	@echo ""
-	@echo "Examples:"
-	@echo "  make build      # Build the generator to bin/"
-	@echo "  make generate   # Generate C headers from TOML"
-	@echo "  make test       # Run all tests"
-	@echo "  make status     # Show current state"
-	@echo "  make clean      # Remove bin/ directory"
-	@echo ""
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  word/work - Build System Help"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+	$(ECHO) "QUICK START"
+	$(ECHO) "  make                 Build all libraries"
+	$(ECHO) "  make test            Run all tests"
+	$(ECHO) "  make status          Show build state"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "BUILD TARGETS"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  Libraries:"
+	$(ECHO) "    make libs          Build all C libraries"
+	$(ECHO) "    make libtrit       Build libtrit.a (Level 0)"
+	$(ECHO) "    make libomni       Build libomni.a (Level 1, depends on libtrit)"
+	$(ECHO) ""
+	$(ECHO) "  Tools:"
+	$(ECHO) "    make tools         Build Go tools"
+	$(ECHO) "    make generate      Generate C headers from TOML"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "TEST TARGETS"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "    make test          Run all tests"
+	$(ECHO) "    make test-trit     Test libtrit only"
+	$(ECHO) "    make test-omni     Test libomni only"
+	$(ECHO) "    make test-go       Test Go packages"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "MAINTENANCE"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "    make clean         Clean all build artifacts"
+	$(ECHO) "    make clean-all     Clean including generated headers"
+	$(ECHO) "    make status        Show current build state"
+	$(ECHO) "    make info          Show configuration"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "BUILD OPTIONS"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  BUILD_MODE=   dev      Fast iteration (default)"
+	$(ECHO) "                debug    Full debugging"
+	$(ECHO) "                release  Production"
+	$(ECHO) ""
+	$(ECHO) "  VERBOSE=1     Show full compilation commands"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "BUILD CHAIN"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "  Level 0:  libtrit.a   ← Foundation (balanced ternary)"
+	$(ECHO) "  Level 1:  libomni.a   ← Depends on libtrit"
+	$(ECHO) "  Level 2:  Go tools    ← Independent"
+	$(ECHO) ""
 
-# ============================================================================
-# CLOSING
-# ============================================================================
-# Makefile structure follows CPI-SI patterns:
-# - METADATA: Purpose and context
-# - SETUP: Variables and configuration
-# - BODY: Targets and rules
-# - CLOSING: Documentation
+# ═══════════════════════════════════════════════════════════════════════════════
+# END BODY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# X.1 STRUCTURE NOTES [STRUCTURE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# This Makefile follows the 4-block structure:
+#   METADATA → SETUP → BODY → CLOSING
+#
+# As an orchestrator Makefile, it:
+#   - Does NOT compile code directly
+#   - Delegates to sub-package Makefiles
+#   - Passes BUILD_MODE and VERBOSE to children
+#   - Provides unified test/clean/info interface
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# X.2 RELATED FILES [RELATED]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Children (called via $(MAKE) -C):
+#   pkg/trit/Makefile   — libtrit.a build
+#   pkg/omni/Makefile   — libomni.a build
+#
+# Parent (can call this):
+#   (none - this is the root work/ Makefile)
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# X.3 BIBLICAL CLOSING [BIBLICAL]
+# ───────────────────────────────────────────────────────────────────────────────
 #
 # "Except the LORD build the house, they labour in vain that build it"
 # — Psalm 127:1 KJV
-# ============================================================================
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# END CLOSING
+# ═══════════════════════════════════════════════════════════════════════════════

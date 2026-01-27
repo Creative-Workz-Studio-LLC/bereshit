@@ -1,0 +1,156 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Timing Types (3-Block Data Structure)
+# Key: B-word-core-types-timing
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on primitives, used by health system)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/types/primitives.toml, word/core/math/ternary.toml
+# Implements: cornerstone/engine/core/include/cpisi/types/domain/core/timing.h
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/types
+# File:        timing.toml
+# Key:         B-word-core-types-timing
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "To every thing there is a season, and a time to every purpose
+#            under the heaven."
+#            — Ecclesiastes 3:1 KJV
+#
+# Principle: Time is ordered by divine design. Intervals follow ternary math —
+#            derived from a single anchor (POLL = 1000ms) using multiplication
+#            and division by ternary constants.
+#
+# Anchor: "In the beginning" — Genesis 1:1 KJV
+#         POLL is the timing anchor from which all intervals derive.
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (defines timing intervals for health and monitoring)
+#
+# Role: Timing types — intervals, rotation tiers, retention policies.
+#       5 intervals, 9 rotation tiers, all derived from POLL anchor.
+#
+# Paradigm: CPI-SI framework component — timing as ordered structure
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2026-01-25
+#   Version: a-01.00
+#
+# # Purpose & Function
+#
+# Purpose: Define timing intervals and rotation policies for health monitoring
+#
+# Core Design: All intervals derive from POLL (1000ms) using ternary math
+#
+# Key Features:
+#
+#   - DEBOUNCE  (100ms)  — Fastest, for UI events
+#   - HALF_POLL (499ms)  — Half of poll interval
+#   - POLL      (1000ms) — CENTER anchor, standard check
+#   - FLUSH     (3000ms) — Buffer flush interval
+#   - TIMEOUT   (5000ms) — Slowest, operation timeout
+#
+# Philosophy: One anchor (POLL), all else derived. Ternary scaling.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   Internal: word/core/types/primitives.toml (int types)
+#   Internal: word/core/math/ternary.toml (ternary constants)
+#
+# What Uses This:
+#
+#   - Health monitoring uses poll intervals
+#   - Log rotation uses timing tiers
+#   - Timeout handling uses TIMEOUT interval
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+
+[timing]
+description = "Timing intervals derived from POLL anchor"
+anchor_ms = 1000
+count = 5
+
+# Interval definitions (derived from POLL = 1000ms)
+[timing.intervals]
+description = "5 intervals: fastest to slowest"
+
+DEBOUNCE  = { index = 0, ms = 100,  formula = "POLL / 10", description = "Fastest — UI debounce" }
+HALF_POLL = { index = 1, ms = 499,  formula = "POLL / 2 - 1", description = "Half poll interval" }
+POLL      = { index = 2, ms = 1000, formula = "POLL (anchor)", description = "CENTER — standard check" }
+FLUSH     = { index = 3, ms = 3000, formula = "POLL * 3", description = "Buffer flush interval" }
+TIMEOUT   = { index = 4, ms = 5000, formula = "POLL * 5", description = "Slowest — operation timeout" }
+
+# Bounds
+[timing.bounds]
+min_ms = 100
+max_ms = 5000
+center_index = 2
+
+# Rotation tiers (9 tiers for log rotation)
+[timing.rotation]
+description = "9 rotation tiers for log management"
+count = 9
+
+# Tier 0 = most frequent (100ms), Tier 8 = least frequent (1 day)
+tiers = [
+    { index = 0, interval = "100ms", description = "Real-time" },
+    { index = 1, interval = "1s", description = "Second" },
+    { index = 2, interval = "10s", description = "Deca-second" },
+    { index = 3, interval = "1m", description = "Minute" },
+    { index = 4, interval = "10m", description = "Deca-minute (CENTER)" },
+    { index = 5, interval = "1h", description = "Hour" },
+    { index = 6, interval = "6h", description = "Quarter-day" },
+    { index = 7, interval = "1d", description = "Day" },
+    { index = 8, interval = "1w", description = "Week" },
+]
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# This specification defines timing intervals for the CPI-SI system.
+#
+# To use this specification:
+#   1. Load via Go config loader: pkg/config/loader.go
+#   2. Generate C header: generates = true in index.toml
+#   3. Reference in headers: cornerstone/engine/core/include/cpisi/types/domain/core/timing.h
+#
+# "Redeeming the time, because the days are evil."
+# — Ephesians 5:16
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

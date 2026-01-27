@@ -61,6 +61,15 @@ func Build(ctx types.SessionContext, sm *statemachine.StateMachine, runtime *sta
 		parts = append(parts, state.Content)
 	}
 
+	// --- METHOD (Building Block Direction) ---
+	// Format: 🔨 BUILD or ⬇ BREAK or 🔄 PIVOT or ◆ STEADY
+	// "A time to break down, and a time to build up" — Ecclesiastes 3:3
+	method := sections.BuildMethod(runtime)
+	if method.HasInfo {
+		parts = append(parts, dimSep())
+		parts = append(parts, method.Content)
+	}
+
 	// Separator based on command
 	parts = append(parts, colorSep(cmdColor, cmd))
 
@@ -103,6 +112,16 @@ func Build(ctx types.SessionContext, sm *statemachine.StateMachine, runtime *sta
 		parts = append(parts, tasks.Content)
 	}
 
+	// --- WORKFLOW SECTION (operation progress) ---
+	// Format: [file-creation 3/7]
+	// Shows: current operation and step progress
+	// "In all labour there is profit" — Proverbs 14:23
+	workflow := sections.BuildWorkflow(runtime)
+	if workflow.HasInfo {
+		parts = append(parts, dimSep())
+		parts = append(parts, workflow.Content)
+	}
+
 	// --- MORAL SECTION (K:ALIGN compass) ---
 	// Format: k→0.8 (direction + alignment)
 	// k > 0 = toward God (Psalm 25:15), k < 0 = toward self (Proverbs 3:5)
@@ -121,8 +140,44 @@ func Build(ctx types.SessionContext, sm *statemachine.StateMachine, runtime *sta
 		parts = append(parts, moralPattern.Content)
 	}
 
-	// --- GROUP 6: DEPTH (Context + Cache) ---
-	depth := sections.BuildDepth(ctx)
+	// --- SESSION FLOW (Arc + Momentum) ---
+	// Format: 📚▆▇█ learning (arc emoji + momentum bars + arc name)
+	// "A time to break down, and a time to build up" — Ecclesiastes 3:3
+	sessionFlow := sections.BuildSessionFlow(runtime)
+	if sessionFlow.HasInfo {
+		parts = append(parts, dimSep())
+		parts = append(parts, sessionFlow.Content)
+	}
+
+	// --- LEARNING PULSE (Pattern/Learning Activity) ---
+	// Format: 🧠●●○ (learning rate indicator)
+	learningPulse := sections.BuildLearningPulse(runtime)
+	if learningPulse.HasInfo {
+		parts = append(parts, learningPulse.Content)
+	}
+
+	// --- CPI SECTION (Covenant Partnership Intelligence) ---
+	// Format: CPI:0.72 [15x/3i] (score, exchange count, insight count)
+	// "By their fruits ye shall know them" — Matthew 7:20
+	cpiSection := sections.BuildCPI(runtime)
+	if cpiSection.HasInfo {
+		parts = append(parts, dimSep())
+		parts = append(parts, cpiSection.Content)
+	}
+
+	// --- MOMENTUM (K:MORAL Balance) ---
+	// Format: ⚡▅▆▇ +12 (momentum bar + net direction)
+	// "A time to break down, and a time to build up" — Ecclesiastes 3:3
+	momentum := sections.BuildMomentum(runtime)
+	if momentum.HasInfo {
+		parts = append(parts, dimSep())
+		parts = append(parts, momentum.Content)
+	}
+
+	// --- GROUP 6: DEPTH (Enhanced - Effective Context) ---
+	// Format: 📊 45K/150K▐▌▌ [C2] (effective context + bar + compaction)
+	// "A time to keep, and a time to cast away" — Ecclesiastes 3:6
+	depth := sections.BuildDepthEnhanced(ctx, runtime)
 	if depth.HasInfo {
 		parts = append(parts, dimSep())
 		parts = append(parts, depth.Content)
@@ -178,6 +233,9 @@ func EmitWezTerm(ctx types.SessionContext, sm *statemachine.StateMachine, runtim
 	// Emit trajectory variables
 	emitTrajectoryVars(sm, runtime)
 
+	// Emit session variables (for left status bar)
+	emitSessionVars(runtime)
+
 	// Emit health variables
 	emitHealthVars(runtime)
 }
@@ -201,6 +259,37 @@ func emitTrajectoryVars(sm *statemachine.StateMachine, runtime *statemachine.Run
 	}
 }
 
+// emitSessionVars sends session-level information to WezTerm for left status bar
+func emitSessionVars(runtime *statemachine.RuntimeState) {
+	if runtime == nil {
+		return
+	}
+
+	// SESSION_START: Parse InitializedAt to Unix timestamp
+	if runtime.Session.InitializedAt != "" {
+		t, err := time.Parse(time.RFC3339, runtime.Session.InitializedAt)
+		if err == nil {
+			wezterm.SetUserVar("SESSION_START", fmt.Sprintf("%d", t.Unix()))
+		}
+	}
+
+	// ACTIVE_TASK: Get first active task subject, or count if no details
+	activeTask := "none"
+	if len(runtime.Session.Tasks.ActiveTasks) > 0 {
+		// Use first active task subject
+		activeTask = runtime.Session.Tasks.ActiveTasks[0].Subject
+	} else if runtime.Session.Tasks.InProgress > 0 {
+		// Fall back to count if no task details
+		activeTask = fmt.Sprintf("%d in progress", runtime.Session.Tasks.InProgress)
+	}
+	wezterm.SetUserVar("ACTIVE_TASK", activeTask)
+
+	// TASK_COUNT: For displaying task summary
+	wezterm.SetUserVar("TASK_PENDING", fmt.Sprintf("%d", runtime.Session.Tasks.Pending))
+	wezterm.SetUserVar("TASK_IN_PROGRESS", fmt.Sprintf("%d", runtime.Session.Tasks.InProgress))
+	wezterm.SetUserVar("TASK_COMPLETED", fmt.Sprintf("%d", runtime.Session.Tasks.Completed))
+}
+
 // emitHealthVars sends health information to WezTerm
 func emitHealthVars(runtime *statemachine.RuntimeState) {
 	score := float64(0)
@@ -222,6 +311,35 @@ func emitHealthVars(runtime *statemachine.RuntimeState) {
 		wezterm.SetUserVar("K_TOWARD_SELF", fmt.Sprintf("%d", runtime.Session.KTowardSelf))
 		wezterm.SetUserVar("HEBREW_STATE", runtime.Session.HebrewState)
 		wezterm.SetUserVar("HEBREW_MEANING", runtime.Session.HebrewMeaning)
+
+		// CPI variables (Covenant Partnership Intelligence)
+		// "By their fruits ye shall know them" — Matthew 7:20
+		wezterm.SetUserVar("CPI_SCORE", fmt.Sprintf("%.2f", runtime.Session.CPIScore))
+		wezterm.SetUserVar("CPI_EXCHANGES", fmt.Sprintf("%d", runtime.Session.ExchangeCount))
+		wezterm.SetUserVar("CPI_INSIGHTS", fmt.Sprintf("%d", runtime.Session.InsightCount))
+		wezterm.SetUserVar("CPI_ARC", runtime.Session.SessionArc)
+		wezterm.SetUserVar("CPI_DOMINANT_TYPE", runtime.Session.DominantExchangeType)
+		wezterm.SetUserVar("CPI_LAST_EXCHANGE", runtime.Session.LastExchangeType)
+
+		// Context window tracking (effective, not flat 200K)
+		// "A time to keep, and a time to cast away" — Ecclesiastes 3:6
+		wezterm.SetUserVar("CTX_BASE_TOKENS", fmt.Sprintf("%d", runtime.Session.BaseContextTokens))
+		wezterm.SetUserVar("CTX_CURRENT_TOKENS", fmt.Sprintf("%d", runtime.Session.CurrentContextTokens))
+		wezterm.SetUserVar("CTX_PEAK_TOKENS", fmt.Sprintf("%d", runtime.Session.PeakContextTokens))
+		wezterm.SetUserVar("CTX_COMPACTION_COUNT", fmt.Sprintf("%d", runtime.Session.CompactionCount))
+		wezterm.SetUserVar("CTX_EFFECTIVE_WINDOW", fmt.Sprintf("%d", runtime.Session.EffectiveContextWindow))
+
+		// Momentum tracking (build/break balance)
+		// "A time to break down, and a time to build up" — Ecclesiastes 3:3
+		netMomentum := runtime.Session.KTowardGod - runtime.Session.KTowardSelf
+		wezterm.SetUserVar("MOMENTUM_NET", fmt.Sprintf("%d", netMomentum))
+		total := runtime.Session.KTowardGod + runtime.Session.KTowardSelf
+		if total > 0 {
+			ratio := float64(netMomentum) / float64(total)
+			wezterm.SetUserVar("MOMENTUM_RATIO", fmt.Sprintf("%.2f", ratio))
+		} else {
+			wezterm.SetUserVar("MOMENTUM_RATIO", "0.00")
+		}
 	}
 }
 

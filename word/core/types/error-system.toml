@@ -1,0 +1,484 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# CPI-SI Error System Architecture (3-Block Data Structure)
+# Key: B-word-core-types-error-system
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: LADDER (foundation for error.h and all error handling)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/types/primitives.toml, word/core/math/ternary.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/types
+# File:        error-system.toml
+# Key:         B-word-core-types-error-system
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "A prudent man foreseeth the evil, and hideth himself: but the
+#            simple pass on, and are punished." — Proverbs 27:12 KJV
+#
+# Principle: Error detection enables error prevention. A well-structured error
+#            system allows code to foresee problems and handle them gracefully.
+#
+# Anchor: "Confess your faults one to another" — James 5:16 KJV
+#         Errors must be acknowledged (detected) to be fixed (recovered).
+#
+# # CPI-SI Identity
+#
+# Component Type: Ladder (foundation for all error handling)
+#
+# Role: Define the error system ARCHITECTURE — layers, tiers, positions.
+#       Specific error CODES are in error-codes.toml.
+#
+# Paradigm: CPI-SI framework component — errors as structured truth
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2026-01-24
+#   Version: a-01.00
+#
+# # Purpose & Function
+#
+# Purpose: Define the error system architecture that types.h S.3d implements
+#
+# Core Design: 9 layers × 27 codes = 243, plus 13 metadata = 256 (one byte)
+#              THE BRIDGE EQUATION: Ternary meets binary.
+#
+# Key Features:
+#
+#   - 9-layer architecture (4+1+4 balanced pattern)
+#   - 3 tiers per layer (CORE, EXT, SYS)
+#   - 9 universal positions per tier (semantic meanings)
+#   - Bridge equation: 243 + 13 = 256
+#
+# Philosophy: Error codes are addresses in computational space. The architecture
+#             maps to the mental construct: layers are WHERE, tiers are HOW DEEP,
+#             positions are WHAT KIND.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   - Parser: Any TOML library
+#   - Constants: word/core/math/ternary.toml (CUBE=27, FACE=9, PENTERACT=243)
+#
+# What Uses This:
+#
+#   - types/types.h S.3d: Implements CpisiError type and layer bases
+#   - types/config/error.h: Implements all specific error codes
+#   - Error handling code: Uses this architecture for routing
+#
+# Integration Points:
+#
+#   - Constants: word/core/math/ternary.toml
+#   - Types: word/core/types/primitives.toml (uint16_t for CpisiError)
+#   - Codes: word/core/types/error-codes.toml (specific error definitions)
+#   - C Header: cornerstone/engine/core/include/cpisi/types/types.h S.3d
+#
+# -----------------------------------------------------------------------------
+# OPERATIONAL (Contextual)
+# -----------------------------------------------------------------------------
+#
+# # Blocking Status
+#
+# [OMIT: Data file — architecture is declarative, not executable]
+#
+# # Health Scoring
+#
+# Configuration Impact: Invalid architecture would break all error handling
+#
+# Validation Behavior:
+#   - Invalid layer: Error — layers are foundational
+#   - Missing section: Error — all sections required
+#   - Math mismatch: Error — bridge equation must hold
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+#
+# Sections: architecture → layers → tiers → positions → formulas
+#
+# =============================================================================
+
+# ═════════════════════════════════════════════════════════════════════════════
+# 1. ARCHITECTURE — The Bridge Equation
+# ═════════════════════════════════════════════════════════════════════════════
+# "In the beginning God created the heaven and the earth." — Genesis 1:1
+# The bridge equation connects ternary (243) to binary (256).
+
+[architecture]
+name        = "CPI-SI Error System"
+description = "9-layer error architecture mapping to mental construct"
+
+# The Bridge Equation: 243 + 13 = 256
+ternary_codes    = 243   # PENTERACT = 3^5, also 9 layers × 27 codes
+metadata_codes   = 13    # BRIDGE = center of CUBE
+binary_fit       = 256   # Fits exactly in uint8_t
+
+# Layer structure
+layers           = 9     # 4 below + 1 center + 4 above
+codes_per_layer  = 27    # CUBE = 3^3
+tiers_per_layer  = 3     # CORE, EXT, SYS
+positions_per_tier = 9   # FACE = 3^2
+
+# Biblical connection
+[architecture.grounding]
+scripture = "A prudent man foreseeth the evil — Proverbs 27:12"
+principle = "Error detection enables error prevention"
+anchor    = "Confess your faults — James 5:16"
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# 2. LAYERS — 9-Layer Architecture (4+1+4)
+# ═════════════════════════════════════════════════════════════════════════════
+# "And the evening and the morning were the first day." — Genesis 1:5
+# Layers follow the balanced ternary pattern: 4 below, 1 center, 4 above.
+
+[layers]
+description = "9 layers in 4+1+4 balanced pattern"
+center      = "HEALTH"
+pattern     = "below:0-3, center:4, above:5-8"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Below Center (layers 0-3, balanced positions -4 to -1)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[layers.kernel]
+index           = 0
+name            = "KERNEL"
+codes           = [0, 26]
+balanced_pos    = -4
+position        = "below"
+brief           = "Core kernel operations"
+description     = "Foundation errors — universal errors that can occur anywhere"
+macro_base      = "CPISI_ERR_BASE_KERNEL"
+layer_const     = "CPISI_LAYER_KERNEL"
+
+[layers.system]
+index           = 1
+name            = "SYSTEM"
+codes           = [27, 53]
+balanced_pos    = -3
+position        = "below"
+brief           = "System-level operations"
+description     = "OS interactions, environment issues"
+macro_base      = "CPISI_ERR_BASE_SYSTEM"
+layer_const     = "CPISI_LAYER_SYSTEM"
+
+[layers.runtime]
+index           = 2
+name            = "RUNTIME"
+codes           = [54, 80]
+balanced_pos    = -2
+position        = "below"
+brief           = "VM/bytecode operations"
+description     = "Virtual machine and runtime issues"
+macro_base      = "CPISI_ERR_BASE_RUNTIME"
+layer_const     = "CPISI_LAYER_RUNTIME"
+
+[layers.framework]
+index           = 3
+name            = "FRAMEWORK"
+codes           = [81, 107]
+balanced_pos    = -1
+position        = "below"
+brief           = "CPI-SI framework"
+description     = "Framework-specific issues"
+macro_base      = "CPISI_ERR_BASE_FRAMEWORK"
+layer_const     = "CPISI_LAYER_FRAMEWORK"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Center (layer 4, balanced position 0)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[layers.health]
+index           = 4
+name            = "HEALTH"
+codes           = [108, 134]
+balanced_pos    = 0
+position        = "center"
+brief           = "Health monitoring"
+description     = "THE CENTER — all health-related errors"
+macro_base      = "CPISI_ERR_BASE_HEALTH"
+layer_const     = "CPISI_LAYER_HEALTH"
+is_center       = true
+scripture       = "Beloved, I wish above all things that thou mayest prosper and be in health — 3 John 1:2"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Above Center (layers 5-8, balanced positions +1 to +4)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[layers.network]
+index           = 5
+name            = "NETWORK"
+codes           = [135, 161]
+balanced_pos    = 1
+position        = "above"
+brief           = "Network operations"
+description     = "Communication, FaithNet, connectivity"
+macro_base      = "CPISI_ERR_BASE_NETWORK"
+layer_const     = "CPISI_LAYER_NETWORK"
+
+[layers.storage]
+index           = 6
+name            = "STORAGE"
+codes           = [162, 188]
+balanced_pos    = 2
+position        = "above"
+brief           = "Storage/filesystem"
+description     = "Filesystem, database, persistence"
+macro_base      = "CPISI_ERR_BASE_STORAGE"
+layer_const     = "CPISI_LAYER_STORAGE"
+
+[layers.engine]
+index           = 7
+name            = "ENGINE"
+codes           = [189, 215]
+balanced_pos    = 3
+position        = "above"
+brief           = "Engine operations"
+description     = "Cornerstone engine, rendering, orchestration"
+macro_base      = "CPISI_ERR_BASE_ENGINE"
+layer_const     = "CPISI_LAYER_ENGINE"
+
+[layers.app]
+index           = 8
+name            = "APP"
+codes           = [216, 242]
+balanced_pos    = 4
+position        = "above"
+brief           = "Application layer"
+description     = "User-facing application issues"
+macro_base      = "CPISI_ERR_BASE_APP"
+layer_const     = "CPISI_LAYER_APP"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Metadata (codes 243-255, bridge equation completion)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[layers.metadata]
+index           = 9
+name            = "METADATA"
+codes           = [243, 255]
+position        = "special"
+brief           = "Error system metadata"
+description     = "Bridge equation completion — 13 slots for infrastructure"
+macro_base      = "CPISI_ERR_BASE_METADATA"
+is_bridge       = true
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# 3. TIERS — 3 Tiers Per Layer
+# ═════════════════════════════════════════════════════════════════════════════
+# "A threefold cord is not quickly broken." — Ecclesiastes 4:12
+# Each layer's 27 codes divide into 3 tiers × 9 positions.
+
+[tiers]
+description = "Each layer has 3 tiers of 9 positions each"
+stride      = 9   # FACE = 3^2
+
+[tiers.core]
+index       = 0
+name        = "CORE"
+range       = [0, 8]
+brief       = "Fundamental errors"
+description = "Essential errors every system must handle"
+macro       = "CPISI_TIER_CORE"
+
+[tiers.ext]
+index       = 1
+name        = "EXT"
+range       = [9, 17]
+brief       = "Extended errors"
+description = "Common scenarios beyond fundamentals"
+macro       = "CPISI_TIER_EXT"
+
+[tiers.sys]
+index       = 2
+name        = "SYS"
+range       = [18, 26]
+brief       = "System errors"
+description = "Internal and low-level system-specific errors"
+macro       = "CPISI_TIER_SYS"
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# 4. POSITIONS — 9 Universal Semantic Meanings
+# ═════════════════════════════════════════════════════════════════════════════
+# "Let your yea be yea; and your nay, nay" — James 5:12
+# Position meanings are UNIVERSAL across all layers and tiers.
+
+[positions]
+description = "9 universal meanings — position 1 is ALWAYS null in every layer"
+count       = 9
+
+[positions.success]
+index       = 0
+name        = "SUCCESS"
+brief       = "Success or no error"
+description = "No error condition exists"
+macro       = "CPISI_POS_SUCCESS"
+universal   = "Position 0 of every tier is reserved for 'no error of this type'"
+
+[positions.null]
+index       = 1
+name        = "NULL"
+brief       = "Null pointer or missing"
+description = "Required pointer was NULL or required item is missing"
+macro       = "CPISI_POS_NULL"
+examples    = ["NULL argument", "missing config", "object not found"]
+
+[positions.invalid]
+index       = 2
+name        = "INVALID"
+brief       = "Invalid parameter or malformed"
+description = "Parameter is syntactically invalid or data is malformed"
+macro       = "CPISI_POS_INVALID"
+examples    = ["invalid enum", "malformed string", "corrupt data"]
+
+[positions.bounds]
+index       = 3
+name        = "BOUNDS"
+brief       = "Out of bounds or range"
+description = "Value exceeds valid range or index is out of bounds"
+macro       = "CPISI_POS_BOUNDS"
+examples    = ["array overflow", "health > 1.0", "layer > 8"]
+
+[positions.type]
+index       = 4
+name        = "TYPE"
+brief       = "Type mismatch or format"
+description = "Wrong type or incompatible format"
+macro       = "CPISI_POS_TYPE"
+examples    = ["expected int got string", "wrong encoding", "version mismatch"]
+
+[positions.state]
+index       = 5
+name        = "STATE"
+brief       = "Invalid state or condition"
+description = "Object is in wrong state for requested operation"
+macro       = "CPISI_POS_STATE"
+examples    = ["read before open", "already initialized", "connection closed"]
+
+[positions.init]
+index       = 6
+name        = "INIT"
+brief       = "Initialization or setup failure"
+description = "Failed to initialize or set up a resource"
+macro       = "CPISI_POS_INIT"
+examples    = ["alloc failed", "config load failed", "subsystem init failed"]
+
+[positions.cleanup]
+index       = 7
+name        = "CLEANUP"
+brief       = "Cleanup or teardown failure"
+description = "Failed to clean up or tear down a resource"
+macro       = "CPISI_POS_CLEANUP"
+examples    = ["close failed", "free failed", "shutdown incomplete"]
+
+[positions.unknown]
+index       = 8
+name        = "UNKNOWN"
+brief       = "Unknown or uncategorized"
+description = "Error doesn't fit other categories — should be rare"
+macro       = "CPISI_POS_UNKNOWN"
+warning     = "Prefer specific positions. UNKNOWN is a last resort."
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# 5. FORMULAS — Error Code Construction
+# ═════════════════════════════════════════════════════════════════════════════
+# "A just weight and balance are the LORD's" — Proverbs 16:11
+# Error codes are derived from structural position, not hardcoded.
+
+[formulas]
+description = "Error codes are derived, not arbitrary"
+
+[formulas.make_error]
+name        = "CPISI_MAKE_ERROR"
+formula     = "(layer × CUBE) + (tier × FACE) + position"
+expanded    = "(layer × 27) + (tier × 9) + position"
+description = "Construct error code from layer, tier, and position"
+
+[formulas.make_error.examples]
+cpisi_ok              = "(0 × 27) + (0 × 9) + 0 = 0"
+cpisi_err_kernel_null = "(0 × 27) + (0 × 9) + 1 = 1"
+cpisi_err_health_bounds = "(4 × 27) + (0 × 9) + 3 = 111"
+
+[formulas.extract_layer]
+name        = "Layer extraction"
+formula     = "layer = code ÷ 27"
+description = "Get layer index from error code"
+
+[formulas.extract_offset]
+name        = "Offset extraction"
+formula     = "offset = code % 27"
+description = "Get position within layer"
+
+[formulas.extract_tier]
+name        = "Tier extraction"
+formula     = "tier = (code % 27) ÷ 9"
+description = "Get tier index within layer"
+
+[formulas.extract_position]
+name        = "Position extraction"
+formula     = "position = (code % 27) % 9"
+description = "Get position within tier"
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# 6. DOMAIN EXPANSION — Future Scalability
+# ═════════════════════════════════════════════════════════════════════════════
+# "Write the vision, and make it plain" — Habakkuk 2:2
+# CpisiError is uint16_t, allowing growth beyond core 256 codes.
+
+[expansion]
+description = "Error type allows expansion beyond core 256"
+type        = "uint16_t"
+max_codes   = 65536
+
+[expansion.domains]
+core        = { range = [0, 255], description = "CPI-SI core (current)" }
+extended    = { range = [256, 511], description = "CPI-SI extended" }
+cornerstone = { range = [512, 767], description = "Cornerstone engine" }
+faithnet    = { range = [768, 1023], description = "FaithNet" }
+bereshit    = { range = [1024, 1279], description = "Bereshit storage" }
+application = { range = [1280, 65535], description = "Application-specific" }
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# Related Files:
+#   - word/core/types/error-codes.toml — specific error code definitions
+#   - word/core/math/ternary.toml — ternary constants (CUBE, FACE, PENTERACT)
+#   - cornerstone/engine/core/include/cpisi/types/types.h S.3d — C implementation
+#   - cornerstone/engine/core/include/cpisi/types/config/error.h — full error codes
+#
+# =============================================================================

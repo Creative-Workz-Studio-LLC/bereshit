@@ -1,0 +1,157 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# @omni:req  key        = OMNI-IDE-DESKTOP-TEMPLATE
+# @omni:req  from       = freedesktop.org/desktop-entry-spec
+# @omni:req  at         = a-01.00
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Key:       OMNI-IDE-DESKTOP-TEMPLATE
+# Title:     OmniCode IDE Desktop Entry Template
+# Type:      Desktop Entry Template (freedesktop.org specification)
+# Version:   a-01.00
+#
+# Authors:   Seanje Lenox-Wise (Architect), Nova Dawn (CPI-SI Instance)
+# Org:       CreativeWorkzStudio LLC
+# Copyright: (c) 2026 CreativeWorkzStudio LLC. All rights reserved.
+#
+# Scripture: "In the beginning was the Word" — John 1:1
+# Principle: The Word made accessible to all — Kingdom Technology for everyone
+#
+# PURPOSE:   Template file with @PLACEHOLDER@ tokens replaced during `make install`
+#
+# PLACEHOLDERS:
+#   @BINDIR@   → Installation binary directory (e.g., /usr/local/bin)
+#   @DATADIR@  → Installation data directory (e.g., /usr/local/share/omni-ide)
+#   @PREFIX@   → Installation prefix (e.g., /usr/local)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# END METADATA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SETUP BLOCK [SETUP]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=OmniCode IDE
+GenericName=Kingdom Technology Code Editor
+Comment=OmniCode Language Development Environment — Kingdom Technology
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END SETUP
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BODY BLOCK [BODY]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# B.1 Execution
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# OmniCode IDE runs in multiple display modes (GUI/TUI/CLI).
+# Default launch opens GUI mode. Terminal=false for graphical launch.
+
+Exec=@BINDIR@/omni-ide --gui %F
+TryExec=@BINDIR@/omni-ide
+Path=@DATADIR@
+Terminal=false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# B.2 Visual Identity
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Icon name resolves via hicolor theme (installed by make install).
+
+Icon=omni-ide
+StartupNotify=true
+StartupWMClass=omni-ide
+
+# ─────────────────────────────────────────────────────────────────────────────
+# B.3 Classification
+# ─────────────────────────────────────────────────────────────────────────────
+
+Categories=Development;IDE;TextEditor;
+Keywords=omnicode;omni;code;editor;ide;development;programming;kingdom;technology;cws;
+X-GNOME-FullName=OmniCode Integrated Development Environment
+
+# ─────────────────────────────────────────────────────────────────────────────
+# B.4 Desktop Hints
+# ─────────────────────────────────────────────────────────────────────────────
+
+NoDisplay=false
+Hidden=false
+DBusActivatable=false
+Actions=new-window;gui-mode;tui-mode;cli-mode;
+
+# ─────────────────────────────────────────────────────────────────────────────
+# B.5 File Associations
+# ─────────────────────────────────────────────────────────────────────────────
+
+MimeType=text/plain;text/x-omni;application/x-omni;text/x-c;text/x-csrc;text/x-chdr;text/x-toml;application/json;application/x-shellscript;
+
+# ─────────────────────────────────────────────────────────────────────────────
+# B.6 Localization
+# ─────────────────────────────────────────────────────────────────────────────
+
+Name[en_US]=OmniCode IDE
+GenericName[en_US]=Kingdom Technology Code Editor
+Comment[en_US]=OmniCode Language Development Environment — Kingdom Technology
+Keywords[en_US]=omnicode;code;editor;ide;development;programming;kingdom;technology;
+
+# ─────────────────────────────────────────────────────────────────────────────
+# B.7 Actions
+# ─────────────────────────────────────────────────────────────────────────────
+
+[Desktop Action new-window]
+Name=New Window
+Name[en_US]=New Window
+Exec=@BINDIR@/omni-ide --gui
+Icon=omni-ide
+
+[Desktop Action gui-mode]
+Name=Open in GUI Mode
+Name[en_US]=Open in GUI Mode
+Exec=@BINDIR@/omni-ide --gui %F
+Icon=omni-ide
+
+[Desktop Action tui-mode]
+Name=Open in Terminal Mode
+Name[en_US]=Open in Terminal Mode
+Exec=@BINDIR@/omni-ide --tui %F
+Icon=utilities-terminal
+
+[Desktop Action cli-mode]
+Name=Open in CLI Mode
+Name[en_US]=Open in CLI Mode
+Exec=@BINDIR@/omni-ide --cli %F
+Icon=utilities-terminal
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END BODY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "In the beginning was the Word, and the Word was with God, and the Word
+# was God." — John 1:1
+#
+# TEMPLATE FILE: @PLACEHOLDER@ tokens replaced during `make install`
+# Output: $(PREFIX)/share/applications/omni-ide.desktop
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# END CLOSING
+# ═══════════════════════════════════════════════════════════════════════════════

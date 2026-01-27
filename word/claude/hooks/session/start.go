@@ -32,6 +32,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	"cws.studio/claude/hooks/internal"
 	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
@@ -115,6 +116,14 @@ func Start() {
 	workdir, _ := os.Getwd()
 	context := cognition.SessionContext(state, workdir)
 
+	// Add WezTerm state awareness (two-way sync: WezTerm → Claude)
+	if wtState := readWezTermState(); wtState != nil {
+		wtContext := formatWezTermContext(wtState)
+		if wtContext != "" {
+			context += "\n" + wtContext
+		}
+	}
+
 	// Add post-compact checkpoint when resuming from auto-compact
 	if input.Source == "compact" {
 		context += "\n" + cognition.PostCompactAwareness()
@@ -130,6 +139,21 @@ func handleStartup(log *logging.Logger, catLog *logging.CategoryLogger, input St
 	// Initialize state machine runtime
 	state := statemachine.InitializeRuntimeState(input.SessionID)
 	path := statemachine.InitializeRuntimePath(input.SessionID)
+
+	// --- Initialize Context Window Tracking ---
+	// "A time to keep, and a time to cast away" — Ecclesiastes 3:6
+	// Estimate base overhead: CLAUDE.md (~15K) + system prompts (~10K) + session context (~5K) = ~30K
+	// Safety margin for compaction recovery: ~20K
+	// Effective working context: 200K - 30K - 20K = 150K
+	const baseOverheadTokens = 30000
+	const safetyMarginTokens = 20000
+	const totalContextWindow = 200000
+
+	state.Session.BaseContextTokens = baseOverheadTokens
+	state.Session.CurrentContextTokens = baseOverheadTokens // Start at base
+	state.Session.PeakContextTokens = 0                     // No peak yet
+	state.Session.CompactionCount = 0                       // Fresh session
+	state.Session.EffectiveContextWindow = totalContextWindow - baseOverheadTokens - safetyMarginTokens
 
 	// Save state to disk
 	if err := statemachine.SaveRuntimeState(state); err != nil {
@@ -214,7 +238,52 @@ func handleResume(log *logging.Logger, catLog *logging.CategoryLogger, input Sta
 	// Update session ID to match Claude Code's session
 	// This is critical - Claude Code generates new session IDs, state must track them
 	if input.SessionID != "" && input.SessionID != state.Session.ID {
+		// NEW SESSION: Reset session-specific counters while preserving identity
+		// "His mercies are new every morning" — Lamentations 3:23
+		log.Info("New session detected, resetting session counters", map[string]string{
+			"old_session": state.Session.ID,
+			"new_session": input.SessionID,
+		})
+		if catLog != nil {
+			catLog.Info("new_session", "New session detected, resetting session counters", map[string]string{
+				"old_session":      state.Session.ID,
+				"new_session":      input.SessionID,
+				"old_exchange_cnt": fmt.Sprintf("%d", state.Session.ExchangeCount),
+				"old_k_toward_god": fmt.Sprintf("%d", state.Session.KTowardGod),
+			})
+		}
+
+		// Preserve: anchor_key, trajectory_section (position in mental construct)
+		// Reset: session-specific counters
+		now := time.Now().Format(time.RFC3339)
 		state.Session.ID = input.SessionID
+		state.Session.InitializedAt = now
+		state.Session.PathLength = 0
+		state.Session.HooksFired = 0
+		state.Session.ChoiceSequence = 0
+
+		// Reset K:MORAL counters (fresh start for this session)
+		state.Session.KTowardGod = 0
+		state.Session.KTowardSelf = 0
+		state.Session.KSelector = 0
+		// Keep KAlign as it represents accumulated alignment (identity)
+
+		// Reset CPI counters (this session's exchanges)
+		state.Session.ExchangeCount = 0
+		state.Session.InsightCount = 0
+		state.Session.CPIScore = 0.5 // Neutral starting point
+		state.Session.DominantExchangeType = ""
+		state.Session.SessionArc = ""
+		state.Session.LastExchangeType = ""
+		state.Session.LastInsightType = ""
+
+		// Reset task tracking
+		state.Session.Tasks = statemachine.RuntimeTaskList{}
+
+		// Reset trajectory momentum (fresh building phase)
+		state.TrajectoryMetrics.AccumulatedWorkMs = 0
+		state.TrajectoryMetrics.MomentumScore = 0
+		// Keep pivot_count and reset_count as cross-session learning
 	}
 
 	// Mark as active
@@ -312,15 +381,29 @@ func handleCompact(log *logging.Logger, catLog *logging.CategoryLogger, input St
 		return nil
 	}
 
-	// Update session ID to match Claude Code's session
-	if input.SessionID != "" && input.SessionID != state.Session.ID {
-		state.Session.ID = input.SessionID
-		_ = statemachine.SaveRuntimeState(state)
+	// --- CONSOLIDATION POINT: Auto-compact is the natural lifecycle moment ---
+	// "There is a time for every purpose under heaven" — Ecclesiastes 3:1
+	// The context is being compressed anyway - consolidate and reset.
+
+	// Record pre-compact snapshot for learning
+	preCompactExchanges := state.Session.ExchangeCount
+	preCompactInsights := state.Session.InsightCount
+	preCompactKRatio := float64(0)
+	if state.Session.KTowardGod+state.Session.KTowardSelf > 0 {
+		preCompactKRatio = float64(state.Session.KTowardGod) / float64(state.Session.KTowardGod+state.Session.KTowardSelf)
 	}
 
+	log.Info("Pre-compact snapshot", map[string]string{
+		"exchanges":     fmt.Sprintf("%d", preCompactExchanges),
+		"insights":      fmt.Sprintf("%d", preCompactInsights),
+		"k_ratio":       fmt.Sprintf("%.2f", preCompactKRatio),
+		"k_toward_god":  fmt.Sprintf("%d", state.Session.KTowardGod),
+		"k_toward_self": fmt.Sprintf("%d", state.Session.KTowardSelf),
+	})
+
 	// Record compact event in path
-	path, err := statemachine.LoadRuntimePath()
-	if err == nil {
+	path, loadErr := statemachine.LoadRuntimePath()
+	if loadErr == nil {
 		path.RecordEvent("context_compact", "", state.TrajectorySection)
 		_ = statemachine.SaveRuntimePath(path)
 	}
@@ -337,18 +420,118 @@ func handleCompact(log *logging.Logger, catLog *logging.CategoryLogger, input St
 		}
 	}
 
-	log.Info("Context compacted, state snapshot recorded", map[string]string{
-		"session_id":  input.SessionID,
-		"anchor":      state.AnchorKey,
-		"trajectory":  state.TrajectorySection,
-		"path_length": fmt.Sprintf("%d", state.Session.PathLength),
+	// --- CONSOLIDATE: Generate session summary to database ---
+	if bridge, bridgeErr := internal.GetBridge(); bridgeErr == nil {
+		ctx := context.Background()
+		// Update session in database with final metrics
+		if updateErr := bridge.EndSession(ctx, state.Session.ID, state); updateErr != nil {
+			log.Warn("Failed to consolidate session", map[string]string{"error": updateErr.Error()})
+		} else {
+			log.Info("Session consolidated to database", map[string]string{
+				"session_id": state.Session.ID,
+			})
+		}
+	}
+
+	// --- RESET: Fresh start with consolidated position ---
+	// Preserve: anchor_key, trajectory_section (position in mental construct)
+	// Preserve: KAlign (accumulated identity alignment)
+	// Reset: session counters
+	now := time.Now().Format(time.RFC3339)
+
+	// Update session ID if changed
+	if input.SessionID != "" && input.SessionID != state.Session.ID {
+		state.Session.ID = input.SessionID
+	}
+	state.Session.InitializedAt = now
+	state.Session.PathLength = 0
+	state.Session.HooksFired = 0
+	state.Session.ChoiceSequence = 0
+
+	// Reset K:MORAL counters (fresh start post-compact)
+	state.Session.KTowardGod = 0
+	state.Session.KTowardSelf = 0
+	state.Session.KSelector = 0
+	// Keep KAlign as it represents accumulated alignment (identity)
+
+	// Reset CPI counters
+	state.Session.ExchangeCount = 0
+	state.Session.InsightCount = 0
+	state.Session.CPIScore = 0.5 // Neutral starting point
+	state.Session.DominantExchangeType = ""
+	state.Session.SessionArc = ""
+	state.Session.LastExchangeType = ""
+	state.Session.LastInsightType = ""
+
+	// --- CONTEXT TRACKING: Record compaction event ---
+	// "A time to keep, and a time to cast away" — Ecclesiastes 3:6
+	state.Session.CompactionCount++
+	// Store peak before reset (current becomes the peak that triggered compaction)
+	if state.Session.CurrentContextTokens > state.Session.PeakContextTokens {
+		state.Session.PeakContextTokens = state.Session.CurrentContextTokens
+	}
+	// Reset current context (post-compaction we're at base overhead again)
+	state.Session.CurrentContextTokens = state.Session.BaseContextTokens
+
+	// Record compaction pattern to database
+	if bridge, bridgeErr := internal.GetBridge(); bridgeErr == nil {
+		ctx := context.Background()
+		repo := bridge.GetRepository()
+		// Track what trajectory section triggers compaction
+		if state.TrajectorySection != "" {
+			_, _ = repo.Exec(ctx, `
+				INSERT INTO detected_patterns (pattern_type, pattern_key, description, first_seen, last_seen, occurrence_count, confidence)
+				VALUES ('compaction_trigger', ?, 'Compaction triggered at trajectory section', datetime('now'), datetime('now'), 1, 0.5)
+				ON CONFLICT(pattern_type, pattern_key) DO UPDATE SET
+					last_seen = datetime('now'),
+					occurrence_count = occurrence_count + 1,
+					confidence = MIN(1.0, confidence + 0.05)
+			`, state.TrajectorySection)
+		}
+		// Track compaction with exchange counts
+		exchangeBucket := "0-10"
+		if preCompactExchanges > 50 {
+			exchangeBucket = "50+"
+		} else if preCompactExchanges > 25 {
+			exchangeBucket = "25-50"
+		} else if preCompactExchanges > 10 {
+			exchangeBucket = "10-25"
+		}
+		_, _ = repo.Exec(ctx, `
+			INSERT INTO detected_patterns (pattern_type, pattern_key, description, first_seen, last_seen, occurrence_count, confidence)
+			VALUES ('compaction_exchanges', ?, 'Exchanges before compaction', datetime('now'), datetime('now'), 1, 0.5)
+			ON CONFLICT(pattern_type, pattern_key) DO UPDATE SET
+				last_seen = datetime('now'),
+				occurrence_count = occurrence_count + 1,
+				confidence = MIN(1.0, confidence + 0.05)
+		`, exchangeBucket)
+	}
+
+	// Reset task tracking
+	state.Session.Tasks = statemachine.RuntimeTaskList{}
+
+	// Reset trajectory momentum
+	state.TrajectoryMetrics.AccumulatedWorkMs = 0
+	state.TrajectoryMetrics.MomentumScore = 0
+
+	// Save reset state
+	if saveErr := statemachine.SaveRuntimeState(state); saveErr != nil {
+		log.LogFailure("Failed to save reset state", map[string]string{"error": saveErr.Error()})
+	}
+
+	log.Info("Post-compact reset complete", map[string]string{
+		"session_id": input.SessionID,
+		"anchor":     state.AnchorKey,
+		"trajectory": state.TrajectorySection,
+		"message":    "Fresh start with consolidated position",
 	})
 	if catLog != nil {
-		catLog.Info("context_compacted", "Context compacted, state snapshot recorded", map[string]string{
-			"session_id":  input.SessionID,
-			"anchor":      state.AnchorKey,
-			"trajectory":  state.TrajectorySection,
-			"path_length": fmt.Sprintf("%d", state.Session.PathLength),
+		catLog.Info("compact_reset", "Post-compact reset complete", map[string]string{
+			"pre_exchanges": fmt.Sprintf("%d", preCompactExchanges),
+			"pre_insights":  fmt.Sprintf("%d", preCompactInsights),
+			"pre_k_ratio":   fmt.Sprintf("%.2f", preCompactKRatio),
+			"anchor":        state.AnchorKey,
+			"trajectory":    state.TrajectorySection,
 		})
 	}
 
@@ -359,3 +542,80 @@ func handleCompact(log *logging.Logger, catLog *logging.CategoryLogger, input St
 // CLOSING
 // ============================================================================
 // Environment: CLAUDE_ENV_FILE available for persisting env vars
+
+// WezTermState represents state written by WezTerm for two-way sync
+type WezTermState struct {
+	Timestamp int64  `json:"timestamp"`
+	Event     string `json:"event"`
+	Workspace string `json:"workspace"`
+	TabCount  int    `json:"tab_count"`
+	PaneCount int    `json:"pane_count"`
+	WindowID  string `json:"window_id"`
+	Focused   bool   `json:"focused"`
+}
+
+// readWezTermState reads WezTerm state from cache file
+// Returns nil if file doesn't exist or is too old (>5 min)
+func readWezTermState() *WezTermState {
+	home := os.Getenv("HOME")
+	if home == "" {
+		return nil
+	}
+
+	stateFile := home + "/.cache/cpisi/wezterm-state.json"
+	data, err := os.ReadFile(stateFile)
+	if err != nil {
+		return nil // File doesn't exist yet - normal on first run
+	}
+
+	var state WezTermState
+	if err := json.Unmarshal(data, &state); err != nil {
+		return nil
+	}
+
+	// Check if state is stale (>5 minutes old)
+	age := time.Now().Unix() - state.Timestamp
+	if age > 300 {
+		return nil // Stale state
+	}
+
+	return &state
+}
+
+// formatWezTermContext builds context string from WezTerm state
+func formatWezTermContext(wt *WezTermState) string {
+	if wt == nil {
+		return ""
+	}
+
+	parts := []string{}
+
+	// Workspace awareness
+	if wt.Workspace != "" && wt.Workspace != "default" {
+		parts = append(parts, fmt.Sprintf("WezTerm workspace: %s", wt.Workspace))
+	}
+
+	// Layout awareness
+	if wt.TabCount > 1 || wt.PaneCount > 1 {
+		parts = append(parts, fmt.Sprintf("Terminal layout: %d tabs, %d panes", wt.TabCount, wt.PaneCount))
+	}
+
+	// Focus awareness
+	if !wt.Focused {
+		parts = append(parts, "Terminal was unfocused (returning to session)")
+	}
+
+	// Recent event
+	switch wt.Event {
+	case "focus_gained":
+		parts = append(parts, "Terminal focus just restored")
+	case "config_reloaded":
+		parts = append(parts, "WezTerm config was reloaded")
+	}
+
+	if len(parts) == 0 {
+		return ""
+	}
+
+	return "**Terminal Context:** " + fmt.Sprintf("%v", parts)
+}

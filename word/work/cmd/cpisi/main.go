@@ -70,6 +70,8 @@ func main() {
 		runExplore(os.Args[2:])
 	case "compute":
 		runCompute(os.Args[2:])
+	case "cpi":
+		runCPI(os.Args[2:])
 	case "help", "-h", "--help":
 		printUsage()
 	default:
@@ -94,6 +96,7 @@ Modes:
   psi      Calculate Ψ(N): cpisi psi 1.5
   explore  Explore theories: cpisi explore <subcommand>
   compute  Geometric computation: cpisi compute <subcommand>
+  cpi      Covenant Partnership Intelligence: cpisi cpi <subcommand>
   help     Show this help
 
 Explore Subcommands:

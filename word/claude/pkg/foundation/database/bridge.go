@@ -52,6 +52,12 @@ func NewBridge(repo Repository) *Bridge {
 	return &Bridge{repo: repo}
 }
 
+// GetRepository returns the underlying repository for direct access
+// Used by CPI tracking extensions that need raw SQL access
+func (b *Bridge) GetRepository() Repository {
+	return b.repo
+}
+
 // ───────────────────────────────────────────────────────────────────────────
 // Session Lifecycle
 // ───────────────────────────────────────────────────────────────────────────
@@ -86,13 +92,22 @@ func (b *Bridge) StartSession(ctx context.Context, sessionID string, state *type
 }
 
 // EndSession records a session end in both database and live file
+// Consolidates CPI tracking data for training/learning
 func (b *Bridge) EndSession(ctx context.Context, sessionID string, state *types.RuntimeState) error {
-	// Update database
+	// Update database with full session summary including CPI data
+	// "By their fruits ye shall know them" — Matthew 7:20
 	finalState := &Session{
 		FinalHebrewState: state.Session.HebrewState,
 		FinalKAlign:      state.Session.KAlign,
 		ToolCount:        state.Session.HooksFired,
 		ChoiceCount:      state.Session.ChoiceSequence,
+
+		// CPI Tracking fields
+		ExchangeCount:        state.Session.ExchangeCount,
+		InsightCount:         state.Session.InsightCount,
+		CPIScore:             state.Session.CPIScore,
+		DominantExchangeType: state.Session.DominantExchangeType,
+		SessionArc:           state.Session.SessionArc,
 	}
 
 	if err := b.repo.EndSession(ctx, sessionID, finalState); err != nil {

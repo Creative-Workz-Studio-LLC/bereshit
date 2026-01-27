@@ -25,16 +25,18 @@
 
     // Hook registry: binary name → build metadata
     "hooks": {
-      "start":         { "category": "session",    "source": "cmd/start" },
-      "end":           { "category": "session",    "source": "cmd/end" },
-      "stop":          { "category": "session",    "source": "cmd/stop" },
-      "subagent-stop": { "category": "session",    "source": "cmd/subagent-stop" },
-      "notification":  { "category": "session",    "source": "cmd/notification" },
-      "pre-compact":   { "category": "session",    "source": "cmd/pre-compact" },
-      "pre-use":       { "category": "tool",       "source": "cmd/pre-use" },
-      "post-use":      { "category": "tool",       "source": "cmd/post-use" },
-      "submit":        { "category": "prompt",     "source": "cmd/submit" },
-      "request":       { "category": "permission", "source": "cmd/request" }
+      "start":              { "category": "session",    "source": "cmd/start" },
+      "end":                { "category": "session",    "source": "cmd/end" },
+      "stop":               { "category": "session",    "source": "cmd/stop" },
+      "subagent-stop":      { "category": "session",    "source": "cmd/subagent-stop" },
+      "subagent-start":     { "category": "session",    "source": "cmd/subagent-start" },
+      "setup":              { "category": "session",    "source": "cmd/setup" },
+      "notification":       { "category": "session",    "source": "cmd/notification" },
+      "pre-compact":        { "category": "session",    "source": "cmd/pre-compact" },
+      "pre-use":            { "category": "tool",       "source": "cmd/pre-use" },
+      "post-use":           { "category": "tool",       "source": "cmd/post-use" },
+      "submit":             { "category": "prompt",     "source": "cmd/submit" },
+      "permission-request": { "category": "permission", "source": "cmd/permission-request" }
     },
 
     // Orchestrator (special - built from root, not cmd/)
@@ -73,6 +75,14 @@
       "binary": "subagent-stop",
       "description": "Subagent completion handling"
     },
+    "SubagentStart": {
+      "binary": "subagent-start",
+      "description": "Subagent spawn handling (v2.0.43)"
+    },
+    "Setup": {
+      "binary": "setup",
+      "description": "Repository setup via --init, --init-only, --maintenance (v2.1.10)"
+    },
     "Notification": {
       "binary": "notification",
       "matcher": "*",
@@ -91,18 +101,18 @@
     },
     "PostToolUse": {
       "binary": "post-use",
-      "matcher": "Write(**)|Edit(**)|Bash(*)|Read(**)|Grep(*)|Glob(**)",
+      "matcher": "*",
       "args": "\"$TOOL_NAME\" \"$TOOL_ARGS\"",
-      "description": "Post-execution validation and health scoring"
+      "description": "Post-execution state tracking, Hebrew transitions, health scoring"
     },
     "UserPromptSubmit": {
       "binary": "submit",
       "description": "Prompt validation, feedback detection, context injection"
     },
     "PermissionRequest": {
-      "binary": "request",
+      "binary": "permission-request",
       "matcher": "*",
-      "description": "Permission auto-handling"
+      "description": "Permission auto-handling (v2.0.45)"
     }
   }
 }

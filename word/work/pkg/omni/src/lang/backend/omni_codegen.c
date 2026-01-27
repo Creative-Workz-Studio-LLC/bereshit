@@ -37,6 +37,9 @@
 #include <stdarg.h>
 #include "omni_codegen.h"
 
+// CPI-SI state-aware logging
+#include "kernel/cpisi/dar/detect.h"
+
 // # S.1 Internal Helpers [HELPERS]
 
 static void safe_strcpy(char* dst, size_t dst_size, const char* src) {
@@ -530,13 +533,16 @@ void omni_codegen_warning(OmniCodeGen* gen, int line, int col,
                           const char* fmt, ...) {
     if (!gen) return;
 
-    // Log to stderr immediately
-    fprintf(stderr, "warning:%d:%d: ", line, col);
+    // Build full message: "line:col: <msg>"
+    char full_msg[512];
+    int prefix_len = snprintf(full_msg, sizeof(full_msg), "%d:%d: ", line, col);
+
     va_list args;
     va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
+    vsnprintf(full_msg + prefix_len, sizeof(full_msg) - prefix_len, fmt, args);
     va_end(args);
-    fprintf(stderr, "\n");
+
+    LOG_WARN("codegen", "%s", full_msg);
 
     gen->warning_count++;
     omni_codegen_health_adjust(gen, -5, "warning");
@@ -554,7 +560,7 @@ void omni_codegen_print_errors(const OmniCodeGen* gen) {
     if (!gen) return;
 
     for (int i = 0; i < gen->error_count; i++) {
-        fprintf(stderr, "error:%d:%d: %s\n",
+        LOG_ERROR("codegen", "error:%d:%d: %s",
                 gen->errors[i].line,
                 gen->errors[i].column,
                 gen->errors[i].message);
@@ -574,7 +580,7 @@ void omni_codegen_health_adjust(OmniCodeGen* gen, int delta, const char* reason)
 
     // Debug logging if enabled
     if (gen->emit_debug && reason) {
-        fprintf(stderr, "[HEALTH] %+d (%s) → %d\n", delta, reason, gen->health);
+        LOG_DEBUG("codegen", "[HEALTH] %+d (%s) → %d", delta, reason, gen->health);
     }
 }
 

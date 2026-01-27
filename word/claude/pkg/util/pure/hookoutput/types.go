@@ -34,6 +34,9 @@ const (
 	EventPostToolUse       = "PostToolUse"
 	EventStop              = "Stop"
 	EventSubagentStop      = "SubagentStop"
+	EventSubagentStart     = "SubagentStart"     // v2.0.43: When subagent begins
+	EventSetup             = "Setup"             // v2.1.10: Via --init, --init-only, --maintenance
+	EventPermissionRequest = "PermissionRequest" // v2.0.45: Permission dialog shown
 )
 
 // Permission decision values for PreToolUse
@@ -102,6 +105,16 @@ func NewBlockedPromptResponse(reason string) *ContextResponse {
 		Decision: DecisionBlock,
 		Reason:   reason,
 	}
+}
+
+// NewSetupResponse creates a Setup hook response (v2.1.10)
+func NewSetupResponse(context string) *ContextResponse {
+	return NewContextResponse(EventSetup, context)
+}
+
+// NewSubagentStartResponse creates a SubagentStart hook response (v2.0.43)
+func NewSubagentStartResponse(context string) *ContextResponse {
+	return NewContextResponse(EventSubagentStart, context)
 }
 
 // --- PreToolUse Hook ---

@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strings"
 	"time"
 
 	"cws.studio/claude/hooks/internal"
@@ -220,7 +221,12 @@ func buildToolContext(state *statemachine.RuntimeState, input PostUseInput) stri
 		// Task updates reflected in Hebrew state
 		builder.Add(cognition.TodoFeedback(state))
 	default:
-		builder.Add(cognition.ToolFeedback(input.ToolName, outcome, state))
+		// MCP tools - track by provider for learning
+		if strings.HasPrefix(input.ToolName, "mcp__") {
+			builder.Add(cognition.MCPFeedback(input.ToolName, outcome, state))
+		} else {
+			builder.Add(cognition.ToolFeedback(input.ToolName, outcome, state))
+		}
 	}
 
 	// Add trajectory guidance
@@ -771,9 +777,17 @@ func retreatTime(t string) string {
 
 // --- Health Score Updates ---
 
-// updateHealthScore adjusts health based on tool outcome
-// Health is cumulative: success = +1, failure = -1 to -5 based on severity
+// updateHealthScore adjusts health based on tool outcome AND direction (key)
+// Health is direction-aware: building (+1), lateral (0), completion (-1)
 // Score range: -100 to +100 (ternary scale)
+//
+// KEY PRINCIPLE: Only directional work (+1/-1) affects health. Lateral (0) is maintenance.
+// SCALING: Deltas diminish as operations accumulate (prevents racing to 100)
+//
+// The key determines the STAKES of the operation:
+// - Building (+1): High stakes - meaningful work affects health significantly
+// - Lateral (0): NO health change - reading/searching is maintenance, not health
+// - Completion (-1): Proper completion/validation affects health
 //
 // Biblical: "A just weight and balance are the LORD's" — Proverbs 16:11
 func updateHealthScore(state *statemachine.RuntimeState, input PostUseInput) {
@@ -781,26 +795,90 @@ func updateHealthScore(state *statemachine.RuntimeState, input PostUseInput) {
 		return
 	}
 
-	// Calculate delta based on tool outcome
+	// Get the direction (key) that was chosen for this operation
+	key := state.Session.LastKeyChosen
+
+	// Calculate base delta based on outcome AND direction
 	var delta float64
-	if toolFailed(input) {
-		// Failure: negative impact based on tool type
-		delta = -1.0
-		// Severe failures get bigger penalty
-		if containsAny(input.ToolName, []string{"Bash", "Write", "Edit"}) {
-			delta = -2.0 // Data-affecting tools have higher stakes
+	failed := toolFailed(input)
+
+	switch key {
+	case 1: // Building up (+1 key) - meaningful work
+		if failed {
+			// Failed to build - significant penalty
+			delta = -3.0
+			// Data-affecting failures are costly
+			if containsAny(input.ToolName, []string{"Write", "Edit"}) {
+				delta = -4.0
+			}
+		} else {
+			// Successfully built - rewarded
+			delta = 2.0
+			// Creating new structure gets bonus
+			if containsAny(input.ToolName, []string{"Write", "Task"}) {
+				delta = 3.0
+			}
 		}
-	} else {
-		// Success: positive impact
-		delta = 1.0
-		// Building/creating tools get bonus
-		if containsAny(input.ToolName, []string{"Write", "Edit", "Task"}) {
-			delta = 1.5 // Creative work is rewarded
+
+	case -1: // Completion/cleanup (-1 key) - meaningful work
+		if failed {
+			// Failed to complete cleanly - concerning
+			delta = -2.5
+			// Destructive operations that fail are dangerous
+			if containsAny(input.ToolName, []string{"Bash"}) {
+				cmd, _ := input.ToolInput["command"].(string)
+				if isDestructiveCommand(cmd) {
+					delta = -4.0 // Failed cleanup can leave mess
+				}
+			}
+		} else {
+			// Proper completion is good
+			delta = 1.5
+			// Successful validation/testing is particularly valuable
+			if containsAny(input.ToolName, []string{"Bash"}) {
+				cmd, _ := input.ToolInput["command"].(string)
+				if isValidationCommand(cmd) {
+					delta = 2.5 // Tests passing is confidence-building
+				}
+			}
+		}
+
+	default: // Lateral (0 key) - maintenance, NO health change
+		// Reading, searching, exploring doesn't affect health
+		// These are necessary but not directional work
+		delta = 0.0
+
+		// Exception: significant lateral failures still matter
+		if failed && containsAny(input.ToolName, []string{"WebFetch", "WebSearch"}) {
+			delta = -0.5 // External resource failures are concerning
 		}
 	}
 
+	// Skip update if no delta
+	if delta == 0.0 {
+		return
+	}
+
+	// Apply diminishing returns based on distance from center
+	// Near 0: full delta. Near ±100: delta is scaled down.
+	// This makes extreme values harder to reach/leave.
+	currentHealth := state.Session.HealthScore
+	absHealth := currentHealth
+	if absHealth < 0 {
+		absHealth = -absHealth
+	}
+
+	// Scale factor: 1.0 at center, 0.2 at extremes
+	// Formula: 1.0 - (absHealth/100) * 0.8
+	scaleFactor := 1.0 - (absHealth/100.0)*0.8
+	if scaleFactor < 0.2 {
+		scaleFactor = 0.2 // Minimum 20% effect at extremes
+	}
+
+	effectiveDelta := delta * scaleFactor
+
 	// Apply delta with clamping to [-100, +100]
-	newScore := state.Session.HealthScore + delta
+	newScore := currentHealth + effectiveDelta
 	if newScore > 100 {
 		newScore = 100
 	} else if newScore < -100 {
@@ -808,6 +886,28 @@ func updateHealthScore(state *statemachine.RuntimeState, input PostUseInput) {
 	}
 
 	state.Session.HealthScore = newScore
+}
+
+// isDestructiveCommand checks if a bash command is destructive (-1 key completion)
+func isDestructiveCommand(cmd string) bool {
+	destructive := []string{"rm ", "rm\t", "make clean", "git reset", "git stash", "kill ", "pkill "}
+	for _, d := range destructive {
+		if strings.Contains(cmd, d) {
+			return true
+		}
+	}
+	return false
+}
+
+// isValidationCommand checks if a bash command is validation (-1 key completion)
+func isValidationCommand(cmd string) bool {
+	validation := []string{"make test", "go test", "pytest", "npm test", "cargo test"}
+	for _, v := range validation {
+		if strings.Contains(cmd, v) {
+			return true
+		}
+	}
+	return false
 }
 
 // ============================================================================

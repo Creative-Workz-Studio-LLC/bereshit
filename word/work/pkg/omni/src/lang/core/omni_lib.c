@@ -39,6 +39,9 @@
 #include "omni_parser.h"
 #include "omni_chunks.h"
 
+// CPI-SI state-aware logging
+#include "kernel/cpisi/dar/detect.h"
+
 // # S.1 Helpers [HELPERS]
 
 static bool file_exists(const char* path) {
@@ -226,14 +229,14 @@ int omni_lib_load(OmniLibLoader* loader, const char* import_path) {
     // Resolve path
     const char* resolved = omni_lib_resolve(loader, import_path);
     if (!resolved) {
-        fprintf(stderr, "omni_lib: Cannot resolve module '%s'\n", import_path);
+        LOG_ERROR("omni_lib", "Cannot resolve module '%s'", import_path);
         return -1;
     }
 
     // Read source file
     FILE* f = fopen(resolved, "r");
     if (!f) {
-        fprintf(stderr, "omni_lib: Cannot open '%s'\n", resolved);
+        LOG_ERROR("omni_lib", "Cannot open '%s'", resolved);
         return -1;
     }
 
@@ -280,7 +283,7 @@ int omni_lib_load(OmniLibLoader* loader, const char* import_path) {
     free(source);
 
     if (!module->program) {
-        fprintf(stderr, "omni_lib: Failed to compile '%s'\n", resolved);
+        LOG_ERROR("omni_lib", "Failed to compile '%s'", resolved);
         return -1;
     }
 

@@ -24,7 +24,7 @@
 // =============================================================================
 
 #include "omni_ide_gui.h"
-#include "ide/core/omni_screenshot.h"         // Session screenshots
+#include "screenshot.h"                        // Shared screenshot module
 #include "engine/platform/common/platform.h"  // Platform layer for GUI
 #include "engine/graphics/include/renderer.h" // Renderer for GUI
 #include <stdio.h>
@@ -32,10 +32,12 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
-#include <signal.h>
 
-// Signal flag for clean shutdown (defined in omni_ide_main.c)
-extern volatile sig_atomic_t g_shutdown_requested;
+// Shared signal handling (full suite - shared with cornerstone engine)
+#include "signals.h"  // signals_is_running
+
+// CPI-SI state-aware logging
+#include "kernel/cpisi/dar/detect.h"
 
 // =============================================================================
 // END SETUP
@@ -579,8 +581,13 @@ static void ide_gui_recalc_layout(IDEGUI* gui) {
 // -----------------------------------------------------------------------------
 
 IDEGUI* ide_gui_create(IDEBuffer* buffer) {
+    LOG_DEBUG("ide-gui", "Creating GUI instance");
+
     IDEGUI* gui = malloc(sizeof(IDEGUI));
-    if (!gui) return NULL;
+    if (!gui) {
+        LOG_ERROR("ide-gui", "Failed to allocate GUI structure");
+        return NULL;
+    }
 
     memset(gui, 0, sizeof(IDEGUI));
     gui->buffer = buffer;
@@ -609,7 +616,7 @@ IDEGUI* ide_gui_create(IDEBuffer* buffer) {
     if (gui->platform_initialized) {
         RendererError rerr = renderer_init(pconfig.width, pconfig.height);
         if (rerr != RENDERER_OK) {
-            fprintf(stderr, "[IDE] Renderer init failed, falling back to TUI\n");
+            LOG_WARN("ide", "Renderer init failed, falling back to TUI");
             platform_shutdown();
             gui->platform_initialized = false;
         }
@@ -652,15 +659,21 @@ IDEGUI* ide_gui_create(IDEBuffer* buffer) {
 
     ide_gui_set_status(gui, "OmniCode IDE | F1: Menu | Ctrl+S: Save | Ctrl+Q: Quit");
 
+    LOG_INFO("ide-gui", "GUI created: %dx%d, platform=%s",
+             gui->screen_cols, gui->screen_rows,
+             gui->platform_initialized ? "initialized" : "fallback");
+
     return gui;
 }
 
 void ide_gui_destroy(IDEGUI* gui) {
     if (!gui) return;
 
+    LOG_DEBUG("ide-gui", "Destroying GUI instance");
+
     // Capture screenshot of last known state before shutdown
     if (gui->platform_initialized) {
-        screenshot_gui("shutdown");
+        screenshot_capture("shutdown");
     }
 
     display_shutdown();
@@ -673,6 +686,8 @@ void ide_gui_destroy(IDEGUI* gui) {
 
     ide_diagnostics_free(gui->diags);
     free(gui);
+
+    LOG_INFO("ide-gui", "GUI destroyed");
 }
 
 // -----------------------------------------------------------------------------
@@ -953,6 +968,8 @@ void ide_gui_handle_key(IDEGUI* gui, DisplayKey key) {
     if (!gui || !gui->buffer) return;
 
     IDEBuffer* buf = gui->buffer;
+
+    LOG_TRACE("ide-gui", "Key event: key=%d, focus=%d", (int)key, (int)gui->focus);
 
     // Handle CLI keys first if CLI is focused
     if (gui->focus == GUI_FOCUS_CLI) {
@@ -1426,7 +1443,7 @@ void ide_gui_run(IDEGUI* gui) {
         }
     }
 
-    while (gui->running && display_is_running() && !g_shutdown_requested) {
+    while (gui->running && display_is_running() && signals_is_running()) {
         if (gui->needs_redraw) {
             ide_gui_draw(gui);
         }

@@ -68,6 +68,15 @@ type Session struct {
 	// Temporal patterns
 	DayOfWeek int // 0=Sunday
 	HourOfDay int // 0-23
+
+	// CPI Tracking (Covenant Partnership Intelligence)
+	// "By their fruits ye shall know them" — Matthew 7:20
+	ExchangeCount        int     // Total exchanges this session
+	InsightCount         int     // Understanding transfer moments
+	CPIScore             float64 // 0.0-1.0 relationship quality
+	DominantExchangeType string  // Most common exchange type
+	SessionArc           string  // learning, execution, creative, etc.
+	NarrativeSummary     string  // Generated narrative of the session
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -286,6 +295,16 @@ type Repository interface {
 
 	// Migrate runs pending migrations
 	Migrate(ctx context.Context) error
+
+	// ─────────────────────────────────────────────────────────────────────
+	// Raw SQL (for extensions and migrations)
+	// ─────────────────────────────────────────────────────────────────────
+
+	// Exec executes a raw SQL statement (for CPI tracking extensions)
+	Exec(ctx context.Context, query string, args ...interface{}) (int64, error)
+
+	// Query executes a raw SQL query and returns rows (for CPI tracking extensions)
+	Query(ctx context.Context, query string, args ...interface{}) ([]map[string]interface{}, error)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

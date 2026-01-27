@@ -30,6 +30,9 @@
 #include <sys/types.h>
 #include <errno.h>
 
+// CPI-SI state-aware logging
+#include "kernel/cpisi/dar/detect.h"
+
 #ifdef IDE_GUI_ENABLED
 #include "engine/platform/common/platform.h"
 #endif
@@ -118,7 +121,7 @@ int screenshot_gui(const char* label) {
     // Create directory: build/screenshots/gui/YYYY-MM-DD/
     snprintf(dir_path, sizeof(dir_path), "%s/gui/%s", SCREENSHOT_BASE, date_dir);
     if (ensure_directory(dir_path) != 0) {
-        fprintf(stderr, "[SCREENSHOT] Failed to create directory: %s\n", dir_path);
+        LOG_ERROR("screenshot", "Failed to create directory: %s", dir_path);
         return -1;
     }
 
@@ -131,7 +134,7 @@ int screenshot_gui(const char* label) {
 
     // Capture using platform screenshot
     if (platform_screenshot(file_path) == 0) {
-        fprintf(stderr, "[SCREENSHOT] GUI saved: %s\n", file_path);
+        LOG_INFO("screenshot", "GUI saved: %s", file_path);
 
         // Also save as "last-session.png" for quick access
         char last_path[512];
@@ -142,7 +145,7 @@ int screenshot_gui(const char* label) {
         return 0;
     }
 
-    fprintf(stderr, "[SCREENSHOT] GUI capture failed\n");
+    LOG_ERROR("screenshot", "GUI capture failed");
     return -1;
 }
 #endif
@@ -165,7 +168,7 @@ int screenshot_tui(const char* label) {
     // Create directory: build/screenshots/tui/YYYY-MM-DD/
     snprintf(dir_path, sizeof(dir_path), "%s/tui/%s", SCREENSHOT_BASE, date_dir);
     if (ensure_directory(dir_path) != 0) {
-        fprintf(stderr, "[SCREENSHOT] Failed to create directory: %s\n", dir_path);
+        LOG_ERROR("screenshot", "Failed to create directory: %s", dir_path);
         return -1;
     }
 
@@ -179,7 +182,7 @@ int screenshot_tui(const char* label) {
     // Capture screen content
     FILE* fp = fopen(file_path, "w");
     if (!fp) {
-        fprintf(stderr, "[SCREENSHOT] Failed to open: %s\n", file_path);
+        LOG_ERROR("screenshot", "Failed to open: %s", file_path);
         return -1;
     }
 
@@ -211,7 +214,7 @@ int screenshot_tui(const char* label) {
     }
 
     fclose(fp);
-    fprintf(stderr, "[SCREENSHOT] TUI saved: %s\n", file_path);
+    LOG_INFO("screenshot", "TUI saved: %s", file_path);
 
     // Also save as "last-session.txt" for quick access
     char last_path[512];
@@ -270,7 +273,7 @@ int screenshot_cli(const char* label) {
         fprintf(fp, "CLI Session ended: %s\n", timestamp);
         if (label) fprintf(fp, "Label: %s\n", label);
         fclose(fp);
-        fprintf(stderr, "[SCREENSHOT] CLI session logged: %s\n", file_path);
+        LOG_INFO("screenshot", "CLI session logged: %s", file_path);
         return 0;
     }
 

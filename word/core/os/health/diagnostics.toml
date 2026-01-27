@@ -527,6 +527,60 @@ text = """
 """
 
 
+# -----------------------------------------------------------------------------
+# 8. System Limits - C Implementation Constants
+# -----------------------------------------------------------------------------
+# These limits define debug levels, hotspot tracking, and analysis settings.
+# C code derives #define constants from these values.
+#
+# Scripture: "Examine yourselves, whether ye be in the faith" — 2 Corinthians 13:5
+
+[system]
+description = "System limits for C implementation - source of truth for cpisi_types.h"
+
+[system.debug_levels]
+# Debug/diagnostics verbosity levels
+#   0 = OFF     — No diagnostics
+#   1 = BASIC   — Essential diagnostics only
+#   2 = VERBOSE — Detailed diagnostics
+#   3 = FULL    — Complete diagnostic output
+#   4 = TRACE   — Everything including internal state
+off     = 0
+basic   = 1
+verbose = 2
+full    = 3
+trace   = 4
+max     = 4   # Maximum debug level
+
+[system.behaviors]
+# Diagnostic behavior flags (default values)
+break_on_assert = true    # Break into debugger on assertion failure
+break_on_error  = false   # Break into debugger on LOG_ERROR
+track_memory    = false   # Track allocations (slow)
+check_bounds    = false   # Check array bounds (slow)
+trace_calls     = false   # Trace function calls (very slow)
+dump_on_exit    = false   # Dump diagnostic info when shutting down
+
+[system.analysis]
+# Analysis settings for breakdown and hotspot detection
+hotspot_count        = 5      # Number of hotspots to identify
+breakdown_by_source  = true   # Enable analysis by source category
+breakdown_by_action  = true   # Enable analysis by action type
+breakdown_by_time    = false  # Enable analysis by time period (expensive)
+
+[system.type_counts]
+# Enum counts for array sizing and validation
+detect_type_count  = 7   # Number of detect types (test, lint, build, etc.)
+severity_count     = 5   # Number of severity levels (info, minor, moderate, major, critical)
+health_level_count = 7   # Number of health levels (broken through perfect)
+
+[system.buffers]
+# Buffer sizes for diagnostic output
+report_line_max   = 256  # Maximum line length in diagnostic report
+source_name_max   = 64   # Maximum source name in breakdown
+category_max      = 32   # Maximum category name length
+
+
 # =============================================================================
 # END CONTENT
 # =============================================================================

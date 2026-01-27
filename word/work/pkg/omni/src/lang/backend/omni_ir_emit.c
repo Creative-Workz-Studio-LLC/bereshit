@@ -41,6 +41,9 @@
 #include "omni_parser.h"
 #include "omni_lib.h"
 
+// CPI-SI state-aware logging
+#include "kernel/cpisi/dar/detect.h"
+
 // Safe copy with explicit null termination (truncation is intentional)
 static void safe_copy(char* dest, size_t dest_size, const char* src) {
     if (!dest || !src || dest_size == 0) return;
@@ -483,7 +486,7 @@ static void emit_intrinsic_stmt(OmniIREmitter* emit, OmniAstNode* node) {
 
     uint8_t opcode = intrinsic_opcode(node->value);
     if (opcode == 0) {
-        fprintf(stderr, "IR emit: unknown intrinsic '%s'\n", node->value);
+        LOG_ERROR("ir_emit", "Unknown intrinsic '%s'", node->value);
         return;
     }
 
@@ -518,7 +521,7 @@ static void emit_import_stmt(OmniIREmitter* emit, OmniAstNode* node) {
     // node->secondary = import path (e.g., "stdlib/math")
 
     if (emit->import_count >= 32) {
-        fprintf(stderr, "IR emit: too many imports\n");
+        LOG_ERROR("ir_emit", "Too many imports");
         return;
     }
 

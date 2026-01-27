@@ -113,7 +113,7 @@
 // ────────────────────────────────────────────────────────────────
 
 //--- Project Headers ---
-#include "math.h"  // Function prototypes (includes trit.h)
+#include "trit_math.h"  // Function prototypes (includes trit.h)
 #include "generated/ternary_math.gen.h"  // Generated arithmetic tables
 
 //--- Standard Library ---

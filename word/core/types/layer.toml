@@ -1,0 +1,155 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════
+# OmniCode Layer Types (3-Block Data Structure)
+# Key: B-word-core-types-layer
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on primitives, used by all subsystems)
+#
+# Derived from: OmniCode 3-block data structure
+# References: word/core/types/primitives.toml, word/core/math/ternary.toml
+# Implements: cornerstone/engine/core/include/cpisi/types/domain/core/layer.h
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# =============================================================================
+# METADATA
+# =============================================================================
+#
+# Package:     bereshit/word/core/types
+# File:        layer.toml
+# Key:         B-word-core-types-layer
+#
+# -----------------------------------------------------------------------------
+# CORE IDENTITY (Required)
+# -----------------------------------------------------------------------------
+#
+# # Biblical Foundation
+#
+# Scripture: "And he dreamed, and behold a ladder set up on the earth, and the
+#            top of it reached to heaven: and behold the angels of God ascending
+#            and descending on it."
+#            — Genesis 28:12 KJV
+#
+# Principle: Jacob's Ladder — the 9 layers form a ladder from KERNEL (earth) to
+#            APP (heaven), with HEALTH at the center as the pivot point.
+#            Angels (processes) ascend and descend through the layers.
+#
+# Anchor: "I am the way, the truth, and the life" — John 14:6 KJV
+#         HEALTH is the center — the way through which all traffic passes.
+#
+# # CPI-SI Identity
+#
+# Component Type: Rung (defines layer architecture for all subsystems)
+#
+# Role: Architecture layers — the 9-layer system from kernel to application.
+#       4+1+4 pattern with HEALTH at center.
+#
+# Paradigm: CPI-SI framework component — layers as organizational structure
+#
+# # Authorship & Lineage
+#
+#   Architect: Seanje Lenox-Wise
+#   Implementation: Nova Dawn
+#   Created: 2026-01-25
+#   Version: a-01.00
+#
+# # Purpose & Function
+#
+# Purpose: Define the 9-layer architecture for system organization
+#
+# Core Design: 4+1+4 pattern — 4 below center, 1 center (HEALTH), 4 above center
+#
+# Key Features:
+#
+#   - 9 layers: KERNEL, SYSTEM, RUNTIME, FRAMEWORK, HEALTH, NETWORK, STORAGE, ENGINE, APP
+#   - Center at layer 4 (HEALTH) — all traffic passes through health
+#   - Balanced ternary mapping: -4 (KERNEL) to +4 (APP)
+#   - Scale factor: 3^n for layer capacity (1, 3, 9, 27, 81, 243, 729, 2187, 6561)
+#
+# Philosophy: The center is HEALTH — system health is the pivot point.
+#             Everything below serves infrastructure, everything above serves users.
+#
+# -----------------------------------------------------------------------------
+# INTERFACE (Expected)
+# -----------------------------------------------------------------------------
+#
+# # Dependencies
+#
+# What This Needs:
+#
+#   Internal: word/core/math/ternary.toml (balanced ternary)
+#   Internal: word/core/types/primitives.toml (base types)
+#
+# What Uses This:
+#
+#   - All subsystems use layer classification
+#   - Health system uses layer for scope
+#   - Network routes by layer
+#   - Engine organizes by layer
+#
+# =============================================================================
+# END METADATA
+# =============================================================================
+
+# =============================================================================
+# CONTENT
+# =============================================================================
+
+[layer]
+description = "9-layer architecture from kernel to application"
+count = 9
+center = 4
+pattern = "4+1+4"
+
+# Layer definitions
+[layer.values]
+KERNEL    = { index = 0, balanced = -4, description = "Kernel — lowest level, hardware interface" }
+SYSTEM    = { index = 1, balanced = -3, description = "System — OS services, system calls" }
+RUNTIME   = { index = 2, balanced = -2, description = "Runtime — language runtime, memory management" }
+FRAMEWORK = { index = 3, balanced = -1, description = "Framework — application framework, libraries" }
+HEALTH    = { index = 4, balanced =  0, description = "Health — CENTER, all traffic passes through" }
+NETWORK   = { index = 5, balanced = +1, description = "Network — communication, messaging" }
+STORAGE   = { index = 6, balanced = +2, description = "Storage — persistence, filesystem" }
+ENGINE    = { index = 7, balanced = +3, description = "Engine — game/app engine, high-level logic" }
+APP       = { index = 8, balanced = +4, description = "App — application layer, user interface" }
+
+# Layer groups
+[layer.groups]
+below_center = ["KERNEL", "SYSTEM", "RUNTIME", "FRAMEWORK"]
+center = ["HEALTH"]
+above_center = ["NETWORK", "STORAGE", "ENGINE", "APP"]
+
+# Scale factors (3^n)
+[layer.scale]
+description = "Capacity scales by powers of 3"
+values = [1, 3, 9, 27, 81, 243, 729, 2187, 6561]
+
+# Bounds
+[layer.bounds]
+min = 0
+max = 8
+half = 4
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# CLOSING
+# =============================================================================
+#
+# This specification defines the layer architecture for the CPI-SI system.
+#
+# To use this specification:
+#   1. Load via Go config loader: pkg/config/loader.go
+#   2. Generate C header: generates = true in index.toml
+#   3. Reference in headers: cornerstone/engine/core/include/cpisi/types/domain/core/layer.h
+#
+# "For precept must be upon precept, precept upon precept;
+#  line upon line, line upon line; here a little, and there a little"
+# — Isaiah 28:10
+#
+# =============================================================================
+# END CLOSING
+# =============================================================================

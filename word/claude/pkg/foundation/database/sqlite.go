@@ -118,7 +118,8 @@ func (r *SQLiteRepository) CreateSession(ctx context.Context, session *Session) 
 	return err
 }
 
-// EndSession marks a session as complete with final state
+// EndSession marks a session as complete with final state and CPI summary
+// "By their fruits ye shall know them" — Matthew 7:20
 func (r *SQLiteRepository) EndSession(ctx context.Context, sessionID string, finalState *Session) error {
 	query := `
 		UPDATE sessions SET
@@ -127,7 +128,13 @@ func (r *SQLiteRepository) EndSession(ctx context.Context, sessionID string, fin
 			final_k_align = ?,
 			final_cube_position = ?,
 			tool_count = ?,
-			choice_count = ?
+			choice_count = ?,
+			exchange_count = ?,
+			insight_count = ?,
+			cpi_score = ?,
+			dominant_exchange_type = ?,
+			session_arc = ?,
+			narrative_summary = ?
 		WHERE id = ?
 	`
 	_, err := r.db.ExecContext(ctx, query,
@@ -137,6 +144,12 @@ func (r *SQLiteRepository) EndSession(ctx context.Context, sessionID string, fin
 		finalState.FinalCubePosition,
 		finalState.ToolCount,
 		finalState.ChoiceCount,
+		finalState.ExchangeCount,
+		finalState.InsightCount,
+		finalState.CPIScore,
+		finalState.DominantExchangeType,
+		finalState.SessionArc,
+		finalState.NarrativeSummary,
 		sessionID,
 	)
 	return err
@@ -815,6 +828,70 @@ func (r *SQLiteRepository) GetAverageGapDuration(ctx context.Context) (time.Dura
 	}
 
 	return time.Duration(avgHours.Float64 * float64(time.Hour)), nil
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BODY - Raw SQL Operations (for CPI tracking extensions)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Exec executes a raw SQL statement and returns the number of rows affected
+// Used for CPI tracking extensions (exchanges, insights) that aren't part of core interface
+func (r *SQLiteRepository) Exec(ctx context.Context, query string, args ...interface{}) (int64, error) {
+	result, err := r.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("exec: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("rows affected: %w", err)
+	}
+
+	return rowsAffected, nil
+}
+
+// Query executes a raw SQL query and returns rows as maps
+// Used for CPI tracking extensions that need flexible schema access
+func (r *SQLiteRepository) Query(ctx context.Context, query string, args ...interface{}) ([]map[string]interface{}, error) {
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("query: %w", err)
+	}
+	defer rows.Close()
+
+	// Get column names
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, fmt.Errorf("columns: %w", err)
+	}
+
+	// Build result set
+	var results []map[string]interface{}
+	for rows.Next() {
+		// Create slice of interface{} to scan into
+		values := make([]interface{}, len(columns))
+		valuePtrs := make([]interface{}, len(columns))
+		for i := range values {
+			valuePtrs[i] = &values[i]
+		}
+
+		if err := rows.Scan(valuePtrs...); err != nil {
+			return nil, fmt.Errorf("scan: %w", err)
+		}
+
+		// Build map for this row
+		row := make(map[string]interface{})
+		for i, col := range columns {
+			row[col] = values[i]
+		}
+		results = append(results, row)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+
+	return results, nil
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

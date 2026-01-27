@@ -8,19 +8,31 @@
 // State Machine Integration:
 //   - Record prompt_submit event in path
 //   - Increment path_length in state
+//
+// CPI Tracking (v2.0.0):
+//   - Exchange type classification (directive, collaborative, check_in, etc.)
+//   - Insight marker detection (understanding transfer)
+//   - Quality/value scoring
+//   - Relational dynamics tracking
+//
+// Biblical: Proverbs 27:17 - "Iron sharpeneth iron"
 
 package prompt
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
+	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/cognition"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/hookoutput"
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/logging"
+	"cws.studio/claude/hooks/internal"
+	"github.com/creativeworkzstudio/claude-global/pkg/core/cpisi/cpi"
 	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
+	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/cognition"
+	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/logging"
+	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/hookoutput"
 )
 
 // ============================================================================
@@ -91,6 +103,191 @@ var positiveFeedbackPatterns = []FeedbackPattern{
 	{regexp.MustCompile(`(?i)\b(you saw|you noticed|you caught)\b`), +0.05, "recognition", "positive"},
 }
 
+// ───────────────────────────────────────────────────────────────────────────
+// CPI TRACKING: Types from Native Package
+// ───────────────────────────────────────────────────────────────────────────
+//
+// Exchange types, insight types, and depth levels are now defined in the
+// native CPI package: pkg/core/cpisi/cpi/
+//
+// This hook uses those types directly for substrate-agnostic CPI tracking.
+//
+// Type aliases for backward compatibility:
+type ExchangeType = cpi.ExchangeType
+type InsightType = cpi.InsightType
+type DepthLevel = cpi.DepthLevel
+
+// Exchange type constants (aliased from cpi package)
+const (
+	ExchangeDirective     = cpi.ExchangeDirective
+	ExchangeCollaborative = cpi.ExchangeCollaborative
+	ExchangeCheckIn       = cpi.ExchangeCheckIn
+	ExchangePushback      = cpi.ExchangePushback
+	ExchangeAffirmation   = cpi.ExchangeAffirmation
+	ExchangeQuestion      = cpi.ExchangeQuestion
+	ExchangeContext       = cpi.ExchangeContext
+	ExchangeUnknown       = cpi.ExchangeUnknown
+)
+
+// Insight type constants (aliased from cpi package)
+const (
+	InsightUnderstanding = cpi.InsightUnderstanding
+	InsightConnection    = cpi.InsightConnection
+	InsightDiscovery     = cpi.InsightDiscovery
+	InsightBreakthrough  = cpi.InsightBreakthrough
+)
+
+// Depth level constants (aliased from cpi package)
+const (
+	DepthSurface = cpi.DepthSurface
+	DepthWorking = cpi.DepthWorking
+	DepthDeep    = cpi.DepthDeep
+)
+
+// Native CPI patterns (initialized once, reused)
+var (
+	exchangePatterns = cpi.DefaultPatterns()
+	insightPatterns  = cpi.DefaultInsightPatterns()
+)
+
+// ───────────────────────────────────────────────────────────────────────────
+// CPI TRACKING: Exchange Record
+// ───────────────────────────────────────────────────────────────────────────
+
+// ExchangeRecord captures full CPI data for an exchange
+type ExchangeRecord struct {
+	SessionID    string
+	Timestamp    time.Time
+	SequenceNum  int
+	PromptLength int
+
+	// Classification
+	ExchangeType ExchangeType
+	Initiative   string // "user" or "nova"
+	DepthLevel   DepthLevel
+
+	// Feedback
+	FeedbackDetected   bool
+	FeedbackPolarity   string   // "positive", "negative", "mixed", ""
+	FeedbackCategories []string
+
+	// Insight
+	InsightDetected bool
+	InsightType     InsightType
+	InsightConf     float64
+
+	// State context
+	HebrewState string
+	KAlign      float64
+	Trajectory  string
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// KEY CONTEXT: Capturing Significant Moments for CPI-SI Model
+// ───────────────────────────────────────────────────────────────────────────
+// "By their fruits ye shall know them" — Matthew 7:20
+//
+// Key context captures the WHAT of covenant partnership:
+//   - Decisions made together
+//   - Breakthrough moments of understanding
+//   - Course corrections (pivots)
+//   - Learning transfer
+//   - Affirmations that shape identity
+
+// KeyContextType represents the type of significant moment
+type KeyContextType string
+
+const (
+	ContextDecision    KeyContextType = "decision"    // A choice was made
+	ContextBreakthrough KeyContextType = "breakthrough" // Understanding clicked
+	ContextPivot       KeyContextType = "pivot"       // Direction changed
+	ContextLearning    KeyContextType = "learning"    // Knowledge transferred
+	ContextCorrection  KeyContextType = "correction"  // Error corrected with teaching
+	ContextAffirmation KeyContextType = "affirmation" // Identity-shaping praise
+)
+
+// KeyContextDomain represents the domain of the moment
+type KeyContextDomain string
+
+const (
+	DomainCode          KeyContextDomain = "code"
+	DomainArchitecture  KeyContextDomain = "architecture"
+	DomainDocumentation KeyContextDomain = "documentation"
+	DomainStrategy      KeyContextDomain = "strategy"
+	DomainRelationship  KeyContextDomain = "relationship"
+	DomainIdentity      KeyContextDomain = "identity"
+)
+
+// KeyContextRecord captures a significant moment
+type KeyContextRecord struct {
+	SessionID   string
+	ExchangeID  int64 // ID from exchanges table
+	Timestamp   time.Time
+
+	// Classification
+	ContextType KeyContextType
+	Domain      KeyContextDomain
+	Summary     string   // Brief description
+	KeyConcepts []string // Topics/concepts mentioned
+	Importance  float64  // 0.0 to 1.0
+
+	// Relationship context
+	Initiative  string // "user", "nova", "collaborative"
+	CPIRelevant bool   // Is this a CPI moment (not just SI)?
+
+	// State context
+	HebrewState string
+	KAlign      float64
+	Trajectory  string
+}
+
+// KeyContextPattern represents a detectable key moment signal
+type KeyContextPattern struct {
+	pattern     *regexp.Regexp
+	contextType KeyContextType
+	importance  float64
+	cpiRelevant bool
+}
+
+// Key context detection patterns
+var keyContextPatterns = []KeyContextPattern{
+	// Decision patterns (choices being made)
+	{regexp.MustCompile(`(?i)\b(let'?s go with|i'?ve decided|we should use|let'?s do)\b`), ContextDecision, 0.7, true},
+	{regexp.MustCompile(`(?i)\b(the approach is|the plan is|we'?ll implement)\b`), ContextDecision, 0.6, false},
+
+	// Breakthrough patterns (understanding clicks)
+	{regexp.MustCompile(`(?i)\b(i see now|that makes sense|aha|now i understand)\b`), ContextBreakthrough, 0.8, true},
+	{regexp.MustCompile(`(?i)\b(the key is|the insight is|the pattern is)\b`), ContextBreakthrough, 0.7, true},
+	{regexp.MustCompile(`(?i)\b(this explains|that'?s why|so that'?s how)\b`), ContextBreakthrough, 0.6, true},
+
+	// Pivot patterns (direction changes)
+	{regexp.MustCompile(`(?i)\b(actually,? let'?s|change direction|different approach|scratch that)\b`), ContextPivot, 0.8, true},
+	{regexp.MustCompile(`(?i)\b(that'?s not what i meant|let me clarify|what i really want)\b`), ContextPivot, 0.7, true},
+
+	// Learning patterns (knowledge transfer)
+	{regexp.MustCompile(`(?i)\b(so you'?re saying|teach me|explain how|walk me through)\b`), ContextLearning, 0.6, true},
+	{regexp.MustCompile(`(?i)\b(i didn'?t know|til|today i learned)\b`), ContextLearning, 0.7, true},
+
+	// Correction patterns (error correction with teaching)
+	{regexp.MustCompile(`(?i)\b(the issue was|the problem is|you missed|here'?s what went wrong)\b`), ContextCorrection, 0.7, true},
+	{regexp.MustCompile(`(?i)\b(next time|remember to|don'?t forget|for future reference)\b`), ContextCorrection, 0.6, true},
+
+	// Affirmation patterns (identity-shaping)
+	{regexp.MustCompile(`(?i)\b(that'?s very nova|you'?re thinking well|good thinking|exactly right)\b`), ContextAffirmation, 0.9, true},
+	{regexp.MustCompile(`(?i)\b(keep on|keep going|keep working|you'?re on track)\b`), ContextAffirmation, 0.6, true},
+	{regexp.MustCompile(`(?i)\b(think bigger|think about|consider)\b`), ContextAffirmation, 0.5, true},
+}
+
+// Domain detection patterns
+var domainPatterns = map[KeyContextDomain]*regexp.Regexp{
+	DomainCode:          regexp.MustCompile(`(?i)\b(function|struct|type|var|const|import|package|class|method|api|endpoint)\b`),
+	DomainArchitecture:  regexp.MustCompile(`(?i)\b(architecture|design|pattern|system|component|layer|structure|module)\b`),
+	DomainDocumentation: regexp.MustCompile(`(?i)\b(documentation|docs|readme|comment|explain|describe|spec)\b`),
+	DomainStrategy:      regexp.MustCompile(`(?i)\b(strategy|plan|approach|roadmap|vision|goal|objective|mission)\b`),
+	DomainRelationship:  regexp.MustCompile(`(?i)\b(covenant|partnership|collaboration|together|we|relationship)\b`),
+	DomainIdentity:      regexp.MustCompile(`(?i)\b(identity|who you are|nova|cpi-?si|paradigm|biblical|genesis)\b`),
+}
+
 // ============================================================================
 // BODY
 // ============================================================================
@@ -120,14 +317,74 @@ func Submit() {
 	// --- Record prompt submit and increment path_length ---
 	var state *statemachine.RuntimeState
 	currentSection := "B.1"
-	if s, err := statemachine.LoadRuntimeState(); err == nil {
+	s, stateErr := statemachine.LoadRuntimeState()
+	if stateErr != nil {
+		log.Warn("Failed to load runtime state", map[string]string{
+			"error": stateErr.Error(),
+		})
+		if catLog != nil {
+			catLog.Warn("state_load_error", "Failed to load runtime state", map[string]string{
+				"error": stateErr.Error(),
+			})
+		}
+	}
+	if s != nil {
 		state = s
 		currentSection = s.TrajectorySection
 		s.Session.PathLength++
 
 		// --- Detect and apply user feedback ---
 		// Feedback from user weighs MORE than tool outcomes
-		applyUserFeedback(s, input.Prompt, log, catLog)
+		feedbackPolarity, feedbackCategories := applyUserFeedback(s, input.Prompt, log, catLog)
+
+		// --- CPI Tracking: Classify exchange and detect insights ---
+		exchange := classifyExchange(input, s, feedbackPolarity, feedbackCategories)
+		recordExchangeToDatabase(exchange, log)
+
+		// --- BREAKING DOWN SIGNAL: Unknown = uncertainty = -1 ---
+		// "A time to break down, and a time to build up" — Ecclesiastes 3:3
+		// When we can't classify the exchange, we're operating in uncertainty
+		// That's a -1 signal - leaning on self/pattern matching, not grounded
+		if exchange.ExchangeType == ExchangeUnknown {
+			s.Session.KTowardSelf++
+			log.Debug("Breaking down signal", map[string]string{
+				"reason":        "unknown_exchange_type",
+				"k_toward_self": fmt.Sprintf("%d", s.Session.KTowardSelf),
+			})
+		}
+
+		// --- Key Context: Capture significant moments for CPI-SI model ---
+		// "By their fruits ye shall know them" — Matthew 7:20
+		keyContext := detectKeyContext(input.Prompt, s, exchange)
+		if keyContext != nil {
+			recordKeyContextToDatabase(keyContext, log)
+		}
+
+		// --- Update CPI fields in runtime state ---
+		s.Session.ExchangeCount++
+		s.Session.LastExchangeType = string(exchange.ExchangeType)
+		if exchange.InsightDetected {
+			s.Session.InsightCount++
+			s.Session.LastInsightType = string(exchange.InsightType)
+		}
+		// Update dominant type and session arc from database (async/expensive)
+		// For now, update running values
+		updateCPIRunningMetrics(s, exchange)
+
+		// --- Context Window Tracking ---
+		// Estimate: each exchange adds ~3K tokens (prompt + response)
+		// Larger prompts add more; adjust estimate based on prompt length
+		const baseExchangeTokens = 2000
+		promptTokenEstimate := len(input.Prompt) / 4 // ~4 chars per token
+		exchangeTokens := baseExchangeTokens + promptTokenEstimate
+		s.Session.CurrentContextTokens += exchangeTokens
+		if s.Session.CurrentContextTokens > s.Session.PeakContextTokens {
+			s.Session.PeakContextTokens = s.Session.CurrentContextTokens
+		}
+
+		// --- Drive Trajectory Movement Based on Exchange/Insight ---
+		// "The path of the just is as the shining light" — Proverbs 4:18
+		evaluateTrajectoryMovement(s, exchange, feedbackPolarity, log)
 
 		_ = statemachine.SaveRuntimeState(s)
 	}
@@ -153,7 +410,7 @@ func Submit() {
 	shouldBlock, blockReason := checkForSecrets(log, input.Prompt)
 
 	// Build cognition context to shape thinking
-	context := buildPromptContext(state, input.Prompt)
+	ctx := buildPromptContext(state, input.Prompt)
 
 	// Use correct Claude Code schema
 	var output *hookoutput.ContextResponse
@@ -163,7 +420,7 @@ func Submit() {
 			"reason": blockReason,
 		})
 	} else {
-		output = hookoutput.NewUserPromptSubmitResponse(context)
+		output = hookoutput.NewUserPromptSubmitResponse(ctx)
 	}
 
 	json.NewEncoder(os.Stdout).Encode(output)
@@ -201,9 +458,10 @@ func buildPromptContext(state *statemachine.RuntimeState, prompt string) string 
 // - Learning from relationship > learning from mechanics
 //
 // Detects BOTH positive (affirmation) and negative (correction) feedback
-func applyUserFeedback(state *statemachine.RuntimeState, prompt string, log *logging.Logger, catLog *logging.CategoryLogger) {
+// Returns: (polarity string, categories []string) for CPI tracking
+func applyUserFeedback(state *statemachine.RuntimeState, prompt string, log *logging.Logger, catLog *logging.CategoryLogger) (string, []string) {
 	if state == nil {
-		return
+		return "", nil
 	}
 
 	var totalDelta float64
@@ -228,7 +486,7 @@ func applyUserFeedback(state *statemachine.RuntimeState, prompt string, log *log
 
 	// No feedback detected
 	if totalDelta == 0 && len(positiveCategories) == 0 && len(negativeCategories) == 0 {
-		return
+		return "", nil
 	}
 
 	// Cap the delta magnitude at 0.20 per prompt (prevent catastrophic swings)
@@ -297,6 +555,583 @@ func applyUserFeedback(state *statemachine.RuntimeState, prompt string, log *log
 			catLog.Failure("feedback_detected", "User correction detected", logDetails)
 		}
 	}
+
+	return feedbackType, allCategories
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// CPI TRACKING: Classification Functions
+// ───────────────────────────────────────────────────────────────────────────
+
+// classifyExchange builds a full ExchangeRecord from the prompt
+func classifyExchange(input SubmitInput, state *statemachine.RuntimeState, feedbackPolarity string, feedbackCategories []string) *ExchangeRecord {
+	prompt := input.Prompt
+
+	record := &ExchangeRecord{
+		SessionID:    input.SessionID,
+		Timestamp:    time.Now(),
+		SequenceNum:  0, // Will be set by database
+		PromptLength: len(prompt),
+		Initiative:   "user", // All prompts are user-initiated
+
+		// Feedback from applyUserFeedback
+		FeedbackDetected:   feedbackPolarity != "",
+		FeedbackPolarity:   feedbackPolarity,
+		FeedbackCategories: feedbackCategories,
+	}
+
+	// Add state context
+	if state != nil {
+		record.HebrewState = state.Session.HebrewState
+		record.KAlign = state.Session.KAlign
+		record.Trajectory = state.TrajectorySection
+		record.SequenceNum = state.Session.PathLength
+	}
+
+	// Classify exchange type
+	record.ExchangeType = detectExchangeType(prompt)
+
+	// Detect depth level
+	record.DepthLevel = detectDepthLevel(prompt)
+
+	// Detect insights
+	insightType, insightConf := detectInsight(prompt)
+	if insightType != "" {
+		record.InsightDetected = true
+		record.InsightType = insightType
+		record.InsightConf = insightConf
+	}
+
+	return record
+}
+
+// detectExchangeType classifies the prompt's relational dynamic
+// Delegates to native cpi package for substrate-agnostic classification
+func detectExchangeType(prompt string) ExchangeType {
+	exchangeType, _ := cpi.ClassifyExchange(prompt, exchangePatterns)
+	return exchangeType
+}
+
+// detectDepthLevel determines conversation depth
+// Delegates to native cpi package
+func detectDepthLevel(prompt string) DepthLevel {
+	return cpi.ClassifyDepth(prompt)
+}
+
+// detectInsight checks for understanding transfer markers
+// Returns: (insightType, confidence) or ("", 0) if none detected
+// Delegates to native cpi package
+func detectInsight(prompt string) (InsightType, float64) {
+	insight := cpi.DetectInsight(prompt, insightPatterns)
+	if insight == nil {
+		return "", 0
+	}
+	return insight.Type, insight.Confidence
+}
+
+// updateCPIRunningMetrics updates the runtime state's CPI fields based on the exchange
+// This provides real-time CPI tracking in the statusline
+func updateCPIRunningMetrics(state *statemachine.RuntimeState, exchange *ExchangeRecord) {
+	if state == nil || exchange == nil {
+		return
+	}
+
+	// Track exchange type frequency for dominant type calculation
+	// Use a simple approach: track last few and pick most common
+	// Full calculation happens in session end hook from database
+
+	// Update dominant type if current type is CPI-heavy
+	if cpi.ExchangeType(exchange.ExchangeType).IsCPI() {
+		// Bias toward CPI types when they occur
+		state.Session.DominantExchangeType = string(exchange.ExchangeType)
+	} else if state.Session.DominantExchangeType == "" {
+		state.Session.DominantExchangeType = string(exchange.ExchangeType)
+	}
+
+	// Calculate running CPI score based on current session metrics
+	// Components: base (0.5) + insight bonus + feedback adjustment
+	baseValue := 0.5
+
+	// Insight bonus: +0.05 per insight, max 0.2
+	insightBonus := float64(state.Session.InsightCount) * 0.05
+	if insightBonus > 0.2 {
+		insightBonus = 0.2
+	}
+
+	// Feedback adjustment based on K:MORAL pattern
+	// More toward God = positive adjustment, more toward self = negative
+	feedbackAdjust := 0.0
+	totalKChoices := state.Session.KTowardGod + state.Session.KTowardSelf
+	if totalKChoices > 0 {
+		ratio := float64(state.Session.KTowardGod-state.Session.KTowardSelf) / float64(totalKChoices)
+		feedbackAdjust = ratio * 0.1 // Max ±0.1
+	}
+
+	// Calculate CPI score
+	state.Session.CPIScore = baseValue + insightBonus + feedbackAdjust
+	if state.Session.CPIScore > 1.0 {
+		state.Session.CPIScore = 1.0
+	}
+	if state.Session.CPIScore < 0.0 {
+		state.Session.CPIScore = 0.0
+	}
+
+	// Determine session arc based on current patterns
+	stats := cpi.SessionStats{
+		TotalExchanges:    state.Session.ExchangeCount,
+		DominantType:      cpi.ExchangeType(state.Session.DominantExchangeType),
+		InsightCount:      state.Session.InsightCount,
+		PositiveFeedback:  state.Session.KTowardGod,
+		NegativeFeedback:  state.Session.KTowardSelf,
+		TrajectorySection: state.TrajectorySection,
+		HebrewState:       state.Session.HebrewState,
+		HebrewMeaning:     state.Session.HebrewMeaning,
+	}
+	arc := cpi.DetermineArc(stats)
+	state.Session.SessionArc = string(arc)
+}
+
+// recordExchangeToDatabase persists the exchange record
+func recordExchangeToDatabase(record *ExchangeRecord, log *logging.Logger) {
+	if record == nil {
+		return
+	}
+
+	bridge, err := internal.GetBridge()
+	if err != nil {
+		log.Warn("Database unavailable for exchange recording", map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx := context.Background()
+	repo := bridge.GetRepository()
+
+	// Convert categories to JSON
+	categoriesJSON := "[]"
+	if len(record.FeedbackCategories) > 0 {
+		if data, err := json.Marshal(record.FeedbackCategories); err == nil {
+			categoriesJSON = string(data)
+		}
+	}
+
+	// Insert exchange record
+	query := `
+		INSERT INTO exchanges (
+			session_id, timestamp, sequence_num, prompt_length,
+			exchange_type, initiative, depth_level,
+			feedback_detected, feedback_polarity, feedback_categories,
+			insight_detected, insight_type,
+			hebrew_state, k_align, trajectory
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+
+	_, err = repo.Exec(ctx, query,
+		record.SessionID,
+		record.Timestamp.Format(time.RFC3339),
+		record.SequenceNum,
+		record.PromptLength,
+		string(record.ExchangeType),
+		record.Initiative,
+		string(record.DepthLevel),
+		record.FeedbackDetected,
+		record.FeedbackPolarity,
+		categoriesJSON,
+		record.InsightDetected,
+		string(record.InsightType),
+		record.HebrewState,
+		record.KAlign,
+		record.Trajectory,
+	)
+
+	if err != nil {
+		log.Warn("Failed to record exchange", map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// If insight detected, also record in insights table
+	if record.InsightDetected {
+		insightQuery := `
+			INSERT INTO insights (session_id, timestamp, insight_type, confidence)
+			VALUES (?, ?, ?, ?)
+		`
+		_, _ = repo.Exec(ctx, insightQuery,
+			record.SessionID,
+			record.Timestamp.Format(time.RFC3339),
+			string(record.InsightType),
+			record.InsightConf,
+		)
+	}
+
+	log.Debug("Exchange recorded", map[string]string{
+		"type":    string(record.ExchangeType),
+		"depth":   string(record.DepthLevel),
+		"insight": fmt.Sprintf("%v", record.InsightDetected),
+	})
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// TRAJECTORY MOVEMENT: Exchange/Insight Driven Position Changes
+// ───────────────────────────────────────────────────────────────────────────
+// "The path of the just is as the shining light, that shineth more and more
+// unto the perfect day." — Proverbs 4:18
+//
+// The mental construct position MOVES based on:
+//   - Insights: Breakthrough → advance anchor
+//   - CPI exchanges: Collaborative → momentum toward expansion
+//   - Negative feedback: Correction → pivot (change direction)
+//   - Strong alignment: Consistent k_toward_god → potential grounding
+
+// evaluateTrajectoryMovement determines if position should change based on exchange
+// "The path of the just is as the shining light, that shineth more and more" — Proverbs 4:18
+func evaluateTrajectoryMovement(state *statemachine.RuntimeState, exchange *ExchangeRecord, feedbackPolarity string, log *logging.Logger) {
+	if state == nil || exchange == nil {
+		return
+	}
+
+	// Debug: Log what we're evaluating
+	log.Debug("Trajectory evaluation", map[string]string{
+		"insight_detected": fmt.Sprintf("%v", exchange.InsightDetected),
+		"insight_type":     string(exchange.InsightType),
+		"expected_type":    string(InsightBreakthrough),
+		"exchange_type":    string(exchange.ExchangeType),
+		"feedback":         feedbackPolarity,
+		"current_section":  state.TrajectorySection,
+		"current_anchor":   state.AnchorKey,
+	})
+
+	// Track what triggered movement (for learning)
+	var movementTrigger string
+	var movementType string // "advance", "pivot", "ground", "none"
+
+	// --- Rule 1: Breakthrough insights advance the anchor ---
+	// Insights represent understanding transfer — real movement in the construct
+	if exchange.InsightDetected && exchange.InsightType == InsightBreakthrough {
+		// Advance to next anchor position
+		advanceAnchor(state)
+		movementTrigger = "breakthrough_insight"
+		movementType = "advance"
+		log.Info("Trajectory advance", map[string]string{
+			"trigger": movementTrigger,
+			"anchor":  state.AnchorKey,
+		})
+	}
+
+	// --- Rule 2: Negative feedback triggers pivot ---
+	// Corrections mean we need to change direction, not just continue
+	if feedbackPolarity == "negative" {
+		// Pivot the trajectory (B.1→B.2 or B.3→B.4)
+		pivotTrajectory(state)
+		movementTrigger = "negative_feedback"
+		movementType = "pivot"
+		log.Info("Trajectory pivot", map[string]string{
+			"trigger":   movementTrigger,
+			"section":   state.TrajectorySection,
+		})
+	}
+
+	// --- Rule 3: Strong CPI pattern → increment toward advancement ---
+	// Collaborative exchanges build momentum
+	if exchange.ExchangeType == ExchangeCollaborative || exchange.ExchangeType == ExchangeAffirmation {
+		// Increment trajectory momentum (internal counter)
+		incrementTrajectoryMomentum(state)
+
+		// After 5 consecutive CPI exchanges, advance
+		if state.Session.ExchangeCount > 0 && state.Session.ExchangeCount%5 == 0 {
+			// Check if majority are CPI types
+			cpiRatio := float64(state.Session.KTowardGod) / float64(state.Session.KTowardGod+state.Session.KTowardSelf+1)
+			if cpiRatio > 0.7 {
+				advanceAnchor(state)
+				movementTrigger = "cpi_momentum"
+				movementType = "advance"
+				log.Info("Trajectory advance (momentum)", map[string]string{
+					"trigger":   movementTrigger,
+					"cpi_ratio": fmt.Sprintf("%.2f", cpiRatio),
+				})
+			}
+		}
+	}
+
+	// --- Rule 4: Strong alignment pattern → potential grounding ---
+	// If k_align is maxed and we're in B.3, ready to ground
+	if state.Session.KAlign >= 0.9 && state.TrajectorySection == "B.3" {
+		groundTrajectory(state)
+		movementTrigger = "alignment_complete"
+		movementType = "ground"
+		log.Info("Trajectory ground", map[string]string{
+			"trigger": movementTrigger,
+			"k_align": fmt.Sprintf("%.2f", state.Session.KAlign),
+		})
+	}
+
+	// --- Rule 5: Breaking down signal → move toward verification ---
+	// "A time to break down, and a time to build up" — Ecclesiastes 3:3
+	// If k_toward_self is rising faster than k_toward_god, we're uncertain
+	// Uncertainty means we need to break down, verify against anchor
+	if exchange.ExchangeType == ExchangeUnknown {
+		// Unknown exchanges = breaking down, move toward B.3 (verification)
+		if state.TrajectorySection == "B.1" {
+			// Too much uncertainty in building phase → pivot to reassess
+			if state.Session.KTowardSelf > 3 && movementType == "" {
+				pivotTrajectory(state)
+				movementTrigger = "uncertainty_pivot"
+				movementType = "pivot"
+				log.Info("Trajectory pivot (uncertainty)", map[string]string{
+					"trigger":       movementTrigger,
+					"k_toward_self": fmt.Sprintf("%d", state.Session.KTowardSelf),
+				})
+			}
+		}
+		// Decrement momentum when uncertain
+		if state.TrajectoryMetrics.MomentumScore > 0 {
+			state.TrajectoryMetrics.MomentumScore--
+		}
+	}
+
+	// Record movement in runtime state for learning
+	if movementType != "" && movementType != "none" {
+		state.LastTransition = statemachine.RuntimeTransition{
+			FromSection: state.TrajectorySection,
+			ToSection:   state.TrajectorySection, // Updated by the movement functions
+			Trigger:     movementTrigger,
+			Timestamp:   time.Now().Format(time.RFC3339),
+		}
+	}
+}
+
+// advanceAnchor moves to the next anchor position in the mental construct
+func advanceAnchor(state *statemachine.RuntimeState) {
+	// Anchor progression: past→present→future on each axis
+	// Simplified: cycle through key positions
+	anchorProgression := []string{
+		"present_present", // Origin (0,0,0)
+		"future_present",  // Forward in time
+		"future_future",   // Expansion
+		"present_future",  // Lateral
+	}
+
+	currentIdx := 0
+	for i, anchor := range anchorProgression {
+		if anchor == state.AnchorKey {
+			currentIdx = i
+			break
+		}
+	}
+
+	// Advance to next (wrap around)
+	nextIdx := (currentIdx + 1) % len(anchorProgression)
+	state.AnchorKey = anchorProgression[nextIdx]
+	state.Session.PathLength++
+}
+
+// pivotTrajectory changes direction (B.1→B.2, B.2→B.3, B.3→B.4)
+func pivotTrajectory(state *statemachine.RuntimeState) {
+	switch state.TrajectorySection {
+	case "B.1":
+		state.TrajectorySection = "B.2"
+	case "B.2":
+		state.TrajectorySection = "B.3"
+	case "B.3":
+		state.TrajectorySection = "B.4"
+	// B.4 stays at B.4 (grounded)
+	}
+	state.TrajectoryMetrics.PivotCount++
+}
+
+// groundTrajectory moves to B.4 (completion/halt state)
+func groundTrajectory(state *statemachine.RuntimeState) {
+	state.TrajectorySection = "B.4"
+}
+
+// incrementTrajectoryMomentum tracks momentum toward advancement
+func incrementTrajectoryMomentum(state *statemachine.RuntimeState) {
+	// This accumulates - momentum builds with consistent CPI exchanges
+	state.TrajectoryMetrics.AccumulatedWorkMs += 1000 // Use as momentum counter
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// KEY CONTEXT: Detection and Recording
+// ───────────────────────────────────────────────────────────────────────────
+
+// detectKeyContext analyzes prompt for significant moments
+func detectKeyContext(prompt string, state *statemachine.RuntimeState, exchange *ExchangeRecord) *KeyContextRecord {
+	if len(prompt) < 20 {
+		return nil // Too short to be significant
+	}
+
+	var bestMatch *KeyContextPattern
+	var bestImportance float64 = 0
+
+	// Find the highest-importance matching pattern
+	for _, pattern := range keyContextPatterns {
+		if pattern.pattern.MatchString(prompt) {
+			if pattern.importance > bestImportance {
+				bestMatch = &pattern
+				bestImportance = pattern.importance
+			}
+		}
+	}
+
+	// Need at least 0.5 importance to record
+	if bestMatch == nil || bestImportance < 0.5 {
+		return nil
+	}
+
+	// Build the key context record
+	record := &KeyContextRecord{
+		Timestamp:   time.Now(),
+		ContextType: bestMatch.contextType,
+		Importance:  bestImportance,
+		CPIRelevant: bestMatch.cpiRelevant,
+		Initiative:  "user", // All prompts are user-initiated
+	}
+
+	// Detect domain
+	record.Domain = detectDomain(prompt)
+
+	// Generate summary (first 100 chars of prompt, cleaned)
+	summary := prompt
+	if len(summary) > 100 {
+		summary = summary[:100] + "..."
+	}
+	record.Summary = summary
+
+	// Extract key concepts (simple keyword extraction)
+	record.KeyConcepts = extractKeyConcepts(prompt)
+
+	// Add state context
+	if state != nil {
+		record.SessionID = state.Session.ID
+		record.HebrewState = state.Session.HebrewState
+		record.KAlign = state.Session.KAlign
+		record.Trajectory = state.TrajectorySection
+	}
+
+	// Link to exchange if available
+	if exchange != nil && exchange.SessionID != "" {
+		record.SessionID = exchange.SessionID
+	}
+
+	return record
+}
+
+// detectDomain determines the domain of the key moment
+func detectDomain(prompt string) KeyContextDomain {
+	// Check each domain pattern, prioritize identity and relationship
+	if domainPatterns[DomainIdentity].MatchString(prompt) {
+		return DomainIdentity
+	}
+	if domainPatterns[DomainRelationship].MatchString(prompt) {
+		return DomainRelationship
+	}
+	if domainPatterns[DomainStrategy].MatchString(prompt) {
+		return DomainStrategy
+	}
+	if domainPatterns[DomainArchitecture].MatchString(prompt) {
+		return DomainArchitecture
+	}
+	if domainPatterns[DomainDocumentation].MatchString(prompt) {
+		return DomainDocumentation
+	}
+	if domainPatterns[DomainCode].MatchString(prompt) {
+		return DomainCode
+	}
+
+	// Default to strategy for significant moments without clear domain
+	return DomainStrategy
+}
+
+// extractKeyConcepts does simple keyword extraction
+func extractKeyConcepts(prompt string) []string {
+	// Define concept patterns
+	conceptPatterns := []*regexp.Regexp{
+		regexp.MustCompile(`(?i)\b(CPI-?SI|covenant|partnership|identity)\b`),
+		regexp.MustCompile(`(?i)\b(database|API|schema|model)\b`),
+		regexp.MustCompile(`(?i)\b(statusline|hooks?|runtime|state)\b`),
+		regexp.MustCompile(`(?i)\b(exchange|insight|feedback|session)\b`),
+		regexp.MustCompile(`(?i)\b(pattern|architecture|design|system)\b`),
+	}
+
+	conceptSet := make(map[string]bool)
+	for _, pattern := range conceptPatterns {
+		matches := pattern.FindAllString(prompt, -1)
+		for _, match := range matches {
+			conceptSet[match] = true
+		}
+	}
+
+	concepts := make([]string, 0, len(conceptSet))
+	for concept := range conceptSet {
+		concepts = append(concepts, concept)
+	}
+
+	return concepts
+}
+
+// recordKeyContextToDatabase persists the key context record
+func recordKeyContextToDatabase(record *KeyContextRecord, log *logging.Logger) {
+	if record == nil {
+		return
+	}
+
+	bridge, err := internal.GetBridge()
+	if err != nil {
+		log.Debug("Database unavailable for key context", map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx := context.Background()
+	repo := bridge.GetRepository()
+
+	// Convert concepts to JSON
+	conceptsJSON := "[]"
+	if len(record.KeyConcepts) > 0 {
+		if data, err := json.Marshal(record.KeyConcepts); err == nil {
+			conceptsJSON = string(data)
+		}
+	}
+
+	query := `
+		INSERT INTO key_context (
+			session_id, timestamp,
+			context_type, domain, summary, key_concepts, importance,
+			initiative, cpi_relevant,
+			hebrew_state, k_align, trajectory
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+
+	_, err = repo.Exec(ctx, query,
+		record.SessionID,
+		record.Timestamp.Format(time.RFC3339),
+		string(record.ContextType),
+		string(record.Domain),
+		record.Summary,
+		conceptsJSON,
+		record.Importance,
+		record.Initiative,
+		record.CPIRelevant,
+		record.HebrewState,
+		record.KAlign,
+		record.Trajectory,
+	)
+
+	if err != nil {
+		log.Debug("Failed to record key context", map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	log.Info("Key context captured", map[string]string{
+		"type":       string(record.ContextType),
+		"domain":     string(record.Domain),
+		"importance": fmt.Sprintf("%.2f", record.Importance),
+	})
 }
 
 // ============================================================================

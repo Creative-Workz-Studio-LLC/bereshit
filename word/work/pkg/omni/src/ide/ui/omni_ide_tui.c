@@ -24,7 +24,7 @@
 // =============================================================================
 
 #include "omni_ide_tui.h"
-#include "ide/core/omni_screenshot.h"  // Session screenshots
+#include "screenshot.h"                 // Shared screenshot module
 #include <ncurses.h>
 #include "display.h"  // Cornerstone display abstraction
 #include "config.h"  // IDE config with themes (from libtrit)
@@ -34,10 +34,12 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <sys/stat.h>
-#include <signal.h>
 
-// Signal flag for clean shutdown (defined in omni_ide_main.c)
-extern volatile sig_atomic_t g_shutdown_requested;
+// Shared signal handling (full suite - shared with cornerstone engine)
+#include "signals.h"  // signals_is_running
+
+// CPI-SI logging (state-aware, health-tracking)
+#include "kernel/cpisi/dar/detect.h"
 
 // Control key macro (converts 'q' to Ctrl+Q code)
 #define CTRL(c) ((c) & 037)
@@ -357,6 +359,12 @@ static void ide_tui_recalc_layout(IDETUI* tui) {
         tui->buffer->visible_lines = tui->edit_rows;
         tui->buffer->visible_cols = tui->edit_cols;
     }
+
+    LOG_TRACE("ide-tui", "Layout: screen=%dx%d, edit=%dx%d, panel_w=%d, bottom_h=%d",
+              tui->screen_cols, tui->screen_rows,
+              tui->edit_cols, tui->edit_rows,
+              tui->layout ? tui->layout->left_width : 0,
+              tui->layout ? tui->layout->bottom_height : 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -722,8 +730,13 @@ static bool ide_menu_handle_key(IDETUI* tui, DisplayKey key) {
 // -----------------------------------------------------------------------------
 
 IDETUI* ide_tui_create(IDEBuffer* buffer) {
+    LOG_DEBUG("ide-tui", "Creating TUI instance");
+
     IDETUI* tui = malloc(sizeof(IDETUI));
-    if (!tui) return NULL;
+    if (!tui) {
+        LOG_ERROR("ide-tui", "Failed to allocate TUI structure");
+        return NULL;
+    }
 
     memset(tui, 0, sizeof(IDETUI));
     tui->buffer = buffer;
@@ -794,19 +807,27 @@ IDETUI* ide_tui_create(IDEBuffer* buffer) {
 
     ide_tui_set_status(tui, "OmniCode IDE | Tab: Panels | Ctrl+B: Toggle | Ctrl+S: Save | Ctrl+Q: Quit");
 
+    LOG_INFO("ide-tui", "TUI created: %dx%d, panels=%s",
+             tui->screen_cols, tui->screen_rows,
+             tui->panels_visible ? "visible" : "hidden");
+
     return tui;
 }
 
 void ide_tui_destroy(IDETUI* tui) {
     if (!tui) return;
 
+    LOG_DEBUG("ide-tui", "Destroying TUI instance");
+
     // Capture screenshot of last known state before shutdown
-    screenshot_tui("shutdown");
+    screenshot_capture_tui("shutdown");
 
     display_shutdown();
     ide_layout_free(tui->layout);
     ide_diagnostics_free(tui->diags);
     free(tui);
+
+    LOG_INFO("ide-tui", "TUI destroyed");
 }
 
 // -----------------------------------------------------------------------------
@@ -1201,6 +1222,8 @@ void ide_tui_handle_key(IDETUI* tui, DisplayKey key) {
 
     IDEBuffer* buf = tui->buffer;
 
+    LOG_TRACE("ide-tui", "Key event: key=%d, focus=%d", (int)key, (int)tui->focus);
+
     // Handle menu keys first if menu is focused
     if (tui->focus == FOCUS_MENU) {
         if (ide_menu_handle_key(tui, key)) {
@@ -1463,7 +1486,7 @@ void ide_tui_run(IDETUI* tui) {
         }
     }
 
-    while (tui->running && !g_shutdown_requested) {
+    while (tui->running && signals_is_running()) {
         if (tui->needs_redraw) {
             ide_tui_draw(tui);
         }

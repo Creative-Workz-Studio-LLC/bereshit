@@ -6,7 +6,9 @@
 // omni_profile.c — CPI-SI Instance Profile Implementation
 // Load identity from config.jsonc and wire to sentence building
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 // =============================================================================
 // METADATA [METADATA]
@@ -28,7 +30,10 @@
 #include <string.h>
 #include <time.h>
 #include "omni_profile.h"
-#include "jsonc.h"  // Cornerstone util
+#include "framework/util/format/jsonc.h"  // Cornerstone util
+
+// CPI-SI state-aware logging
+#include "kernel/cpisi/dar/detect.h"
 
 // =============================================================================
 // END SETUP
@@ -86,7 +91,7 @@ CPISIProfile* profile_load(const char* bereshit_root, const char* username) {
     // Load JSON file (new DOM API)
     JsonValue* root = jsonc_load(path);
     if (!root) {
-        fprintf(stderr, "[PROFILE] Failed to load profile: %s\n", path);
+        LOG_ERROR("profile", "Failed to load profile: %s", path);
         free(profile);
         return NULL;
     }
@@ -190,12 +195,12 @@ CPISIProfile* profile_load(const char* bereshit_root, const char* username) {
                   "Genesis 1:1, Malachi 3:6");
         profile->heart.loaded = true;
 
-        fprintf(stderr, "[PROFILE] Heart anchor loaded: %s\n", heart_path);
+        LOG_INFO("profile", "Heart anchor loaded: %s", heart_path);
     }
 
     profile->loaded = true;
 
-    fprintf(stderr, "[PROFILE] Loaded: %s (%s)\n",
+    LOG_INFO("profile", "Loaded: %s (%s)",
             profile->identity.name, profile->biblical.scripture);
 
     return profile;

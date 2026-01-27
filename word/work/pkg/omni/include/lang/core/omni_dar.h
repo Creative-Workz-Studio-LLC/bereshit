@@ -36,7 +36,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "omni_hebrew.h"  // Bottom rung: Hebrew states
+
+// Cornerstone's DAR system (canonical implementation)
+// Provides: DAROrchestrator, HebrewState, HealthScore, KFactor
+#include "kernel/cpisi/dar/dar.h"
+
+#include "omni_hebrew.h"  // Hebrew state compatibility aliases (DAR_* → HEBREW_*)
 #include "omni_vm.h"      // For OmniValue in checkpoints (TODO: extract to omni_value.h)
 
 // # S.1 DAR Constants [CONSTANTS]
@@ -55,8 +60,9 @@
 
 // # S.2 Hebrew State Encoding [HEBREW]
 //
-// DARHebrewState is defined in omni_hebrew.h (bottom rung)
-// shavar=-3, chaser=-2, ratsah=-1, yashar=0, tamim=+1, shalem=+2, tov=+3
+// HebrewState is defined in Cornerstone's types.h (via omni_hebrew.h)
+// Uses 0-indexed values: HEBREW_SHAVAR=0, ..., HEBREW_YASHAR=3, ..., HEBREW_TOV=6
+// DARHebrewState is a typedef alias for backward compatibility
 
 // # S.3 Checkpoint Structure [CHECKPOINT]
 //
@@ -108,9 +114,13 @@ typedef struct {
     DARCheckpoint checkpoints[DAR_MAX_CHECKPOINTS];
 } DARSession;
 
-// # S.5 DAR Context [CONTEXT]
+// # S.5 OmniCode DAR Context [CONTEXT]
+//
+// NOTE: This is OmniDARContext — the VM-specific persistence context.
+// Cornerstone's DAROrchestrator is the cognitive state orchestrator.
+// Both share HebrewState/HealthScore types from Cornerstone's types.h.
 
-typedef struct DARContext {  // Named struct for forward declaration compatibility
+typedef struct OmniDARContext {
     // Session management
     DARSession* session;
     char        session_path[DAR_CHECKPOINT_PATH_LEN];
@@ -121,7 +131,14 @@ typedef struct DARContext {  // Named struct for forward declaration compatibili
 
     // Connected VM (optional)
     OmniVM*     vm;
-} DARContext;
+
+    // Link to Cornerstone's DAR (if available)
+    // This enables sync between VM state and cognitive state
+    DAROrchestrator* orchestrator;
+} OmniDARContext;
+
+// Backward compatibility alias
+typedef OmniDARContext DARContext;
 
 // =============================================================================
 // END SETUP
