@@ -120,7 +120,7 @@
 #include <string.h>   // strcmp
 
 //--- Project Headers ---
-#include "bible_rail.h"  // Bible Rail encoding (includes trit.h)
+#include "trit/trit.h"       // Master aggregator: includes bible layer
 
 // ────────────────────────────────────────────────────────────────
 // Defines

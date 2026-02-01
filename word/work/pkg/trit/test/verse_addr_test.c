@@ -119,7 +119,7 @@
 #include <stdbool.h>  // bool
 
 //--- Project Headers ---
-#include "verse_addr.h"  // Verse address encoding (includes trit.h)
+#include "trit/trit.h"       // Master aggregator: includes bible layer
 
 // ────────────────────────────────────────────────────────────────
 // Defines

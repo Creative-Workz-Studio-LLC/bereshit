@@ -160,7 +160,7 @@
 
 // # S.1b Project Headers [PROJECT]
 
-#include "toml.h"  // Interface we implement
+#include "trit/toml.h"  // Interface we implement
 
 // # S.1c External Libraries [EXTERNAL]
 
@@ -1016,7 +1016,7 @@ const char* toml_get_error_string(TomlError err) {
 // # X.1c Self-Test [SELF_TEST]
 //
 //   // test_toml.c — minimal TOML test
-//   #include "toml.h"
+//   #include "trit/toml.h"
 //   char* toml = toml_load_file("word/core/types/trit.toml");
 //   assert(toml != NULL);
 //   const char* val = toml_find_key_in_section(toml, "trit", "bits");
@@ -1035,7 +1035,7 @@ const char* toml_get_error_string(TomlError err) {
 
 // # X.2a Include [INCLUDE]
 //
-//   #include "toml.h"
+//   #include "trit/toml.h"
 
 // # X.2b Exit Codes [EXIT_CODES]
 //

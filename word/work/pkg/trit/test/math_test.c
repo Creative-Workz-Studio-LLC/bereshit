@@ -121,8 +121,7 @@
 #include <string.h>   // strcmp for string comparison
 
 //--- Project Headers ---
-#include "trit.h"   // MATTER layer: trit types
-#include "trit_math.h"   // Math operations: 5 families
+#include "trit/trit.h"            // Master aggregator: all Genesis 1:1 layers
 
 // ────────────────────────────────────────────────────────────────
 // Defines

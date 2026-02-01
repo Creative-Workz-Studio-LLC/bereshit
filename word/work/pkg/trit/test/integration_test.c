@@ -116,9 +116,7 @@
 #include <stdio.h>   // printf
 
 //--- Project Headers ---
-#include "trit.h"       // MATTER layer: trit types and operations
-#include "dimension.h"  // SPACE layer: cognitive dimension navigation
-#include "temporal.h"   // TIME layer: temporal state cognition
+#include "trit/trit.h"       // Master aggregator: all Genesis 1:1 layers
 
 // ────────────────────────────────────────────────────────────────
 // Defines

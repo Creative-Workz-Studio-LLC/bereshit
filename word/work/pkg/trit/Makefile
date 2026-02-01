@@ -248,6 +248,7 @@
 	test test-trit test-pack test-dimension test-temporal test-integration \
 	test-math test-bible-rail test-verse-addr test-scripture-path \
 	test-scripture-text test-statemachine test-all \
+	diag diag-install diag-clean \
 	_ensure-dirs
 
 # Set default goal explicitly (helpers appear before entry points in BODY)
@@ -262,6 +263,7 @@
 LIB_NAME     := libtrit.a
 BUILD_DIR    := build
 OBJ_DIR      := $(BUILD_DIR)/obj
+DIAG_DIR     := $(BUILD_DIR)/diag
 
 # S.2b Directories [DIRS]
 
@@ -316,12 +318,37 @@ ECHO         := @echo
 # S.3 SOURCES & OBJECTS [SOURCES]
 # ───────────────────────────────────────────────────────────────────────────────
 
-# Source files (organized by layer)
-MATTER_SRCS  := $(SRC_DIR)/trit.c $(SRC_DIR)/pack.c
-SPACE_SRCS   := $(SRC_DIR)/dimension.c
-TIME_SRCS    := $(SRC_DIR)/temporal.c
+# Source files (organized by Genesis 1:1 layer structure)
+#
+# MATTER ("the earth") - foundation types
+MATTER_SRCS  := $(SRC_DIR)/matter/trit.type.c \
+                $(SRC_DIR)/matter/pack.op.c \
+                $(SRC_DIR)/matter/math.op.c
 
-SOURCES      := $(MATTER_SRCS) $(SPACE_SRCS) $(TIME_SRCS)
+# SPACE ("the heavens") - navigation
+SPACE_SRCS   := $(SRC_DIR)/space/dimension.nav.c \
+                $(SRC_DIR)/space/cube.nav.c
+
+# TIME ("In the beginning") - temporal/cognitive states
+TIME_SRCS    := $(SRC_DIR)/time/temporal.state.c \
+                $(SRC_DIR)/time/hebrew.state.c \
+                $(SRC_DIR)/time/kalign.nav.c \
+                $(SRC_DIR)/time/trajectory.nav.c
+
+# MIND - unified cognitive engine
+MIND_SRCS    := $(SRC_DIR)/mind/cognitive.engine.c
+
+# BIBLE - scripture codex (rail encoding, verse addressing, scripture paths)
+BIBLE_SRCS   := $(SRC_DIR)/bible/rail.enc.c \
+                $(SRC_DIR)/bible/verse.enc.c \
+                $(SRC_DIR)/bible/path.txt.c \
+                $(SRC_DIR)/bible/text.txt.c
+
+# Configuration (TOML parsing)
+CONFIG_SRCS  := $(SRC_DIR)/config.c $(SRC_DIR)/toml.c
+
+SOURCES      := $(MATTER_SRCS) $(SPACE_SRCS) $(TIME_SRCS) \
+                $(MIND_SRCS) $(BIBLE_SRCS) $(CONFIG_SRCS)
 OBJECTS      := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCES))
 DEPS         := $(OBJECTS:.o=.d)
 
@@ -369,9 +396,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | _ensure-dirs
 # B.1 HELPERS (L0) — Internal Support [HELPERS]
 # ───────────────────────────────────────────────────────────────────────────────
 
-## _ensure-dirs: Create build directories
+## _ensure-dirs: Create build directories (including layer subdirectories)
 _ensure-dirs:
-	$(Q)mkdir -p $(BUILD_DIR) $(OBJ_DIR) $(GEN_DIR)
+	$(Q)mkdir -p $(BUILD_DIR) $(OBJ_DIR) $(GEN_DIR) $(DIAG_DIR)
+	$(Q)mkdir -p $(OBJ_DIR)/matter $(OBJ_DIR)/space $(OBJ_DIR)/time
+	$(Q)mkdir -p $(OBJ_DIR)/mind $(OBJ_DIR)/bible
 
 # ───────────────────────────────────────────────────────────────────────────────
 # B.2 BUILD (L1) — Compilation [BUILD]
@@ -493,6 +522,87 @@ test-statemachine: build
 	$(Q)./$(BUILD_DIR)/statemachine_test
 
 # ───────────────────────────────────────────────────────────────────────────────
+# B.3b DIAGNOSTICS — Standalone Diagnostic Tools [DIAGNOSTICS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Diagnostic tools are the same tests built as standalone utilities.
+# Use these for system verification, troubleshooting, and education.
+#
+# Usage:
+#   make diag           Build all diagnostic tools
+#   ./build/diag/trit   Run trit layer diagnostics
+#
+
+# Diagnostic tool names
+DIAG_TRIT       := $(DIAG_DIR)/diag-trit
+DIAG_PACK       := $(DIAG_DIR)/diag-pack
+DIAG_DIMENSION  := $(DIAG_DIR)/diag-dimension
+DIAG_TEMPORAL   := $(DIAG_DIR)/diag-temporal
+DIAG_MATH       := $(DIAG_DIR)/diag-math
+DIAG_STATEMACHINE := $(DIAG_DIR)/diag-statemachine
+DIAG_INTEGRATION := $(DIAG_DIR)/diag-integration
+
+DIAG_TOOLS := $(DIAG_TRIT) $(DIAG_PACK) $(DIAG_DIMENSION) $(DIAG_TEMPORAL) \
+              $(DIAG_MATH) $(DIAG_STATEMACHINE) $(DIAG_INTEGRATION)
+
+## diag: Build all diagnostic tools
+diag: library $(DIAG_TOOLS)
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(ECHO) "  ✓ Diagnostic tools built in $(DIAG_DIR)/"
+	$(ECHO) "════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+	$(ECHO) "  MATTER Layer:"
+	$(ECHO) "    $(DIAG_TRIT)       Trit operations"
+	$(ECHO) "    $(DIAG_PACK)       Packing/unpacking"
+	$(ECHO) "    $(DIAG_MATH)       Math operations"
+	$(ECHO) ""
+	$(ECHO) "  SPACE Layer:"
+	$(ECHO) "    $(DIAG_DIMENSION)  Dimension mapping"
+	$(ECHO) ""
+	$(ECHO) "  TIME Layer:"
+	$(ECHO) "    $(DIAG_TEMPORAL)   Temporal states"
+	$(ECHO) ""
+	$(ECHO) "  Integration:"
+	$(ECHO) "    $(DIAG_STATEMACHINE) CPI-SI state machine"
+	$(ECHO) "    $(DIAG_INTEGRATION)  All layers together"
+	$(ECHO) ""
+
+$(DIAG_TRIT): $(TEST_DIR)/trit_test.c $(BUILD_DIR)/$(LIB_NAME) | _ensure-dirs
+	$(ECHO) "  DIAG    diag-trit"
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(BUILD_DIR)/$(LIB_NAME)
+
+$(DIAG_PACK): $(TEST_DIR)/pack_test.c $(BUILD_DIR)/$(LIB_NAME) | _ensure-dirs
+	$(ECHO) "  DIAG    diag-pack"
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(BUILD_DIR)/$(LIB_NAME)
+
+$(DIAG_DIMENSION): $(TEST_DIR)/dimension_test.c $(BUILD_DIR)/$(LIB_NAME) | _ensure-dirs
+	$(ECHO) "  DIAG    diag-dimension"
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(BUILD_DIR)/$(LIB_NAME)
+
+$(DIAG_TEMPORAL): $(TEST_DIR)/temporal_test.c $(BUILD_DIR)/$(LIB_NAME) | _ensure-dirs
+	$(ECHO) "  DIAG    diag-temporal"
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(BUILD_DIR)/$(LIB_NAME)
+
+$(DIAG_MATH): $(TEST_DIR)/math_test.c $(BUILD_DIR)/$(LIB_NAME) | _ensure-dirs
+	$(ECHO) "  DIAG    diag-math"
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(BUILD_DIR)/$(LIB_NAME)
+
+$(DIAG_STATEMACHINE): $(TEST_DIR)/statemachine_test.c $(BUILD_DIR)/$(LIB_NAME) | _ensure-dirs
+	$(ECHO) "  DIAG    diag-statemachine"
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(BUILD_DIR)/$(LIB_NAME) -lm
+
+$(DIAG_INTEGRATION): $(TEST_DIR)/integration_test.c $(BUILD_DIR)/$(LIB_NAME) | _ensure-dirs
+	$(ECHO) "  DIAG    diag-integration"
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(BUILD_DIR)/$(LIB_NAME)
+
+## diag-clean: Remove diagnostic tools only
+diag-clean:
+	$(ECHO) "Cleaning diagnostic tools..."
+	$(Q)rm -rf $(DIAG_DIR)
+	$(ECHO) "✓ Diagnostic tools removed"
+
+# ───────────────────────────────────────────────────────────────────────────────
 # B.4 ENTRY (L3) — User-Facing Entry Points [ENTRY]
 # ───────────────────────────────────────────────────────────────────────────────
 
@@ -543,6 +653,11 @@ help:
 	$(ECHO) "    make test-temporal       TIME layer (temporal.c)"
 	$(ECHO) "    make test-integration    Integration (all layers)"
 	$(ECHO) "    make test-statemachine   CPI-SI state machine"
+	$(ECHO) ""
+	$(ECHO) "  Diagnostics:"
+	$(ECHO) "    make diag                Build all diagnostic tools"
+	$(ECHO) "    make diag-clean          Remove diagnostic tools only"
+	$(ECHO) "    ./build/diag/diag-trit   Run specific diagnostic"
 	$(ECHO) ""
 	$(ECHO) "  Maintain:"
 	$(ECHO) "    make clean               Remove all build artifacts"

@@ -12,7 +12,7 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-#include "statemachine.h"
+#include "trit/mind/cognitive.engine.h"  // Unified cognitive state machine
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -117,7 +117,7 @@
 #include <string.h>   // strcmp
 
 //--- Project Headers ---
-#include "scripture_path.h"  // Scripture path resolution (includes bible_rail.h, verse_addr.h)
+#include "trit/trit.h"       // Master aggregator: includes bible layer
 
 // ────────────────────────────────────────────────────────────────
 // Defines

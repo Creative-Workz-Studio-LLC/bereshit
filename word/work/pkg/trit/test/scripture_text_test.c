@@ -116,7 +116,7 @@
 #include <string.h>   // strcmp, memcmp
 
 //--- Project Headers ---
-#include "scripture_text.h"  // Character ↔ trit5 encoding (standalone)
+#include "trit/trit.h"       // Master aggregator: includes bible layer
 
 // ────────────────────────────────────────────────────────────────
 // Defines
