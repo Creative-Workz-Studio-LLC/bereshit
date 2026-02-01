@@ -8,11 +8,15 @@ module github.com/creativeworkzstudio/claude-global/statusline
 
 go 1.23
 
-require github.com/creativeworkzstudio/claude-global/pkg v0.0.0
+require (
+	github.com/creativeworkzstudio/claude-global/pkg v0.0.0
+	golang.org/x/term v0.27.0
+)
 
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.24 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 )
 
 replace github.com/creativeworkzstudio/claude-global/pkg => ../pkg

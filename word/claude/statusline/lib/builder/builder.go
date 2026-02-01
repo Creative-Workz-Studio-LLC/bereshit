@@ -19,10 +19,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
 	"github.com/creativeworkzstudio/claude-global/pkg/core/health"
 	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
 	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
+	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
 	"github.com/creativeworkzstudio/claude-global/pkg/util/term/wezterm"
 	"github.com/creativeworkzstudio/claude-global/statusline/lib/sections"
 )
@@ -31,7 +31,44 @@ import (
 // BODY
 // ============================================================================
 
-// Build assembles all sections into the final statusline string
+// BuildOptions controls statusline generation
+type BuildOptions struct {
+	TerminalWidth int                  // Available terminal width (0 = auto/unlimited)
+	Mode          sections.DisplayMode // Display mode (auto-detected from width if not set)
+}
+
+// DefaultOptions returns default build options
+func DefaultOptions() BuildOptions {
+	return BuildOptions{
+		TerminalWidth: 0, // Unlimited
+		Mode:          sections.DisplayFull,
+	}
+}
+
+// BuildAdaptive assembles statusline with width-aware display
+func BuildAdaptive(ctx types.SessionContext, sm *statemachine.StateMachine, runtime *statemachine.RuntimeState, healthCfg *health.HealthConfig, opts BuildOptions) string {
+	// Determine display mode from width
+	mode := opts.Mode
+	if opts.TerminalWidth > 0 {
+		mode = sections.ModeFromWidth(opts.TerminalWidth)
+	}
+
+	// Build all sections
+	allSections := buildAllSections(ctx, sm, runtime, healthCfg)
+
+	// Get command for separator styling
+	var cmd statemachine.Command
+	var cmdColor string
+	if sm != nil {
+		cmd = sm.GetCurrentCommand()
+		cmdColor = statemachine.CommandColor(cmd)
+	}
+
+	// Adaptive assembly based on width
+	return assembleAdaptive(allSections, mode, opts.TerminalWidth, cmdColor, cmd)
+}
+
+// Build assembles all sections into the final statusline string (legacy, unlimited width)
 //
 // Structure: [WHO] | [STATE] | [WHEN] | [SUBSTRATE] | [SPACE] -> [DYNAMIC] | [HEALTH] | [ANCHOR]
 func Build(ctx types.SessionContext, sm *statemachine.StateMachine, runtime *statemachine.RuntimeState, healthCfg *health.HealthConfig) string {
@@ -339,6 +376,156 @@ func emitHealthVars(runtime *statemachine.RuntimeState) {
 			wezterm.SetUserVar("MOMENTUM_RATIO", fmt.Sprintf("%.2f", ratio))
 		} else {
 			wezterm.SetUserVar("MOMENTUM_RATIO", "0.00")
+		}
+	}
+}
+
+// --- Adaptive Assembly Functions ---
+
+// sectionEntry holds a section with its metadata
+type sectionEntry struct {
+	Name    string
+	Section sections.SectionResult
+}
+
+// buildAllSections creates all section results
+func buildAllSections(ctx types.SessionContext, sm *statemachine.StateMachine, runtime *statemachine.RuntimeState, healthCfg *health.HealthConfig) []sectionEntry {
+	now := time.Now()
+	entries := []sectionEntry{}
+
+	// GROUP 1: WHO (Identity) - Priority 1
+	identity := sections.BuildIdentity(ctx)
+	if identity.HasInfo {
+		entries = append(entries, sectionEntry{Name: "identity", Section: identity})
+	}
+
+	// GROUP 2: STATE - Priority 2
+	state := sections.BuildState(sm, runtime)
+	if state.HasInfo {
+		entries = append(entries, sectionEntry{Name: "state", Section: state})
+	}
+
+	// GROUP 3: TEMPORAL - Priority 5
+	temporal := sections.BuildTemporal(now)
+	if temporal.HasInfo {
+		entries = append(entries, sectionEntry{Name: "temporal", Section: temporal})
+	}
+
+	// GROUP 4: SUBSTRATE - Priority 7
+	substrate := sections.BuildSubstrate(ctx)
+	if substrate.HasInfo {
+		entries = append(entries, sectionEntry{Name: "substrate", Section: substrate})
+	}
+
+	// GROUP 5: SPACE - Priority 7
+	space := sections.BuildSpace(ctx)
+	if space.HasInfo {
+		entries = append(entries, sectionEntry{Name: "space", Section: space})
+	}
+
+	// TASKS - Priority 4
+	tasks := sections.BuildTasks(runtime)
+	if tasks.HasInfo {
+		entries = append(entries, sectionEntry{Name: "tasks", Section: tasks})
+	}
+
+	// DEPTH - Priority 3
+	depth := sections.BuildDepthEnhanced(ctx, runtime)
+	if depth.HasInfo {
+		entries = append(entries, sectionEntry{Name: "depth", Section: depth})
+	}
+
+	// HEALTH - Priority 2
+	healthSection := sections.BuildHealth(runtime, healthCfg)
+	if healthSection.HasInfo {
+		entries = append(entries, sectionEntry{Name: "health", Section: healthSection})
+	}
+
+	// ANCHOR - Priority 2
+	anchor := sections.BuildAnchor(sm, ctx.SessionID)
+	if anchor.HasInfo {
+		entries = append(entries, sectionEntry{Name: "anchor", Section: anchor})
+	}
+
+	return entries
+}
+
+// assembleAdaptive builds statusline respecting width constraints
+func assembleAdaptive(allSections []sectionEntry, mode sections.DisplayMode, maxWidth int, cmdColor string, cmd statemachine.Command) string {
+	if maxWidth == 0 {
+		// Unlimited - use all sections
+		return assembleAll(allSections, mode, cmdColor, cmd)
+	}
+
+	// Sort by priority (lower number = higher priority)
+	sorted := make([]sectionEntry, len(allSections))
+	copy(sorted, allSections)
+	sortByPriority(sorted)
+
+	// Build with width constraint
+	var parts []string
+	currentWidth := 0
+	sepWidth := 3 // " | "
+
+	for i, entry := range sorted {
+		content := entry.Section.GetContent(mode)
+		width := entry.Section.GetWidth(mode)
+
+		// Check if we have room
+		needed := width
+		if i > 0 {
+			needed += sepWidth
+		}
+
+		if currentWidth+needed <= maxWidth {
+			if i > 0 {
+				parts = append(parts, dimSep())
+			}
+			parts = append(parts, content)
+			currentWidth += needed
+		} else if mode < sections.DisplayMinimal {
+			// Try compact form
+			compactContent := entry.Section.CompactContent
+			compactWidth := entry.Section.CompactWidth
+			compactNeeded := compactWidth
+			if i > 0 {
+				compactNeeded += sepWidth
+			}
+
+			if compactContent != "" && currentWidth+compactNeeded <= maxWidth {
+				if i > 0 {
+					parts = append(parts, dimSep())
+				}
+				parts = append(parts, compactContent)
+				currentWidth += compactNeeded
+			}
+			// If still doesn't fit, skip this section
+		}
+	}
+
+	return strings.Join(parts, " ")
+}
+
+// assembleAll builds all sections without width constraint
+func assembleAll(entries []sectionEntry, mode sections.DisplayMode, cmdColor string, cmd statemachine.Command) string {
+	var parts []string
+	for i, entry := range entries {
+		if i > 0 {
+			parts = append(parts, dimSep())
+		}
+		parts = append(parts, entry.Section.GetContent(mode))
+	}
+	return strings.Join(parts, " ")
+}
+
+// sortByPriority sorts entries by priority (lower = higher priority)
+func sortByPriority(entries []sectionEntry) {
+	// Simple bubble sort (small array)
+	for i := 0; i < len(entries)-1; i++ {
+		for j := i + 1; j < len(entries); j++ {
+			if entries[j].Section.Priority < entries[i].Section.Priority {
+				entries[i], entries[j] = entries[j], entries[i]
+			}
 		}
 	}
 }
