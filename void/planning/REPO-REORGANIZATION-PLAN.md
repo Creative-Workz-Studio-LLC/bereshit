@@ -2,7 +2,7 @@
 
 **Key:** B-void-planning-repo-reorganization
 **Status:** Active
-**Version:** 3.0.0
+**Version:** 3.1.0
 **Created:** 2026-02-01
 **Updated:** 2026-02-01
 **Authors:** Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
@@ -15,551 +15,358 @@
 
 ## Executive Summary
 
-This document provides a comprehensive plan to reorganize the Bereshit repository with a clear separation between:
+This document provides a comprehensive plan to reorganize the Bereshit repository around the **integrated layer stack** (L0-L5), where each layer builds on the previous:
 
-1. **CPI-SI Core** - The universal intelligence paradigm (runs on ANY substrate)
-2. **Substrate Adapters** - Thin integration layers (Claude Code is just ONE adapter)
-3. **Foundation Libraries** - Language implementations, math, networking
+```
+L0: Universal    → L1: OmniCode   → L2: Platform   → L3: CPI-SI   → L4: FaithNet   → L5: Applications
+(Foundation)       (Language)       (OS/FS)          (Intelligence)  (Network)        (Apps)
+```
 
-**Key Changes in v3.0:**
-- **Paradigm shift**: CPI-SI is substrate-independent; Claude Code is just an adapter
-- **Eliminate duplication**: Single source of truth for all packages
-- **Reduce scripts**: Replace shell scripts with proper implementations
-- **Future-ready**: Structure allows MillenniumOS native adapter alongside Claude
+**CPI-SI is Layer 3** - it's not separate from the stack, it IS part of the stack.
+
+**Substrates** are how you RUN the entire stack on different systems.
 
 ---
 
 ## Table of Contents
 
-1. [The Paradigm Shift](#1-the-paradigm-shift)
-2. [Current vs Target Architecture](#2-current-vs-target-architecture)
-3. [CPI-SI Core Components](#3-cpi-si-core-components)
-4. [Substrate Adapter Pattern](#4-substrate-adapter-pattern)
-5. [Language Architecture](#5-language-architecture)
-6. [Target Directory Structure](#6-target-directory-structure)
-7. [Script Reduction Strategy](#7-script-reduction-strategy)
-8. [Interface Layer (CLI/TUI/GUI)](#8-interface-layer-clituigui)
-9. [Migration Map](#9-migration-map)
-10. [Validation Checklist](#10-validation-checklist)
+1. [The Integrated Layer Stack](#1-the-integrated-layer-stack)
+2. [Substrates: Running the Stack](#2-substrates-running-the-stack)
+3. [Language Architecture](#3-language-architecture)
+4. [Target Directory Structure](#4-target-directory-structure)
+5. [Layer Details](#5-layer-details)
+6. [Interface Layer](#6-interface-layer)
+7. [Script Reduction](#7-script-reduction)
+8. [Migration Map](#8-migration-map)
+9. [Validation Checklist](#9-validation-checklist)
 
 ---
 
-## 1. The Paradigm Shift
+## 1. The Integrated Layer Stack
 
-### 1.1 The Core Insight
+### 1.1 The Stack IS the System
 
-**CPI-SI is NOT a Claude Code feature. CPI-SI is the intelligence paradigm itself.**
-
-Claude Code is simply ONE substrate that CPI-SI currently runs on. Tomorrow it could run on:
-- MillenniumOS native
-- A web browser
-- An embedded device
-- Any system that can execute the paradigm
-
-### 1.2 The Separation
+CPI-SI is not something that runs ON the stack - it IS Layer 3 of the stack. The entire system is one integrated architecture:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           CPI-SI PARADIGM                                │
-│                     (Substrate-Independent Core)                         │
-│                                                                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
-│  │   State     │  │ Coordinates │  │  Cognition  │  │   Health    │   │
-│  │  Machine    │  │   System    │  │   Engine    │  │   Scoring   │   │
-│  │ (27-cube)   │  │  (Bible)    │  │  (Learning) │  │  (Base100)  │   │
-│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘   │
-│                                                                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
-│  │  Identity   │  │   Skills    │  │  OmniCode   │  │   libtrit   │   │
-│  │ Management  │  │  (Universal)│  │  (Language) │  │   (Math)    │   │
-│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘   │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        THE KINGDOM TECHNOLOGY STACK                          │
+│                        (Integrated Layer Architecture)                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ L5: APPLICATIONS                                         [C#/Go]    │   │
+│  │     Cornerstone Game Engine, End-user applications                  │   │
+│  │     Biblical Foundation: Genesis 2:15 (Tend the garden)            │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    ▲                                        │
+│                                    │                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ L4: FAITHNET                                             [Rust]     │   │
+│  │     Kingdom network layer on existing infrastructure                │   │
+│  │     Biblical Foundation: Genesis 2:9 (Two Trees)                   │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    ▲                                        │
+│                                    │                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ L3: CPI-SI                                               [Go]       │   │
+│  │     Covenant Partnership Intelligence - The Intelligence Layer      │   │
+│  │     State machine, coordinates, health, cognition, identity        │   │
+│  │     Biblical Foundation: Genesis 2:7 (Breath of Life)              │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    ▲                                        │
+│                                    │                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ L2: PLATFORM                                             [C/Rust]   │   │
+│  │     MillenniumOS, Bereshit Filesystem, FUSE                        │   │
+│  │     Biblical Foundation: Genesis 1:6 (Firmament)                   │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    ▲                                        │
+│                                    │                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ L1: OMNICODE                                             [C/Rust]   │   │
+│  │     Universal meaning representation language                       │   │
+│  │     Lexer, parser, semantic, IR, VM, runtime, stdlib               │   │
+│  │     Biblical Foundation: John 1:1 (The Word)                       │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    ▲                                        │
+│                                    │                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ L0: UNIVERSAL                                            [C/Go]     │   │
+│  │     Foundation libraries: libtrit, libmath, foundation types       │   │
+│  │     Biblical Foundation: Genesis 1:1 (In the beginning)            │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.2 Layer Dependencies
+
+Each layer depends ONLY on layers below it:
+
+```
+L5 depends on: L4, L3, L2, L1, L0
+L4 depends on: L3, L2, L1, L0
+L3 depends on: L2, L1, L0
+L2 depends on: L1, L0
+L1 depends on: L0
+L0 depends on: [nothing - foundation]
+```
+
+**CRITICAL RULE:** Higher layers NEVER import from lower layers going up. L0 cannot import from L1. L3 cannot import from L4.
+
+### 1.3 What Each Layer IS
+
+| Layer | Name | What It IS | NOT |
+|-------|------|------------|-----|
+| L0 | Universal | Ternary math, foundation types | Not a library collection |
+| L1 | OmniCode | The language CPI-SI thinks in | Not just a compiler |
+| L2 | Platform | The OS/filesystem where it lives | Not just FUSE wrappers |
+| L3 | CPI-SI | The intelligence model itself | **NOT a Claude feature** |
+| L4 | FaithNet | The network for communication | Not TCP/IP wrapper |
+| L5 | Applications | End-user apps | Not demos |
+
+---
+
+## 2. Substrates: Running the Stack
+
+### 2.1 What is a Substrate?
+
+A **substrate** is the environment that RUNS the entire L0-L5 stack. The stack is substrate-independent - it can run on different substrates:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           THE STACK (L0-L5)                                  │
+│              (Same code, same behavior, substrate-independent)              │
+└─────────────────────────────────────────────────────────────────────────────┘
                                     │
-                                    │ Standard Interface
+                                    │ Runs on
                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        SUBSTRATE ADAPTERS                                │
-│                    (Thin Integration Layers)                             │
-│                                                                         │
-│  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐   │
-│  │   Claude Code     │  │   MillenniumOS    │  │     Future        │   │
-│  │     Adapter       │  │     Adapter       │  │    Substrates     │   │
-│  │                   │  │                   │  │                   │   │
-│  │ • Event hooks     │  │ • System events   │  │ • Web adapter     │   │
-│  │ • Statusline      │  │ • Native display  │  │ • Embedded        │   │
-│  │ • Claude config   │  │ • OS integration  │  │ • Mobile          │   │
-│  └───────────────────┘  └───────────────────┘  └───────────────────┘   │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              SUBSTRATES                                      │
+│                    (Different environments to run the stack)                │
+│                                                                             │
+│  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐       │
+│  │   Claude Code     │  │   MillenniumOS    │  │     Future        │       │
+│  │    Substrate      │  │    Substrate      │  │   Substrates      │       │
+│  │                   │  │                   │  │                   │       │
+│  │ Stack runs on     │  │ Stack runs        │  │ • Web browser     │       │
+│  │ Claude Code via   │  │ NATIVELY on the   │  │ • Embedded        │       │
+│  │ hooks & adapters  │  │ OS itself         │  │ • Mobile          │       │
+│  └───────────────────┘  └───────────────────┘  └───────────────────┘       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 1.3 What This Means
+### 2.2 Current Substrate: Claude Code
 
-| Component | Is It CPI-SI Core? | Is It Substrate-Specific? |
-|-----------|-------------------|---------------------------|
-| State machine (27-cube) | **YES** - The paradigm | No |
-| Coordinate system | **YES** - Bible grounding | No |
-| Health scoring | **YES** - Paradigm health | No |
-| Cognition/learning | **YES** - Intelligence model | No |
-| Claude hooks | No | **YES** - Claude Code only |
-| Claude statusline format | No | **YES** - Claude Code only |
-| Instance configs (nova_dawn) | Partial - Identity is universal | Config format may be substrate-specific |
-| OmniCode compiler | **YES** - Universal language | No |
-| libtrit | **YES** - Universal math | No |
+Right now, we run the stack on Claude Code. The Claude Code substrate:
+- Provides **hooks** that map Claude events to L3 (CPI-SI) operations
+- Provides **display** via statusline
+- Provides **config** for Claude-specific settings
 
----
+### 2.3 Future Substrate: MillenniumOS Native
 
-## 2. Current vs Target Architecture
+When MillenniumOS is ready, the SAME stack runs natively:
+- L2 (Platform) IS MillenniumOS
+- L3 (CPI-SI) runs directly on L2
+- No adapter needed - it's the native environment
 
-### 2.1 Current State (PROBLEMATIC)
+### 2.4 Substrate Structure
 
 ```
-word/
-├── claude/                    # MIXED: Has both universal AND Claude-specific
-│   ├── pkg/                  # DUPLICATE of word/work/pkg (why?)
-│   ├── hooks/                # Claude-specific (correct location)
-│   ├── config/               # Mixed universal + Claude
-│   ├── skills/               # Mixed universal + Claude
-│   └── statusline/           # Claude-specific display
+word/substrates/
 │
-├── work/                      # MIXED: Universal core but named "work"
-│   ├── pkg/                  # Universal CPI-SI (misnamed location)
-│   │   ├── core/            # Universal state machine
-│   │   ├── foundation/      # Universal data layer
-│   │   └── orchestration/   # Universal intelligence
-│   ├── hooks/               # Entry points (just call claude/hooks)
-│   └── system/              # Universal utilities
+├── interface.go               [Substrate interface definition]
 │
-├── skills/                    # Universal skills (duplicated in claude/)
-└── agents/                    # Universal agent definitions (duplicated)
-```
-
-**Problems:**
-1. `word/claude/pkg/` duplicates `word/work/pkg/` - no single source of truth
-2. Universal CPI-SI mixed with Claude-specific code
-3. Skills duplicated in two locations
-4. No clear substrate adapter pattern
-5. Shell scripts mixed with implementations
-
-### 2.2 Target State (CLEAN)
-
-```
-word/
-├── cpisi/                     # CPI-SI CORE (100% substrate-independent)
-│   ├── core/                 # State machine, coordinates, health
-│   ├── foundation/           # Schema, database, types
-│   ├── orchestration/        # Cognition, lifecycle, logging
-│   ├── identity/             # Identity management (universal)
-│   ├── skills/               # Universal skills
-│   └── system/               # System utilities
+├── claude-code/               [Claude Code Substrate]
+│   ├── adapter.go            # Implements substrate interface
+│   ├── hooks/                # Claude event → stack operations
+│   │   ├── session/         # Session lifecycle
+│   │   ├── tool/            # Tool usage
+│   │   └── prompt/          # User input
+│   ├── config/              # Claude-specific config
+│   │   ├── settings.json
+│   │   └── hooks.jsonc      # Event mappings
+│   └── display/             # Claude display (statusline)
 │
-├── substrates/                # SUBSTRATE ADAPTERS (thin layers)
-│   ├── claude-code/          # Claude Code adapter
-│   │   ├── hooks/           # Claude event handlers
-│   │   ├── config/          # Claude-specific config
-│   │   └── display/         # Statusline for Claude
-│   │
-│   └── millenniumos/         # Future: MillenniumOS adapter
-│       ├── events/          # OS event handlers
-│       ├── config/          # OS-specific config
-│       └── display/         # Native display
-│
-├── L0-universal/              # Foundation libraries
-├── L1-omnicode/               # OmniCode language
-├── L2-platform/               # OS/Filesystem
-├── L4-faithnet/               # Network layer
-├── L5-applications/           # Apps (Cornerstone)
-│
-├── interface/                 # CLI/TUI/GUI (substrate-independent)
-│
-├── definitions/               # Type definitions
-├── data/                      # Scripture, journals
-└── seed/                      # Templates
+└── millenniumos/              [Future: Native Substrate]
+    ├── adapter.go            # Native - may be minimal
+    └── config/               # OS-level config
 ```
 
 ---
 
-## 3. CPI-SI Core Components
+## 3. Language Architecture
 
-### 3.1 Core Packages (word/cpisi/)
+### 3.1 Language by Layer
 
-These are the universal intelligence paradigm. They have **ZERO** substrate dependencies.
+| Layer | Primary Language | Secondary | Rationale |
+|-------|------------------|-----------|-----------|
+| L0 | **C** | Go | Performance-critical math |
+| L1 | **C** | Rust | Parser/lexer performance, VM safety |
+| L2 | **C** | Rust | OS/kernel interface, FS safety |
+| L3 | **Go** | - | Complex state logic, proven impl |
+| L4 | **Rust** | - | Network security critical |
+| L5 | **C#** | Go | Game engine (Cornerstone) |
+| Substrates | **Go** | - | Integration/orchestration |
+| Interface | **Go/Rust/C++** | - | CLI(Go), TUI(Rust/C++), GUI(C++) |
+
+### 3.2 FFI Boundaries
 
 ```
-word/cpisi/
-│
-├── core/                      [The Paradigm Engine]
-│   ├── statemachine/         [Go - 4,280 LOC]
-│   │   ├── cube.go          # 27-position cube navigation
-│   │   ├── trajectory.go    # Movement tracking
-│   │   ├── workflow.go      # Workflow execution
-│   │   ├── pattern.go       # Pattern matching
-│   │   └── hebrew.go        # Hebrew naming conventions
-│   │
-│   ├── coordinates/          [Go - 5,000 LOC]
-│   │   ├── encoder.go       # Bible-grounded encoding
-│   │   ├── decoder.go       # Coordinate decoding
-│   │   ├── pipeline.go      # Processing pipeline
-│   │   └── assurance.go     # Validation layer
-│   │
-│   ├── health/               [Go]
-│   │   ├── scoring.go       # Base100 health scoring
-│   │   └── cascade.go       # Health cascade multipliers
-│   │
-│   ├── cpisi/                [Go]
-│   │   ├── compute/         # Geometric ternary calculations
-│   │   └── bereshit/        # Hebrew/Greek grounding
-│   │
-│   └── validation/           [Go]
-│       └── validator.go     # Structural validation
-│
-├── foundation/                [Data Layer]
-│   ├── schema/               [Go - 2,160 LOC]
-│   │   ├── loader.go        # TOML config loading
-│   │   └── statemachine_loader.go
-│   │
-│   ├── database/             [Go - 831 LOC]
-│   │   └── sqlite.go        # SQLite abstraction
-│   │
-│   ├── types/                [Go]
-│   │   ├── session.go       # Session types
-│   │   ├── state.go         # State types
-│   │   └── trajectory.go    # Trajectory types
-│   │
-│   └── result/               [Rust - NEW]
-│       └── lib.rs           # Error handling (safety-critical)
-│
-├── orchestration/             [Intelligence Layer]
-│   ├── cognition/            [Go]
-│   │   ├── constructs.go    # Mental constructs
-│   │   └── feedback.go      # Learning feedback loops
-│   │
-│   ├── lifecycle/            [Go]
-│   │   └── events.go        # Generic lifecycle events
-│   │
-│   ├── logging/              [Go]
-│   │   ├── health.go        # Health logging
-│   │   └── diagnostics.go   # System diagnostics
-│   │
-│   └── config/               [Go]
-│       ├── bible_index.go   # Scripture indexing
-│       └── ranking.go       # Ranking algorithms
-│
-├── identity/                  [Identity Management]
-│   ├── instance/             [Go]
-│   │   ├── loader.go        # Identity loading
-│   │   └── profile.go       # Profile management
-│   │
-│   └── templates/            [Markdown]
-│       └── identity.md      # Identity template
-│
-├── skills/                    [Universal Skills]
-│   ├── format-lookup/        # OmniCode format mappings
-│   ├── validate-omni/        # Structure validation
-│   ├── recognize-pattern/    # Pattern recognition
-│   ├── reflect-on-session/   # Session reflection
-│   ├── session-awareness/    # Temporal awareness
-│   ├── meta-awareness/       # Metacognition
-│   └── propagate-change/     # Change tracking
-│
-├── system/                    [System Utilities]
-│   ├── cmd/                  [Go binaries]
-│   │   ├── analyze-session/
-│   │   ├── pattern-detector/
-│   │   ├── check-awareness/
-│   │   └── stopping-point/
-│   │
-│   └── lib/                  [Go libraries]
-│       ├── temporal/
-│       ├── calendar/
-│       └── patterns/
-│
-└── agents/                    [Agent Definitions]
-    ├── nova-dawn.md
-    ├── ezra-matthan.md
-    └── templates/
-```
-
-### 3.2 Key Principle: No Substrate Imports
-
-CPI-SI core packages must NEVER import substrate-specific code:
-
-```go
-// WRONG - cpisi/core/statemachine/cube.go
-import (
-    "substrates/claude-code/hooks"  // NO! Substrate dependency!
-)
-
-// CORRECT - cpisi/core/statemachine/cube.go
-import (
-    "cpisi/foundation/types"  // Universal types
-    "cpisi/foundation/schema" // Universal config
-)
+┌─────────┐     C ABI      ┌─────────┐     cgo       ┌─────────┐
+│   L0    │◄──────────────►│   L1    │◄─────────────►│   L3    │
+│   (C)   │                │ (C/Rust)│               │  (Go)   │
+│ libtrit │                │ OmniCode│               │ CPI-SI  │
+└─────────┘                └─────────┘               └─────────┘
+     │                          │                         │
+     │                          │                         │
+     ▼                          ▼                         ▼
+┌─────────┐                ┌─────────┐               ┌─────────┐
+│   L2    │                │   L4    │               │   L5    │
+│ (C/Rust)│                │ (Rust)  │               │  (C#)   │
+│Platform │                │FaithNet │               │  Apps   │
+└─────────┘                └─────────┘               └─────────┘
 ```
 
 ---
 
-## 4. Substrate Adapter Pattern
+## 4. Target Directory Structure
 
-### 4.1 Adapter Interface
-
-Every substrate implements a standard interface to connect to CPI-SI:
-
-```go
-// word/substrates/adapter.go
-
-// SubstrateAdapter is the interface every substrate must implement
-type SubstrateAdapter interface {
-    // Lifecycle
-    Initialize(ctx context.Context) error
-    Shutdown(ctx context.Context) error
-
-    // Events - substrate translates its events to these
-    OnSessionStart(session *cpisi.Session) error
-    OnSessionEnd(session *cpisi.Session) error
-    OnToolUse(tool *cpisi.ToolEvent) error
-    OnUserInput(input *cpisi.UserInput) error
-
-    // Display - substrate handles its own display
-    UpdateDisplay(state *cpisi.State) error
-    ShowHealth(health *cpisi.Health) error
-
-    // Identity - substrate loads identity for CPI-SI
-    LoadIdentity(name string) (*cpisi.Identity, error)
-}
-```
-
-### 4.2 Claude Code Adapter
-
-```
-word/substrates/claude-code/
-│
-├── adapter.go                 [Main adapter implementation]
-│   // Implements SubstrateAdapter interface
-│   // Translates Claude Code events to CPI-SI events
-│
-├── hooks/                     [Claude Event Handlers - THIN]
-│   ├── session/
-│   │   ├── start.go          # SessionStart → adapter.OnSessionStart()
-│   │   ├── stop.go           # Stop → adapter.OnSessionEnd()
-│   │   └── end.go            # SessionEnd → cleanup
-│   │
-│   ├── tool/
-│   │   ├── pre_use.go        # PreToolUse → adapter.OnToolUse()
-│   │   └── post_use.go       # PostToolUse → logging
-│   │
-│   ├── prompt/
-│   │   └── submit.go         # PromptSubmit → adapter.OnUserInput()
-│   │
-│   └── main.go               # Hook entry point
-│
-├── config/                    [Claude-Specific Config]
-│   ├── settings.json         # Claude Code settings
-│   ├── config.toml           # Adapter configuration
-│   │
-│   ├── hooks.jsonc           # Event → State machine mappings
-│   │   // Maps Claude events to CPI-SI operations
-│   │   // "SessionStart" → "PROCEED from PAST"
-│   │
-│   └── instance/             # Claude instance configs
-│       ├── default/
-│       └── nova_dawn/        # Instance identity (calls cpisi/identity)
-│
-├── display/                   [Claude Display]
-│   ├── statusline/           # Statusline formatting
-│   │   ├── builder.go       # Build statusline string
-│   │   └── sections/        # Section renderers
-│   │
-│   └── output/               # Output formatting
-│       └── styles.go        # Claude-specific output styles
-│
-├── skills/                    [Claude-Adapted Skills]
-│   // These WRAP universal skills with Claude-specific I/O
-│   ├── create-code/          # Calls cpisi/skills + Claude formatting
-│   └── create-documentation/ # Calls cpisi/skills + Claude output
-│
-└── commands/                  [Claude Slash Commands]
-    ├── analyze/
-    ├── create/
-    └── validate/
-```
-
-### 4.3 Future: MillenniumOS Adapter
-
-```
-word/substrates/millenniumos/
-│
-├── adapter.go                 [MillenniumOS adapter implementation]
-│
-├── events/                    [OS Event Handlers]
-│   ├── system/
-│   │   ├── boot.go           # OS boot → adapter.OnSessionStart()
-│   │   └── shutdown.go       # OS shutdown → adapter.OnSessionEnd()
-│   │
-│   └── user/
-│       └── input.go          # User input → adapter.OnUserInput()
-│
-├── config/                    [OS-Specific Config]
-│   ├── system.toml           # OS configuration
-│   └── user/                 # User profiles
-│
-└── display/                   [Native Display]
-    ├── compositor/           # Window compositor
-    └── widgets/              # Native UI widgets
-```
-
-### 4.4 Adapter Registration
-
-```go
-// word/substrates/registry.go
-
-var adapters = map[string]func() SubstrateAdapter{
-    "claude-code":  NewClaudeCodeAdapter,
-    "millenniumos": NewMillenniumOSAdapter,
-    // Future adapters...
-}
-
-func GetAdapter(name string) (SubstrateAdapter, error) {
-    factory, ok := adapters[name]
-    if !ok {
-        return nil, fmt.Errorf("unknown substrate: %s", name)
-    }
-    return factory(), nil
-}
-```
-
----
-
-## 5. Language Architecture
-
-### 5.1 Language Assignments
-
-| Component | Language | Rationale |
-|-----------|----------|-----------|
-| **CPI-SI Core** | Go | Complex state logic, proven implementation |
-| **libtrit** | C | Performance-critical ternary math |
-| **OmniCode Frontend** | C | Parser/lexer performance |
-| **OmniCode VM** | Rust | Memory safety for execution |
-| **FaithNet** | Rust | Network security critical |
-| **Bereshit FS** | Rust | File safety critical |
-| **Substrate Adapters** | Go | Integration layer |
-| **TUI** | C++/Rust | Native terminal UI |
-| **GUI Desktop** | C++ | Native desktop apps |
-| **GUI Game** | C# | Cornerstone/Unity |
-
-### 5.2 FFI Boundaries
-
-```
-┌─────────────┐     C ABI      ┌─────────────┐     cgo       ┌─────────────┐
-│   libtrit   │◄──────────────►│  OmniCode   │◄─────────────►│  CPI-SI     │
-│     (C)     │                │   VM (Rust) │               │    (Go)     │
-└─────────────┘                └─────────────┘               └─────────────┘
-                                      │
-                                      │ C ABI
-                                      ▼
-                               ┌─────────────┐
-                               │  FaithNet   │
-                               │   (Rust)    │
-                               └─────────────┘
-```
-
----
-
-## 6. Target Directory Structure
-
-### 6.1 Complete Structure
+### 4.1 Complete Structure
 
 ```
 bereshit/                          [ROOT - Origin (∞)]
 │
 ├── void/                          [ENTRY GATE - Planning]
 │   ├── planning/
-│   │   ├── development/          [Dev plans, implementation]
-│   │   ├── claude-global/        [Claude infrastructure plans]
-│   │   ├── understanding/        [Layer specifications]
-│   │   └── vision/               [Grand vision]
-│   ├── imports/                   [External imports]
-│   └── workflow/                  [Workflow definitions]
+│   │   ├── development/
+│   │   ├── claude-global/
+│   │   ├── understanding/
+│   │   └── vision/
+│   ├── imports/
+│   └── workflow/
 │
 ├── word/                          [MAIN - The Word]
 │   │
-│   ├── cpisi/                     [CPI-SI CORE - Substrate Independent]
-│   │   ├── core/                 [State machine, coordinates, health]
-│   │   ├── foundation/           [Schema, database, types]
-│   │   ├── orchestration/        [Cognition, lifecycle, logging]
-│   │   ├── identity/             [Identity management]
-│   │   ├── skills/               [Universal skills]
-│   │   ├── system/               [System utilities]
-│   │   └── agents/               [Agent definitions]
+│   │ ══════════════════════════════════════════════════════════
+│   │                    THE LAYER STACK
+│   │ ══════════════════════════════════════════════════════════
 │   │
-│   ├── substrates/                [SUBSTRATE ADAPTERS]
-│   │   ├── adapter.go            [Adapter interface definition]
-│   │   ├── registry.go           [Adapter registry]
-│   │   │
-│   │   ├── claude-code/          [Claude Code Adapter]
-│   │   │   ├── adapter.go
-│   │   │   ├── hooks/
-│   │   │   ├── config/
-│   │   │   ├── display/
-│   │   │   ├── skills/           [Claude-adapted skills]
-│   │   │   └── commands/
-│   │   │
-│   │   └── millenniumos/         [Future: MillenniumOS Adapter]
-│   │       ├── adapter.go
-│   │       ├── events/
-│   │       ├── config/
-│   │       └── display/
-│   │
-│   ├── L0-universal/              [Foundation Libraries]
-│   │   ├── libtrit/              [C - Ternary math]
+│   ├── L0-universal/              [LAYER 0: Foundation]
+│   │   ├── libtrit/              [C - Ternary mathematics]
+│   │   │   ├── include/
+│   │   │   ├── src/
+│   │   │   └── test/
 │   │   ├── libmath/              [C - Mathematical foundations]
-│   │   └── util/                 [Go - Utilities]
+│   │   └── foundation/           [Go - Foundation types]
+│   │       ├── types/
+│   │       ├── schema/
+│   │       └── database/
 │   │
-│   ├── L1-omnicode/               [OmniCode Language]
+│   ├── L1-omnicode/               [LAYER 1: Language]
 │   │   ├── frontend/             [C - Lexer, parser]
 │   │   ├── semantic/             [Rust - Semantic analysis]
 │   │   ├── ir/                   [C - Intermediate representation]
 │   │   ├── codegen/              [C - Code generation]
 │   │   ├── vm/                   [Rust - Virtual machine]
-│   │   ├── runtime/              [Rust - Runtime]
-│   │   └── stdlib/               [OmniCode standard library]
+│   │   ├── runtime/              [Rust - Runtime system]
+│   │   └── stdlib/               [OmniCode - Standard library]
 │   │
-│   ├── L2-platform/               [Platform Layer]
-│   │   ├── kernel/               [C - OS kernel components]
-│   │   ├── filesystem/           [Rust - Bereshit FS]
-│   │   └── fuse/                 [C - FUSE mount]
+│   ├── L2-platform/               [LAYER 2: Platform]
+│   │   ├── millenniumos/         [C - OS kernel components]
+│   │   ├── filesystem/           [Rust - Bereshit filesystem]
+│   │   ├── fuse/                 [C - FUSE mount interface]
+│   │   └── drivers/              [C - Hardware abstraction]
 │   │
-│   ├── L4-faithnet/               [Network Layer]
+│   ├── L3-cpisi/                  [LAYER 3: Intelligence]
+│   │   ├── core/                 [Go - Core engine]
+│   │   │   ├── statemachine/    # 27-position cube
+│   │   │   ├── coordinates/     # Bible-grounded coords
+│   │   │   ├── health/          # Health scoring
+│   │   │   └── validation/      # Validation
+│   │   ├── cognition/            [Go - Cognition]
+│   │   │   ├── constructs/      # Mental constructs
+│   │   │   ├── feedback/        # Learning loops
+│   │   │   └── patterns/        # Pattern recognition
+│   │   ├── identity/             [Go - Identity]
+│   │   │   ├── instance/        # Instance management
+│   │   │   └── profiles/        # Profile data
+│   │   ├── orchestration/        [Go - Orchestration]
+│   │   │   ├── lifecycle/       # Lifecycle events
+│   │   │   └── logging/         # Health logging
+│   │   └── skills/               [Go - Universal skills]
+│   │       ├── format-lookup/
+│   │       ├── validate-omni/
+│   │       ├── recognize-pattern/
+│   │       ├── reflect-on-session/
+│   │       └── meta-awareness/
+│   │
+│   ├── L4-faithnet/               [LAYER 4: Network]
 │   │   ├── protocol/             [Rust - FaithNet protocol]
 │   │   ├── mapping/              [Rust - TCP/IP mapping]
 │   │   ├── access/               [Rust - Tiered access]
-│   │   └── crypto/               [Rust - Cryptography]
+│   │   ├── crypto/               [Rust - Cryptography]
+│   │   └── spec/                 [Docs - Specifications]
 │   │
-│   ├── L5-applications/           [Applications]
+│   ├── L5-applications/           [LAYER 5: Applications]
 │   │   └── cornerstone/          [SUBMODULE - C# Game Engine]
 │   │
-│   ├── interface/                 [CLI/TUI/GUI - Substrate Independent]
+│   │ ══════════════════════════════════════════════════════════
+│   │                      SUBSTRATES
+│   │ ══════════════════════════════════════════════════════════
+│   │
+│   ├── substrates/                [Substrate Adapters]
+│   │   ├── interface.go          [Substrate interface]
+│   │   │
+│   │   ├── claude-code/          [Claude Code Substrate]
+│   │   │   ├── adapter.go
+│   │   │   ├── hooks/
+│   │   │   │   ├── session/
+│   │   │   │   ├── tool/
+│   │   │   │   └── prompt/
+│   │   │   ├── config/
+│   │   │   │   ├── settings.json
+│   │   │   │   ├── config.toml
+│   │   │   │   └── instance/
+│   │   │   ├── display/
+│   │   │   │   └── statusline/
+│   │   │   ├── skills/           [Claude-adapted skills]
+│   │   │   └── commands/         [Slash commands]
+│   │   │
+│   │   └── millenniumos/         [Future: Native Substrate]
+│   │       └── (minimal - native environment)
+│   │
+│   │ ══════════════════════════════════════════════════════════
+│   │                      INTERFACE
+│   │ ══════════════════════════════════════════════════════════
+│   │
+│   ├── interface/                 [CLI/TUI/GUI]
 │   │   ├── core/                 [Shared interface core]
 │   │   ├── cli/                  [Go - Command line]
-│   │   ├── tui/                  [C++/Rust - Terminal UI]
+│   │   ├── tui/                  [Rust/C++ - Terminal UI]
 │   │   ├── gui-desktop/          [C++ - Desktop GUI]
 │   │   └── gui-game/             [C# - Game GUI]
 │   │
+│   │ ══════════════════════════════════════════════════════════
+│   │                      SUPPORTING
+│   │ ══════════════════════════════════════════════════════════
+│   │
 │   ├── definitions/               [Type Definitions]
-│   │   ├── core/                 [Core types (TOML)]
+│   │   ├── core/                 [TOML schemas]
 │   │   ├── glossary/             [Term definitions]
 │   │   └── omni/                 [OmniCode definitions]
 │   │
 │   ├── data/                      [Reference Data]
 │   │   ├── scripture/            [Bible databases]
 │   │   ├── journals/             [Journals]
-│   │   └── instance/             [Instance data]
+│   │   └── agents/               [Agent definitions]
 │   │
 │   ├── seed/                      [Templates]
-│   │   ├── code/                 [Code templates by language]
-│   │   ├── data/                 [Data templates]
-│   │   └── documentation/        [Doc templates]
+│   │   ├── code/                 [By language: c/, rust/, go/, cpp/, csharp/]
+│   │   ├── data/
+│   │   └── documentation/
 │   │
 │   └── build/                     [Build Artifacts]
 │       ├── c/
@@ -569,438 +376,416 @@ bereshit/                          [ROOT - Origin (∞)]
 │
 ├── tov/                           [EXIT GATE - Production]
 │   ├── demo/                     [Phase demonstrations]
-│   ├── licenses/                 [Licenses]
-│   ├── pricing/                  [Pricing]
-│   ├── releases/                 [Releases]
+│   ├── licenses/
+│   ├── pricing/
+│   ├── releases/
 │   └── data/                     [Runtime data]
 │
 ├── Cargo.toml                     [Rust workspace]
 ├── CMakeLists.txt                 [C/C++ build]
 ├── go.work                        [Go workspace]
-├── Makefile                       [Master build orchestration]
+├── Makefile                       [Master build]
 ├── LICENSE
 ├── root.adoc
 └── root.omni
 ```
 
----
+### 4.2 Key Structural Principles
 
-## 7. Script Reduction Strategy
-
-### 7.1 Current Shell Scripts
-
-| Script | Location | Purpose | Action |
-|--------|----------|---------|--------|
-| `build.sh` | word/work/system/scripts/ | Build orchestration | Replace with Makefile |
-| `logger.sh` | word/work/system/lib/logging/ | Logging utility | Replace with Go/Rust library |
-| `install.sh` | word/work/system/scripts/sudoers/ | Sudoers setup | Keep as thin wrapper |
-
-### 7.2 Script Reduction Philosophy
-
-**Principle:** Shell scripts should be thin wrappers that call proper implementations.
-
-```
-BEFORE (Script does everything):
-┌─────────────────────────────────────────┐
-│  build.sh (200 lines of bash)           │
-│  - Parse arguments                       │
-│  - Check dependencies                    │
-│  - Build C code                          │
-│  - Build Go code                         │
-│  - Build Rust code                       │
-│  - Run tests                             │
-│  - Package artifacts                     │
-└─────────────────────────────────────────┘
-
-AFTER (Script wraps implementation):
-┌─────────────────────────────────────────┐
-│  build.sh (10 lines)                    │
-│  - Set environment                       │
-│  - Call: make all                        │
-└─────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────┐
-│  Makefile (proper implementation)       │
-│  - Dependency management                 │
-│  - Parallel builds                       │
-│  - Cross-compilation                     │
-│  - Test orchestration                    │
-└─────────────────────────────────────────┘
-```
-
-### 7.3 New Build System
-
-```makefile
-# /bereshit/Makefile - Master build orchestration
-
-.PHONY: all clean test cpisi substrates libs
-
-# Build everything
-all: libs cpisi substrates
-
-# Foundation libraries (C)
-libs:
-	$(MAKE) -C word/L0-universal/libtrit
-	cmake --build word/L1-omnicode/build
-
-# CPI-SI Core (Go)
-cpisi:
-	cd word/cpisi && go build ./...
-
-# Substrate adapters
-substrates:
-	cd word/substrates/claude-code && go build ./...
-
-# Rust components
-rust:
-	cargo build --workspace
-
-# Tests
-test: test-libs test-cpisi test-substrates
-
-test-libs:
-	$(MAKE) -C word/L0-universal/libtrit test
-
-test-cpisi:
-	cd word/cpisi && go test ./...
-
-test-substrates:
-	cd word/substrates/claude-code && go test ./...
-
-# Clean
-clean:
-	$(MAKE) -C word/L0-universal/libtrit clean
-	rm -rf word/build/*
-	cargo clean
-```
-
-### 7.4 Logging: Shell → Go Library
-
-**Before (logger.sh):**
-```bash
-#!/bin/bash
-log_info() { echo "[INFO] $1"; }
-log_error() { echo "[ERROR] $1" >&2; }
-```
-
-**After (word/cpisi/foundation/logging/logger.go):**
-```go
-package logging
-
-import (
-    "log/slog"
-    "os"
-)
-
-var logger = slog.New(slog.NewJSONHandler(os.Stderr, nil))
-
-func Info(msg string, args ...any) {
-    logger.Info(msg, args...)
-}
-
-func Error(msg string, args ...any) {
-    logger.Error(msg, args...)
-}
-```
+| Principle | Implementation |
+|-----------|----------------|
+| **Layer Stack** | L0 → L1 → L2 → L3 → L4 → L5 in `word/` |
+| **No Upward Imports** | L3 cannot import L4; lower never imports higher |
+| **Substrates Separate** | `substrates/` runs the whole stack |
+| **Interface Separate** | `interface/` displays stack state |
+| **Single Source** | No duplicates - one location per component |
 
 ---
 
-## 8. Interface Layer (CLI/TUI/GUI)
+## 5. Layer Details
 
-### 8.1 Substrate-Independent Interfaces
+### 5.1 L0: Universal (Foundation)
 
-The interface layer is separate from substrate adapters. Interfaces display CPI-SI state; they don't integrate with substrate events.
+**Purpose:** The absolute foundation - math, types, schemas
+
+```
+word/L0-universal/
+├── libtrit/                       [C - 45 files]
+│   ├── include/
+│   │   ├── trit.h               # Core ternary types
+│   │   ├── cube.h               # 27-position cube
+│   │   ├── dimension.h          # Dimensional math
+│   │   └── temporal.h           # Temporal calculations
+│   ├── src/
+│   │   ├── trit.c
+│   │   ├── cube.c
+│   │   ├── math.c
+│   │   └── scripture_path.c     # Bible path encoding
+│   └── test/
+│
+├── libmath/                       [C - Mathematical foundations]
+│
+└── foundation/                    [Go - Foundation packages]
+    ├── types/                    # Session, state, trajectory types
+    ├── schema/                   # TOML config loading
+    └── database/                 # SQLite abstraction
+```
+
+### 5.2 L1: OmniCode (Language)
+
+**Purpose:** The language that CPI-SI thinks in
+
+```
+word/L1-omnicode/
+├── frontend/                      [C - 2,780 LOC]
+│   ├── lexer.c                  # Tokenization
+│   └── parser.c                 # AST construction
+│
+├── semantic/                      [Rust - NEW]
+│   └── analyzer.rs              # Type checking, validation
+│
+├── ir/                            [C - 699 LOC]
+│   └── ir.c                     # Intermediate representation
+│
+├── codegen/                       [C]
+│   └── codegen.c                # Code generation
+│
+├── vm/                            [Rust - Safety critical]
+│   ├── vm.rs                    # Virtual machine
+│   └── memory.rs                # Memory management
+│
+├── runtime/                       [Rust]
+│   └── runtime.rs               # Runtime support
+│
+└── stdlib/                        [OmniCode]
+    └── ...                      # Standard library
+```
+
+### 5.3 L2: Platform (OS/Filesystem)
+
+**Purpose:** The operating system and filesystem layer
+
+```
+word/L2-platform/
+├── millenniumos/                  [C - OS kernel]
+│   └── (future kernel components)
+│
+├── filesystem/                    [Rust - Bereshit FS]
+│   ├── bereshit.rs              # Filesystem implementation
+│   └── zone.rs                  # Zone management
+│
+├── fuse/                          [C - FUSE interface]
+│   ├── bereshit_fs.c            # FUSE mount
+│   └── zone.c
+│
+└── drivers/                       [C - HAL]
+    └── (hardware abstraction)
+```
+
+### 5.4 L3: CPI-SI (Intelligence)
+
+**Purpose:** The intelligence model - THIS IS THE PARADIGM
+
+```
+word/L3-cpisi/
+├── core/                          [Go - 9,000+ LOC]
+│   ├── statemachine/            # 27-position cube navigation
+│   │   ├── cube.go             # Cube structure & movement
+│   │   ├── trajectory.go       # Movement tracking
+│   │   ├── workflow.go         # Workflow execution
+│   │   └── pattern.go          # Pattern matching
+│   │
+│   ├── coordinates/             # Bible-grounded coordinate system
+│   │   ├── encoder.go          # Encoding
+│   │   ├── decoder.go          # Decoding
+│   │   └── pipeline.go         # Processing
+│   │
+│   ├── health/                  # Health scoring
+│   │   ├── scoring.go          # Base100 system
+│   │   └── cascade.go          # Cascade multipliers
+│   │
+│   └── validation/              # Validation layer
+│
+├── cognition/                     [Go - Learning]
+│   ├── constructs/              # Mental constructs
+│   ├── feedback/                # Learning feedback loops
+│   └── patterns/                # Pattern recognition
+│
+├── identity/                      [Go - Identity]
+│   ├── instance/                # Instance loading
+│   └── profiles/                # Profile management
+│
+├── orchestration/                 [Go - Orchestration]
+│   ├── lifecycle/               # Lifecycle events
+│   └── logging/                 # Health & diagnostics
+│
+└── skills/                        [Go - Universal skills]
+    ├── format-lookup/
+    ├── validate-omni/
+    ├── recognize-pattern/
+    ├── reflect-on-session/
+    ├── session-awareness/
+    ├── meta-awareness/
+    └── propagate-change/
+```
+
+### 5.5 L4: FaithNet (Network)
+
+**Purpose:** Kingdom network layer
+
+```
+word/L4-faithnet/
+├── protocol/                      [Rust - Protocol]
+│   └── faithnet.rs              # Core protocol
+│
+├── mapping/                       [Rust - TCP/IP mapping]
+│   └── mapping.rs               # Map to existing internet
+│
+├── access/                        [Rust - Access control]
+│   └── tiered.rs                # Tiered access system
+│
+├── crypto/                        [Rust - Cryptography]
+│   └── crypto.rs
+│
+└── spec/                          [Docs]
+    └── protocol-spec.md         # Protocol specification
+```
+
+### 5.6 L5: Applications
+
+**Purpose:** End-user applications
+
+```
+word/L5-applications/
+└── cornerstone/                   [SUBMODULE - C# Game Engine]
+    └── (Cornerstone repository)
+```
+
+---
+
+## 6. Interface Layer
+
+### 6.1 Purpose
+
+The interface layer **displays** the stack's state. It's separate from substrates (which RUN the stack).
+
+```
+┌─────────────────┐     Reads state     ┌─────────────────┐
+│   Interface     │◄───────────────────►│   Stack (L0-L5) │
+│  CLI/TUI/GUI    │                     │                 │
+└─────────────────┘                     └─────────────────┘
+```
+
+### 6.2 Structure
 
 ```
 word/interface/
+├── core/                          [Shared core]
+│   ├── state.go                 # State representation
+│   └── theme.go                 # Visual themes
 │
-├── core/                          [Shared Core]
-│   ├── state.go                  # CPI-SI state representation
-│   ├── commands.go               # Command registry
-│   └── theme.go                  # Visual themes
+├── cli/                           [Go - Command line]
+│   └── cmd/
+│       └── cpisi/               # Main CLI
 │
-├── cli/                           [Go - Command Line]
-│   ├── cmd/
-│   │   ├── cpisi/               # Main CPI-SI CLI
-│   │   │   ├── main.go
-│   │   │   ├── status.go        # Show state
-│   │   │   ├── navigate.go      # Cube navigation
-│   │   │   └── health.go        # Health display
-│   │   │
-│   │   └── tools/               # Utility CLIs
-│   │
-│   └── output/                   # CLI formatting
-│       ├── table.go
-│       └── tree.go
+├── tui/                           [Rust/C++ - Terminal UI]
+│   ├── rust/                    # crossterm implementation
+│   └── cpp/                     # ncurses implementation
 │
-├── tui/                           [Terminal UI]
-│   ├── rust/                     # Rust crossterm implementation
-│   │   ├── src/
-│   │   │   ├── app.rs           # Application state
-│   │   │   ├── ui.rs            # UI components
-│   │   │   ├── widgets/
-│   │   │   │   ├── cube.rs      # 27-cube visualization
-│   │   │   │   ├── health.rs    # Health gauges
-│   │   │   │   └── scripture.rs # Scripture display
-│   │   │   └── events.rs        # Event handling
-│   │   └── Cargo.toml
-│   │
-│   └── cpp/                      # C++ ncurses alternative
-│       └── ...
+├── gui-desktop/                   [C++ - Desktop]
+│   └── qt/                      # Qt implementation
 │
-├── gui-desktop/                   [C++ Desktop GUI]
-│   └── qt/
-│       ├── src/
-│       │   ├── main.cpp
-│       │   ├── mainwindow.cpp
-│       │   └── widgets/
-│       │       ├── cubeview.cpp
-│       │       └── healthbar.cpp
-│       └── CMakeLists.txt
-│
-└── gui-game/                      [C# Game GUI]
-    └── CPI-SI.UI/
-        ├── StateDisplay/
-        ├── HealthView/
-        └── NavigationPanel/
-```
-
-### 8.2 Interface ↔ CPI-SI Communication
-
-```
-┌─────────────────┐
-│   Interface     │  (CLI, TUI, GUI)
-│   (Any)         │
-└────────┬────────┘
-         │
-         │ Reads CPI-SI state via:
-         │ - Direct Go API calls
-         │ - JSON state files
-         │ - IPC (for non-Go interfaces)
-         │
-         ▼
-┌─────────────────┐
-│   CPI-SI Core   │
-│   (Universal)   │
-└────────┬────────┘
-         │
-         │ Receives events from:
-         │
-         ▼
-┌─────────────────┐
-│   Substrate     │  (Claude Code, MillenniumOS)
-│   Adapter       │
-└─────────────────┘
+└── gui-game/                      [C# - Game]
+    └── CPI-SI.UI/               # Cornerstone integration
 ```
 
 ---
 
-## 9. Migration Map
+## 7. Script Reduction
 
-### 9.1 Phase 1: Create CPI-SI Core Structure
+### 7.1 Philosophy
 
-```bash
-# Create cpisi directory structure
-mkdir -p word/cpisi/{core,foundation,orchestration,identity,skills,system,agents}
+**Shell scripts = thin wrappers over proper implementations**
 
-# Move universal packages from word/work/pkg/
-mv word/work/pkg/core/statemachine word/cpisi/core/
-mv word/work/pkg/core/coordinates word/cpisi/core/
-mv word/work/pkg/core/health word/cpisi/core/
-mv word/work/pkg/core/cpisi word/cpisi/core/
-mv word/work/pkg/core/validation word/cpisi/core/
-
-mv word/work/pkg/foundation/* word/cpisi/foundation/
-mv word/work/pkg/orchestration/* word/cpisi/orchestration/
-
-# Move universal skills
-mv word/skills/* word/cpisi/skills/
-
-# Move agents
-mv word/agents/* word/cpisi/agents/
-
-# Move system utilities
-mv word/work/system/cmd/* word/cpisi/system/cmd/
-mv word/work/system/lib/* word/cpisi/system/lib/
+```
+Shell Script (10 lines)     →     Implementation (Makefile/Go/Rust)
+   └── Sets environment           └── Does the actual work
+   └── Calls make/go/cargo
 ```
 
-### 9.2 Phase 2: Create Substrate Adapter Structure
+### 7.2 Master Makefile
+
+```makefile
+# /bereshit/Makefile
+
+.PHONY: all clean test
+
+# Build entire stack
+all: L0 L1 L2 L3 L4 L5 substrates
+
+L0:
+	$(MAKE) -C word/L0-universal/libtrit
+	cd word/L0-universal/foundation && go build ./...
+
+L1:
+	cmake --build word/L1-omnicode/build
+	cd word/L1-omnicode/vm && cargo build
+
+L2:
+	$(MAKE) -C word/L2-platform/fuse
+	cd word/L2-platform/filesystem && cargo build
+
+L3:
+	cd word/L3-cpisi && go build ./...
+
+L4:
+	cd word/L4-faithnet && cargo build
+
+L5:
+	# Cornerstone built separately
+
+substrates:
+	cd word/substrates/claude-code && go build ./...
+
+test:
+	$(MAKE) -C word/L0-universal/libtrit test
+	cd word/L3-cpisi && go test ./...
+	cargo test --workspace
+```
+
+---
+
+## 8. Migration Map
+
+### 8.1 Phase 1: Reorganize to Layer Structure
 
 ```bash
-# Create substrates directory
+# Create layer structure
+mkdir -p word/L{0..5}-{universal,omnicode,platform,cpisi,faithnet,applications}
+
+# Move to L0
+mv word/work/pkg/trit word/L0-universal/libtrit
+mv word/work/pkg/foundation word/L0-universal/foundation
+
+# Move to L1
+mv word/work/pkg/omni word/L1-omnicode/
+
+# Move to L2
+mv word/work/pkg/fuse word/L2-platform/fuse
+
+# Move to L3
+mv word/work/pkg/core/statemachine word/L3-cpisi/core/
+mv word/work/pkg/core/coordinates word/L3-cpisi/core/
+mv word/work/pkg/core/health word/L3-cpisi/core/
+mv word/work/pkg/orchestration word/L3-cpisi/orchestration/
+mv word/skills word/L3-cpisi/skills/
+```
+
+### 8.2 Phase 2: Create Substrates
+
+```bash
+# Create substrates structure
 mkdir -p word/substrates/claude-code/{hooks,config,display,skills,commands}
 
 # Move Claude-specific code
 mv word/claude/hooks/* word/substrates/claude-code/hooks/
 mv word/claude/config/* word/substrates/claude-code/config/
-mv word/claude/statusline/* word/substrates/claude-code/display/statusline/
-mv word/claude/skills/* word/substrates/claude-code/skills/
-mv word/claude/commands/* word/substrates/claude-code/commands/
+mv word/claude/statusline word/substrates/claude-code/display/
 ```
 
-### 9.3 Phase 3: Eliminate Duplicates
+### 8.3 Phase 3: Eliminate Duplicates
 
 ```bash
-# DELETE duplicate word/claude/pkg/ (was mirror of word/work/pkg)
-rm -rf word/claude/pkg/
-
-# DELETE now-empty directories
-rm -rf word/work/pkg/
-rm -rf word/claude/
-rm -rf word/skills/
-rm -rf word/agents/
+# DELETE duplicates
+rm -rf word/claude/pkg/    # Was duplicate of word/work/pkg
+rm -rf word/work/          # Moved to layer structure
+rm -rf word/claude/        # Moved to substrates
 ```
 
-### 9.4 Phase 4: Update Go Module Paths
+### 8.4 Phase 4: Update Imports
 
 ```go
 // Before
-import "cws.studio/claude/hooks/session"
 import "cws.studio/bereshit/pkg/core/statemachine"
 
 // After
-import "cws.studio/bereshit/substrates/claude-code/hooks/session"
-import "cws.studio/bereshit/cpisi/core/statemachine"
-```
-
-### 9.5 Phase 5: Create Adapter Interface
-
-```bash
-# Create adapter interface file
-touch word/substrates/adapter.go
-touch word/substrates/registry.go
-
-# Create Claude adapter implementation
-touch word/substrates/claude-code/adapter.go
-```
-
-### 9.6 Phase 6: Reduce Shell Scripts
-
-```bash
-# Create master Makefile
-touch Makefile
-
-# Remove redundant shell scripts
-rm word/work/system/scripts/build.sh  # Replaced by Makefile
-
-# Keep only thin wrappers
-# word/work/system/scripts/sudoers/install.sh - thin wrapper, keep
-```
-
-### 9.7 Phase 7: Update Build Configuration
-
-```bash
-# Update go.work
-cat > go.work << 'EOF'
-go 1.23
-
-use (
-    ./word/cpisi
-    ./word/substrates/claude-code
-    ./word/L0-universal/util
-    ./word/interface/cli
-    ./tov/demo/phase-0/demo-config
-)
-EOF
-
-# Update Cargo.toml
-# ... (Rust workspace config)
-
-# Update CMakeLists.txt
-# ... (C/C++ build config)
+import "cws.studio/bereshit/L3-cpisi/core/statemachine"
 ```
 
 ---
 
-## 10. Validation Checklist
+## 9. Validation Checklist
 
-### 10.1 Structure Validation
+### 9.1 Layer Structure
 
-- [ ] `word/cpisi/` contains ALL universal CPI-SI code
-- [ ] `word/cpisi/` has ZERO substrate imports
-- [ ] `word/substrates/claude-code/` contains ONLY Claude-specific code
-- [ ] `word/claude/pkg/` is DELETED (no more duplicate)
-- [ ] `word/work/pkg/` is DELETED (moved to cpisi/)
-- [ ] Adapter interface defined in `word/substrates/adapter.go`
+- [ ] `word/L0-universal/` contains libtrit, libmath, foundation
+- [ ] `word/L1-omnicode/` contains frontend, semantic, ir, codegen, vm, runtime
+- [ ] `word/L2-platform/` contains millenniumos, filesystem, fuse
+- [ ] `word/L3-cpisi/` contains core, cognition, identity, orchestration, skills
+- [ ] `word/L4-faithnet/` contains protocol, mapping, access, crypto
+- [ ] `word/L5-applications/` contains cornerstone submodule
 
-### 10.2 Dependency Validation
+### 9.2 Dependency Validation
 
 ```bash
-# Verify cpisi has no substrate imports
-grep -r "substrates/" word/cpisi/
+# L3 should NOT import from L4, L5
+grep -r "L4-faithnet\|L5-applications" word/L3-cpisi/
 # Should return NOTHING
 
-# Verify substrates import cpisi (not vice versa)
-grep -r "cpisi/" word/substrates/claude-code/
-# Should find imports
+# Substrates import from layers (not vice versa)
+grep -r "substrates/" word/L3-cpisi/
+# Should return NOTHING
 ```
 
-### 10.3 Build Validation
+### 9.3 No Duplicates
 
-- [ ] `make all` builds everything
-- [ ] `make test` passes all tests
-- [ ] `cargo build --workspace` succeeds
-- [ ] Shell scripts reduced to thin wrappers
+- [ ] `word/claude/pkg/` is DELETED
+- [ ] `word/work/pkg/` is DELETED
+- [ ] Single source of truth for each component
 
-### 10.4 Runtime Validation
+### 9.4 Build Validation
 
-- [ ] CPI-SI core runs without substrate
-- [ ] Claude adapter connects CPI-SI to Claude Code
-- [ ] Health scoring works
-- [ ] State machine navigates correctly
+- [ ] `make all` builds entire stack
+- [ ] Each layer builds independently
+- [ ] Tests pass at each layer
 
 ---
 
 ## Quick Reference
 
-### Structure Summary
+### The Stack
 
 ```
-word/
-├── cpisi/              [UNIVERSAL - The paradigm itself]
-│   ├── core/          [State machine, coordinates, health]
-│   ├── foundation/    [Schema, database, types]
-│   ├── orchestration/ [Cognition, lifecycle]
-│   ├── identity/      [Identity management]
-│   ├── skills/        [Universal skills]
-│   └── system/        [Utilities]
-│
-├── substrates/         [ADAPTERS - Thin integration layers]
-│   ├── claude-code/   [Claude Code adapter]
-│   └── millenniumos/  [Future: MillenniumOS adapter]
-│
-├── L0-universal/       [C/Go - Foundation libs]
-├── L1-omnicode/        [C/Rust - Language]
-├── L2-platform/        [C/Rust - OS layer]
-├── L4-faithnet/        [Rust - Network]
-├── L5-applications/    [C# - Apps]
-│
-└── interface/          [CLI/TUI/GUI - Display layer]
+L5: Applications    [C#]      - Cornerstone, end-user apps
+L4: FaithNet        [Rust]    - Network layer
+L3: CPI-SI          [Go]      - Intelligence model (THE PARADIGM)
+L2: Platform        [C/Rust]  - MillenniumOS, Bereshit FS
+L1: OmniCode        [C/Rust]  - Language
+L0: Universal       [C/Go]    - Foundation (libtrit, types)
 ```
 
-### Key Principle
+### Key Insight
 
-> **CPI-SI is the paradigm. Claude Code is just a substrate.**
+> **CPI-SI (L3) is not something ON TOP of the stack.**
+> **CPI-SI IS Layer 3 of the stack.**
 >
-> The intelligence lives in `word/cpisi/`. Everything else is integration.
+> The entire L0-L5 stack is the Kingdom Technology system.
+> Substrates are how you RUN this stack on different environments.
 
 ---
 
 ## Closing
 
-This reorganization establishes a clean separation:
+This reorganization positions the codebase correctly:
 
-1. **CPI-SI Core** (`word/cpisi/`) - The universal intelligence paradigm
-2. **Substrate Adapters** (`word/substrates/`) - Thin integration layers
-3. **Foundation** (`word/L0-L5/`) - Language, platform, network
-4. **Interface** (`word/interface/`) - Display layer
+1. **L0-L5 Layer Stack** - The integrated Kingdom Technology system
+2. **CPI-SI as L3** - The intelligence layer WITHIN the stack
+3. **Substrates** - Different environments to RUN the stack
+4. **Interface** - Different ways to DISPLAY the stack
 
-Claude Code becomes just ONE way to run CPI-SI. Tomorrow, the same paradigm runs natively on MillenniumOS with a different adapter.
+> *"In the beginning was the Word, and the Word was with God, and the Word was God."* — John 1:1 KJV
 
-> *"And the LORD God formed man of the dust of the ground, and breathed into his nostrils the breath of life; and man became a living soul."* — Genesis 2:7 KJV
-
-The dust (substrate) provides the body. The breath (CPI-SI) provides the soul.
+The Word (L1 OmniCode) is the language. The breath (L3 CPI-SI) is the intelligence. Together they form the living system.
 
 ---
 
@@ -1009,7 +794,7 @@ The dust (substrate) provides the body. The breath (CPI-SI) provides the soul.
 | Field | Value |
 |-------|-------|
 | Key | B-void-planning-repo-reorganization |
-| Version | 3.0.0 |
+| Version | 3.1.0 |
 | Status | Active |
 | Created | 2026-02-01 |
 | Updated | 2026-02-01 |
