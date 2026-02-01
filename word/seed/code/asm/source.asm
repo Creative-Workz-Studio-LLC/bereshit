@@ -1,22 +1,69 @@
 ; %error "TEMPLATE: Remove this line when ready to assemble"
-; ═══════════════════════════════════════════════════════════════════════════
-; TEMPLATE: Assembly Source File (4-Block Structure)
-; Key: B-word-seed-code-asm-source
-; ═══════════════════════════════════════════════════════════════════════════
+; @file source.asm
+; @omni template --asm-source
+;
+; ═══════════════════════════════════════════════════════════════════════════════
+; OMNICODE PRAGMA [PRAGMA]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @legend
+;   :req  REQUIRED   — must exist, validation fails without
+;   :inh  INHERITED  — from template, override allowed
+;   :ins  INSTANCE   — file-specific, unique values
+; @endlegend
+;
+; ───────────────────────────────────────────────────────────────────────────────
+; P.1 CORE — Identity [CORE]
+; ───────────────────────────────────────────────────────────────────────────────
+;
+; @omni:req  key        = B-word-seed-code-asm-source
+; @omni:req  from       = bereshit/word/omni/seed/B-word-omni-seed-code.omni
+; @omni:req  at         = template
+;
+; ───────────────────────────────────────────────────────────────────────────────
+; P.2 FAMILY — Classification [FAMILY]
+; ───────────────────────────────────────────────────────────────────────────────
+;
+; @omni:inh  type       = source
+; @omni:inh  subtype    = template
+; @omni:inh  role       = seed
+; @omni:inh  structure  = 4-block
+;
+; ───────────────────────────────────────────────────────────────────────────────
+; P.3 INSTANCE — File Details [INSTANCE]
+; ───────────────────────────────────────────────────────────────────────────────
+;
+; @omni:ins  component  = seed
+; @omni:ins  layer      = code/asm
+; @omni:ins  includes   = none
+; @omni:ins  provides   = [ASM_SOURCE_TEMPLATE]
+;
+; ───────────────────────────────────────────────────────────────────────────────
+; P.4 ARCHITECTURE — Scaling Context [ARCH]
+; ───────────────────────────────────────────────────────────────────────────────
+;
+; @omni:ins  layers     = [0:kernel, 1:system, 2:runtime, 3:framework,
+;                          4:health, 5:network, 6:storage, 7:engine, 8:app]
+; @omni:ins  scale      = 3^n [1, 3, 9, 27, 81, 243, 729, 2187, 6561]
+; @omni:ins  pattern    = 4+1+4 [below:0-3, center:4, above:5-8]
+; @omni:ins  anchor     = genesis_1_1 -> void(0) -> unity(1) -> derivation
+;
+; ───────────────────────────────────────────────────────────────────────────────
+; P.5 SUMMARY — Human Identity [SUMMARY]
+; ───────────────────────────────────────────────────────────────────────────────
+;
+; @omni:req  title      = Assembly Source File Template
+; @omni:req  brief      = 4-block structure template for NASM assembly source files
+;
+; ═══════════════════════════════════════════════════════════════════════════════
+; END PRAGMA [END]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; USAGE: cp source.asm dest.asm → update pragma → fill sections
 ;
 ; DEPENDENCY CLASSIFICATION: [PURE/DEPENDED] ([deps if DEPENDED])
 ;   - PURE: Self-contained - no external dependencies beyond CPU
 ;   - DEPENDED: Needs external symbols - list them: (needs: kernel_main, vga_init)
-;
-; This is a TEMPLATE file - copy and modify for new assembly source files.
-; Replace all [bracketed] placeholders with actual content.
-; Rename to appropriate name (e.g., entry.asm, boot.asm).
-; Remove the "%error" line above when ready to assemble.
-;
-; Assembler: NASM (Netwide Assembler)
-; derives_from: bereshit/word/omni/seed/code.omni
-; Derived from: Kingdom Technology 4-block code structure
-; See: standards/code/4-block/ for complete documentation
 ;
 ; Assembly Format Notes:
 ;   - NASM syntax (Intel style, not AT&T)
@@ -24,462 +71,531 @@
 ;   - Labels end with colon (:)
 ;   - Directives use brackets for memory [addr]
 ;
-; ═══════════════════════════════════════════════════════════════════════════
-
 ; [brief description of what this assembly file implements].
 ;
 ; [Module Name] - CPI-SI [Project/System Name]
 ;
-; ============================================================================
-; METADATA
-; ============================================================================
+; ═══════════════════════════════════════════════════════════════════════════════
+; METADATA BLOCK [METADATA]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; ────────────────────────────────────────────────────────────────
-; CORE IDENTITY (Required)
-; ────────────────────────────────────────────────────────────────
+; @brief Identity and context for this component.
 ;
-; # Biblical Foundation
+; STRUCTURE: M.1-M.10 sections, grouped for readability:
+;   - M.1 IDENTITY:    Core identity (file, brief, key, title, type, component, role)
+;   - M.2-M.6:         State, Attribution, Location, Derivation, Classification
+;   - M.7-M.10:        Intent, Grounding, Dependencies, Roadmap
 ;
-; Scripture: [Relevant verse grounding this module's purpose]
+; DOMAIN FILES: Use condensed M.2-M.6 and M.7-M.10 groupings.
+; FOUNDATION FILES: May expand individual M.X sections as needed.
 ;
-; Principle: [Kingdom principle this module demonstrates]
+; ═══════════════════════════════════════════════════════════════════════════════
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; M.1 IDENTITY — Core Identity [IDENTITY]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Anchor: [Supporting verse reinforcing the principle]
+; @file      seed_component.asm
+; @brief     [Component Name] — [One-line description].
 ;
-; # CPI-SI Identity
+; Key:       [PROJECT-COMPONENT-NAME]
+; Title:     [Human-Readable Title]
+; Type:      Source ([Bootloader|Kernel|Library|Executable])
+; Component: [Ladder|Baton|Rails] — [architectural role]
+; Role:      [Specific responsibility in system]
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; M.2 STATE — Lifecycle State [STATE]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Component Type: [Ladder/Baton/Rails - see CWS-STD-004 for explanations]
+; @version   a-XX.XX
+; @date      YYYY-MM-DD
 ;
-; Role: [Specific responsibility in system architecture]
+; Status:    Active
+; Created:   YYYY-MM-DD
+; Updated:   YYYY-MM-DD
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; M.3 ATTRIBUTION — Authorship & Rights [ATTRIBUTION]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Paradigm: CPI-SI framework component
+; @author    SeedCallback (Architect)
+; @author    SeedCallback (Implementation)
+; @copyright © YYYY [Organization]. All rights reserved.
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; M.4 LOCATION — File Position [LOCATION]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; # Authorship & Lineage
+; Path:      [project/path/to/file.asm]
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; M.5 DERIVATION — Template Lineage [DERIVATION]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-;   - Architect: [Who designed the approach and requirements]
-;   - Implementation: [Who wrote the code and verified it works]
-;   - Created: [YYYY-MM-DD]
-;   - Version: [MAJOR.MINOR.PATCH]
-;   - Modified: [YYYY-MM-DD - what changed]
+; Derives:   bereshit/word/seed/code/asm/source.asm (template)
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; M.6 CLASSIFICATION — Categorization [CLASSIFICATION]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Version History:
+; Tags:      [asm, nasm, kernel, boot, x86, x64]
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; M.7 INTENT — Purpose Statement [INTENT]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-;   - [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
-;   - [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
-;
-; # Purpose & Function
-;
-; Purpose: [What problem does this module solve?]
+; Purpose:   [What this enables for whom]
 ;
 ; Core Design: [Architectural pattern or paradigm]
 ;
 ; Key Features:
+;   - [What it provides — major capabilities]
+;   - [What it enables — what others can build with this]
+;   - [What problems it solves — specific use cases]
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; M.8 GROUNDING — Biblical Foundation [GROUNDING]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-;   - [What it provides - major capabilities]
-;   - [What it enables - what others can build with this]
-;   - [What problems it solves - specific use cases]
+; Scripture: [Book Chapter:Verse] — "[Quote or theme]"
+; Principle: [Kingdom principle demonstrated]
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; M.9 DEPENDENCIES — Required Components [DEPENDENCIES]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Philosophy: [Guiding principle for how this module works]
+; CPU Features:
+;   - [list required features — e.g., protected mode, long mode, SSE]
 ;
-; ────────────────────────────────────────────────────────────────
-; INTERFACE (Expected)
-; ────────────────────────────────────────────────────────────────
+; External Symbols:
+;   - [None | EXTERN symbol_name — purpose]
 ;
-; # Dependencies
+; Memory Layout:
+;   - [Any assumptions about memory layout]
 ;
-; What This Needs:
-;
-;   - CPU Features: [list required features - e.g., protected mode, SSE]
-;   - External Symbols: [None | list extern symbols]
-;   - Memory Layout: [Any assumptions about memory layout]
-;
-; What Uses This:
-;
-;   - Linker: [How this gets linked]
-;   - Bootloader: [If applicable]
-;   - C code: [If called from C]
-;
-; Integration Points:
-;
-;   - [How other systems connect - calling convention, symbol names]
-;   - [Cross-component interactions]
-;   - [Memory/register state expectations]
-;
-; # Usage & Integration
+; Used by:
+;   - [What depends on this — linker, bootloader, C code]
 ;
 ; Assemble:
-;
 ;   nasm -f [format] [source].asm -o [output].[o/bin]
 ;
 ; Formats:
-;   - elf32: 32-bit ELF object (Linux, link with ld)
-;   - elf64: 64-bit ELF object (Linux x64)
 ;   - bin:   Flat binary (bootloaders, bare metal)
-;   - win32: Windows 32-bit object
-;   - win64: Windows 64-bit object
-;
-; ────────────────────────────────────────────────────────────────
-; OPERATIONAL (Contextual)
-; ────────────────────────────────────────────────────────────────
-;
-; # Blocking Status
-;
-; [Blocking/Non-blocking]: [Brief explanation]
-;
-; Mitigation: [How blocking/failures handled]
-;
-; # Health Scoring
-;
-; [OMIT: Assembly modules are foundations - health tracked at higher levels]
-;
-; Note: Assembly modules typically don't track health - they're foundations.
-; Health scoring occurs in the C/Go code that calls these routines.
-;
-; ────────────────────────────────────────────────────────────────
-; METADATA Omission Guide
-; ────────────────────────────────────────────────────────────────
-;
-; Tier 1 (CORE IDENTITY): Never omit - every file needs these.
-;
-; Tier 2 (INTERFACE): May omit with [OMIT: reason] notation.
-;   - Dependencies: Required for ASM - documents CPU features and extern symbols
-;   - Usage & Integration: Required - shows assemble commands and formats
-;
-; Tier 3 (OPERATIONAL): Include when applicable to file type.
-;   - Blocking Status: Include for boot code, interrupt handlers
-;   - Health Scoring: [OMIT: Assembly is foundational - health at higher levels]
-;
-; Unlike SETUP (all sections required), METADATA omission signals component characteristics.
+;   - elf64: 64-bit ELF object (Linux x64)
+;   - elf32: 32-bit ELF object (Linux)
 
-; ============================================================================
-; END METADATA
-; ============================================================================
+; ═══════════════════════════════════════════════════════════════════════════════
+; M.10 ROADMAP — Version History [ROADMAP]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; History:
+;   a-XX.XX (YYYY-MM-DD) — [Initial creation or significant change]
+;   a-XX.XX (YYYY-MM-DD) — [Subsequent change]
 
-; ============================================================================
-; SETUP
-; ============================================================================
-;
-; For SETUP structure explanation, see: standards/code/4-block/CWS-STD-006-CODE-setup-block.md
-;
-; Section order: Directives → Constants → External Symbols → Data → BSS → Debug Infrastructure
-; This flows: assembler config → values → dependencies → initialized → uninitialized → infrastructure
-;
-; IMPORTANT: All sections MUST be present, even if empty or reserved.
-; For empty sections, use: ; [Reserved: Brief reason why not needed]
-;
-; -----------------------------------------------------------------------------
-; SETUP Sections Overview
-; -----------------------------------------------------------------------------
-;
-; 1. ASSEMBLER DIRECTIVES (Dependencies)
-;    Purpose: Configuration telling NASM how to assemble this file
-;    Subsections: Mode Selection → Origin → CPU Features
-;
-; 2. CONSTANTS (EQU Definitions)
-;    Purpose: Fixed values that never change (compile-time, no memory used)
-;    Subsections: Category Constants → Hardware Constants → Size Constants
-;
-; 3. EXTERNAL SYMBOLS (Type Behaviors)
-;    Purpose: Symbols defined elsewhere or exported to other modules
-;    Subsections: External Dependencies (EXTERN) → Exported Symbols (GLOBAL)
-;
-; 4. DATA SECTION (Variables - Initialized)
-;    Purpose: Data with initial values, loaded into memory at runtime
-;    Subsections: String Data → Numeric Data → Structured Data
-;
-; 5. BSS SECTION (Variables - Uninitialized)
-;    Purpose: Space reserved for runtime data, does not increase binary size
-;    Subsections: Buffers → Stack → Heap Area
-;
-; 6. DEBUG INFRASTRUCTURE (Rails Pattern)
-;    Purpose: Debug output, logging markers, diagnostic symbols
-;    Subsections: Debug Strings → Diagnostic Symbols
+; ═══════════════════════════════════════════════════════════════════════════════
+; END METADATA [END]
+; ═══════════════════════════════════════════════════════════════════════════════
 
-; ────────────────────────────────────────────────────────────────
-; Assembler Directives
-; ────────────────────────────────────────────────────────────────
+; ═══════════════════════════════════════════════════════════════════════════════
+; SETUP BLOCK [SETUP]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Configuration telling NASM how to assemble this file.
-; Must come before any code or data.
+; @brief Configuration and declarations before body.
 ;
-; See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-001-imports.md
+; 4-Block Code Structure: METADATA → SETUP → BODY → CLOSING
+;
+; CONTAINS:
+;   - S.1 DIRECTIVES — Assembler configuration (BITS, ORG, CPU)
+;   - S.2 CONSTANTS  — EQU definitions (compile-time values)
+;   - S.3 EXTERNAL   — Symbol declarations (EXTERN, GLOBAL)
+;   - S.4 DATA       — Initialized data section
+;   - S.5 BSS        — Uninitialized data section
+;   - S.6 DEBUG      — Debug infrastructure
+;
+; Section order: Directives → Constants → External → Data → BSS → Debug
+; Flow: assembler config → values → symbols → initialized → uninitialized → debug
+;
+; ═══════════════════════════════════════════════════════════════════════════════
 
-;--- Mode Selection ---
+; ═══════════════════════════════════════════════════════════════════════════════
+; S.1 DIRECTIVES — Assembler Configuration [DIRECTIVES]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief Configuration telling NASM how to assemble this file.
+;
+; PURPOSE: Set CPU mode, origin address, and feature requirements.
+;          Must come before any code or data.
+;
+; CONTAINS:
+;   - S.1a MODE   — CPU bit mode (16/32/64)
+;   - S.1b ORIGIN — Load address for flat binaries
+;   - S.1c CPU    — Minimum CPU feature requirements
+;
+; Builds FROM: SETUP block (configuration context)
+; Builds TO:   S.2 CONSTANTS (assembler now knows target mode)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
+
+; ───────────────────────────────────────────────────────────────────────────────
+; S.1a MODE — CPU Bit Mode [MODE]
+; ───────────────────────────────────────────────────────────────────────────────
+
 ; [BITS 16]          ; Real mode (bootloaders, BIOS)
 ; [BITS 32]          ; Protected mode (32-bit kernels)
 ; [BITS 64]          ; Long mode (64-bit kernels)
 
-;--- Origin (for flat binaries) ---
-; [ORG 0x7C00]       ; Bootloader origin
-; [ORG 0x100000]     ; Kernel load address
+; ───────────────────────────────────────────────────────────────────────────────
+; S.1b ORIGIN — Load Address [ORIGIN]
+; ───────────────────────────────────────────────────────────────────────────────
 
-;--- CPU Feature Requirements ---
+; [ORG 0x7C00]       ; Boot sector origin
+; [ORG 0x7E00]       ; Stage 0b origin (after boot sector)
+; [ORG 0x100000]     ; Kernel load address (1MB)
+
+; ───────────────────────────────────────────────────────────────────────────────
+; S.1c CPU — Feature Requirements [CPU]
+; ───────────────────────────────────────────────────────────────────────────────
+
 ; [CPU 386]          ; Minimum 386 instructions
-; [CPU X64]          ; 64-bit instructions
+; [CPU X64]          ; 64-bit long mode instructions
 
-; ────────────────────────────────────────────────────────────────
-; Constants (EQU Definitions)
-; ────────────────────────────────────────────────────────────────
+; ═══════════════════════════════════════════════════════════════════════════════
+; S.2 CONSTANTS — EQU Definitions [CONSTANTS]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Named values that never change. Magic numbers given meaningful names.
-; EQU creates compile-time constants (no memory used).
+; @brief Named compile-time values — no memory used at runtime.
 ;
-; See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-002-constants.md
-
-;--- [Category Name] Constants ---
-; [Brief explanation of this group and their purpose]
-
-; ; [CONSTANT_NAME] [brief description].
-; ;
-; ; Set to [value] based on [reasoning].
-; [CONSTANT_NAME] equ [value]
+; PURPOSE: Define component-specific constants. Magic numbers with meaning.
 ;
-; ; [ANOTHER_CONSTANT] [brief description].
-; [ANOTHER_CONSTANT] equ [value]
+; CONTAINS:
+;   - S.2a SIZES    — Buffer and array sizes
+;   - S.2b HARDWARE — Memory addresses, port numbers
+;   - S.2c LIMITS   — Min, max, default values
+;
+; Builds FROM: S.1 DIRECTIVES (mode affects address sizes)
+; Builds TO:   S.3 EXTERNAL (constants used in symbol declarations)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
 
-;--- Hardware Constants ---
+; ───────────────────────────────────────────────────────────────────────────────
+; S.2a SIZES — Buffer and Array Sizes [SIZES]
+; ───────────────────────────────────────────────────────────────────────────────
+
+; STACK_SIZE      equ 16384      ; 16KB stack
+; SECTOR_SIZE     equ 512        ; Disk sector size
+; BUFFER_SIZE     equ 4096       ; General buffer size
+
+; ───────────────────────────────────────────────────────────────────────────────
+; S.2b HARDWARE — Memory and Port Constants [HARDWARE]
+; ───────────────────────────────────────────────────────────────────────────────
+
 ; VGA_MEMORY      equ 0xB8000    ; VGA text mode buffer address
 ; VGA_WIDTH       equ 80         ; Characters per row
 ; VGA_HEIGHT      equ 25         ; Rows on screen
+; COM1_PORT       equ 0x3F8      ; Serial port 1
 
-;--- Size Constants ---
-; STACK_SIZE      equ 16384      ; 16KB stack
-; SECTOR_SIZE     equ 512        ; Disk sector size
+; ───────────────────────────────────────────────────────────────────────────────
+; S.2c LIMITS — Value Bounds [LIMITS]
+; ───────────────────────────────────────────────────────────────────────────────
 
-; ────────────────────────────────────────────────────────────────
-; External Symbols
-; ────────────────────────────────────────────────────────────────
+; [CONSTANT_NAME] equ [value]    ; [brief description]
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; S.3 EXTERNAL — Symbol Declarations [EXTERNAL]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Symbols defined in other files that this module needs.
-; EXTERN declares symbols to be resolved at link time.
-; GLOBAL exports symbols for other modules to use.
+; @brief Symbols from other modules (EXTERN) and exports (GLOBAL).
 ;
-; See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-005-type-methods.md
-
-;--- External Dependencies ---
-; Symbols this module needs from other files.
-
-; [EXTERN symbol_name]     ; [Purpose - what this symbol provides]
-
-;--- Exported Symbols ---
-; Symbols this module provides to other files.
-
-; [GLOBAL symbol_name]     ; [Purpose - what this symbol does]
-
-; ────────────────────────────────────────────────────────────────
-; Data Section (Initialized Data)
-; ────────────────────────────────────────────────────────────────
+; PURPOSE: Coordinate symbol visibility across compilation units.
 ;
-; Data with initial values. Loaded into memory at runtime.
-; Use sparingly - increases binary size.
+; CONTAINS:
+;   - S.3a EXTERN — Symbols this module needs from other files
+;   - S.3b GLOBAL — Symbols this module provides to other files
 ;
-; See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-003-variables.md
+; Builds FROM: S.2 CONSTANTS (constants may define symbol addresses)
+; Builds TO:   S.4 DATA (external symbols may reference data)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
+
+; ───────────────────────────────────────────────────────────────────────────────
+; S.3a EXTERN — External Dependencies [EXTERN]
+; ───────────────────────────────────────────────────────────────────────────────
+
+; extern kernel_main            ; C kernel entry point
+; extern gdt_descriptor         ; GDT from linker
+
+; ───────────────────────────────────────────────────────────────────────────────
+; S.3b GLOBAL — Exported Symbols [GLOBAL]
+; ───────────────────────────────────────────────────────────────────────────────
+
+; global _start                 ; Entry point for linker
+; global boot_info              ; Boot information structure
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; S.4 DATA — Initialized Data [DATA]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief Data with initial values — loaded into memory at runtime.
+;
+; PURPOSE: Strings, lookup tables, initial values.
+;          Use sparingly — increases binary size.
+;
+; CONTAINS:
+;   - S.4a STRINGS  — Null-terminated strings
+;   - S.4b NUMERIC  — Initialized variables
+;   - S.4c TABLES   — Lookup tables, arrays
+;
+; Builds FROM: S.3 EXTERNAL (data may be exported)
+; Builds TO:   S.5 BSS (initialized before uninitialized)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
 
 ; section .data
-; align [alignment]
+; align 8
 
-;--- String Data ---
-; ; [string_name] [brief description].
-; [string_name]:    db "[string content]", 0    ; Null-terminated
-; [string_name]:    db "[string content]", 10, 0 ; With newline
+; ───────────────────────────────────────────────────────────────────────────────
+; S.4a STRINGS — String Data [STRINGS]
+; ───────────────────────────────────────────────────────────────────────────────
 
-;--- Numeric Data ---
-; ; [var_name] [brief description].
-; [var_name]:       db [value]     ; Byte (8-bit)
-; [var_name]:       dw [value]     ; Word (16-bit)
-; [var_name]:       dd [value]     ; Double word (32-bit)
-; [var_name]:       dq [value]     ; Quad word (64-bit)
+; msg_hello:      db "Hello, World!", 0
+; msg_error:      db "Error!", 10, 0    ; With newline
 
-; ────────────────────────────────────────────────────────────────
-; BSS Section (Uninitialized Data)
-; ────────────────────────────────────────────────────────────────
+; ───────────────────────────────────────────────────────────────────────────────
+; S.4b NUMERIC — Initialized Variables [NUMERIC]
+; ───────────────────────────────────────────────────────────────────────────────
+
+; boot_drive:     db 0           ; Byte (8-bit)
+; sector_count:   dw 0           ; Word (16-bit)
+; load_address:   dd 0           ; Double word (32-bit)
+; tsc_value:      dq 0           ; Quad word (64-bit)
+
+; ───────────────────────────────────────────────────────────────────────────────
+; S.4c TABLES — Lookup Tables [TABLES]
+; ───────────────────────────────────────────────────────────────────────────────
+
+; [Reserved: Add lookup tables as component develops]
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; S.5 BSS — Uninitialized Data [BSS]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Space reserved for runtime data. Does not increase binary size.
-; Use RESB/RESW/RESD/RESQ to reserve space.
+; @brief Space reserved for runtime data — does not increase binary size.
 ;
-; See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-003-variables.md
+; PURPOSE: Buffers, stack, heap areas.
+;          Use RESB/RESW/RESD/RESQ to reserve space.
+;
+; CONTAINS:
+;   - S.5a BUFFERS — General purpose buffers
+;   - S.5b STACK   — Stack space reservation
+;
+; Builds FROM: S.4 DATA (BSS follows initialized data)
+; Builds TO:   S.6 DEBUG (all data sections complete)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
 
 ; section .bss
-; align [alignment]
+; align 16
 
-;--- Buffers ---
-; ; [buffer_name] [brief description].
-; [buffer_name]:    resb [size]    ; Reserve [size] bytes
+; ───────────────────────────────────────────────────────────────────────────────
+; S.5a BUFFERS — General Purpose Buffers [BUFFERS]
+; ───────────────────────────────────────────────────────────────────────────────
 
-;--- Stack ---
-; ; Stack space for this module.
+; temp_buffer:    resb 4096      ; 4KB temporary buffer
+; read_buffer:    resb 512       ; Sector read buffer
+
+; ───────────────────────────────────────────────────────────────────────────────
+; S.5b STACK — Stack Space [STACK]
+; ───────────────────────────────────────────────────────────────────────────────
+
 ; stack_bottom:
-;     resb STACK_SIZE              ; Reserve stack space
+;     resb STACK_SIZE            ; Reserve stack space
 ; stack_top:
 
-; ────────────────────────────────────────────────────────────────
-; Debug Infrastructure (Rails Pattern)
-; ────────────────────────────────────────────────────────────────
+; ═══════════════════════════════════════════════════════════════════════════════
+; S.6 DEBUG — Debug Infrastructure [DEBUG]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Debug output strings and diagnostic symbols for development.
-; Use conditional assembly to exclude from release builds.
+; @brief Debug output strings and diagnostic symbols.
 ;
-; See: standards/code/patterns/CWS-PATTERN-003-CODE-rails.md
+; PURPOSE: Development aids — excluded from release builds.
+;          Use conditional assembly (%ifdef DEBUG).
+;
+; CONTAINS:
+;   - S.6a STRINGS — Debug message strings
+;   - S.6b SYMBOLS — Diagnostic entry points
+;
+; Builds FROM: S.5 BSS (all runtime data defined)
+; Builds TO:   END SETUP (configuration complete)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
 
-;--- Debug Strings ---
-; Debug messages for development (exclude in release builds).
+; ───────────────────────────────────────────────────────────────────────────────
+; S.6a STRINGS — Debug Message Strings [DBG_STRINGS]
+; ───────────────────────────────────────────────────────────────────────────────
 
 ; %ifdef DEBUG
 ; section .data
 ; dbg_prefix:     db "[component] ", 0
 ; dbg_init:       db "Initializing...", 10, 0
-; dbg_done:       db "Done.", 10, 0
+; dbg_done:       db "Complete.", 10, 0
 ; %endif
 
-;--- Diagnostic Symbols ---
-; Symbols for debugger breakpoints and diagnostic tools.
+; ───────────────────────────────────────────────────────────────────────────────
+; S.6b SYMBOLS — Diagnostic Entry Points [DBG_SYMBOLS]
+; ───────────────────────────────────────────────────────────────────────────────
 
 ; [Reserved: Add debug entry points as component develops]
 
-; -----------------------------------------------------------------------------
-; SETUP Omission Guide
-; -----------------------------------------------------------------------------
-;
-; ALL sections MUST be present. Content may be reserved with reason:
-;
-;   - Assembler Directives: Rarely reserved - most files need BITS/ORG
-;   - Constants: [Reserved: No fixed values needed]
-;   - External Symbols: [Reserved: Self-contained, no external dependencies]
-;   - Data Section: [Reserved: No initialized data needed]
-;   - BSS Section: [Reserved: No runtime buffers needed]
-;   - Debug Infrastructure: [Reserved: Minimal component - no debug output]
-;
-; Unlike METADATA (sections omitted entirely with [OMIT:]), SETUP preserves
-; all section headers with [Reserved:] notation for unused sections.
+; ═══════════════════════════════════════════════════════════════════════════════
+; END SETUP [END]
+; ═══════════════════════════════════════════════════════════════════════════════
 
-; ============================================================================
-; END SETUP
-; ============================================================================
+; ═══════════════════════════════════════════════════════════════════════════════
+; BODY BLOCK [BODY]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief The actual work — implementations (assembly routines).
+;
+; 4-Block Code Structure: METADATA → SETUP → BODY → CLOSING
+;
+; SECTION ORDER (Assembly-optimized):
+;   B.1 ORG CHART      — Map first, reader knows the terrain
+;   B.2 CORE OPS       — WHAT it does: main execution flow
+;   B.3 HELPERS        — HOW it supports: utility subroutines
+;   B.4 ERROR HANDLING — Exceptional paths, failure handlers
+;   B.5 PUBLIC APIS    — Exported symbols (GLOBAL declarations)
+;
+; WHY THIS ORDER:
+;   Assembly doesn't require forward declarations like C. NASM resolves forward
+;   references automatically. So we organize for READING ORDER: show WHAT the
+;   code does (CORE OPS) before HOW the utilities work (HELPERS).
+;
+; CONTAINS:
+;   - B.1 ORG CHART      — Label hierarchy, baton flow, statistics
+;   - B.2 CORE OPS       — Main execution flow, business logic
+;   - B.3 HELPERS        — Utility subroutines (pure, hardware, mode-specific)
+;   - B.4 ERROR HANDLING — Error handlers, halt loops, failure paths
+;   - B.5 PUBLIC APIS    — Exported entry points (GLOBAL)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
 
-; ============================================================================
-; BODY
-; ============================================================================
+; ═══════════════════════════════════════════════════════════════════════════════
+; B.1 ORG CHART — Label Hierarchy [ORGCHART]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; For BODY structure explanation, see: standards/code/4-block/CWS-STD-007-CODE-body-block.md
+; @brief Map internal structure — label hierarchy, baton flow, statistics.
 ;
-; -----------------------------------------------------------------------------
-; BODY Sections Overview
-; -----------------------------------------------------------------------------
+; WHY: Understanding the file structure before diving into details.
+;      Org chart provides the mental model for navigation.
 ;
-; 1. ORGANIZATIONAL CHART (Internal Structure)
-;    Purpose: Map label dependencies and execution flow within this module
-;    Subsections: Label Structure → Execution Flow → APUs
+; CONTAINS:
+;   - B.1a STRUCTURE — Labels grouped by section (CORE OPS, HELPERS, ERRORS)
+;   - B.1b FLOW      — Baton execution path diagram
+;   - B.1c COUNTS    — Statistics (labels per section)
 ;
-; 2. HELPERS/UTILITIES (Internal Support)
-;    Purpose: Foundation routines - simple, focused, reusable
-;    Subsections: Pure Computations → Hardware Access Helpers
-;
-; 3. CORE OPERATIONS (Business Logic)
-;    Purpose: Module-specific functionality implementing primary purpose
-;    Subsections: [Category 1] → [Category 2] → ... (organized by concern)
-;
-; 4. ERROR HANDLING (Safety Patterns)
-;    Purpose: Error responses - halt, return codes, exception handling
-;    Subsections: Design Principle → Error Strategy → halt_error
-;
-; 5. PUBLIC ENTRY POINTS (Exported Interface)
-;    Purpose: Labels exported via GLOBAL for external callers
-;    Subsections: [Category 1] → [Category 2] → ... (organized by purpose)
-;
-; Section order: Org Chart → Helpers → Core Operations → Error Handling → Entry Points
-; This flows: understand structure → build foundations → implement logic → handle errors → expose interface
-;
-; Universal mapping (see standards for cross-language patterns):
-;   Organizational Chart ≈ Dependency/Flow Documentation
-;   Helpers/Utilities ≈ Internal Routines (not exported)
-;   Core Operations ≈ Business Logic (the work)
-;   Error Handling ≈ halt_error, return codes
-;   Public Entry Points ≈ GLOBAL labels (what others call)
+; ═══════════════════════════════════════════════════════════════════════════════
 
-; ────────────────────────────────────────────────────────────────
-; Organizational Chart - Internal Structure
-; ────────────────────────────────────────────────────────────────
-; Maps bidirectional dependencies and execution flow within this module.
+; ───────────────────────────────────────────────────────────────────────────────
+; B.1a STRUCTURE — Label Hierarchy by Section [STRUCTURE]
+; ───────────────────────────────────────────────────────────────────────────────
 ;
-; See: standards/code/4-block/sections/body/CWS-SECTION-BODY-001-organizational-chart.md
+; ┌─────────────────────────────────────────────────────────────────────────────┐
+; │ B.2 CORE OPS — Main Execution Flow (WHAT it does)                           │
+; └─────────────────────────────────────────────────────────────────────────────┘
 ;
-; Label Structure:
+; B.2a [Category] — [Purpose]
+; ├── [core_op_label]   → [what it does]
+; └── [another_op]      → [what it does]
 ;
-;   Entry Points (GLOBAL)
-;   ├── [entry_label] → sets up, calls [helper_label]
-;   └── [another_entry] → uses [utility_label]
+; ┌─────────────────────────────────────────────────────────────────────────────┐
+; │ B.3 HELPERS — Utility Subroutines (HOW it supports)                         │
+; └─────────────────────────────────────────────────────────────────────────────┘
 ;
-;   Helpers (internal)
-;   ├── [helper_label] → pure computation
-;   └── [utility_label] → hardware access
+; B.3a PURE — Pure Computation
+; ├── [helper_label]    → [pure computation]
+; └── [utility_label]   → [stateless utility]
 ;
-; Execution Flow:
+; B.3b HARDWARE — Hardware Access
+; └── [hw_helper]       → [hardware I/O]
 ;
-;   External call → [entry_label]
-;     ↓
-;   [setup code]
-;     ↓
-;   [helper_label]
-;     ↓
-;   [cleanup/return]
+; ┌─────────────────────────────────────────────────────────────────────────────┐
+; │ B.4 ERROR HANDLING — Failure Paths                                          │
+; └─────────────────────────────────────────────────────────────────────────────┘
 ;
-; APUs (Available Processing Units):
-; - [X] labels total
-; - [X] entry points (global)
-; - [X] helper routines (internal)
+; B.4a HANDLERS — Error Handlers
+; ├── [error_handler]   → [recovery/cleanup]
+; └── halt_error        → [cli; hlt loop]
+;
+; ┌─────────────────────────────────────────────────────────────────────────────┐
+; │ B.5 PUBLIC APIS — Exported Symbols                                          │
+; └─────────────────────────────────────────────────────────────────────────────┘
+;
+; B.5a [Category] — Exported Entry Points
+; ├── [entry_label]     → GLOBAL, called externally
+; └── [another_entry]   → GLOBAL, public API
 
-; ────────────────────────────────────────────────────────────────
-; Text Section (Code)
-; ────────────────────────────────────────────────────────────────
+; ───────────────────────────────────────────────────────────────────────────────
+; B.1b FLOW — Baton Execution Path [FLOW]
+; ───────────────────────────────────────────────────────────────────────────────
+;
+; External call → [B.5: entry_label]
+;   ↓
+; [setup code]
+;   ↓
+; [B.2: core_op_label] → [B.3: helper_label]
+;   ↓                        ↓ on error
+; [cleanup/return]      [B.4: error_handler]
+
+; ───────────────────────────────────────────────────────────────────────────────
+; B.1c COUNTS — Label Statistics by Section [COUNTS]
+; ───────────────────────────────────────────────────────────────────────────────
+;
+; ┌───────────────────────────────────────────────────────────────────────────┐
+; │ Section          │ Count │ Labels                                        │
+; ├───────────────────────────────────────────────────────────────────────────┤
+; │ B.2 CORE OPS     │  [X]  │ [list main operation labels]                  │
+; │ B.3 HELPERS      │  [X]  │ [list helper labels]                          │
+; │ B.4 ERROR HANDLING│ [X]  │ [list error handler labels]                   │
+; │ B.5 PUBLIC APIS  │  [X]  │ [list exported labels]                        │
+; └───────────────────────────────────────────────────────────────────────────┘
+;
+; TOTAL: [X] primary labels
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; B.2 CORE OPS — Main Execution Flow [COREOPS]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief WHAT the module does — main execution flow and business logic.
+;
+; PURPOSE: The actual work this module does.
+;          Organized by concern/category.
+;          Reader sees WHAT before HOW (helpers).
+;
+; CONTAINS:
+;   - B.2a [Category1] — [description]
+;   - B.2b [Category2] — [description]
+;
+; Builds FROM: B.1 ORG CHART (structure understanding)
+; Builds TO:   B.3 HELPERS (utilities called by core ops)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
 
 section .text
 
-; ────────────────────────────────────────────────────────────────
-; Helpers/Utilities - Internal Support
-; ────────────────────────────────────────────────────────────────
-; Foundation routines used throughout this module. Usually not exported.
+; ───────────────────────────────────────────────────────────────────────────────
+; B.2a [Category Name] — [Purpose] [CATEGORY1]
+; ───────────────────────────────────────────────────────────────────────────────
 ;
-; See: standards/code/4-block/sections/body/CWS-SECTION-BODY-002-helpers.md
-;
-; [Reserved: Additional helpers will emerge as module develops]
-
-; [helper_name] [does what]
-;
-; What It Does:
-; [Brief explanation - helpers are usually simple and focused]
-;
-; Parameters (registers):
-;   [register]: [Purpose and expected values]
-;
-; Returns:
-;   [register]: [What's returned]
-;
-; Clobbers: [registers modified]
-;
-; [helper_name]:
-;     ; Implementation
-;     ret
-
-; ────────────────────────────────────────────────────────────────
-; Core Operations - Main Logic
-; ────────────────────────────────────────────────────────────────
-; Module-specific functionality implementing primary purpose.
-;
-; See: standards/code/4-block/sections/body/CWS-SECTION-BODY-003-core-operations.md
-
-; ────────────────────────────────────────────────────────────────
-; [Category Name] - [Purpose]
-; ────────────────────────────────────────────────────────────────
 ; What These Do:
-; [High-level description of this category of operations]
+;   [High-level description of this category of operations]
 ;
 ; Calling Convention:
-; [Describe register usage, stack expectations]
+;   [Describe register usage, stack expectations]
 
 ; [operation_name] [does what]
 ;
-; What It Does:
-; [Detailed explanation of operation purpose and behavior]
+; @brief  [Detailed explanation of operation purpose and behavior]
 ;
 ; Parameters (registers):
 ;   [register]: [Purpose and expected values]
@@ -492,7 +608,6 @@ section .text
 ; Stack Usage: [bytes used, if any]
 ;
 ; Example usage:
-;
 ;     mov eax, [value]
 ;     call [operation_name]
 ;     ; Result in [register]
@@ -511,12 +626,73 @@ section .text
 ;     pop ebx
 ;     ret
 
-; ────────────────────────────────────────────────────────────────
-; Error Handling
-; ────────────────────────────────────────────────────────────────
-; Assembly error handling is typically simple - halt or return error code.
+; ═══════════════════════════════════════════════════════════════════════════════
+; B.3 HELPERS — Utility Subroutines [HELPERS]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; See: standards/code/4-block/sections/body/CWS-SECTION-BODY-004-error-handling.md
+; @brief HOW it supports — utility subroutines called by core ops.
+;
+; PURPOSE: Pure computations and utility functions.
+;          Usually not exported (internal to module).
+;          Reader sees these AFTER understanding WHAT the code does.
+;
+; CONTAINS:
+;   - B.3a PURE      — Pure computation routines
+;   - B.3b HARDWARE  — Hardware access helpers
+;
+; Builds FROM: B.2 CORE OPS (called by main execution)
+; Builds TO:   B.4 ERROR HANDLING (helpers may need error paths)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
+
+; ───────────────────────────────────────────────────────────────────────────────
+; B.3a PURE — Pure Computation Routines [PURE]
+; ───────────────────────────────────────────────────────────────────────────────
+
+; [helper_name] [does what]
+;
+; @brief  [Brief explanation — helpers are usually simple and focused]
+;
+; Parameters (registers):
+;   [register]: [Purpose and expected values]
+;
+; Returns:
+;   [register]: [What's returned]
+;
+; Clobbers: [registers modified]
+;
+; [helper_name]:
+;     ; Implementation
+;     ret
+
+; ───────────────────────────────────────────────────────────────────────────────
+; B.3b HARDWARE — Hardware Access Helpers [HARDWARE]
+; ───────────────────────────────────────────────────────────────────────────────
+
+; [Reserved: Add hardware access helpers as component develops]
+
+; ═══════════════════════════════════════════════════════════════════════════════
+; B.4 ERROR HANDLING — Failure Paths [ERRORS]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief Error responses — halt, return codes, exception handling.
+;
+; PURPOSE: Handle failure cases gracefully or halt safely.
+;          Assembly error handling is typically simple.
+;          Separated from happy path for clarity.
+;
+; CONTAINS:
+;   - B.4a STRATEGY — Error handling approach
+;   - B.4b HANDLERS — Error handler routines
+;
+; Builds FROM: B.3 HELPERS (errors may arise from utilities)
+; Builds TO:   B.5 PUBLIC APIS (public API uses error handling)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
+
+; ───────────────────────────────────────────────────────────────────────────────
+; B.4a STRATEGY — Error Handling Approach [STRATEGY]
+; ───────────────────────────────────────────────────────────────────────────────
 ;
 ; Design Principle: [Blocking/Non-blocking]
 ;
@@ -525,9 +701,13 @@ section .text
 ;   - Hardware fault: [Halt with error message / interrupt handler]
 ;   - Unrecoverable: [cli; hlt loop]
 
+; ───────────────────────────────────────────────────────────────────────────────
+; B.4b HANDLERS — Error Handler Routines [HANDLERS]
+; ───────────────────────────────────────────────────────────────────────────────
+
 ; halt_error halts the CPU with interrupts disabled.
 ;
-; Used for unrecoverable errors. CPU will not continue.
+; @brief  Used for unrecoverable errors. CPU will not continue.
 ;
 ; halt_error:
 ;     cli                 ; Disable interrupts
@@ -535,19 +715,32 @@ section .text
 ;     hlt                 ; Halt CPU
 ;     jmp .loop           ; Loop if spurious wakeup
 
-; ────────────────────────────────────────────────────────────────
-; Public Entry Points - Exported Interface
-; ────────────────────────────────────────────────────────────────
-; Entry points exported via GLOBAL for external callers.
+; ═══════════════════════════════════════════════════════════════════════════════
+; B.5 PUBLIC APIS — Exported Entry Points [PUBLICAPI]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; See: standards/code/4-block/sections/body/CWS-SECTION-BODY-005-public-apis.md
+; @brief Entry points exported via GLOBAL for external callers.
+;
+; PURPOSE: The public interface — what other modules call.
+;          These orchestrate core ops and helpers.
+;          For flat binaries (bootloaders), this section may be empty.
+;
+; CONTAINS:
+;   - B.5a [Category1] — [description]
+;   - B.5b [Category2] — [description]
+;
+; Builds FROM: B.4 ERROR HANDLING (error handling integrated)
+; Builds TO:   END BODY (implementation complete)
+;
+; ═══════════════════════════════════════════════════════════════════════════════
 
-; ═══ [Category Name] ═══
+; ───────────────────────────────────────────────────────────────────────────────
+; B.5a [Category Name] — [Purpose] [ENTRY1]
+; ───────────────────────────────────────────────────────────────────────────────
 
 ; [entry_point_name] [does what at high level]
 ;
-; What It Does:
-; [Detailed explanation of complete operation]
+; @brief  [Detailed explanation of complete operation]
 ;
 ; Parameters (registers):
 ;   [register]: [Purpose and expected values]
@@ -560,12 +753,10 @@ section .text
 ; Calling Convention: [cdecl/stdcall/custom]
 ;
 ; Example usage (from C):
-;
 ;     extern void [entry_point_name](void);
 ;     [entry_point_name]();
 ;
 ; Example usage (from assembly):
-;
 ;     call [entry_point_name]
 ;
 ; global [entry_point_name]
@@ -577,104 +768,40 @@ section .text
 ;     ; Cleanup and return
 ;     ret
 
-; -----------------------------------------------------------------------------
-; BODY Omission Guide
-; -----------------------------------------------------------------------------
-;
-; ALL five sections MUST be present. Content may be reserved with reason:
-;
-;   - Organizational Chart: Rarely reserved - label structure benefits from map
-;   - Helpers/Utilities: [Reserved: No internal subroutines - uses library calls]
-;   - Core Operations: Rarely reserved - contains primary instruction sequences
-;   - Error Handling: [Reserved: Uses CPU exceptions, no custom error handlers]
-;   - Public Entry Points: [Reserved: Internal module - no GLOBAL exports]
-;
-; Unlike METADATA (sections omitted entirely with [OMIT:]), BODY preserves
-; all section headers with [Reserved:] notation for unused sections.
-;
-; For multi-file assembly projects:
-;   - Entry file: Contains _start/main, GLOBAL exports, orchestration
-;   - Module files: Contains internal routines, EXTERN imports
-;   - Document linkage with [Reserved: Calls helpers from utils.asm via EXTERN]
+; ═══════════════════════════════════════════════════════════════════════════════
+; END BODY [END]
+; ═══════════════════════════════════════════════════════════════════════════════
 
-; ============================================================================
-; END BODY
-; ============================================================================
+; ═══════════════════════════════════════════════════════════════════════════════
+; CLOSING BLOCK [CLOSING]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief Synthesis, verification, and forward guidance.
+;
+; 4-Block Code Structure: METADATA → SETUP → BODY → CLOSING
+;
+; GROUP 1 — OPERATIONS (Verify, Execute, Clean):
+;   - X.1 VALIDATION — Build and test verification
+;   - X.2 EXECUTION  — Entry point and execution flow
+;   - X.3 CLEANUP    — Register and resource management
+;
+; GROUP 2 — DOCUMENTATION (Synthesis and References):
+;   - X.4 OVERVIEW    — Module summary (references METADATA)
+;   - X.5 POLICY      — Modification guidelines
+;   - X.6 FLOW        — Ladder and baton (references BODY)
+;   - X.7 PERF        — Performance considerations
+;   - X.8 DEBUG       — Troubleshooting guide
+;   - X.9 RELATED     — Related components
+;   - X.10 ROADMAP    — Future expansions
+;   - X.11 REFERENCE  — Quick reference patterns
+;
+; ═══════════════════════════════════════════════════════════════════════════════
 
-; ============================================================================
-; CLOSING
-; ============================================================================
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.1 VALIDATION — Build & Test Verification [VALIDATION]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; For CLOSING structure explanation, see: standards/code/4-block/CWS-STD-008-CODE-closing-block.md
-;
-; -----------------------------------------------------------------------------
-; CLOSING Sections Overview
-; -----------------------------------------------------------------------------
-;
-; GROUP 1: CODING (Operations - Verify, Execute, Clean)
-;
-; 1. CODE VALIDATION (Testing & Verification)
-;    Purpose: Prove correctness - assemble, link, test
-;    Subsections: Assembly Verification → Link Testing → Runtime Testing
-;
-; 2. CODE EXECUTION (Entry Points & Flow)
-;    Purpose: Entry point(s) and execution orchestration
-;    Subsections: Entry Point → Execution Flow → Exit Codes → Exception Handling
-;
-; 3. CODE CLEANUP (Resource Management)
-;    Purpose: Register preservation, stack cleanup, resource release
-;    Subsections: Register Preservation → Stack Management → Resource Cleanup
-;
-; GROUP 2: FINAL DOCUMENTATION (Synthesis - Reference Back to Earlier Blocks)
-;
-; 4. MODULE OVERVIEW (Summary with Back-References)
-;    Purpose: High-level summary pointing back to METADATA for details
-;    References: METADATA "Purpose & Function", "Key Features"
-;
-; 5. MODIFICATION POLICY (Safe/Careful/Never)
-;    Purpose: Guide future maintainers on what's safe to change
-;    Subsections: Safe to Modify → Modify with Care → Never Modify
-;
-; 6. LADDER AND BATON FLOW (Back-Reference to BODY)
-;    Purpose: Point to BODY Organizational Chart for label structure
-;    References: BODY "Organizational Chart - Internal Structure"
-;
-; 7. SURGICAL UPDATE POINTS (Back-Reference to BODY)
-;    Purpose: Point to BODY for adding new routines
-;    References: BODY section categories for routine placement
-;
-; 8. PERFORMANCE CONSIDERATIONS (Cycle Counts)
-;    Purpose: Instruction timing, pipeline considerations, cache behavior
-;    References: BODY routine comments with cycle counts
-;
-; 9. TROUBLESHOOTING GUIDE (Debug Patterns)
-;    Purpose: Common assembly issues and debugging techniques
-;    Subsections: Register Corruption → Stack Misalignment → Memory Access
-;
-; 10. RELATED COMPONENTS (Module Dependencies)
-;     Purpose: Point to related assembly modules and includes
-;     References: METADATA "Dependencies" - EXTERN symbols, includes
-;
-; 11. FUTURE EXPANSIONS (Module Roadmap)
-;     Purpose: Planned routines, optimizations, platform support
-;     Subsections: Planned Routines → Optimizations → Platform Support
-;
-; 12. CONTRIBUTION GUIDELINES (Adding Routines)
-;     Purpose: How to add new routines to this module
-;     Subsections: Routine Structure → Register Convention → Documentation
-;
-; 13. QUICK REFERENCE (Assembly Patterns)
-;     Purpose: Copy-paste ready patterns for common operations
-;     Subsections: Function Prologue/Epilogue → System Calls → Memory Operations
-;
-; Section order: Validation → Execution → Cleanup → Overview → Policy → Ladder/Baton →
-;                Surgical → Performance → Troubleshooting → Related → Future → Contribution → Reference
-; This flows: verify → run → clean → document → guide future work
-
-; ────────────────────────────────────────────────────────────────
-; Code Validation: [moduleName]
-; ────────────────────────────────────────────────────────────────
-; For Code Validation section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-001-code-validation.md
+; @brief Prove correctness — assemble, link, test.
 ;
 ; Build Verification:
 ;   nasm -f [format] [source].asm -o [output]
@@ -692,30 +819,20 @@ section .text
 ;   - Verify [specific behavior] in emulator (QEMU, Bochs)
 ;   - Check [register state] after execution
 ;   - Confirm [memory layout] correct
-;
-; Example validation commands:
-;
-;     # Assemble
-;     nasm -f elf32 -o [module].o [module].asm
-;
-;     # Link with C code
-;     ld -m elf_i386 -o [binary] [module].o [other].o
-;
-;     # Test in emulator
-;     qemu-system-i386 -kernel [binary]
 
-; ────────────────────────────────────────────────────────────────
-; Code Execution
-; ────────────────────────────────────────────────────────────────
-; For Code Execution section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-002-code-execution.md
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.2 EXECUTION — Entry Point & Flow [EXECUTION]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief Entry point(s) and execution orchestration.
 ;
 ; Entry Point: [label name]
 ;
 ; Execution Flow:
-;   1. [First step - e.g., set up stack]
-;   2. [Second step - e.g., call C function]
-;   3. [Third step - e.g., handle return]
-;   4. [Final step - e.g., halt]
+;   1. [First step — e.g., set up stack]
+;   2. [Second step — e.g., call C function]
+;   3. [Third step — e.g., handle return]
+;   4. [Final step — e.g., halt]
 ;
 ; Register State on Entry:
 ;   [register]: [Expected value/state]
@@ -723,10 +840,11 @@ section .text
 ; Register State on Exit:
 ;   [register]: [Value/state after execution]
 
-; ────────────────────────────────────────────────────────────────
-; Code Cleanup
-; ────────────────────────────────────────────────────────────────
-; For Code Cleanup section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-003-code-cleanup.md
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.3 CLEANUP — Register & Resource Management [CLEANUP]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief Register preservation, stack cleanup, resource release.
 ;
 ; Resource Management:
 ;   - Registers: [Which are preserved/restored]
@@ -735,183 +853,149 @@ section .text
 ;
 ; Callee-Saved Registers (must preserve):
 ;   - 32-bit cdecl: EBX, ESI, EDI, EBP
-;   - 64-bit SysV: RBX, RBP, R12-R15
+;   - 64-bit SysV:  RBX, RBP, R12-R15
 ;
 ; Caller-Saved Registers (can clobber):
 ;   - 32-bit cdecl: EAX, ECX, EDX
-;   - 64-bit SysV: RAX, RCX, RDX, RSI, RDI, R8-R11
+;   - 64-bit SysV:  RAX, RCX, RDX, RSI, RDI, R8-R11
 
-; ════════════════════════════════════════════════════════════════
-; FINAL DOCUMENTATION
-; ════════════════════════════════════════════════════════════════
-
-; ────────────────────────────────────────────────────────────────
-; Module Overview & Usage Summary
-; ────────────────────────────────────────────────────────────────
-; For Module Overview section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-004-library-overview.md
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.4 OVERVIEW — Module Summary [OVERVIEW]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Purpose: See METADATA "Purpose & Function" section above
+; @brief High-level summary — references METADATA for details.
 ;
-; Provides: See METADATA "Key Features" list above
+; Purpose:  See METADATA M.7 INTENT section above
+; Provides: See METADATA M.7 INTENT "Key Features" list above
 ;
 ; Quick summary:
-;   - [1-2 sentence overview of what this module does]
+;   [1-2 sentence overview of what this module does]
 ;
-; Architecture: See METADATA "CPI-SI Identity" section above
+; Architecture: See METADATA M.1 IDENTITY "Component" field above
 
-; ────────────────────────────────────────────────────────────────
-; Modification Policy
-; ────────────────────────────────────────────────────────────────
-; For Modification Policy section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-005-modification-policy.md
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.5 POLICY — Modification Guidelines [POLICY]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief Guide future maintainers on what's safe to change.
 ;
 ; Safe to Modify (Extension Points):
-;   [tick] Add new helper routines (follow existing patterns)
-;   [tick] Add new constants (use EQU)
-;   [tick] Extend data section
+;   ✅ Add new helper routines (follow existing patterns)
+;   ✅ Add new constants (use EQU)
+;   ✅ Extend data section
 ;
 ; Modify with Extreme Care (Breaking Changes):
-;   [warn] Entry point labels - breaks all callers
-;   [warn] Register conventions - breaks calling code
-;   [warn] Memory layout assumptions
+;   ⚠️ Entry point labels — breaks all callers
+;   ⚠️ Register conventions — breaks calling code
+;   ⚠️ Memory layout assumptions
 ;
 ; NEVER Modify (Foundational Rails):
-;   [x] 4-block structure (METADATA, SETUP, BODY, CLOSING)
-;   [x] Calling convention (cdecl/stdcall/etc)
-;   [x] Hardware interface contracts
+;   ❌ 4-block structure (METADATA, SETUP, BODY, CLOSING)
+;   ❌ Calling convention (cdecl/stdcall/SysV)
+;   ❌ Hardware interface contracts
 
-; ────────────────────────────────────────────────────────────────
-; Ladder and Baton Flow
-; ────────────────────────────────────────────────────────────────
-; For Ladder and Baton Flow section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-006-ladder-baton-flow.md
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.6 FLOW — Ladder & Baton [FLOW]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; See BODY "Organizational Chart" for complete structure.
+; @brief Execution flow — references BODY B.1 ORG CHART for details.
+;
+; See BODY B.1 ORG CHART for complete structure.
 ;
 ; Quick summary:
-; - Ladder: [Dependencies - what this needs]
-; - Baton: [Execution flow - entry to exit]
+;   Ladder: [Dependencies — what this needs]
+;   Baton:  [Execution flow — entry to exit]
 
-; ────────────────────────────────────────────────────────────────
-; Performance Considerations
-; ────────────────────────────────────────────────────────────────
-; For Performance Considerations section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-008-performance-considerations.md
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.7 PERF — Performance Considerations [PERF]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; Assembly is the performance baseline - no abstraction overhead.
+; @brief Instruction timing, pipeline, cache behavior.
+;
+; Assembly is the performance baseline — no abstraction overhead.
 ;
 ; Key optimizations:
-;   - [Optimization 1 - e.g., register usage over memory]
-;   - [Optimization 2 - e.g., aligned memory access]
-;   - [Optimization 3 - e.g., branch prediction hints]
+;   - [Optimization 1 — e.g., register usage over memory]
+;   - [Optimization 2 — e.g., aligned memory access]
+;   - [Optimization 3 — e.g., branch prediction hints]
 ;
 ; Cycle counts (approximate):
 ;   - [Operation]: ~[N] cycles
 ;   - [Operation]: ~[N] cycles
 
-; ────────────────────────────────────────────────────────────────
-; Troubleshooting Guide
-; ────────────────────────────────────────────────────────────────
-; For Troubleshooting Guide section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-009-troubleshooting-guide.md
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.8 DEBUG — Troubleshooting Guide [DEBUG]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief Common assembly issues and debugging techniques.
 ;
 ; Problem: "undefined reference to [symbol]"
-;   - Cause: Symbol not exported with GLOBAL
-;   - Solution: Add "global [symbol]" before label
+;   Cause:    Symbol not exported with GLOBAL
+;   Solution: Add "global [symbol]" before label
 ;
 ; Problem: "relocation truncated to fit"
-;   - Cause: Address doesn't fit in instruction
-;   - Solution: Use indirect addressing or different format
+;   Cause:    Address doesn't fit in instruction
+;   Solution: Use indirect addressing or different format
 ;
 ; Problem: Triple fault / immediate reboot
-;   - Cause: Invalid instruction, bad memory access, stack overflow
-;   - Solution: Debug with emulator, check stack setup
+;   Cause:    Invalid instruction, bad memory access, stack overflow
+;   Solution: Debug with emulator, check stack setup
 
-; ────────────────────────────────────────────────────────────────
-; Related Components & Dependencies
-; ────────────────────────────────────────────────────────────────
-; For Related Components section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-010-related-components.md
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.9 RELATED — Related Components [RELATED]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; See METADATA "Dependencies" section above for complete information.
+; @brief Related modules and dependencies — references METADATA M.9.
+;
+; See METADATA M.9 DEPENDENCIES section above for complete information.
 ;
 ; Quick summary:
-; - Dependencies: [Key external symbols needed]
-; - Dependents: [What uses this module]
+;   Dependencies: [Key external symbols needed]
+;   Dependents:   [What uses this module]
 
-; ────────────────────────────────────────────────────────────────
-; Future Expansions & Roadmap
-; ────────────────────────────────────────────────────────────────
-; For Future Expansions section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-011-future-expansions.md
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.10 ROADMAP — Future Expansions [ROADMAP]
+; ═══════════════════════════════════════════════════════════════════════════════
+;
+; @brief Planned routines, optimizations, platform support.
 ;
 ; Planned Features:
-;   [check] [Completed feature] - COMPLETED
-;   [pending] [Planned feature 1]
-;   [pending] [Planned feature 2]
+;   ✓ [Completed feature] — COMPLETED
+;   ⏳ [Planned feature 1]
+;   ⏳ [Planned feature 2]
 ;
 ; Research Areas:
 ;   - [Research direction 1]
 ;   - [Research direction 2]
 
-; ────────────────────────────────────────────────────────────────
-; Closing Note
-; ────────────────────────────────────────────────────────────────
-; For Closing Note section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-012-closing-note.md
+; ═══════════════════════════════════════════════════════════════════════════════
+; X.11 REFERENCE — Quick Reference [REFERENCE]
+; ═══════════════════════════════════════════════════════════════════════════════
 ;
-; This module is [architectural role - what it provides].
-; [Explain its place in the ecosystem].
+; @brief Copy-paste ready patterns for common operations.
 ;
-; Modify thoughtfully - assembly errors are subtle and hard to debug.
-; Test thoroughly in emulator before hardware.
-;
-; "[Relevant Scripture verse]" - [Reference]
-
-; ────────────────────────────────────────────────────────────────
-; Quick Reference: Usage Examples
-; ────────────────────────────────────────────────────────────────
-; For Quick Reference section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-013-quick-reference.md
-;
-; Assemble (ELF32 object):
-;
-;     nasm -f elf32 [module].asm -o [module].o
+; Assemble (ELF64 object):
+;     nasm -f elf64 [module].asm -o [module].o
 ;
 ; Assemble (flat binary):
-;
 ;     nasm -f bin [module].asm -o [module].bin
 ;
 ; Link with C code:
-;
-;     ld -m elf_i386 -T linker.ld -o kernel.elf entry.o kernel.o
+;     ld -m elf_x86_64 -T linker.ld -o kernel.elf entry.o kernel.o
 ;
 ; Call from C:
-;
 ;     extern void [entry_point](void);
 ;     [entry_point]();
+;
+; Closing Note:
+;   This module is [architectural role — what it provides].
+;   [Explain its place in the ecosystem].
+;
+;   Modify thoughtfully — assembly errors are subtle and hard to debug.
+;   Test thoroughly in emulator before hardware.
+;
+;   "[Relevant Scripture verse]" — [Reference]
 
-; -----------------------------------------------------------------------------
-; CLOSING Omission Guide
-; -----------------------------------------------------------------------------
-;
-; ALL thirteen sections MUST be present. Content may be reserved with reason:
-;
-; GROUP 1: CODING
-;   - Code Validation: Assembly and link verification
-;   - Code Execution: Entry point and execution flow
-;   - Code Cleanup: Register preservation and stack management
-;
-; GROUP 2: FINAL DOCUMENTATION (mostly back-references)
-;   - Module Overview: Summary of what this module provides
-;   - Modification Policy: Guide for modifying routines safely
-;   - Ladder and Baton Flow: Back-reference to BODY label structure
-;   - Surgical Update Points: Where to add new routines
-;   - Performance Considerations: Cycle counts and timing
-;   - Troubleshooting Guide: Common assembly issues
-;   - Related Components: Related modules and includes
-;   - Future Expansions: [Reserved: Module complete, no planned routines]
-;   - Contribution Guidelines: How to add new routines
-;   - Quick Reference: Common assembly patterns
-;
-; Unlike BODY (which uses [Reserved:] inline), CLOSING sections can be
-; entirely replaced with back-references to avoid duplication.
-;
-; The key principle: CLOSING synthesizes, METADATA/SETUP/BODY contain details.
-; Don't repeat - reference back to where the information lives.
-
-; ============================================================================
-; END CLOSING
-; ============================================================================
+; ═══════════════════════════════════════════════════════════════════════════════
+; END CLOSING [END]
+; ═══════════════════════════════════════════════════════════════════════════════
