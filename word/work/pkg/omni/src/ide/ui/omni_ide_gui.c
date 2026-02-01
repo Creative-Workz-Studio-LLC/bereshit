@@ -6,7 +6,9 @@
 // omni_ide_gui.c — OmniCode IDE GUI Implementation
 // Cornerstone display backend for graphical editing
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 // =============================================================================
 // METADATA [METADATA]
@@ -24,9 +26,9 @@
 // =============================================================================
 
 #include "omni_ide_gui.h"
-#include "screenshot.h"                        // Shared screenshot module
-#include "engine/platform/common/platform.h"  // Platform layer for GUI
-#include "engine/graphics/include/renderer.h" // Renderer for GUI
+#include "framework/util/graphics/util/screenshot.util.h" // Shared screenshot module
+#include "platform.hal.h"  // Platform layer for GUI
+#include "renderer.mgr.h" // Renderer for GUI
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,10 +36,10 @@
 #include <ctype.h>
 
 // Shared signal handling (full suite - shared with cornerstone engine)
-#include "signals.h"  // signals_is_running
+#include "signals.util.h"  // signals_is_running
 
 // CPI-SI state-aware logging
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 
 // =============================================================================
 // END SETUP
@@ -995,33 +997,36 @@ void ide_gui_handle_key(IDEGUI* gui, DisplayKey key) {
     }
 
     switch (key) {
-        // Mouse click
-        case DISPLAY_KEY_MOUSE: {
-            DisplayMouseEvent mouse = display_get_mouse_event();
-            if (mouse.button == DISPLAY_MOUSE_BUTTON_LEFT) {
-                // Check if click is on menu bar (row 0)
-                if (mouse.y == 0 && gui->menubar.visible) {
-                    // Find which menu was clicked
-                    int x = 2;  // Start after initial padding
-                    for (int m = 0; m < GUI_MENU_COUNT; m++) {
-                        int menu_width = strlen(gui->menubar.menus[m].label) + 2;
-                        if (mouse.x >= x && mouse.x < x + menu_width) {
-                            // Clicked this menu
-                            gui->focus = GUI_FOCUS_MENU;
-                            gui->menubar.active_menu = m;
-                            gui->menubar.active_item = 0;
-                            ide_gui_set_status(gui, "Menu | Arrows: Navigate | Enter: Select | Esc: Close");
-                            gui->needs_redraw = true;
-                            return;
-                        }
-                        x += menu_width;
-                    }
-                }
-                // Click elsewhere could set cursor position in editor
-                // (future enhancement)
-            }
-            return;
-        }
+        // Mouse click handling (disabled in Phase A API)
+        // NOTE: Mouse events need full refactor for new input API
+        // TODO: Refactor to use new input system for mouse handling
+        //
+        // case DISPLAY_KEY_MOUSE: {
+        //     DisplayMouseEvent mouse = display_get_mouse_event();
+        //     if (mouse.button == DISPLAY_MOUSE_BUTTON_LEFT) {
+        //         // Check if click is on menu bar (row 0)
+        //         if (mouse.y == 0 && gui->menubar.visible) {
+        //             // Find which menu was clicked
+        //             int x = 2;  // Start after initial padding
+        //             for (int m = 0; m < GUI_MENU_COUNT; m++) {
+        //                 int menu_width = strlen(gui->menubar.menus[m].label) + 2;
+        //                 if (mouse.x >= x && mouse.x < x + menu_width) {
+        //                     // Clicked this menu
+        //                     gui->focus = GUI_FOCUS_MENU;
+        //                     gui->menubar.active_menu = m;
+        //                     gui->menubar.active_item = 0;
+        //                     ide_gui_set_status(gui, "Menu | Arrows: Navigate | Enter: Select | Esc: Close");
+        //                     gui->needs_redraw = true;
+        //                     return;
+        //                 }
+        //                 x += menu_width;
+        //             }
+        //         }
+        //         // Click elsewhere could set cursor position in editor
+        //         // (future enhancement)
+        //     }
+        //     return;
+        // }
 
         // F1 - Open menu
         case DISPLAY_KEY_F1:
@@ -1151,18 +1156,22 @@ void ide_gui_handle_key(IDEGUI* gui, DisplayKey key) {
             break;
 
         // Legacy single-key fallbacks (for compatibility)
-        case DISPLAY_KEY_Q:
-            if (buf->modified) {
-                ide_gui_set_status(gui, "Unsaved changes! Use Ctrl+Q to quit.");
-            } else {
-                gui->running = false;
-            }
-            break;
-
-        case DISPLAY_KEY_S:
-            // Hint to use Ctrl+S
-            ide_gui_set_status(gui, "Use Ctrl+S to save");
-            break;
+        // NOTE: Disabled - conflicts with CTRL_* in new API (both map to same KEY_*)
+        // TODO: Refactor to use KeyState with modifier checking
+        // In new API: Check KeyState.modifiers to distinguish Q from Ctrl+Q
+        //
+        // case DISPLAY_KEY_Q:
+        //     if (buf->modified) {
+        //         ide_gui_set_status(gui, "Unsaved changes! Use Ctrl+Q to quit.");
+        //     } else {
+        //         gui->running = false;
+        //     }
+        //     break;
+        //
+        // case DISPLAY_KEY_S:
+        //     // Hint to use Ctrl+S
+        //     ide_gui_set_status(gui, "Use Ctrl+S to save");
+        //     break;
 
         // Cursor movement
         case DISPLAY_KEY_UP:

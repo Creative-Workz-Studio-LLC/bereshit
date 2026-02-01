@@ -37,7 +37,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include "omni_lexer.h"
-#include "config.h"  // For Bible validation and error config
+#include "trit/config.h"  // For Bible validation and error config
 
 // # S.1 Chunk Categories [CATEGORIES]
 //

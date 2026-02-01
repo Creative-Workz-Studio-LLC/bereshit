@@ -40,7 +40,7 @@
 #include "omni_chunks.h"
 
 // CPI-SI state-aware logging
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 
 // # S.1 Helpers [HELPERS]
 

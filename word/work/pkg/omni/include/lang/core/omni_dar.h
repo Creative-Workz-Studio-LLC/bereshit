@@ -39,10 +39,36 @@
 
 // Cornerstone's DAR system (canonical implementation)
 // Provides: DAROrchestrator, HebrewState, HealthScore, KFactor
-#include "kernel/cpisi/dar/dar.h"
+#include "witness/dar.h"
 
-#include "omni_hebrew.h"  // Hebrew state compatibility aliases (DAR_* → HEBREW_*)
+// Freestanding kernel mode: provide stubs instead of full OmniCode types
+#if CPISI_MODE >= 2
+#include "../frontend/omni_hebrew.h"  // Hebrew state compatibility aliases (DAR_* → HEBREW_*)
 #include "omni_vm.h"      // For OmniValue in checkpoints (TODO: extract to omni_value.h)
+#else
+// Hebrew state aliases for freestanding mode
+#define DAR_SHAVAR HEBREW_SHAVAR
+#define DAR_CHASER HEBREW_CHASER
+#define DAR_RATSAH HEBREW_RATSAH
+#define DAR_YASHAR HEBREW_YASHAR
+#define DAR_TAMIM  HEBREW_TAMIM
+#define DAR_SHALEM HEBREW_SHALEM
+#define DAR_TOV    HEBREW_TOV
+// OmniValue stub for freestanding
+typedef struct OmniValue { int64_t i; } OmniValue;
+
+// OmniVM stub for freestanding (minimal structure)
+typedef struct OmniVM {
+    uint32_t    ip;         // Instruction pointer
+    uint16_t    sp;         // Stack pointer
+    int8_t      health;     // Health score
+    int8_t      state;      // Hebrew state
+    void*       memory;     // Opaque memory pointer
+} OmniVM;
+
+// DARHebrewState is alias to HebrewState for backward compatibility
+typedef int8_t DARHebrewState;
+#endif
 
 // # S.1 DAR Constants [CONSTANTS]
 

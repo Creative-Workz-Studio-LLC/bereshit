@@ -35,7 +35,7 @@
 
 // Include cpisi_log for integration (forward declared in header)
 // Direct include when building from cornerstone -Iengine/core/include/util
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 
 // # S.1 Internal Helpers [HELPERS]
 

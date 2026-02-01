@@ -6,7 +6,9 @@
 // omni_ide_cli.c — OmniCode IDE Base Implementation
 // Uses only display_* abstraction — works across CLI/TUI/GUI modes
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 // =============================================================================
 // METADATA [METADATA]
@@ -24,10 +26,10 @@
 // =============================================================================
 
 #include "omni_ide_cli.h"
-#include "display.h"  // Cornerstone display abstraction
+#include "display.hal.h"  // Cornerstone display abstraction
 
 // CPI-SI logging (state-aware, health-tracking)
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1298,46 +1300,52 @@ void ide_cli_handle_key(IDECLI* cli, DisplayKey key) {
             break;
 
         // --- Alt+key: Open specific menu ---
-        case DISPLAY_KEY_ALT_F:
-            cli->menubar.active_menu = MENU_FILE;
-            cli->menubar.active_item = 0;
-            cli->focus = FOCUS_MENU;
-            ide_cli_set_status(cli, "File menu");
-            cli->needs_redraw = true;
-            break;
-
-        case DISPLAY_KEY_ALT_E:
-            cli->menubar.active_menu = MENU_EDIT;
-            cli->menubar.active_item = 0;
-            cli->focus = FOCUS_MENU;
-            ide_cli_set_status(cli, "Edit menu");
-            cli->needs_redraw = true;
-            break;
-
-        case DISPLAY_KEY_ALT_V:
-            cli->menubar.active_menu = MENU_VIEW;
-            cli->menubar.active_item = 0;
-            cli->focus = FOCUS_MENU;
-            ide_cli_set_status(cli, "View menu");
-            cli->needs_redraw = true;
-            break;
-
-        case DISPLAY_KEY_ALT_H:
-            cli->menubar.active_menu = MENU_HELP;
-            cli->menubar.active_item = 0;
-            cli->focus = FOCUS_MENU;
-            ide_cli_set_status(cli, "Help menu");
-            cli->needs_redraw = true;
-            break;
+        // NOTE: Disabled - conflicts with CTRL_* in new API (both map to same KEY_*)
+        // TODO: Refactor to use KeyState with modifier checking
+        // In new API: Check KeyState.modifiers for MOD_ALT flag separately
+        //
+        // case DISPLAY_KEY_ALT_F:
+        //     cli->menubar.active_menu = MENU_FILE;
+        //     cli->menubar.active_item = 0;
+        //     cli->focus = FOCUS_MENU;
+        //     ide_cli_set_status(cli, "File menu");
+        //     cli->needs_redraw = true;
+        //     break;
+        //
+        // case DISPLAY_KEY_ALT_E:
+        //     cli->menubar.active_menu = MENU_EDIT;
+        //     cli->menubar.active_item = 0;
+        //     cli->focus = FOCUS_MENU;
+        //     ide_cli_set_status(cli, "Edit menu");
+        //     cli->needs_redraw = true;
+        //     break;
+        //
+        // case DISPLAY_KEY_ALT_V:
+        //     cli->menubar.active_menu = MENU_VIEW;
+        //     cli->menubar.active_item = 0;
+        //     cli->focus = FOCUS_MENU;
+        //     ide_cli_set_status(cli, "View menu");
+        //     cli->needs_redraw = true;
+        //     break;
+        //
+        // case DISPLAY_KEY_ALT_H:
+        //     cli->menubar.active_menu = MENU_HELP;
+        //     cli->menubar.active_item = 0;
+        //     cli->focus = FOCUS_MENU;
+        //     ide_cli_set_status(cli, "Help menu");
+        //     cli->needs_redraw = true;
+        //     break;
 
         // --- Legacy single-key quit (for compatibility) ---
-        case DISPLAY_KEY_Q:
-            // Only quit if not in editor focus (e.g., menu)
-            if (cli->focus != FOCUS_EDITOR) {
-                cli->running = false;
-            }
-            cli->needs_redraw = true;
-            break;
+        // NOTE: Disabled - conflicts with CTRL_Q in new API (both map to KEY_Q)
+        // TODO: Refactor to use KeyState with modifier checking
+        // case DISPLAY_KEY_Q:
+        //     // Only quit if not in editor focus (e.g., menu)
+        //     if (cli->focus != FOCUS_EDITOR) {
+        //         cli->running = false;
+        //     }
+        //     cli->needs_redraw = true;
+        //     break;
 
         // --- Printable characters ---
         case DISPLAY_KEY_CHAR:

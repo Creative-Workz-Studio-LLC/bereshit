@@ -75,7 +75,8 @@
 
 .PHONY: all libomni.a assets test test-lexer test-chunks test-dar test-parser \
         test-codegen test-conversation clean help info install install-desktop \
-        install-system uninstall uninstall-system ide
+        install-system install-user uninstall uninstall-system uninstall-user \
+        update-user ide
 
 # Set default goal explicitly (pattern rules appear before entry points)
 .DEFAULT_GOAL := all
@@ -187,8 +188,9 @@ INCLUDES = -I$(INC_DIR) \
            -I$(INC_DIR)/lang/frontend -I$(INC_DIR)/lang/backend -I$(INC_DIR)/lang/core \
            -I$(INC_DIR)/runtime/vm -I$(INC_DIR)/runtime/cpisi -I$(INC_DIR)/runtime/tools \
            -I$(INC_DIR)/ide/core -I$(INC_DIR)/ide/ui -I$(INC_DIR)/ide/panels \
+           -I$(INC_DIR)/ide/compat \
            -I$(TRIT_INC) \
-           -I$(CORNERSTONE_INC)/engine/include
+           -I$(CORNERSTONE_DIR)/engine/include
 
 # Source directories (organized structure)
 LANG_DIR = $(SRC_DIR)/lang
@@ -451,22 +453,84 @@ test-ide: libomni.a
 IDE_MODE ?= gui
 
 ## Cornerstone paths (shared by all IDE modes)
-CORNERSTONE_DISPLAY_INC = $(CORNERSTONE_DIR)/engine/display/include
-CORNERSTONE_DISPLAY_SRC = $(CORNERSTONE_DIR)/engine/display/src
-CORNERSTONE_CORE_INC = $(CORNERSTONE_DIR)/engine/core/include
-CORNERSTONE_CORE_SRC = $(CORNERSTONE_DIR)/engine/core/src
-CORNERSTONE_PLATFORM_SRC = $(CORNERSTONE_DIR)/engine/platform/linux
-CORNERSTONE_GRAPHICS_INC = $(CORNERSTONE_DIR)/engine/graphics/include
-CORNERSTONE_GRAPHICS_SRC = $(CORNERSTONE_DIR)/engine/graphics/src
-CORNERSTONE_CONFIG_SRC = $(CORNERSTONE_DIR)/engine/config/src
-CORNERSTONE_UI_SRC = $(CORNERSTONE_DIR)/engine/ui/src
-CORNERSTONE_SESSION_SRC = $(CORNERSTONE_DIR)/engine/session/src
+## Updated for kernel-like header structure (Phase A reorganization)
+##
+## Structure:
+##   engine/include/           - headers
+##     ├── types.h             - root types
+##     ├── kernel/             - kernel core (cpisi, dar, platform, ipc)
+##     ├── hal/                - hardware abstraction (display, audio, input)
+##     ├── services/           - persistence layer
+##     ├── framework/          - engine framework (graphics, ui, util)
+##     └── app/                - application code
+##   engine/src/               - corresponding sources
+##
+CORNERSTONE_INC = $(CORNERSTONE_DIR)/engine/include
+CORNERSTONE_SRC = $(CORNERSTONE_DIR)/engine/src
+
+# Include paths (layered)
+CORNERSTONE_KERNEL_INC = $(CORNERSTONE_INC)/kernel
+CORNERSTONE_HAL_INC = $(CORNERSTONE_INC)/hal
+CORNERSTONE_SERVICES_INC = $(CORNERSTONE_INC)/services
+CORNERSTONE_FRAMEWORK_INC = $(CORNERSTONE_INC)/framework
+
+# Source paths (layered)
+CORNERSTONE_KERNEL_SRC = $(CORNERSTONE_SRC)/kernel
+CORNERSTONE_HAL_SRC = $(CORNERSTONE_SRC)/hal
+CORNERSTONE_SERVICES_SRC = $(CORNERSTONE_SRC)/services
+CORNERSTONE_FRAMEWORK_SRC = $(CORNERSTONE_SRC)/framework
+
+# Specific component paths (for IDE compilation)
+CORNERSTONE_DISPLAY_INC = $(CORNERSTONE_HAL_INC)/display
+CORNERSTONE_DISPLAY_SRC = $(CORNERSTONE_HAL_SRC)/display/hal
+CORNERSTONE_DISPLAY_DRV = $(CORNERSTONE_HAL_SRC)/display/driver
+CORNERSTONE_GRAPHICS_INC = $(CORNERSTONE_FRAMEWORK_INC)/graphics
+CORNERSTONE_GRAPHICS_SRC = $(CORNERSTONE_FRAMEWORK_SRC)/graphics
+CORNERSTONE_PLATFORM_INC = $(CORNERSTONE_KERNEL_INC)/platform
+CORNERSTONE_PLATFORM_SRC = $(CORNERSTONE_KERNEL_SRC)/platform/hal
+CORNERSTONE_DAR_INC = $(CORNERSTONE_KERNEL_INC)/dar
+CORNERSTONE_DAR_SRC = $(CORNERSTONE_KERNEL_SRC)/dar
+CORNERSTONE_UTIL_INC = $(CORNERSTONE_FRAMEWORK_INC)/util
+CORNERSTONE_UTIL_SRC = $(CORNERSTONE_FRAMEWORK_SRC)/util
+CORNERSTONE_UI_INC = $(CORNERSTONE_FRAMEWORK_INC)/ui
+CORNERSTONE_UI_SRC = $(CORNERSTONE_FRAMEWORK_SRC)/ui
+CORNERSTONE_CONFIG_SRC = $(CORNERSTONE_FRAMEWORK_SRC)/config
+CORNERSTONE_SESSION_SRC = $(CORNERSTONE_SERVICES_SRC)/session
+
+# Cornerstone Libraries (Phase A structure)
+# Link against Cornerstone stage libraries using same pattern as cornerstone.c
+# Key: --start-group/--end-group handles circular deps, --whole-archive for stage3
+CORNERSTONE_LIB_DIR = $(CORNERSTONE_DIR)/build/lib
+
+# Cornerstone link flags (matches Cornerstone's own linking pattern)
+# Order: stage4 → stage3 (whole archive) → stage2 → stage1 → bereshit
+CORNERSTONE_LINK_FLAGS = \
+	-L$(CORNERSTONE_LIB_DIR) \
+	-Wl,--start-group \
+	-lstage4_app \
+	-Wl,--whole-archive -lstage3_framework -Wl,--no-whole-archive \
+	-lstage2_hal -lstage1_kernel -lbereshit \
+	-Wl,--end-group
+
+# External libraries required by Cornerstone (from LDFLAGS)
+CORNERSTONE_EXT_LIBS = -lGL -lepoxy -lglfw -lpng -lncurses -lm -ldl -lutil -lsqlite3
 
 # Base CFLAGS (always needed for IDE)
+# Includes follow the kernel-like layer hierarchy:
+#   types.h (root) → kernel/ → hal/ → services/ → framework/
 IDE_CFLAGS_BASE = $(CFLAGS) $(INCLUDES) \
 	-I$(CORNERSTONE_DIR) \
-	-I$(CORNERSTONE_DISPLAY_INC) \
-	-I$(CORNERSTONE_CORE_INC)/engine -I$(CORNERSTONE_CORE_INC)/scene -I$(CORNERSTONE_CORE_INC)/util \
+	-I$(CORNERSTONE_INC) \
+	-I$(CORNERSTONE_KERNEL_INC) \
+	-I$(CORNERSTONE_KERNEL_INC)/cpisi \
+	-I$(CORNERSTONE_HAL_INC) \
+	-I$(CORNERSTONE_HAL_INC)/input/device \
+	-I$(CORNERSTONE_FRAMEWORK_INC) \
+	-I$(CORNERSTONE_DISPLAY_INC)/hal \
+	-I$(CORNERSTONE_PLATFORM_INC)/hal \
+	-I$(CORNERSTONE_DAR_INC) \
+	-I$(CORNERSTONE_UTIL_INC)/system/util \
+	-I$(CORNERSTONE_UTIL_INC)/graphics/util \
 	-DIDE_CLI_BASE
 
 # Mode-specific CFLAGS additions
@@ -479,12 +543,12 @@ IDE_CFLAGS = $(IDE_CFLAGS_BASE) -DIDE_TUI_ENABLED
 IDE_LIBS = -lncurses
 IDE_MODE_DESC = TUI (CLI + ncurses)
 else ifeq ($(IDE_MODE),full)
-IDE_CFLAGS = $(IDE_CFLAGS_BASE) -I$(CORNERSTONE_GRAPHICS_INC) -DIDE_TUI_ENABLED -DIDE_GUI_ENABLED
+IDE_CFLAGS = $(IDE_CFLAGS_BASE) -I$(CORNERSTONE_GRAPHICS_INC)/render/manager -DIDE_TUI_ENABLED -DIDE_GUI_ENABLED
 IDE_LIBS = -lncurses -lglfw -lGL -lepoxy -lpng -lm
 IDE_MODE_DESC = Full (CLI + TUI + GUI)
 else
 # Default: gui
-IDE_CFLAGS = $(IDE_CFLAGS_BASE) -I$(CORNERSTONE_GRAPHICS_INC) -DIDE_GUI_ENABLED
+IDE_CFLAGS = $(IDE_CFLAGS_BASE) -I$(CORNERSTONE_GRAPHICS_INC)/render/manager -DIDE_GUI_ENABLED
 IDE_LIBS = -lglfw -lGL -lepoxy -lpng -lm
 IDE_MODE_DESC = GUI (CLI + OpenGL)
 endif
@@ -492,7 +556,7 @@ endif
 ## ide: Build OmniCode IDE
 ## Single target with IDE_MODE variable controlling what gets built
 ## Always outputs: build/omni-ide
-ide: libomni.a assets
+ide: libomni.a assets cornerstone-libs
 	$(ECHO) "Building OmniCode IDE [$(IDE_MODE_DESC)]..."
 	$(Q)rm -rf $(BUILD_DIR)/ide && mkdir -p $(BUILD_DIR)/ide
 	$(ECHO) "  [Core] omni_ide_main.c"
@@ -510,93 +574,26 @@ endif
 ifeq ($(IDE_MODE),gui)
 	$(ECHO) "  [UI] omni_ide_gui.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/gui_ui.o $(IDE_DIR)/ui/omni_ide_gui.c
-	$(ECHO) "  [Util] screenshot.c (shared, GUI)"
-	$(Q)$(CC) $(IDE_CFLAGS) -DSCREENSHOT_GUI_ENABLED -c -o $(BUILD_DIR)/ide/screenshot.o $(CORNERSTONE_CORE_SRC)/util/screenshot.c
-endif
-ifeq ($(IDE_MODE),tui)
-	$(ECHO) "  [Util] screenshot.c (shared, TUI)"
-	$(Q)$(CC) $(IDE_CFLAGS) -DSCREENSHOT_TUI_ENABLED -c -o $(BUILD_DIR)/ide/screenshot.o $(CORNERSTONE_CORE_SRC)/util/screenshot.c
 endif
 ifeq ($(IDE_MODE),full)
 	$(ECHO) "  [UI] omni_ide_tui.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/tui_ui.o $(IDE_DIR)/ui/omni_ide_tui.c
 	$(ECHO) "  [UI] omni_ide_gui.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/gui_ui.o $(IDE_DIR)/ui/omni_ide_gui.c
-	$(ECHO) "  [Util] screenshot.c (shared, TUI+GUI)"
-	$(Q)$(CC) $(IDE_CFLAGS) -DSCREENSHOT_TUI_ENABLED -DSCREENSHOT_GUI_ENABLED -c -o $(BUILD_DIR)/ide/screenshot.o $(CORNERSTONE_CORE_SRC)/util/screenshot.c
 endif
-	$(ECHO) "  [Display] display.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/display.o $(CORNERSTONE_DISPLAY_SRC)/display.c
-	$(ECHO) "  [Backend] cli.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cli_backend.o $(CORNERSTONE_DISPLAY_SRC)/backends/cli.c
-ifeq ($(IDE_MODE),tui)
-	$(ECHO) "  [Backend] tui.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/tui_backend.o $(CORNERSTONE_DISPLAY_SRC)/backends/tui.c
-endif
-ifeq ($(IDE_MODE),gui)
-	$(ECHO) "  [Backend] gui.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/gui_backend.o $(CORNERSTONE_DISPLAY_SRC)/backends/gui.c
-	$(ECHO) "  [Graphics] renderer.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/renderer.o $(CORNERSTONE_GRAPHICS_SRC)/renderer.c
-	$(ECHO) "  [Graphics] texture.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/texture.o $(CORNERSTONE_GRAPHICS_SRC)/texture.c
-	$(ECHO) "  [Graphics] text.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/text.o $(CORNERSTONE_GRAPHICS_SRC)/text.c
-	$(ECHO) "  [Graphics] fontgen.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/fontgen.o $(CORNERSTONE_GRAPHICS_SRC)/fontgen.c
-	$(ECHO) "  [Graphics] blockfont.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/blockfont.o $(CORNERSTONE_CORE_SRC)/util/blockfont.c
-	$(ECHO) "  [Platform] platform_linux.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/platform.o $(CORNERSTONE_PLATFORM_SRC)/platform_linux.c
-endif
-ifeq ($(IDE_MODE),full)
-	$(ECHO) "  [Backend] tui.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/tui_backend.o $(CORNERSTONE_DISPLAY_SRC)/backends/tui.c
-	$(ECHO) "  [Backend] gui.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/gui_backend.o $(CORNERSTONE_DISPLAY_SRC)/backends/gui.c
-	$(ECHO) "  [Graphics] renderer.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/renderer.o $(CORNERSTONE_GRAPHICS_SRC)/renderer.c
-	$(ECHO) "  [Graphics] texture.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/texture.o $(CORNERSTONE_GRAPHICS_SRC)/texture.c
-	$(ECHO) "  [Graphics] text.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/text.o $(CORNERSTONE_GRAPHICS_SRC)/text.c
-	$(ECHO) "  [Graphics] fontgen.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/fontgen.o $(CORNERSTONE_GRAPHICS_SRC)/fontgen.c
-	$(ECHO) "  [Graphics] blockfont.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/blockfont.o $(CORNERSTONE_CORE_SRC)/util/blockfont.c
-	$(ECHO) "  [Platform] platform_linux.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/platform.o $(CORNERSTONE_PLATFORM_SRC)/platform_linux.c
-endif
-	$(ECHO) "  [Util] cpisi_log.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi_log.o $(CORNERSTONE_CORE_SRC)/util/cpisi_log.c
-	$(ECHO) "  [Util] cpisi_debug.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi_debug.o $(CORNERSTONE_CORE_SRC)/util/cpisi_debug.c
-	$(ECHO) "  [Util] cpisi_restore.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi_restore.o $(CORNERSTONE_CORE_SRC)/util/cpisi_restore.c
-	$(ECHO) "  [Util] cpisi_config.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi_config.o $(CORNERSTONE_CORE_SRC)/util/cpisi_config.c
-	$(ECHO) "  [Util] cpisi_log_rotation.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi_log_rotation.o $(CORNERSTONE_CORE_SRC)/util/cpisi_log_rotation.c
-	$(ECHO) "  [Util] cpisi.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/cpisi.o $(CORNERSTONE_CORE_SRC)/util/cpisi.c
-	$(ECHO) "  [Util] signals.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/signals.o $(CORNERSTONE_CORE_SRC)/util/signals.c
-	$(ECHO) "  [Util] jsonc.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/jsonc.o $(CORNERSTONE_CORE_SRC)/util/jsonc.c
-	$(ECHO) "  [Engine] engine_config.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/engine_config.o $(CORNERSTONE_CONFIG_SRC)/engine_config.c
-	$(ECHO) "  [UI] log_panel.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/log_panel.o $(CORNERSTONE_UI_SRC)/log_panel.c
-	$(ECHO) "  [Session] session.c"
-	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/session.o $(CORNERSTONE_SESSION_SRC)/session.c
 	$(ECHO) "  [Config] config.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/config.o $(TRIT_DIR)/src/config.c
 	$(ECHO) "  [Config] toml.c"
 	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/toml.o $(TRIT_DIR)/src/toml.c
-	$(ECHO) "  [Link] omni-ide"
+	$(ECHO) "  [Bridge] engine_bridge.c"
+	$(Q)$(CC) $(IDE_CFLAGS) -c -o $(BUILD_DIR)/ide/engine_bridge.o $(IDE_DIR)/bridge/engine_bridge.c
+	$(ECHO) "  [Link] omni-ide (linking against Cornerstone stage libraries)"
 	$(Q)$(CC) -o $(BUILD_DIR)/omni-ide \
 		$(BUILD_DIR)/ide/*.o \
-		$(BUILD_DIR)/$(LIB_NAME) $(TRIT_LIB) $(IDE_LIBS)
+		$(BUILD_DIR)/$(LIB_NAME) $(TRIT_LIB) \
+		$(CORNERSTONE_LINK_FLAGS) \
+		$(CORNERSTONE_EXT_LIBS) \
+		$(IDE_LIBS) -lpthread
 	$(ECHO) "✓ Built $(BUILD_DIR)/omni-ide [$(IDE_MODE_DESC)]"
 	$(ECHO) ""
 ifeq ($(IDE_MODE),cli)
@@ -618,6 +615,16 @@ else
 endif
 	$(ECHO) ""
 	$(ECHO) "Usage: ./build/omni-ide [options] <file>"
+
+## cornerstone-libs: Ensure Cornerstone libraries are built
+## IDE links against pre-built Cornerstone libraries (Phase A architecture)
+cornerstone-libs:
+	$(Q)if [ ! -f "$(CORNERSTONE_LIB_DIR)/libstage1_kernel.a" ]; then \
+		echo "Building Cornerstone libraries..."; \
+		$(MAKE) -C $(CORNERSTONE_DIR) libs; \
+	else \
+		echo "  Cornerstone libraries up-to-date"; \
+	fi
 
 ## install: Install omni-ide (use PREFIX=~/.local for user-local, or install-system for system-wide)
 ## Uses IDE_MODE=full by default for maximum compatibility
@@ -757,6 +764,35 @@ uninstall:
 	$(Q)rm -f $(ICONDIR)/omni-ide.png
 	$(Q)update-desktop-database $(DESKTOPDIR) 2>/dev/null || true
 	$(ECHO) "✓ OmniCode IDE uninstalled"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# User-Local Installation (aligned with Cornerstone/MillenniumOS pattern)
+# ─────────────────────────────────────────────────────────────────────────────
+
+## install-user: Install to user's local directory (~/.local)
+install-user: PREFIX=$(HOME)/.local
+install-user: DESKTOPDIR=$(HOME)/.local/share/applications
+install-user: ICONDIR=$(HOME)/.local/share/icons/hicolor/256x256/apps
+install-user: install
+	@# Force desktop cache refresh for user install
+	$(Q)update-desktop-database $(HOME)/.local/share/applications 2>/dev/null || true
+	$(Q)gtk-update-icon-cache -f -t $(HOME)/.local/share/icons/hicolor 2>/dev/null || true
+	$(ECHO) ""
+	$(ECHO) "  Desktop entry installed — search 'OmniCode' in applications"
+
+## uninstall-user: Remove from user's local directory (~/.local)
+uninstall-user: PREFIX=$(HOME)/.local
+uninstall-user: DESKTOPDIR=$(HOME)/.local/share/applications
+uninstall-user: ICONDIR=$(HOME)/.local/share/icons/hicolor/256x256/apps
+uninstall-user: uninstall
+	$(ECHO) "✓ Uninstalled from user's local directory"
+
+## update-user: Rebuild and reinstall to user's local directory
+update-user: clean ide
+	@$(MAKE) --no-print-directory uninstall-user 2>/dev/null || true
+	@$(MAKE) --no-print-directory install-user
+	$(ECHO) ""
+	$(ECHO) "✓ OmniCode IDE updated in ~/.local"
 
 ## clean: Remove build artifacts
 clean:

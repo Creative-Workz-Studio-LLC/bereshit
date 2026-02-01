@@ -41,7 +41,7 @@
 #include "kernel/types/types.h"
 
 // DAR system from Cornerstone (single source of truth)
-#include "kernel/cpisi/dar/dar.h"
+#include "kernel/dar/manager/dar.mgr.h"
 
 #include "omni_hebrew.h"  // Hebrew state compatibility aliases
 

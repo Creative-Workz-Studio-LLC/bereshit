@@ -98,6 +98,19 @@ typedef enum {
     OP_TRIT_SUM     = 0x36,     // Ternary SUM (addition mod 3)
 
     // -------------------------------------------------------------------------
+    // Binary Bitwise Operations (0x38 - 0x3F) - x86 equivalence for self-hosting
+    // -------------------------------------------------------------------------
+    // These enable OmniCode to express x86-level bit manipulation,
+    // required for OS development, device drivers, and self-hosting.
+    OP_BIT_AND      = 0x38,     // Binary AND:  a & b
+    OP_BIT_OR       = 0x39,     // Binary OR:   a | b
+    OP_BIT_XOR      = 0x3A,     // Binary XOR:  a ^ b
+    OP_BIT_NOT      = 0x3B,     // Binary NOT:  ~a
+    OP_BIT_SHL      = 0x3C,     // Shift left:  a << b
+    OP_BIT_SHR      = 0x3D,     // Shift right: a >> b (logical)
+    OP_BIT_SAR      = 0x3E,     // Shift right: a >> b (arithmetic, sign-extend)
+
+    // -------------------------------------------------------------------------
     // Comparison (0x40 - 0x4F)
     // -------------------------------------------------------------------------
     OP_EQ           = 0x40,     // a == b -> trit
@@ -118,6 +131,9 @@ typedef enum {
     OP_CALL         = 0x55,     // Call function: [func_index:2]
     OP_RETURN       = 0x56,     // Return from function
     OP_HALT         = 0x57,     // Halt execution
+    OP_PROCEED      = 0x58,     // Proceed (continue) - inverse of HALT
+    OP_YIELD        = 0x59,     // Yield control (cooperative multitasking)
+    OP_RESUME       = 0x5A,     // Resume from yield
 
     // -------------------------------------------------------------------------
     // Health & State (0x60 - 0x6F) - CPI-SI native
@@ -136,6 +152,21 @@ typedef enum {
     OP_PRINT_NL     = 0x72,     // Print newline
     OP_READ_INT     = 0x73,     // Read integer to stack
     OP_READ_LINE    = 0x74,     // Read line to stack (string index)
+
+    // Hardware I/O (x86 equivalence for OS/driver development)
+    OP_PORT_IN      = 0x75,     // Port input:  pop port, push value (IN)
+    OP_PORT_OUT     = 0x76,     // Port output: pop value, pop port (OUT)
+    OP_PORT_IN8     = 0x77,     // Port input 8-bit
+    OP_PORT_IN16    = 0x78,     // Port input 16-bit
+    OP_PORT_IN32    = 0x79,     // Port input 32-bit
+    OP_PORT_OUT8    = 0x7A,     // Port output 8-bit
+    OP_PORT_OUT16   = 0x7B,     // Port output 16-bit
+    OP_PORT_OUT32   = 0x7C,     // Port output 32-bit
+
+    // Memory operations (direct addressing for OS kernel)
+    OP_MEM_READ8    = 0x7D,     // Read byte:  pop addr, push value
+    OP_MEM_READ16   = 0x7E,     // Read word:  pop addr, push value
+    OP_MEM_READ32   = 0x7F,     // Read dword: pop addr, push value
 
     // -------------------------------------------------------------------------
     // Witness Operations (0x80 - 0x8F) - OmniCode native
@@ -212,6 +243,38 @@ typedef enum {
     OP_DIR_LIST     = 0xD9,     // List directory: pop path, push list
     OP_DIR_CREATE   = 0xDA,     // Create directory: pop path
     OP_DIR_EXISTS   = 0xDB,     // Dir exists: pop path, push trit
+
+    // -------------------------------------------------------------------------
+    // System/Hardware Operations (0xE0 - 0xEF) - x86 equivalence for OS kernel
+    // -------------------------------------------------------------------------
+    // These enable OmniCode to express system-level operations required for
+    // MillenniumOS kernel development and self-hosting toolchain.
+
+    // Memory write operations (complete the 0x7D-0x7F read set)
+    OP_MEM_WRITE8   = 0xE0,     // Write byte:  pop value, pop addr
+    OP_MEM_WRITE16  = 0xE1,     // Write word:  pop value, pop addr
+    OP_MEM_WRITE32  = 0xE2,     // Write dword: pop value, pop addr
+    OP_MEM_READ64   = 0xE3,     // Read qword:  pop addr, push value
+    OP_MEM_WRITE64  = 0xE4,     // Write qword: pop value, pop addr
+
+    // Interrupt and system operations
+    OP_INT          = 0xE5,     // Software interrupt: [vector:1] (x86 INT n)
+    OP_CLI          = 0xE6,     // Clear interrupt flag (disable interrupts)
+    OP_STI          = 0xE7,     // Set interrupt flag (enable interrupts)
+    OP_IRET         = 0xE8,     // Return from interrupt
+
+    // CPU control
+    OP_HLT          = 0xE9,     // Halt until interrupt (x86 HLT)
+    OP_CPUID        = 0xEA,     // CPU identification: push features
+    OP_RDTSC        = 0xEB,     // Read timestamp counter: push value
+
+    // Control register access (for paging, protection)
+    OP_CR_READ      = 0xEC,     // Read CR: [cr_num:1], push value
+    OP_CR_WRITE     = 0xED,     // Write CR: pop value, [cr_num:1]
+
+    // Memory barrier and cache
+    OP_MFENCE       = 0xEE,     // Memory fence (serialize memory ops)
+    OP_CLFLUSH      = 0xEF,     // Cache line flush: pop addr
 
     // -------------------------------------------------------------------------
     // Extended (0xF0 - 0xFF)

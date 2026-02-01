@@ -865,8 +865,9 @@ static bool try_block_marker(OmniChunkLexer* lexer, OmniChunk* chunk) {
     return true;
 }
 
-// Pattern: Comment (with block marker detection)
+// Pattern: Comment (with block marker and pragma detection)
 // Block markers appear as comments like "// METADATA" or "// [METADATA]"
+// Pragmas appear as comments like "// #!omni code" or "// #!omni meta.key = X"
 static bool try_comment(OmniChunkLexer* lexer, OmniChunk* chunk) {
     if (!check_token(lexer, TOK_COMMENT)) return false;
 
@@ -876,8 +877,74 @@ static bool try_comment(OmniChunkLexer* lexer, OmniChunk* chunk) {
     // Skip leading whitespace in comment text
     while (*text == ' ' || *text == '\t') text++;
 
+    // =========================================================================
+    // Check for #!omni pragmas inside comments (MUST be first)
+    // This is how OmniCode embeds in host languages like C, Go, etc.
+    // =========================================================================
+
+    // Check for "#!omni meta.key = VALUE"
+    if (strncmp(text, "#!omni meta.key", 15) == 0) {
+        init_chunk(chunk, CHUNK_META_KEY, &first);
+        const char* eq = strchr(text, '=');
+        if (eq) {
+            eq++;
+            while (*eq == ' ' || *eq == '\t') eq++;
+            safe_strcpy(chunk->primary_value, sizeof(chunk->primary_value), eq);
+        }
+        return true;
+    }
+
+    // Check for "#!omni meta.from = VALUE"
+    if (strncmp(text, "#!omni meta.from", 16) == 0) {
+        init_chunk(chunk, CHUNK_META_FROM, &first);
+        const char* eq = strchr(text, '=');
+        if (eq) {
+            eq++;
+            while (*eq == ' ' || *eq == '\t') eq++;
+            safe_strcpy(chunk->primary_value, sizeof(chunk->primary_value), eq);
+        }
+        return true;
+    }
+
+    // Check for "#!omni meta.at = VALUE"
+    if (strncmp(text, "#!omni meta.at", 14) == 0) {
+        init_chunk(chunk, CHUNK_META_AT, &first);
+        const char* eq = strchr(text, '=');
+        if (eq) {
+            eq++;
+            while (*eq == ' ' || *eq == '\t') eq++;
+            safe_strcpy(chunk->primary_value, sizeof(chunk->primary_value), eq);
+        }
+        return true;
+    }
+
+    // Check for "#!omni TYPE FLAGS..." (main pragma line)
+    if (strncmp(text, "#!omni ", 7) == 0) {
+        init_chunk(chunk, CHUNK_PRAGMA, &first);
+        text += 7;  // Skip "#!omni "
+
+        // Extract type word (first word after #!omni)
+        char type[64] = {0};
+        int i = 0;
+        while (*text && *text != ' ' && *text != '\t' && i < 63) {
+            type[i++] = *text++;
+        }
+        type[i] = '\0';
+        safe_strcpy(chunk->primary_value, sizeof(chunk->primary_value), type);
+
+        // Skip whitespace
+        while (*text == ' ' || *text == '\t') text++;
+
+        // Rest is flags
+        safe_strcpy(chunk->secondary_value, sizeof(chunk->secondary_value), text);
+
+        return true;
+    }
+
+    // =========================================================================
     // Check for block markers (with or without brackets)
     // Format: "METADATA", "[METADATA]", "END METADATA", etc.
+    // =========================================================================
 
     // Check for END markers first (they're longer)
     if (strncasecmp(text, "END METADATA", 12) == 0 ||

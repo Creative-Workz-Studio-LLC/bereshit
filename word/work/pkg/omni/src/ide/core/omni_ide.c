@@ -6,7 +6,9 @@
 // omni_ide.c — OmniCode IDE Core Implementation
 // Text editing with structure awareness
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 // =============================================================================
 // METADATA [METADATA]
@@ -28,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "kernel/cpisi/dar/detect.h"  // CPI-SI state-aware logging
+#include "kernel/dar/phase/detect.phase.h"  // CPI-SI state-aware logging
 
 // =============================================================================
 // END SETUP

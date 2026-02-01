@@ -24,10 +24,10 @@
 // =============================================================================
 
 #include "omni_ide_tui.h"
-#include "screenshot.h"                 // Shared screenshot module
+#include "framework/util/graphics/util/screenshot.util.h" // Shared screenshot module
 #include <ncurses.h>
-#include "display.h"  // Cornerstone display abstraction
-#include "config.h"  // IDE config with themes (from libtrit)
+#include "display.hal.h"  // Cornerstone display abstraction
+#include "trit/config.h"  // IDE config with themes (from libtrit)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,10 +36,10 @@
 #include <sys/stat.h>
 
 // Shared signal handling (full suite - shared with cornerstone engine)
-#include "signals.h"  // signals_is_running
+#include "signals.util.h"  // signals_is_running
 
 // CPI-SI logging (state-aware, health-tracking)
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 
 // Control key macro (converts 'q' to Ctrl+Q code)
 #define CTRL(c) ((c) & 037)

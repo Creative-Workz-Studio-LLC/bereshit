@@ -38,7 +38,7 @@
 #include "omni_codegen.h"
 
 // CPI-SI state-aware logging
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 
 // # S.1 Internal Helpers [HELPERS]
 

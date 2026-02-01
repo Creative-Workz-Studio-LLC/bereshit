@@ -6,7 +6,9 @@
 // omni_ide_panel.c — OmniCode IDE Panel Implementation
 // File browser, block outline, validation panels
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 // =============================================================================
 // METADATA [METADATA]
@@ -24,7 +26,7 @@
 // =============================================================================
 
 #include "omni_ide_panel.h"
-#include "display.h"
+#include "display.hal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

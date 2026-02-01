@@ -42,7 +42,7 @@
 #include "omni_lib.h"
 
 // CPI-SI state-aware logging
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 
 // Safe copy with explicit null termination (truncation is intentional)
 static void safe_copy(char* dest, size_t dest_size, const char* src) {

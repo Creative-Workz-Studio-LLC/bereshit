@@ -30,7 +30,7 @@
 // =============================================================================
 
 #include "omni_mind.h"
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>

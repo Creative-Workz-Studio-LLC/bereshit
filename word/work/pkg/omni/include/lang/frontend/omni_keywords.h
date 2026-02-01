@@ -114,6 +114,36 @@ static const OmniKeyword omni_keywords[] = {
     {"spawn", TOK_SPAWN},
 
     // -------------------------------------------------------------------------
+    // STACK OPERATION KEYWORDS (sentence-friendly vocabulary)
+    // -------------------------------------------------------------------------
+    // These enable natural OmniCode sentences for stack operations:
+    //   "push value onto stack"
+    //   "pull value from stack"
+    //   "peek at stack"
+    //   "place value on stack" (synonym for push)
+    //   "take value from stack" (synonym for pull)
+    {"push", TOK_PUSH},
+    {"pull", TOK_PULL},
+    {"peek", TOK_PEEK},
+    {"place", TOK_PLACE},
+    {"take", TOK_TAKE},
+    {"onto", TOK_ONTO},
+    {"stack", TOK_STACK},
+
+    // -------------------------------------------------------------------------
+    // CONTROL FLOW KEYWORDS (inverse pairs)
+    // -------------------------------------------------------------------------
+    // Ternary control flow with clear inverse relationships:
+    //   proceed ↔ halt     (continue/stop execution)
+    //   push ↔ pull        (add/remove from stack)
+    //   spawn ↔ pop        (create/destroy task)
+    //   await → (waits)    (suspend until ready)
+    {"halt", TOK_HALT},
+    {"proceed", TOK_PROCEED},
+    {"yield", TOK_YIELD},
+    {"resume", TOK_RESUME},
+
+    // -------------------------------------------------------------------------
     // LOGICAL KEYWORDS
     // -------------------------------------------------------------------------
     {"and", TOK_AND},

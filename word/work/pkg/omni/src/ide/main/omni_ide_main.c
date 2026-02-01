@@ -28,7 +28,7 @@
 // CLI base support - uses display_* abstraction only
 #ifdef IDE_CLI_BASE
 #include "omni_ide_cli.h"
-#include "display.h"  // For DisplayMode type
+#include "display.hal.h"  // For DisplayMode type
 #else
 #include "omni_ide_tui.h"
 #endif
@@ -36,8 +36,8 @@
 // GUI support - conditionally compiled if Cornerstone available
 #ifdef IDE_GUI_ENABLED
 #include "omni_ide_gui.h"
-#include "engine/platform/common/platform.h"  // Platform layer for GUI
-#include "engine/graphics/include/renderer.h" // Renderer for GUI
+#include "platform.hal.h"  // Platform layer for GUI
+#include "renderer.mgr.h" // Renderer for GUI
 #endif
 
 #include <stdio.h>
@@ -45,13 +45,13 @@
 #include <string.h>
 
 // Shared signal handling (full suite - shared with cornerstone engine)
-#include "signals.h"  // signals_init, signals_is_running
+#include "signals.util.h"  // signals_init, signals_is_running
 
 // Display layer access
-#include "display.h"
+#include "display.hal.h"
 
 // CPI-SI unified system (log, debug, restore)
-#include "cpisi.h"
+#include "cpisi.mgr.h"
 
 // Display mode selection
 typedef enum {

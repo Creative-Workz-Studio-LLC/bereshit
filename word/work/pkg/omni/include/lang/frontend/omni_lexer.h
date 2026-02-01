@@ -126,6 +126,22 @@ typedef enum {
     TOK_AWAIT,            // await
     TOK_SPAWN,            // spawn
 
+    // Stack Operation Keywords (sentence-friendly vocabulary)
+    TOK_PUSH,             // push
+    TOK_PULL,             // pull (synonym for pop in natural language)
+    TOK_PEEK,             // peek (look at top without removing)
+    TOK_PLACE,            // place (synonym for push)
+    TOK_TAKE,             // take (synonym for pull)
+    TOK_ONTO,             // onto (used with: "push X onto stack")
+    TOK_STACK,            // stack (the stack itself)
+
+    // Control Flow Keywords (inverse pairs)
+    // proceed ↔ halt, yield ↔ resume
+    TOK_HALT,             // halt (stop execution)
+    TOK_PROCEED,          // proceed (continue execution)
+    TOK_YIELD,            // yield (pause, give up control)
+    TOK_RESUME,           // resume (continue from yield)
+
     // Logical Keywords
     TOK_AND,              // and
     TOK_OR,               // or

@@ -30,10 +30,10 @@
 #include <string.h>
 #include <time.h>
 #include "omni_profile.h"
-#include "framework/util/format/jsonc.h"  // Cornerstone util
+#include "framework/util/format/fmt/jsonc.fmt.h"  // Cornerstone util
 
 // CPI-SI state-aware logging
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 
 // =============================================================================
 // END SETUP

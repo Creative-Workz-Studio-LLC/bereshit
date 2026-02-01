@@ -26,7 +26,7 @@
 // =============================================================================
 
 #include "omni_retrieval.h"
-#include "framework/util/format/jsonc.h"  // Cornerstone util
+#include "framework/util/format/fmt/jsonc.fmt.h"  // Cornerstone util
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,7 +35,7 @@
 #include <sys/stat.h>
 
 // CPI-SI state-aware logging
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 
 // Scripture index cache (loaded once, used many times)
 static ScriptureEntry* g_kjv_index = NULL;

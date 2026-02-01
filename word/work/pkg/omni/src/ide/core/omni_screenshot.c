@@ -31,10 +31,10 @@
 #include <errno.h>
 
 // CPI-SI state-aware logging
-#include "kernel/cpisi/dar/detect.h"
+#include "kernel/dar/phase/detect.phase.h"
 
 #ifdef IDE_GUI_ENABLED
-#include "engine/platform/common/platform.h"
+#include "platform.hal.h"
 #endif
 
 #ifdef IDE_TUI_ENABLED

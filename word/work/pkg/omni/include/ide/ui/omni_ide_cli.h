@@ -31,7 +31,8 @@
 // =============================================================================
 
 #include "omni_ide_panel.h"  // Includes omni_ide.h
-#include "display.h"         // Cornerstone display abstraction
+#include "display.hal.h"     // Cornerstone display abstraction (HAL layer)
+#include "../compat/cornerstone_compat.h"  // Key compatibility for Phase A
 #include <stdbool.h>
 
 // =============================================================================
