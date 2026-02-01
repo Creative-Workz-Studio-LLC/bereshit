@@ -1,0 +1,618 @@
+// =============================================================================
+// METADATA
+// =============================================================================
+//
+// :key: millenniumos-qemu-scripts-readme
+// :title: MillenniumOS QEMU Scripts
+// :type: Documentation
+// :status: Active
+// :version: 2.0.0
+// :created: 2025-01-31
+// :updated: 2025-01-31
+// :authors: Seanje Lenox-Wise (Architect), Nova Dawn (Author)
+// :organization: CreativeWorkzStudio LLC
+// :purpose: Comprehensive documentation for QEMU launch scripts and configurations
+// :grounding: Genesis 1:1 — "In the beginning God created the heaven and the earth."
+//
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+= MillenniumOS QEMU Scripts
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+// =============================================================================
+// HEADER
+// =============================================================================
+
+[.lead]
+*Kingdom Technology Operating System — QEMU Virtual Machine Infrastructure*
+
+____
+"In the beginning God created the heaven and the earth." — Genesis 1:1
+____
+
+QEMU scripts for running MillenniumOS in a virtual machine.
+All scripts follow the *4-block structure* and are *config-driven*.
+
+// =============================================================================
+// CONTEXT
+// =============================================================================
+
+== Overview
+
+=== Directory Structure
+
+[source]
+----
+qemu/
+├── README.adoc              # This documentation
+│
+├── uefi/                    # UEFI boot scripts
+│   ├── run-uefi.sh              # PRODUCTION — Full GPT + ESP image
+│   ├── run-uefi-simple.sh       # DEVELOPMENT — QEMU vvfat fallback
+│   └── run-uefi-debug.sh        # DEBUG — GDB server enabled
+│
+├── bios/                    # Legacy BIOS boot scripts
+│   └── run-bios.sh              # LEGACY — SeaBIOS fallback
+│
+└── config/                  # Configuration files
+    └── uefi.cfg                 # Shared QEMU/UEFI configuration
+----
+
+=== Boot Mode Ladder
+
+All scripts document their position in the boot mode hierarchy:
+
+[source]
+----
+┌────────────────────────────────────────────────────────────┐
+│  run-uefi.sh        │ PRODUCTION — Full GPT + ESP image   │
+├────────────────────────────────────────────────────────────┤
+│  run-uefi-simple.sh │ DEVELOPMENT — QEMU vvfat            │
+├────────────────────────────────────────────────────────────┤
+│  run-uefi-debug.sh  │ DEBUG — GDB server enabled          │
+├────────────────────────────────────────────────────────────┤
+│  run-bios.sh        │ LEGACY — SeaBIOS fallback           │
+└────────────────────────────────────────────────────────────┘
+----
+
+=== Script Standards
+
+All scripts follow the *4-block structure*:
+
+[cols="1,2,3"]
+|===
+|Block |Sections |Contents
+
+|**METADATA**
+|—
+|Key, title, authors, grounding, boot mode ladder
+
+|**SETUP**
+|S.1 – S.6
+|Shell config, paths, config loading, defaults, colors
+
+|**BODY**
+|B.1 – B.n
+|Output functions, OVMF detection, checks, setup, launch
+
+|**CLOSING**
+|X.1 – X.n
+|Argument parsing, help, main entry, execution
+|===
+
+== Boot Mode Comparison
+
+[cols="2,3,3"]
+|===
+|Aspect |UEFI |BIOS
+
+|**Primary Use**
+|Production boot
+|Legacy/compatibility
+
+|**CPU Mode at Entry**
+|64-bit long mode
+|16-bit real mode
+
+|**Firmware**
+|OVMF (EDK2)
+|SeaBIOS
+
+|**Disk Format**
+|GPT + FAT32 ESP
+|MBR + raw
+
+|**Graphics**
+|GOP framebuffer
+|VGA text/VESA
+
+|**Boot Process**
+|BOOTX64.EFI → kernel
+|MBR → Stage 1 → Stage 2 → kernel
+|===
+
+// =============================================================================
+// CONTENT
+// =============================================================================
+
+== UEFI Scripts
+
+=== run-uefi.sh (Production)
+
+The *primary production boot script* with full EDK2 compatibility.
+
+**Location:** `uefi/run-uefi.sh`
+
+**Role:** PRODUCTION — use for final testing and releases.
+
+**Features:**
+
+* Creates proper GPT disk with EFI System Partition
+* Auto-detects EDK2-built OVMF or falls back to system OVMF
+* Dual serial output (OVMF → ovmf.log, Bootloader → debug.log)
+* Q35 machine with AHCI controller (modern SATA)
+* Kernel integrity verification after ESP creation
+* Config-driven from `uefi.cfg`
+* Tool validation (sgdisk, mtools) before ESP creation
+
+**Usage:**
+
+[source,bash]
+----
+./uefi/run-uefi.sh              # Normal production run
+./uefi/run-uefi.sh --debug      # Enable QEMU debug tracing
+./uefi/run-uefi.sh --gdb        # Wait for GDB on :1234
+./uefi/run-uefi.sh --rebuild    # Force ESP image rebuild
+./uefi/run-uefi.sh --help       # Show help
+----
+
+**QEMU Configuration:**
+
+[source]
+----
+Machine:    Q35 (smm=off) — modern chipset with AHCI, IOMMU
+CPU:        qemu64 (SMP: 2)
+Memory:     512MB
+Display:    GTK with GOP framebuffer (std VGA)
+Storage:    AHCI controller with GPT disk
+Serial:     COM1 → ovmf.log, COM2 → debug.log
+----
+
+**ESP Image Creation Process (10 Steps):**
+
+. Create 64MB empty disk image
+. Create GPT partition table with `sgdisk`
+. Create ESP partition (type EF00) at sector 2048
+. Format partition as FAT32 with `mkfs.fat`
+. Write formatted partition back to disk image
+. Configure mtools for partition access
+. Create `/EFI/BOOT/` directory structure
+. Copy bootloader (BOOTX64.EFI)
+. Copy kernel (kernel.bin) to ESP root
+. Create `startup.nsh` for auto-boot
+. Verify kernel integrity
+
+=== run-uefi-simple.sh (Development)
+
+Quick testing script using QEMU's built-in vvfat driver.
+
+**Location:** `uefi/run-uefi-simple.sh`
+
+**Role:** DEVELOPMENT — fast iteration, no disk image creation.
+
+**Features:**
+
+* No disk image creation required
+* Uses QEMU vvfat to expose ESP directory as FAT filesystem
+* Faster iteration for development
+* Auto-detects EDK2-built or system OVMF
+* Shows ESP directory contents before launch
+* Development mode warning displayed
+
+**Usage:**
+
+[source,bash]
+----
+./uefi/run-uefi-simple.sh           # Quick development run
+./uefi/run-uefi-simple.sh --gdb     # With GDB server
+./uefi/run-uefi-simple.sh --help    # Show help with ladder
+----
+
+**When to Use:**
+
+* Quick smoke tests during development
+* When mtools/mkfs.fat not available
+* Rapid iteration (no disk image rebuild)
+
+**Trade-offs:**
+
+[cols="1,3"]
+|===
+|Advantage |Faster startup, no external tools needed
+|Limitation |Less compatible with some OVMF features, cannot test disk operations
+|===
+
+=== run-uefi-debug.sh (Debug)
+
+Debug configuration with GDB server always enabled.
+
+**Location:** `uefi/run-uefi-debug.sh`
+
+**Role:** DEBUG — deep debugging with GDB integration.
+
+**Features:**
+
+* GDB server on port 1234 (always enabled)
+* QEMU pauses waiting for debugger by default
+* Debug tracing (interrupts, CPU resets, guest errors)
+* Clear GDB connection instructions displayed
+* `--no-wait` option to skip GDB pause
+
+**Usage:**
+
+[source,bash]
+----
+./uefi/run-uefi-debug.sh            # Pause waiting for GDB
+./uefi/run-uefi-debug.sh --no-wait  # Start immediately
+./uefi/run-uefi-debug.sh --help     # Show help
+----
+
+**GDB Connection:**
+
+[source,bash]
+----
+# Terminal 1: Start QEMU (paused)
+./uefi/run-uefi-debug.sh
+
+# Terminal 2: Connect GDB
+gdb
+(gdb) target remote :1234
+(gdb) symbol-file build/kernel.elf
+(gdb) break kernel_main
+(gdb) continue
+----
+
+== BIOS Script
+
+=== run-bios.sh (Legacy)
+
+Legacy BIOS boot using SeaBIOS.
+
+**Location:** `bios/run-bios.sh`
+
+**Role:** LEGACY — fallback for older hardware compatibility.
+
+**Features:**
+
+* MBR boot sector loading
+* Real mode → protected mode → long mode transition
+* VESA fallback chain (1024x768 → 800x600 → 640x480 → VGA Text)
+* Config-driven from `uefi.cfg` (shared values)
+* i440fx machine (legacy chipset)
+
+**Usage:**
+
+[source,bash]
+----
+./bios/run-bios.sh              # Normal BIOS boot
+./bios/run-bios.sh --debug      # Enable debug tracing
+./bios/run-bios.sh --gdb        # Wait for GDB on :1234
+----
+
+**QEMU Configuration:**
+
+[source]
+----
+Machine:    i440fx (pc) — legacy chipset
+CPU:        qemu64
+Memory:     512MB
+Display:    VGA std (VESA fallback)
+Storage:    IDE with raw disk image
+Serial:     COM1 → debug.log
+----
+
+== Configuration
+
+=== uefi.cfg
+
+Central configuration file loaded by all scripts.
+
+**Location:** `config/uefi.cfg`
+
+**Sections:**
+
+[cols="2,3"]
+|===
+|Section |Contents
+
+|Machine Configuration
+|QEMU_MACHINE, QEMU_CPU, QEMU_SMP, QEMU_MEMORY
+
+|Firmware Configuration
+|SYS_OVMF_CODE, SYS_OVMF_VARS, EDK2_OVMF_CODE, EDK2_OVMF_VARS
+
+|Storage Configuration
+|ESP_SIZE_MB, ESP_PARTITION_START, STORAGE_CONTROLLER
+
+|Display Configuration
+|QEMU_VGA, QEMU_DISPLAY, GOP defaults
+
+|Serial Port Configuration
+|SERIAL_COM1_PORT, SERIAL_COM2_PORT, output files
+
+|Debug Configuration
+|GDB_PORT, DEBUG_INT, DEBUG_CPU
+
+|Kingdom Technology Branding
+|OS_NAME, OS_VERSION, OS_TAGLINE, OS_SCRIPTURE
+|===
+
+**Key Values:**
+
+[source,bash]
+----
+# Machine
+QEMU_MACHINE="q35"
+QEMU_CPU="qemu64"
+QEMU_SMP="2"
+QEMU_MEMORY="512M"
+
+# Branding
+OS_NAME="MillenniumOS"
+OS_VERSION="a-01.00"
+OS_TAGLINE="Redeeming Technology for the Kingdom"
+OS_SCRIPTURE="In the beginning God created the heaven and the earth. — Genesis 1:1"
+----
+
+== Serial Port Architecture
+
+=== UEFI Mode (Dual Serial)
+
+[cols="1,2,3,2"]
+|===
+|Port |Address |Output File |Content
+
+|COM1
+|0x3F8
+|`build/ovmf.log`
+|OVMF firmware messages
+
+|COM2
+|0x2F8
+|`build/debug.log`
+|MillenniumOS bootloader/kernel
+|===
+
+=== BIOS Mode (Single Serial)
+
+[cols="1,2,3,2"]
+|===
+|Port |Address |Output File |Content
+
+|COM1
+|0x3F8
+|`build/debug.log`
+|All debug output
+|===
+
+=== Live Monitoring
+
+[source,bash]
+----
+# Monitor bootloader/kernel output
+tail -f build/debug.log
+
+# Monitor OVMF firmware
+tail -f build/ovmf.log
+
+# Monitor both
+tail -f build/debug.log build/ovmf.log
+----
+
+== OVMF Selection
+
+Scripts auto-detect OVMF location with preference for EDK2-built:
+
+[cols="1,3,2"]
+|===
+|Priority |Path |Source
+
+|1
+|`tools/edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF_*.fd`
+|EDK2 build (debug features)
+
+|2
+|`/usr/share/OVMF/OVMF_*_4M.fd`
+|System package
+|===
+
+=== Building EDK2 OVMF
+
+[source,bash]
+----
+cd tools/edk2
+source edksetup.sh
+build -a X64 -t GCC5 -p OvmfPkg/OvmfPkgX64.dsc
+----
+
+== Visual Debug System
+
+The bootloader uses framebuffer visual indicators:
+
+[cols="1,1,3"]
+|===
+|Color |RGB |Meaning
+
+|Yellow
+|`0xFFFF00`
+|Operation in progress
+
+|Green
+|`0x00FF00`
+|Success
+
+|Red
+|`0xFF0000`
+|Failure
+
+|Orange
+|`0xFFA500`
+|Fallback path used
+
+|Cyan
+|`0x00FFFF`
+|Informational
+
+|Magenta
+|`0xFF00FF`
+|Step marker
+|===
+
+== Console Output Colors
+
+Scripts use consistent colored output:
+
+[cols="1,2,3"]
+|===
+|Tag |Color |Meaning
+
+|`[OK]`
+|Green
+|Success / check passed
+
+|`[INFO]`
+|Cyan
+|Informational message
+
+|`[WARN]`
+|Yellow
+|Warning / non-fatal issue
+
+|`[ERROR]`
+|Red
+|Error / fatal issue
+
+|`[STEP]`
+|Magenta
+|Progress step marker
+|===
+
+== Troubleshooting
+
+=== ESP Creation Fails
+
+**Symptom:** `sgdisk` or `mkfs.fat` errors
+
+**Solutions:**
+[source,bash]
+----
+# Install required tools
+sudo apt install gdisk dosfstools mtools
+
+# Check disk image isn't in use
+lsof build/esp.img
+
+# Force rebuild
+./uefi/run-uefi.sh --rebuild
+----
+
+=== OVMF Hangs at Logo
+
+**Symptom:** OVMF logo displays but boot doesn't proceed
+
+**Solutions:**
+
+* Check `build/ovmf.log` for errors
+* Verify ESP structure:
++
+[source,bash]
+----
+MTOOLSRC=build/.mtoolsrc mdir e:/
+MTOOLSRC=build/.mtoolsrc mdir e:/EFI/BOOT/
+----
+
+=== Kernel Not Found
+
+**Symptom:** Bootloader reports kernel not found
+
+**Debug steps:**
+
+. Check ESP contents:
++
+[source,bash]
+----
+MTOOLSRC=build/.mtoolsrc mdir e:/
+----
+
+. Verify kernel was copied:
++
+[source,bash]
+----
+ls -la build/esp/kernel.bin
+----
+
+. Force ESP rebuild:
++
+[source,bash]
+----
+./uefi/run-uefi.sh --rebuild
+----
+
+=== GDB Connection Refused
+
+**Symptom:** Cannot connect to GDB server
+
+**Solutions:**
+
+* Use `--gdb` flag (run-uefi.sh, run-bios.sh)
+* Or use `run-uefi-debug.sh` (GDB always enabled)
+* Verify port 1234 is free:
++
+[source,bash]
+----
+lsof -i :1234
+----
+
+// =============================================================================
+// FOOTER
+// =============================================================================
+
+== Related Documentation
+
+* xref:../README.adoc[Scripts Overview]
+* xref:../run.sh[Main Launcher]
+* xref:../../boot/README.adoc[Boot Architecture]
+* xref:../../boot/uefi/README.adoc[UEFI Bootloader]
+* xref:../../boot/bios/README.adoc[BIOS Bootloader]
+
+== Version History
+
+[cols="1,1,3"]
+|===
+|Version |Date |Changes
+
+|2.0.0
+|2025-01-31
+|Complete rewrite — all scripts aligned to 4-block structure, config-driven,
+boot mode ladder documentation, Kingdom Technology branding
+
+|1.0.0
+|2025-01-31
+|Initial comprehensive documentation
+|===
+
+---
+
+[.text-center]
+*MillenniumOS* — Kingdom Technology Operating System +
+_Redeeming Technology for the Kingdom_ +
+© 2025-2026 CreativeWorkzStudio LLC
+
+____
+"In the beginning God created the heaven and the earth." — Genesis 1:1
+____

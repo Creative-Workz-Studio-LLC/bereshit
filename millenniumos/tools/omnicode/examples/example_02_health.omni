@@ -1,0 +1,188 @@
+/// @omni code --c --header
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// OMNICODE PRAGMA [PRAGMA]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// @legend
+///   :req  REQUIRED   — must exist, validation fails without
+///   :inh  INHERITED  — from template, override allowed
+///   :ins  INSTANCE   — file-specific, unique values
+/// @endlegend
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.1 CORE — Identity [CORE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  key   = EXAMPLE-02-HEALTH
+/// @omni:req  from  = bereshit/word/seed/code/c/header.c
+/// @omni:req  at    = a-01.00
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.2 FAMILY — Classification [FAMILY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:inh  type       = header
+/// @omni:inh  subtype    = interface
+/// @omni:inh  structure  = 4-block
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.3 INSTANCE — File Details [INSTANCE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  component  = health
+/// @omni:ins  layer      = kernel
+/// @omni:ins  includes   = [stdint.h, stdbool.h]
+/// @omni:ins  provides   = [HealthScore, HEALTH_MIN, HEALTH_MAX,
+///                          health_is_critical, health_is_healthy,
+///                          health_add, health_clamp]
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.4 ARCHITECTURE — Scaling Context [ARCH]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  layers  = [0:kernel, 1:system, 2:runtime]
+/// @omni:ins  pattern = 4+1+4 (this is in below:0-3)
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.5 SUMMARY — Human Identity [SUMMARY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  title = Health Score System
+/// @omni:req  brief = Track and manage system health using balanced ternary range
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// END PRAGMA
+/// ═══════════════════════════════════════════════════════════════════════════════
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// METADATA BLOCK [METADATA]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// @file health.h
+/// @brief Health score type and operations for CPI-SI systems
+///
+/// Health uses balanced ternary range: -100 to +100 where:
+///   - Negative: degraded, needs recovery
+///   - Zero: neutral, balanced
+///   - Positive: healthy, stable
+///
+/// Biblical Grounding:
+///   "A just man falleth seven times, and riseth up again."
+///   — Proverbs 24:16
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+
+#ifndef HEALTH_H
+#define HEALTH_H
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// SETUP BLOCK [SETUP]
+/// ═══════════════════════════════════════════════════════════════════════════════
+
+#include <stdint.h>
+#include <stdbool.h>
+
+/// ───────────────────────────────────────────────────────────────────────────────
+/// S.1 CONSTANTS [CONSTANTS]
+/// ───────────────────────────────────────────────────────────────────────────────
+
+/** Minimum health value (critical state) */
+#define HEALTH_MIN  (-100)
+
+/** Maximum health value (optimal state) */
+#define HEALTH_MAX  (+100)
+
+/** Threshold below which state is critical */
+#define HEALTH_CRITICAL_THRESHOLD  (-50)
+
+/** Threshold above which state is healthy */
+#define HEALTH_HEALTHY_THRESHOLD   (+50)
+
+/// ───────────────────────────────────────────────────────────────────────────────
+/// S.2 TYPES [TYPES]
+/// ───────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @brief Health score type.
+ *
+ * Signed 8-bit integer representing health in range [HEALTH_MIN, HEALTH_MAX].
+ * Balanced ternary semantics: negative = degraded, zero = neutral, positive = healthy.
+ */
+typedef int8_t HealthScore;
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// END SETUP
+/// ═══════════════════════════════════════════════════════════════════════════════
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// BODY BLOCK [BODY]
+/// ═══════════════════════════════════════════════════════════════════════════════
+
+/// ───────────────────────────────────────────────────────────────────────────────
+/// B.1 STATE QUERIES [QUERIES]
+/// ───────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @brief Check if health is in critical state.
+ * @param health Health score to check
+ * @return true if health <= HEALTH_CRITICAL_THRESHOLD
+ */
+bool health_is_critical(HealthScore health);
+
+/**
+ * @brief Check if health is in healthy state.
+ * @param health Health score to check
+ * @return true if health >= HEALTH_HEALTHY_THRESHOLD
+ */
+bool health_is_healthy(HealthScore health);
+
+/// ───────────────────────────────────────────────────────────────────────────────
+/// B.2 OPERATIONS [OPERATIONS]
+/// ───────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @brief Add delta to health, clamping to valid range.
+ * @param current Current health score
+ * @param delta Amount to add (can be negative)
+ * @return New health score in [HEALTH_MIN, HEALTH_MAX]
+ */
+HealthScore health_add(HealthScore current, int8_t delta);
+
+/**
+ * @brief Clamp health to valid range.
+ * @param value Value to clamp
+ * @return Value clamped to [HEALTH_MIN, HEALTH_MAX]
+ */
+HealthScore health_clamp(int16_t value);
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// END BODY
+/// ═══════════════════════════════════════════════════════════════════════════════
+
+#endif /* HEALTH_H */
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// CLOSING BLOCK [CLOSING]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// WHAT THIS EXAMPLE SHOWS:
+///   1. Header structure with include guards
+///   2. Constants and types in SETUP
+///   3. Function declarations in BODY
+///   4. Section organization with light separators
+///   5. Doxygen documentation
+///   6. Biblical grounding in METADATA
+///
+/// USAGE:
+///   #include "health.h"
+///
+///   HealthScore score = 0;
+///   score = health_add(score, -60);
+///   if (health_is_critical(score)) {
+///       // Trigger recovery...
+///   }
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// END CLOSING
+/// ═══════════════════════════════════════════════════════════════════════════════

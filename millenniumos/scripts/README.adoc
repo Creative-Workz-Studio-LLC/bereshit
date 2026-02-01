@@ -1,0 +1,511 @@
+// =============================================================================
+// METADATA
+// =============================================================================
+//
+// :key: millenniumos-scripts-readme
+// :title: MillenniumOS Scripts Directory
+// :type: Documentation
+// :status: Active
+// :version: 2.0.0
+// :created: 2025-01-31
+// :updated: 2025-01-31
+// :authors: Seanje Lenox-Wise (Architect), Nova Dawn (Author)
+// :organization: CreativeWorkzStudio LLC
+// :purpose: Comprehensive documentation for MillenniumOS build and run scripts
+// :grounding: Genesis 1:1 — "In the beginning God created the heaven and the earth."
+//
+// =============================================================================
+// END METADATA
+// =============================================================================
+
+= MillenniumOS Scripts Directory
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+// =============================================================================
+// HEADER
+// =============================================================================
+
+[.lead]
+*Kingdom Technology Operating System — Build & Run Infrastructure*
+
+____
+"In the beginning God created the heaven and the earth." — Genesis 1:1
+____
+
+This directory contains all build, run, and configuration scripts for MillenniumOS.
+The system is *config-driven* and *data-driven* — configuration files define behavior,
+scripts execute based on that configuration.
+
+// =============================================================================
+// CONTEXT
+// =============================================================================
+
+== Overview
+
+[cols="1,3"]
+|===
+|Component |Purpose
+
+|`run.sh`
+|Main launcher — orchestrates build and QEMU execution
+
+|`qemu/`
+|QEMU virtual machine scripts organized by boot mode
+
+|`qemu/config/`
+|Configuration files driving all QEMU behavior
+|===
+
+== Directory Structure
+
+[source]
+----
+scripts/
+├── README.adoc              # This documentation
+├── run.sh                   # Main launcher (config-driven orchestrator)
+│
+└── qemu/                    # QEMU-specific configurations
+    ├── README.adoc          # QEMU scripts documentation
+    │
+    ├── uefi/                # UEFI boot scripts
+    │   ├── run-uefi.sh          # Primary EDK2-compatible boot
+    │   ├── run-uefi-simple.sh   # QEMU vvfat fallback
+    │   └── run-uefi-debug.sh    # Debug mode with GDB
+    │
+    ├── bios/                # Legacy BIOS boot scripts
+    │   └── run-bios.sh          # SeaBIOS/legacy boot
+    │
+    └── config/              # Configuration files
+        └── uefi.cfg             # UEFI/QEMU configuration
+----
+
+== Prerequisites
+
+=== Required Tools
+
+[cols="1,2,2"]
+|===
+|Tool |Purpose |Installation
+
+|`nasm`
+|Assembly compilation
+|`sudo apt install nasm`
+
+|`gcc`
+|C compilation
+|`sudo apt install build-essential`
+
+|`ld`
+|Linking
+|Included with build-essential
+
+|`objcopy`
+|Binary manipulation
+|Included with build-essential
+
+|`make`
+|Build orchestration
+|Included with build-essential
+
+|`qemu-system-x86_64`
+|x86_64 emulation
+|`sudo apt install qemu-system-x86`
+|===
+
+=== UEFI Tools (Optional but Recommended)
+
+[cols="1,2,2"]
+|===
+|Tool |Purpose |Installation
+
+|`sgdisk`
+|GPT partition management
+|`sudo apt install gdisk`
+
+|`mkfs.fat`
+|FAT32 filesystem creation
+|`sudo apt install dosfstools`
+
+|`mcopy`
+|FAT filesystem manipulation
+|`sudo apt install mtools`
+
+|`ovmf`
+|UEFI firmware for QEMU
+|`sudo apt install ovmf`
+|===
+
+// =============================================================================
+// CONTENT
+// =============================================================================
+
+== Main Launcher (run.sh)
+
+The main launcher is a *config-driven orchestrator* that:
+
+* Loads configuration from `qemu/config/uefi.cfg`
+* Checks build requirements
+* Delegates to dedicated QEMU scripts
+* Provides status, logging, and help
+
+=== Commands
+
+[cols="1,3"]
+|===
+|Command |Description
+
+|`(default)`
+|Build if needed, run in UEFI mode
+
+|`build`
+|Build MillenniumOS
+
+|`run`
+|Run in QEMU (requires built image)
+
+|`clean`
+|Clean build artifacts
+
+|`rebuild`
+|Clean and rebuild
+
+|`status`
+|Show build status and configuration
+
+|`check`
+|Check tool requirements
+
+|`logs`
+|View debug logs
+
+|`help`
+|Show help with architecture diagram
+|===
+
+=== Boot Modes
+
+[cols="1,3"]
+|===
+|Option |Description
+
+|`--uefi`
+|UEFI mode with GOP graphics (default, modern)
+
+|`--bios`
+|BIOS mode with VESA graphics (legacy fallback)
+|===
+
+=== Debug Options
+
+[cols="1,3"]
+|===
+|Option |Description
+
+|`--debug`
+|Enable debug output
+
+|`--gdb`
+|Start GDB server on :1234
+
+|`--verbose`
+|Verbose build output (make V=1)
+|===
+
+=== Examples
+
+[source,bash]
+----
+# Build and run (UEFI mode)
+./scripts/run.sh
+
+# Build and run in BIOS mode
+./scripts/run.sh --bios
+
+# Just build
+./scripts/run.sh build
+
+# Check build status and configuration
+./scripts/run.sh status
+
+# Check tool requirements
+./scripts/run.sh check
+
+# View debug logs
+./scripts/run.sh logs
+
+# Rebuild from scratch
+./scripts/run.sh rebuild
+
+# Run with verbose build
+./scripts/run.sh --verbose build
+----
+
+== Configuration System
+
+The scripts use a *config-driven* approach. All QEMU settings are defined in
+`qemu/config/uefi.cfg` and sourced by the scripts.
+
+=== Configuration Sections
+
+[cols="1,3"]
+|===
+|Section |Contents
+
+|Machine Configuration
+|QEMU machine type, CPU, SMP, memory
+
+|Firmware Configuration
+|OVMF/EDK2 paths (system and custom)
+
+|Storage Configuration
+|ESP size, partition settings, controller type
+
+|Display Configuration
+|VGA type, display backend, GOP defaults
+
+|Serial Port Configuration
+|COM1/COM2 ports, IRQs, output files
+
+|Debug Configuration
+|GDB settings, QEMU debug flags
+
+|Network Configuration
+|Network settings (future)
+
+|Audio Configuration
+|Audio settings (future)
+
+|USB Configuration
+|USB controller settings
+
+|Boot Configuration
+|Boot order, startup.nsh content
+
+|Visual Debug Colors
+|Framebuffer debug color codes
+
+|Kingdom Technology Branding
+|OS name, version, copyright, tagline, scripture
+|===
+
+=== Key Configuration Values
+
+[source,bash]
+----
+# Machine
+QEMU_MACHINE="q35"
+QEMU_CPU="qemu64"
+QEMU_MEMORY="512M"
+
+# Branding
+OS_NAME="MillenniumOS"
+OS_VERSION="a-01.00"
+OS_TAGLINE="Redeeming Technology for the Kingdom"
+OS_SCRIPTURE="In the beginning God created the heaven and the earth. — Genesis 1:1"
+----
+
+== Boot Architecture
+
+[source]
+----
+┌─────────────────────────────────────────────────────────────┐
+│                      MillenniumOS                           │
+│           Kingdom Technology Operating System               │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   UEFI Boot (Primary)        │   BIOS Boot (Fallback)      │
+│   ├─ BOOTX64.EFI             │   ├─ Stage 0a (MBR)         │
+│   ├─ GOP Framebuffer         │   ├─ Stage 0b (Loader)      │
+│   └─ kernel.bin              │   └─ kernel.bin             │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│                        Kernel                               │
+│   ├─ entry.asm (64-bit entry point)                        │
+│   ├─ kernel.c (kernel main)                                │
+│   ├─ DAR Witness System (logging)                          │
+│   └─ Subsystems (memory, interrupts, timer, scheduler)     │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+----
+
+== Debug Output
+
+=== Serial Ports
+
+[cols="1,2,2,2"]
+|===
+|Port |Address |Output File |Content
+
+|COM1
+|0x3F8
+|`build/ovmf.log`
+|OVMF firmware messages
+
+|COM2
+|0x2F8
+|`build/debug.log`
+|MillenniumOS bootloader/kernel
+|===
+
+=== Live Monitoring
+
+[source,bash]
+----
+# Monitor bootloader/kernel output
+tail -f build/debug.log
+
+# Monitor OVMF firmware
+tail -f build/ovmf.log
+
+# Monitor both
+tail -f build/debug.log build/ovmf.log
+----
+
+=== Visual Debug Colors
+
+The bootloader uses framebuffer colors to indicate status:
+
+[cols="1,1,2"]
+|===
+|Color |Hex Code |Meaning
+
+|Yellow
+|`0xFFFF00`
+|Operation in progress
+
+|Green
+|`0x00FF00`
+|Success
+
+|Red
+|`0xFF0000`
+|Failure
+
+|Orange
+|`0xFFA500`
+|Fallback path used
+
+|Cyan
+|`0x00FFFF`
+|Informational
+
+|Magenta
+|`0xFF00FF`
+|Step marker
+|===
+
+== Script Structure
+
+All scripts follow the *4-block structure*:
+
+[source]
+----
+# METADATA    - Identity, purpose, authorship
+# SETUP       - Variables, configuration, imports
+# BODY        - Functions organized by section (B.1, B.2, etc.)
+# CLOSING     - Main entry point, execution
+----
+
+=== run.sh Sections
+
+[cols="1,2"]
+|===
+|Section |Purpose
+
+|S.1
+|Shell Configuration (set -e, -u, pipefail)
+
+|S.2
+|Path Configuration
+
+|S.2b
+|Configuration Loading
+
+|S.3
+|Output Files
+
+|S.4
+|Color Palette
+
+|S.5
+|Required Tools Arrays
+
+|S.6
+|Scripture Verses
+
+|B.1
+|Output Functions (log_info, log_error, etc.)
+
+|B.2
+|Banner & Branding
+
+|B.3
+|Component Checking
+
+|B.4
+|Requirements Checking
+
+|B.5
+|Help System
+
+|B.6
+|Status Display
+
+|B.7
+|Log Viewing
+
+|B.8
+|Build Operations
+
+|B.9
+|Run Operations (Script Delegation)
+
+|X.1
+|Script Argument Parsing
+
+|X.2
+|Script Main Entry Point
+
+|X.3
+|Script Execution
+|===
+
+// =============================================================================
+// FOOTER
+// =============================================================================
+
+== Related Documentation
+
+* xref:qemu/README.adoc[QEMU Scripts Documentation]
+* xref:../boot/README.adoc[Boot Architecture]
+* xref:../CLAUDE.md[Project Guidelines]
+
+== Version History
+
+[cols="1,1,3"]
+|===
+|Version |Date |Changes
+
+|2.0.0
+|2025-01-31
+|Complete rewrite — config-driven system, proper 4-block structure,
+comprehensive documentation, organized directory structure
+
+|1.0.0
+|2025-01-30
+|Initial scripts organization
+|===
+
+---
+
+[.text-center]
+*MillenniumOS* — Kingdom Technology Operating System +
+_Redeeming Technology for the Kingdom_ +
+© 2025-2026 CreativeWorkzStudio LLC
+
+____
+"In the beginning God created the heaven and the earth." — Genesis 1:1
+____

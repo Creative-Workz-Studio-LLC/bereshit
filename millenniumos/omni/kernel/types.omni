@@ -1,0 +1,556 @@
+#!omni code --c
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MILLENNIUMOS KERNEL TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// OmniCode source for kernel type definitions.
+// Transpiles to: millenniumos/kernel/types.h (C header)
+//
+// Chain: types.omni → types.h
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// METADATA
+// ═══════════════════════════════════════════════════════════════════════════
+
+this is a code for "MillenniumOS Kernel Types":
+    keyed as "MOS-kernel-types"
+    following "4-Block Structure"
+
+this code classifies as:
+    dependent (-1) when "requiring libtrit" such as "trit/trit.h"
+
+this code derives from:
+    original (1) when "establishing kernel type definitions"
+    documented at "millenniumos/omni/kernel/types.omni"
+
+this code strictness is:
+    tight (1) meaning "Types must match libtrit foundation exactly"
+
+core identity of this work:
+
+    grounded in:
+        scripture "And God said, Let there be light: and there was light"
+            from Genesis 1:3 in KJV
+        principle "Types are the vocabulary of creation - build on libtrit foundation"
+        anchor "In the beginning God created the heaven and the earth"
+            from Genesis 1:1 in KJV
+
+    serves as Rails:
+        role "Kernel type definitions built on libtrit ternary foundation"
+        paradigm "CPI-SI framework"
+
+    authored by:
+        architect "Seanje Lenox-Wise"
+        implementation "Nova Dawn"
+        created "2026-01-30"
+        version "a-01.00"
+        modified "2026-01-30" with "Initial OmniCode specification"
+
+    exists to:
+        purpose "Define kernel types using libtrit ternary-to-binary mapping"
+        design "All kernel types derive from libtrit primitives"
+        philosophy "The kernel thinks in ternary - binary is just storage"
+        features:
+            "Result types with ternary semantics (negative/zero/positive)"
+            "Address types using trit27 (ternary word)"
+            "Process IDs using trit9 (19,683 values)"
+            "Zone types as pure trit (-1/0/+1)"
+            "Hebrew cognitive states as trit5"
+
+interface of this work:
+
+    depends on:
+        requires (1): "trit/trit.h" for "ternary-to-binary foundation"
+        includes (0): "stdint.h, stddef.h, stdbool.h" for "C standard types"
+        excludes (-1): "Binary-only type definitions"
+        used by: "kernel.h, all kernel subsystems"
+        integrates with: "libtrit provides pack/unpack, kernel types extend"
+
+    integrated as:
+        include "types.h" for "access to kernel types"
+        exits 0 (1) for "types correctly defined"
+
+operational context:
+
+    blocking:
+        yes (1) because "Type changes affect all kernel code"
+        mitigation "Careful versioning and testing"
+
+    health:
+        system Base100 with scale from -100 to +100
+        granted (1) above +50 meaning "Types complete and aligned with libtrit"
+        deferred (0) within ±50 meaning "Types in development"
+        denied (-1) below -50 meaning "Types broken or misaligned"
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END METADATA
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════════════════════════════════════════
+
+inputs of this work:
+
+    requires:
+        from stdlib (1):
+            import "stdint.h" for "fixed-width integer types"
+            import "stddef.h" for "size_t, NULL"
+            import "stdbool.h" for "bool type"
+
+        from internal (0):
+            import "trit/trit.h" for "libtrit ternary foundation"
+
+        from external (-1):
+            [none - kernel is freestanding]
+
+definitions of this work:
+
+    constants:
+        established (1):
+            /// Result codes using ternary semantics
+            ///
+            /// teaching: Negative = error, Zero = success, Positive = success with info
+            ///
+            MOS_OK be trit of TRIT_ZERO meaning "Success (0)"
+            MOS_ERR_GENERIC be count of TRIT_NEG meaning "Generic error (-1)"
+            MOS_ERR_NOMEM be count of (TRIT_NEG times 2) meaning "Out of memory (-2)"
+            MOS_ERR_INVALID be count of (TRIT_NEG times 3) meaning "Invalid argument (-3)"
+            MOS_ERR_NOTFOUND be count of (TRIT_NEG times 4) meaning "Not found (-4)"
+            MOS_ERR_BUSY be count of (TRIT_NEG times 5) meaning "Resource busy (-5)"
+            MOS_ERR_TIMEOUT be count of (TRIT_NEG times 6) meaning "Operation timed out (-6)"
+            MOS_ERR_PERM be count of (TRIT_NEG times 7) meaning "Permission denied (-7)"
+            MOS_ERR_IO be count of (TRIT_NEG times 8) meaning "I/O error (-8)"
+            MOS_ERR_NODEV be count of (TRIT_NEG times 9) meaning "No such device (-9)"
+
+            /// Zone constants (direct trit mapping)
+            MOS_ZONE_VOID be trit of TRIT_NEG meaning "Entry gate (-1, permissive)"
+            MOS_ZONE_WORD be trit of TRIT_ZERO meaning "Processing (0, standard)"
+            MOS_ZONE_TOV be trit of TRIT_POS meaning "Exit gate (+1, structured)"
+            MOS_ZONE_UNKNOWN be trit of (-99) meaning "Invalid zone marker"
+
+            /// Address constants
+            MOS_ADDR_NULL be trit27 of 0 meaning "Null address (ternary zero)"
+
+            /// Process ID constants
+            MOS_PID_KERNEL be trit9 of 9841 meaning "Kernel pseudo-process (0 in balanced)"
+            MOS_PID_INIT be trit9 of 9842 meaning "Init process (+1 in balanced)"
+            MOS_PID_INVALID be trit9 of TRIT9_MAX meaning "Invalid PID marker"
+
+            /// Hebrew state constants (trit5 packed values)
+            MOS_STATE_SHAVAR be trit5 of 0 meaning "BROKEN [-1,-1,*,*,*]"
+            MOS_STATE_CHASER be trit5 of 40 meaning "LACKING [-1,0,-1,*,*] k=-1"
+            MOS_STATE_RATSAH be trit5 of 42 meaning "WANTING [-1,0,+1,*,*] k=+1"
+            MOS_STATE_YASHAR be trit5 of 121 meaning "EVEN [0,0,0,*,*] center"
+            MOS_STATE_TAMIM be trit5 of 202 meaning "SOUND [+1,0,-1,*,*] k=-1"
+            MOS_STATE_SHALEM be trit5 of 204 meaning "WHOLE [+1,0,+1,*,*] k=+1"
+            MOS_STATE_TOV be trit5 of 242 meaning "PERFECT [+1,+1,*,*,*]"
+
+            /// Flag constants (trit5 packed permissions)
+            MOS_FLAG_NONE be trit5 of 121 meaning "All inherit [0,0,0,0,0]"
+            MOS_FLAG_RO be trit5 of 122 meaning "Read only [+1,0,0,0,0]"
+            MOS_FLAG_RW be trit5 of 125 meaning "Read-write [+1,+1,0,0,0]"
+            MOS_FLAG_RWX be trit5 of 134 meaning "Full access [+1,+1,+1,0,0]"
+            MOS_FLAG_USER_RWX be trit5 of 161 meaning "User full [+1,+1,+1,+1,0]"
+
+            /// Flag positions
+            MOS_FLAG_POS_READ be count of 0 meaning "Read flag position"
+            MOS_FLAG_POS_WRITE be count of 1 meaning "Write flag position"
+            MOS_FLAG_POS_EXEC be count of 2 meaning "Execute flag position"
+            MOS_FLAG_POS_USER be count of 3 meaning "User flag position"
+            MOS_FLAG_POS_SHARED be count of 4 meaning "Shared flag position"
+
+            /// Health constants
+            MOS_HEALTH_MIN be count of (-127) meaning "Minimum health"
+            MOS_HEALTH_MAX be count of (+127) meaning "Maximum health"
+            MOS_HEALTH_NEUTRAL be trit of TRIT_ZERO meaning "Neutral health"
+
+            /// Time constants
+            MOS_NS_PER_US be count of 1000 meaning "Nanoseconds per microsecond"
+            MOS_NS_PER_MS be count of 1000000 meaning "Nanoseconds per millisecond"
+            MOS_NS_PER_SEC be count of 1000000000 meaning "Nanoseconds per second"
+
+        derived (0):
+            [none - all constants from scratch]
+
+        reserved (-1):
+            [none - all constants defined]
+
+    assemblies:
+        defined (1):
+            /// mos_result_t - Kernel result type
+            ///
+            /// teaching: Results follow ternary pattern using trit9 range
+            ///   Negative (-9841 to -1): Error codes
+            ///   Zero (0): Success
+            ///   Positive (+1 to +9841): Success with info
+            ///
+            mos_result_t is alias for int16_t
+                meaning "Kernel result using trit9 range"
+
+            /// Address types (ternary word = 48 bits)
+            mos_paddr_t is alias for trit27_t
+                meaning "Physical address (ternary word)"
+
+            mos_vaddr_t is alias for trit27_t
+                meaning "Virtual address (ternary word)"
+
+            mos_size_t is alias for trit27_t
+                meaning "Size type (ternary word)"
+
+            /// Process/Thread/User/Group IDs (trit9 = 19,683 values)
+            mos_pid_t is alias for trit9_t
+                meaning "Process ID (trit9)"
+
+            mos_tid_t is alias for trit9_t
+                meaning "Thread ID (trit9)"
+
+            mos_uid_t is alias for trit9_t
+                meaning "User ID (trit9)"
+
+            mos_gid_t is alias for trit9_t
+                meaning "Group ID (trit9)"
+
+            /// Time types (ternary word for nanosecond precision)
+            mos_time_t is alias for trit27_t
+                meaning "Time in nanoseconds (ternary word)"
+
+            mos_ticks_t is alias for trit9_t
+                meaning "Timer ticks (smaller granularity)"
+
+            /// Zone type (pure trit)
+            MosZone is alias for trit_t
+                meaning "Zone IS a trit (void/word/tov)"
+
+            /// Hebrew cognitive state (trit5 packed)
+            MosHebrewState is alias for trit5_t
+                meaning "Hebrew state (7 states packed in trit5)"
+
+            /// Health score (scaled trit)
+            mos_health_t is alias for int8_t
+                meaning "Health score (-127 to +127)"
+
+            /// Permission flags (trit5 packed)
+            mos_flags_t is alias for trit5_t
+                meaning "Ternary permission flags"
+
+        extended (0):
+            [none - all types are new]
+
+        reserved (-1):
+            [none - all types defined]
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END SETUP
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BODY
+// ═══════════════════════════════════════════════════════════════════════════
+
+structure of this work:
+
+    organized as:
+        ladder (dependencies):
+            documented (1):
+                libtrit types (foundation):
+                    trit_t, trit5_t, trit9_t, trit27_t
+
+                Kernel type aliases (built on libtrit):
+                    mos_result_t uses int16_t (trit9 range)
+                    mos_paddr_t uses trit27_t
+                    mos_vaddr_t uses trit27_t
+                    MosZone uses trit_t
+                    MosHebrewState uses trit5_t
+                    mos_flags_t uses trit5_t
+
+                Helper functions (use libtrit pack/unpack):
+                    mos_state_health_sign uses trit5_unpack
+                    mos_state_k_factor uses trit5_unpack
+                    mos_flag_get uses trit5_unpack
+                    mos_flag_set uses trit5_pack
+
+            implied (0):
+                [none - all dependencies documented]
+
+            omitted (-1):
+                [none - complete dependency map]
+
+implementation of this work:
+
+    helpers:
+        internal (1):
+            /// MOS_FAILED - Check if result indicates failure
+            ///
+            /// teaching: Negative results are errors in ternary semantics
+            ///
+            establish macro MOS_FAILED that takes mos_result_t r and returns truth:
+                meaning "Check if result is error (negative)"
+                return (r is less than TRIT_ZERO)
+
+            /// MOS_SUCCESS - Check if result indicates success
+            establish macro MOS_SUCCESS that takes mos_result_t r and returns truth:
+                meaning "Check if result is success (non-negative)"
+                return (r is greater than or equal to TRIT_ZERO)
+
+            /// MOS_HAS_INFO - Check if result has additional info
+            establish macro MOS_HAS_INFO that takes mos_result_t r and returns truth:
+                meaning "Check if result has info (positive)"
+                return (r is greater than TRIT_ZERO)
+
+            /// MOS_ZONE_VALID - Check if zone is valid trit
+            establish macro MOS_ZONE_VALID that takes MosZone z and returns truth:
+                meaning "Check if zone is valid (-1, 0, or +1)"
+                return trit_valid with z
+
+            /// MOS_ADDR_TO_BINARY - Convert ternary address to binary
+            establish macro MOS_ADDR_TO_BINARY that takes trit27_t t27 and returns uint64_t:
+                meaning "Convert ternary address to binary (trit27 is already uint64)"
+                return t27
+
+            /// MOS_BINARY_TO_ADDR - Convert binary to ternary address
+            establish macro MOS_BINARY_TO_ADDR that takes uint64_t u64 and returns mos_paddr_t:
+                meaning "Convert binary to ternary address (mask to trit27 range)"
+                return ((mos_paddr_t)(u64) bitand TRIT27_MAX)
+
+            /// MOS_PID_TO_BALANCED - Convert PID to balanced representation
+            establish macro MOS_PID_TO_BALANCED that takes mos_pid_t pid and returns int16_t:
+                meaning "Convert raw PID to balanced (-9841 to +9841)"
+                return ((int16_t)(pid) minus 9841)
+
+            /// MOS_BALANCED_TO_PID - Convert balanced to raw PID
+            establish macro MOS_BALANCED_TO_PID that takes int16_t bal and returns mos_pid_t:
+                meaning "Convert balanced PID to raw (0 to 19682)"
+                return ((mos_pid_t)((bal) plus 9841))
+
+            /// MOS_HEALTH_TREND - Determine health direction
+            establish macro MOS_HEALTH_TREND that takes mos_health_t old and mos_health_t new and returns trit_t:
+                meaning "Calculate health trend (improving/stable/degrading)"
+                return trit_create with (new minus old)
+
+        shared (0):
+            [none - no helpers from other modules]
+
+        reserved (-1):
+            [none - all helpers implemented]
+
+    operations:
+        implemented (1):
+            /// mos_state_health_sign - Extract health sign from Hebrew state
+            ///
+            /// teaching: Hebrew states encode health sign in first trit position
+            ///
+            establish work mos_state_health_sign that takes MosHebrewState s and returns trit_t:
+                meaning "Extract health sign (-1=negative, 0=neutral, +1=positive)"
+
+                let trits be array of trit_t with 5 elements
+                call trit5_unpack with s and trits
+                return trits at index 0
+
+            /// mos_state_k_factor - Extract k-factor from Hebrew state
+            ///
+            /// teaching: k-factor is direction of choice (trit position 2)
+            ///
+            establish work mos_state_k_factor that takes MosHebrewState s and returns trit_t:
+                meaning "Extract k-factor (-1=retreat, 0=hold, +1=advance)"
+
+                let trits be array of trit_t with 5 elements
+                call trit5_unpack with s and trits
+                return trits at index 2
+
+            /// mos_flag_get - Get individual permission flag
+            ///
+            /// teaching: Flags are packed in trit5 - extract using position
+            ///
+            establish work mos_flag_get that takes mos_flags_t flags and count pos and returns trit_t:
+                meaning "Extract single flag from permission trit5"
+
+                let trits be array of trit_t with 5 elements
+                call trit5_unpack with flags and trits
+                when (pos is greater than or equal to 0) and (pos is less than 5):
+                    return trits at index pos
+                return TRIT_ZERO
+
+            /// mos_flag_set - Set individual permission flag
+            ///
+            /// teaching: Modify single flag in trit5 packed permissions
+            ///
+            establish work mos_flag_set that takes mos_flags_t flags and count pos and trit_t val and returns mos_flags_t:
+                meaning "Set single flag in permission trit5"
+
+                let trits be array of trit_t with 5 elements
+                call trit5_unpack with flags and trits
+                when (pos is greater than or equal to 0) and (pos is less than 5):
+                    set trits at index pos to val
+                return trit5_pack with trits
+
+        delegated (0):
+            [none - all operations implemented locally]
+
+        reserved (-1):
+            [none - all operations defined]
+
+interface of this work:
+
+    exposes:
+        exported (1):
+            /// Type aliases - available to all kernel code
+            mos_result_t for "ternary result type"
+            mos_paddr_t for "physical address"
+            mos_vaddr_t for "virtual address"
+            mos_size_t for "size type"
+            mos_pid_t for "process ID"
+            mos_tid_t for "thread ID"
+            mos_uid_t for "user ID"
+            mos_gid_t for "group ID"
+            mos_time_t for "time in nanoseconds"
+            mos_ticks_t for "timer ticks"
+            MosZone for "zone type"
+            MosHebrewState for "Hebrew cognitive state"
+            mos_health_t for "health score"
+            mos_flags_t for "permission flags"
+
+            /// Result checking macros
+            MOS_FAILED for "check error"
+            MOS_SUCCESS for "check success"
+            MOS_HAS_INFO for "check info"
+
+            /// Zone checking
+            MOS_ZONE_VALID for "validate zone"
+
+            /// Address conversion
+            MOS_ADDR_TO_BINARY for "ternary to binary"
+            MOS_BINARY_TO_ADDR for "binary to ternary"
+
+            /// PID conversion
+            MOS_PID_TO_BALANCED for "raw to balanced"
+            MOS_BALANCED_TO_PID for "balanced to raw"
+
+            /// State extraction functions
+            mos_state_health_sign for "get health sign"
+            mos_state_k_factor for "get k-factor"
+            mos_flag_get for "get flag"
+            mos_flag_set for "set flag"
+
+        internal (0):
+            [none - all types are exported]
+
+        reserved (-1):
+            [none - all interfaces defined]
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END BODY
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLOSING
+// ═══════════════════════════════════════════════════════════════════════════
+
+operations of this work:
+
+    verified by:
+        build (1):
+            "omnic build kernel/types.omni --c" producing "kernel/types.h"
+            "gcc -c kernel/types.h" producing "no errors"
+
+        runtime (0):
+            [none - header file only]
+
+        tests (-1):
+            "test_types" expecting "all type operations work correctly"
+
+policy of this work:
+
+    modification:
+        safe (1):
+            "Add new error codes following ternary pattern"
+            "Add new type aliases following conventions"
+
+        careful (0):
+            "Change existing type definitions"
+            "Modify constant values"
+
+        never (-1):
+            "Remove libtrit foundation"
+            "Break ternary semantics"
+
+    future:
+        planned (1):
+            "Additional Hebrew state accessors"
+            "More flag manipulation helpers"
+
+        considered (0):
+            "Compile-time validation of ternary ranges"
+
+        rejected (-1):
+            "Binary-only type definitions"
+
+synthesis of this work:
+
+    overview:
+        see "METADATA exists to" for "purpose and ternary philosophy"
+
+    architecture:
+        see "BODY structure organized as" for "libtrit foundation chain"
+
+    dependencies:
+        see "METADATA interface depends on" for "libtrit requirement"
+
+    closing note:
+        role "Rails - foundation types for all kernel code"
+        impact "Type changes cascade through entire kernel"
+        scripture "The kernel thinks in ternary. Binary is just the storage medium."
+            from "millenniumos/kernel/types.h closing comment"
+
+    quick reference:
+        include "types.h"
+        check "MOS_SUCCESS(result)"
+        zone "MOS_ZONE_WORD"
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END CLOSING
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FORMAT DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+format definitions:
+
+    format "c" for this code:
+        file extension ".h"
+        derives from "millenniumos/kernel/types.h"
+
+        pragma mapping:
+            "#!omni code --c" emits:
+                emit "// Code generated from OmniCode. DO NOT EDIT."
+                emit "// Source: millenniumos/omni/kernel/types.omni"
+                emit ""
+
+        metadata mapping:
+            "this is a code for" → file header comment block
+            "keyed as" → Key: comment
+            "grounded in: scripture" → Biblical grounding comment
+            "authored by" → Authors comment
+
+        setup mapping:
+            "inputs: from stdlib" → #include <stdint.h> etc.
+            "inputs: from internal" → #include "trit/trit.h"
+            "definitions: constants" → #define statements
+            "definitions: assemblies: is alias for" → typedef statements
+
+        body mapping:
+            "helpers: establish macro" → #define macro
+            "operations: establish work" → static inline function
+
+        guard:
+            emit "#ifndef MILLENNIUMOS_KERNEL_TYPES_H"
+            emit "#define MILLENNIUMOS_KERNEL_TYPES_H"
+            at end emit "#endif // MILLENNIUMOS_KERNEL_TYPES_H"
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END FORMAT DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════
