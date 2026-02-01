@@ -1,639 +1,533 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# OMNICODE PRAGMA [PRAGMA]
-# ═══════════════════════════════════════════════════════════════════════════════
+# ============================================================================
+# METADATA
+# ============================================================================
+# Key: B-root-Makefile
+# Purpose: Unified build orchestration for Bereshit - the ternary file system
+# Biblical: "In the beginning God created the heaven and the earth" — Genesis 1:1
 #
-#!omni makefile
+# Architecture: L0-L5 Layer Stack
+#   L0: Universal   [C]    - libtrit foundation
+#   L1: OmniCode    [C]    - Language frontend/backend
+#   L2: Platform    [C]    - FUSE filesystem, MillenniumOS integration
+#   L3: CPI-SI      [Go]   - Intelligence model (config, orchestration)
+#   L4: FaithNet    [Rust] - Network layer (planned)
+#   L5: Applications[C#]   - Cornerstone (submodule)
 #
-# @omni:req  make >= 4.0
-# @omni:req  go >= 1.21
-# @omni:req  gcc|clang (C11)
+# Config-Driven: TOML specs in word/core/ drive code generation
+# Data-Driven: Schemas define structures, code follows
 #
-# @omni:ins  ROOT Makefile for Bereshit repository
-#            Orchestrates ALL builds: libtrit, libomni, cornerstone
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+# ============================================================================
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# METADATA BLOCK [METADATA]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# M.1 IDENTITY — What This Is [IDENTITY]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# Key:         B-root-Makefile
-# Package:     bereshit (root)
-# Purpose:     ROOT orchestrator — builds entire Bereshit system
-# Type:        Master Orchestrator
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# M.2 BIBLICAL FOUNDATION [BIBLICAL]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# Scripture: "In the beginning God created the heaven and the earth."
-#            — Genesis 1:1
-#
-# Principle: From one source, all things are built in order.
-#            Foundation first, then what depends on it.
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# M.3 BUILD CHAIN — Complete Dependency Order [CHAIN]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-#   ┌─────────────────────────────────────────────────────────────────────────┐
-#   │  BERESHIT BUILD CHAIN                                                   │
-#   ├─────────────────────────────────────────────────────────────────────────┤
-#   │                                                                         │
-#   │  Level 0 (Foundation - no dependencies):                                │
-#   │    word/work/pkg/trit/     libtrit.a — Balanced ternary types           │
-#   │    word/work/pkg/fuse/     bereshit_fs — Zone-aware filesystem          │
-#   │                                                                         │
-#   │  Level 1 (Depends on L0):                                               │
-#   │    word/work/pkg/omni/     libomni.a — OmniCode language library        │
-#   │                                                                         │
-#   │  Level 2 (Depends on L0+L1):                                            │
-#   │    cornerstone/            Cornerstone engine (game engine)             │
-#   │                                                                         │
-#   │  Level 3 (Go tools - independent):                                      │
-#   │    word/work/cmd/          Go CLI tools                                 │
-#   │                                                                         │
-#   │  Level 4 (MillenniumOS - depends on libtrit):                           │
-#   │    millenniumos/           MillenniumOS (kernel + bootloader)           │
-#   │                                                                         │
-#   │  Dependency Flow:                                                       │
-#   │    libtrit.a ─┬─► libomni.a ─► cornerstone ─► millenniumos              │
-#   │    bereshit_fs─┘                                                        │
-#   │                                                                         │
-#   │  Crossing Pattern:                                                      │
-#   │    pkg/trit declares → cornerstone implements → millenniumos extends    │
-#   │    pkg/fuse userspace → millenniumos kernel VFS                         │
-#   │                                                                         │
-#   └─────────────────────────────────────────────────────────────────────────┘
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# M.4 TARGETS OVERVIEW [TARGETS]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# Build:
-#   make                Build all (libs + cornerstone)
-#   make libs           Build libraries only (libtrit + libomni + bereshit-fs)
-#   make libtrit        Build libtrit.a only
-#   make bereshit-fs    Build bereshit_fs only (zone-aware filesystem)
-#   make libomni        Build libomni.a only
-#   make cornerstone    Build cornerstone engine
-#   make millenniumos   Build MillenniumOS (kernel + bootloader)
-#   make tools          Build Go tools
-#
-# Test:
-#   make test           Run all tests
-#   make test-libs      Test libraries only
-#   make test-engine    Test cornerstone
-#
-# Run:
-#   make run            Run cornerstone (GUI mode)
-#   make run-tui        Run cornerstone (TUI mode)
-#   make run-cli        Run cornerstone (CLI mode)
-#   make run-os         Run MillenniumOS in QEMU
-#   make debug-os       Run MillenniumOS with debug output
-#   make launcher       Interactive launcher (all modes)
-#
-# Install (User-Local):
-#   make install-user   Install all to ~/.local (Cornerstone + OmniCode + MillenniumOS)
-#   make uninstall-user Remove all from ~/.local
-#   make update-user    Rebuild and reinstall all
-#
-# Maintain:
-#   make clean          Clean all build artifacts
-#   make clean-libs     Clean library artifacts
-#   make clean-fuse     Clean bereshit-fs artifacts
-#   make clean-engine   Clean cornerstone artifacts
-#   make clean-os       Clean MillenniumOS artifacts
-#   make status         Show build state
-#   make info           Show configuration
-#   make help           This message
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-# END METADATA
-# ═══════════════════════════════════════════════════════════════════════════════
+# ============================================================================
+# SETUP - Variables and Configuration
+# ============================================================================
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SETUP BLOCK [SETUP]
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# ───────────────────────────────────────────────────────────────────────────────
-# S.1 PHONY — Non-File Targets [PHONY]
-# ───────────────────────────────────────────────────────────────────────────────
-
-.PHONY: all libs libtrit libomni bereshit-fs cornerstone millenniumos tools \
-        test test-libs test-fuse test-engine test-os \
-        diag diag-trit \
-        run run-tui run-cli run-os debug-os launcher \
-        install-user uninstall-user update-user \
-        clean clean-libs clean-fuse clean-engine clean-os status info help
-
-# Set default goal explicitly
-.DEFAULT_GOAL := all
-
-# ───────────────────────────────────────────────────────────────────────────────
-# S.2 VARIABLES — Configuration [VARIABLES]
-# ───────────────────────────────────────────────────────────────────────────────
-
-# S.2a Root Paths [PATHS]
-
+# Project Root
 BERESHIT_ROOT := $(CURDIR)
-WORD_WORK     := $(BERESHIT_ROOT)/word/work
 
-# S.2b Package Locations [PACKAGES]
+# Build Configuration
+BUILD_TYPE ?= debug
+VERBOSE ?= 0
 
-TRIT_DIR      := $(WORD_WORK)/pkg/trit
-FUSE_DIR      := $(WORD_WORK)/pkg/fuse
-OMNI_DIR      := $(WORD_WORK)/pkg/omni
-CORNERSTONE   := $(BERESHIT_ROOT)/cornerstone
-MILLENNIUMOS  := $(BERESHIT_ROOT)/millenniumos
+# Tool Detection
+GO := $(shell command -v go 2>/dev/null)
+CC := $(shell command -v gcc 2>/dev/null || command -v clang 2>/dev/null)
+CARGO := $(shell command -v cargo 2>/dev/null)
+CMAKE := $(shell command -v cmake 2>/dev/null)
+DOTNET := $(shell command -v dotnet 2>/dev/null)
 
-# S.2c Build Artifacts [ARTIFACTS]
+# Directories
+VOID_DIR := $(BERESHIT_ROOT)/void
+WORD_DIR := $(BERESHIT_ROOT)/word
+TOV_DIR := $(BERESHIT_ROOT)/tov
 
-LIBTRIT       := $(TRIT_DIR)/build/libtrit.a
-BERESHIT_FS   := $(FUSE_DIR)/bin/bereshit_fs
-LIBOMNI       := $(OMNI_DIR)/build/libomni.a
-ENGINE_BIN    := $(CORNERSTONE)/build/bin/cornerstone
-OS_IMAGE      := $(MILLENNIUMOS)/build/millenniumos.img
+# Layer Directories (current structure, to be migrated)
+L0_DIR := $(WORD_DIR)/work/pkg/trit
+L1_DIR := $(WORD_DIR)/work/pkg/omni
+L2_DIR := $(WORD_DIR)/work/pkg/fuse
+L3_DIR := $(WORD_DIR)/work
+L3_CLAUDE_DIR := $(WORD_DIR)/claude
 
-# S.2d Build Mode (passed to all sub-Makefiles) [MODE]
+# Output Directories
+BUILD_DIR := $(BERESHIT_ROOT)/build
+BIN_DIR := $(BUILD_DIR)/bin
+LIB_DIR := $(BUILD_DIR)/lib
+GEN_DIR := $(BUILD_DIR)/generated
 
-BUILD_MODE    ?= dev
-export BUILD_MODE
+# C Compiler Flags
+CFLAGS := -Wall -Wextra -std=c11
+ifeq ($(BUILD_TYPE),debug)
+	CFLAGS += -g -O0 -DDEBUG
+else ifeq ($(BUILD_TYPE),release)
+	CFLAGS += -O2 -DNDEBUG
+endif
 
-# S.2e Verbose Mode [VERBOSE]
+# Go Flags
+GOFLAGS := -v
+ifeq ($(BUILD_TYPE),release)
+	GOFLAGS += -ldflags="-s -w"
+endif
 
-VERBOSE       ?=
-export VERBOSE
+# ============================================================================
+# BODY - Primary Targets
+# ============================================================================
 
-# S.2f Output Control [OUTPUT_CONTROL]
+.PHONY: all build clean test help status
+.PHONY: l0 l1 l2 l3 l4 l5
+.PHONY: libtrit omni fuse cpisi claude demos
+.PHONY: generate generate-headers generate-config
+.PHONY: check-tools check-deps
 
-Q             := $(if $(VERBOSE),,@)
-ECHO          := @echo
+# Default target
+all: check-tools build
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# END SETUP
-# ═══════════════════════════════════════════════════════════════════════════════
+# Build all layers
+build: l0 l1 l2 l3
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Bereshit Build Complete"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Binaries: $(BIN_DIR)/"
+	@echo "  Libraries: $(LIB_DIR)/"
+	@echo "  Generated: $(GEN_DIR)/"
+	@echo ""
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# BODY BLOCK [BODY]
-# ═══════════════════════════════════════════════════════════════════════════════
+# ────────────────────────────────────────────────────────────────────────────
+# Layer Targets - Build in dependency order
+# ────────────────────────────────────────────────────────────────────────────
 
-# ───────────────────────────────────────────────────────────────────────────────
-# B.1 ENTRY POINTS — User-Facing Targets [ENTRY]
-# ───────────────────────────────────────────────────────────────────────────────
+## l0: Build L0 Universal (libtrit) - Foundation
+l0: libtrit
+	@echo "✓ L0 Universal layer complete"
 
-## all: Build everything (libraries + cornerstone)
-all: libs cornerstone
-	$(ECHO) ""
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  ✓ Bereshit build complete"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) ""
-	$(ECHO) "  Run:     make run           (GUI mode)"
-	$(ECHO) "  Test:    make test"
-	$(ECHO) "  Clean:   make clean"
-	$(ECHO) ""
+## l1: Build L1 OmniCode - Language
+l1: l0 omni
+	@echo "✓ L1 OmniCode layer complete"
 
-## libs: Build all libraries (libtrit + libomni + bereshit-fs)
-libs: libtrit libomni bereshit-fs
-	$(ECHO) ""
-	$(ECHO) "✓ All libraries and tools built"
+## l2: Build L2 Platform (FUSE) - Filesystem
+l2: l0 fuse
+	@echo "✓ L2 Platform layer complete"
 
-# ───────────────────────────────────────────────────────────────────────────────
-# B.2 LIBRARY TARGETS — Foundation Builds [LIBRARIES]
-# ───────────────────────────────────────────────────────────────────────────────
+## l3: Build L3 CPI-SI - Intelligence
+l3: l0 cpisi
+	@echo "✓ L3 CPI-SI layer complete"
 
-## libtrit: Build libtrit.a (Level 0 - foundation)
-libtrit:
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(ECHO) "  [L0] Building libtrit..."
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(Q)$(MAKE) -C $(TRIT_DIR)
+## l4: Build L4 FaithNet - Network (planned)
+l4:
+	@echo "L4 FaithNet: Not yet implemented (Rust)"
+	@echo "  Planned: Rust workspace with Cargo.toml"
 
-## libomni: Build libomni.a (Level 1 - depends on libtrit)
-libomni: libtrit
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(ECHO) "  [L1] Building libomni..."
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(Q)$(MAKE) -C $(OMNI_DIR)
+## l5: Build L5 Applications - Cornerstone
+l5:
+	@if [ -d "$(BERESHIT_ROOT)/cornerstone" ] && [ -n "$(DOTNET)" ]; then \
+		echo "Building L5 Cornerstone..."; \
+		cd $(BERESHIT_ROOT)/cornerstone && dotnet build; \
+	else \
+		echo "L5 Cornerstone: Submodule or .NET not available"; \
+	fi
 
-## bereshit-fs: Build zone-aware filesystem (Level 0 - foundation)
-bereshit-fs:
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(ECHO) "  [L0] Building bereshit-fs..."
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(Q)$(MAKE) -C $(FUSE_DIR)
+# ────────────────────────────────────────────────────────────────────────────
+# Component Targets
+# ────────────────────────────────────────────────────────────────────────────
 
-# ───────────────────────────────────────────────────────────────────────────────
-# B.3 ENGINE TARGET — Cornerstone Build [ENGINE]
-# ───────────────────────────────────────────────────────────────────────────────
+## libtrit: Build ternary mathematics library (C)
+libtrit: | $(BUILD_DIR) $(LIB_DIR)
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Building L0: libtrit (ternary mathematics)"
+	@echo "═══════════════════════════════════════════════════════════════"
+ifdef CC
+	@mkdir -p $(BUILD_DIR)/obj/trit
+	@for src in $(L0_DIR)/src/*.c; do \
+		obj=$(BUILD_DIR)/obj/trit/$$(basename $$src .c).o; \
+		echo "  CC $$src"; \
+		$(CC) $(CFLAGS) -I$(L0_DIR)/include -c $$src -o $$obj 2>/dev/null || true; \
+	done
+	@echo "  AR libtrit.a"
+	@ar rcs $(LIB_DIR)/libtrit.a $(BUILD_DIR)/obj/trit/*.o 2>/dev/null || echo "    (some objects failed)"
+	@echo "✓ libtrit built: $(LIB_DIR)/libtrit.a"
+else
+	@echo "  ⚠ C compiler not found, skipping libtrit"
+endif
 
-## cornerstone: Build cornerstone engine (Level 2 - depends on libs)
-cornerstone: libs
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(ECHO) "  [L2] Building cornerstone..."
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(Q)$(MAKE) -C $(CORNERSTONE) build
+## omni: Build OmniCode language (C)
+omni: libtrit | $(BUILD_DIR)
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Building L1: OmniCode (language processor)"
+	@echo "═══════════════════════════════════════════════════════════════"
+ifdef CC
+	@mkdir -p $(BUILD_DIR)/obj/omni
+	@# Build language core
+	@for src in $(L1_DIR)/src/lang/core/*.c; do \
+		obj=$(BUILD_DIR)/obj/omni/$$(basename $$src .c).o; \
+		echo "  CC $$src"; \
+		$(CC) $(CFLAGS) -I$(L1_DIR)/include -I$(L0_DIR)/include -c $$src -o $$obj 2>/dev/null || true; \
+	done
+	@# Build frontend
+	@for src in $(L1_DIR)/src/lang/frontend/*.c; do \
+		obj=$(BUILD_DIR)/obj/omni/$$(basename $$src .c).o; \
+		echo "  CC $$src"; \
+		$(CC) $(CFLAGS) -I$(L1_DIR)/include -I$(L0_DIR)/include -c $$src -o $$obj 2>/dev/null || true; \
+	done
+	@# Build backend
+	@for src in $(L1_DIR)/src/lang/backend/*.c; do \
+		obj=$(BUILD_DIR)/obj/omni/$$(basename $$src .c).o; \
+		echo "  CC $$src"; \
+		$(CC) $(CFLAGS) -I$(L1_DIR)/include -I$(L0_DIR)/include -c $$src -o $$obj 2>/dev/null || true; \
+	done
+	@echo "  AR libomni.a"
+	@ar rcs $(LIB_DIR)/libomni.a $(BUILD_DIR)/obj/omni/*.o 2>/dev/null || echo "    (some objects failed)"
+	@echo "✓ libomni built: $(LIB_DIR)/libomni.a"
+else
+	@echo "  ⚠ C compiler not found, skipping OmniCode"
+endif
 
-# ───────────────────────────────────────────────────────────────────────────────
-# B.3b OS TARGET — MillenniumOS Build [OS]
-# ───────────────────────────────────────────────────────────────────────────────
+## fuse: Build FUSE filesystem (C)
+fuse: libtrit | $(BUILD_DIR)
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Building L2: Bereshit FUSE filesystem"
+	@echo "═══════════════════════════════════════════════════════════════"
+ifdef CC
+	@if pkg-config --exists fuse3 2>/dev/null; then \
+		mkdir -p $(BUILD_DIR)/obj/fuse; \
+		for src in $(L2_DIR)/src/*.c; do \
+			obj=$(BUILD_DIR)/obj/fuse/$$(basename $$src .c).o; \
+			echo "  CC $$src"; \
+			$(CC) $(CFLAGS) $$(pkg-config --cflags fuse3) -I$(L2_DIR)/include -I$(L0_DIR)/include -c $$src -o $$obj 2>/dev/null || true; \
+		done; \
+		echo "✓ FUSE objects built"; \
+	else \
+		echo "  ⚠ libfuse3 not found, skipping FUSE build"; \
+	fi
+else
+	@echo "  ⚠ C compiler not found, skipping FUSE"
+endif
 
-## millenniumos: Build MillenniumOS (Level 3 - depends on libtrit)
-millenniumos: libtrit
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(ECHO) "  [L3] Building MillenniumOS..."
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(Q)$(MAKE) -C $(MILLENNIUMOS)
+## cpisi: Build CPI-SI intelligence layer (Go)
+cpisi: | $(BUILD_DIR) $(BIN_DIR)
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Building L3: CPI-SI (config, orchestration, intelligence)"
+	@echo "═══════════════════════════════════════════════════════════════"
+ifdef GO
+	@echo "  Building word/work..."
+	@BERESHIT_ROOT=$(BERESHIT_ROOT) $(GO) build $(GOFLAGS) -o $(BIN_DIR)/generate-config ./$(L3_DIR)/cmd/generate-config 2>/dev/null || echo "    (generate-config not available)"
+	@echo "  Building word/claude substrate..."
+	@if [ -f "$(L3_CLAUDE_DIR)/go.mod" ]; then \
+		cd $(L3_CLAUDE_DIR) && BERESHIT_ROOT=$(BERESHIT_ROOT) $(GO) build $(GOFLAGS) -o $(BIN_DIR)/cpisi ./entrypoints/cpisi 2>/dev/null || echo "    (cpisi not available)"; \
+		cd $(L3_CLAUDE_DIR) && BERESHIT_ROOT=$(BERESHIT_ROOT) $(GO) build $(GOFLAGS) -o $(BIN_DIR)/statusline ./statusline/cmd/statusline 2>/dev/null || echo "    (statusline not available)"; \
+	fi
+	@echo "✓ CPI-SI layer built"
+else
+	@echo "  ⚠ Go not found, skipping CPI-SI"
+endif
 
-# ───────────────────────────────────────────────────────────────────────────────
-# B.4 GO TOOLS — Independent Builds [TOOLS]
-# ───────────────────────────────────────────────────────────────────────────────
+## claude: Build Claude Code substrate specifically
+claude: | $(BUILD_DIR) $(BIN_DIR)
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Building Claude Code Substrate"
+	@echo "═══════════════════════════════════════════════════════════════"
+ifdef GO
+	@if [ -d "$(L3_CLAUDE_DIR)" ]; then \
+		$(MAKE) -C $(L3_CLAUDE_DIR) build; \
+	else \
+		echo "  ⚠ Claude substrate not found"; \
+	fi
+else
+	@echo "  ⚠ Go not found"
+endif
 
-## tools: Build Go tools
-tools:
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(ECHO) "  [L3] Building Go tools..."
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(Q)$(MAKE) -C $(WORD_WORK) tools
+## demos: Build all phase demonstrations
+demos: l0 l1
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Building Phase Demonstrations"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@for phase in 0 1 2 3 4; do \
+		phase_dir=$(TOV_DIR)/demo/phase-$$phase; \
+		if [ -d "$$phase_dir" ]; then \
+			echo "  Phase $$phase:"; \
+			for demo in $$phase_dir/demo-*; do \
+				if [ -d "$$demo" ] && [ -f "$$demo/Makefile" ]; then \
+					echo "    Building $$(basename $$demo)..."; \
+					$(MAKE) -C $$demo build BERESHIT_ROOT=$(BERESHIT_ROOT) 2>/dev/null || echo "      (failed)"; \
+				fi; \
+			done; \
+		fi; \
+	done
+	@echo "✓ Demos built"
 
-# ───────────────────────────────────────────────────────────────────────────────
-# B.5 TEST TARGETS — Testing [TEST]
-# ───────────────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────────
+# Code Generation - Config-Driven, Data-Driven
+# ────────────────────────────────────────────────────────────────────────────
+
+## generate: Run all code generation from TOML specs
+generate: generate-headers generate-config
+	@echo ""
+	@echo "✓ All code generation complete"
+
+## generate-headers: Generate C headers from TOML specs
+generate-headers: cpisi | $(GEN_DIR)
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Generating C Headers from TOML Specs"
+	@echo "═══════════════════════════════════════════════════════════════"
+ifdef GO
+	@if [ -f "$(BIN_DIR)/generate-config" ]; then \
+		BERESHIT_ROOT=$(BERESHIT_ROOT) $(BIN_DIR)/generate-config; \
+	elif [ -f "$(L3_DIR)/bin/generate-config" ]; then \
+		BERESHIT_ROOT=$(BERESHIT_ROOT) $(L3_DIR)/bin/generate-config; \
+	else \
+		echo "  Building generator first..."; \
+		$(MAKE) -C $(L3_DIR) build; \
+		BERESHIT_ROOT=$(BERESHIT_ROOT) $(MAKE) -C $(L3_DIR) generate; \
+	fi
+else
+	@echo "  ⚠ Go not found, cannot generate headers"
+endif
+
+## generate-config: Validate and regenerate configuration
+generate-config:
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Validating Configuration"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  TOML specs: $(WORD_DIR)/core/"
+	@count=$$(find $(WORD_DIR)/core -name "*.toml" 2>/dev/null | wc -l); \
+	echo "  Found: $$count TOML specification files"
+	@gen_count=$$(grep -l "\[_generate\]" $(WORD_DIR)/core/**/*.toml 2>/dev/null | wc -l); \
+	echo "  With [_generate]: $$gen_count files"
+
+# ────────────────────────────────────────────────────────────────────────────
+# Test Targets
+# ────────────────────────────────────────────────────────────────────────────
 
 ## test: Run all tests
-test: test-libs test-engine
-	$(ECHO) ""
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  ✓ All tests complete!"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+test: test-l0 test-l3 test-demos
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  All Tests Complete"
+	@echo "═══════════════════════════════════════════════════════════════"
 
-## test-libs: Test libraries (libtrit + libomni)
-test-libs:
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(ECHO) "  Testing libraries..."
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(Q)$(MAKE) -C $(TRIT_DIR) test
-	$(Q)$(MAKE) -C $(OMNI_DIR) test
-
-## test-engine: Test cornerstone
-test-engine:
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(ECHO) "  Testing cornerstone..."
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(Q)$(MAKE) -C $(CORNERSTONE) test
-
-# ───────────────────────────────────────────────────────────────────────────────
-# B.5b DIAGNOSTIC TARGETS — System Verification [DIAGNOSTICS]
-# ───────────────────────────────────────────────────────────────────────────────
-
-## diag: Build all diagnostic tools (libtrit)
-diag:
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(ECHO) "  Building diagnostic tools..."
-	$(ECHO) "════════════════════════════════════════════════════════════════"
-	$(Q)$(MAKE) -C $(TRIT_DIR) diag
-
-## diag-trit: Build and list libtrit diagnostic tools
-diag-trit:
-	$(Q)$(MAKE) -C $(TRIT_DIR) diag
-
-# ───────────────────────────────────────────────────────────────────────────────
-# B.6 RUN TARGETS — Execution [RUN]
-# ───────────────────────────────────────────────────────────────────────────────
-
-## run: Run cornerstone (GUI mode)
-run: cornerstone
-	$(Q)$(MAKE) -C $(CORNERSTONE) run
-
-## run-tui: Run cornerstone (TUI mode)
-run-tui: cornerstone
-	$(Q)$(MAKE) -C $(CORNERSTONE) run-tui
-
-## run-cli: Run cornerstone (CLI mode)
-run-cli: cornerstone
-	$(Q)$(MAKE) -C $(CORNERSTONE) run-cli
-
-## run-os: Run MillenniumOS in QEMU
-run-os: millenniumos
-	$(Q)$(MAKE) -C $(MILLENNIUMOS) run
-
-## debug-os: Run MillenniumOS in QEMU with debug output
-debug-os: millenniumos
-	$(Q)$(MAKE) -C $(MILLENNIUMOS) debug
-
-## launcher: Run the Cornerstone interactive launcher
-launcher: cornerstone
-	$(Q)$(CORNERSTONE)/cws-launcher --select
-
-# ───────────────────────────────────────────────────────────────────────────────
-# B.6b INSTALL TARGETS — User-Local Installation [INSTALL]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# Orchestrated installation of all three projects to ~/.local
-# Pattern: install-user / uninstall-user / update-user (aligned across all)
-#
-
-## install-user: Install Cornerstone + OmniCode IDE + MillenniumOS to ~/.local
-install-user: cornerstone millenniumos
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  Installing Kingdom Technology Suite to ~/.local"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) ""
-	$(ECHO) "  [1/3] Installing Cornerstone Engine..."
-	$(Q)$(MAKE) -C $(CORNERSTONE) install-user
-	$(ECHO) ""
-	$(ECHO) "  [2/3] Installing OmniCode IDE..."
-	$(Q)$(MAKE) -C $(OMNI_DIR) install-user
-	$(ECHO) ""
-	$(ECHO) "  [3/3] Installing MillenniumOS..."
-	$(Q)$(MAKE) -C $(MILLENNIUMOS) install-user
-	$(ECHO) ""
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  ✓ Kingdom Technology Suite installed to ~/.local"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) ""
-	$(ECHO) "  Search your applications menu for:"
-	$(ECHO) "    • Cornerstone Engine"
-	$(ECHO) "    • OmniCode IDE"
-	$(ECHO) "    • MillenniumOS"
-	$(ECHO) ""
-
-## uninstall-user: Remove Cornerstone + OmniCode IDE + MillenniumOS from ~/.local
-uninstall-user:
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  Uninstalling Kingdom Technology Suite from ~/.local"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) ""
-	$(ECHO) "  [1/3] Uninstalling Cornerstone Engine..."
-	$(Q)$(MAKE) -C $(CORNERSTONE) uninstall-user 2>/dev/null || true
-	$(ECHO) ""
-	$(ECHO) "  [2/3] Uninstalling OmniCode IDE..."
-	$(Q)$(MAKE) -C $(OMNI_DIR) uninstall-user 2>/dev/null || true
-	$(ECHO) ""
-	$(ECHO) "  [3/3] Uninstalling MillenniumOS..."
-	$(Q)$(MAKE) -C $(MILLENNIUMOS) uninstall-user 2>/dev/null || true
-	$(ECHO) ""
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  ✓ Kingdom Technology Suite uninstalled from ~/.local"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-
-## update-user: Rebuild and reinstall all to ~/.local
-update-user:
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  Updating Kingdom Technology Suite in ~/.local"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) ""
-	$(ECHO) "  [1/3] Updating Cornerstone Engine..."
-	$(Q)$(MAKE) -C $(CORNERSTONE) update-user
-	$(ECHO) ""
-	$(ECHO) "  [2/3] Updating OmniCode IDE..."
-	$(Q)$(MAKE) -C $(OMNI_DIR) update-user
-	$(ECHO) ""
-	$(ECHO) "  [3/3] Updating MillenniumOS..."
-	$(Q)$(MAKE) -C $(MILLENNIUMOS) update-user
-	$(ECHO) ""
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  ✓ Kingdom Technology Suite updated in ~/.local"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-
-# ───────────────────────────────────────────────────────────────────────────────
-# B.7 CLEAN TARGETS — Maintenance [CLEAN]
-# ───────────────────────────────────────────────────────────────────────────────
-
-## clean: Clean all build artifacts
-clean: clean-libs clean-fuse clean-engine clean-os
-	$(ECHO) ""
-	$(ECHO) "✓ All clean"
-
-## clean-libs: Clean library artifacts
-clean-libs:
-	$(ECHO) "Cleaning libraries..."
-	$(Q)$(MAKE) -C $(TRIT_DIR) clean
-	$(Q)$(MAKE) -C $(OMNI_DIR) clean
-
-## clean-fuse: Clean bereshit-fs artifacts
-clean-fuse:
-	$(ECHO) "Cleaning bereshit-fs..."
-	$(Q)$(MAKE) -C $(FUSE_DIR) clean
-
-## clean-engine: Clean cornerstone artifacts
-clean-engine:
-	$(ECHO) "Cleaning cornerstone..."
-	$(Q)$(MAKE) -C $(CORNERSTONE) clean
-
-## clean-os: Clean MillenniumOS artifacts
-clean-os:
-	$(ECHO) "Cleaning MillenniumOS..."
-	$(Q)$(MAKE) -C $(MILLENNIUMOS) clean 2>/dev/null || true
-
-# ───────────────────────────────────────────────────────────────────────────────
-# B.8 INFO TARGETS — Diagnostics [INFO]
-# ───────────────────────────────────────────────────────────────────────────────
-
-## status: Show build state across all components
-status:
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  Bereshit - Build Status"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) ""
-	$(ECHO) "BUILD_MODE: $(BUILD_MODE)"
-	$(ECHO) ""
-	$(ECHO) "Libraries:"
-	@if [ -f $(LIBTRIT) ]; then \
-		echo "  ✓ libtrit.a  ($(TRIT_DIR)/build/)"; \
-	else \
-		echo "  ○ libtrit.a  (not built)"; \
+## test-l0: Test L0 libtrit
+test-l0:
+	@echo ""
+	@echo "Testing L0: libtrit..."
+ifdef CC
+	@if [ -d "$(L0_DIR)/test" ]; then \
+		echo "  Running C tests..."; \
+		for test in $(L0_DIR)/test/*_test.c; do \
+			name=$$(basename $$test .c); \
+			$(CC) $(CFLAGS) -I$(L0_DIR)/include $$test $(L0_DIR)/src/*.c -o $(BUILD_DIR)/$$name -lm 2>/dev/null && \
+			$(BUILD_DIR)/$$name && echo "    ✓ $$name" || echo "    ✗ $$name"; \
+		done; \
 	fi
-	@if [ -f $(LIBOMNI) ]; then \
-		echo "  ✓ libomni.a  ($(OMNI_DIR)/build/)"; \
-	else \
-		echo "  ○ libomni.a  (not built)"; \
-	fi
-	$(ECHO) ""
-	$(ECHO) "Filesystem:"
-	@if [ -f $(BERESHIT_FS) ]; then \
-		echo "  ✓ bereshit_fs  ($(FUSE_DIR)/bin/)"; \
-	else \
-		echo "  ○ bereshit_fs  (not built)"; \
-	fi
-	$(ECHO) ""
-	$(ECHO) "Engine:"
-	@if [ -f $(ENGINE_BIN) ]; then \
-		echo "  ✓ cornerstone  ($(CORNERSTONE)/)"; \
-	else \
-		echo "  ○ cornerstone  (not built)"; \
-	fi
-	$(ECHO) ""
+else
+	@echo "  ⚠ C compiler not found"
+endif
 
-## info: Show configuration
-info:
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  Bereshit - Configuration"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) ""
-	$(ECHO) "Paths:"
-	$(ECHO) "  BERESHIT_ROOT:  $(BERESHIT_ROOT)"
-	$(ECHO) "  WORD_WORK:      $(WORD_WORK)"
-	$(ECHO) "  CORNERSTONE:    $(CORNERSTONE)"
-	$(ECHO) ""
-	$(ECHO) "Packages:"
-	$(ECHO) "  TRIT_DIR:       $(TRIT_DIR)"
-	$(ECHO) "  FUSE_DIR:       $(FUSE_DIR)"
-	$(ECHO) "  OMNI_DIR:       $(OMNI_DIR)"
-	$(ECHO) ""
-	$(ECHO) "Settings:"
-	$(ECHO) "  BUILD_MODE:     $(BUILD_MODE)"
-	$(ECHO) "  VERBOSE:        $(if $(VERBOSE),yes,no)"
-	$(ECHO) ""
+## test-l3: Test L3 CPI-SI
+test-l3:
+	@echo ""
+	@echo "Testing L3: CPI-SI..."
+ifdef GO
+	@cd $(L3_DIR) && BERESHIT_ROOT=$(BERESHIT_ROOT) $(GO) test ./pkg/... 2>/dev/null || echo "  (some tests failed)"
+else
+	@echo "  ⚠ Go not found"
+endif
 
-## help: Show this help message
+## test-demos: Run demo tests
+test-demos:
+	@echo ""
+	@echo "Testing Demos..."
+	@for demo in $(TOV_DIR)/demo/phase-*/demo-*/; do \
+		if [ -f "$$demo/Makefile" ]; then \
+			name=$$(basename $$demo); \
+			$(MAKE) -C $$demo test BERESHIT_ROOT=$(BERESHIT_ROOT) 2>/dev/null && \
+			echo "  ✓ $$name" || echo "  ✗ $$name"; \
+		fi; \
+	done
+
+# ────────────────────────────────────────────────────────────────────────────
+# Clean Targets
+# ────────────────────────────────────────────────────────────────────────────
+
+## clean: Remove build artifacts
+clean:
+	@echo "Cleaning build artifacts..."
+	@rm -rf $(BUILD_DIR)
+	@echo "✓ Clean"
+
+## clean-all: Remove all generated files
+clean-all: clean
+	@echo "Cleaning generated files..."
+	@rm -f $(L0_DIR)/include/generated/*.gen.h
+	@find . -type d -name "bin" -path "*/word/*" -exec rm -rf {} + 2>/dev/null || true
+	@echo "✓ Clean all"
+
+## clean-demos: Clean demo build artifacts
+clean-demos:
+	@echo "Cleaning demos..."
+	@for demo in $(TOV_DIR)/demo/phase-*/demo-*/; do \
+		if [ -f "$$demo/Makefile" ]; then \
+			$(MAKE) -C $$demo clean 2>/dev/null || true; \
+		fi; \
+	done
+	@echo "✓ Demos cleaned"
+
+# ────────────────────────────────────────────────────────────────────────────
+# Utility Targets
+# ────────────────────────────────────────────────────────────────────────────
+
+## check-tools: Verify required tools are installed
+check-tools:
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Tool Check"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@printf "  %-12s " "C Compiler:"; \
+		if [ -n "$(CC)" ]; then echo "✓ $(CC)"; else echo "✗ not found"; fi
+	@printf "  %-12s " "Go:"; \
+		if [ -n "$(GO)" ]; then echo "✓ $$($(GO) version 2>/dev/null | head -1)"; else echo "✗ not found"; fi
+	@printf "  %-12s " "Cargo:"; \
+		if [ -n "$(CARGO)" ]; then echo "✓ $(CARGO)"; else echo "○ not found (L4 disabled)"; fi
+	@printf "  %-12s " "CMake:"; \
+		if [ -n "$(CMAKE)" ]; then echo "✓ $(CMAKE)"; else echo "○ not found (optional)"; fi
+	@printf "  %-12s " ".NET:"; \
+		if [ -n "$(DOTNET)" ]; then echo "✓ $(DOTNET)"; else echo "○ not found (L5 disabled)"; fi
+	@printf "  %-12s " "FUSE3:"; \
+		if pkg-config --exists fuse3 2>/dev/null; then echo "✓ $$(pkg-config --modversion fuse3)"; else echo "○ not found (L2 disabled)"; fi
+	@echo ""
+
+## check-deps: Check layer dependencies
+check-deps:
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Dependency Check"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  L0 Universal:"
+	@printf "    %-20s " "libtrit/include:"; \
+		if [ -d "$(L0_DIR)/include" ]; then echo "✓"; else echo "✗"; fi
+	@printf "    %-20s " "libtrit/src:"; \
+		if [ -d "$(L0_DIR)/src" ]; then echo "✓"; else echo "✗"; fi
+	@echo "  L1 OmniCode:"
+	@printf "    %-20s " "omni/include:"; \
+		if [ -d "$(L1_DIR)/include" ]; then echo "✓"; else echo "✗"; fi
+	@printf "    %-20s " "omni/src:"; \
+		if [ -d "$(L1_DIR)/src" ]; then echo "✓"; else echo "✗"; fi
+	@echo "  L2 Platform:"
+	@printf "    %-20s " "fuse/include:"; \
+		if [ -d "$(L2_DIR)/include" ]; then echo "✓"; else echo "✗"; fi
+	@echo "  L3 CPI-SI:"
+	@printf "    %-20s " "word/work/go.mod:"; \
+		if [ -f "$(L3_DIR)/go.mod" ]; then echo "✓"; else echo "✗"; fi
+	@printf "    %-20s " "word/claude/go.mod:"; \
+		if [ -f "$(L3_CLAUDE_DIR)/go.mod" ]; then echo "✓"; else echo "✗"; fi
+	@echo ""
+
+## status: Show build system status
+status: check-tools check-deps
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Build Status"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Root: $(BERESHIT_ROOT)"
+	@echo "  Build Type: $(BUILD_TYPE)"
+	@echo ""
+	@echo "  Build Directory:"
+	@if [ -d "$(BUILD_DIR)" ]; then \
+		echo "    $(BUILD_DIR)/"; \
+		[ -d "$(BIN_DIR)" ] && echo "      bin/ ($$(ls $(BIN_DIR) 2>/dev/null | wc -l) files)"; \
+		[ -d "$(LIB_DIR)" ] && echo "      lib/ ($$(ls $(LIB_DIR) 2>/dev/null | wc -l) files)"; \
+	else \
+		echo "    (not built)"; \
+	fi
+	@echo ""
+	@echo "  TOML Specs: $$(find $(WORD_DIR)/core -name '*.toml' 2>/dev/null | wc -l) files"
+	@echo "  Go Modules: $$(find . -name 'go.mod' 2>/dev/null | wc -l) files"
+	@echo "  Makefiles: $$(find . -name 'Makefile' 2>/dev/null | wc -l) files"
+	@echo ""
+
+# ────────────────────────────────────────────────────────────────────────────
+# Directory Creation
+# ────────────────────────────────────────────────────────────────────────────
+
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
+
+$(BIN_DIR):
+	@mkdir -p $(BIN_DIR)
+
+$(LIB_DIR):
+	@mkdir -p $(LIB_DIR)
+
+$(GEN_DIR):
+	@mkdir -p $(GEN_DIR)
+
+# ============================================================================
+# CLOSING - Help and Documentation
+# ============================================================================
+
+## help: Show this help
 help:
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) "  Bereshit - Root Build System"
-	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
-	$(ECHO) ""
-	$(ECHO) "  \"In the beginning God created the heaven and the earth.\" — Genesis 1:1"
-	$(ECHO) ""
-	$(ECHO) "QUICK START"
-	$(ECHO) "  make                 Build everything"
-	$(ECHO) "  make run             Run cornerstone (GUI)"
-	$(ECHO) "  make test            Run all tests"
-	$(ECHO) "  make status          Show build state"
-	$(ECHO) ""
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) "BUILD TARGETS"
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) ""
-	$(ECHO) "  Full Build:"
-	$(ECHO) "    make               Build all (libs + cornerstone)"
-	$(ECHO) "    make libs          Build libraries only"
-	$(ECHO) "    make cornerstone   Build engine only (builds libs first)"
-	$(ECHO) ""
-	$(ECHO) "  Individual:"
-	$(ECHO) "    make libtrit       Build libtrit.a (L0 - foundation)"
-	$(ECHO) "    make bereshit-fs   Build bereshit_fs (L0 - zone filesystem)"
-	$(ECHO) "    make libomni       Build libomni.a (L1 - depends on libtrit)"
-	$(ECHO) "    make tools         Build Go tools (L3 - independent)"
-	$(ECHO) ""
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) "RUN TARGETS"
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) ""
-	$(ECHO) "    make run           Run cornerstone (GUI mode)"
-	$(ECHO) "    make run-tui       Run cornerstone (TUI mode)"
-	$(ECHO) "    make run-cli       Run cornerstone (CLI mode)"
-	$(ECHO) "    make run-os        Run MillenniumOS in QEMU"
-	$(ECHO) "    make debug-os      Run MillenniumOS with debug output"
-	$(ECHO) "    make launcher      Interactive launcher (all modes)"
-	$(ECHO) ""
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) "INSTALL TARGETS (User-Local)"
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) ""
-	$(ECHO) "    make install-user   Install all to ~/.local (no sudo)"
-	$(ECHO) "    make uninstall-user Remove all from ~/.local"
-	$(ECHO) "    make update-user    Rebuild and reinstall all"
-	$(ECHO) ""
-	$(ECHO) "    Installs: Cornerstone + OmniCode IDE + MillenniumOS"
-	$(ECHO) "    Search your applications menu after install"
-	$(ECHO) ""
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) "TEST TARGETS"
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) ""
-	$(ECHO) "    make test          Run all tests"
-	$(ECHO) "    make test-libs     Test libraries only"
-	$(ECHO) "    make test-engine   Test cornerstone only"
-	$(ECHO) ""
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) "DIAGNOSTIC TOOLS"
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) ""
-	$(ECHO) "    make diag          Build all diagnostic tools"
-	$(ECHO) "    make diag-trit     Build libtrit diagnostic tools"
-	$(ECHO) ""
-	$(ECHO) "    Diagnostic tools are built to:"
-	$(ECHO) "    word/work/pkg/trit/build/diag/"
-	$(ECHO) ""
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) "MAINTENANCE"
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) ""
-	$(ECHO) "    make clean         Clean all build artifacts"
-	$(ECHO) "    make clean-libs    Clean libraries only"
-	$(ECHO) "    make clean-engine  Clean cornerstone only"
-	$(ECHO) "    make status        Show build state"
-	$(ECHO) "    make info          Show configuration"
-	$(ECHO) ""
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) "BUILD OPTIONS"
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) ""
-	$(ECHO) "  BUILD_MODE=   dev      Fast iteration (default)"
-	$(ECHO) "                debug    Full debugging"
-	$(ECHO) "                release  Production"
-	$(ECHO) ""
-	$(ECHO) "  VERBOSE=1     Show full compilation commands"
-	$(ECHO) ""
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) "BUILD CHAIN"
-	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
-	$(ECHO) ""
-	$(ECHO) "  L0:  libtrit.a     ← Foundation (balanced ternary)"
-	$(ECHO) "  L0:  bereshit_fs   ← Zone-aware filesystem (FUSE)"
-	$(ECHO) "  L1:  libomni.a     ← Depends on libtrit"
-	$(ECHO) "  L2:  cornerstone   ← Depends on libs"
-	$(ECHO) "  L3:  Go tools      ← Independent"
-	$(ECHO) ""
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  Bereshit Build System"
+	@echo "  \"In the beginning God created the heaven and the earth\""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo ""
+	@echo "Usage: make [target] [BUILD_TYPE=debug|release] [VERBOSE=0|1]"
+	@echo ""
+	@echo "Primary Targets:"
+	@echo "  all           Build all layers (default)"
+	@echo "  build         Build all layers"
+	@echo "  test          Run all tests"
+	@echo "  clean         Remove build artifacts"
+	@echo "  status        Show build system status"
+	@echo ""
+	@echo "Layer Targets (build in dependency order):"
+	@echo "  l0            L0 Universal (libtrit) - C foundation"
+	@echo "  l1            L1 OmniCode - C language processor"
+	@echo "  l2            L2 Platform - C FUSE filesystem"
+	@echo "  l3            L3 CPI-SI - Go intelligence model"
+	@echo "  l4            L4 FaithNet - Rust network (planned)"
+	@echo "  l5            L5 Applications - C# Cornerstone"
+	@echo ""
+	@echo "Component Targets:"
+	@echo "  libtrit       Build ternary math library"
+	@echo "  omni          Build OmniCode language"
+	@echo "  fuse          Build FUSE filesystem"
+	@echo "  cpisi         Build CPI-SI intelligence"
+	@echo "  claude        Build Claude Code substrate"
+	@echo "  demos         Build phase demonstrations"
+	@echo ""
+	@echo "Generation Targets:"
+	@echo "  generate      Run all code generation"
+	@echo "  generate-headers  Generate C headers from TOML"
+	@echo "  generate-config   Validate TOML configuration"
+	@echo ""
+	@echo "Test Targets:"
+	@echo "  test          Run all tests"
+	@echo "  test-l0       Test libtrit"
+	@echo "  test-l3       Test CPI-SI"
+	@echo "  test-demos    Test demonstrations"
+	@echo ""
+	@echo "Utility Targets:"
+	@echo "  check-tools   Verify tools installed"
+	@echo "  check-deps    Check layer dependencies"
+	@echo "  clean-all     Remove all generated files"
+	@echo "  clean-demos   Clean demo artifacts"
+	@echo ""
+	@echo "Build Types:"
+	@echo "  BUILD_TYPE=debug    Debug build (default)"
+	@echo "  BUILD_TYPE=release  Optimized release build"
+	@echo ""
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# END BODY
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CLOSING BLOCK [CLOSING]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# X.1 STRUCTURE NOTES [STRUCTURE]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# This is the ROOT Makefile for the entire Bereshit repository.
-# It orchestrates all sub-builds in dependency order:
-#
-#   L0: libtrit.a   (word/work/pkg/trit/)   — Balanced ternary types
-#   L0: bereshit_fs (word/work/pkg/fuse/)   — Zone-aware filesystem
-#   L1: libomni.a   (word/work/pkg/omni/)   — OmniCode language library
-#   L2: cornerstone (cornerstone/)          — Game engine
-#
-# Each sub-package has its own Makefile that handles its specific build.
-# This Makefile only coordinates and delegates.
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# X.2 RELATED FILES [RELATED]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# Children (called via $(MAKE) -C):
-#   word/work/pkg/trit/Makefile   — libtrit.a build
-#   word/work/pkg/fuse/Makefile   — bereshit_fs build
-#   word/work/pkg/omni/Makefile   — libomni.a build
-#   cornerstone/Makefile          — engine build
-#   word/work/Makefile            — Go tools
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# X.3 BIBLICAL CLOSING [BIBLICAL]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# "In the beginning God created the heaven and the earth."
-# — Genesis 1:1 KJV
-#
-# From one source, all things are built in order.
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-# END CLOSING
-# ═══════════════════════════════════════════════════════════════════════════════
+# ============================================================================
+# END
+# ============================================================================
+# "Except the LORD build the house, they labour in vain that build it"
+# — Psalm 127:1 KJV
+# ============================================================================

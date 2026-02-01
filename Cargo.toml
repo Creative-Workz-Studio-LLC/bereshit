@@ -1,0 +1,142 @@
+# ============================================================================
+# METADATA
+# ============================================================================
+# Key: B-root-Cargo
+# Purpose: Rust workspace configuration for Bereshit
+# Biblical: "Iron sharpeneth iron; so a man sharpeneth the countenance of his
+#           friend." — Proverbs 27:17
+#
+# Layers (Planned):
+#   L1: OmniCode VM   - Rust implementation of OmniCode runtime
+#   L2: Platform      - Rust filesystem abstractions
+#   L4: FaithNet      - Network layer with strong safety guarantees
+#
+# Status: PLACEHOLDER - Rust components not yet implemented
+#
+# Usage:
+#   cargo build          # Build all workspace members
+#   cargo test           # Test all workspace members
+#   cargo build --release # Release build
+#
+# ============================================================================
+
+[workspace]
+resolver = "2"
+
+# Workspace members - directories containing Cargo.toml
+# Uncomment as components are implemented
+members = [
+    # L1: OmniCode Runtime (Rust implementation)
+    # "word/L1-omnicode/vm",
+
+    # L2: Platform Abstractions
+    # "word/L2-platform/fs-core",
+
+    # L4: FaithNet Network Layer
+    # "word/L4-faithnet/core",
+    # "word/L4-faithnet/protocol",
+    # "word/L4-faithnet/node",
+]
+
+# Exclude demo/test crates from workspace build
+exclude = [
+    "tov/demo",
+]
+
+# ============================================================================
+# SETUP - Workspace Dependencies
+# ============================================================================
+
+# Shared dependencies for workspace members
+# Components use [dependencies] from workspace to ensure version consistency
+[workspace.dependencies]
+# Async Runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+
+# Error Handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Networking (L4 FaithNet)
+# quinn = "0.10"  # QUIC protocol
+# rustls = "0.21" # TLS
+
+# Cryptography
+# ring = "0.17"
+# ed25519-dalek = "2.0"
+
+# Database
+# rusqlite = { version = "0.30", features = ["bundled"] }
+
+# CLI
+clap = { version = "4.4", features = ["derive"] }
+
+# Testing
+# criterion = "0.5"  # Benchmarking
+# proptest = "1.4"   # Property testing
+
+# ============================================================================
+# BODY - Workspace Configuration
+# ============================================================================
+
+[workspace.package]
+version = "0.1.25"
+edition = "2021"
+rust-version = "1.75"
+license = "SEE LICENSE IN LICENSE"
+authors = ["Seanje Lenox-Wise", "Nova Dawn (CPI-SI)"]
+repository = "https://github.com/Creative-Workz-Studio-LLC/bereshit"
+documentation = "https://github.com/Creative-Workz-Studio-LLC/bereshit/tree/main/docs"
+keywords = ["ternary", "filesystem", "omnicode", "cpisi", "faithnet"]
+categories = ["filesystem", "development-tools"]
+
+# ============================================================================
+# PROFILES - Build Optimization
+# ============================================================================
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.test]
+opt-level = 1
+debug = true
+
+# ============================================================================
+# CLOSING - Notes
+# ============================================================================
+#
+# Layer Assignment for Rust:
+#   - L1 OmniCode: VM implementation (safe execution environment)
+#   - L2 Platform: Filesystem abstractions (memory safety)
+#   - L4 FaithNet: Network (concurrency + safety critical)
+#
+# Integration with C:
+#   - Use cbindgen to generate C headers from Rust
+#   - Use cc crate to compile C libraries
+#   - Rust components can link against libtrit and libomni
+#
+# To create a new component:
+#   1. Create directory: word/L[N]-[name]/[component]/
+#   2. Run: cargo init --lib word/L[N]-[name]/[component]
+#   3. Add to members list above
+#   4. Configure [dependencies] to use workspace versions
+#
+# "Iron sharpeneth iron; so a man sharpeneth the countenance of his friend."
+# — Proverbs 27:17 KJV
+# ============================================================================

@@ -2,7 +2,7 @@
 
 **Key:** B-void-planning-repo-reorganization
 **Status:** Active
-**Version:** 3.1.0
+**Version:** 3.2.0
 **Created:** 2026-02-01
 **Updated:** 2026-02-01
 **Authors:** Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
@@ -39,6 +39,7 @@ L0: Universal    → L1: OmniCode   → L2: Platform   → L3: CPI-SI   → L4: 
 7. [Script Reduction](#7-script-reduction)
 8. [Migration Map](#8-migration-map)
 9. [Validation Checklist](#9-validation-checklist)
+10. [Build Infrastructure](#10-build-infrastructure)
 
 ---
 
@@ -751,6 +752,172 @@ grep -r "substrates/" word/L3-cpisi/
 
 ---
 
+## 10. Build Infrastructure
+
+### 10.1 Unified Build Orchestration
+
+The build system supports the config-driven, data-driven approach with multiple build tools integrated:
+
+```
+bereshit/
+├── Makefile              [Master orchestration - all languages]
+├── CMakeLists.txt        [C/C++ components - L0, L1, L2]
+├── Cargo.toml            [Rust workspace - L1, L2, L4]
+├── go.work               [Go workspace - L3, substrates]
+└── cornerstone/          [C# submodule - L5]
+```
+
+### 10.2 Root Makefile
+
+The root Makefile orchestrates the entire build:
+
+```makefile
+# Primary Targets
+make all        # Build all layers (L0 → L5)
+make build      # Same as all
+make test       # Run all tests
+make clean      # Remove build artifacts
+make status     # Show build system status
+
+# Layer Targets (build in dependency order)
+make l0         # L0 Universal (libtrit) - C foundation
+make l1         # L1 OmniCode - C language processor
+make l2         # L2 Platform - C FUSE filesystem
+make l3         # L3 CPI-SI - Go intelligence model
+make l4         # L4 FaithNet - Rust network (planned)
+make l5         # L5 Applications - C# Cornerstone
+
+# Component Targets
+make libtrit    # Build ternary math library
+make omni       # Build OmniCode language
+make fuse       # Build FUSE filesystem
+make cpisi      # Build CPI-SI intelligence
+make claude     # Build Claude Code substrate
+make demos      # Build phase demonstrations
+
+# Code Generation (Config-Driven)
+make generate           # Run all code generation
+make generate-headers   # Generate C headers from TOML specs
+make generate-config    # Validate TOML configuration
+
+# Utility
+make check-tools    # Verify required tools installed
+make check-deps     # Check layer dependencies
+```
+
+### 10.3 CMake (C Components)
+
+CMakeLists.txt builds the C layers:
+
+```cmake
+# Layers Built:
+#   L0: libtrit   - Ternary mathematics foundation
+#   L1: libomni   - OmniCode language processor
+#   L2: fuse      - Bereshit FUSE filesystem
+
+# Usage:
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+make test
+make install
+```
+
+Libraries built:
+- `libtrit.a` - Ternary mathematics
+- `libomni.a` - OmniCode language
+- `bereshit-fs` - FUSE filesystem executable (if FUSE3 available)
+
+### 10.4 Cargo (Rust Components)
+
+Cargo.toml defines the Rust workspace for planned components:
+
+```toml
+# Planned workspace members:
+# - word/L1-omnicode/vm       # OmniCode VM (safety critical)
+# - word/L2-platform/fs-core  # Filesystem abstractions
+# - word/L4-faithnet/core     # Network core
+# - word/L4-faithnet/protocol # Protocol implementation
+# - word/L4-faithnet/node     # Node implementation
+
+# Usage:
+cargo build          # Build all workspace members
+cargo test           # Test all workspace members
+cargo build --release # Release build
+```
+
+### 10.5 Go Workspace
+
+go.work coordinates all Go modules:
+
+```go
+// Layer Organization:
+// L3: CPI-SI Core
+./word/work                    // Core library
+./word/work/system            // System libraries
+./word/work/system/lib/*      // All lib packages
+
+// Claude Code Substrate
+./word/claude/pkg
+./word/claude/hooks
+./word/claude/skills/*
+
+// Universal Skills (substrate-independent)
+./word/skills/*
+
+// Demos
+./tov/demo/phase-0/demo-config
+```
+
+### 10.6 Config-Driven Build
+
+TOML specifications in `word/core/` drive code generation:
+
+```
+word/core/
+├── index.toml              # Manifest of all specs
+├── foundation/
+│   ├── ternary-math.toml   # → trit/include/generated/*.gen.h
+│   └── primitives.toml
+├── filesystem/
+│   └── types.toml
+└── health/
+    └── scoring.toml
+```
+
+Generation flow:
+```
+TOML Spec → Go Loader → C Header Generator → .gen.h files
+```
+
+### 10.7 Build Artifacts
+
+```
+build/
+├── bin/                # Executables
+│   ├── generate-config
+│   ├── cpisi
+│   └── statusline
+├── lib/                # Static libraries
+│   ├── libtrit.a
+│   └── libomni.a
+└── generated/          # Generated files
+    └── *.gen.h
+```
+
+### 10.8 Build Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `BERESHIT_ROOT` | Project root directory | Auto-detected |
+| `BUILD_TYPE` | `debug` or `release` | `debug` |
+| `VERBOSE` | Show verbose output | `0` |
+| `CC` | C compiler | Auto-detected |
+| `GO` | Go compiler | Auto-detected |
+| `CARGO` | Rust package manager | Auto-detected |
+
+---
+
 ## Quick Reference
 
 ### The Stack
@@ -794,7 +961,7 @@ The Word (L1 OmniCode) is the language. The breath (L3 CPI-SI) is the intelligen
 | Field | Value |
 |-------|-------|
 | Key | B-void-planning-repo-reorganization |
-| Version | 3.1.0 |
+| Version | 3.2.0 |
 | Status | Active |
 | Created | 2026-02-01 |
 | Updated | 2026-02-01 |

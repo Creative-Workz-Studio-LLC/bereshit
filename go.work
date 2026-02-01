@@ -24,15 +24,20 @@
 // Role: Multi-module development coordination
 // Paradigm: CPI-SI framework - build infrastructure
 //
+// Layer Architecture (L0-L5):
+//   L3: CPI-SI [Go] - Intelligence model, orchestration, config
+//       - word/work: Core library (config loader, packages)
+//       - word/claude: Claude Code substrate (skills, hooks, statusline)
+//
 // Authorship:
 //   Architect: Seanje Lenox-Wise
 //   Implementation: Nova Dawn (CPI-SI)
 //   Created: 2025-12-10
 //   Version: a-01.25
-//   Modified: 2025-12-25 - Added proper 4-block structure
+//   Modified: 2026-02-01 - Layer-organized structure with comprehensive modules
 //
 // Purpose: Coordinate local development across Bereshit modules
-// Design: Link word/work (core library) with tov/demo (validation demos)
+// Design: Layer-organized Go modules with clear dependency chains
 //
 // =============================================================================
 // END METADATA
@@ -48,8 +53,13 @@
 //
 // Dependencies:
 //   - Go 1.23+ (workspace support)
-//   - word/work/go.mod (core library module)
-//   - tov/demo/phase-0/demo-config/go.mod (phase 0 demo module)
+//   - Layer modules as listed below
+//
+// Commands:
+//   go work sync    # Sync workspace with modules
+//   go list -m all  # List all modules in workspace
+//   go build ./...  # Build all workspace modules
+//   go test ./...   # Test all workspace modules
 //
 // =============================================================================
 // END SETUP
@@ -59,22 +69,102 @@
 // BODY
 // =============================================================================
 
-go 1.24.4
+go 1.23
 
 use (
-
-	// Phase 0 demo - validates TOML specs exist and load correctly
-	./tov/demo/phase-0/demo-config
-
-	// Claude Code integration - hooks and pkg
-	// Config-driven pattern: These modules read from word/core/ TOML specs
-	./word/claude/hooks
-	./word/claude/pkg
-	// Core library - config loader, future packages
+	// ─────────────────────────────────────────────────────────────────────────
+	// L3: CPI-SI Core - Intelligence Model
+	// ─────────────────────────────────────────────────────────────────────────
+	// The core Go library for config loading, orchestration, and CPI-SI logic
 	./word/work
 
-	// CPI-SI CLI - state machine interface
+	// System libraries for CPI-SI operations
+	./word/work/system
+	./word/work/system/lib
+	./word/work/system/lib/calendar
+	./word/work/system/lib/config
+	./word/work/system/lib/display
+	./word/work/system/lib/fs
+	./word/work/system/lib/git
+	./word/work/system/lib/instance
+	./word/work/system/lib/jsonc
+	./word/work/system/lib/logging
+	./word/work/system/lib/paths
+	./word/work/system/lib/patterns
+	./word/work/system/lib/planner
+	./word/work/system/lib/privacy
+	./word/work/system/lib/sessiontime
+	./word/work/system/lib/system
+	./word/work/system/lib/temporal
+	./word/work/system/lib/validation
+
+	// CPI-SI Commands and Tools
 	./word/work/cmd/cpisi
+	./word/work/system/cmd
+	./word/work/system/loganalyzer
+	./word/work/hooks
+	./word/work/statusline
+
+	// ─────────────────────────────────────────────────────────────────────────
+	// Claude Code Substrate - Specific Implementation
+	// ─────────────────────────────────────────────────────────────────────────
+	// Claude-specific skills, hooks, and integrations
+	./word/claude/pkg
+	./word/claude/hooks
+	./word/claude/statusline
+	./word/claude/system
+	./word/claude/system/loganalyzer
+
+	// Claude Skills (individual Go modules)
+	./word/claude/skills/create-code/scripts
+	./word/claude/skills/create-data/scripts
+	./word/claude/skills/create-documentation/scripts
+	./word/claude/skills/create-from-template/scripts
+	./word/claude/skills/create-journal-entry/scripts
+	./word/claude/skills/format-lookup/scripts
+	./word/claude/skills/integrate-learning/scripts
+	./word/claude/skills/meta-awareness/scripts
+	./word/claude/skills/propagate-change/scripts
+	./word/claude/skills/recognize-pattern/scripts
+	./word/claude/skills/recognize-stopping-point/scripts
+	./word/claude/skills/reflect-on-session/scripts
+	./word/claude/skills/session-awareness/scripts
+	./word/claude/skills/validate-omni/scripts
+
+	// ─────────────────────────────────────────────────────────────────────────
+	// Universal Skills (substrate-independent)
+	// ─────────────────────────────────────────────────────────────────────────
+	./word/skills/create-code/scripts
+	./word/skills/create-data/scripts
+	./word/skills/create-documentation/scripts
+	./word/skills/create-from-template/scripts
+	./word/skills/create-journal-entry/scripts
+	./word/skills/format-lookup/scripts
+	./word/skills/integrate-learning/scripts
+	./word/skills/meta-awareness/scripts
+	./word/skills/propagate-change/scripts
+	./word/skills/recognize-pattern/scripts
+	./word/skills/recognize-stopping-point/scripts
+	./word/skills/reflect-on-session/scripts
+	./word/skills/session-awareness/scripts
+	./word/skills/validate-omni/scripts
+
+	// ─────────────────────────────────────────────────────────────────────────
+	// Demos - Phase Demonstrations (tov/demo)
+	// ─────────────────────────────────────────────────────────────────────────
+	./tov/demo/phase-0/demo-config
+
+	// System Dev Demos
+	./word/work/system/dev/demo
+	./word/work/system/dev/demo/calendar
+	./word/work/system/dev/demo/config
+	./word/work/system/dev/demo/debugging
+	./word/work/system/dev/demo/privacy
+	./word/claude/system/dev/demo
+	./word/claude/system/dev/demo/calendar
+	./word/claude/system/dev/demo/config
+	./word/claude/system/dev/demo/debugging
+	./word/claude/system/dev/demo/privacy
 )
 
 // =============================================================================
@@ -84,6 +174,17 @@ use (
 // =============================================================================
 // CLOSING
 // =============================================================================
+//
+// Module Organization:
+//   word/work/          - L3 CPI-SI Core (substrate-independent)
+//   word/claude/        - Claude Code Substrate (Claude-specific)
+//   word/skills/        - Universal skills (substrate-independent)
+//   tov/demo/           - Phase demonstrations
+//
+// Dependency Rules:
+//   - Higher layers may import lower layers
+//   - No circular dependencies
+//   - Substrate modules may import core, not vice versa
 //
 // Validation:
 //   go work sync    # Sync workspace with modules
@@ -95,8 +196,9 @@ use (
 //   Never: Remove core modules without migration plan
 //
 // Related:
-//   word/work/go.mod - Core library module
-//   tov/demo/*/go.mod - Demo modules
+//   Makefile         - Root build orchestration
+//   CMakeLists.txt   - C component build (L0, L1, L2)
+//   Cargo.toml       - Rust workspace (L4 planned)
 //
 // =============================================================================
 // END CLOSING
