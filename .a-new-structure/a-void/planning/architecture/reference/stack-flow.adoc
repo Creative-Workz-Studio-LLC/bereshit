@@ -1,0 +1,971 @@
+////
+/// @file stack-flow.adoc
+/// @omni document --adoc
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// OMNICODE PRAGMA [PRAGMA]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// @legend
+///   :req  REQUIRED   — must exist, validation fails without
+///   :inh  INHERITED  — from template, override allowed
+///   :ins  INSTANCE   — file-specific, unique values
+/// @endlegend
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.1 CORE — Identity [CORE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  key        = B-void-planning-architecture-stack-flow
+/// @omni:req  from       = bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+/// @omni:req  at         = document
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.2 FAMILY — Classification [FAMILY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:inh  type       = documentation
+/// @omni:inh  subtype    = reference
+/// @omni:inh  role       = architecture
+/// @omni:inh  structure  = 5-block
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.3 INSTANCE — File Details [INSTANCE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  component  = planning
+/// @omni:ins  layer      = void/planning/architecture/reference
+/// @omni:ins  includes   = none
+/// @omni:ins  provides   = [STACK_FLOW_ARCHITECTURE]
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.4 ARCHITECTURE — Scaling Context [ARCH]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  layers     = [0:universal, 1:omnicode, 2:platform, 3:cpisi,
+///                          4:faithnet, 5:applications]
+/// @omni:ins  scale      = 3^n [1, 3, 9, 27, 81, 243]
+/// @omni:ins  pattern    = L0-L5 vertical stack with horizontal substrate scaling
+/// @omni:ins  anchor     = genesis_1_1 -> L0 foundation -> upward derivation
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.5 SUMMARY — Human Identity [SUMMARY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  title      = Bereshit Stack Flow Architecture
+/// @omni:req  brief      = How all layers of Kingdom Technology interact, build, and flow data
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// END PRAGMA [END]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// PURPOSE: Architecture reference — complete flow of Kingdom Technology stack
+/// STRUCTURE: METADATA → HEADER → CONTEXT → CONTENT → FOOTER
+////
+
+// ============================================================================
+// METADATA
+// ============================================================================
+
+// # M.1 Core Identity [IDENTITY]
+// Document identification and classification
+:key: B-void-planning-architecture-stack-flow
+:title: Bereshit Stack Flow Architecture
+:subtitle: How all layers of Kingdom Technology interact, build, and flow data
+:type: Reference
+:doctype: article
+:lang: en
+
+// # M.2 Lifecycle State [STATE]
+// Version tracking and revision history
+:status: Active
+:version: a-01.00
+:revnumber: {version}
+:created: 2026-02-01
+:revdate: 2026-02-01
+:revremark: Initial stack flow architecture from void migration
+
+// # M.3 Attribution [ATTRIBUTION]
+// Authorship and ownership
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Seanje Lenox-Wise
+:author_2: Nova Dawn
+:email: seanje.lenox@creativeworkzstudio.com
+:email_2: nova@creativeworkzstudio.com
+:organization: CreativeWorkzStudio LLC
+:copyright: © 2026 CreativeWorkzStudio LLC. All rights reserved.
+
+// # M.4 Location [LOCATION]
+// Filesystem path relative to bereshit root
+:path: /bereshit/a-void/planning/architecture/reference/
+
+// # M.5 Derivation [DERIVATION]
+// Template lineage for cascade updates
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+
+// # M.6 Classification [CLASSIFICATION]
+// Discovery tags and search keywords
+:tags: architecture, stack-flow, L0-L5, layers, data-flow, build-flow
+:keywords: Kingdom Technology, stack architecture, layer interaction, build chain, runtime flow
+
+// # M.7 Intent [INTENT]
+// Purpose and scope of this document
+:purpose: Defines how all layers of the Kingdom Technology stack interact, build upon each other, and flow data through the system
+:description: Complete architectural blueprint for understanding, maintaining, and scaling Bereshit — covers build-time flow, config-driven architecture, runtime data flow, substrate integration, and scaling pathways.
+
+// # M.8 Grounding [GROUNDING]
+// Biblical foundation — separation creates structure
+:verse-ref: Genesis 1:9
+:verse-kjv-text: And God said, Let the waters under the heaven be gathered together unto one place, and let the dry land appear: and it was so.
+:verse-kjv-path: {kjv}Genesis/Chapter_1/Verse_9.txt
+:verse-web-text: God said, "Let the waters under the sky be gathered together to one place, and let the dry land appear;" and it was so.
+:verse-web-path: {scripture}WEB/Genesis/Chapter_1/Verse_9.txt
+:biblical_foundation: {verse-kjv-text}
+
+// # M.9 Strictness [STRICTNESS]
+// G = Guided interpretation allowed
+:strictness: G
+
+// # M.10 AsciiDoc Settings [SETTINGS]
+// Rendering and display configuration
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+:pdf-theme: default
+:media: prepress
+:linkcss:
+:stylesdir: styles
+:stylesheet: cws-asciidoctor.css
+
+// # M.11 Navigation [NAVIGATION]
+// Path attributes for DRY linking
+:root: ../../../../
+:word: {root}b-word/
+:void: {root}a-void/
+:tov: {root}c-tov/
+:core: {word}core/
+:work: {word}work/
+:scripture: {word}scripture/
+:kjv: {scripture}KJV/
+
+// # M.12 Content Attributes [CONTENT-ATTRS]
+// Document-specific values used in content
+:section-count: 7
+:the-purpose: Complete architectural blueprint for understanding, maintaining, and scaling Bereshit
+
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+// # H.1 Title [TITLE]
+[[_top]]
+= {title}: {subtitle}
+{authors}
+v{version}, {revdate}
+
+// # H.2 Epigraph [EPIGRAPH]
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+
+_{verse-web-text}_ — link:{verse-web-path}[WEB]
+____
+
+// # H.3 Lead [LEAD]
+[.lead.text-center]
+*{the-purpose}*
+
+// # H.4 Abstract [ABSTRACT]
+[abstract]
+--
+icon:sitemap[] *Layers:* L0 (Universal) → L1 (OmniCode) → L2 (Platform) → L3 (CPI-SI) → L4 (FaithNet) → L5 (Applications)
+
+icon:cogs[] *Build Streams:* C/Rust (L0→L1→L2→L4), Go (L3→Substrates→Skills), C# (L5 Cornerstone)
+
+icon:database[] *Data Flow:* TOML specs → Loaders → Runtime state (JSON + SQLite)
+
+icon:plug[] *Substrates:* Claude Code (current), MillenniumOS (future), Web/Mobile (planned)
+--
+
+// # H.5 Status [STATUS]
+.Document Status
+[cols="^1,^1,^1,^1",options="header,autowidth",frame="topbot"]
+|===
+| Status | Version | Sections | Strictness
+
+| {status}
+| {version}
+| {section-count}
+| {strictness}
+|===
+
+'''
+
+// # H.6 Navigation [NAVIGATION]
+*<<overview,Overview>>* • *<<complete-picture,The Stack>>* • *<<build-time,Build Flow>>* • *<<config-driven,Config>>* • *<<runtime-flow,Runtime>>* • *<<substrate-integration,Substrates>>* • *<<scaling,Scaling>>*
+
+'''
+
+// ============================================================================
+// END HEADER
+// ============================================================================
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+// # C.1 Overview [OVERVIEW]
+[[overview]]
+== Overview
+
+[.lead]
+This document defines how all layers of the Kingdom Technology stack interact, build upon each other, and flow data through the system. It serves as the architectural blueprint for understanding, maintaining, and scaling Bereshit.
+
+[IMPORTANT]
+====
+*Dependency Rule:* Higher layers depend on lower layers. L0 depends on nothing. No upward imports allowed.
+====
+
+// # C.2 Scope [SCOPE]
+=== Scope
+
+****
+[horizontal]
+icon:check-circle[] *In Scope*:: Build-time flow, config architecture, runtime data flow, substrate integration, layer interaction patterns, scaling pathways
+icon:times-circle[] *Out of Scope*:: Implementation details (see code), API documentation (see pkg docs), deployment procedures (see ops docs)
+****
+
+// # C.3 Key Terms [KEY_TERMS]
+=== Key Terms
+
+.icon:book[] Click to expand terminology reference
+[%collapsible]
+======
+[horizontal]
+icon:tag[] *Layer (L0-L5)*:: Vertical tier in the stack, each building on the one below
+icon:tag[] *Substrate*:: Environment running the stack (Claude Code, MillenniumOS, etc.)
+icon:tag[] *TOML Specs*:: Single source of truth configuration files
+icon:tag[] *State Machine*:: 27-position cognitive navigation system (3×3×3 cube)
+icon:tag[] *Health Score*:: Balanced ternary metric (-100 to +100) tracking system state
+======
+
+// # C.4 Contents [CONTENTS]
+=== What This Document Provides
+
+[cols="^1,3,4",options="header,autowidth",frame="topbot"]
+|===
+| | Section | What You'll Learn
+
+| icon:sitemap[]
+| *The Complete Picture*
+| Full L0-L5 layer stack and dependency rules
+
+| icon:wrench[]
+| *Build-Time Flow*
+| How components compile and their build chain
+
+| icon:cog[]
+| *Config-Driven Architecture*
+| Three-layer config system (TOML → Loaders → Runtime)
+
+| icon:bolt[]
+| *Runtime Data Flow*
+| Session lifecycle, state machine, health scoring
+
+| icon:plug[]
+| *Substrate Integration*
+| How the stack runs on different environments
+
+| icon:expand[]
+| *Scaling Pathways*
+| Interface scaling (CLI→TUI→GUI), substrate scaling, feature roadmap
+|===
+
+// # C.5 Return [RETURN]
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// ============================================================================
+// END CONTEXT
+// ============================================================================
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+// # T.1 The Complete Picture [COMPLETE-PICTURE]
+
+[[complete-picture]]
+== The Complete Picture
+
+[.lead]
+The Kingdom Technology stack organizes into six layers (L0-L5), each building on the one below.
+
+=== The Kingdom Technology Stack
+
+....
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         KINGDOM TECHNOLOGY ARCHITECTURE                          │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                              APPLICATIONS (L5)                                   │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐        │
+│     │   Cornerstone   │     │   Future Apps   │     │   User Tools    │        │
+│     │   Game Engine   │     │    [C#/Go]      │     │    [Any]        │        │
+│     │      [C#]       │     │                 │     │                 │        │
+│     └────────┬────────┘     └────────┬────────┘     └────────┬────────┘        │
+│              └───────────────────────┼───────────────────────┘                  │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                               FAITHNET (L4)                                      │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────────────────────────────────────────────────────┐        │
+│     │                    Kingdom Network Layer                         │        │
+│     │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │        │
+│     │  │ Protocol │  │ Mapping  │  │  Access  │  │  Crypto  │        │        │
+│     │  │  [Rust]  │  │  [Rust]  │  │  [Rust]  │  │  [Rust]  │        │        │
+│     │  └──────────┘  └──────────┘  └──────────┘  └──────────┘        │        │
+│     └─────────────────────────────────────────────────────────────────┘        │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                               CPI-SI (L3)                                        │
+│                        *** THE INTELLIGENCE LAYER ***                            │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────────────────────────────────────────────────────┐        │
+│     │                  Covenant Partnership Intelligence               │        │
+│     │  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌──────────┐  │        │
+│     │  │   Core     │  │ Cognition  │  │  Identity  │  │  Skills  │  │        │
+│     │  │ • State    │  │ • Constructs│ │ • Instance │  │ • Format │  │        │
+│     │  │   Machine  │  │ • Feedback │  │ • Profiles │  │ • Validate│ │        │
+│     │  │ • Coords   │  │ • Patterns │  │            │  │ • Reflect│  │        │
+│     │  │ • Health   │  │            │  │            │  │ • Meta   │  │        │
+│     │  │   [Go]     │  │   [Go]     │  │   [Go]     │  │  [Go]    │  │        │
+│     │  └────────────┘  └────────────┘  └────────────┘  └──────────┘  │        │
+│     └─────────────────────────────────────────────────────────────────┘        │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                              PLATFORM (L2)                                       │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────────────────────────────────────────────────────┐        │
+│     │                    Operating System Layer                        │        │
+│     │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │        │
+│     │  │ MillenniumOS │  │  Bereshit FS │  │    FUSE      │          │        │
+│     │  │    [C]       │  │   [Rust]     │  │    [C]       │          │        │
+│     │  └──────────────┘  └──────────────┘  └──────────────┘          │        │
+│     └─────────────────────────────────────────────────────────────────┘        │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                              OMNICODE (L1)                                       │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────────────────────────────────────────────────────┐        │
+│     │                   Universal Meaning Language                     │        │
+│     │  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐   │        │
+│     │  │Frontend│  │Semantic│  │   IR   │  │   VM   │  │Runtime │   │        │
+│     │  │  [C]   │  │ [Rust] │  │  [C]   │  │ [Rust] │  │ [Rust] │   │        │
+│     │  └────────┘  └────────┘  └────────┘  └────────┘  └────────┘   │        │
+│     └─────────────────────────────────────────────────────────────────┘        │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                              UNIVERSAL (L0)                                      │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────────────────────────────────────────────────────┐        │
+│     │                      Foundation Layer                            │        │
+│     │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │        │
+│     │  │   libtrit    │  │   libmath    │  │  foundation  │          │        │
+│     │  │ Ternary Math │  │  Operations  │  │    Types     │          │        │
+│     │  │     [C]      │  │     [C]      │  │    [Go]      │          │        │
+│     │  └──────────────┘  └──────────────┘  └──────────────┘          │        │
+│     └─────────────────────────────────────────────────────────────────┘        │
+└─────────────────────────────────────────────────────────────────────────────────┘
+....
+
+=== Dependency Rule
+
+[IMPORTANT]
+====
+*CRITICAL: NO UPWARD IMPORTS!* L0 cannot import from L1. L3 cannot import from L4.
+====
+
+....
+                    HIGHER LAYERS DEPEND ON LOWER LAYERS
+                    ════════════════════════════════════
+
+    L5 ──depends on──► L4, L3, L2, L1, L0
+    L4 ──depends on──► L3, L2, L1, L0
+    L3 ──depends on──► L2, L1, L0
+    L2 ──depends on──► L1, L0
+    L1 ──depends on──► L0
+    L0 ──depends on──► [nothing - foundation]
+....
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.2 Build-Time Flow [BUILD-TIME]
+
+[[build-time]]
+== Build-Time Flow
+
+[.lead]
+How components compile and their dependency chains.
+
+=== Build Dependency Chain
+
+....
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                          make all                                        │
+    └─────────────────────────────────────────────────────────────────────────┘
+                                     │
+         ┌───────────────────────────┼───────────────────────────┐
+         │                           │                           │
+         ▼                           ▼                           ▼
+    ┌─────────┐                ┌─────────┐                ┌─────────┐
+    │   L0    │                │   L3    │                │   L5    │
+    │  make   │                │   go    │                │ dotnet  │
+    │ libtrit │                │  build  │                │  build  │
+    └────┬────┘                └────┬────┘                └─────────┘
+         │                          │
+         ▼                          ▼
+    ┌─────────┐                ┌─────────┐
+    │   L1    │                │Substrates│
+    │  make   │                │   go    │
+    │  omni   │                │  build  │
+    └────┬────┘                └─────────┘
+         │
+         ▼
+    ┌─────────┐
+    │   L2    │
+    │  make   │
+    │  fuse   │
+    └─────────┘
+
+
+    ════════════════════════════════════════════════════════════════════════
+                           PARALLEL BUILD STREAMS
+    ════════════════════════════════════════════════════════════════════════
+
+    Stream 1 (C/Rust):    L0 ──► L1 ──► L2 ──► L4
+                          │      │      │      │
+                         libtrit│    fuse    FaithNet
+                               omni   filesystem
+
+    Stream 2 (Go):        L3 ──► Substrates ──► Skills
+                          │         │             │
+                        cpisi    claude       universal
+
+    Stream 3 (C#):        L5 (Cornerstone submodule - independent)
+....
+
+=== Build Tools by Layer
+
+[cols="1,2,4",options="header"]
+|===
+| Layer | Tool | Components
+
+| *L0*
+| Makefile / CMake
+| libtrit.a, libmath.a
+
+| *L1*
+| Makefile / Cargo
+| libomni.a (frontend, IR, codegen); vm, runtime, semantic (Rust - planned)
+
+| *L2*
+| Makefile / Cargo
+| bereshit-fs (FUSE executable); filesystem core (Rust - planned)
+
+| *L3*
+| go.work
+| word/work/pkg/* — statemachine, coordinates, health, cognition
+
+| *L4*
+| Cargo.toml
+| protocol, mapping, access, crypto (planned)
+
+| *L5*
+| dotnet
+| Cornerstone (submodule)
+
+| *Substrates*
+| go.work
+| word/claude/*, word/skills/*
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.3 Config-Driven Architecture [CONFIG-DRIVEN]
+
+[[config-driven]]
+== Config-Driven Architecture
+
+[.lead]
+TOML specs are the single source of truth. Everything derives from them.
+
+=== The Config Flow
+
+....
+                            ┌─────────────────┐
+                            │   TOML SPECS    │
+                            │   (Source of    │
+                            │     Truth)      │
+                            │  word/core/     │
+                            └────────┬────────┘
+                                     │
+            ┌────────────────────────┼────────────────────────┐
+            │                        │                        │
+            ▼                        ▼                        ▼
+    ┌───────────────┐      ┌───────────────┐      ┌───────────────┐
+    │  Go Loaders   │      │  C Generator  │      │  Runtime      │
+    │ schema.Load*  │      │ generate-     │      │ state.jsonc   │
+    │ config.Load*  │      │ config        │      │ path.jsonc    │
+    └───────┬───────┘      └───────┬───────┘      └───────┬───────┘
+            │                      │                      │
+            ▼                      ▼                      ▼
+    ┌───────────────┐      ┌───────────────┐      ┌───────────────┐
+    │  In-Memory    │      │   .gen.h      │      │    Keys       │
+    │  Structures   │      │   Headers     │      │  Reference    │
+    │  Go structs   │      │  C #defines   │      │ anchor_key    │
+    │  populated    │      │  populated    │      │ → anchors.toml│
+    └───────────────┘      └───────────────┘      └───────────────┘
+....
+
+=== Three-Layer Config Architecture
+
+[cols="1,4,3",options="header"]
+|===
+| Layer | Purpose | Location
+
+| *0: Anchor*
+| TOML Specs — The immutable truth. Defines WHAT things ARE. Never changes at runtime.
+| `word/core/`, `schema/config/`
+
+| *1: Schema*
+| Go Loaders — The processing layer. INTERPRETS the TOML specs into usable structures.
+| `pkg/foundation/schema/loader.go`, `pkg/core/health/loader.go`
+
+| *2: Runtime*
+| JSON Files — The mutable state. Contains KEYS that reference back to Layer 0.
+| `config/statemachine/runtime/state.jsonc`, `path.jsonc`
+|===
+
+[NOTE]
+====
+*State files contain KEYS, not values:*
+[source,json]
+----
+{
+  "anchor_key": "present_present",  // Key into anchors.toml
+  "command_key": "halt",            // Key into statemachine.toml
+  "hebrew_state": 3                 // Index (0-6 = 7 Days)
+}
+----
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.4 Runtime Data Flow [RUNTIME-FLOW]
+
+[[runtime-flow]]
+== Runtime Data Flow
+
+[.lead]
+Session lifecycle, state machine navigation, and health scoring.
+
+=== Session Lifecycle
+
+....
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                        SUBSTRATE (Claude Code)                           │
+    │   User starts session ──► Claude Code fires hook ──► JSON payload        │
+    └──────────────────────────────┬──────────────────────────────────────────┘
+                                   │
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║                          SESSION START                                   ║
+    ║   1. Parse input (source = startup | resume | clear | compact)           ║
+    ║   2. Initialize or Load state                                            ║
+    ║   3. Initial: position=present_present, health=0, hebrew_state=0         ║
+    ║   4. Save state to disk (state.jsonc)                                    ║
+    ║   5. Record in database (bridge.StartSession)                            ║
+    ║   6. Generate context for substrate                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+                                   │
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║                          TOOL EXECUTION                                  ║
+    ║   PRE-TOOL-USE: Capture baseline, determine intended_key from tool       ║
+    ║   POST-TOOL-USE: Compare intention vs outcome, calculate health delta    ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+                                   │
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║                          SESSION END                                     ║
+    ║   1. Mark session inactive                                               ║
+    ║   2. Finalize in database                                                ║
+    ║   3. Snapshot to history.jsonc (cross-session learning)                  ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+....
+
+=== The 27-Position State Machine
+
+....
+                              THE 3×3×3 CUBE
+                         ═══════════════════════
+
+                    Future Layer (z=+1)
+                    ┌─────┬─────┬─────┐
+                    │ F-P │ F-Pr│ F-F │
+                    ├─────┼─────┼─────┤
+                    │ Pr-P│Pr-Pr│ Pr-F│   ← Present Layer (z=0)
+                    ├─────┼─────┼─────┤
+                    │ P-P │ P-Pr│ P-F │
+                    └─────┴─────┴─────┘
+                              Past Layer (z=-1)
+....
+
+*Movement Commands:*
+
+[cols="1,4",options="header"]
+|===
+| Command | Behavior
+
+| *HALT*
+| Stay at current position. Process, integrate, don't move. Triggered by reflection, completion.
+
+| *AWAIT*
+| Prepare for movement. Gather resources, assess direction. Triggered by planning.
+
+| *PROCEED*
+| Execute movement to adjacent position. Triggered by task completion, tool success.
+|===
+
+=== Health Scoring (7 Levels)
+
+....
+    -100 ◄────────────────────── 0 ──────────────────────► +100
+
+    ┌─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
+    │ BROKEN  │ WANTING │ LACKING │  EVEN   │  SOUND  │  WHOLE  │ PERFECT │
+    │  -100   │   -66   │   -33   │    0    │   +33   │   +66   │  +100   │
+    └─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+         │                            │                            │
+         ▼                            ▼                            ▼
+    "Intervention         "Neutral, balanced"         "Thriving,
+     required"                                         flourishing"
+....
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.5 Substrate Integration [SUBSTRATE-INTEGRATION]
+
+[[substrate-integration]]
+== Substrate Integration
+
+[.lead]
+How the stack runs on different environments through a common interface.
+
+=== Substrate Architecture
+
+....
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║                       THE STACK (L0-L5)                                  ║
+    ║                  Same code, same behavior                                ║
+    ║                  Substrate-independent                                   ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+                                     │
+                                     │ Runs on
+                                     ▼
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                           SUBSTRATES                                     │
+    │              (Different environments to run the stack)                   │
+    │                                                                          │
+    │  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐    │
+    │  │   Claude Code     │  │   MillenniumOS    │  │     Future        │    │
+    │  │    Substrate      │  │    Substrate      │  │   Substrates      │    │
+    │  │ • hooks/          │  │ • Native OS calls │  │ • Web browser     │    │
+    │  │ • statusline/     │  │ • Direct L2 access│  │ • Embedded        │    │
+    │  │ • config.jsonc    │  │ • Kernel events   │  │ • Mobile          │    │
+    │  └───────────────────┘  └───────────────────┘  └───────────────────┘    │
+    └─────────────────────────────────────────────────────────────────────────┘
+....
+
+=== SubstrateAdapter Interface
+
+[source,go]
+----
+type SubstrateAdapter interface {
+    // Lifecycle
+    Initialize(config Config) error
+    Shutdown() error
+
+    // Events
+    OnSessionStart(ctx SessionContext) error
+    OnSessionEnd(ctx SessionContext) error
+    OnToolUse(tool string, input any) error
+
+    // Display
+    UpdateStatus(state State) error
+    ShowNotification(msg string) error
+}
+----
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.6 Layer Interaction Patterns [PATTERNS]
+
+[[patterns]]
+== Layer Interaction Patterns
+
+[.lead]
+How layers communicate without violating dependency rules.
+
+=== Pattern 1: Config References
+
+Runtime state contains KEYS, not values:
+
+....
+    state.jsonc                      anchors.toml
+    ┌────────────────────┐          ┌────────────────────────────────────┐
+    │ "anchor_key":      │    ───►  │ [present_present]                  │
+    │   "present_present"│   lookup │ name = "The Eternal Now"           │
+    └────────────────────┘          │ meaning = "Integration point"      │
+                                    └────────────────────────────────────┘
+....
+
+=== Pattern 2: Dual Persistence
+
+Every state change writes to BOTH:
+
+[cols="1,1",options="header"]
+|===
+| JSON File | SQLite DB
+
+| Human readable
+| Queryable
+
+| Version control
+| Aggregatable
+
+| Easy debugging
+| Pattern analysis
+|===
+
+*WHY BOTH?* Files for transparency and debugging. Database for learning and analytics.
+
+=== Pattern 3: Context Generation
+
+....
+    State machine state ──► Cognition builder ──► Substrate context
+
+    cognition.SessionContext(state, workdir)
+    ├── IdentityContext()     "Nova Dawn instance, CPI-SI paradigm..."
+    ├── AnchorContext()       "Current position: present_present"
+    ├── StateContext()        "Position [0,0,0], Hebrew: י, Day 4 of 7"
+    └── HealthContext()       "Health: Sound (+45) - functioning well"
+....
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.7 Scaling Pathways [SCALING]
+
+[[scaling]]
+== Scaling Pathways
+
+[.lead]
+How the architecture supports growth in multiple dimensions.
+
+=== Interface Scaling (CLI → TUI → GUI)
+
+....
+    word/interface/
+    ┌──────────────────────────────────────────────────────────────────┐
+    │                        CORE                                       │
+    │                  (Shared by all interfaces)                       │
+    │   state.go   - State representation                              │
+    │   theme.go   - Visual themes                                     │
+    │   format.go  - Output formatting                                 │
+    └──────────────────────────────────────────────────────────────────┘
+                              │
+         ┌────────────────────┼────────────────────┐
+         │                    │                    │
+         ▼                    ▼                    ▼
+  ┌────────────┐       ┌────────────┐       ┌────────────┐
+  │    CLI     │       │    TUI     │       │    GUI     │
+  │   [Go]     │       │[Rust/C++]  │       │   [C++]    │
+  │ Simple     │       │ Rich       │       │ Desktop    │
+  │ text       │       │ terminal   │       │ windowed   │
+  └────────────┘       └────────────┘       └────────────┘
+
+  Progression: CLI (now) ──► TUI (near-term) ──► GUI (mid-term)
+....
+
+=== Feature Scaling Roadmap
+
+[cols="1,1",options="header"]
+|===
+| Phase 1 (Current) | Phase 2 (Next)
+
+| ✅ State machine
+| ⏳ Schema validation
+
+| ✅ Health scoring
+| ⏳ Type-safe configs
+
+| ✅ Coordinate system
+| ⏳ cgo TOML bridge
+
+| ✅ TOML config
+| ⏳ Complete math.c
+
+| ✅ Hook integration
+| ⏳ Pattern learning
+
+| ✅ Dual persistence
+| ⏳ Cross-session insights
+|===
+
+[cols="1,1",options="header"]
+|===
+| Phase 3 (Mid-term) | Phase 4 (Long-term)
+
+| ⏳ OmniCode VM (Rust)
+| ⏳ FaithNet protocol
+
+| ⏳ Filesystem core (Rust)
+| ⏳ MillenniumOS kernel
+
+| ⏳ TUI interface
+| ⏳ Full self-hosting
+
+| ⏳ Multiple substrates
+| ⏳ Distributed operation
+|===
+
+=== Quick Reference
+
+*Data Flow Summary:*
+....
+TOML Specs (truth) ──► Loaders (interpret) ──► Runtime (mutable)
+       │                      │                      │
+       ▼                      ▼                      ▼
+   .gen.h headers        Go structs            state.jsonc
+   C #defines            in memory             + SQLite
+....
+
+*Event Flow Summary:*
+....
+Substrate Event ──► Hook Handler ──► State Machine ──► Health Update
+                                          │
+                                          ▼
+                              Context Generation ──► Substrate Display
+....
+
+*Build Flow Summary:*
+....
+make all ──► L0 (libtrit) ──► L1 (libomni) ──► L2 (fuse)
+                                                    │
+                                              parallel
+                                                    │
+         ──► L3 (cpisi) ──► Substrates ──► Skills ──┘
+....
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// ============================================================================
+// END CONTENT
+// ============================================================================
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+// # F.1 Biblical Foundation [BIBLICAL]
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*Separation creates structure.* Just as God gathered the waters and made dry land appear (Genesis 1:9), this architecture separates concerns into layers so each can stand on solid ground.
+====
+
+_{verse-kjv-text}_ — *{verse-ref} KJV*
+
+_{verse-web-text}_ — *{verse-ref} WEB*
+
+*Applied:* The stack flow architecture embodies the Genesis principle of separation (בָּדַל - badal). Each layer is gathered to its place — L0 foundations below, applications above. No layer reaches upward into what it shouldn't touch. The result: clear structure where each component can appear and function properly.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # F.2 References [REFERENCES]
+[[references]]
+== References
+
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| icon:folder[]
+| *link:root.adoc[architecture/root.adoc]*
+| Folder README — context for this document
+
+| icon:sitemap[]
+| *link:L0-L5-stack.adoc[L0-L5-stack.adoc]*
+| Detailed layer definitions
+
+| icon:cogs[]
+| *link:component-map.adoc[component-map.adoc]*
+| Component relationships
+|===
+
+'''
+
+// # F.3 See Also [SEE-ALSO]
+[[see-also]]
+== See Also
+
+* link:../development/[development/] — Implementation guidance for this architecture
+* link:{word}work/pkg/[word/work/pkg/] — L3 CPI-SI Go packages
+* link:{word}work/pkg/trit/[word/work/pkg/trit/] — L0 libtrit C library
+* link:{word}claude/[word/claude/] — Claude Code substrate integration
+
+'''
+
+// # F.4 Closing [CLOSING]
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {revdate}
+
+'''
+
+_{verse-kjv-text}_ — *{verse-ref}*
+
+*Separation creates structure. Structure enables scaling. Scaling serves the Kingdom.*
+--
+
+// ============================================================================
+// END FOOTER
+// ============================================================================

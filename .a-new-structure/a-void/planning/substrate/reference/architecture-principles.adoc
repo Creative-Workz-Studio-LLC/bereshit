@@ -1,0 +1,519 @@
+////
+/// @file architecture-principles.adoc
+/// @omni document --adoc
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// OMNICODE PRAGMA [PRAGMA]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// @legend
+///   :req  REQUIRED   — must exist, validation fails without
+///   :inh  INHERITED  — from template, override allowed
+///   :ins  INSTANCE   — file-specific, unique values
+/// @endlegend
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.1 CORE — Identity [CORE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  key        = B-void-planning-substrate-reference-architecture-principles
+/// @omni:req  from       = bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+/// @omni:req  at         = document
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.2 FAMILY — Classification [FAMILY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:inh  type       = documentation
+/// @omni:inh  subtype    = reference
+/// @omni:inh  role       = permanent
+/// @omni:inh  structure  = 5-block
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.3 INSTANCE — File Details [INSTANCE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  component  = planning
+/// @omni:ins  layer      = a-void/planning/substrate/reference
+/// @omni:ins  includes   = none
+/// @omni:ins  provides   = [ARCHITECTURE_PRINCIPLES, DEV_PROD_WORKFLOW]
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.4 ARCHITECTURE — Scaling Context [ARCH]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  layers     = [dev, prod, ops]
+/// @omni:ins  scale      = standing principles
+/// @omni:ins  pattern    = DEV -> PROD -> OPS workflow
+/// @omni:ins  anchor     = genesis_1_1 -> order_enables_excellence
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.5 SUMMARY — Human Identity [SUMMARY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  title      = Architecture Principles
+/// @omni:req  brief      = Standing principles for substrate infrastructure development
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// END PRAGMA [END]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// PURPOSE: Standing reference for architecture principles (always relevant)
+/// STRUCTURE: METADATA → HEADER → CONTEXT → CONTENT → FOOTER
+////
+
+// ============================================================================
+// METADATA
+// ============================================================================
+
+// # M.1 Core Identity [IDENTITY]
+//
+//	Purpose:   What IS this document?
+//	Structure: key | title | subtitle | type | doctype | lang
+//	Elements:  document-specific key, descriptive title, technical type
+//
+:key: B-void-planning-substrate-reference-architecture-principles
+:title: Architecture Principles
+:subtitle: Standing Reference for Substrate Infrastructure Development
+:type: Reference
+:doctype: article
+:lang: en
+
+// # M.2 Lifecycle State [STATE]
+//
+//	Purpose:   Lifecycle tracking
+//	Structure: status | version | revnumber | created | revdate | revremark
+//	Elements:  living versioning (a-01.00), meaningful revremarks
+//
+:status: Active
+:version: b-01.00
+:revnumber: {version}
+:created: 2025-12-21
+:revdate: 2026-02-01
+:revremark: Migrated to AsciiDoc with substrate naming
+
+// # M.3 Attribution [ATTRIBUTION]
+//
+//	Purpose:   Who created and owns this?
+//	Structure: authors | author | author_2 | email | email_2 | organization | copyright
+//	Elements:  roles in parentheses, full contact info
+//
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Author)
+:author: Seanje Lenox-Wise
+:author_2: Nova Dawn
+:email: seanje.lenox@creativeworkzstudio.com
+:email_2: nova@creativeworkzstudio.com
+:organization: CreativeWorkzStudio LLC
+:copyright: © 2025-2026 CreativeWorkzStudio LLC. All rights reserved.
+
+// # M.4 Location [LOCATION]
+//
+//	Purpose:   Where does this document live?
+//	Structure: path (folder path, not file path)
+//	Elements:  relative from bereshit root
+//
+:path: /bereshit/a-void/planning/substrate/reference/
+
+// # M.5 Derivation [DERIVATION]
+//
+//	Purpose:   What template does this come from?
+//	Structure: derives_from (template path)
+//	Elements:  base template for reference documents
+//
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+
+// # M.6 Classification [CLASSIFICATION]
+//
+//	Purpose:   How is this categorized?
+//	Structure: tags | keywords
+//	Elements:  document-relevant terms, searchable keywords
+//
+:tags: reference, principles, architecture, permanent
+:keywords: dev workflow, thin callers, block patterns, state machine, three questions
+
+// # M.7 Intent [INTENT]
+//
+//	Purpose:   Why does this document exist?
+//	Structure: purpose | description
+//	Elements:  document-specific purpose, what it CONTAINS
+//
+:purpose: Define standing architecture principles for all substrate development
+:description: Permanent reference document defining the development workflow, code patterns, and guiding principles for substrate infrastructure work.
+
+// # M.8 Grounding [GROUNDING]
+//
+//	Purpose:   Biblical anchor for this document's domain
+//	Structure: verse-ref | verse-kjv-text | verse-kjv-path | verse-web-text | verse-web-path | biblical_foundation
+//	Elements:  verse relevant to document purpose, both KJV and WEB
+//
+:verse-ref: 1 Corinthians 14:40
+:verse-kjv-text: Let all things be done decently and in order.
+:verse-kjv-path: {kjv}1_Corinthians/Chapter_14/Verse_40.txt
+:verse-web-text: Let all things be done decently and in order.
+:verse-web-path: {scripture}WEB/1_Corinthians/Chapter_14/Verse_40.txt
+:biblical_foundation: {verse-kjv-text}
+
+// # M.9 Strictness [STRICTNESS]
+//
+//	Purpose:   How strictly should this be interpreted?
+//	Structure: strictness (G=guidelines, S=strict, R=required)
+//	Elements:  S for standing principles (strict adherence)
+//
+:strictness: S
+
+// # M.10 AsciiDoc Settings [SETTINGS]
+//
+//	Purpose:   Rendering configuration
+//	Structure: toc | toclevels | sectnums | icons | source-highlighter | experimental | pdf-theme | media
+//	Elements:  standard settings for system documentation
+//
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+:pdf-theme: default
+:media: prepress
+:linkcss:
+:stylesdir: styles
+:stylesheet: cws-asciidoctor.css
+
+// # M.11 Navigation [NAVIGATION]
+//
+//	Purpose:   Path attributes for linking (DRY principle)
+//	Structure: root | word | void | tov | scripture | kjv | core | [folder-specific]
+//	Elements:  adjust :root: depth based on folder location
+//
+:root: ../../../../
+:word: {root}b-word/
+:void: {root}a-void/
+:tov: {root}c-tov/
+:work: {word}work/
+:scripture: {word}scripture/
+:kjv: {scripture}KJV/
+:core: {word}core/
+
+// # M.12 Content Attributes [CONTENT-ATTRS]
+//
+//	Purpose:   Reusable narrative/data elements
+//	Structure: document-specific attributes used in content
+//	Elements:  counts, distinctions, key concepts for this document
+//
+:the-principle: Structure enables excellence
+
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+// # H.1 Title [TITLE]
+//
+//	Purpose:   AsciiDoc document header
+//	Structure: = Title: Subtitle | authors | version, date
+//	Elements:  document name, what it contains
+//
+
+[[_top]]
+= {title}: {subtitle}
+{authors}
+v{version}, {revdate}
+
+// # H.2 Epigraph [EPIGRAPH]
+//
+//	Purpose:   Scripture grounding — why this document matters
+//	Structure: quote block with KJV link
+//	Elements:  verse relevant to document domain
+//
+
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+____
+
+// # H.3 Lead [LEAD]
+//
+//	Purpose:   The hook — key principle
+//	Structure: centered lead paragraph
+//	Elements:  {the-principle} attribute
+//
+
+[.lead.text-center]
+*{the-principle}*
+
+'''
+
+// # H.4 Navigation [NAVIGATION]
+//
+//	Purpose:   Quick links to major sections
+//	Structure: bullet-separated anchor links
+//	Elements:  principle sections
+//
+
+*<<anchor-chain,Anchor Chain>>* • *<<dev-prod-workflow,DEV->PROD Workflow>>* • *<<thin-callers,Thin Callers>>* • *<<block-patterns,Block Patterns>>* • *<<three-questions,Three Questions>>*
+
+'''
+
+// ============================================================================
+// END HEADER
+// ============================================================================
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+// # T.1 Anchor Chain [ANCHOR-CHAIN]
+//
+//	Purpose:   How principles trace to Genesis 1:1
+//	Structure: == Anchor Chain | tree diagram
+//	Elements:  foundation → principles connection
+//
+
+[[anchor-chain]]
+== Anchor Chain
+
+[source,text]
+----
+Genesis 1:1 (God created with order)
+    |
+Kingdom Technology (excellence honors God)
+    |
+Architecture Principles (structure enables excellence)
+----
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// # T.2 Development -> Production Workflow [DEV-PROD-WORKFLOW]
+//
+//	Purpose:   Three-stage development process
+//	Structure: == DEV->PROD Workflow | stage table | command
+//	Elements:  development, production, runtime stages
+//
+
+[[dev-prod-workflow]]
+== Development -> Production Workflow
+
+[cols="1,3,4",options="header"]
+|===
+| Stage | Location | Purpose
+
+| *Development*
+| `claude-global/`
+| Edit code here
+
+| *Production*
+| `bereshit/word/claude/`
+| Symlinks point here
+
+| *Runtime*
+| `~/.claude/`
+| Symlinks to production
+|===
+
+*Command:* `make deploy` (builds -> syncs -> rebuilds)
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// # T.3 Thin Callers, Fat Packages [THIN-CALLERS]
+//
+//	Purpose:   Code organization principle
+//	Structure: == Thin Callers | component table | principle
+//	Elements:  entry point vs package roles
+//
+
+[[thin-callers]]
+== Thin Callers, Fat Packages
+
+[cols="2,^1,4",options="header"]
+|===
+| Component | Lines | Role
+
+| `main.go` / hooks
+| ~50
+| Caller - orchestrates
+
+| `pkg/*/`
+| Many
+| Worker - does the work
+|===
+
+*Principle:* Entry points CALL, packages WORK.
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// # T.4 Block Patterns [BLOCK-PATTERNS]
+//
+//	Purpose:   File structure standards
+//	Structure: == Block Patterns | pattern table
+//	Elements:  3-block, 4-block, 5-block uses
+//
+
+[[block-patterns]]
+== Block Patterns
+
+[cols="2,3,3",options="header"]
+|===
+| Type | Blocks | Use
+
+| *3-Block*
+| METADATA -> CONTENT -> CLOSING
+| Data files
+
+| *4-Block*
+| METADATA -> SETUP -> BODY -> CLOSING
+| Code
+
+| *5-Block*
+| METADATA -> HEADER -> CONTEXT -> CONTENT -> FOOTER
+| Documentation
+|===
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// # T.5 Build Infrastructure [BUILD-INFRASTRUCTURE]
+//
+//	Purpose:   Build system standards
+//	Structure: == Build Infrastructure | target table
+//	Elements:  Makefile targets and purposes
+//
+
+[[build-infrastructure]]
+== Build Infrastructure
+
+*Always use Makefiles.* Never ad-hoc `go build`.
+
+[cols="2,4",options="header"]
+|===
+| Target | Purpose
+
+| `make build`
+| Build all modules
+
+| `make deploy`
+| Sync + rebuild in production
+
+| `make test`
+| Run all tests
+
+| `make clean`
+| Remove artifacts
+|===
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// # T.6 State Machine Integration [STATE-MACHINE-INTEGRATION]
+//
+//	Purpose:   CPI-SI state machine architecture
+//	Structure: == State Machine Integration | layer table
+//	Elements:  schema, runtime, display, cognition layers
+//
+
+[[state-machine-integration]]
+== State Machine Integration
+
+[cols="2,4",options="header"]
+|===
+| Layer | What
+
+| *Schema*
+| `pkg/cpisi/schema/config/` - vocabulary (static)
+
+| *Runtime*
+| `config/statemachine/runtime/` - state (dynamic)
+
+| *Display*
+| Statusline reads runtime, emits OSC to WezTerm
+
+| *Cognition*
+| Hooks inject context via `pkg/cognition/`
+|===
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// # T.7 The Three Questions [THREE-QUESTIONS]
+//
+//	Purpose:   Decision-making framework
+//	Structure: == The Three Questions | numbered list | outcome
+//	Elements:  honor God, serve others, eternal value
+//
+
+[[three-questions]]
+== The Three Questions
+
+Before any work:
+
+1. *Does this honor God?*
+2. *Does this serve others?*
+3. *Does this have eternal value?*
+
+*Yes to all three = proceed.*
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// ============================================================================
+// END CONTENT
+// ============================================================================
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+// # F.1 See Also [SEE-ALSO]
+//
+//	Purpose:   Quick links to related documents
+//	Structure: == See Also | bullet list of links
+//	Elements:  related reference files
+//
+
+[[see-also]]
+== See Also
+
+* link:plan-template.adoc[Plan Template] — Template for creating new plans
+* link:../index.adoc[Plans Index] — Master index for all plans
+
+'''
+
+// # F.2 Closing [CLOSING]
+//
+//	Purpose:   Document footer — metadata, closing verse, tagline
+//	Structure: centered block | back to top | key info | closing verse | tagline
+//	Elements:  key, type, version, status, closing scripture
+//
+
+[.text-center]
+--
+*<<_top,icon:arrow-up[] Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {revdate}
+
+'''
+
+_{verse-kjv-text}_ — *{verse-ref}*
+
+*{the-principle}*
+--
+
+// ============================================================================
+// END FOOTER
+// ============================================================================

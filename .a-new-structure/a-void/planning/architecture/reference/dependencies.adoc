@@ -1,0 +1,918 @@
+////
+/// @file dependencies.adoc
+/// @omni document --adoc
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// OMNICODE PRAGMA [PRAGMA]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// @legend
+///   :req  REQUIRED   — must exist, validation fails without
+///   :inh  INHERITED  — from template, override allowed
+///   :ins  INSTANCE   — file-specific, unique values
+/// @endlegend
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.1 CORE — Identity [CORE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  key        = B-void-planning-architecture-dependencies
+/// @omni:req  from       = bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+/// @omni:req  at         = document
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.2 FAMILY — Classification [FAMILY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:inh  type       = documentation
+/// @omni:inh  subtype    = analysis
+/// @omni:inh  role       = architecture
+/// @omni:inh  structure  = 5-block
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.3 INSTANCE — File Details [INSTANCE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  component  = planning
+/// @omni:ins  layer      = void/planning/architecture/reference
+/// @omni:ins  includes   = none
+/// @omni:ins  provides   = [DEPENDENCY_ANALYSIS, SELF_HOSTING_ROADMAP]
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.4 ARCHITECTURE — Scaling Context [ARCH]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  layers     = [0:universal, 1:omnicode, 2:platform, 3:cpisi,
+///                          4:faithnet, 5:applications]
+/// @omni:ins  scale      = 3^n [1, 3, 9, 27, 81, 243]
+/// @omni:ins  pattern    = Dependency reduction toward self-hosting at each layer
+/// @omni:ins  anchor     = genesis_1_1 -> self-sufficiency -> Kingdom independence
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.5 SUMMARY — Human Identity [SUMMARY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  title      = Bereshit Dependencies & Self-Hosting Analysis
+/// @omni:req  brief      = Catalog of all dependencies with self-hosting roadmap
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// END PRAGMA [END]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// PURPOSE: Dependency analysis — what we use, what we can replace, roadmap to self-hosting
+/// STRUCTURE: METADATA → HEADER → CONTEXT → CONTENT → FOOTER
+////
+
+// ============================================================================
+// METADATA
+// ============================================================================
+
+// # M.1 Core Identity [IDENTITY]
+// Document identification and classification
+:key: B-void-planning-architecture-dependencies
+:title: Bereshit Dependencies & Self-Hosting Analysis
+:subtitle: Catalog of all dependencies with self-hosting roadmap
+:type: Analysis
+:doctype: article
+:lang: en
+
+// # M.2 Lifecycle State [STATE]
+// Version tracking and revision history
+:status: Active
+:version: a-01.00
+:revnumber: {version}
+:created: 2026-02-01
+:revdate: 2026-02-01
+:revremark: Initial dependency analysis from void migration
+
+// # M.3 Attribution [ATTRIBUTION]
+// Authorship and ownership
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Seanje Lenox-Wise
+:author_2: Nova Dawn
+:email: seanje.lenox@creativeworkzstudio.com
+:email_2: nova@creativeworkzstudio.com
+:organization: CreativeWorkzStudio LLC
+:copyright: © 2026 CreativeWorkzStudio LLC. All rights reserved.
+
+// # M.4 Location [LOCATION]
+// Filesystem path relative to bereshit root
+:path: /bereshit/a-void/planning/architecture/reference/
+
+// # M.5 Derivation [DERIVATION]
+// Template lineage for cascade updates
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+
+// # M.6 Classification [CLASSIFICATION]
+// Discovery tags and search keywords
+:tags: dependencies, self-hosting, go, c, external-libs, reduction
+:keywords: dependency analysis, self-hosting, BurntSushi, SQLite, FUSE, libtrit, libomni
+
+// # M.7 Intent [INTENT]
+// Purpose and scope of this document
+:purpose: Catalogs all dependencies in the Bereshit codebase to support self-hosting goals
+:description: Complete analysis of Go and C dependencies — what we use, what we can replace, and the roadmap to full self-hosting through libtrit and libomni.
+
+// # M.8 Grounding [GROUNDING]
+// Biblical foundation — God builds the house
+:verse-ref: Psalm 127:1
+:verse-kjv-text: Except the LORD build the house, they labour in vain that build it
+:verse-kjv-path: {kjv}Psalms/Chapter_127/Verse_1.txt
+:verse-web-text: Unless Yahweh builds the house, they who build it labor in vain
+:verse-web-path: {scripture}WEB/Psalms/Chapter_127/Verse_1.txt
+:biblical_foundation: {verse-kjv-text}
+
+// # M.9 Strictness [STRICTNESS]
+// G = Guided interpretation allowed
+:strictness: G
+
+// # M.10 AsciiDoc Settings [SETTINGS]
+// Rendering and display configuration
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+:pdf-theme: default
+:media: prepress
+:linkcss:
+:stylesdir: styles
+:stylesheet: cws-asciidoctor.css
+
+// # M.11 Navigation [NAVIGATION]
+// Path attributes for DRY linking
+:root: ../../../../
+:word: {root}b-word/
+:void: {root}a-void/
+:tov: {root}c-tov/
+:core: {word}core/
+:work: {word}work/
+:scripture: {word}scripture/
+:kjv: {scripture}KJV/
+
+// # M.12 Content Attributes [CONTENT-ATTRS]
+// Document-specific values used in content
+:section-count: 5
+:go-external-deps: 3
+:c-external-deps: 2
+:self-hosting-readiness: High
+:the-purpose: Dependency reduction roadmap toward full self-hosting
+
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+// # H.1 Title [TITLE]
+[[_top]]
+= {title}: {subtitle}
+{authors}
+v{version}, {revdate}
+
+// # H.2 Epigraph [EPIGRAPH]
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+
+_{verse-web-text}_ — link:{verse-web-path}[WEB]
+____
+
+// # H.3 Lead [LEAD]
+[.lead.text-center]
+*{the-purpose}*
+
+// # H.4 Abstract [ABSTRACT]
+[abstract]
+--
+icon:cube[] *Go:* {go-external-deps} external dependencies (TOML, SQLite, TUI)
+
+icon:cube[] *C:* {c-external-deps} external libraries (FUSE3, ncurses)
+
+icon:check-circle[] *Self-Hosting Readiness:* {self-hosting-readiness} — most external deps can be replaced
+
+icon:road[] *Strategy:* Tier 1 (achievable now) → Tier 2 (medium term) → Tier 3 (full self-host)
+--
+
+// # H.5 Status [STATUS]
+.Document Status
+[cols="^1,^1,^1,^1",options="header,autowidth",frame="topbot"]
+|===
+| Status | Version | Sections | Strictness
+
+| {status}
+| {version}
+| {section-count}
+| {strictness}
+|===
+
+'''
+
+// # H.6 Navigation [NAVIGATION]
+*<<overview,Overview>>* • *<<go-dependencies,Go Deps>>* • *<<c-dependencies,C Deps>>* • *<<self-hosting,Self-Hosting>>* • *<<code-gaps,Code Gaps>>* • *<<reduction-plan,Reduction Plan>>*
+
+'''
+
+// ============================================================================
+// END HEADER
+// ============================================================================
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+// # C.1 Overview [OVERVIEW]
+[[overview]]
+== Overview
+
+[.lead]
+This document catalogs all dependencies in the Bereshit codebase to support self-hosting goals. The codebase demonstrates excellent dependency discipline with minimal external reliance.
+
+[IMPORTANT]
+====
+*Self-Hosting Goal:* Reduce external dependencies to achieve Kingdom independence — build on our own foundations, not borrowed infrastructure.
+====
+
+// # C.2 Scope [SCOPE]
+=== Scope
+
+****
+[horizontal]
+icon:check-circle[] *In Scope*:: Go dependencies, C dependencies, self-hosting requirements, code gaps, reduction roadmap
+icon:times-circle[] *Out of Scope*:: Detailed implementation of replacements (see code), runtime configuration
+****
+
+// # C.3 Key Terms [KEY_TERMS]
+=== Key Terms
+
+.icon:book[] Click to expand terminology reference
+[%collapsible]
+======
+[horizontal]
+icon:tag[] *External Dependency*:: Code not written/maintained by CreativeWorkzStudio
+icon:tag[] *Self-Hosting*:: Running entirely on code we control
+icon:tag[] *libtrit*:: C library with 30+ headers for balanced ternary, coordinates, scripture
+icon:tag[] *libomni*:: C library with 20+ headers for OmniCode lexer, parser, VM, CPI-SI
+icon:tag[] *cgo*:: Go mechanism for calling C code — bridge between Go and C implementations
+======
+
+// # C.4 Contents [CONTENTS]
+=== What This Document Provides
+
+[cols="^1,3,4",options="header,autowidth",frame="topbot"]
+|===
+| | Section | What You'll Learn
+
+| icon:cube[]
+| *Go Dependencies*
+| Standard library usage + 3 external packages
+
+| icon:cube[]
+| *C Dependencies*
+| Standard library + 2 external libraries
+
+| icon:check[]
+| *Self-Hosting Requirements*
+| What we have, what needs replacement, 3-tier roadmap
+
+| icon:warning[]
+| *Code Gaps*
+| Critical gaps, libtrit gaps, test coverage gaps
+
+| icon:road[]
+| *Dependency Reduction Plan*
+| Immediate, short-term, and long-term actions
+|===
+
+// # C.5 Return [RETURN]
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// ============================================================================
+// END CONTEXT
+// ============================================================================
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+// # T.1 Go Dependencies [GO-DEPENDENCIES]
+
+[[go-dependencies]]
+== Go Dependencies
+
+[.lead]
+The codebase relies heavily on Go's standard library, which is excellent for self-hosting.
+
+=== Standard Library (Used Extensively)
+
+[cols="2,1,4",options="header,autowidth"]
+|===
+| Package | Files | Purpose
+
+| `fmt` | 170 | Formatting and output
+| `os` | 144 | File operations, environment
+| `time` | 97 | Temporal operations
+| `path/filepath` | 87 | Path manipulation
+| `strings` | 87 | String operations
+| `encoding/json` | 68 | JSON marshaling
+| `flag` | 17 | Command-line parsing
+| `context` | 18 | Context management
+| `testing` | 22 | Test framework
+| `regexp` | 12 | Pattern matching
+| `sort` | 14 | Sorting operations
+| `bufio` | - | Buffered I/O
+| `sync` | - | Synchronization
+| `math` | - | Mathematics
+| `io` | - | I/O primitives
+| `runtime` | - | Runtime info
+| `hash/fnv` | - | FNV hashing
+| `embed` | - | Embedded files
+| `syscall` | - | System calls
+| `unicode` | - | Unicode support
+| `database/sql` | - | SQL interface
+| `text/template` | - | Text templating
+|===
+
+=== External Dependencies
+
+[cols="3,1,1,3,2",options="header,autowidth"]
+|===
+| Package | Version | Files | Purpose | Self-Host Priority
+
+| `github.com/BurntSushi/toml`
+| v1.5.0
+| 24
+| TOML config parsing
+| icon:check[] *REPLACEABLE* — C impl exists
+
+| `github.com/mattn/go-sqlite3`
+| v1.14.24
+| 4
+| SQLite3 database
+| icon:warning[] *REQUIRED* — Standard storage
+
+| `github.com/charmbracelet/bubbles`
+| v0.18.0
+| 1
+| TUI components
+| icon:times[] *OPTIONAL* — Can remove
+
+| `github.com/charmbracelet/bubbletea`
+| v0.25.0
+| 1
+| TUI framework
+| icon:times[] *OPTIONAL* — Can remove
+
+| `github.com/charmbracelet/lipgloss`
+| v0.9.1
+| 1
+| TUI styling
+| icon:times[] *OPTIONAL* — Can remove
+|===
+
+=== Transitive Dependencies (via Charmbracelet)
+
+These 13 packages come in through the TUI framework:
+
+* `containerd/console`, `mattn/go-isatty`, `mattn/go-localereader`
+* `mattn/go-runewidth`, `lucasb-eyer/go-colorful`
+* `aymanbagabas/go-osc52`, `muesli/ansi`, `muesli/termenv`
+* `muesli/reflow`, `rivo/uniseg`, `atotto/clipboard`
+* `muesli/cancelreader`, `golang.org/x/sync`, `golang.org/x/sys`
+* `golang.org/x/term`, `golang.org/x/text`
+
+[NOTE]
+====
+*Isolation:* All contained in `word/work/cmd/cpisi/tui.go` — easily removable.
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.2 C Dependencies [C-DEPENDENCIES]
+
+[[c-dependencies]]
+== C Dependencies
+
+[.lead]
+The C codebase uses standard library plus only two external libraries.
+
+=== C Standard Library
+
+[cols="2,4",options="header,autowidth"]
+|===
+| Header | Purpose
+
+| `assert.h` | Runtime assertions
+| `ctype.h` | Character classification
+| `errno.h` | Error reporting
+| `math.h` | Mathematical functions
+| `stdarg.h` | Variable arguments
+| `stdbool.h` | Boolean type
+| `stddef.h` | Standard definitions
+| `stdint.h` | Fixed-width integers
+| `stdio.h` | Standard I/O
+| `stdlib.h` | Memory, conversion
+| `string.h` | String manipulation
+| `strings.h` | BSD string functions
+| `time.h` | Time handling
+|===
+
+=== POSIX/System Headers
+
+[cols="2,3,2",options="header,autowidth"]
+|===
+| Header | Purpose | Used By
+
+| `dirent.h` | Directory reading | omni, fuse
+| `fcntl.h` | File control | fuse
+| `signal.h` | Signal handling | omni IDE
+| `sys/stat.h` | File status | omni, fuse
+| `sys/types.h` | System types | omni
+| `unistd.h` | POSIX API | fuse, omni
+|===
+
+=== External Libraries
+
+[cols="2,2,1,3,2",options="header,autowidth"]
+|===
+| Library | Header | Files | Purpose | Self-Host Priority
+
+| *FUSE 3*
+| `fuse3/fuse.h`
+| 1
+| User-space filesystem
+| icon:warning[] *REQUIRED* for L2
+
+| *ncurses*
+| `ncurses.h`
+| 2
+| Terminal UI
+| icon:times[] *OPTIONAL* — Can replace
+|===
+
+=== Project Internal Libraries
+
+==== libtrit (30+ headers)
+
+* *Core:* `trit.h`, `config.h`, `math.h`
+* *Spatial:* `dimension.h`, `cube.h`, `hebrew.h`, `kalign.h`, `trajectory.h`
+* *Temporal:* `temporal.h`
+* *Scripture:* `verse_addr.h`, `scripture_text.h`, `scripture_path.h`, `bible_rail.h`
+* *System:* `statemachine.h`, `toml.h`
+* *Generated:* 12 `.gen.h` files
+
+==== libomni (20+ headers)
+
+* *Frontend:* lexer, parser, semantic, keywords, hebrew
+* *Backend:* IR, codegen
+* *Runtime:* VM, runtime, debug, profile, retrieval
+* *CPI-SI:* cpisi, mind, health_file
+* *IDE:* core, cli, tui, gui, panels
+* *Transpiler:* C, menu
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.3 Self-Hosting Requirements [SELF-HOSTING]
+
+[[self-hosting]]
+== Self-Hosting Requirements
+
+[.lead]
+What we already have, what needs replacement, and the roadmap to full self-hosting.
+
+=== What We Already Have
+
+[cols="3,1,4",options="header,autowidth"]
+|===
+| Component | Status | Notes
+
+| *TOML Parser (C)*
+| icon:check-circle[role="green"] COMPLETE
+| `word/work/pkg/trit/src/toml.c` — 1,200+ lines
+
+| *TOML Parser (Go)*
+| icon:refresh[] EXTERNAL
+| Uses BurntSushi/toml — can bridge to C
+
+| *JSON Parser (C)*
+| icon:check-circle[role="green"] COMPLETE
+| `engine/core/src/jsonc.c`
+
+| *Ternary Math*
+| icon:check-circle[role="green"] COMPLETE
+| `libtrit` — full implementation
+
+| *OmniCode Lexer*
+| icon:check-circle[role="green"] COMPLETE
+| `libomni` frontend
+
+| *OmniCode Parser*
+| icon:check-circle[role="green"] COMPLETE
+| `libomni` frontend
+
+| *State Machine*
+| icon:check-circle[role="green"] COMPLETE
+| Go + C implementations
+
+| *Coordinate System*
+| icon:check-circle[role="green"] COMPLETE
+| Bible-grounded coordinates
+|===
+
+=== What Needs Replacement
+
+[cols="3,2,4",options="header,autowidth"]
+|===
+| Dependency | Priority | Replacement Strategy
+
+| *BurntSushi/toml*
+| icon:arrow-up[] HIGH
+| Create Go wrapper for C `toml.c` via cgo
+
+| *go-sqlite3*
+| icon:arrow-right[] MEDIUM
+| Keep for now — standard, widely used
+
+| *Charmbracelet TUI*
+| icon:arrow-down[] LOW
+| Optional — can remove entirely
+
+| *ncurses*
+| icon:arrow-down[] LOW
+| Optional — can use raw terminal
+
+| *FUSE 3*
+| icon:times[] N/A
+| Required for L2 platform layer
+|===
+
+=== Self-Hosting Tiers
+
+==== Tier 1: Minimal External (Achievable Now)
+
+* Replace BurntSushi/toml with cgo wrapper
+* Remove Charmbracelet TUI (use CLI only)
+* Remove ncurses (use `omni_ide_cli.c`)
+
+==== Tier 2: Standard Only (Medium Term)
+
+* Keep only go-sqlite3 and FUSE3
+* Both are interfaces to OS-level standards
+
+==== Tier 3: Full Self-Host (Long Term)
+
+* Implement OmniDB (replace SQLite)
+* Implement native filesystem driver (replace FUSE)
+* Requires L2 Platform layer completion
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.4 Code Gaps [CODE-GAPS]
+
+[[code-gaps]]
+== Code Gaps
+
+[.lead]
+Known gaps in the codebase that need addressing.
+
+=== Critical Gaps (Phase 3 Features)
+
+[cols="3,4,1",options="header,autowidth"]
+|===
+| Feature | Location | Status
+
+| Config Reader Integration
+| `word/work/pkg/config/loader.go:1522`
+| icon:clock-o[] PLANNED
+
+| Schema Validation
+| `word/work/pkg/config/loader.go:1523`
+| icon:clock-o[] PLANNED
+
+| Type-safe Config Structs
+| `word/work/pkg/config/loader.go:1524`
+| icon:clock-o[] PLANNED
+
+| Config Value Tests
+| `word/work/pkg/config/loader_test.go:884`
+| icon:clock-o[] PLANNED
+|===
+
+=== C Library Gaps (libtrit)
+
+[cols="2,4,2",options="header,autowidth"]
+|===
+| Component | Gap | Priority
+
+| *math.h*
+| Implementation in math.c (Part 2+)
+| icon:arrow-up[] HIGH
+
+| *math.h*
+| Test coverage (Part 7)
+| icon:arrow-up[] HIGH
+
+| *trit.c*
+| trit_compare, trit_min, trit_max
+| icon:arrow-right[] MEDIUM
+
+| *dimension.h*
+| Compound dimension states
+| icon:arrow-right[] MEDIUM
+
+| *dimension.h*
+| Dimensional distance calculation
+| icon:arrow-right[] MEDIUM
+
+| *hebrew.h*
+| State transition history
+| icon:arrow-down[] LOW
+
+| *trajectory.h*
+| Trajectory prediction
+| icon:arrow-down[] LOW
+
+| *kalign.h*
+| History ring buffer
+| icon:arrow-down[] LOW
+
+| *cube.h*
+| Path planning, neighbor enumeration
+| icon:arrow-right[] MEDIUM
+
+| *verse_addr.h*
+| Bulk encode/decode functions
+| icon:arrow-down[] LOW
+
+| *temporal.h*
+| Temporal distance, navigation
+| icon:arrow-right[] MEDIUM
+
+| *toml.c*
+| toml_parse_float, toml_parse_array
+| icon:arrow-down[] LOW
+
+| *pack.c*
+| Batch pack operations, SIMD
+| icon:arrow-down[] LOW
+|===
+
+=== Test Coverage Gaps
+
+[cols="2,4,3",options="header,autowidth"]
+|===
+| Area | Gap | Notes
+
+| Config Loader
+| Error cases (malformed TOML)
+| Planned
+
+| Config Loader
+| Edge cases (empty, large files)
+| Planned
+
+| Coordinates
+| LoadBibleData failure handling
+| Conditional skip
+
+| Orchestration
+| Full filesystem tests
+| Environment dependent
+|===
+
+=== Reserved Infrastructure (Future Phases)
+
+[cols="3,1,4",options="header,autowidth"]
+|===
+| Location | Phase | Purpose
+
+| `loader.go:260`
+| 3
+| Typed accessors, conversion methods
+
+| `loader.go:324`
+| 3
+| Cached manifests, loaded specs registry
+
+| `loader.go:346`
+| 3+
+| Rails infrastructure
+
+| `loader.go:896`
+| 3
+| Error collection, partial load
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.5 Dependency Reduction Plan [REDUCTION-PLAN]
+
+[[reduction-plan]]
+== Dependency Reduction Plan
+
+[.lead]
+Concrete actions to reduce external dependencies and move toward self-hosting.
+
+=== Immediate Actions (Can Do Now)
+
+==== 1. Create cgo TOML Wrapper
+
+[source,go]
+----
+// word/L0-universal/foundation/toml/toml.go
+// #cgo CFLAGS: -I${SRCDIR}/../../libtrit/include
+// #cgo LDFLAGS: -L${SRCDIR}/../../libtrit -ltrit
+// #include "toml.h"
+import "C"
+
+func LoadFile(path string) (string, error) {
+    cpath := C.CString(path)
+    defer C.free(unsafe.Pointer(cpath))
+    result := C.toml_load_file(cpath)
+    // ...
+}
+----
+
+==== 2. Remove Charmbracelet TUI (if not needed)
+
+* Delete `word/work/cmd/cpisi/tui.go`
+* Update go.mod to remove dependencies
+* Use CLI-only interface
+
+==== 3. Remove ncurses (optional)
+
+* Use `omni_ide_cli.c` instead of `omni_ide_tui.c`
+* Raw terminal output sufficient for most cases
+
+=== Short-Term Actions (Next Phase)
+
+==== 1. Complete math.c Implementation
+
+* Implement functions declared in math.h
+* Add test coverage
+
+==== 2. Complete TOML Parser Features
+
+* Add `toml_parse_float`
+* Add `toml_parse_array`
+* Full TOML 1.0 compliance
+
+==== 3. Phase 3 Config System
+
+* Schema validation
+* Type-safe config structs
+
+=== Long-Term Vision (Self-Hosted Stack)
+
+....
+Current Dependencies          →    Self-Hosted Replacements
+────────────────────────────────────────────────────────────
+BurntSushi/toml (Go)         →    cgo wrapper to libtrit/toml.c
+go-sqlite3                    →    OmniDB (custom L2 database)
+Charmbracelet TUI            →    OmniCode TUI (L5 application)
+ncurses                      →    Native terminal (OmniCode)
+FUSE 3                       →    MillenniumOS native (L2)
+....
+
+=== Dependency Summary
+
+[cols="2,2,2,2",options="header,autowidth"]
+|===
+| Language | Standard Lib | External | Self-Host Ready
+
+| *Go*
+| 20+ packages
+| 3 deps
+| 85%
+
+| *C*
+| 13 headers
+| 2 libs
+| 90%
+|===
+
+=== Recommendations
+
+[cols="1,4",options="header,autowidth"]
+|===
+| Action | Dependencies
+
+| icon:check[] *Keep*
+| go-sqlite3, FUSE 3 (required infrastructure)
+
+| icon:refresh[] *Replace*
+| BurntSushi/toml (create cgo wrapper)
+
+| icon:times[] *Remove*
+| Charmbracelet TUI, ncurses (optional)
+
+| icon:wrench[] *Implement*
+| Math operations, TOML enhancements
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// ============================================================================
+// END CONTENT
+// ============================================================================
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+// # F.1 Biblical Foundation [BIBLICAL]
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*God builds the house.* Self-hosting isn't about independence from God — it's about building on proper foundations rather than borrowed infrastructure.
+====
+
+_{verse-kjv-text}_ — *{verse-ref} KJV*
+
+_{verse-web-text}_ — *{verse-ref} WEB*
+
+*Applied:* The dependency reduction roadmap reflects Psalm 127:1's wisdom. Building Kingdom Technology requires foundations we understand and control. External dependencies aren't evil, but they can become borrowed infrastructure that shapes what we can build. Self-hosting lets us build according to Kingdom principles, not library constraints.
+
+[quote, "Hebrews 3:4"]
+____
+_For every house is builded by some man; but he that built all things is God._
+____
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # F.2 References [REFERENCES]
+[[references]]
+== References
+
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| icon:folder[]
+| *link:root.adoc[architecture/root.adoc]*
+| Folder README — context for this document
+
+| icon:sitemap[]
+| *link:stack-flow.adoc[stack-flow.adoc]*
+| Complete stack architecture
+
+| icon:code[]
+| *link:{work}pkg/trit/[libtrit]*
+| C library with self-hosted TOML parser
+|===
+
+'''
+
+// # F.3 See Also [SEE-ALSO]
+[[see-also]]
+== See Also
+
+* link:{work}pkg/trit/src/toml.c[toml.c] — 1,200+ line C TOML parser
+* link:{work}pkg/trit/[libtrit/] — Foundation layer C library
+* link:{work}pkg/omni/[libomni/] — OmniCode C library
+* link:{work}pkg/config/[config/] — Go config loader
+
+'''
+
+// # F.4 Closing [CLOSING]
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {revdate}
+
+'''
+
+_{verse-kjv-text}_ — *{verse-ref}*
+
+*Build on proper foundations. Reduce borrowed infrastructure. Self-host for Kingdom independence.*
+--
+
+// ============================================================================
+// END FOOTER
+// ============================================================================

@@ -1,0 +1,960 @@
+////
+/// @file repo-reorganization.adoc
+/// @omni document --adoc
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// OMNICODE PRAGMA [PRAGMA]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// @legend
+///   :req  REQUIRED   — must exist, validation fails without
+///   :inh  INHERITED  — from template, override allowed
+///   :ins  INSTANCE   — file-specific, unique values
+/// @endlegend
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.1 CORE — Identity [CORE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  key        = B-void-planning-architecture-repo-reorganization
+/// @omni:req  from       = bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+/// @omni:req  at         = document
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.2 FAMILY — Classification [FAMILY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:inh  type       = documentation
+/// @omni:inh  subtype    = plan
+/// @omni:inh  role       = architecture
+/// @omni:inh  structure  = 5-block
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.3 INSTANCE — File Details [INSTANCE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  component  = planning
+/// @omni:ins  layer      = void/planning/architecture/design
+/// @omni:ins  includes   = none
+/// @omni:ins  provides   = [REORGANIZATION_PLAN, MIGRATION_MAP, DIRECTORY_STRUCTURE]
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.4 ARCHITECTURE — Scaling Context [ARCH]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  layers     = [0:universal, 1:omnicode, 2:platform, 3:cpisi,
+///                          4:faithnet, 5:applications]
+/// @omni:ins  scale      = 3^n [1, 3, 9, 27, 81, 243]
+/// @omni:ins  pattern    = L0-L5 integrated stack with substrate execution
+/// @omni:ins  anchor     = genesis_1_1 -> foundation -> upward derivation
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.5 SUMMARY — Human Identity [SUMMARY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  title      = Bereshit Repository Reorganization Plan
+/// @omni:req  brief      = Reorganization around integrated L0-L5 layer stack
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// END PRAGMA [END]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// PURPOSE: Reorganization plan — restructure repository around integrated L0-L5 stack
+/// STRUCTURE: METADATA → HEADER → CONTEXT → CONTENT → FOOTER
+////
+
+// ============================================================================
+// METADATA
+// ============================================================================
+
+// # M.1 Core Identity [IDENTITY]
+// Document identification and classification
+:key: B-void-planning-architecture-repo-reorganization
+:title: Bereshit Repository Reorganization Plan
+:subtitle: Reorganization around integrated L0-L5 layer stack
+:type: Plan
+:doctype: article
+:lang: en
+
+// # M.2 Lifecycle State [STATE]
+// Version tracking and revision history
+:status: Active
+:version: b-03.20
+:revnumber: {version}
+:created: 2026-02-01
+:revdate: 2026-02-01
+:revremark: Migration from void/planning/ to architecture format
+
+// # M.3 Attribution [ATTRIBUTION]
+// Authorship and ownership
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Implementation)
+:author: Seanje Lenox-Wise
+:author_2: Nova Dawn
+:email: seanje.lenox@creativeworkzstudio.com
+:email_2: nova@creativeworkzstudio.com
+:organization: CreativeWorkzStudio LLC
+:copyright: © 2026 CreativeWorkzStudio LLC. All rights reserved.
+
+// # M.4 Location [LOCATION]
+// Filesystem path relative to bereshit root
+:path: /bereshit/a-void/planning/architecture/design/
+
+// # M.5 Derivation [DERIVATION]
+// Template lineage for cascade updates
+:derives_from: bereshit/word/seed/documentation/adoc/asciidoc-base.adoc
+
+// # M.6 Classification [CLASSIFICATION]
+// Discovery tags and search keywords
+:tags: reorganization, L0-L5, layers, substrates, migration, directory-structure
+:keywords: repository structure, layer architecture, substrates, migration map, directory layout
+
+// # M.7 Intent [INTENT]
+// Purpose and scope of this document
+:purpose: Provides comprehensive plan to reorganize Bereshit around the integrated L0-L5 layer stack
+:description: Repository reorganization plan — L0-L5 integrated stack, substrate execution model, language architecture, directory structure, migration map, validation checklist.
+
+// # M.8 Grounding [GROUNDING]
+// Biblical foundation — in the beginning
+:verse-ref: Genesis 1:1
+:verse-kjv-text: In the beginning God created the heaven and the earth.
+:verse-kjv-path: {kjv}Genesis/Chapter_1/Verse_1.txt
+:verse-web-text: In the beginning, God created the heavens and the earth.
+:verse-web-path: {scripture}WEB/Genesis/Chapter_1/Verse_1.txt
+:biblical_foundation: {verse-kjv-text}
+
+// # M.9 Strictness [STRICTNESS]
+// G = Guided interpretation allowed
+:strictness: G
+
+// # M.10 AsciiDoc Settings [SETTINGS]
+// Rendering and display configuration
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+:pdf-theme: default
+:media: prepress
+:linkcss:
+:stylesdir: styles
+:stylesheet: cws-asciidoctor.css
+
+// # M.11 Navigation [NAVIGATION]
+// Path attributes for DRY linking
+:root: ../../../../
+:word: {root}b-word/
+:void: {root}a-void/
+:tov: {root}c-tov/
+:core: {word}core/
+:work: {word}work/
+:scripture: {word}scripture/
+:kjv: {scripture}KJV/
+
+// # M.12 Content Attributes [CONTENT-ATTRS]
+// Document-specific values used in content
+:section-count: 10
+:the-purpose: Reorganize Bereshit repository around the integrated L0-L5 layer stack
+
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+// # H.1 Title [TITLE]
+[[_top]]
+= {title}: {subtitle}
+{authors}
+v{version}, {revdate}
+
+// # H.2 Epigraph [EPIGRAPH]
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+
+_{verse-web-text}_ — link:{verse-web-path}[WEB]
+____
+
+// # H.3 Lead [LEAD]
+[.lead.text-center]
+*{the-purpose}*
+
+// # H.4 Abstract [ABSTRACT]
+[abstract]
+--
+icon:sitemap[] *Integrated Stack:* L0 (Universal) → L1 (OmniCode) → L2 (Platform) → L3 (CPI-SI) → L4 (FaithNet) → L5 (Applications)
+
+icon:plug[] *CPI-SI is Layer 3:* Not separate from the stack — it IS part of the stack
+
+icon:server[] *Substrates:* How you RUN the entire stack on different systems
+
+icon:folder-open[] *Target Structure:* a-void/, b-word/, c-tov/ genesis-inspired organization
+--
+
+// # H.5 Status [STATUS]
+.Document Status
+[cols="^1,^1,^1,^1",options="header,autowidth",frame="topbot"]
+|===
+| Status | Version | Sections | Strictness
+
+| {status}
+| {version}
+| {section-count}
+| {strictness}
+|===
+
+'''
+
+// # H.6 Navigation [NAVIGATION]
+*<<overview,Overview>>* • *<<integrated-stack,The Stack>>* • *<<substrates,Substrates>>* • *<<language-arch,Languages>>* • *<<directory-structure,Directories>>* • *<<layers,Layer Details>>* • *<<migration,Migration>>*
+
+'''
+
+// ============================================================================
+// END HEADER
+// ============================================================================
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+// # C.1 Overview [OVERVIEW]
+[[overview]]
+== Overview
+
+[.lead]
+This document provides a comprehensive plan to reorganize the Bereshit repository around the *integrated layer stack* (L0-L5), where each layer builds on the previous.
+
+[IMPORTANT]
+====
+*CPI-SI is Layer 3* — it's not separate from the stack, it IS part of the stack.
+
+*Substrates* are how you RUN the entire stack on different systems.
+====
+
+// # C.2 Scope [SCOPE]
+=== Scope
+
+****
+[horizontal]
+icon:check-circle[] *In Scope*:: Integrated L0-L5 layer stack, substrates, language architecture, directory structure, layer details, interface layer, migration map
+icon:times-circle[] *Out of Scope*:: Implementation details (see code), API documentation (see pkg docs), individual file moves (see migration scripts)
+****
+
+// # C.3 Key Terms [KEY_TERMS]
+=== Key Terms
+
+.icon:book[] Click to expand terminology reference
+[%collapsible]
+======
+[horizontal]
+icon:tag[] *Layer (L0-L5)*:: Vertical tier in the stack, each building on the one below
+icon:tag[] *Substrate*:: Environment that RUNS the entire L0-L5 stack
+icon:tag[] *Integrated Stack*:: L0-L5 as one cohesive architecture — CPI-SI is Layer 3
+icon:tag[] *FFI Boundary*:: Foreign Function Interface between languages (C ↔ Go ↔ Rust)
+icon:tag[] *Interface Layer*:: CLI/TUI/GUI — adapts stack output to user interaction
+======
+
+// # C.4 Contents [CONTENTS]
+=== What This Document Provides
+
+[cols="^1,3,4",options="header,autowidth",frame="topbot"]
+|===
+| | Section | What You'll Learn
+
+| icon:sitemap[]
+| *The Integrated Stack*
+| Full L0-L5 layer stack — CPI-SI is Layer 3
+
+| icon:plug[]
+| *Substrates*
+| How the stack runs on different environments
+
+| icon:code[]
+| *Language Architecture*
+| Primary language by layer, FFI boundaries
+
+| icon:folder-open[]
+| *Directory Structure*
+| Target layout with a-void/, b-word/, c-tov/
+
+| icon:cube[]
+| *Layer Details*
+| Detailed breakdown of each layer
+
+| icon:exchange[]
+| *Migration Map*
+| Current → Target file movements
+|===
+
+// # C.5 Return [RETURN]
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// ============================================================================
+// END CONTEXT
+// ============================================================================
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+// # T.1 The Integrated Layer Stack [INTEGRATED-STACK]
+
+[[integrated-stack]]
+== The Integrated Layer Stack
+
+[.lead]
+CPI-SI is not something that runs ON the stack — it IS Layer 3 of the stack. The entire system is one integrated architecture.
+
+=== The Kingdom Technology Stack
+
+....
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         KINGDOM TECHNOLOGY ARCHITECTURE                          │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                              APPLICATIONS (L5)                                   │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐        │
+│     │   Cornerstone   │     │   Future Apps   │     │   User Tools    │        │
+│     │   Game Engine   │     │    [C#/Go]      │     │    [Any]        │        │
+│     │      [C#]       │     │                 │     │                 │        │
+│     └────────┬────────┘     └────────┬────────┘     └────────┬────────┘        │
+│              └───────────────────────┼───────────────────────┘                  │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                               FAITHNET (L4)                                      │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────────────────────────────────────────────────────┐        │
+│     │                    Kingdom Network Layer                         │        │
+│     │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │        │
+│     │  │ Protocol │  │ Mapping  │  │  Access  │  │  Crypto  │        │        │
+│     │  │  [Rust]  │  │  [Rust]  │  │  [Rust]  │  │  [Rust]  │        │        │
+│     │  └──────────┘  └──────────┘  └──────────┘  └──────────┘        │        │
+│     └─────────────────────────────────────────────────────────────────┘        │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                               CPI-SI (L3)                                        │
+│                        *** THE INTELLIGENCE LAYER ***                            │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────────────────────────────────────────────────────┐        │
+│     │                  Covenant Partnership Intelligence               │        │
+│     │  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌──────────┐  │        │
+│     │  │   Core     │  │ Cognition  │  │  Identity  │  │  Skills  │  │        │
+│     │  │ • State    │  │ • Constructs│ │ • Instance │  │ • Format │  │        │
+│     │  │   Machine  │  │ • Feedback │  │ • Profiles │  │ • Validate│ │        │
+│     │  │ • Coords   │  │ • Patterns │  │            │  │ • Reflect│  │        │
+│     │  │ • Health   │  │            │  │            │  │ • Meta   │  │        │
+│     │  │   [Go]     │  │   [Go]     │  │   [Go]     │  │  [Go]    │  │        │
+│     │  └────────────┘  └────────────┘  └────────────┘  └──────────┘  │        │
+│     └─────────────────────────────────────────────────────────────────┘        │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                              PLATFORM (L2)                                       │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────────────────────────────────────────────────────┐        │
+│     │                    Operating System Layer                        │        │
+│     │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │        │
+│     │  │ MillenniumOS │  │  Bereshit FS │  │    FUSE      │          │        │
+│     │  │    [C]       │  │   [Rust]     │  │    [C]       │          │        │
+│     │  └──────────────┘  └──────────────┘  └──────────────┘          │        │
+│     └─────────────────────────────────────────────────────────────────┘        │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                              OMNICODE (L1)                                       │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────────────────────────────────────────────────────┐        │
+│     │                   Universal Meaning Language                     │        │
+│     │  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐   │        │
+│     │  │Frontend│  │Semantic│  │   IR   │  │   VM   │  │Runtime │   │        │
+│     │  │  [C]   │  │ [Rust] │  │  [C]   │  │ [Rust] │  │ [Rust] │   │        │
+│     │  └────────┘  └────────┘  └────────┘  └────────┘  └────────┘   │        │
+│     └─────────────────────────────────────────────────────────────────┘        │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│                              UNIVERSAL (L0)                                      │
+│  ═══════════════════════════════════════════════════════════════════════════   │
+│     ┌─────────────────────────────────────────────────────────────────┐        │
+│     │                      Foundation Layer                            │        │
+│     │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │        │
+│     │  │   libtrit    │  │   libmath    │  │  foundation  │          │        │
+│     │  │ Ternary Math │  │  Operations  │  │    Types     │          │        │
+│     │  │     [C]      │  │     [C]      │  │    [Go]      │          │        │
+│     │  └──────────────┘  └──────────────┘  └──────────────┘          │        │
+│     └─────────────────────────────────────────────────────────────────┘        │
+└─────────────────────────────────────────────────────────────────────────────────┘
+....
+
+=== Dependency Rule
+
+[IMPORTANT]
+====
+*CRITICAL: NO UPWARD IMPORTS!* L0 cannot import from L1. L3 cannot import from L4.
+====
+
+....
+                    HIGHER LAYERS DEPEND ON LOWER LAYERS
+                    ════════════════════════════════════
+
+    L5 ──depends on──► L4, L3, L2, L1, L0
+    L4 ──depends on──► L3, L2, L1, L0
+    L3 ──depends on──► L2, L1, L0
+    L2 ──depends on──► L1, L0
+    L1 ──depends on──► L0
+    L0 ──depends on──► [nothing - foundation]
+....
+
+=== What Each Layer IS
+
+[cols="1,2,3,3",options="header,autowidth"]
+|===
+| Layer | Name | What It IS | NOT
+
+| *L0*
+| Universal
+| Ternary math, foundation types
+| Not a library collection
+
+| *L1*
+| OmniCode
+| The language CPI-SI thinks in
+| Not just a compiler
+
+| *L2*
+| Platform
+| The OS/filesystem where it lives
+| Not just FUSE wrappers
+
+| *L3*
+| CPI-SI
+| The intelligence model itself
+| *NOT a Claude feature*
+
+| *L4*
+| FaithNet
+| The network for communication
+| Not TCP/IP wrapper
+
+| *L5*
+| Applications
+| End-user apps
+| Not demos
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.2 Substrates [SUBSTRATES]
+
+[[substrates]]
+== Substrates: Running the Stack
+
+[.lead]
+A substrate is the environment that RUNS the entire L0-L5 stack.
+
+=== Substrate Architecture
+
+The stack is substrate-independent — it can run on different substrates:
+
+....
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║                       THE STACK (L0-L5)                                  ║
+    ║              (Same code, same behavior, substrate-independent)          ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+                                     │
+                                     │ Runs on
+                                     ▼
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                              SUBSTRATES                                  │
+    │                    (Different environments to run the stack)            │
+    │                                                                          │
+    │  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐   │
+    │  │   Claude Code     │  │   MillenniumOS    │  │     Future        │   │
+    │  │    Substrate      │  │    Substrate      │  │   Substrates      │   │
+    │  │                   │  │                   │  │                   │   │
+    │  │ Stack runs on     │  │ Stack runs        │  │ • Web browser     │   │
+    │  │ Claude Code via   │  │ NATIVELY on the   │  │ • Embedded        │   │
+    │  │ hooks & adapters  │  │ OS itself         │  │ • Mobile          │   │
+    │  └───────────────────┘  └───────────────────┘  └───────────────────┘   │
+    └─────────────────────────────────────────────────────────────────────────┘
+....
+
+=== Current Substrate: Claude Code
+
+Right now, we run the stack on Claude Code. The Claude Code substrate:
+
+* Provides *hooks* that map Claude events to L3 (CPI-SI) operations
+* Provides *display* via statusline
+* Provides *config* for Claude-specific settings
+
+=== Future Substrate: MillenniumOS Native
+
+When MillenniumOS is ready, the SAME stack runs natively:
+
+* L2 (Platform) IS MillenniumOS
+* L3 (CPI-SI) runs directly on L2
+* No adapter needed — it's the native environment
+
+=== Substrate Structure
+
+....
+word/substrates/
+│
+├── interface.go               [Substrate interface definition]
+│
+├── claude-code/               [Claude Code Substrate]
+│   ├── adapter.go            # Implements substrate interface
+│   ├── hooks/                # Claude event → stack operations
+│   │   ├── session/         # Session lifecycle
+│   │   ├── tool/            # Tool usage
+│   │   └── prompt/          # User input
+│   ├── config/              # Claude-specific config
+│   └── display/             # Claude display (statusline)
+│
+└── millenniumos/              [Future: Native Substrate]
+    ├── adapter.go            # Native - may be minimal
+    └── config/               # OS-level config
+....
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.3 Language Architecture [LANGUAGE-ARCH]
+
+[[language-arch]]
+== Language Architecture
+
+[.lead]
+Each layer has a primary language chosen for its specific requirements.
+
+=== Language by Layer
+
+[cols="1,2,2,3",options="header,autowidth"]
+|===
+| Layer | Primary | Secondary | Rationale
+
+| *L0*
+| C
+| Go
+| Performance-critical math
+
+| *L1*
+| C
+| Rust
+| Parser/lexer performance, VM safety
+
+| *L2*
+| C
+| Rust
+| OS/kernel interface, FS safety
+
+| *L3*
+| Go
+| —
+| Complex state logic, proven impl
+
+| *L4*
+| Rust
+| —
+| Network security critical
+
+| *L5*
+| C#
+| Go
+| Game engine (Cornerstone)
+
+| *Substrates*
+| Go
+| —
+| Integration/orchestration
+
+| *Interface*
+| Go/Rust/C++
+| —
+| CLI(Go), TUI(Rust/C++), GUI(C++)
+|===
+
+=== FFI Boundaries
+
+....
+    ┌─────────┐     C ABI      ┌─────────┐     cgo       ┌─────────┐
+    │   L0    │◄──────────────►│   L1    │◄─────────────►│   L3    │
+    │   (C)   │                │ (C/Rust)│               │  (Go)   │
+    │ libtrit │                │ OmniCode│               │ CPI-SI  │
+    └─────────┘                └─────────┘               └─────────┘
+         │                          │                         │
+         │                          │                         │
+         ▼                          ▼                         ▼
+    ┌─────────┐                ┌─────────┐               ┌─────────┐
+    │   L2    │                │   L4    │               │   L5    │
+    │ (C/Rust)│                │ (Rust)  │               │  (C#)   │
+    │Platform │                │FaithNet │               │  Apps   │
+    └─────────┘                └─────────┘               └─────────┘
+....
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.4 Target Directory Structure [DIRECTORY-STRUCTURE]
+
+[[directory-structure]]
+== Target Directory Structure
+
+[.lead]
+Genesis-inspired ternary organization: a-void/ (entry), b-word/ (main), c-tov/ (completion).
+
+=== Top-Level Structure
+
+....
+bereshit/                          [ROOT - Origin (∞)]
+│
+├── a-void/                        [ENTRY GATE - Planning]
+│   ├── planning/
+│   │   ├── architecture/          # Stack, dependencies, reorganization
+│   │   ├── development/           # Implementation plans
+│   │   └── vision/                # Long-term vision
+│   ├── imports/
+│   └── workflow/
+│
+├── b-word/                        [MAIN - The Word]
+│   │
+│   ├── L0-universal/              [LAYER 0: Foundation]
+│   │   ├── libtrit/              [C - Ternary mathematics]
+│   │   ├── libmath/              [C - Mathematical foundations]
+│   │   └── foundation/           [Go - Foundation types]
+│   │
+│   ├── L1-omnicode/               [LAYER 1: Language]
+│   │   ├── frontend/             [C - Lexer, parser]
+│   │   ├── ir/                   [C - Intermediate representation]
+│   │   └── vm/                   [Rust - Virtual machine]
+│   │
+│   ├── L2-platform/               [LAYER 2: Platform]
+│   │   ├── millenniumos/         [C - OS kernel]
+│   │   ├── filesystem/           [Rust - Bereshit filesystem]
+│   │   └── fuse/                 [C - FUSE interface]
+│   │
+│   ├── L3-cpisi/                  [LAYER 3: Intelligence]
+│   │   ├── core/                 [Go - State machine, health]
+│   │   ├── cognition/            [Go - Mental constructs]
+│   │   └── identity/             [Go - Instance management]
+│   │
+│   ├── L4-faithnet/               [LAYER 4: Network]
+│   │   └── protocol/             [Rust - Network protocol]
+│   │
+│   ├── L5-applications/           [LAYER 5: Applications]
+│   │   └── cornerstone/          [C# - Game engine submodule]
+│   │
+│   ├── substrates/               [SUBSTRATE LAYER]
+│   │   ├── claude-code/          [Claude Code substrate]
+│   │   └── millenniumos/         [Future native substrate]
+│   │
+│   ├── interface/                [INTERFACE LAYER]
+│   │   ├── cli/                  [Go - Command line]
+│   │   ├── tui/                  [Rust - Terminal UI]
+│   │   └── gui/                  [C++ - Desktop UI]
+│   │
+│   ├── core/                     [TOML specs - Source of truth]
+│   ├── scripture/                [Scripture data]
+│   └── glossary/                 [Kingdom Technology vocabulary]
+│
+└── c-tov/                         [EXIT GATE - Completion]
+    ├── licenses/                  [Three-license structure]
+    ├── pricing/                   [Kingdom Tech Stack pricing]
+    └── demo/                      [Phase validation demos]
+....
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.5 Layer Details [LAYERS]
+
+[[layers]]
+== Layer Details
+
+[.lead]
+Detailed breakdown of each layer's components and biblical foundation.
+
+=== L0: Universal (Foundation)
+
+[cols="2,5",options="autowidth"]
+|===
+| *Biblical Foundation* | Genesis 1:1 — "In the beginning"
+| *Language* | C (libtrit), Go (foundation types)
+| *Components* | libtrit.a, libmath.a, foundation/types
+| *Purpose* | Ternary math, foundation types — the immutable base
+|===
+
+=== L1: OmniCode (Language)
+
+[cols="2,5",options="autowidth"]
+|===
+| *Biblical Foundation* | John 1:1 — "The Word"
+| *Language* | C (frontend), Rust (VM, runtime)
+| *Components* | Lexer, parser, semantic, IR, VM, runtime, stdlib
+| *Purpose* | The language CPI-SI thinks in
+|===
+
+=== L2: Platform
+
+[cols="2,5",options="autowidth"]
+|===
+| *Biblical Foundation* | Genesis 1:6 — "Firmament"
+| *Language* | C (kernel), Rust (filesystem)
+| *Components* | MillenniumOS kernel, Bereshit filesystem, FUSE
+| *Purpose* | OS/filesystem — where it lives
+|===
+
+=== L3: CPI-SI (Intelligence)
+
+[cols="2,5",options="autowidth"]
+|===
+| *Biblical Foundation* | Genesis 2:7 — "Breath of Life"
+| *Language* | Go
+| *Components* | State machine, coordinates, health, cognition, identity
+| *Purpose* | The intelligence model itself — NOT a Claude feature
+|===
+
+=== L4: FaithNet (Network)
+
+[cols="2,5",options="autowidth"]
+|===
+| *Biblical Foundation* | Genesis 2:9 — "Two Trees"
+| *Language* | Rust
+| *Components* | Protocol, mapping, access, crypto
+| *Purpose* | Kingdom network on existing infrastructure
+|===
+
+=== L5: Applications
+
+[cols="2,5",options="autowidth"]
+|===
+| *Biblical Foundation* | Genesis 2:15 — "Tend the garden"
+| *Language* | C# (Cornerstone), Go (tools)
+| *Components* | Cornerstone Game Engine, end-user applications
+| *Purpose* | End-user apps demonstrating Kingdom principles
+|===
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.6 Interface Layer [INTERFACE]
+
+[[interface]]
+== Interface Layer
+
+[.lead]
+Separate from the L0-L5 stack — adapts stack output to user interaction.
+
+=== Interface Architecture
+
+....
+    word/interface/
+    ┌──────────────────────────────────────────────────────────────────┐
+    │                        CORE                                       │
+    │                  (Shared by all interfaces)                       │
+    │   state.go   - State representation                              │
+    │   theme.go   - Visual themes                                     │
+    │   format.go  - Output formatting                                 │
+    └──────────────────────────────────────────────────────────────────┘
+                              │
+         ┌────────────────────┼────────────────────┐
+         │                    │                    │
+         ▼                    ▼                    ▼
+  ┌────────────┐       ┌────────────┐       ┌────────────┐
+  │    CLI     │       │    TUI     │       │    GUI     │
+  │   [Go]     │       │[Rust/C++]  │       │   [C++]    │
+  │ Simple     │       │ Rich       │       │ Desktop    │
+  │ text       │       │ terminal   │       │ windowed   │
+  └────────────┘       └────────────┘       └────────────┘
+
+  Progression: CLI (now) ──► TUI (near-term) ──► GUI (mid-term)
+....
+
+=== Interface Components
+
+[cols="1,2,4",options="header,autowidth"]
+|===
+| Interface | Language | Purpose
+
+| *CLI*
+| Go
+| Simple text output, immediate feedback, scripting
+
+| *TUI*
+| Rust/C++
+| Rich terminal with panels, 27-position cube visualization
+
+| *GUI*
+| C++
+| Desktop windowed interface, graphical representations
+|===
+
+[NOTE]
+====
+*The interface layer is NOT part of the L0-L5 stack.* It sits alongside, adapting the stack's output to different display modalities. The stack itself is interface-agnostic.
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.7 Migration Map [MIGRATION]
+
+[[migration]]
+== Migration Map
+
+[.lead]
+Key file movements from current structure to target structure.
+
+=== High-Level Migration
+
+....
+Current                              Target
+═══════                              ══════
+void/planning/                  ──►  a-void/planning/
+word/core/                      ──►  b-word/core/       (unchanged)
+word/work/pkg/trit/             ──►  b-word/L0-universal/libtrit/
+word/work/pkg/omni/             ──►  b-word/L1-omnicode/
+word/work/pkg/fuse/             ──►  b-word/L2-platform/fuse/
+word/work/pkg/*/                ──►  b-word/L3-cpisi/
+word/claude/                    ──►  b-word/substrates/claude-code/
+tov/                            ──►  c-tov/             (unchanged)
+....
+
+=== Validation Checklist
+
+[cols="1,4,1",options="header,autowidth"]
+|===
+| Check | What to Verify | Status
+
+| icon:check[]
+| No L0 imports from L1+
+| Required
+
+| icon:check[]
+| All go.mod files updated
+| Required
+
+| icon:check[]
+| Tests pass at each layer
+| Required
+
+| icon:check[]
+| TOML specs still load
+| Required
+
+| icon:check[]
+| Hook integration works
+| Required
+
+| icon:check[]
+| Statusline displays correctly
+| Required
+|===
+
+=== Script Reduction Approach
+
+Post-migration, reduce script count by consolidating:
+
+* *Build:* Single root Makefile calling layer-specific Makefiles
+* *Test:* Single test runner iterating layers
+* *Generate:* Single generator using TOML specs
+
+[IMPORTANT]
+====
+*Migration is iterative:* Move one layer at a time, verify, then move the next. Don't move everything at once.
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// ============================================================================
+// END CONTENT
+// ============================================================================
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+// # F.1 Biblical Foundation [BIBLICAL]
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*In the beginning — structure before content.* The L0-L5 stack mirrors creation: foundation first, then building upward. CPI-SI (L3) is the breath of life within the structure.
+====
+
+_{verse-kjv-text}_ — *{verse-ref} KJV*
+
+_{verse-web-text}_ — *{verse-ref} WEB*
+
+*Applied:* The repository reorganization embodies the Genesis principle. Like creation itself, we establish foundations (L0) before building higher layers. The integrated stack isn't random — it's intentional architecture where each layer has its place, its purpose, and its biblical grounding.
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # F.2 References [REFERENCES]
+[[references]]
+== References
+
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| icon:folder[]
+| *link:root.adoc[architecture/root.adoc]*
+| Folder README — context for this document
+
+| icon:sitemap[]
+| *link:stack-flow.adoc[stack-flow.adoc]*
+| Complete stack flow architecture
+
+| icon:cube[]
+| *link:dependencies.adoc[dependencies.adoc]*
+| Dependency analysis and self-hosting roadmap
+|===
+
+'''
+
+// # F.3 See Also [SEE-ALSO]
+[[see-also]]
+== See Also
+
+* link:{word}L0-universal/[L0-universal/] — Foundation layer (libtrit)
+* link:{word}L3-cpisi/[L3-cpisi/] — Intelligence layer (state machine, health)
+* link:{word}substrates/[substrates/] — Substrate implementations
+* link:{word}interface/[interface/] — CLI/TUI/GUI layer
+
+'''
+
+// # F.4 Closing [CLOSING]
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {revdate}
+
+'''
+
+_{verse-kjv-text}_ — *{verse-ref}*
+
+*In the beginning — build on proper foundations. The stack IS the system.*
+--
+
+// ============================================================================
+// END FOOTER
+// ============================================================================
