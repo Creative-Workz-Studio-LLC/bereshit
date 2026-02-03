@@ -51,6 +51,9 @@ image::assets/cws-logo.png[Creative Workz Studio LLC,width=200,align="center"]
 [.text-center]
 *Building for the Kingdom to come.*
 
+[.text-center]
+<<00-COVER.adoc#,Cover Page>> | <<00-GLOSSARY.adoc#,Glossary>> | <<book.adoc#,Full Manual (PDF)>>
+
 '''
 
 == Document Information
@@ -715,6 +718,69 @@ ____
 
 '''
 
+== Compiling the Full Manual
+
+This manual can be compiled into a single PDF or EPUB document using the `book.adoc` master file.
+
+=== Prerequisites
+
+* **Asciidoctor** — Ruby-based AsciiDoc processor
+* **Asciidoctor-PDF** — For PDF generation
+* **Asciidoctor-EPUB3** — For EPUB generation (optional)
+* **Rouge** — Syntax highlighter
+
+[source,bash]
+----
+# Install prerequisites
+gem install asciidoctor asciidoctor-pdf rouge
+----
+
+=== Generating the Manual
+
+[source,bash]
+----
+# Generate PDF
+asciidoctor-pdf book.adoc -o CWS-Company-Identity-Manual.pdf
+
+# Generate HTML
+asciidoctor book.adoc -o CWS-Company-Identity-Manual.html
+
+# Generate EPUB (requires asciidoctor-epub3)
+asciidoctor-epub3 book.adoc -o CWS-Company-Identity-Manual.epub
+----
+
+=== Book Structure
+
+The compiled book organizes content into four parts:
+
+[cols="1,2,3",options="header"]
+|===
+|Part |Title |Chapters
+
+|*I*
+|Identity
+|01: Entity Overview, 02: Publishing House Model
+
+|*II*
+|Operations
+|03: What CWS Builds, 04: What CWS Provides, 05: Who CWS Serves
+
+|*III*
+|Business
+|06: Business Model, 07: Core Values
+
+|*IV*
+|Direction
+|08: Mission and Vision, 09: The Team, 10: Timeline, 11: The Whole Thing
+|===
+
+[NOTE]
+====
+The book.adoc file includes all chapters with proper document structure, part introductions, and navigation. Chapters 09-11 are currently pending development.
+====
+
+'''
+
 == Document Governance
 
 === Version Control
@@ -935,10 +1001,12 @@ The following diagram illustrates the relationships between manual sections:
      │     │     │                │
      ▼     ▼     ▼                ▼
    ┌───┐ ┌───┐ ┌───┐            ┌───┐
-   │08 │ │09 │ │10 │            │11 │
+   │08*│ │09 │ │10 │            │11 │
    └───┘ └───┘ └───┘            └───┘
   Mission Team  Timeline      The Whole
   & Vision              Perspective    Thing
+
+   * = Complete    (unmarked = Coming Soon)
 ----
 
 [appendix]
