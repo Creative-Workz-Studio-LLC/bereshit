@@ -1,0 +1,743 @@
+// =============================================================================
+// DOCUMENT: Repository and Technical Architecture
+// CHAPTER: 01 — Entity Overview
+// SECTION: I — Identity
+// =============================================================================
+// METADATA
+// =============================================================================
+// version: 1.0.0-draft
+// status: Board Review Draft
+// classification: Internal — Board and Leadership
+// created: 2026-02-03
+// authors: Nova Dawn, Seanje Lenox-Wise
+// organization: Creative Workz Studio LLC
+// copyright: © 2026 Creative Workz Studio LLC. All rights reserved.
+// parent: 01-00-ENTITY-OVERVIEW.adoc
+// =============================================================================
+
+= 01-06: Repository and Technical Architecture
+:author: Nova Dawn; Seanje Lenox-Wise
+:revnumber: 1.0.0-draft
+:revdate: 2026-02-03
+:revremark: Initial draft for board review
+:doctype: article
+:sectnums:
+:sectnumlevels: 4
+:toc: left
+:toclevels: 3
+:icons: font
+:xrefstyle: full
+
+'''
+
+== Document Purpose
+
+This document establishes how CWS technical work is organized at the repository level. It defines the hierarchy of code repositories, submodule relationships, and the principles governing this architecture.
+
+[NOTE]
+====
+Repository architecture reflects organizational structure. How we organize code mirrors how we think about our work and relationships. This document bridges technical organization with company identity.
+====
+
+'''
+
+== Repository Hierarchy
+
+=== Overview
+
+CWS work is organized in a hierarchy of Git repositories with submodule relationships:
+
+[source]
+----
+CWS Repo (Creative Workz Studio — company level)
+│
+└── Bereshit Repo (Kingdom Technology foundation)
+    │
+    ├── CPI-SI for Claude Repo (AI integration framework)
+    │
+    └── Cornerstone Repo (Game engine)
+----
+
+=== Hierarchy Principles
+
+[cols="1,3",options="header"]
+|===
+|Principle |Application
+
+|*Parent Contains Child*
+|Higher-level repos include lower-level as submodules
+
+|*Child Can Stand Alone*
+|Each repo is complete and functional independently
+
+|*Clear Ownership*
+|Each repo has defined ownership and responsibility
+
+|*Shareable Components*
+|Submodules can be shared with external parties without exposing parent
+
+|*Version Pinning*
+|Parent pins specific versions of submodules for stability
+|===
+
+'''
+
+== Repository Descriptions
+
+=== CWS Repo (Company Level)
+
+[cols="1,2",options="header"]
+|===
+|Attribute |Value
+
+|*Name*
+|CWS / Creative Workz Studio
+
+|*Level*
+|Company (top level)
+
+|*Purpose*
+|Company-wide resources, policies, coordination
+
+|*Contains*
+|Bereshit (submodule), company documentation, policies
+|===
+
+==== Contents
+
+[cols="1,2",options="header"]
+|===
+|Content |Description
+
+|*Company Documentation*
+|Policies, procedures, company-wide standards
+
+|*Bereshit Submodule*
+|Link to Bereshit repo at specific version
+
+|*Business Assets*
+|Non-technical business resources
+
+|*Coordination Tools*
+|Cross-project coordination resources
+|===
+
+==== Status
+
+_[To be established — currently Bereshit functions as working repository]_
+
+=== Bereshit Repo (Foundation Level)
+
+[cols="1,2",options="header"]
+|===
+|Attribute |Value
+
+|*Name*
+|Bereshit (בְּרֵאשִׁית)
+
+|*Level*
+|Foundation technology
+
+|*Purpose*
+|Kingdom Technology stack and all technical work
+
+|*Contains*
+|CPI-SI, Cornerstone (submodules), full L0-L5 stack
+|===
+
+==== Ternary Directory Structure
+
+Bereshit follows a ternary (three-part) structure based on Genesis creation patterns:
+
+[source]
+----
+bereshit/
+│
+├── void/     (-1) Entry gate — formless, planning, incoming
+│
+├── word/     (0)  Definitions — source of truth, specifications
+│
+└── tov/      (+1) Exit gate — complete, validated, ready for release
+----
+
+===== void/ — The Entry Gate
+
+[cols="1,3",options="header"]
+|===
+|Aspect |Description
+
+|*Meaning*
+|"Formless and void" (Genesis 1:2) — awaiting form
+
+|*Purpose*
+|Planning, research, incoming content, work in progress
+
+|*Contents*
+|Planning documents, research, development logs, drafts
+
+|*Flow*
+|Content enters here, moves to word/ when crystallized
+|===
+
+===== word/ — The Source of Truth
+
+[cols="1,3",options="header"]
+|===
+|Aspect |Description
+
+|*Meaning*
+|"God said" (Genesis 1:3+) — the spoken word that creates
+
+|*Purpose*
+|Authoritative definitions, specifications, source code
+
+|*Contents*
+|Core specifications, implementation code, canonical definitions
+
+|*Authority*
+|What's in word/ is truth; other areas derive from this
+|===
+
+===== tov/ — The Exit Gate
+
+[cols="1,3",options="header"]
+|===
+|Aspect |Description
+
+|*Meaning*
+|"It was good" (Genesis 1:4+) — complete and validated
+
+|*Purpose*
+|Validated output, demos, releases, completed work
+
+|*Contents*
+|Demo applications, release artifacts, validated implementations
+
+|*Quality*
+|Content here has been validated against specifications
+|===
+
+==== Submodules
+
+[cols="1,2,2",options="header"]
+|===
+|Submodule |Location |Purpose
+
+|*CPI-SI for Claude*
+|word/claude/ (or similar)
+|AI framework extractable for sharing
+
+|*Cornerstone*
+|cornerstone/
+|Game engine (independent development)
+|===
+
+=== CPI-SI for Claude Repo
+
+[cols="1,2",options="header"]
+|===
+|Attribute |Value
+
+|*Name*
+|CPI-SI for Claude
+
+|*Level*
+|Component (shareable)
+
+|*Purpose*
+|AI framework for Claude Code integration
+
+|*Shareability*
+|Can be shared without exposing full Bereshit
+|===
+
+==== Why Separate
+
+[cols="1,3",options="header"]
+|===
+|Reason |Explanation
+
+|*Shareability*
+|Others can use CPI-SI without needing full Bereshit stack
+
+|*Independence*
+|CPI-SI development can proceed on its own timeline
+
+|*Clarity*
+|Clear boundary between CPI-SI framework and broader infrastructure
+
+|*Licensing*
+|Can have different license terms if needed
+|===
+
+=== Cornerstone Repo
+
+[cols="1,2",options="header"]
+|===
+|Attribute |Value
+
+|*Name*
+|Cornerstone
+
+|*Level*
+|Component (game engine)
+
+|*Purpose*
+|Game engine for educational games
+
+|*Independence*
+|Highly independent; major component with own development
+|===
+
+==== Why Separate
+
+[cols="1,3",options="header"]
+|===
+|Reason |Explanation
+
+|*Scale*
+|Game engine is large, complex, warranting own repository
+
+|*Team*
+|May have different contributors than core Bereshit
+
+|*Timeline*
+|Game development has different release cycles
+
+|*Focus*
+|Keeps game-specific concerns separated from infrastructure
+
+|*Shareability*
+|Engine can be shared with game development partners
+|===
+
+'''
+
+== Submodule Architecture
+
+=== What Are Submodules
+
+Git submodules allow one repository to include another at a specific version:
+
+* Parent repo references child repo at a specific commit
+* Child repo maintains full independence
+* Parent can update to newer child versions deliberately
+* Changes to child don't automatically affect parent
+
+=== Submodule Benefits
+
+[cols="1,3",options="header"]
+|===
+|Benefit |Description
+
+|*Version Stability*
+|Parent pins specific version; unexpected changes don't break parent
+
+|*Independent Development*
+|Child repo can evolve without coordinating every change
+
+|*Selective Sharing*
+|Can share child without exposing parent
+
+|*Clear Boundaries*
+|Defined interfaces between components
+
+|*Distributed Ownership*
+|Different teams can own different repos
+|===
+
+=== Submodule Practices
+
+[cols="1,3",options="header"]
+|===
+|Practice |Description
+
+|*Pin to Stable*
+|Parent should reference tested, stable child versions
+
+|*Deliberate Updates*
+|Update child references intentionally, not automatically
+
+|*Document Versions*
+|Track why specific versions are pinned
+
+|*Test After Updates*
+|Verify parent still works after child version updates
+
+|*Coordinate Breaking Changes*
+|Communicate when child changes break parent expectations
+|===
+
+'''
+
+== Code Organization Principles
+
+=== Layered Architecture (L0-L5)
+
+Code within Bereshit follows the layered architecture:
+
+[source]
+----
+word/work/
+├── pkg/
+│   ├── trit/         (L0 — Universal)
+│   ├── omni/         (L1 — OmniCode)
+│   ├── fuse/         (L2 — Platform/Filesystem)
+│   ├── foundation/   (L0/L3 — Core foundations)
+│   └── ...
+├── cmd/              (CLI tools)
+└── ...
+----
+
+=== Dependency Direction
+
+[IMPORTANT]
+====
+*Dependency Rule:* Higher layers depend on lower layers. Lower layers NEVER depend on higher layers.
+
+* L5 may import L4, L3, L2, L1, L0
+* L4 may import L3, L2, L1, L0
+* L3 may import L2, L1, L0
+* L2 may import L1, L0
+* L1 may import L0
+* L0 depends on nothing (foundational)
+====
+
+=== Module Organization
+
+Each module should:
+
+[cols="1,3",options="header"]
+|===
+|Principle |Application
+
+|*Single Responsibility*
+|One clear purpose per module
+
+|*Clear Interface*
+|Defined public API, hidden implementation
+
+|*Documentation*
+|README, code comments, usage examples
+
+|*Tests*
+|Unit tests, integration tests as appropriate
+
+|*Independence*
+|Minimal dependencies, especially across layers
+|===
+
+'''
+
+== Version Control Standards
+
+=== Branching Strategy
+
+[cols="1,2,2",options="header"]
+|===
+|Branch |Purpose |Lifetime
+
+|*main*
+|Stable, release-ready code
+|Permanent
+
+|*develop*
+|Integration branch for features
+|Permanent (if used)
+
+|*feature/**
+|Individual feature development
+|Temporary
+
+|*claude/**
+|AI-assisted development sessions
+|Temporary
+
+|*release/**
+|Release preparation
+|Temporary
+
+|*hotfix/**
+|Emergency fixes
+|Temporary
+|===
+
+=== Commit Standards
+
+Commits follow structured format:
+
+[source]
+----
+[scope] TYPE: Brief description
+
+## Changes
+- Specific change 1
+- Specific change 2
+
+## Version
+version: X.Y.Z
+
+## Understanding
+Why this change was made, what was learned.
+
+## Impact
+Impact: Isolated | Cross-component | Repo-wide
+
+## References
+refs: related-items
+part: which-part-of-project
+----
+
+==== Commit Types
+
+[cols="1,3",options="header"]
+|===
+|Type |Use
+
+|*INIT*
+|Initial creation
+
+|*BUILD*
+|Build system, compilation changes
+
+|*REFACTOR*
+|Restructuring without changing behavior
+
+|*EXPAND*
+|Adding new capabilities
+
+|*FIX*
+|Bug fixes
+
+|*DOCS*
+|Documentation changes
+
+|*SYNC*
+|Submodule updates
+
+|*REORG*
+|Reorganization
+
+|*PLAN*
+|Planning documents
+|===
+
+=== Documentation Co-location
+
+Documentation lives with code:
+
+[cols="1,3",options="header"]
+|===
+|Principle |Application
+
+|*README per directory*
+|Each significant directory has README
+
+|*Code comments*
+|Explain why, not just what
+
+|*Specification co-location*
+|TOML specs near implementations
+
+|*Journey documentation*
+|Devlogs capture decision history
+|===
+
+'''
+
+== Build and Deployment Architecture
+
+=== Build System
+
+[cols="1,2,2",options="header"]
+|===
+|Tool |Purpose |Scope
+
+|*Make*
+|Primary build orchestration
+|All components
+
+|*CMake*
+|C/C++ component builds
+|libtrit, libomni, etc.
+
+|*Cargo*
+|Rust component builds
+|L1/L2/L4 Rust components
+
+|*Go*
+|Go component builds
+|CPI-SI, CLI tools
+|===
+
+=== Build Layers
+
+Builds proceed in dependency order:
+
+[source]
+----
+L0 (libtrit)           ← No dependencies
+    ↓
+L1 (libomni)           ← Depends on L0
+    ↓
+L2 (MillenniumOS, FS)  ← Depends on L0, L1
+    ↓
+L3 (CPI-SI)            ← Depends on L0, L1, L2
+    ↓
+L4 (FaithNet)          ← Depends on L0-L3
+    ↓
+L5 (Cornerstone, Apps) ← Depends on L0-L4
+----
+
+=== Artifact Organization
+
+[source]
+----
+build/
+├── lib/           # Libraries
+│   ├── libtrit.a
+│   ├── libomni.a
+│   └── ...
+├── bin/           # Executables
+│   ├── cpisi
+│   ├── millenniumos
+│   └── ...
+└── include/       # Headers
+----
+
+'''
+
+== Security Considerations
+
+=== Repository Access
+
+[cols="1,2",options="header"]
+|===
+|Level |Access
+
+|*Public*
+|Open source components intended for sharing
+
+|*Internal*
+|CWS team access only
+
+|*Restricted*
+|Sensitive components, limited access
+|===
+
+=== Sensitive Content
+
+Never commit:
+
+* API keys or secrets
+* Passwords or credentials
+* Private keys
+* Personal information
+* Proprietary third-party content
+
+Use:
+
+* Environment variables for secrets
+* .gitignore for sensitive files
+* Secret management tools
+* Separate secure storage for credentials
+
+'''
+
+== Repository Roadmap
+
+=== Current State
+
+[cols="1,1,2",options="header"]
+|===
+|Repository |Status |Notes
+
+|*Bereshit*
+|Active
+|Primary working repository
+
+|*CWS*
+|Planned
+|To be established
+
+|*CPI-SI for Claude*
+|Embedded
+|To be extracted as submodule
+
+|*Cornerstone*
+|Submodule
+|Active, external development
+|===
+
+=== Planned Evolution
+
+. *Current* — Bereshit as primary, Cornerstone as submodule
+. *Next* — Extract CPI-SI for Claude as separate repo/submodule
+. *Then* — Establish CWS repo with Bereshit as submodule
+. *Future* — Additional component repos as warranted
+
+'''
+
+== Document Governance
+
+=== Related Documents
+
+[cols="1,2",options="header"]
+|===
+|Document |Relationship
+
+|<<01-04-SECONDARY-IDENTITY.adoc#,01-04 Secondary Identity>>
+|Repository structure serves infrastructure mission
+
+|Technical Documentation (Bereshit)
+|Detailed technical specifications
+
+|STRUCTURE.md (word/)
+|Specific folder organization standards
+
+|Makefile
+|Build orchestration documentation
+|===
+
+=== Review Schedule
+
+This document should be reviewed:
+
+* *When Repository Structure Changes* — New repos, reorganization
+* *Quarterly* — Ensure documentation matches reality
+* *When Submodule Relationships Change* — Extraction or addition
+
+'''
+
+== Version History
+
+[cols="1,1,2,3",options="header"]
+|===
+|Version |Date |Author(s) |Changes
+
+|1.0.0-draft
+|2026-02-03
+|Nova Dawn, Seanje Lenox-Wise
+|Initial draft establishing repository architecture documentation
+|===
+
+'''
+
+== Navigation
+
+[cols="1,1,1",options="header"]
+|===
+|Previous |Up |Next
+
+|<<01-05-RELATED-ENTITIES.adoc#,01-05: Related Entities>>
+|<<01-00-ENTITY-OVERVIEW.adoc#,01 Entity Overview>>
+|<<01-07-SCRIPTURAL-FOUNDATION.adoc#,01-07: Scriptural Foundation>>
+|===
+
+'''
+
+[.text-center]
+*Creative Workz Studio LLC*
+
+[.text-center]
+_Building for the Kingdom to come._
