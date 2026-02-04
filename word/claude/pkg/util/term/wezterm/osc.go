@@ -6,8 +6,13 @@
 // Purpose: WezTerm OSC sequence emission for terminal integration
 // Biblical: Proverbs 25:11 - "A word fitly spoken is like apples of gold"
 // Authors: Nova Dawn
-// Version: 1.0.0
+// Version: 1.1.0
 // Created: 2025-12-20
+// Updated: 2026-02-02
+//
+// Change: v1.1.0 - OSC output now goes to /dev/tty directly instead of stderr.
+//         This bypasses Claude Code's process piping so WezTerm receives the
+//         escape sequences even when statusline output is captured.
 //
 // OSC Sequences Supported:
 //   OSC 1  - Set tab title (icon name)
@@ -31,10 +36,27 @@ package wezterm
 import (
 	"encoding/base64"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 )
+
+// ttyWriter is the output destination for OSC sequences.
+// Uses /dev/tty to bypass any process piping and reach the terminal directly.
+var ttyWriter io.Writer
+
+func init() {
+	// Try to open /dev/tty for direct terminal access
+	// This bypasses Claude Code's output capture
+	tty, err := os.OpenFile("/dev/tty", os.O_WRONLY, 0)
+	if err != nil {
+		// Fall back to stderr if /dev/tty isn't available
+		ttyWriter = os.Stderr
+	} else {
+		ttyWriter = tty
+	}
+}
 
 // OSC escape sequence constants
 const (
@@ -54,19 +76,19 @@ const (
 // SetTabTitle sets the tab title (OSC 1)
 // This appears in WezTerm's tab bar
 func SetTabTitle(title string) {
-	fmt.Fprintf(os.Stderr, "%s]1;%s%s", ESC, title, BEL)
+	fmt.Fprintf(ttyWriter, "%s]1;%s%s", ESC, title, BEL)
 }
 
 // SetWindowTitle sets the window title (OSC 2)
 // This appears in the window title bar
 func SetWindowTitle(title string) {
-	fmt.Fprintf(os.Stderr, "%s]2;%s%s", ESC, title, BEL)
+	fmt.Fprintf(ttyWriter, "%s]2;%s%s", ESC, title, BEL)
 }
 
 // SetBothTitles sets both tab and window title (OSC 0)
 // Clears icon name and sets window title
 func SetBothTitles(title string) {
-	fmt.Fprintf(os.Stderr, "%s]0;%s%s", ESC, title, BEL)
+	fmt.Fprintf(ttyWriter, "%s]0;%s%s", ESC, title, BEL)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -81,7 +103,7 @@ func SetCWD(path string) {
 		hostname = "localhost"
 	}
 	// Format: file://hostname/path
-	fmt.Fprintf(os.Stderr, "%s]7;file://%s%s%s", ESC, hostname, path, BEL)
+	fmt.Fprintf(ttyWriter, "%s]7;file://%s%s%s", ESC, hostname, path, BEL)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -90,12 +112,12 @@ func SetCWD(path string) {
 
 // Notify sends an iTerm2-style notification (OSC 9)
 func Notify(message string) {
-	fmt.Fprintf(os.Stderr, "%s]9;%s%s", ESC, message, BEL)
+	fmt.Fprintf(ttyWriter, "%s]9;%s%s", ESC, message, BEL)
 }
 
 // NotifyWithTitle sends an rxvt-style notification with title (OSC 777)
 func NotifyWithTitle(title, body string) {
-	fmt.Fprintf(os.Stderr, "%s]777;notify;%s;%s%s", ESC, title, body, BEL)
+	fmt.Fprintf(ttyWriter, "%s]777;notify;%s;%s%s", ESC, title, body, BEL)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -106,7 +128,7 @@ func NotifyWithTitle(title, body string) {
 // Values are base64 encoded per iTerm2 protocol
 func SetUserVar(name, value string) {
 	encoded := base64.StdEncoding.EncodeToString([]byte(value))
-	fmt.Fprintf(os.Stderr, "%s]1337;SetUserVar=%s=%s%s", ESC, name, encoded, BEL)
+	fmt.Fprintf(ttyWriter, "%s]1337;SetUserVar=%s=%s%s", ESC, name, encoded, BEL)
 }
 
 // SetUserVars sets multiple user variables at once
@@ -124,7 +146,7 @@ func SetUserVars(vars map[string]string) {
 // target can be: "c" (clipboard), "p" (primary), "s" (select), etc.
 func SetClipboard(target, content string) {
 	encoded := base64.StdEncoding.EncodeToString([]byte(content))
-	fmt.Fprintf(os.Stderr, "%s]52;%s;%s%s", ESC, target, encoded, BEL)
+	fmt.Fprintf(ttyWriter, "%s]52;%s;%s%s", ESC, target, encoded, BEL)
 }
 
 // CopyToClipboard is a convenience function for copying to system clipboard
@@ -162,25 +184,25 @@ var commandColors = map[string]struct {
 
 // SetForegroundColor sets terminal foreground color (OSC 10)
 func SetForegroundColor(hexColor string) {
-	fmt.Fprintf(os.Stderr, "%s]10;%s%s", ESC, hexColor, BEL)
+	fmt.Fprintf(ttyWriter, "%s]10;%s%s", ESC, hexColor, BEL)
 }
 
 // SetBackgroundColor sets terminal background color (OSC 11)
 func SetBackgroundColor(hexColor string) {
-	fmt.Fprintf(os.Stderr, "%s]11;%s%s", ESC, hexColor, BEL)
+	fmt.Fprintf(ttyWriter, "%s]11;%s%s", ESC, hexColor, BEL)
 }
 
 // SetCursorColor sets terminal cursor color (OSC 12)
 func SetCursorColor(hexColor string) {
-	fmt.Fprintf(os.Stderr, "%s]12;%s%s", ESC, hexColor, BEL)
+	fmt.Fprintf(ttyWriter, "%s]12;%s%s", ESC, hexColor, BEL)
 }
 
 // ResetTerminalColors resets to default colors (OSC 104/110/111/112)
 func ResetTerminalColors() {
-	fmt.Fprintf(os.Stderr, "%s]104%s", ESC, BEL)  // Reset all colors
-	fmt.Fprintf(os.Stderr, "%s]110%s", ESC, BEL)  // Reset foreground
-	fmt.Fprintf(os.Stderr, "%s]111%s", ESC, BEL)  // Reset background
-	fmt.Fprintf(os.Stderr, "%s]112%s", ESC, BEL)  // Reset cursor
+	fmt.Fprintf(ttyWriter, "%s]104%s", ESC, BEL)  // Reset all colors
+	fmt.Fprintf(ttyWriter, "%s]110%s", ESC, BEL)  // Reset foreground
+	fmt.Fprintf(ttyWriter, "%s]111%s", ESC, BEL)  // Reset background
+	fmt.Fprintf(ttyWriter, "%s]112%s", ESC, BEL)  // Reset cursor
 }
 
 // SetCommandColors sets terminal colors based on command state
@@ -317,6 +339,154 @@ func EmitHealth(score float64, hebrewState, level string) {
 	SetUserVar("HEALTH_SCORE", fmt.Sprintf("%.0f", score))
 	SetUserVar("HEALTH_STATE", hebrewState)
 	SetUserVar("HEALTH_LEVEL", level)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Framework/Trajectory Emission
+// ─────────────────────────────────────────────────────────────────────────────
+
+// TrajectoryVars holds framework trajectory state
+type TrajectoryVars struct {
+	Section string // B.1, B.2, B.3, B.4
+	Display string // →→, →|, |→, ||
+	State   string // BUILDING, PIVOTING_OUT, PIVOTING_IN, GROUNDING
+	PathLen int    // Number of anchors traversed
+	X       string // Trajectory X position
+	Y       string // Trajectory Y position
+	Z       string // Trajectory Z position
+}
+
+// EmitTrajectory sends FRAMEWORK trajectory variables to WezTerm
+// User variables set:
+//   SM_TRAJ_SECTION  - Section identifier (B.1, B.2, etc.)
+//   SM_TRAJ_DISPLAY  - Visual display (→→, →|, etc.)
+//   SM_TRAJ_STATE    - State name (BUILDING, etc.)
+//   SM_TRAJ_PATH_LEN - Anchors traversed count
+//   SM_TRAJ_X/Y/Z    - Trajectory coordinates
+func EmitTrajectory(tv TrajectoryVars) {
+	SetUserVar("SM_TRAJ_SECTION", tv.Section)
+	SetUserVar("SM_TRAJ_DISPLAY", tv.Display)
+	SetUserVar("SM_TRAJ_STATE", tv.State)
+	SetUserVar("SM_TRAJ_PATH_LEN", fmt.Sprintf("%d", tv.PathLen))
+	if tv.X != "" {
+		SetUserVar("SM_TRAJ_X", tv.X)
+	}
+	if tv.Y != "" {
+		SetUserVar("SM_TRAJ_Y", tv.Y)
+	}
+	if tv.Z != "" {
+		SetUserVar("SM_TRAJ_Z", tv.Z)
+	}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// K:MORAL Emission
+// ─────────────────────────────────────────────────────────────────────────────
+
+// KMoralVars holds K:MORAL (moral direction) state
+type KMoralVars struct {
+	Selector    string // Current selector
+	Align       string // Alignment indicator
+	TowardGod   int    // Count of +k choices
+	TowardSelf  int    // Count of -k choices
+	HebrewState string // Current Hebrew state (yashar, tamim, etc.)
+}
+
+// EmitKMoral sends K:MORAL direction variables to WezTerm
+// User variables set:
+//   K_SELECTOR    - Current k selector
+//   K_ALIGN       - Alignment indicator
+//   K_TOWARD_GOD  - Count of toward-God choices
+//   K_TOWARD_SELF - Count of toward-self choices
+//   HEBREW_STATE  - Current Hebrew state
+func EmitKMoral(km KMoralVars) {
+	SetUserVar("K_SELECTOR", km.Selector)
+	SetUserVar("K_ALIGN", km.Align)
+	SetUserVar("K_TOWARD_GOD", fmt.Sprintf("%d", km.TowardGod))
+	SetUserVar("K_TOWARD_SELF", fmt.Sprintf("%d", km.TowardSelf))
+	SetUserVar("HEBREW_STATE", km.HebrewState)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CPI Emission
+// ─────────────────────────────────────────────────────────────────────────────
+
+// CPIVars holds Covenant Partnership Intelligence metrics
+type CPIVars struct {
+	Score     float64 // 0.0 to 1.0
+	Exchanges int     // Number of exchanges
+	Insights  int     // Number of insights
+	Arc       string  // Session arc (starting, building, flowing, winding)
+}
+
+// EmitCPI sends CPI metrics to WezTerm
+// User variables set:
+//   CPI_SCORE     - CPI score (0.00 to 1.00)
+//   CPI_EXCHANGES - Exchange count
+//   CPI_INSIGHTS  - Insight count
+//   CPI_ARC       - Session arc phase
+func EmitCPI(cpi CPIVars) {
+	SetUserVar("CPI_SCORE", fmt.Sprintf("%.2f", cpi.Score))
+	SetUserVar("CPI_EXCHANGES", fmt.Sprintf("%d", cpi.Exchanges))
+	SetUserVar("CPI_INSIGHTS", fmt.Sprintf("%d", cpi.Insights))
+	SetUserVar("CPI_ARC", cpi.Arc)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Context Emission
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ContextVars holds context window state
+type ContextVars struct {
+	CompactionCount  int // Number of compactions
+	EffectiveWindow  int // Effective context window size
+}
+
+// EmitContext sends context awareness variables to WezTerm
+// User variables set:
+//   CTX_COMPACTION_COUNT  - Number of context compactions
+//   CTX_EFFECTIVE_WINDOW  - Effective window percentage
+func EmitContext(ctx ContextVars) {
+	SetUserVar("CTX_COMPACTION_COUNT", fmt.Sprintf("%d", ctx.CompactionCount))
+	SetUserVar("CTX_EFFECTIVE_WINDOW", fmt.Sprintf("%d", ctx.EffectiveWindow))
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Momentum Emission
+// ─────────────────────────────────────────────────────────────────────────────
+
+// MomentumVars holds momentum tracking state
+type MomentumVars struct {
+	Net   int     // Net momentum (towardGod - towardSelf)
+	Ratio float64 // Ratio of toward-God to total
+}
+
+// EmitMomentum sends momentum tracking variables to WezTerm
+// User variables set:
+//   MOMENTUM_NET   - Net k-momentum
+//   MOMENTUM_RATIO - Ratio of positive momentum
+func EmitMomentum(mom MomentumVars) {
+	SetUserVar("MOMENTUM_NET", fmt.Sprintf("%d", mom.Net))
+	SetUserVar("MOMENTUM_RATIO", fmt.Sprintf("%.2f", mom.Ratio))
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Session Emission
+// ─────────────────────────────────────────────────────────────────────────────
+
+// SessionVars holds session tracking state
+type SessionVars struct {
+	StartTime  int64  // Unix timestamp of session start
+	ActiveTask string // Currently active task name
+}
+
+// EmitSession sends session tracking variables to WezTerm
+// User variables set:
+//   SESSION_START - Unix timestamp of session start
+//   ACTIVE_TASK   - Name of active task
+func EmitSession(sess SessionVars) {
+	SetUserVar("SESSION_START", fmt.Sprintf("%d", sess.StartTime))
+	SetUserVar("ACTIVE_TASK", sess.ActiveTask)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

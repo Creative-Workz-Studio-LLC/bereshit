@@ -285,8 +285,13 @@ type rawBookDef struct {
 
 // --- Default Path ---
 
-// DefaultBereshitDir returns the default Bereshit repository location
+// DefaultBereshitDir returns the Bereshit repository location.
+// Checks BERESHIT_ROOT environment variable first, then falls back to default.
 func DefaultBereshitDir() string {
+	if root := os.Getenv("BERESHIT_ROOT"); root != "" {
+		return root
+	}
+	// Fallback to known location on CWS workstation
 	return "/media/seanje-lenox-wise/Project/Bereshit"
 }
 

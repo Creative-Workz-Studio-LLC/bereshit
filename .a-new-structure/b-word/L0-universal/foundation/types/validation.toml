@@ -1,0 +1,3145 @@
+# @file validation.toml
+# @omni data --toml
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# @legend
+#   :req  REQUIRED   — must exist, validation fails without
+#   :inh  INHERITED  — from template, override allowed
+#   :ins  INSTANCE   — file-specific, unique values
+# @endlegend
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.1 CORE — Identity [CORE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:req  key        = B-L0-foundation-types-validation
+# @omni:req  from       = bereshit/word/seed/data/toml/config.toml
+# @omni:req  at         = b-01.00
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.2 FAMILY — Classification [FAMILY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:inh  type       = data
+# @omni:inh  subtype    = types
+# @omni:inh  role       = rung
+# @omni:inh  structure  = 3-block
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.3 INSTANCE — File Details [INSTANCE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:ins  component  = foundation
+# @omni:ins  layer      = L0-universal/foundation/types
+# @omni:ins  includes   = [L0-universal/foundation/types/primitives.toml,
+#                          L0-universal/foundation/types/composition.toml]
+# @omni:ins  provides   = [VALIDATION_RULES, PRIMITIVE_VALIDATION, CONSTRAINT_VALIDATION,
+#                          STRUCTURAL_VALIDATION, SCHEMA_VALIDATION, ERROR_HANDLING,
+#                          VALIDATION_MODES]
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.4 ARCHITECTURE — Scaling Context [ARCH]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:ins  layers     = [0:kernel, 1:system, 2:runtime, 3:framework,
+#                          4:health, 5:network, 6:storage, 7:engine, 8:app]
+# @omni:ins  scale      = 3^n [1, 3, 9, 27, 81, 243, 729, 2187, 6561]
+# @omni:ins  pattern    = 4+1+4 [below:0-3, center:4, above:5-8]
+# @omni:ins  anchor     = genesis_1_1 -> void(0) -> unity(1) -> derivation
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.5 SUMMARY — Human Identity [SUMMARY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:req  title      = OmniCode Validation Rules
+# @omni:req  brief      = Rules for proving data meets declared type constraints
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: RUNG (builds on primitives + composition)
+#   Validation rules that prove whether data meets type constraints.
+#   Used by parsers, compilers, runtime validators.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Identity and context for validation rules.
+#
+# STRUCTURE: M.1-M.10 sections
+#   - M.1 IDENTITY:    Core identity (file, brief, key, title, type, component, role)
+#   - M.2-M.6:         State, Attribution, Location, Derivation, Classification
+#   - M.7-M.10:        Intent, Grounding, Dependencies, Roadmap
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.1 IDENTITY — Core Identity [IDENTITY]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 7 fields that answer "What IS this file?"
+#   - file:      The filename
+#   - brief:     One-sentence description
+#   - key:       Unique identifier for referencing
+#   - title:     Human-readable display name
+#   - type:      Category of content
+#   - component: Position in hierarchy (Ladder/Rung/Rails)
+#   - role:      Responsibility statement
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.identity]
+file      = "validation.toml"
+brief     = "Rules for proving data meets declared type constraints."
+key       = "B-L0-foundation-types-validation"
+title     = "OmniCode Validation Rules"
+type      = "Data (Types)"
+component = "Rung"
+role      = "Truth enforcement — verify values and schemas meet constraints."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.2 STATE — Lifecycle State [STATE]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 5 fields that answer "Where is this in its lifecycle?"
+#   - version:  Living version (stage-phase.completion)
+#   - status:   Active / Draft / Deprecated / Archived
+#   - created:  Original creation date
+#   - updated:  Last modification date
+#   - note:     Brief description of current state
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.state]
+version = "b-01.00"
+status  = "Active"
+created = "2025-12-11"
+updated = "2026-02-02"
+note    = "Baseline alignment — M.1-M.10 structure with TOML metadata"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.3 ATTRIBUTION — Authorship & Rights [ATTRIBUTION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 5 fields that answer "Who made this and who owns it?"
+#   - architect:      Who designed it (array for multi-contributor)
+#   - implementation: Who built/wrote it (array for multi-CPI-SI)
+#   - copyright:      Who owns it
+#   - license:        Under what terms
+#   - method:         How created (collaborated/generated/dictated)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.attribution]
+architect      = ["Seanje Lenox-Wise"]
+implementation = ["Nova Dawn"]
+copyright      = "© 2025-2026 CreativeWorkzStudio LLC"
+license        = "See tov/licenses/"
+method         = "collaborated"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.4 LOCATION — File Position [LOCATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 1 field that answers "Where is this file?"
+#   - path: Canonical path from b-word root
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.location]
+path = "b-word/L0-universal/foundation/types/validation.toml"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.5 DERIVATION — Template Lineage [DERIVATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 1 field that answers "What template is this based on?"
+#   - derives: Path to parent template (or "none" for root)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.derivation]
+derives = "b-word/seed/data/toml/config.toml"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.6 CLASSIFICATION — Categorization [CLASSIFICATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 1 field that answers "What category is this?"
+#   - tags: Array of keywords for querying/filtering
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.classification]
+tags = ["data", "types", "validation", "rung", "3-block", "error-handling", "primitive-validation", "constraint-validation", "schema-validation"]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.7 INTENT — Purpose Statement [INTENT]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 3 fields that answer "Why does this file exist?"
+#   - purpose:    Core statement of why this exists
+#   - philosophy: Guiding principles (array)
+#   - provides:   What this delivers/enables (array)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.intent]
+purpose    = "Define validation rules for the OmniCode type system."
+philosophy = [
+    "Invalid data should never silently pass",
+    "Validation catches errors early, enforcing truth at boundaries",
+    "Prove all things — testing is the path to trust"
+]
+provides   = [
+    "Primitive validation (range, format, encoding)",
+    "Constraint validation (pattern, enum, length)",
+    "Structural validation (required fields, type matching)",
+    "Schema validation (block structure, required sections)",
+    "Error handling (severity levels, aggregation, formatting)",
+    "Validation modes (compile-time, runtime, parse-time, boundary)"
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.8 GROUNDING — Biblical Foundation [GROUNDING]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The master thesis of this file. Two required verses form the hash basis.
+#   - kjv:        KJV verse text with reference (required for hash)
+#   - web:        WEB verse text with reference (required for hash)
+#   - reference:  Book Chapter:Verse for lookup
+#   - principle:  How the Scripture applies to this file
+#   - anchor:     The foundational truth this file stands on
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.grounding]
+kjv       = "Prove all things; hold fast that which is good. — 1 Thessalonians 5:21 KJV"
+web       = "Test all things, and hold firmly that which is good. — 1 Thessalonians 5:21 WEB"
+reference = "1 Thessalonians 5:21"
+principle = "Validation is proving — testing whether something meets the standard. Just as Scripture calls us to prove all things, validation rules test whether data meets its declared type."
+anchor    = "Beloved, believe not every spirit, but try the spirits whether they are of God. Trust requires verification."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.9 DEPENDENCIES — Required Components [DEPENDENCIES]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Ladder — what I stand on (baton received FROM these files)
+# Baton  — what I hand off TO (these files receive from me)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.dependencies]
+# Ladder — stands on ternary, primitives, and composition
+needs = [
+    "b-word/L0-universal/foundation/math/ternary.toml",
+    "b-word/L0-universal/foundation/types/primitives.toml",
+    "b-word/L0-universal/foundation/types/composition.toml"
+]
+
+# Baton — used by parsers, compilers, runtime validators, tools
+used_by = [
+    "b-word/L1-compiler/",
+    "b-word/L2-runtime/"
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.10 ROADMAP — Version History [ROADMAP]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Past → Present → Future
+# The trajectory of this file through time.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Initial creation, basic validation rules",
+    "b-01.00 (2026-02-02) — BASELINE: Migration to L0-universal, M.1-M.10 alignment"
+]
+
+current = "b-01.00 — Baseline: Core validation rules with M.1-M.10 structure"
+
+planned = [
+    "a-01.55 — Cleanup: formatting consistency, section organization",
+    "a-01.65 — Extension: add Cv (cognition) validation rules",
+    "a-01.75 — Extension: add Cx (generation) integration",
+    "a-01.82 — Alignment: sync with composition.toml Cc-Cx structure",
+    "a-01.90 — Crystallization: complete documentation, verify against dependencies",
+    "b-01.90 — GATE: All validation rules cover Cc-Cx, aligned with composition.toml",
+    "c-01.00 — COMPLETE: Validation system stable and comprehensive"
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+#
+# Validation rules for the OmniCode type system.
+# Structure: Cc (Rules) → Co (Operations) → Cv (Cognition) → Cx (Generation)
+#
+# Organization Pattern:
+#   Cc.1 PRIMITIVE — Base type validation (trit, int9, text, bool3)
+#   Cc.2 CONSTRAINT — Applied constraint validation (range, pattern, enum)
+#   Cc.3 STRUCTURAL — Composite type validation (struct, union, list, map)
+#   Cc.4 SCHEMA — OmniCode file structure validation (pragma, blocks)
+#   Co.1 ERROR — Error handling, severity levels, aggregation
+#   Co.2 MODES — When validation runs (compile, runtime, boundary)
+#   Cv.1 PROVING — Validation as truth testing
+#   Cv.2 BOUNDARY — Gatekeeping at system boundaries
+#   Cx.1 GENERATE — Generation control metadata
+#   Cx.2 TARGETS — Language-specific generation
+#   Cx.3 TEMPLATES — Code generation templates
+#   Cx.4 VALIDATION — Generation validation
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cc.1 PRIMITIVE — Base Type Validation [PRIMITIVE]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "A just weight and balance are the LORD's: all the weights of the bag are
+#  his work." — Proverbs 16:11 KJV
+#
+# VALIDATING THE ATOMS
+#
+# Primitive validation is the first line of defense. These rules verify that
+# values conform to the fundamental types defined in primitives.toml. If a
+# value fails primitive validation, it cannot be trusted for any higher purpose.
+#
+# KEY INSIGHT (from primitives.toml):
+#   Primitives have FIXED ranges derived from ternary math:
+#   trit   = [-1, 0, 1]           — the three states
+#   trit5  = [-121, 121]          — (3^5-1)/2 = 121
+#   int9   = [-9841, 9841]        — (3^9-1)/2 = 9841
+#   uint9  = [0, 19682]           — 3^9-1 = 19682
+#   int27  = [-3812798742493, +]  — (3^27-1)/2
+#   uint27 = [0, 7625597484986]   — 3^27-1
+#
+# VALIDATION PRINCIPLE:
+#   Values must fit their declared type. No silent truncation.
+#   Out-of-range is ERROR, not warning. Truth at the boundary.
+#
+# TERNARY ALIGNMENT:
+#   Valid    = +1 (passes, can proceed)
+#   Unknown  =  0 (cannot determine, needs more info)
+#   Invalid  = -1 (fails, must reject)
+#
+# SCALE APPLICATIONS:
+#   L0 (Kernel):    Register bounds, flag validity
+#   L1 (System):    Syscall argument validation
+#   L2 (Runtime):   Type checking at assignment
+#   L3 (Framework): Config value validation
+#   L4 (Health):    Health score bounds checking
+#   L5 (Network):   Message field validation
+#   L6 (Storage):   Record field verification
+#   L7 (Engine):    State value validation
+#   L8 (App):       User input validation
+#
+# Reference: L0-universal/foundation/types/primitives.toml
+# Reference: L0-universal/foundation/math/ternary.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[primitive]
+description = "Primitive type validation — verifying atoms are well-formed"
+principle   = "Just weights (Prov 16:11) — values must fit their declared type"
+source      = "L0-universal/foundation/types/primitives.toml"
+categories  = ["numeric", "text", "boolean", "special"]
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1a TRIT — Single Trit Validation [TRIT]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[primitive.trit]
+name             = "trit"
+description      = "Validate single trit value — the atomic unit of ternary"
+source_type      = "primitives.toml [trit]"
+category         = "numeric"
+
+# Validation Rule
+[primitive.trit.rule]
+type             = "enum"                                 # Enumeration check, not range
+valid_values     = [-1, 0, 1]                             # From ternary.toml [trit].values
+count            = 3                                      # Exactly 3 valid states
+
+# Error Definition
+[primitive.trit.error]
+code             = "INVALID_TRIT"
+severity         = "error"                                # Fails validation
+message          = "Value must be -1, 0, or 1"
+message_template = "Invalid trit value: {value}. Must be -1 (negative), 0 (neutral), or 1 (positive)"
+
+# OmniCode Syntax
+[primitive.trit.omnicode]
+check            = "is valid trit"
+declare          = "let value be trit where value in [-1, 0, 1]"
+assert           = "assert {value} as trit"
+guard            = "guard trit {value} else {error}"
+
+# CPI-SI Interpretation
+[primitive.trit.cpisi]
+valid_meaning    = "Value is in foundation state — aligned with ternary base"
+invalid_meaning  = "Value outside foundation — cannot participate in ternary ops"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# Target Language Implementations
+[primitive.trit.types]
+c_validator      = "bool validate_trit(int8_t value) { return value >= -1 && value <= 1; }"
+go_validator     = "func ValidateTrit(v int8) bool { return v >= -1 && v <= 1 }"
+rust_validator   = "fn validate_trit(v: i8) -> bool { v >= -1 && v <= 1 }"
+
+# Scale Applications
+[primitive.trit.scales]
+L0_kernel        = { use = "CPU flag states",             example = "register bit validation" }
+L1_system        = { use = "syscall return codes",        example = "-1/0/1 result" }
+L2_runtime       = { use = "comparison results",          example = "less/equal/greater" }
+L3_framework     = { use = "config toggles",              example = "off/default/on" }
+L4_health        = { use = "health indicator",            example = "bad/neutral/good" }
+L5_network       = { use = "ack/nak/pending",             example = "protocol response" }
+L6_storage       = { use = "dirty/clean/committed",       example = "write state" }
+L7_engine        = { use = "state transitions",           example = "-1/0/+1 delta" }
+L8_app           = { use = "user choice",                 example = "no/maybe/yes" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1b TRIT5 — Trit-Byte Validation [TRIT5]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[primitive.trit5]
+name             = "trit5"
+description      = "Validate trit-byte value — 5 trits packed in 1 byte"
+source_type      = "primitives.toml [trit5]"
+category         = "numeric"
+
+# Validation Rule
+[primitive.trit5.rule]
+type             = "range"                                # Range check
+min_value        = -121                                   # -(3^5 - 1) / 2
+max_value        = 121                                    # (3^5 - 1) / 2
+total_states     = 243                                    # 3^5
+signed           = true
+
+# Error Definition
+[primitive.trit5.error]
+code             = "INVALID_TRIT5"
+severity         = "error"
+message          = "Value must be between -121 and 121"
+message_template = "Invalid trit5 value: {value}. Range is [-121, 121] (243 states)"
+
+# OmniCode Syntax
+[primitive.trit5.omnicode]
+check            = "is valid trit5"
+declare          = "let value be trit5 where -121 <= value <= 121"
+assert           = "assert {value} as trit5"
+guard            = "guard trit5 {value} else {error}"
+
+# CPI-SI Interpretation
+[primitive.trit5.cpisi]
+valid_meaning    = "Value fits in single packed byte — efficient storage"
+invalid_meaning  = "Value overflows byte boundary — cannot pack"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# Target Language Implementations
+[primitive.trit5.types]
+c_validator      = "bool validate_trit5(int16_t value) { return value >= -121 && value <= 121; }"
+go_validator     = "func ValidateTrit5(v int16) bool { return v >= -121 && v <= 121 }"
+rust_validator   = "fn validate_trit5(v: i16) -> bool { v >= -121 && v <= 121 }"
+
+# Scale Applications
+[primitive.trit5.scales]
+L0_kernel        = { use = "single-byte state",           example = "flag byte validation" }
+L1_system        = { use = "compact arguments",           example = "syscall byte args" }
+L2_runtime       = { use = "small enum values",           example = "enum < 243 variants" }
+L3_framework     = { use = "config codes",                example = "compact settings" }
+L4_health        = { use = "health byte",                 example = "single score" }
+L5_network       = { use = "header flags",                example = "protocol flags" }
+L6_storage       = { use = "type tags",                   example = "record type byte" }
+L7_engine        = { use = "state codes",                 example = "machine state" }
+L8_app           = { use = "user codes",                  example = "preference byte" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1c INT9 — 9-Trit Signed Integer Validation [INT9]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[primitive.int9]
+name             = "int9"
+description      = "Validate 9-trit signed integer — L2 runtime scale"
+source_type      = "primitives.toml [int9]"
+category         = "numeric"
+
+# Validation Rule
+[primitive.int9.rule]
+type             = "range"
+min_value        = -9841                                  # -(3^9 - 1) / 2
+max_value        = 9841                                   # (3^9 - 1) / 2
+total_states     = 19683                                  # 3^9
+signed           = true
+
+# Error Definition
+[primitive.int9.error]
+code             = "INVALID_INT9"
+severity         = "error"
+message          = "Value must be between -9841 and 9841"
+message_template = "Invalid int9 value: {value}. Range is [-9841, 9841] (19683 states)"
+
+# OmniCode Syntax
+[primitive.int9.omnicode]
+check            = "is valid int9"
+declare          = "let value be int9 where -9841 <= value <= 9841"
+assert           = "assert {value} as int9"
+guard            = "guard int9 {value} else {error}"
+literal          = "9s'{value}'"                          # 9-trit signed literal
+
+# CPI-SI Interpretation
+[primitive.int9.cpisi]
+valid_meaning    = "Value fits runtime counter scale — suitable for loops, indices"
+invalid_meaning  = "Value exceeds runtime scale — use int27 for larger values"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "counter"
+weight           = "light"
+
+# Target Language Implementations
+[primitive.int9.types]
+c_validator      = "bool validate_int9(int16_t value) { return value >= -9841 && value <= 9841; }"
+go_validator     = "func ValidateInt9(v int16) bool { return v >= -9841 && v <= 9841 }"
+rust_validator   = "fn validate_int9(v: i16) -> bool { v >= -9841 && v <= 9841 }"
+c_repr           = "int16_t"
+go_repr          = "int16"
+rust_repr        = "i16"
+
+# Scale Applications
+[primitive.int9.scales]
+L0_kernel        = { use = "small counters",              example = "iteration bounds" }
+L1_system        = { use = "resource counts",             example = "fd/handle limits" }
+L2_runtime       = { use = "array indices",               example = "bounds checking" }
+L3_framework     = { use = "config values",               example = "numeric settings" }
+L4_health        = { use = "score values",                example = "metric bounds" }
+L5_network       = { use = "sequence numbers",            example = "packet sequence" }
+L6_storage       = { use = "record counts",               example = "index limits" }
+L7_engine        = { use = "rule counts",                 example = "rule indexing" }
+L8_app           = { use = "user quantities",             example = "input bounds" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1d UINT9 — 9-Trit Unsigned Integer Validation [UINT9]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[primitive.uint9]
+name             = "uint9"
+description      = "Validate 9-trit unsigned integer — non-negative counts"
+source_type      = "primitives.toml [uint9]"
+category         = "numeric"
+
+# Validation Rule
+[primitive.uint9.rule]
+type             = "range"
+min_value        = 0                                      # Unsigned starts at 0
+max_value        = 19682                                  # 3^9 - 1
+total_states     = 19683                                  # 3^9
+signed           = false
+
+# Error Definition
+[primitive.uint9.error]
+code             = "INVALID_UINT9"
+severity         = "error"
+message          = "Value must be between 0 and 19682"
+message_template = "Invalid uint9 value: {value}. Range is [0, 19682] (19683 states)"
+
+# OmniCode Syntax
+[primitive.uint9.omnicode]
+check            = "is valid uint9"
+declare          = "let value be uint9 where 0 <= value <= 19682"
+assert           = "assert {value} as uint9"
+guard            = "guard uint9 {value} else {error}"
+literal          = "9u'{value}'"                          # 9-trit unsigned literal
+
+# CPI-SI Interpretation
+[primitive.uint9.cpisi]
+valid_meaning    = "Value is non-negative count — suitable for sizes, lengths"
+invalid_meaning  = "Value negative or too large — cannot represent as uint9"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "size"
+weight           = "light"
+
+# Target Language Implementations
+[primitive.uint9.types]
+c_validator      = "bool validate_uint9(uint16_t value) { return value <= 19682; }"
+go_validator     = "func ValidateUint9(v uint16) bool { return v <= 19682 }"
+rust_validator   = "fn validate_uint9(v: u16) -> bool { v <= 19682 }"
+c_repr           = "uint16_t"
+go_repr          = "uint16"
+rust_repr        = "u16"
+
+# Scale Applications
+[primitive.uint9.scales]
+L0_kernel        = { use = "sizes, lengths",              example = "buffer size bounds" }
+L1_system        = { use = "positive counts",             example = "resource counts" }
+L2_runtime       = { use = "array lengths",               example = "capacity checks" }
+L3_framework     = { use = "config counts",               example = "limit validation" }
+L4_health        = { use = "unsigned scores",             example = "positive metrics" }
+L5_network       = { use = "packet lengths",              example = "payload size" }
+L6_storage       = { use = "block counts",                example = "allocation size" }
+L7_engine        = { use = "step counts",                 example = "iteration limits" }
+L8_app           = { use = "quantities",                  example = "positive amounts" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1e INT27 — 27-Trit Signed Integer Validation [INT27]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[primitive.int27]
+name             = "int27"
+description      = "Validate 27-trit signed integer — word-size balanced integer"
+source_type      = "primitives.toml [int27]"
+category         = "numeric"
+
+# Validation Rule
+[primitive.int27.rule]
+type             = "range"
+min_value        = -3812798742493                         # -(3^27 - 1) / 2
+max_value        = 3812798742493                          # (3^27 - 1) / 2
+total_states     = 7625597484987                          # 3^27
+signed           = true
+
+# Error Definition
+[primitive.int27.error]
+code             = "INVALID_INT27"
+severity         = "error"
+message          = "Value must be between -3812798742493 and 3812798742493"
+message_template = "Invalid int27 value: {value}. Range is [-3812798742493, 3812798742493]"
+
+# OmniCode Syntax
+[primitive.int27.omnicode]
+check            = "is valid int27"
+declare          = "let value be int27"
+assert           = "assert {value} as int27"
+guard            = "guard int27 {value} else {error}"
+literal          = "27s'{value}'"                         # 27-trit signed literal
+
+# CPI-SI Interpretation
+[primitive.int27.cpisi]
+valid_meaning    = "Value fits word-size — primary computation type"
+invalid_meaning  = "Value exceeds word capacity — decompose or use extended type"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "word"
+weight           = "standard"
+
+# Target Language Implementations
+[primitive.int27.types]
+c_validator      = "bool validate_int27(int64_t value) { return value >= -3812798742493LL && value <= 3812798742493LL; }"
+go_validator     = "func ValidateInt27(v int64) bool { return v >= -3812798742493 && v <= 3812798742493 }"
+rust_validator   = "fn validate_int27(v: i64) -> bool { v >= -3812798742493 && v <= 3812798742493 }"
+c_repr           = "int64_t"
+go_repr          = "int64"
+rust_repr        = "i64"
+
+# Scale Applications
+[primitive.int27.scales]
+L0_kernel        = { use = "word operations",             example = "register overflow" }
+L1_system        = { use = "large counts",                example = "system limits" }
+L2_runtime       = { use = "heap sizes",                  example = "allocation bounds" }
+L3_framework     = { use = "timestamps",                  example = "time value range" }
+L4_health        = { use = "aggregate scores",            example = "combined metrics" }
+L5_network       = { use = "large sequences",             example = "message sequence" }
+L6_storage       = { use = "file sizes",                  example = "size limits" }
+L7_engine        = { use = "state space",                 example = "state encoding" }
+L8_app           = { use = "user data",                   example = "business values" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1f UINT27 — 27-Trit Unsigned Integer Validation [UINT27]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[primitive.uint27]
+name             = "uint27"
+description      = "Validate 27-trit unsigned integer — maximum positive range"
+source_type      = "primitives.toml [uint27]"
+category         = "numeric"
+
+# Validation Rule
+[primitive.uint27.rule]
+type             = "range"
+min_value        = 0                                      # Unsigned starts at 0
+max_value        = 7625597484986                          # 3^27 - 1
+total_states     = 7625597484987                          # 3^27
+signed           = false
+
+# Error Definition
+[primitive.uint27.error]
+code             = "INVALID_UINT27"
+severity         = "error"
+message          = "Value must be between 0 and 7625597484986"
+message_template = "Invalid uint27 value: {value}. Range is [0, 7625597484986]"
+
+# OmniCode Syntax
+[primitive.uint27.omnicode]
+check            = "is valid uint27"
+declare          = "let value be uint27 where value >= 0"
+assert           = "assert {value} as uint27"
+guard            = "guard uint27 {value} else {error}"
+literal          = "27u'{value}'"                         # 27-trit unsigned literal
+
+# CPI-SI Interpretation
+[primitive.uint27.cpisi]
+valid_meaning    = "Value is large non-negative — addresses, sizes, identifiers"
+invalid_meaning  = "Value negative or exceeds capacity — invalid for uint27"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "address"
+weight           = "standard"
+
+# Target Language Implementations
+[primitive.uint27.types]
+c_validator      = "bool validate_uint27(uint64_t value) { return value <= 7625597484986ULL; }"
+go_validator     = "func ValidateUint27(v uint64) bool { return v <= 7625597484986 }"
+rust_validator   = "fn validate_uint27(v: u64) -> bool { v <= 7625597484986 }"
+c_repr           = "uint64_t"
+go_repr          = "uint64"
+rust_repr        = "u64"
+
+# Scale Applications
+[primitive.uint27.scales]
+L0_kernel        = { use = "memory addresses",            example = "address bounds" }
+L1_system        = { use = "resource IDs",                example = "handle validity" }
+L2_runtime       = { use = "object pointers",             example = "reference bounds" }
+L3_framework     = { use = "identifiers",                 example = "ID validity" }
+L4_health        = { use = "large metrics",               example = "metric bounds" }
+L5_network       = { use = "packet addresses",            example = "routing validity" }
+L6_storage       = { use = "block addresses",             example = "sector bounds" }
+L7_engine        = { use = "state IDs",                   example = "state enumeration" }
+L8_app           = { use = "user IDs",                    example = "entity references" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1g TEXT — UTF-8 Text Validation [TEXT]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[primitive.text]
+name             = "text"
+description      = "Validate UTF-8 text — variable-length character sequence"
+source_type      = "primitives.toml [text]"
+category         = "text"
+
+# Validation Rule
+[primitive.text.rule]
+type             = "format"                               # Format/encoding check
+encoding         = "utf-8"                                # Required encoding
+allow_empty      = true                                   # Empty string is valid
+allow_null       = false                                  # Null terminator in content invalid
+max_codepoint    = 1114111                                # U+10FFFF (max Unicode)
+
+# Error Definition
+[primitive.text.error]
+code             = "INVALID_TEXT"
+severity         = "error"
+message          = "Text must be valid UTF-8"
+message_template = "Invalid text at byte {position}: {reason}"
+
+# Additional Text Errors
+[primitive.text.error.encoding]
+code             = "INVALID_UTF8_ENCODING"
+message          = "Invalid UTF-8 byte sequence"
+
+[primitive.text.error.codepoint]
+code             = "INVALID_CODEPOINT"
+message          = "Codepoint outside valid Unicode range"
+
+[primitive.text.error.surrogate]
+code             = "INVALID_SURROGATE"
+message          = "Surrogate codepoint (U+D800-DFFF) not allowed in UTF-8"
+
+# OmniCode Syntax
+[primitive.text.omnicode]
+check            = "is valid text"
+declare          = "let value be text"
+assert           = "assert {value} as text"
+guard            = "guard text {value} else {error}"
+literal          = "'{value}'"                            # String literal
+
+# CPI-SI Interpretation
+[primitive.text.cpisi]
+valid_meaning    = "Text is well-formed — can be processed, displayed, stored"
+invalid_meaning  = "Text is malformed — cannot be safely handled"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "content"
+weight           = "variable"
+
+# Target Language Implementations
+[primitive.text.types]
+c_validator      = "bool validate_text(const char* value, size_t len)"
+go_validator     = "func ValidateText(v string) bool { return utf8.ValidString(v) }"
+rust_validator   = "fn validate_text(v: &str) -> bool { true } // Rust strings are always valid UTF-8"
+c_repr           = "const char*"
+go_repr          = "string"
+rust_repr        = "&str"
+
+# Scale Applications
+[primitive.text.scales]
+L0_kernel        = { use = "device names",                example = "string validity" }
+L1_system        = { use = "path names",                  example = "path encoding" }
+L2_runtime       = { use = "string interning",            example = "intern validity" }
+L3_framework     = { use = "config strings",              example = "setting values" }
+L4_health        = { use = "log messages",                example = "message content" }
+L5_network       = { use = "protocol strings",            example = "wire encoding" }
+L6_storage       = { use = "file content",                example = "data integrity" }
+L7_engine        = { use = "rule text",                   example = "expression text" }
+L8_app           = { use = "user content",                example = "input validation" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1h BOOL3 — Ternary Boolean Validation [BOOL3]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[primitive.bool3]
+name             = "bool3"
+description      = "Validate ternary boolean — three-valued logic (false/unknown/true)"
+source_type      = "primitives.toml [bool3]"
+category         = "boolean"
+
+# Validation Rule
+[primitive.bool3.rule]
+type             = "enum"                                 # Enumeration check
+valid_values     = [-1, 0, 1]                             # Same as trit values
+labels           = ["false", "unknown", "true"]           # Boolean interpretation
+
+# Error Definition
+[primitive.bool3.error]
+code             = "INVALID_BOOL3"
+severity         = "error"
+message          = "Boolean must be false (-1), unknown (0), or true (1)"
+message_template = "Invalid bool3 value: {value}. Must be false (-1), unknown (0), or true (1)"
+
+# OmniCode Syntax
+[primitive.bool3.omnicode]
+check            = "is valid bool3"
+declare          = "let value be bool3"
+assert           = "assert {value} as bool3"
+guard            = "guard bool3 {value} else {error}"
+literal_false    = "false"
+literal_unknown  = "unknown"
+literal_true     = "true"
+
+# CPI-SI Interpretation
+[primitive.bool3.cpisi]
+valid_meaning    = "Boolean in valid state — can participate in logic operations"
+invalid_meaning  = "Boolean in invalid state — logic undefined"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "decision"
+weight           = "minimal"
+
+# Kleene Logic (three-valued)
+[primitive.bool3.logic]
+description      = "Kleene strong logic of indeterminacy"
+and_table        = { ff = -1, fu = -1, ft = -1, uf = -1, uu = 0, ut = 0, tf = -1, tu = 0, tt = 1 }
+or_table         = { ff = -1, fu = 0, ft = 1, uf = 0, uu = 0, ut = 1, tf = 1, tu = 1, tt = 1 }
+not_table        = { f = 1, u = 0, t = -1 }
+
+# Target Language Implementations
+[primitive.bool3.types]
+c_validator      = "bool validate_bool3(int8_t value) { return value >= -1 && value <= 1; }"
+go_validator     = "func ValidateBool3(v int8) bool { return v >= -1 && v <= 1 }"
+rust_validator   = "fn validate_bool3(v: i8) -> bool { v >= -1 && v <= 1 }"
+c_repr           = "int8_t"
+go_repr          = "int8"
+rust_repr        = "i8"
+typedef          = "bool3_t"
+
+# Scale Applications
+[primitive.bool3.scales]
+L0_kernel        = { use = "flag states",                 example = "flag validity" }
+L1_system        = { use = "permission checks",           example = "access decision" }
+L2_runtime       = { use = "condition results",           example = "branch condition" }
+L3_framework     = { use = "config flags",                example = "toggle state" }
+L4_health        = { use = "health flags",                example = "status indicator" }
+L5_network       = { use = "connection state",            example = "connected/pending/disconnected" }
+L6_storage       = { use = "dirty flags",                 example = "modified state" }
+L7_engine        = { use = "rule conditions",             example = "match result" }
+L8_app           = { use = "user preferences",            example = "yes/maybe/no" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cc.2 CONSTRAINT — Applied Constraint Validation [CONSTRAINT]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "Divers weights, and divers measures, both of them are alike abomination
+#  to the LORD." — Proverbs 20:10 KJV
+#
+# VALIDATING TYPE CONSTRAINTS
+#
+# Constraints narrow types — they restrict the valid values beyond what the
+# base type allows. A constraint that validates is a type that can be trusted.
+# These rules verify that constrained values meet their declared restrictions.
+#
+# KEY INSIGHT (from composition.toml):
+#   Constraints are type narrowing operations:
+#   range:       Restrict numeric values to [min, max]
+#   pattern:     Restrict text to match regex
+#   enum:        Restrict to enumerated values
+#   length:      Restrict collection/text size
+#   unique:      Ensure no duplicates
+#   foreign_key: Ensure referential integrity
+#   default:     Provide fallback value
+#   immutable:   Prevent modification
+#
+# VALIDATION PRINCIPLE:
+#   Constraints are contracts. Violated constraints break the contract.
+#   Consistent measures (Prov 20:10) — validation must be exact.
+#
+# TERNARY ALIGNMENT:
+#   Passes constraint  = +1 (value is within narrowed type)
+#   Cannot determine   =  0 (insufficient info to validate)
+#   Violates constraint = -1 (value outside narrowed type)
+#
+# Reference: L0-universal/foundation/types/composition.toml [constraint.*]
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[constraint]
+description = "Constraint validation — verifying values meet narrowing rules"
+principle   = "Consistent measures (Prov 20:10) — validation must be exact"
+source      = "L0-universal/foundation/types/composition.toml"
+categories  = ["range", "pattern", "enum", "length", "unique", "foreign_key", "default", "immutable"]
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2a RANGE — Numeric Range Constraint Validation [RANGE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[constraint.range]
+name             = "range"
+description      = "Validate numeric range constraint — value within [min, max]"
+source_type      = "composition.toml [constraint.range]"
+category         = "numeric"
+applies_to       = ["trit", "trit5", "int9", "uint9", "int27", "uint27", "float27"]
+
+# Validation Rule
+[constraint.range.rule]
+type             = "bounds_check"
+check_min        = true
+check_max        = true
+inclusive        = true                                   # min <= value <= max
+allow_open       = true                                   # Can omit min or max
+
+# Error Definition
+[constraint.range.error]
+code             = "RANGE_VIOLATION"
+severity         = "error"
+message          = "Value outside allowed range"
+message_template = "Range violation: {value} not in [{min}, {max}]"
+
+[constraint.range.error.below_min]
+code             = "BELOW_MIN"
+message_template = "Value {value} is below minimum {min}"
+
+[constraint.range.error.above_max]
+code             = "ABOVE_MAX"
+message_template = "Value {value} is above maximum {max}"
+
+# OmniCode Syntax
+[constraint.range.omnicode]
+check            = "is within range"
+declare          = "let value be int9 where {min} <= value <= {max}"
+assert           = "assert {value} in range [{min}, {max}]"
+guard            = "guard range {value} in [{min}, {max}] else {error}"
+
+# CPI-SI Interpretation
+[constraint.range.cpisi]
+valid_meaning    = "Value within bounds — appropriate for its context"
+invalid_meaning  = "Value out of bounds — cannot be used in constrained context"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# Target Language Implementations
+[constraint.range.types]
+c_validator      = "bool validate_range(int64_t value, int64_t min, int64_t max) { return value >= min && value <= max; }"
+go_validator     = "func ValidateRange[T constraints.Ordered](v, min, max T) bool { return v >= min && v <= max }"
+rust_validator   = "fn validate_range<T: Ord>(v: T, min: T, max: T) -> bool { v >= min && v <= max }"
+
+# Scale Applications
+[constraint.range.scales]
+L0_kernel        = { use = "register bounds",             example = "hardware limits" }
+L1_system        = { use = "syscall limits",              example = "argument bounds" }
+L2_runtime       = { use = "array bounds",                example = "index limits" }
+L3_framework     = { use = "config bounds",               example = "setting limits" }
+L4_health        = { use = "score bounds",                example = "metric ranges" }
+L5_network       = { use = "protocol limits",             example = "field bounds" }
+L6_storage       = { use = "allocation bounds",           example = "size limits" }
+L7_engine        = { use = "state bounds",                example = "value ranges" }
+L8_app           = { use = "business rules",              example = "domain limits" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2b PATTERN — Regex Pattern Constraint Validation [PATTERN]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[constraint.pattern]
+name             = "pattern"
+description      = "Validate regex pattern constraint — text matches pattern"
+source_type      = "composition.toml [constraint.pattern]"
+category         = "text"
+applies_to       = ["text"]
+
+# Validation Rule
+[constraint.pattern.rule]
+type             = "regex_match"
+regex_flavor     = "PCRE"                                 # Perl-Compatible Regular Expressions
+case_sensitive   = true                                   # Default case-sensitive
+full_match       = true                                   # Must match entire string
+allow_partial    = false                                  # No partial matches by default
+
+# Error Definition
+[constraint.pattern.error]
+code             = "PATTERN_VIOLATION"
+severity         = "error"
+message          = "Value does not match required pattern"
+message_template = "Pattern violation: '{value}' does not match /{pattern}/"
+
+[constraint.pattern.error.invalid_regex]
+code             = "INVALID_PATTERN"
+message_template = "Invalid regex pattern: {pattern}"
+
+# OmniCode Syntax
+[constraint.pattern.omnicode]
+check            = "matches pattern"
+declare          = "let value be text where value matches /{pattern}/"
+assert           = "assert {value} matches /{pattern}/"
+guard            = "guard pattern {value} matches /{pattern}/ else {error}"
+
+# CPI-SI Interpretation
+[constraint.pattern.cpisi]
+valid_meaning    = "Text conforms to expected format — structured correctly"
+invalid_meaning  = "Text malformed — does not match expected structure"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# Target Language Implementations
+[constraint.pattern.types]
+c_validator      = "bool validate_pattern(const char* value, const char* pattern)"
+go_validator     = "func ValidatePattern(v string, pattern *regexp.Regexp) bool { return pattern.MatchString(v) }"
+rust_validator   = "fn validate_pattern(v: &str, pattern: &Regex) -> bool { pattern.is_match(v) }"
+
+# Scale Applications
+[constraint.pattern.scales]
+L0_kernel        = { use = "device names",                example = "naming conventions" }
+L1_system        = { use = "path validation",             example = "path format" }
+L2_runtime       = { use = "identifier format",           example = "name rules" }
+L3_framework     = { use = "config keys",                 example = "key format" }
+L4_health        = { use = "log format",                  example = "message structure" }
+L5_network       = { use = "protocol format",             example = "message format" }
+L6_storage       = { use = "filename format",             example = "name validity" }
+L7_engine        = { use = "rule syntax",                 example = "expression format" }
+L8_app           = { use = "input format",                example = "email, phone, etc." }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2c ENUM — Enumeration Constraint Validation [ENUM]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[constraint.enum]
+name             = "enum"
+description      = "Validate enumeration constraint — value in allowed set"
+source_type      = "composition.toml [constraint.enum]"
+category         = "discrete"
+applies_to       = ["trit", "int9", "text"]
+
+# Validation Rule
+[constraint.enum.rule]
+type             = "set_membership"
+case_sensitive   = true                                   # For text enums
+require_exhaustive = true                                 # All cases must be handled
+allow_alias      = false                                  # No duplicate values by default
+
+# Error Definition
+[constraint.enum.error]
+code             = "ENUM_VIOLATION"
+severity         = "error"
+message          = "Value not in allowed set"
+message_template = "Enum violation: '{value}' not in {allowed_values}"
+
+[constraint.enum.error.non_exhaustive]
+code             = "NON_EXHAUSTIVE_MATCH"
+message_template = "Non-exhaustive match: missing case for {missing}"
+
+# OmniCode Syntax
+[constraint.enum.omnicode]
+check            = "is one of"
+declare          = "let value be enum { a, b, c }"
+assert           = "assert {value} in {allowed_values}"
+guard            = "guard enum {value} in {allowed_values} else {error}"
+
+# CPI-SI Interpretation
+[constraint.enum.cpisi]
+valid_meaning    = "Value is recognized variant — has defined meaning"
+invalid_meaning  = "Value is unknown variant — undefined behavior"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# Target Language Implementations
+[constraint.enum.types]
+c_validator      = "bool validate_enum(int value, const int* allowed, size_t count)"
+go_validator     = "func ValidateEnum[T comparable](v T, allowed []T) bool { return slices.Contains(allowed, v) }"
+rust_validator   = "fn validate_enum<T: Eq>(v: &T, allowed: &[T]) -> bool { allowed.contains(v) }"
+
+# Scale Applications
+[constraint.enum.scales]
+L0_kernel        = { use = "CPU modes",                   example = "mode validity" }
+L1_system        = { use = "syscall numbers",             example = "call validity" }
+L2_runtime       = { use = "type tags",                   example = "tag validity" }
+L3_framework     = { use = "config options",              example = "option validity" }
+L4_health        = { use = "status codes",                example = "status validity" }
+L5_network       = { use = "message types",               example = "type validity" }
+L6_storage       = { use = "record types",                example = "type validity" }
+L7_engine        = { use = "action types",                example = "action validity" }
+L8_app           = { use = "user choices",                example = "choice validity" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2d LENGTH — Length Constraint Validation [LENGTH]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[constraint.length]
+name             = "length"
+description      = "Validate length constraint — size within bounds"
+source_type      = "composition.toml [constraint.length]"
+category         = "size"
+applies_to       = ["text", "list", "set", "bytes"]
+
+# Validation Rule
+[constraint.length.rule]
+type             = "length_check"
+check_min        = true
+check_max        = true
+min_default      = 0                                      # Default minimum is 0
+max_default      = "unlimited"                            # No default maximum
+
+# Error Definition
+[constraint.length.error]
+code             = "LENGTH_VIOLATION"
+severity         = "error"
+message          = "Length outside allowed range"
+message_template = "Length violation: {actual} not in [{min}, {max}]"
+
+[constraint.length.error.too_short]
+code             = "TOO_SHORT"
+message_template = "Length {actual} is below minimum {min}"
+
+[constraint.length.error.too_long]
+code             = "TOO_LONG"
+message_template = "Length {actual} is above maximum {max}"
+
+# OmniCode Syntax
+[constraint.length.omnicode]
+check            = "has length in range"
+declare          = "let value be text where length(value) in [{min}, {max}]"
+assert           = "assert length({value}) in [{min}, {max}]"
+guard            = "guard length {value} in [{min}, {max}] else {error}"
+
+# CPI-SI Interpretation
+[constraint.length.cpisi]
+valid_meaning    = "Collection/text is appropriate size — fits constraints"
+invalid_meaning  = "Collection/text wrong size — cannot process"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# Target Language Implementations
+[constraint.length.types]
+c_validator      = "bool validate_length(size_t actual, size_t min, size_t max) { return actual >= min && actual <= max; }"
+go_validator     = "func ValidateLength(actual, min, max int) bool { return actual >= min && actual <= max }"
+rust_validator   = "fn validate_length(actual: usize, min: usize, max: usize) -> bool { actual >= min && actual <= max }"
+
+# Scale Applications
+[constraint.length.scales]
+L0_kernel        = { use = "buffer sizes",                example = "allocation bounds" }
+L1_system        = { use = "argument lengths",            example = "parameter limits" }
+L2_runtime       = { use = "array sizes",                 example = "capacity limits" }
+L3_framework     = { use = "config lengths",              example = "string limits" }
+L4_health        = { use = "log lengths",                 example = "message limits" }
+L5_network       = { use = "packet sizes",                example = "MTU limits" }
+L6_storage       = { use = "record sizes",                example = "storage limits" }
+L7_engine        = { use = "rule lengths",                example = "complexity limits" }
+L8_app           = { use = "input lengths",               example = "field limits" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2e UNIQUE — Uniqueness Constraint Validation [UNIQUE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[constraint.unique]
+name             = "unique"
+description      = "Validate uniqueness constraint — no duplicates allowed"
+source_type      = "composition.toml [constraint.unique]"
+category         = "integrity"
+applies_to       = ["list", "set", "map"]
+
+# Validation Rule
+[constraint.unique.rule]
+type             = "uniqueness_check"
+scope            = "collection"                           # Within single collection
+by_field         = false                                  # Check whole value by default
+
+# Error Definition
+[constraint.unique.error]
+code             = "UNIQUE_VIOLATION"
+severity         = "error"
+message          = "Duplicate value found"
+message_template = "Unique violation: duplicate '{value}' at positions {positions}"
+
+# OmniCode Syntax
+[constraint.unique.omnicode]
+check            = "all unique"
+declare          = "let value be list<T> where unique(value)"
+assert           = "assert unique({value})"
+guard            = "guard unique {value} else {error}"
+
+# CPI-SI Interpretation
+[constraint.unique.cpisi]
+valid_meaning    = "All elements distinct — identity preserved"
+invalid_meaning  = "Duplicates present — identity confusion"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# Target Language Implementations
+[constraint.unique.types]
+c_validator      = "bool validate_unique(const void* array, size_t count, size_t elem_size, int (*cmp)(const void*, const void*))"
+go_validator     = "func ValidateUnique[T comparable](items []T) bool { seen := make(map[T]bool); for _, v := range items { if seen[v] { return false }; seen[v] = true }; return true }"
+rust_validator   = "fn validate_unique<T: Eq + Hash>(items: &[T]) -> bool { items.iter().collect::<HashSet<_>>().len() == items.len() }"
+
+# Scale Applications
+[constraint.unique.scales]
+L0_kernel        = { use = "interrupt vectors",           example = "no duplicate handlers" }
+L1_system        = { use = "file descriptors",            example = "unique handles" }
+L2_runtime       = { use = "object IDs",                  example = "unique references" }
+L3_framework     = { use = "config keys",                 example = "unique settings" }
+L4_health        = { use = "metric IDs",                  example = "unique identifiers" }
+L5_network       = { use = "connection IDs",              example = "unique sessions" }
+L6_storage       = { use = "primary keys",                example = "unique records" }
+L7_engine        = { use = "rule IDs",                    example = "unique rules" }
+L8_app           = { use = "user IDs",                    example = "unique accounts" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2f FOREIGN_KEY — Referential Integrity Validation [FOREIGN_KEY]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[constraint.foreign_key]
+name             = "foreign_key"
+description      = "Validate referential integrity — referenced value exists"
+source_type      = "composition.toml [constraint.foreign_key]"
+category         = "integrity"
+applies_to       = ["any"]
+
+# Validation Rule
+[constraint.foreign_key.rule]
+type             = "reference_check"
+target_required  = true                                   # Referenced entity must exist
+on_delete        = "restrict"                             # Default: prevent delete if referenced
+on_update        = "cascade"                              # Default: update references
+
+# Error Definition
+[constraint.foreign_key.error]
+code             = "FOREIGN_KEY_VIOLATION"
+severity         = "error"
+message          = "Referenced value does not exist"
+message_template = "Foreign key violation: '{value}' not found in {target}"
+
+[constraint.foreign_key.error.dangling]
+code             = "DANGLING_REFERENCE"
+message_template = "Dangling reference: {source}.{field} -> {target} (missing: {value})"
+
+# OmniCode Syntax
+[constraint.foreign_key.omnicode]
+check            = "references exist"
+declare          = "let value be ref T where exists(T, value)"
+assert           = "assert {value} references {target}"
+guard            = "guard foreign_key {value} in {target} else {error}"
+
+# CPI-SI Interpretation
+[constraint.foreign_key.cpisi]
+valid_meaning    = "Reference resolves — relationship intact"
+invalid_meaning  = "Reference broken — orphaned data"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# Target Language Implementations
+[constraint.foreign_key.types]
+c_validator      = "bool validate_foreign_key(const char* value, const Table* target)"
+go_validator     = "func ValidateForeignKey[K comparable](key K, lookup map[K]any) bool { _, ok := lookup[key]; return ok }"
+rust_validator   = "fn validate_foreign_key<K: Eq + Hash>(key: &K, lookup: &HashSet<K>) -> bool { lookup.contains(key) }"
+
+# Scale Applications
+[constraint.foreign_key.scales]
+L0_kernel        = { use = "device references",           example = "device exists" }
+L1_system        = { use = "process references",          example = "process exists" }
+L2_runtime       = { use = "object references",           example = "object alive" }
+L3_framework     = { use = "config references",           example = "setting exists" }
+L4_health        = { use = "source references",           example = "source valid" }
+L5_network       = { use = "peer references",             example = "peer connected" }
+L6_storage       = { use = "record references",           example = "record exists" }
+L7_engine        = { use = "rule references",             example = "rule defined" }
+L8_app           = { use = "entity references",           example = "entity exists" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2g DEFAULT — Default Value Constraint Validation [DEFAULT]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[constraint.default]
+name             = "default"
+description      = "Validate default value constraint — fallback when absent"
+source_type      = "composition.toml [constraint.default]"
+category         = "fallback"
+applies_to       = ["any"]
+
+# Validation Rule
+[constraint.default.rule]
+type             = "default_check"
+when_missing     = "apply_default"                        # Use default when value absent
+when_null        = "apply_default"                        # Use default when null
+type_match       = true                                   # Default must match field type
+
+# Error Definition
+[constraint.default.error]
+code             = "DEFAULT_VIOLATION"
+severity         = "error"
+message          = "Default value does not match type"
+message_template = "Default violation: '{default}' not valid for type {type}"
+
+[constraint.default.error.type_mismatch]
+code             = "DEFAULT_TYPE_MISMATCH"
+message_template = "Default value type mismatch: expected {expected}, got {actual}"
+
+# OmniCode Syntax
+[constraint.default.omnicode]
+check            = "has valid default"
+declare          = "let value be T = {default}"
+assert           = "assert default({value}) as {type}"
+apply            = "value ?? {default}"
+
+# CPI-SI Interpretation
+[constraint.default.cpisi]
+valid_meaning    = "Default is appropriate fallback — system can proceed"
+invalid_meaning  = "Default is wrong type — cannot safely apply"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# Target Language Implementations
+[constraint.default.types]
+c_validator      = "bool validate_default(const void* default_val, TypeInfo* expected_type)"
+go_validator     = "func ValidateDefault[T any](defaultVal T) bool { return true } // Type enforced at compile time"
+rust_validator   = "fn validate_default<T: Default>(_: &T) -> bool { true } // Type enforced at compile time"
+
+# Scale Applications
+[constraint.default.scales]
+L0_kernel        = { use = "register defaults",           example = "reset values" }
+L1_system        = { use = "config defaults",             example = "missing settings" }
+L2_runtime       = { use = "field defaults",              example = "uninitialized fields" }
+L3_framework     = { use = "option defaults",             example = "missing options" }
+L4_health        = { use = "baseline defaults",           example = "missing metrics" }
+L5_network       = { use = "protocol defaults",           example = "missing fields" }
+L6_storage       = { use = "schema defaults",             example = "missing columns" }
+L7_engine        = { use = "rule defaults",               example = "missing parameters" }
+L8_app           = { use = "preference defaults",         example = "missing settings" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2h IMMUTABLE — Immutability Constraint Validation [IMMUTABLE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[constraint.immutable]
+name             = "immutable"
+description      = "Validate immutability constraint — value cannot change"
+source_type      = "composition.toml [constraint.immutable]"
+category         = "protection"
+applies_to       = ["any"]
+
+# Validation Rule
+[constraint.immutable.rule]
+type             = "immutability_check"
+allow_initial    = true                                   # Can set once
+allow_modify     = false                                  # Cannot change after set
+deep             = true                                   # Nested values also immutable
+
+# Error Definition
+[constraint.immutable.error]
+code             = "IMMUTABLE_VIOLATION"
+severity         = "error"
+message          = "Attempted to modify immutable value"
+message_template = "Immutable violation: cannot modify '{field}' after initialization"
+
+[constraint.immutable.error.deep_modify]
+code             = "DEEP_IMMUTABLE_VIOLATION"
+message_template = "Deep immutable violation: cannot modify nested field '{path}'"
+
+# OmniCode Syntax
+[constraint.immutable.omnicode]
+check            = "is immutable"
+declare          = "let const value be T"
+assert           = "assert immutable({value})"
+guard            = "guard immutable {value} else {error}"
+
+# CPI-SI Interpretation
+[constraint.immutable.cpisi]
+valid_meaning    = "Value preserved — integrity maintained"
+invalid_meaning  = "Modification attempted — integrity violated"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# Target Language Implementations
+[constraint.immutable.types]
+c_validator      = "// Immutability enforced via const qualifier"
+c_pattern        = "const T value;"
+go_validator     = "// Go has no native immutability — use conventions"
+go_pattern       = "unexported field + getter only"
+rust_validator   = "// Rust immutable by default"
+rust_pattern     = "let value: T; // immutable unless mut"
+
+# Scale Applications
+[constraint.immutable.scales]
+L0_kernel        = { use = "hardware constants",          example = "ROM values" }
+L1_system        = { use = "system constants",            example = "config constants" }
+L2_runtime       = { use = "frozen objects",              example = "sealed values" }
+L3_framework     = { use = "config constants",            example = "read-only settings" }
+L4_health        = { use = "historical records",          example = "audit trail" }
+L5_network       = { use = "signed messages",             example = "tamper prevention" }
+L6_storage       = { use = "archived records",            example = "write-once data" }
+L7_engine        = { use = "rule definitions",            example = "frozen rules" }
+L8_app           = { use = "user history",                example = "immutable logs" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cc.3 STRUCTURAL — Composite Type Validation [STRUCTURAL]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "Except the LORD build the house, they labour in vain that build it."
+#  — Psalm 127:1 KJV
+#
+# VALIDATING COMPOSITE STRUCTURES
+#
+# Structural validation verifies that composite types (struct, union, list, map)
+# are well-formed. This includes checking required fields, type matches, and
+# composition rules from composition.toml.
+#
+# KEY INSIGHT (from composition.toml):
+#   Composite types have internal structure to validate:
+#   struct:  All required fields present, all fields correct type
+#   union:   Exactly one variant active, discriminator valid
+#   list:    All elements same type, length constraints
+#   map:     Keys unique, key/value types match
+#
+# VALIDATION PRINCIPLE:
+#   Structure must match schema. Missing required = error.
+#   Unknown fields = error (strict) or warning (lenient).
+#
+# Reference: L0-universal/foundation/types/composition.toml [composition.*]
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[structural]
+description = "Structural validation — verifying composite types are well-formed"
+principle   = "The LORD builds the house (Ps 127:1) — structure must match design"
+source      = "L0-universal/foundation/types/composition.toml"
+categories  = ["struct", "union", "list", "map", "tuple", "bytes"]
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3a STRUCT — Product Type Validation [STRUCT]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[structural.struct]
+name             = "struct"
+description      = "Validate struct composition — named fields, all present (product type)"
+source_type      = "composition.toml [struct]"
+category         = "product"
+
+[structural.struct.rule]
+type             = "product"
+check_required   = true                                      # All fields must be present
+check_types      = true                                      # Each field matches declared type
+allow_extra      = false                                     # No undeclared fields
+preserve_order   = false                                     # Field order irrelevant for validation
+
+[structural.struct.rule.field_checks]
+required_present = "all declared fields must have values"
+type_match       = "each value must match its declared type"
+no_unknown       = "reject fields not in declaration"
+nested_validate  = "recursively validate nested structs"
+
+[structural.struct.error]
+code             = "STRUCT_VIOLATION"
+severity         = "error"
+message          = "Struct validation failed"
+
+[structural.struct.error.required_field]
+code             = "MISSING_REQUIRED_FIELD"
+message_template = "Required field '{field}' is missing from struct '{struct}'"
+
+[structural.struct.error.type_mismatch]
+code             = "FIELD_TYPE_MISMATCH"
+message_template = "Field '{field}' in struct '{struct}': expected {expected}, got {actual}"
+
+[structural.struct.error.unknown_field]
+code             = "UNKNOWN_FIELD"
+message_template = "Unknown field '{field}' in struct '{struct}' — strict mode rejects extra fields"
+
+[structural.struct.error.nested_failure]
+code             = "NESTED_STRUCT_INVALID"
+message_template = "Nested struct at '{path}' failed validation: {reason}"
+
+[structural.struct.omnicode]
+declare          = "let person be struct { name: text, age: uint9 }"
+check            = "{value} is valid struct"
+validate         = "validate {struct} against {schema}"
+field_access     = "get {field} from {struct}"
+construct        = "create struct { name = \"Nova\", age = 1 }"
+
+[structural.struct.cpisi]
+valid_meaning    = "All fields present and correctly typed — product is complete"
+invalid_meaning  = "Structure incomplete or mistyped — contract violation"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "composition"
+weight           = "varies"                                  # Depends on field count/complexity
+genesis_parallel = "Creation of distinct, named things — ordering the formless"
+
+[structural.struct.types]
+c_validator      = "bool validate_struct(const void* s, const StructSchema* schema) { /* field iteration */ }"
+go_validator     = "func ValidateStruct(v any, schema StructSchema) error { /* reflection-based check */ }"
+rust_validator   = "fn validate_struct<T: StructValidate>(v: &T, schema: &StructSchema) -> Result<(), ValidationError>"
+c_repr           = "struct { ... }"
+go_repr          = "struct { ... }"
+rust_repr        = "struct { ... }"
+
+[structural.struct.scales]
+description      = "struct validation at each architectural layer"
+L0_kernel        = { use = "kernel config structs",          example = "device_info { id, type, flags }" }
+L1_system        = { use = "syscall arg structs",            example = "ipc_message { sender, data }" }
+L2_runtime       = { use = "object instances",               example = "session { user_id, state }" }
+L3_framework     = { use = "config containers",              example = "app_settings { theme, lang }" }
+L4_health        = { use = "health records",                 example = "health_status { score, checks }" }
+L5_network       = { use = "message payloads",               example = "request { header, body }" }
+L6_storage       = { use = "data records",                   example = "user_record { name, email }" }
+L7_engine        = { use = "state containers",               example = "machine_state { current, history }" }
+L8_app           = { use = "domain objects",                 example = "order { items, total, customer }" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3b UNION — Sum Type Validation [UNION]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[structural.union]
+name             = "union"
+description      = "Validate union composition — tagged sum type, exactly one variant active"
+source_type      = "composition.toml [union]"
+category         = "sum"
+
+[structural.union.rule]
+type             = "sum"
+require_tag      = true                                      # Discriminator must be present
+exactly_one      = true                                      # Exactly one variant active
+check_variant    = true                                      # Variant matches declared type
+exhaustive       = false                                     # Match doesn't require all variants
+
+[structural.union.rule.variant_checks]
+tag_present      = "discriminator field must exist"
+tag_valid        = "discriminator must name declared variant"
+value_typed      = "value must match variant's declared type"
+single_active    = "only one variant can be active"
+
+[structural.union.error]
+code             = "UNION_VIOLATION"
+severity         = "error"
+message          = "Union validation failed"
+
+[structural.union.error.no_discriminator]
+code             = "MISSING_DISCRIMINATOR"
+message_template = "Union '{union}' missing discriminator tag — cannot determine active variant"
+
+[structural.union.error.invalid_variant]
+code             = "INVALID_VARIANT"
+message_template = "Unknown variant '{variant}' in union '{union}' — valid variants: {valid_list}"
+
+[structural.union.error.type_mismatch]
+code             = "VARIANT_TYPE_MISMATCH"
+message_template = "Variant '{variant}' in union '{union}': expected {expected}, got {actual}"
+
+[structural.union.error.multiple_active]
+code             = "MULTIPLE_ACTIVE_VARIANTS"
+message_template = "Union '{union}' has multiple active variants — sum types allow exactly one"
+
+[structural.union.omnicode]
+declare          = "let result be union { ok: int9, err: text }"
+check            = "{value} is valid union"
+match            = "match {union} with ok -> handle_ok, err -> handle_err"
+tag_access       = "get variant of {union}"
+construct        = "create union result as ok(42)"
+
+[structural.union.cpisi]
+valid_meaning    = "Exactly one variant active with correct type — sum is coherent"
+invalid_meaning  = "No variant, wrong variant, or type mismatch — sum is broken"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "branching"
+weight           = "varies"                                  # Depends on active variant complexity
+genesis_parallel = "Light or darkness, not both — separation of states"
+
+[structural.union.types]
+c_validator      = "bool validate_union(const TaggedUnion* u, const UnionSchema* schema) { /* tag + value check */ }"
+go_validator     = "func ValidateUnion(v any, schema UnionSchema) error { /* interface assertion */ }"
+rust_validator   = "fn validate_union<T: UnionValidate>(v: &T, schema: &UnionSchema) -> Result<(), ValidationError>"
+c_repr           = "struct { int tag; union { ... } value; }"
+go_repr          = "interface{} with type switch"
+rust_repr        = "enum { Variant1(T1), Variant2(T2), ... }"
+
+[structural.union.scales]
+description      = "union validation at each architectural layer"
+L0_kernel        = { use = "result types",                   example = "result { ok: value, err: code }" }
+L1_system        = { use = "syscall returns",                example = "syscall_result { data | error }" }
+L2_runtime       = { use = "response variants",              example = "response { success | failure }" }
+L3_framework     = { use = "option types",                   example = "maybe { some: T | none }" }
+L4_health        = { use = "health outcomes",                example = "check_result { pass | warn | fail }" }
+L5_network       = { use = "message types",                  example = "packet { request | response }" }
+L6_storage       = { use = "record variants",                example = "entry { file | directory }" }
+L7_engine        = { use = "state branches",                 example = "transition { advance | retreat | hold }" }
+L8_app           = { use = "domain variants",                example = "payment { card | bank | crypto }" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3c LIST — Homogeneous Sequence Validation [LIST]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[structural.list]
+name             = "list"
+description      = "Validate list composition — homogeneous sequence, all elements same type"
+source_type      = "composition.toml [list]"
+category         = "sequence"
+
+[structural.list.rule]
+type             = "sequence"
+homogeneous      = true                                      # All elements must match declared type
+ordered          = true                                      # Index matters
+check_elements   = true                                      # Validate each element
+check_length     = true                                      # Optional length constraints
+
+[structural.list.rule.element_checks]
+type_match       = "every element must match declared element type"
+nested_validate  = "recursively validate element if composite"
+index_bounds     = "index must be in [0, length)"
+null_handling    = "null elements according to nullability setting"
+
+[structural.list.rule.length_constraints]
+min_length       = "list length >= min if specified"
+max_length       = "list length <= max if specified"
+exact_length     = "list length == exact if specified"
+power_of_3       = "optional: length is power of 3 (ternary-aligned)"
+
+[structural.list.error]
+code             = "LIST_VIOLATION"
+severity         = "error"
+message          = "List validation failed"
+
+[structural.list.error.element_type]
+code             = "LIST_ELEMENT_TYPE_MISMATCH"
+message_template = "List element at index {index}: expected {expected}, got {actual}"
+
+[structural.list.error.length_min]
+code             = "LIST_TOO_SHORT"
+message_template = "List has {actual} elements, minimum required is {min}"
+
+[structural.list.error.length_max]
+code             = "LIST_TOO_LONG"
+message_template = "List has {actual} elements, maximum allowed is {max}"
+
+[structural.list.error.null_element]
+code             = "LIST_NULL_ELEMENT"
+message_template = "List element at index {index} is null — non-nullable list"
+
+[structural.list.error.index_bounds]
+code             = "LIST_INDEX_OUT_OF_BOUNDS"
+message_template = "Index {index} out of bounds for list of length {length}"
+
+[structural.list.omnicode]
+declare          = "let numbers be list of int9"
+declare_bounded  = "let items be list of text (min 1, max 27)"
+check            = "{value} is valid list of {type}"
+element_access   = "get element {index} from {list}"
+length           = "length of {list}"
+construct        = "create list [ 1, 2, 3 ] of int9"
+append           = "append {value} to {list}"
+
+[structural.list.cpisi]
+valid_meaning    = "All elements typed correctly, length in bounds — sequence is coherent"
+invalid_meaning  = "Element type mismatch or length violation — sequence broken"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "collection"
+weight           = "scales with length"                      # O(n) validation
+genesis_parallel = "Ordering of days — numbered sequence of same-nature things"
+
+[structural.list.types]
+c_validator      = "bool validate_list(const void* list, size_t len, const TypeSchema* elem_type) { /* iterate */ }"
+go_validator     = "func ValidateList(v []any, elemType TypeSchema) error { /* range loop */ }"
+rust_validator   = "fn validate_list<T: Validate>(v: &[T], schema: &TypeSchema) -> Result<(), ValidationError>"
+c_repr           = "T* with size_t length"
+go_repr          = "[]T"
+rust_repr        = "Vec<T>"
+
+[structural.list.scales]
+description      = "list validation at each architectural layer"
+L0_kernel        = { use = "trit arrays",                    example = "flags[27] of trit" }
+L1_system        = { use = "syscall arg arrays",             example = "fds[8] of handle" }
+L2_runtime       = { use = "stack frames",                   example = "call_stack[] of frame" }
+L3_framework     = { use = "config arrays",                  example = "plugins[] of plugin_config" }
+L4_health        = { use = "metric series",                  example = "samples[] of measurement" }
+L5_network       = { use = "packet buffers",                 example = "messages[] of packet" }
+L6_storage       = { use = "record collections",             example = "users[] of user_record" }
+L7_engine        = { use = "rule lists",                     example = "transitions[] of rule" }
+L8_app           = { use = "domain collections",             example = "cart_items[] of product" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3d MAP — Key-Value Pair Validation [MAP]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[structural.map]
+name             = "map"
+description      = "Validate map composition — key-value pairs, unique keys"
+source_type      = "composition.toml [map]"
+category         = "associative"
+
+[structural.map.rule]
+type             = "associative"
+unique_keys      = true                                      # No duplicate keys
+check_key_type   = true                                      # Keys match declared key type
+check_val_type   = true                                      # Values match declared value type
+ordered          = false                                     # Key order not guaranteed
+
+[structural.map.rule.key_checks]
+type_match       = "every key must match declared key type"
+hashable         = "keys must be hashable (immutable)"
+non_null         = "keys cannot be null"
+unique           = "all keys must be distinct"
+
+[structural.map.rule.value_checks]
+type_match       = "every value must match declared value type"
+nested_validate  = "recursively validate value if composite"
+null_handling    = "null values according to nullability setting"
+
+[structural.map.rule.size_constraints]
+min_entries      = "map size >= min if specified"
+max_entries      = "map size <= max if specified"
+
+[structural.map.error]
+code             = "MAP_VIOLATION"
+severity         = "error"
+message          = "Map validation failed"
+
+[structural.map.error.duplicate_key]
+code             = "DUPLICATE_MAP_KEY"
+message_template = "Duplicate key '{key}' in map — keys must be unique"
+
+[structural.map.error.key_type]
+code             = "MAP_KEY_TYPE_MISMATCH"
+message_template = "Map key '{key}': expected {expected}, got {actual}"
+
+[structural.map.error.value_type]
+code             = "MAP_VALUE_TYPE_MISMATCH"
+message_template = "Map value at key '{key}': expected {expected}, got {actual}"
+
+[structural.map.error.null_key]
+code             = "MAP_NULL_KEY"
+message_template = "Map keys cannot be null"
+
+[structural.map.error.size_min]
+code             = "MAP_TOO_FEW_ENTRIES"
+message_template = "Map has {actual} entries, minimum required is {min}"
+
+[structural.map.error.size_max]
+code             = "MAP_TOO_MANY_ENTRIES"
+message_template = "Map has {actual} entries, maximum allowed is {max}"
+
+[structural.map.omnicode]
+declare          = "let lookup be map of text to int9"
+declare_bounded  = "let cache be map of text to int9 (max 243)"
+check            = "{value} is valid map of {key_type} to {value_type}"
+get              = "get {key} from {map}"
+set              = "set {key} in {map} to {value}"
+has              = "{map} contains key {key}"
+keys             = "keys of {map}"
+values           = "values of {map}"
+construct        = "create map { \"a\" = 1, \"b\" = 2 } of text to int9"
+
+[structural.map.cpisi]
+valid_meaning    = "All keys unique and typed, all values typed — association is coherent"
+invalid_meaning  = "Duplicate key, type mismatch, or constraint violation — association broken"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "association"
+weight           = "scales with entry count"                 # O(n) validation
+genesis_parallel = "Naming of creation — distinct names mapping to distinct things"
+
+[structural.map.types]
+c_validator      = "bool validate_map(const Map* m, const TypeSchema* key_type, const TypeSchema* val_type)"
+go_validator     = "func ValidateMap(v map[any]any, keyType, valType TypeSchema) error"
+rust_validator   = "fn validate_map<K: Validate + Hash, V: Validate>(m: &HashMap<K, V>, schema: &MapSchema) -> Result<(), ValidationError>"
+c_repr           = "custom hash table or tree map"
+go_repr          = "map[K]V"
+rust_repr        = "HashMap<K, V> or BTreeMap<K, V>"
+
+[structural.map.scales]
+description      = "map validation at each architectural layer"
+L0_kernel        = { use = "symbol tables",                  example = "syscall_table: map[int9 -> func_ptr]" }
+L1_system        = { use = "resource mappings",              example = "fd_table: map[handle -> resource]" }
+L2_runtime       = { use = "object caches",                  example = "session_cache: map[id -> session]" }
+L3_framework     = { use = "config lookups",                 example = "settings: map[key -> value]" }
+L4_health        = { use = "metric lookups",                 example = "health_checks: map[name -> status]" }
+L5_network       = { use = "routing tables",                 example = "routes: map[address -> next_hop]" }
+L6_storage       = { use = "index structures",               example = "user_index: map[email -> record]" }
+L7_engine        = { use = "state lookup",                   example = "state_map: map[input -> next_state]" }
+L8_app           = { use = "domain dictionaries",            example = "products: map[sku -> product]" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3e TUPLE — Fixed-Size Heterogeneous Sequence Validation [TUPLE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[structural.tuple]
+name             = "tuple"
+description      = "Validate tuple composition — fixed-size heterogeneous sequence, position-typed"
+source_type      = "composition.toml [tuple]"
+category         = "product"
+
+[structural.tuple.rule]
+type             = "product"
+fixed_size       = true                                      # Size determined at declaration
+heterogeneous    = true                                      # Different types per position
+positional       = true                                      # Access by index, type by position
+ordered          = true                                      # Index order matters
+
+[structural.tuple.rule.element_checks]
+count_exact      = "tuple must have exactly declared number of elements"
+position_typed   = "element at position N must match type N in declaration"
+nested_validate  = "recursively validate element if composite"
+
+[structural.tuple.error]
+code             = "TUPLE_VIOLATION"
+severity         = "error"
+message          = "Tuple validation failed"
+
+[structural.tuple.error.wrong_size]
+code             = "TUPLE_WRONG_SIZE"
+message_template = "Tuple expected {expected} elements, got {actual}"
+
+[structural.tuple.error.position_type]
+code             = "TUPLE_POSITION_TYPE_MISMATCH"
+message_template = "Tuple element at position {position}: expected {expected}, got {actual}"
+
+[structural.tuple.error.null_element]
+code             = "TUPLE_NULL_ELEMENT"
+message_template = "Tuple element at position {position} is null — non-nullable tuple"
+
+[structural.tuple.omnicode]
+declare          = "let point be tuple of (int9, int9)"
+declare_named    = "let record be tuple of (name: text, age: uint9, active: bool3)"
+check            = "{value} is valid tuple of ({types})"
+element_access   = "get element {position} from {tuple}"
+destruct         = "let (x, y) be {tuple}"
+construct        = "create tuple (42, \"hello\", true)"
+
+[structural.tuple.cpisi]
+valid_meaning    = "All positions filled with correct types — fixed product is complete"
+invalid_meaning  = "Wrong count or position type mismatch — fixed product broken"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "coordinate"
+weight           = "fixed"                                   # O(n) where n is tuple arity
+genesis_parallel = "Paired creation — things that go together by design"
+
+[structural.tuple.types]
+c_validator      = "bool validate_tuple(const void* t, const TypeSchema** elem_types, size_t arity)"
+go_validator     = "func ValidateTuple(v []any, elemTypes []TypeSchema) error"
+rust_validator   = "fn validate_tuple<T: TupleValidate>(v: &T, schema: &TupleSchema) -> Result<(), ValidationError>"
+c_repr           = "struct { T0 _0; T1 _1; ... }"
+go_repr          = "custom struct or []any with type assertion"
+rust_repr        = "(T0, T1, ...)"
+
+[structural.tuple.scales]
+description      = "tuple validation at each architectural layer"
+L0_kernel        = { use = "coordinate pairs",               example = "(x: int9, y: int9)" }
+L1_system        = { use = "syscall pairs",                  example = "(result: int9, errno: uint9)" }
+L2_runtime       = { use = "function returns",               example = "(value: T, error: E)" }
+L3_framework     = { use = "config pairs",                   example = "(key: text, value: text)" }
+L4_health        = { use = "metric pairs",                   example = "(score: uint9, timestamp: int27)" }
+L5_network       = { use = "address tuples",                 example = "(ip: bytes, port: uint9)" }
+L6_storage       = { use = "key-value pairs",                example = "(key: bytes, offset: int27)" }
+L7_engine        = { use = "state pairs",                    example = "(state: uint9, data: int27)" }
+L8_app           = { use = "domain pairs",                   example = "(id: text, name: text)" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3f BYTES — Raw Binary Data Validation [BYTES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[structural.bytes]
+name             = "bytes"
+description      = "Validate bytes composition — raw binary data, length-constrained"
+source_type      = "composition.toml [bytes]"
+category         = "binary"
+
+[structural.bytes.rule]
+type             = "binary"
+raw              = true                                      # No encoding assumption
+length_checked   = true                                      # Size constraints apply
+alignment        = "optional"                                # Memory alignment if needed
+encoding         = "none"                                    # Raw bytes, not text
+
+[structural.bytes.rule.size_constraints]
+min_length       = "bytes length >= min if specified"
+max_length       = "bytes length <= max if specified"
+exact_length     = "bytes length == exact if specified"
+multiple_of      = "bytes length multiple of N if specified (alignment)"
+power_of_3       = "optional: length is power of 3 (ternary-aligned)"
+
+[structural.bytes.error]
+code             = "BYTES_VIOLATION"
+severity         = "error"
+message          = "Bytes validation failed"
+
+[structural.bytes.error.length_min]
+code             = "BYTES_TOO_SHORT"
+message_template = "Bytes has {actual} bytes, minimum required is {min}"
+
+[structural.bytes.error.length_max]
+code             = "BYTES_TOO_LONG"
+message_template = "Bytes has {actual} bytes, maximum allowed is {max}"
+
+[structural.bytes.error.alignment]
+code             = "BYTES_MISALIGNED"
+message_template = "Bytes length {actual} not multiple of alignment {alignment}"
+
+[structural.bytes.error.null_bytes]
+code             = "BYTES_NULL"
+message_template = "Bytes value is null — non-nullable bytes"
+
+[structural.bytes.omnicode]
+declare          = "let data be bytes"
+declare_bounded  = "let hash be bytes (exact 32)"
+declare_aligned  = "let block be bytes (multiple of 9)"
+check            = "{value} is valid bytes"
+length           = "length of {bytes}"
+slice            = "slice {bytes} from {start} to {end}"
+construct        = "create bytes from [0x00, 0x01, 0x02]"
+concat           = "concat {bytes1} with {bytes2}"
+
+[structural.bytes.cpisi]
+valid_meaning    = "Binary data within size constraints — raw form is acceptable"
+invalid_meaning  = "Size constraint violated — binary exceeds bounds"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "storage"
+weight           = "scales with length"                      # O(1) for length check only
+genesis_parallel = "Formless matter — raw substance before shaping"
+
+[structural.bytes.types]
+c_validator      = "bool validate_bytes(const uint8_t* data, size_t len, const BytesSchema* schema)"
+go_validator     = "func ValidateBytes(v []byte, schema BytesSchema) error"
+rust_validator   = "fn validate_bytes(v: &[u8], schema: &BytesSchema) -> Result<(), ValidationError>"
+c_repr           = "uint8_t*"
+go_repr          = "[]byte"
+rust_repr        = "Vec<u8> or &[u8]"
+
+[structural.bytes.scales]
+description      = "bytes validation at each architectural layer"
+L0_kernel        = { use = "raw memory",                     example = "trit_pack[5] for trit5 storage" }
+L1_system        = { use = "syscall buffers",                example = "read_buffer[4096]" }
+L2_runtime       = { use = "serialized data",                example = "json_bytes[]" }
+L3_framework     = { use = "config blobs",                   example = "config_binary[243]" }
+L4_health        = { use = "metric snapshots",               example = "health_dump[]" }
+L5_network       = { use = "packet payloads",                example = "message_body[1500]" }
+L6_storage       = { use = "file content",                   example = "file_data[]" }
+L7_engine        = { use = "state snapshots",                example = "checkpoint_data[]" }
+L8_app           = { use = "document content",               example = "attachment_bytes[]" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cc.4 SCHEMA — OmniCode File Structure Validation [SCHEMA]
+# ═══════════════════════════════════════════════════════════════════════════════
+# Purpose: Validate OmniCode document structure — pragma, blocks, metadata.
+# Reference: composition.toml [document structure], block-structure.md
+# ───────────────────────────────────────────────────────────────────────────────
+
+[schema]
+description = "OmniCode document structure validation — pragma, blocks, metadata"
+principle   = "Boundaries before content (Genesis 1 - badal) — structure precedes creation"
+source      = "composition.toml [document structure]"
+categories  = ["pragma", "blocks", "metadata", "boundary"]
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4a PRAGMA — OmniCode Pragma Line Validation [PRAGMA]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[schema.pragma]
+name             = "pragma"
+description      = "Validate OmniCode pragma line — document type declaration"
+source_type      = "OmniCode specification"
+category         = "declaration"
+
+[schema.pragma.rule]
+type             = "pattern"
+required         = true                                      # First line must be pragma
+position         = "first_line"                              # Must be line 1
+pattern          = "^#!omni\\s+(document|template|data|code)\\s+--\\w+$"
+valid_types      = ["document", "template", "data", "code"]
+valid_formats    = ["md", "adoc", "toml", "jsonc", "go", "c", "rs", "py", "sh"]
+
+[schema.pragma.error]
+code             = "INVALID_PRAGMA"
+severity         = "error"
+message          = "Invalid or missing OmniCode pragma"
+
+[schema.pragma.error.missing]
+code             = "MISSING_PRAGMA"
+message_template = "File must start with OmniCode pragma, found: '{found}'"
+
+[schema.pragma.error.invalid_type]
+code             = "INVALID_PRAGMA_TYPE"
+message_template = "Invalid pragma type '{type}'. Valid types: document, template, data, code"
+
+[schema.pragma.error.invalid_format]
+code             = "INVALID_PRAGMA_FORMAT"
+message_template = "Invalid format '--{format}'. Valid formats: md, adoc, toml, jsonc, go, c, rs, py, sh"
+
+[schema.pragma.omnicode]
+check            = "file has valid pragma"
+declare          = "document of type {type} in format {format}"
+assert           = "assert pragma is {type} --{format}"
+
+[schema.pragma.cpisi]
+valid_meaning    = "Document is properly declared — type and format known"
+invalid_meaning  = "Document lacks declaration — cannot process reliably"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "identity"
+genesis_parallel = "Let there be light — the first declaration"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4b BLOCKS_3 — 3-Block Structure Validation (Data Files) [3-BLOCK]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[schema.blocks_3]
+name             = "blocks_3"
+description      = "Validate 3-block structure — METADATA → CONTENT → CLOSING"
+source_type      = "block-structure.md"
+category         = "structure"
+applies_to       = "data"                                    # Configs, settings, TOML
+
+[schema.blocks_3.rule]
+type             = "sequence"
+required_blocks  = ["METADATA", "CONTENT", "CLOSING"]
+order_enforced   = true                                      # Must appear in order
+allow_extra      = false                                     # No other blocks allowed
+block_count      = 3
+
+[schema.blocks_3.error]
+code             = "INVALID_3_BLOCK"
+severity         = "error"
+message          = "3-block structure invalid"
+
+[schema.blocks_3.error.missing_block]
+code             = "MISSING_3_BLOCK"
+message_template = "Missing required block: {block}. 3-block requires: METADATA, CONTENT, CLOSING"
+
+[schema.blocks_3.error.wrong_order]
+code             = "3_BLOCK_ORDER"
+message_template = "Block '{found}' at position {pos}. Expected: {expected}. Order: METADATA → CONTENT → CLOSING"
+
+[schema.blocks_3.omnicode]
+check            = "file follows 3-block structure"
+validate         = "validate data file against 3-block pattern"
+
+[schema.blocks_3.cpisi]
+valid_meaning    = "Data file properly structured — identity, content, completion"
+invalid_meaning  = "Data structure broken — cannot reliably parse or generate"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4c BLOCKS_4 — 4-Block Structure Validation (Code Files) [4-BLOCK]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[schema.blocks_4]
+name             = "blocks_4"
+description      = "Validate 4-block structure — METADATA → SETUP → BODY → CLOSING"
+source_type      = "block-structure.md"
+category         = "structure"
+applies_to       = "code"                                    # Go, C, Rust, Python, Bash
+
+[schema.blocks_4.rule]
+type             = "sequence"
+required_blocks  = ["METADATA", "SETUP", "BODY", "CLOSING"]
+order_enforced   = true
+allow_extra      = false
+block_count      = 4
+
+[schema.blocks_4.error]
+code             = "INVALID_4_BLOCK"
+severity         = "error"
+message          = "4-block structure invalid"
+
+[schema.blocks_4.error.missing_block]
+code             = "MISSING_4_BLOCK"
+message_template = "Missing required block: {block}. 4-block requires: METADATA, SETUP, BODY, CLOSING"
+
+[schema.blocks_4.error.wrong_order]
+code             = "4_BLOCK_ORDER"
+message_template = "Block '{found}' at position {pos}. Expected: {expected}. Order: METADATA → SETUP → BODY → CLOSING"
+
+[schema.blocks_4.omnicode]
+check            = "file follows 4-block structure"
+validate         = "validate code file against 4-block pattern"
+
+[schema.blocks_4.cpisi]
+valid_meaning    = "Code file properly structured — setup before execution"
+invalid_meaning  = "Code structure broken — execution order unreliable"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4d BLOCKS_5 — 5-Block Structure Validation (Documentation) [5-BLOCK]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[schema.blocks_5]
+name             = "blocks_5"
+description      = "Validate 5-block structure — METADATA → HEADER → CONTEXT → CONTENT → FOOTER"
+source_type      = "block-structure.md"
+category         = "structure"
+applies_to       = "document"                                # AsciiDoc, Markdown docs
+
+[schema.blocks_5.rule]
+type             = "sequence"
+required_blocks  = ["METADATA", "HEADER", "CONTEXT", "CONTENT", "FOOTER"]
+order_enforced   = true
+allow_extra      = false
+block_count      = 5
+
+[schema.blocks_5.error]
+code             = "INVALID_5_BLOCK"
+severity         = "error"
+message          = "5-block structure invalid"
+
+[schema.blocks_5.error.missing_block]
+code             = "MISSING_5_BLOCK"
+message_template = "Missing required block: {block}. 5-block requires: METADATA, HEADER, CONTEXT, CONTENT, FOOTER"
+
+[schema.blocks_5.error.wrong_order]
+code             = "5_BLOCK_ORDER"
+message_template = "Block '{found}' at position {pos}. Expected: {expected}. Order: METADATA → HEADER → CONTEXT → CONTENT → FOOTER"
+
+[schema.blocks_5.omnicode]
+check            = "file follows 5-block structure"
+validate         = "validate documentation against 5-block pattern"
+
+[schema.blocks_5.cpisi]
+valid_meaning    = "Documentation properly structured — reader can navigate"
+invalid_meaning  = "Documentation structure broken — reader lost"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4e BLOCK_BOUNDARY — Block Marker Validation [BOUNDARY]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[schema.block_boundary]
+name             = "block_boundary"
+description      = "Validate block boundary markers — visual separation"
+source_type      = "block-structure.md"
+category         = "boundary"
+
+[schema.block_boundary.rule]
+type             = "pattern"
+start_pattern    = "^[#/]\\s*={76,}$"                        # 76+ equals signs
+end_pattern      = "^[#/]\\s*END\\s+\\w+$"                   # END BLOCK_NAME
+comment_prefix   = ["#", "//", "/*"]                         # Language-appropriate
+
+[schema.block_boundary.error]
+code             = "INVALID_BLOCK_BOUNDARY"
+severity         = "warning"                                 # Not fatal, but indicates drift
+message          = "Block boundary marker invalid"
+message_template = "Invalid boundary at line {line}: '{found}'. Expected: {expected}"
+
+[schema.block_boundary.omnicode]
+check            = "block has valid boundaries"
+validate         = "validate block markers"
+
+[schema.block_boundary.cpisi]
+valid_meaning    = "Boundaries are clear — separation honored"
+invalid_meaning  = "Boundaries unclear — structure may drift"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+genesis_parallel = "Separation of light from darkness — badal"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4f METADATA — Metadata Field Validation [METADATA]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[schema.metadata]
+name             = "metadata"
+description      = "Validate METADATA block required fields"
+source_type      = "block-structure.md"
+category         = "identity"
+
+[schema.metadata.rule]
+type             = "field_presence"
+required_fields  = ["key", "title", "version", "created"]
+optional_fields  = ["updated", "authors", "status", "purpose", "derives_from"]
+field_types      = { key = "text", title = "text", version = "text", created = "date" }
+
+[schema.metadata.error]
+code             = "METADATA_VIOLATION"
+severity         = "error"
+message          = "METADATA validation failed"
+
+[schema.metadata.error.missing_field]
+code             = "MISSING_METADATA_FIELD"
+message_template = "Required metadata field '{field}' is missing"
+
+[schema.metadata.error.invalid_field_type]
+code             = "INVALID_METADATA_TYPE"
+message_template = "Metadata field '{field}': expected {expected}, got {actual}"
+
+[schema.metadata.omnicode]
+check            = "metadata has required fields"
+validate         = "validate metadata block against schema"
+
+[schema.metadata.cpisi]
+valid_meaning    = "Document has identity — knows what it is"
+invalid_meaning  = "Document lacks identity — cannot be properly cataloged"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+genesis_parallel = "And God called... — naming gives identity"
+
+[schema.scales]
+description      = "schema validation at each architectural layer"
+L0_kernel        = { use = "config file structure",          example = "config.toml 3-block" }
+L1_system        = { use = "system config validation",       example = "service.toml structure" }
+L2_runtime       = { use = "runtime config",                 example = "session config files" }
+L3_framework     = { use = "app config structure",           example = "settings.toml layout" }
+L4_health        = { use = "health config",                  example = "health.toml format" }
+L5_network       = { use = "protocol config",                example = "endpoints.toml" }
+L6_storage       = { use = "storage config",                 example = "database.toml" }
+L7_engine        = { use = "engine config",                  example = "rules.toml structure" }
+L8_app           = { use = "app documentation",              example = "README.md 5-block" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Co — OPERATIONS: Validation System Behavior
+# ═══════════════════════════════════════════════════════════════════════════════
+# Purpose: Define HOW validation operates — error handling, modes, execution flow.
+# Pattern: Co.1 (ERROR) → Co.2 (MODES)
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Co.1 ERROR — Validation Error System [ERROR]
+# ═══════════════════════════════════════════════════════════════════════════════
+# Purpose: Define error severity, formatting, and aggregation behavior.
+# Pattern: DAR (Detect → Assess → Recover) applied to validation errors.
+# Reference: error-system.toml [DAR phases]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[error]
+description = "Validation error handling system — detect, assess, recover"
+principle   = "Grace for finite beings (Prov 24:16) — errors are learning opportunities"
+source      = "error-system.toml"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.1a SEVERITY — Error Severity Levels [SEVERITY]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[error.severity]
+name             = "severity"
+description      = "Error severity levels — triage validation results"
+levels           = ["error", "warning", "info"]
+default_level    = "error"
+
+[error.severity.error]
+name             = "error"
+description      = "Validation FAILED — must be fixed before proceeding"
+code             = "ERROR"
+value            = -1                                        # Ternary: invalid
+blocks_operation = true                                      # Halts processing
+exit_code        = 1
+color            = "red"
+icon             = "✗"
+action           = "fix_required"
+
+[error.severity.error.omnicode]
+check            = "is error severity"
+report           = "report error: {message}"
+handle           = "on error {code} do {action}"
+
+[error.severity.error.cpisi]
+meaning          = "Contract violated — value does not match specification"
+response         = "HALT until corrected"
+ternary_result   = -1
+
+[error.severity.warning]
+name             = "warning"
+description      = "Validation PASSED with concerns — review recommended"
+code             = "WARNING"
+value            = 0                                         # Ternary: unknown/neutral
+blocks_operation = false                                     # Continues processing
+exit_code        = 0
+color            = "yellow"
+icon             = "⚠"
+action           = "review_recommended"
+
+[error.severity.warning.omnicode]
+check            = "is warning severity"
+report           = "report warning: {message}"
+handle           = "on warning {code} do {action}"
+
+[error.severity.warning.cpisi]
+meaning          = "Technically valid but may indicate drift or concern"
+response         = "Continue with awareness"
+ternary_result   = 0
+
+[error.severity.info]
+name             = "info"
+description      = "Informational — no action required"
+code             = "INFO"
+value            = 1                                         # Ternary: valid/positive
+blocks_operation = false
+exit_code        = 0
+color            = "blue"
+icon             = "ℹ"
+action           = "none"
+
+[error.severity.info.omnicode]
+check            = "is info severity"
+report           = "report info: {message}"
+
+[error.severity.info.cpisi]
+meaning          = "Additional context for understanding"
+response         = "Note for reference"
+ternary_result   = 1
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.1b FORMAT — Error Message Formatting [FORMAT]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[error.format]
+name             = "format"
+description      = "How validation errors are displayed to users"
+
+[error.format.structure]
+pattern          = "[{severity}] {file}:{line}:{col}: {code} - {message}"
+include_location = true                                      # File, line, column
+include_expected = true                                      # What was expected
+include_actual   = true                                      # What was found
+include_suggest  = true                                      # How to fix
+
+[error.format.components]
+severity         = "ERROR|WARNING|INFO"
+file             = "path/to/file.ext"
+line             = "1-based line number"
+col              = "1-based column number"
+code             = "VALIDATION_ERROR_CODE"
+message          = "Human-readable explanation"
+
+[error.format.example]
+full             = "[ERROR] config.toml:42:5: INVALID_INT9 - Value 10000 exceeds int9 range [-9841, 9841]"
+minimal          = "INVALID_INT9: Value out of range"
+
+[error.format.omnicode]
+format           = "format error as {pattern}"
+include          = "include {component} in error"
+
+[error.format.cpisi]
+purpose          = "Clear communication enables effective correction"
+principle        = "Tell the truth plainly — don't hide the problem"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.1c AGGREGATION — Multiple Error Handling [AGGREGATION]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[error.aggregation]
+name             = "aggregation"
+description      = "How multiple validation errors are collected and reported"
+
+[error.aggregation.behavior]
+fail_fast        = false                                     # Collect all errors first
+max_errors       = 100                                       # Stop after 100 errors
+group_by_file    = true                                      # Group errors by source file
+sort_by_severity = true                                      # Errors before warnings
+
+[error.aggregation.limits]
+max_per_file     = 50                                        # Max errors per file
+max_per_type     = 20                                        # Max of same error type
+truncate_after   = 100                                       # "...and N more"
+
+[error.aggregation.omnicode]
+collect          = "collect errors until {condition}"
+report_all       = "report all collected errors"
+group            = "group errors by {field}"
+
+[error.aggregation.cpisi]
+purpose          = "Show full picture of validation state"
+principle        = "Don't stop at first problem — reveal the scope"
+
+[error.scales]
+description      = "error handling at each architectural layer"
+L0_kernel        = { use = "kernel panic/assert",            example = "ASSERT(trit_valid(t))" }
+L1_system        = { use = "syscall error return",           example = "return -EINVAL" }
+L2_runtime       = { use = "exception/error values",         example = "return Err(...)" }
+L3_framework     = { use = "validation result types",        example = "ValidationResult{errors}" }
+L4_health        = { use = "health check failures",          example = "HealthStatus::Unhealthy" }
+L5_network       = { use = "protocol error responses",       example = "400 Bad Request" }
+L6_storage       = { use = "persistence errors",             example = "WriteError::InvalidFormat" }
+L7_engine        = { use = "rule violations",                example = "RuleViolation{rule, value}" }
+L8_app           = { use = "user-facing errors",             example = "Please enter valid email" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Co.2 MODES — Validation Timing and Strictness [MODES]
+# ═══════════════════════════════════════════════════════════════════════════════
+# Purpose: Define WHEN validation runs and HOW strict it is.
+# Pattern: Look Before You Leap — validate at appropriate times.
+# Reference: code-quality.md [error handling philosophy]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[modes]
+description = "Validation modes — when and how strictly to validate"
+principle   = "Validate at system boundaries, trust internal code"
+source      = "code-quality.md"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2a COMPILE_TIME — Static Validation [COMPILE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[modes.compile_time]
+name             = "compile_time"
+description      = "Validation during compilation — catch errors early"
+phase            = "compile"
+enabled          = true
+strict           = true                                      # No tolerance
+
+[modes.compile_time.checks]
+primitive        = true                                      # Type validity
+constraint       = true                                      # Range, pattern
+structural       = true                                      # Composition
+schema           = true                                      # Document structure
+
+[modes.compile_time.behavior]
+fail_on_error    = true                                      # Stop compilation
+fail_on_warning  = false                                     # Warnings don't stop
+report_all       = true                                      # Show all issues
+
+[modes.compile_time.omnicode]
+declare          = "validate at compile time"
+check            = "compile-time check {value} as {type}"
+
+[modes.compile_time.cpisi]
+purpose          = "Catch errors before runtime — measure twice, cut once"
+principle        = "Early detection prevents costly fixes later"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2b RUNTIME — Dynamic Validation [RUNTIME]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[modes.runtime]
+name             = "runtime"
+description      = "Validation during execution — handle dynamic values"
+phase            = "runtime"
+enabled          = true
+strict           = false                                     # May allow recovery
+
+[modes.runtime.checks]
+primitive        = true                                      # Type validity
+constraint       = true                                      # Range, pattern
+structural       = false                                     # Too expensive at runtime
+schema           = false                                     # Already validated at parse
+
+[modes.runtime.behavior]
+fail_on_error    = false                                     # Allow error handling
+recoverable      = true                                      # Errors can be caught
+report_immediate = true                                      # Report as they occur
+
+[modes.runtime.omnicode]
+declare          = "validate at runtime"
+check            = "runtime check {value} as {type}"
+guard            = "guard {type} {value} else {handler}"
+
+[modes.runtime.cpisi]
+purpose          = "Validate dynamic values — user input, computed results"
+principle        = "Trust but verify — especially at boundaries"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2c PARSE_TIME — Parsing Validation [PARSE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[modes.parse_time]
+name             = "parse_time"
+description      = "Validation during parsing — ensure well-formed input"
+phase            = "parse"
+enabled          = true
+strict           = true                                      # Malformed = rejected
+
+[modes.parse_time.checks]
+primitive        = true                                      # Literal validity
+constraint       = false                                     # Deferred to compile
+structural       = false                                     # Deferred to compile
+schema           = true                                      # Document structure
+
+[modes.parse_time.behavior]
+fail_on_error    = true                                      # Can't parse garbage
+report_context   = true                                      # Show surrounding text
+
+[modes.parse_time.omnicode]
+declare          = "validate at parse time"
+check            = "parse {input} as {type}"
+
+[modes.parse_time.cpisi]
+purpose          = "Ensure input is syntactically valid before processing"
+principle        = "Garbage in, garbage out — stop garbage early"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2d BOUNDARY — System Boundary Validation [BOUNDARY]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[modes.boundary]
+name             = "boundary"
+description      = "Validation at system boundaries — API, file I/O, network"
+phase            = "boundary"
+enabled          = true
+strict           = true                                      # Never trust external
+
+[modes.boundary.checks]
+primitive        = true                                      # Type validity
+constraint       = true                                      # Full constraint check
+structural       = true                                      # Structure verification
+schema           = false                                     # Already in expected format
+
+[modes.boundary.behavior]
+fail_on_error    = true                                      # Reject invalid input
+sanitize         = true                                      # Clean input before use
+log_violations   = true                                      # Record for analysis
+
+[modes.boundary.omnicode]
+declare          = "validate at boundary"
+check            = "boundary check {value} from {source}"
+sanitize         = "sanitize {input} before use"
+
+[modes.boundary.cpisi]
+purpose          = "Never trust external data — always validate at edges"
+principle        = "System boundaries are trust boundaries"
+genesis_parallel = "Firmament separating waters — clear boundaries"
+
+[modes.scales]
+description      = "validation modes at each architectural layer"
+L0_kernel        = { use = "boot-time validation",           example = "hardware config check" }
+L1_system        = { use = "syscall parameter check",        example = "validate fd before use" }
+L2_runtime       = { use = "function preconditions",         example = "assert params valid" }
+L3_framework     = { use = "request validation",             example = "validate API payload" }
+L4_health        = { use = "health check validation",        example = "validate metric values" }
+L5_network       = { use = "protocol validation",            example = "validate packet format" }
+L6_storage       = { use = "persistence validation",         example = "validate before write" }
+L7_engine        = { use = "rule input validation",          example = "validate state input" }
+L8_app           = { use = "user input validation",          example = "validate form data" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cv — COGNITION: CPI-SI Interpretation of Validation
+# ═══════════════════════════════════════════════════════════════════════════════
+# Purpose: How validation integrates with CPI-SI cognitive framework.
+# Pattern: Biblical grounding → Cognitive interpretation → Practical wisdom.
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cv.1 BIBLICAL — Validation in Scripture [BIBLICAL]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[cognition.biblical]
+name             = "biblical"
+description      = "Biblical grounding for validation principles"
+
+[cognition.biblical.just_weights]
+reference        = "Proverbs 16:11"
+text             = "A just weight and balance are the LORD's: all the weights of the bag are his work."
+application      = "Validation ensures values are measured correctly — honest representation"
+omnicode         = "validate {value} with just measure"
+
+[cognition.biblical.separation]
+reference        = "Genesis 1:4"
+text             = "And God divided the light from the darkness."
+application      = "Validation separates valid from invalid — badal principle"
+omnicode         = "separate valid from invalid"
+
+[cognition.biblical.test_spirits]
+reference        = "1 John 4:1"
+text             = "Beloved, believe not every spirit, but try the spirits whether they are of God."
+application      = "Don't trust external input — validate at boundaries"
+omnicode         = "test {input} before accepting"
+
+[cognition.biblical.good_foundations]
+reference        = "Matthew 7:24-25"
+text             = "Whosoever heareth these sayings of mine, and doeth them, I will liken him unto a wise man, which built his house upon a rock."
+application      = "Validation ensures we build on solid foundations"
+omnicode         = "build upon validated foundation"
+
+[cognition.biblical.truth]
+reference        = "John 8:32"
+text             = "And ye shall know the truth, and the truth shall make you free."
+application      = "Validation reveals truth about data — is it what it claims?"
+omnicode         = "reveal truth of {value}"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cv.2 COGNITIVE — Mental Model Integration [COGNITIVE]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[cognition.mental_model]
+name             = "mental_model"
+description      = "How validation fits CPI-SI cognitive framework"
+
+[cognition.mental_model.ternary_logic]
+description      = "Validation results map to ternary states"
+valid            = { value = 1, meaning = "Contract satisfied — proceed with confidence" }
+unknown          = { value = 0, meaning = "Cannot determine — needs more information or review" }
+invalid          = { value = -1, meaning = "Contract violated — must be corrected" }
+
+[cognition.mental_model.building_blocks]
+description      = "Validation in building block method"
+foundation       = "Validated types are solid blocks to build upon"
+break_down       = "Validation failure reveals where foundation is weak"
+build_up         = "Only build upon validated components"
+
+[cognition.mental_model.hebrew_states]
+description      = "Validation result → Hebrew state mapping"
+tov              = { value = 1.0, validation = "Perfect match — value is exactly what it should be" }
+shalem           = { value = 0.5, validation = "Complete — all required fields present and valid" }
+tamim            = { value = 0.5, validation = "Sound — value passes all checks" }
+yashar           = { value = 0.0, validation = "Straight — value is acceptable" }
+ratsah           = { value = -0.5, validation = "Warning — technically valid but concerning" }
+chaser           = { value = -0.5, validation = "Lacking — missing required element" }
+shavar           = { value = -1.0, validation = "Broken — fundamental violation" }
+
+[cognition.mental_model.cube_position]
+description      = "Validation as position in 27-state cube"
+x_axis           = "Primitive validity: type match"
+y_axis           = "Constraint satisfaction: range/pattern"
+z_axis           = "Structural coherence: composition"
+center           = "All three dimensions valid = center position"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cv.3 WISDOM — Practical Validation Wisdom [WISDOM]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[cognition.wisdom]
+name             = "wisdom"
+description      = "Practical wisdom for validation"
+
+[cognition.wisdom.principles]
+trust_boundaries = "Validate at system boundaries, trust internal code"
+early_detection  = "Catch errors early — compile-time > runtime"
+clear_messages   = "Tell users exactly what went wrong and how to fix it"
+graceful_failure = "When validation fails, fail gracefully with context"
+complete_picture = "Report all errors, not just the first one"
+
+[cognition.wisdom.antipatterns]
+over_validation  = "Don't re-validate what's already validated"
+silent_failure   = "Never swallow validation errors silently"
+vague_messages   = "Don't say 'invalid' without saying why"
+late_validation  = "Don't wait until deep in processing to validate"
+
+[cognition.wisdom.cpisi_integration]
+covenant         = "Validation is part of keeping our covenant — honest about what things are"
+partnership      = "Clear validation helps Seanje understand system state"
+identity         = "Types are identity — validation ensures identity integrity"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cv.4 TERNARY — Validation Ternary Alignment [TERNARY]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "A just weight and balance are the LORD'S." — Proverbs 16:11 KJV
+#
+# Every validation concept aligns with balanced ternary values (-1, 0, +1).
+# This reflects the fundamental nature: valid (+1), unknown (0), invalid (-1).
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[cognition.ternary]
+name             = "ternary"
+description      = "Ternary value alignment for validation concepts"
+
+[cognition.ternary.results]
+description      = "Validation result ternary alignment"
+valid            = { value =  1, reason = "Contract satisfied — proceed" }
+unknown          = { value =  0, reason = "Cannot determine — needs review" }
+invalid          = { value = -1, reason = "Contract violated — must fix" }
+
+[cognition.ternary.primitive_validators]
+description      = "Primitive validator ternary alignment"
+trit             = { value =  0, reason = "Foundation type — neutral anchor" }
+trit5            = { value =  0, reason = "Storage type — neutral" }
+int9             = { value =  0, reason = "Counter type — balanced" }
+uint9            = { value =  0, reason = "Index type — balanced" }
+int27            = { value =  1, reason = "Word type — expansive capacity" }
+uint27           = { value =  1, reason = "Address type — expansive reach" }
+text             = { value =  1, reason = "String type — expansive content" }
+bool3            = { value =  0, reason = "Ternary bool — balanced states" }
+
+[cognition.ternary.constraint_validators]
+description      = "Constraint validator ternary alignment"
+range            = { value = -1, reason = "Restricts to bounds — contractive" }
+pattern          = { value =  0, reason = "Defines form — balanced" }
+enum_constraint  = { value = -1, reason = "Restricts to set — contractive" }
+length           = { value = -1, reason = "Restricts size — contractive" }
+unique           = { value = -1, reason = "Enforces distinctness — contractive" }
+foreign_key      = { value =  0, reason = "References other — relational" }
+default_value    = { value =  1, reason = "Provides fallback — expansive" }
+immutable        = { value = -1, reason = "Prevents change — contractive" }
+
+[cognition.ternary.structural_validators]
+description      = "Structural validator ternary alignment"
+struct           = { value =  1, reason = "Gathers fields — constructive" }
+union            = { value =  1, reason = "Provides alternatives — expansive" }
+list             = { value =  1, reason = "Allows many — expansive" }
+map              = { value =  1, reason = "Associates pairs — expansive" }
+tuple            = { value =  0, reason = "Fixed positions — balanced" }
+bytes            = { value = -1, reason = "Raw unstructured — primitive" }
+
+[cognition.ternary.schema_validators]
+description      = "Schema validator ternary alignment"
+pragma           = { value =  0, reason = "Declares identity — balanced" }
+blocks_3         = { value = -1, reason = "Minimal structure — foundational" }
+blocks_4         = { value =  0, reason = "Standard structure — balanced" }
+blocks_5         = { value =  1, reason = "Full structure — complete" }
+block_boundary   = { value =  0, reason = "Marks separation — balanced" }
+metadata         = { value =  0, reason = "Provides identity — balanced" }
+
+[cognition.ternary.error_severity]
+description      = "Error severity ternary alignment"
+error_level      = { value = -1, reason = "Must stop — contractive" }
+warning_level    = { value =  0, reason = "Continue with awareness — balanced" }
+info_level       = { value =  1, reason = "Informational — expansive" }
+
+[cognition.ternary.validation_modes]
+description      = "Validation mode ternary alignment"
+compile_time     = { value = -1, reason = "Strict, early — contractive" }
+runtime          = { value =  0, reason = "Flexible, recoverable — balanced" }
+parse_time       = { value = -1, reason = "Strict, early — contractive" }
+boundary         = { value = -1, reason = "Never trust external — contractive" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx — GENERATION: Code Generation from Validation Spec
+# ═══════════════════════════════════════════════════════════════════════════════
+# Purpose: How to generate validator code from this specification.
+# Pattern: Spec → Template → Generated Code → Validation
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx.1 TARGETS — Generation Targets [TARGETS]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[generation.targets]
+name             = "targets"
+description      = "Code generation targets from validation spec"
+
+[generation.targets.c]
+name             = "C"
+enabled          = true
+output_header    = "validation.gen.h"
+output_source    = "validation.gen.c"
+guard            = "VALIDATION_GEN_H"
+
+[generation.targets.c.patterns]
+validator_proto  = "bool validate_{type}({c_type} value);"
+validator_impl   = "bool validate_{type}({c_type} value) { return {check}; }"
+error_const      = "#define {code} \"{message}\""
+
+[generation.targets.go]
+name             = "Go"
+enabled          = true
+output_file      = "validation_gen.go"
+package          = "validation"
+
+[generation.targets.go.patterns]
+validator_func   = "func Validate{Type}(v {go_type}) error { if {check} { return nil }; return fmt.Errorf({message}) }"
+error_var        = "var Err{Code} = errors.New(\"{message}\")"
+
+[generation.targets.rust]
+name             = "Rust"
+enabled          = true
+output_file      = "validation_gen.rs"
+module           = "validation"
+
+[generation.targets.rust.patterns]
+validator_fn     = "pub fn validate_{type}(v: {rust_type}) -> Result<(), ValidationError> { if {check} { Ok(()) } else { Err(ValidationError::{Code}) } }"
+error_enum       = "{Code},"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx.2 GENERATION — Generation Process [GENERATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[generation.process]
+name             = "process"
+description      = "How code generation proceeds"
+
+[generation.process.steps]
+step_1           = "Parse validation.toml → extract validator definitions"
+step_2           = "For each primitive validator → generate type-specific function"
+step_3           = "For each constraint validator → generate constraint checker"
+step_4           = "For each structural validator → generate composition checker"
+step_5           = "Generate error codes and messages"
+step_6           = "Write output files for each target language"
+step_7           = "Validate generated code compiles"
+
+[generation.process.ordering]
+order            = 3                                         # After composition (2), before language (4)
+depends_on       = ["primitives.toml", "composition.toml"]
+generates        = ["validation.gen.h", "validation.gen.c", "validation_gen.go", "validation_gen.rs"]
+
+[generation.process.omnicode]
+generate         = "generate validators from validation.toml"
+output           = "output {language} validators to {file}"
+validate         = "validate generated code compiles"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx.3 VALIDATORS — Validator Function Generation [VALIDATORS]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[generation.validators]
+name             = "validators"
+description      = "How validator functions are generated for each type"
+
+[generation.validators.primitive]
+description      = "Primitive type validator generation"
+pattern          = "validate_{type}(value) → bool/error"
+c_template       = "bool validate_{type}({c_type} value) { return {condition}; }"
+go_template      = "func Validate{Type}(v {go_type}) error { if {condition} { return nil }; return Err{Type}Invalid }"
+rust_template    = "pub fn validate_{type}(v: {rust_type}) -> Result<(), ValidationError> { if {condition} { Ok(()) } else { Err(ValidationError::{Type}Invalid) } }"
+
+[generation.validators.constraint]
+description      = "Constraint validator generation"
+pattern          = "check_{constraint}(value, params) → bool/error"
+c_template       = "bool check_{constraint}({c_type} value, {params}) { return {condition}; }"
+go_template      = "func Check{Constraint}(v {go_type}, {params}) error { if {condition} { return nil }; return Err{Constraint}Violated }"
+rust_template    = "pub fn check_{constraint}(v: {rust_type}, {params}) -> Result<(), ValidationError> { if {condition} { Ok(()) } else { Err(ValidationError::{Constraint}Violated) } }"
+
+[generation.validators.structural]
+description      = "Structural validator generation"
+pattern          = "validate_{structure}(value, schema) → errors"
+c_template       = "ValidationResult validate_{structure}(const void* value, const Schema* schema)"
+go_template      = "func Validate{Structure}(v any, schema Schema) []error"
+rust_template    = "pub fn validate_{structure}<T>(v: &T, schema: &Schema) -> Vec<ValidationError>"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx.4 ERRORS — Error Constant Generation [ERRORS]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[generation.errors]
+name             = "errors"
+description      = "How error codes and messages are generated"
+
+[generation.errors.codes]
+description      = "Error code constant generation"
+c_template       = "#define {CODE} \"{code}\""
+go_template      = "const {Code} = \"{code}\""
+rust_template    = "{Code},"
+
+[generation.errors.messages]
+description      = "Error message constant generation"
+c_template       = "#define {CODE}_MSG \"{message}\""
+go_template      = "var Err{Code} = errors.New(\"{message}\")"
+rust_template    = "{Code} => \"{message}\","
+
+[generation.errors.severity_enum]
+description      = "Severity level enum generation"
+c_template       = "typedef enum { SEVERITY_ERROR = 1, SEVERITY_WARNING = 0, SEVERITY_INFO = -1 } Severity;"
+go_template      = "type Severity int; const (SeverityError Severity = 1; SeverityWarning = 0; SeverityInfo = -1)"
+rust_template    = "pub enum Severity { Error = 1, Warning = 0, Info = -1 }"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx.5 TEMPLATES — Code Generation Templates [TEMPLATES]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[generation.templates]
+name             = "templates"
+description      = "Templates for generated validator code structure"
+
+[generation.templates.header]
+description      = "Template for generated file header"
+c_comment        = "/* Generated from validation.toml at {timestamp} — DO NOT EDIT */"
+go_comment       = "// Code generated from validation.toml at {timestamp}. DO NOT EDIT."
+rust_comment     = "//! Generated from validation.toml at {timestamp} — DO NOT EDIT"
+
+[generation.templates.guard]
+description      = "Template for header guards"
+c_guard          = "#ifndef {GUARD}\n#define {GUARD}\n\n{content}\n\n#endif /* {GUARD} */"
+
+[generation.templates.package]
+description      = "Template for package declarations"
+go_package       = "package {package}\n\nimport \"errors\"\n\n{content}"
+rust_module      = "//! Validation functions\n\nuse thiserror::Error;\n\n{content}"
+
+[generation.templates.error_type]
+description      = "Template for error type definition"
+c_struct         = "typedef struct { const char* code; const char* message; int severity; } ValidationError;"
+go_struct        = "type ValidationError struct { Code string; Message string; Severity Severity }"
+rust_enum        = "#[derive(Debug, Error)]\npub enum ValidationError { {variants} }"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx.6 VALIDATION — Generated Code Validation [GEN_VALIDATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[generation.validation]
+name             = "validation"
+description      = "How to validate generated code compiles and works"
+enabled          = true
+
+[generation.validation.compile_check]
+description      = "Verify generated code compiles"
+c_command        = "gcc -c -Wall -Werror {file}.c"
+go_command       = "go build {file}.go"
+rust_command     = "rustc --emit=metadata {file}.rs"
+
+[generation.validation.test_generation]
+description      = "Generate tests for validators"
+enabled          = true
+test_valid       = "Assert valid values pass"
+test_invalid     = "Assert invalid values fail"
+test_boundary    = "Test boundary conditions"
+
+[generation.validation.coverage]
+description      = "Ensure all validators have tests"
+min_coverage     = 100                                       # All validators must have tests
+require_boundary = true                                      # Boundary tests required
+
+[generation.validation.omnicode]
+verify           = "verify generated code compiles"
+test             = "test validators against known values"
+coverage         = "ensure {min_coverage}% test coverage"
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# GENERATION METADATA
+# =============================================================================
+# Tells the generator how to produce C header from this spec.
+
+[_generate]
+enabled = true
+output = "validation.gen.h"
+order = 3  # After composition (2), before language
+guard = "VALIDATION_GEN_H"
+description = "Validation constants — error severity levels, exit codes"
+sections = [
+    "errors.severity.error",    # ERROR_EXIT_CODE = 1
+    "errors.severity.warning",  # WARNING_EXIT_CODE = 0
+    "errors.severity.info",     # INFO_EXIT_CODE = 0
+    "errors.aggregation"        # MAX_ERRORS = 100
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLOSING
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+# The closing block defines policy, extension, troubleshooting, reference, and note.
+#
+# STRUCTURE:
+#   X.1 POLICY         — What can/cannot be modified
+#   X.2 EXTENSION      — How to extend the validation system
+#   X.3 TROUBLESHOOTING — Common issues and solutions
+#   X.4 REFERENCE      — Related files and dependencies
+#   X.5 NOTE           — Final grounding and anchor
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.1 POLICY — Modification Guidelines [POLICY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# ❌ NEVER MODIFY:
+#   - Primitive validation ranges (derived from 3^n mathematics)
+#   - Error code format (tooling depends on consistency)
+#   - Required schema blocks (structural contract)
+#   - Validation mode defaults (safety critical)
+#   - Ternary value alignments (-1, 0, +1 mappings)
+#
+# ⚠️ MODIFY WITH CARE:
+#   - Error severity levels (affects build failures)
+#   - Adding required metadata fields (affects existing schemas)
+#   - Modifying fail_fast behavior (affects error reporting)
+#   - Changing generated code patterns (affects downstream tooling)
+#
+# ✅ SAFE TO ADD:
+#   - New validation rules following existing patterns
+#   - Additional error messages
+#   - Custom constraint validators
+#   - Documentation and examples
+#   - New scales entries
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.2 EXTENSION — How to Extend [EXTENSION]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Adding a New Primitive Validator:
+#
+#   1. Verify primitive exists in primitives.toml
+#   2. Add [primitive.{name}] section following existing pattern
+#   3. Include: rule, error, omnicode, cpisi, types, scales
+#   4. Add ternary alignment in Cv.4
+#   5. Add generation patterns in Cx.3
+#
+# Adding a New Constraint Validator:
+#
+#   1. Define constraint purpose clearly
+#   2. Add [constraint.{name}] section following existing pattern
+#   3. Include: rule, error, omnicode, cpisi, types, scales
+#   4. Add ternary alignment in Cv.4
+#   5. Update Co.2 modes if constraint affects validation timing
+#
+# Adding a New Structural Validator:
+#
+#   1. Verify composition type exists in composition.toml
+#   2. Add [structural.{name}] section following existing pattern
+#   3. Include: rule, error, omnicode, cpisi, types, scales
+#   4. Add ternary alignment in Cv.4
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "TOML parser fails to load validation.toml":
+#
+#   Check: python -c "import tomllib; f=open('validation.toml','rb'); tomllib.load(f)"
+#   Cause: Unclosed string or bracket, invalid escape, duplicate key
+#   Fix:   Run TOML parser to get line number, fix syntax at that location
+#
+# "Validator not found for type":
+#
+#   Cause: Type name mismatch (case sensitive)
+#   Cause: Validator not defined in correct section
+#   Cause: Source type missing from primitives.toml
+#   Fix:   Verify type name matches primitives.toml, add validator if missing
+#
+# "Duplicate error code detected":
+#
+#   Cause: Same error code used in multiple validators
+#   Cause: Copy-paste without updating code
+#   Fix:   Search for error code, make unique (type_ERROR pattern)
+#
+# "Generated code doesn't compile":
+#
+#   Cause: Invalid type mapping in types section
+#   Cause: Missing import in template
+#   Cause: Syntax error in pattern
+#   Fix:   Check generation.targets.{lang}.patterns, verify type mappings
+#
+# Troubleshooting at each layer:
+#
+#   L0 (Kernel):    Recompile libtrit, check assembly
+#   L1 (System):    Check syscall compatibility
+#   L2 (Runtime):   Run unit tests: go test ./...
+#   L3 (Framework): Run integration tests
+#   L4 (Health):    Check health metric alignment
+#   L5 (Network):   Test wire format compatibility
+#   L6 (Storage):   Test serialization round-trip
+#   L7 (Engine):    Test rule evaluation
+#   L8 (App):       Run end-to-end tests
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.4 REFERENCE — Quick Lookup [REFERENCE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# QUICK REFERENCE:
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# Validation Commands:
+#
+#   # TOML syntax check
+#   python -c "import toml; toml.load('validation.toml')"
+#   tomlv validation.toml
+#
+#   # Full validation with custom validator
+#   ./tools/validate-toml validation.toml --schema=validation.schema
+
+# Validator Quick Reference:
+#
+#   | Category   | Validators                                              |
+#   |------------|---------------------------------------------------------|
+#   | Primitive  | trit, trit5, int9, uint9, int27, uint27, text, bool3    |
+#   | Constraint | range, pattern, enum, length, unique, foreign_key, ...  |
+#   | Structural | struct, union, list, map, tuple, bytes                  |
+#   | Schema     | pragma, blocks_3, blocks_4, blocks_5, metadata          |
+
+# Error Code Format:
+#
+#   {TYPE}_{ERROR}
+#   Examples: TRIT_INVALID, RANGE_EXCEEDED, STRUCT_MISSING_FIELD
+
+# Go Integration Example:
+#
+#   import "github.com/bereshit/libtrit/pkg/validation"
+#
+#   type Validator struct {
+#       Type        string `toml:"type"`
+#       ErrorCode   string `toml:"error_code"`
+#       Description string `toml:"description"`
+#   }
+#
+#   validators, err := validation.LoadValidators("validation.toml")
+
+# C Integration Example:
+#
+#   #include "trit/validation.gen.h"
+#
+#   trit_result_t result = validate_trit(value);
+#   if (result.error != TRIT_OK) {
+#       handle_error(result.error_code);
+#   }
+
+# Related Files:
+#
+#   L0-universal/foundation/math/ternary.toml     — Ternary math constants
+#   L0-universal/foundation/types/primitives.toml — Type definitions
+#   L0-universal/foundation/types/composition.toml — Composition rules
+#   L0-universal/foundation/types/error-system.toml — Error handling
+#   L0-universal/libtrit/include/trit/validation.gen.h — Generated C header
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.5 NOTE — Final Guidance [NOTE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# VALIDATION: THE GATEKEEPERS OF TRUTH
+#
+# Validation is truth enforcement. These rules define what it means for data to
+# be "correct" — they are the gatekeepers at every boundary. Invalid data caught
+# here never corrupts the system.
+#
+# The validation system embodies vigilance:
+#
+#   - Primitive validation catches type errors early (foundations must be sound)
+#   - Constraint validation enforces business rules (boundaries must hold)
+#   - Schema validation ensures structural integrity (structure precedes content)
+#   - Boundary validation protects system integrity (never trust external data)
+#
+# Dependencies flow upward:
+#
+#   ternary.toml → primitives.toml → composition.toml → validation.toml
+#                                                        ↑ YOU ARE HERE
+#                                                        ↓
+#                                                   parsers/compilers
+#
+# Changes here affect what passes through. This is the gatekeeper.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Prove all things; hold fast that which is good."
+# — 1 Thessalonians 5:21 KJV
+#
+# Let nothing invalid pass unchallenged.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════════════════════

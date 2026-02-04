@@ -2,7 +2,7 @@
 
 **Purpose:** Define structured formats for logging and debugging to avoid hardcoding in runtime code
 
-**Location:** `~/.claude/cpi-si/system/dev/templates/`
+**Location:** `~/.claude/system/dev/templates/`
 
 ---
 

@@ -13,12 +13,14 @@ METADATA BLOCK
 <!--
 :key: skill-create-from-template
 :title: Create From Template Skill
-:type: Skill Documentation
+:type: Skill
 :status: Active
-:version: 2.0.0
+:version: 2.1.0
 :created: 2025-12-09
+:updated: 2026-02-02
 :authors: Nova Dawn
-:purpose: Template-driven file creation with block structure enforcement
+:purpose: Template-driven file creation with block structure enforcement - AFTER using check-existing
+:category: creation
 :biblical_foundation: Exodus 25:40 - "Look that thou make them after their pattern"
 -->
 
@@ -42,10 +44,11 @@ Templates are **Foundation (0)** in the building block method - they are what ne
 
 | Section | Purpose |
 |---------|---------|
+| [Before You Start](#before-you-start) | Check existing first |
 | [When to Use](#when-to-use) | Triggering conditions |
+| [The Workflow](#the-workflow) | Full creation process |
 | [CLI Tool](#cli-tool) | Binary usage |
 | [Configuration](#configuration) | TOML config reference |
-| [How It Works](#how-it-works) | Template workflow |
 
 ---
 
@@ -55,21 +58,50 @@ CONTEXT BLOCK
 ===============================================================================
 -->
 
+## Before You Start
+
+> **CRITICAL:** Before using this skill, use [check-existing](../check-existing/) first!
+
+1. **Does the file already exist?** → Edit it, don't duplicate
+2. **Is there a similar file?** → Follow its pattern
+3. **Need a new file?** → Then use this skill
+
+**Only proceed here after confirming you need a new file from template.**
+
+---
+
 ## When to Use
 
-Use this skill when Nova Dawn needs to:
-- Create a new Go, C, ASM, Shell, or Make file
-- Create a new Dockerfile or configuration file
-- Create a new AsciiDoc, Markdown, or Typst document
-- Ensure new files follow proper block structure
+Use this skill when:
+
+- [check-existing](../check-existing/) confirms need for new file
+- Creating a new Go, C, ASM, Shell, or Make file
+- Creating a new Dockerfile or configuration file
+- Creating a new AsciiDoc, Markdown, or Typst document
+- Ensuring new files follow proper block structure
+
+**Do NOT use when:**
+
+- File already exists (edit instead)
+- Similar file exists to follow (copy and modify)
+- Quick one-off change (just write it)
 
 ## Prerequisites
 
 | Requirement | Location |
 |-------------|----------|
+| check-existing completed | Confirmed need for new file |
 | Templates | `bereshit/word/seed/` |
 | Config | `config/template-config.toml` |
-| Go 1.23+ | For building CLI tool |
+| Go 1.24+ | For building CLI tool |
+
+## Key Terms
+
+| Term | Definition |
+|------|------------|
+| **Template** | Foundation (0) - what new files are built FROM |
+| **Block-by-block** | Complete one block before moving to next |
+| **Placeholder** | `{{KEY}}` style markers to replace with actual values |
 
 ---
 
@@ -155,24 +187,43 @@ omni_seed = "bereshit/word/omni/seed"
 
 ---
 
-## How It Works
+## The Workflow
 
-### Building Block Method Applied
+### Full Creation Process
+
+| Step | Action | Verify Before Moving |
+|:----:|--------|---------------------|
+| 0 | [check-existing](../check-existing/) completed | Need confirmed |
+| 1 | Copy template | `cp bereshit/word/seed/[category]/[template] [dest]` |
+| 2 | Change pragma | `#!omni template` → `#!omni document` |
+| 3 | Fill METADATA | All required fields complete |
+| 4 | Fill HEADER (docs) or SETUP (code) | Block complete |
+| 5 | Fill CONTEXT (docs) or BODY (code) | Block complete |
+| 6 | Fill CONTENT (docs) or CLOSING (code) | Block complete |
+| 7 | Fill FOOTER (docs only) | Block complete |
+| 8 | Remove template notes | Clean file |
+| 9 | Validate | Use [validate-omni](../validate-omni/) |
+| 10 | Quality check | Use [verify-quality](../verify-quality/) |
+
+### Block-by-Block Method
+
+**Complete one block before moving to the next.** Read the block-by-block rule.
 
 1. **Foundation (0)**: Template is the anchor
    - Template structure cannot be violated
    - Block order is fixed
 
-2. **Build Up (+1)**: Layer content
-   - Fill METADATA with file identity
-   - Add imports/constants (SETUP)
-   - Implement logic (BODY)
-   - Complete cleanup (CLOSING)
+2. **Build Up (+1)**: Layer content block-by-block
+   - Complete METADATA first (identity)
+   - Then HEADER/SETUP (orientation)
+   - Then CONTEXT/BODY (substance)
+   - Then CONTENT/CLOSING (completion)
+   - Then FOOTER (references)
 
-3. **Verify (-1)**: Trace back
-   - Does structure match template?
-   - Are all blocks present?
-   - Run validate-omni to verify
+3. **Verify (-1)**: After each block
+   - Is this block complete?
+   - Is it consistent with previous blocks?
+   - Can someone understand this block alone?
 
 ### Template Hierarchy
 
@@ -231,12 +282,30 @@ FOOTER BLOCK
 
 ## Related
 
+### Skills
+
+| Skill | Relationship |
+|-------|--------------|
+| [check-existing](../check-existing/) | **Use FIRST** — confirm need before creating |
+| [validate-omni](../validate-omni/) | Validate structure after creation |
+| [verify-quality](../verify-quality/) | Quality check after creation |
+| [format-lookup](../format-lookup/) | Check format mappings |
+
+### Resources
+
 | Resource | Relationship |
 |----------|--------------|
-| [validate-omni](../validate-omni/) | Validate structure after creation |
-| [format-lookup](../format-lookup/) | Check format mappings |
 | [bereshit/word/seed/](bereshit/word/seed/) | Canonical templates |
 | [references/template-guide.md](references/template-guide.md) | Template creation guide |
+
+### Rules
+
+| Rule | Relationship |
+|------|--------------|
+| [rules/use-existing-first.md](../../rules/use-existing-first.md) | Template-first principles |
+| [rules/block-by-block.md](../../rules/block-by-block.md) | Block completion method |
+| [rules/block-structure.md](../../rules/block-structure.md) | 3/4/5-block patterns |
+| [rules/code-quality.md](../../rules/code-quality.md) | Quality standards |
 
 ---
 

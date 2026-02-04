@@ -36,7 +36,7 @@ import (
 
 // Demo configuration
 const (
-	configDrivenDebugBase = "cpi-si/system/dev/debug"
+	configDrivenDebugBase = "system/dev/debug"
 
 	testComponentZeroCost       = "test-zero-cost"
 	testComponentCategorization = "test-categorization"
@@ -289,4 +289,4 @@ func TestInspectorLifecycle(t *testing.T) {
 // ============================================================================
 // Run: go test -v
 // Output: Visible demonstration of inspector library promises
-// Inspect: cat ~/.claude/cpi-si/system/dev/debug/test-*/*.debug
+// Inspect: cat ~/.claude/system/dev/debug/test-*/*.debug

@@ -281,6 +281,8 @@ FOOTER BLOCK
 | recognize-stopping-point skill | Uses session data to determine stopping |
 | system/bin/session-time | Core duration tracking |
 | system/docs/session-history-architecture.md | Data architecture |
+| [rules/planning-workflow.md](../../rules/planning-workflow.md) | Planning within session context |
+| [rules/task-decomposition.md](../../rules/task-decomposition.md) | Breaking work into session-sized chunks |
 
 ---
 

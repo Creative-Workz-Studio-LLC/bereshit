@@ -25,7 +25,7 @@ This is NOT a test - this is a **demo** showing real usage patterns for the cale
 ## Running the Demo
 
 ```bash
-cd ~/.claude/cpi-si/system/runtime/demos/calendar
+cd ~/.claude/system/runtime/demos/calendar
 go run demo.go
 ```
 

@@ -297,9 +297,13 @@ func newAlphabetTable() *AlphabetTable {
 // Public APIs
 // ────────────────────────────────────────────────────────────────
 
-// DefaultBereshitDir returns the default Bereshit bible data directory.
+// DefaultBereshitDir returns the Bereshit bible data directory.
+// Checks BERESHIT_ROOT environment variable first, then falls back to default.
 func DefaultBereshitDir() string {
-	// Look for Bereshit relative to workspace
+	if root := os.Getenv("BERESHIT_ROOT"); root != "" {
+		return filepath.Join(root, "word/core/bible")
+	}
+	// Fallback to known location on CWS workstation
 	return "/media/seanje-lenox-wise/Project/Bereshit/word/core/bible"
 }
 

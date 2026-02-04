@@ -2,7 +2,7 @@
 
 **Purpose:** Development-specific data, tooling, and output for CPI-SI system
 
-**Location:** `~/.claude/cpi-si/system/dev/`
+**Location:** `~/.claude/system/dev/`
 
 ---
 

@@ -195,7 +195,7 @@ func main() {
 	fmt.Println("• ISO 8601 week numbering used throughout")
 	fmt.Println()
 	fmt.Println("REFERENCE:")
-	fmt.Println("Data location: ~/.claude/cpi-si/system/data/temporal/chronological/calendar/")
+	fmt.Println("Data location: ~/.claude/system/data/temporal/chronological/calendar/")
 	fmt.Println("Library location: system/runtime/lib/calendar/")
 	fmt.Println()
 }

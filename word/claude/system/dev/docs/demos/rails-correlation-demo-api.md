@@ -1,7 +1,7 @@
 # Rails Correlation Demo - API Documentation
 
 **Component:** `rails_correlation_demo.go`
-**Location:** `~/.claude/cpi-si/system/dev/demo/`
+**Location:** `~/.claude/system/dev/demo/`
 **Type:** Educational Demonstration (Executable)
 **Version:** 2.0.0
 

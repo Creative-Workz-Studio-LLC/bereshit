@@ -254,6 +254,8 @@ FOOTER BLOCK
 | [reflect-on-session](../reflect-on-session/) | Reflection uses awareness data |
 | [session-awareness](../session-awareness/) | Time awareness (external) |
 | [references/awareness-guide.md](references/awareness-guide.md) | Full awareness documentation |
+| [rules/thinking-framework.md](../../rules/thinking-framework.md) | 5-question framework |
+| [rules/core-disciplines.md](../../rules/core-disciplines.md) | The 6 core disciplines |
 
 ---
 

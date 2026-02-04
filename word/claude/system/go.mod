@@ -2,8 +2,8 @@
 // METADATA
 // ============================================================================
 // System Module Definition - CPI-SI Interactive Terminal System
-// Purpose: Define Go module and dependencies for system tools
-// Dependencies: system/lib for shared system libraries
+// Purpose: Define Go module for system organization
+// Note: This is a structural module; actual code is in runtime/cmd and runtime/lib
 
 // ============================================================================
 // SETUP
@@ -16,18 +16,10 @@ go 1.24.4
 // ============================================================================
 // BODY
 // ============================================================================
-
-// External Dependencies
-// System libraries providing logging, debugging, and infrastructure
-require system/lib v0.0.0
-
-require github.com/BurntSushi/toml v1.5.0 // indirect
-
-// Local Module Path Resolution
-// Point to actual location of system libraries
-replace system/lib => ./runtime/lib
+// No dependencies needed - this module is structural only
+// Actual code lives in child modules: runtime/cmd, runtime/lib/*
 
 // ============================================================================
 // CLOSING
 // ============================================================================
-// Module ready for system tools and commands
+// Module ready for system organization

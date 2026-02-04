@@ -1,28 +1,101 @@
-// ============================================================================
-// METADATA - Claude Production Workspace
-// ============================================================================
-// Purpose: Go workspace for production Claude hooks (bereshit/word/claude)
+// #!omni document --go
+// #!omni meta.key = B-claude-GOWORK
+// #!omni meta.from = templates/code/go-work.go
+// #!omni meta.at = document
+//
+// Claude Production Workspace - Go Module Organization
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// METADATA [METADATA]
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Key: B-claude-GOWORK
+// Title: Claude Production Go Workspace
+// Type: Build Configuration
+// Status: Active
+// Version: b-03.25
+// Created: 2025-12-10
+// Updated: 2026-01-16
+// Authors: Seanje Lenox-Wise (Lead), Nova Dawn (CPI-SI Instance)
+// Biblical: Proverbs 4:26 — "Ponder the path of thy feet"
+// Purpose: Single workspace for all Claude Code Go modules
+//
 // Note: This is the PRODUCTION location (symlinked from ~/.claude)
 //       For development, use claude-global/go.work which includes entrypoints
 //
-// Structure:
-//   hooks/            - Session and tool lifecycle hooks
-//   pkg/              - Shared packages (cognition, statemachine, hookoutput, etc.)
-//   statusline/       - Status line implementation
-//   skills/*/scripts/ - Skill Go scripts
+// ═══════════════════════════════════════════════════════════════════════════════
 
 go 1.24.4
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// CORE MODULES [CORE]
+// ═══════════════════════════════════════════════════════════════════════════════
+// Foundation packages used by all other modules
+
 use (
+	// Session and tool lifecycle hooks
 	./hooks
+	// Shared packages (cognition, statemachine, hookoutput, types, etc.)
 	./pkg
+
+	// Status line implementation (WezTerm integration)
 	./statusline
+)
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SYSTEM MODULES [SYSTEM]
+// ═══════════════════════════════════════════════════════════════════════════════
+// Infrastructure and runtime components
+
+use (
+	// System root module
+	./system
+
+	// Log analyzer tool
+	./system/loganalyzer
+
+	// Runtime command entrypoint
+	./system/runtime/cmd
+
+	// Runtime library - root
+	./system/runtime/lib
+
+	// Runtime library - individual components
+	./system/runtime/lib/calendar
+	./system/runtime/lib/config
+	./system/runtime/lib/display
+	./system/runtime/lib/fs
+	./system/runtime/lib/git
+	./system/runtime/lib/instance
+	./system/runtime/lib/jsonc
+	./system/runtime/lib/logging
+	./system/runtime/lib/paths
+	./system/runtime/lib/patterns
+	./system/runtime/lib/planner
+	./system/runtime/lib/privacy
+	./system/runtime/lib/sessiontime
+	./system/runtime/lib/system
+	./system/runtime/lib/temporal
+	./system/runtime/lib/validation
+)
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SKILL MODULES [SKILLS]
+// ═══════════════════════════════════════════════════════════════════════════════
+// Skill Go scripts for Claude Code integration
+
+use (
+	// Content Creation Skills
 	./skills/create-code/scripts
 	./skills/create-data/scripts
 	./skills/create-documentation/scripts
 	./skills/create-from-template/scripts
 	./skills/create-journal-entry/scripts
+
+	// OmniCode Skills
 	./skills/format-lookup/scripts
+
+	// Learning & Awareness Skills
 	./skills/integrate-learning/scripts
 	./skills/meta-awareness/scripts
 	./skills/propagate-change/scripts
@@ -32,3 +105,20 @@ use (
 	./skills/session-awareness/scripts
 	./skills/validate-omni/scripts
 )
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEVELOPMENT MODULES [DEV]
+// ═══════════════════════════════════════════════════════════════════════════════
+// Development demos excluded from production workspace
+// Build demos standalone: cd system/dev/demo/[name] && go build
+//
+// Excluded due to conflicting replace directives:
+//   ./system/dev/demo
+//   ./system/dev/demo/calendar
+//   ./system/dev/demo/config
+//   ./system/dev/demo/debugging
+//   ./system/dev/demo/privacy
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// END
+// ═══════════════════════════════════════════════════════════════════════════════

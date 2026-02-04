@@ -107,10 +107,12 @@ test-states: build
 	@echo "WezTerm variables set:"
 	@echo "$$FULL_TEST_JSON" | ./$(BIN_DIR)/$(BINARY) 2>&1 | grep -o 'SM_[A-Z_]*' | sort -u || true
 
+# Install to the correct location (parent bin/ is symlinked to ~/.claude/bin/)
+# NOTE: Prefer using parent Makefile: cd .. && make bin
 install: build
-	@mkdir -p ~/.claude/cpi-si/statusline/
-	@cp $(BIN_DIR)/$(BINARY) ~/.claude/cpi-si/statusline/
-	@echo "Installed to ~/.claude/cpi-si/statusline/"
+	@mkdir -p ../bin
+	@cp $(BIN_DIR)/$(BINARY) ../bin/$(BINARY)
+	@echo "Installed to ../bin/$(BINARY) (symlinked to ~/.claude/bin/)"
 
 # ============================================================================
 # CLOSING
@@ -126,7 +128,7 @@ help:
 	@echo "  test-minimal - Test with minimal JSON"
 	@echo "  test-full    - Test with complete Claude Code JSON"
 	@echo "  test-states  - Test state machine variable output"
-	@echo "  install      - Install to ~/.claude/cpi-si/statusline/"
+	@echo "  install      - Install to ../bin/ (symlinked to ~/.claude/bin/)"
 	@echo ""
 	@echo "WezTerm Integration:"
 	@echo "  SM_POSITION  - Current state machine position"

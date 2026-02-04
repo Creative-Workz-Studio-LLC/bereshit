@@ -2,7 +2,7 @@
 
 **Purpose:** API documentation, design philosophy, and guides for CPI-SI development tools and systems
 
-**Location:** `~/.claude/cpi-si/system/dev/docs/`
+**Location:** `~/.claude/system/dev/docs/`
 
 ---
 

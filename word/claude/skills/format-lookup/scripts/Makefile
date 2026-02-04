@@ -32,8 +32,7 @@ all: build
 build:
 	@echo "Building lookup..."
 	@mkdir -p $(BIN_DIR)
-	GOWORK=off go mod tidy
-	GOWORK=off go build -o $(BIN_DIR)/lookup ./$(CMD_DIR)/lookup
+	go build -o $(BIN_DIR)/lookup ./$(CMD_DIR)/lookup
 	@echo "Built: $(BIN_DIR)/lookup"
 
 # Clean build artifacts
@@ -45,7 +44,7 @@ clean:
 # Run tests
 test:
 	@echo "Running tests..."
-	GOWORK=off go test ./...
+	go test ./...
 
 # Format code
 fmt:
@@ -55,7 +54,7 @@ fmt:
 # Vet code
 vet:
 	@echo "Vetting..."
-	GOWORK=off go vet ./...
+	go vet ./...
 
 # Full check
 check: fmt vet test

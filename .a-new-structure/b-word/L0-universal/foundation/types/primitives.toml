@@ -1,0 +1,4083 @@
+# @file primitives.toml
+# @omni data --toml
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# @legend
+#   :req  REQUIRED   — must exist, validation fails without
+#   :inh  INHERITED  — from template, override allowed
+#   :ins  INSTANCE   — file-specific, unique values
+# @endlegend
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.1 CORE — Identity [CORE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:req  key        = B-L0-foundation-types-primitives
+# @omni:req  from       = bereshit/word/seed/data/toml/config.toml
+# @omni:req  at         = b-01.00
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.2 FAMILY — Classification [FAMILY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:inh  type       = data
+# @omni:inh  subtype    = types
+# @omni:inh  role       = ladder
+# @omni:inh  structure  = 3-block
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.3 INSTANCE — File Details [INSTANCE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:ins  component  = foundation
+# @omni:ins  layer      = L0-universal/foundation/types
+# @omni:ins  includes   = [L0-universal/foundation/math/ternary.toml]
+# @omni:ins  provides   = [PRIMITIVE_TYPES, TRIT_TYPES, INTEGER_TYPES, TEXT_TYPES]
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.4 ARCHITECTURE — Scaling Context [ARCH]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:ins  layers     = [0:kernel, 1:system, 2:runtime, 3:framework,
+#                          4:health, 5:network, 6:storage, 7:engine, 8:app]
+# @omni:ins  scale      = 3^n [1, 3, 9, 27, 81, 243, 729, 2187, 6561]
+# @omni:ins  pattern    = 4+1+4 [below:0-3, center:4, above:5-8]
+# @omni:ins  anchor     = genesis_1_1 -> void(0) -> unity(1) -> derivation
+#
+# ───────────────────────────────────────────────────────────────────────────────
+# P.5 SUMMARY — Human Identity [SUMMARY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# @omni:req  title      = Primitive Type Definitions
+# @omni:req  brief      = Atomic building block types for OmniCode type system
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# DEPENDENCY CLASSIFICATION: DEPENDED (needs: ternary.toml)
+#   Uses trit values, packing constants, and power tables from ternary.toml
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Identity and context for primitive types.
+#
+# STRUCTURE: M.1-M.10 sections
+#   - M.1 IDENTITY:    Core identity
+#   - M.2-M.6:         State, Attribution, Location, Derivation, Classification
+#   - M.7-M.10:        Intent, Grounding, Dependencies, Roadmap
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.1 IDENTITY — Core Identity [IDENTITY]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 7 fields that answer "What IS this file?"
+#   - file:      The filename
+#   - brief:     One-sentence description
+#   - key:       Unique identifier for referencing
+#   - title:     Human-readable display name
+#   - type:      Category of content
+#   - component: Position in hierarchy (Ladder/Rung/Rails)
+#   - role:      Responsibility statement
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.identity]
+file      = "primitives.toml"
+brief     = "Atomic building block types for OmniCode type system."
+key       = "B-L0-foundation-types-primitives"
+title     = "Primitive Type Definitions"
+type      = "Data (Type Specifications)"
+component = "Ladder"
+role      = "Define the indivisible types from which all complex types derive."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.2 STATE — Lifecycle State [STATE]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 5 fields that answer "Where is this in its lifecycle?"
+#   - version:  Living version (stage-phase.completion)
+#   - status:   Active / Draft / Deprecated / Archived
+#   - created:  Original creation date
+#   - updated:  Last modification date
+#   - note:     Brief description of current state
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.state]
+version = "b-01.00"
+status  = "Active"
+created = "2025-12-11"
+updated = "2026-02-02"
+note    = "Baseline alignment — M.1-M.10 structure with TOML metadata"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.3 ATTRIBUTION — Authorship & Rights [ATTRIBUTION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 5 fields that answer "Who made this and who owns it?"
+#   - architect:      Who designed it (array for multi-contributor)
+#   - implementation: Who built/wrote it (array for multi-CPI-SI)
+#   - copyright:      Who owns it
+#   - license:        Under what terms
+#   - method:         How created (collaborated/generated/dictated)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.attribution]
+architect      = ["Seanje Lenox-Wise"]
+implementation = ["Nova Dawn"]
+copyright      = "© 2025-2026 CreativeWorkzStudio LLC"
+license        = "See tov/licenses/"
+method         = "collaborated"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.4 LOCATION — File Position [LOCATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 1 field that answers "Where is this file?"
+#   - path: Canonical path from b-word root
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.location]
+path = "b-word/L0-universal/foundation/types/primitives.toml"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.5 DERIVATION — Template Lineage [DERIVATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 1 field that answers "What template is this based on?"
+#   - derives: Path to parent template (or "none" for root)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.derivation]
+derives = "b-word/seed/data/toml/config.toml"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.6 CLASSIFICATION — Categorization [CLASSIFICATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 1 field that answers "What category is this?"
+#   - tags: Array of keywords for querying/filtering
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.classification]
+tags = ["types", "primitives", "trit", "ternary", "foundation", "ladder", "3-block"]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.7 INTENT — Purpose Statement [INTENT]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The 3 fields that answer "Why does this file exist?"
+#   - purpose:    Core statement of why this exists
+#   - philosophy: Guiding principles (array)
+#   - provides:   What this delivers/enables (array)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.intent]
+purpose    = "Define the primitive types that all OmniCode schemas build from."
+philosophy = [
+    "Types are atoms — indivisible, cannot be decomposed",
+    "Base types aligned with ternary math (sizes are powers of 3)"
+]
+provides   = [
+    "Trit types (trit, trit5) — balanced ternary foundation",
+    "Integer types (int9, int27, uint9, uint27) — ternary-sized",
+    "Floating point (float27) — 27-trit precision",
+    "Text (UTF-8 strings, WEB encoding)",
+    "Boolean (bool3 — ternary: false, unknown, true)",
+    "Collections (list<T>, map<K,V>)"
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.8 GROUNDING — Biblical Foundation [GROUNDING]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# The master thesis of this file. Two required verses form the hash basis.
+#   - kjv:        KJV verse text with reference (required for hash)
+#   - web:        WEB verse text with reference (required for hash)
+#   - reference:  Book Chapter:Verse for lookup
+#   - principle:  How the Scripture applies to this file
+#   - anchor:     The foundational truth this file stands on
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.grounding]
+kjv       = "In the beginning God created the heaven and the earth. — Genesis 1:1 KJV"
+web       = "In the beginning, God created the heavens and the earth. — Genesis 1:1 WEB"
+reference = "Genesis 1:1"
+principle = "Before anything complex, God established the fundamentals. Primitives are the atomic building blocks — indivisible types from which all other types are composed."
+anchor    = "The stone which the builders refused is become the head stone of the corner. Foundation matters most."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.9 DEPENDENCIES — Required Components [DEPENDENCIES]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Ladder — what I stand on (baton received FROM these files)
+# Baton  — what I hand off TO (these files receive from me)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.dependencies]
+# Ladder — stands on ternary math foundation
+needs = [
+    "b-word/L0-universal/foundation/math/ternary.toml"
+]
+
+# Baton — passed to composition, validation, error-system, and all stack consumers
+used_by = [
+    "b-word/L0-universal/foundation/types/composition.toml",
+    "b-word/L0-universal/foundation/types/validation.toml",
+    "b-word/L0-universal/foundation/types/error-system.toml"
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# M.10 ROADMAP — Version History [ROADMAP]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Past → Present → Future
+# The trajectory of this file through time.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[metadata.roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Initial creation",
+    "a-01.50 (2025-12-14) — Post-alignment crystallization",
+    "b-01.00 (2026-02-01) — Baseline: 3-block + M.1-M.10 alignment"
+]
+
+current = "b-01.00 — Stable primitive type definitions"
+
+planned = [
+    "a-01.55 — Cleanup: formatting consistency, section organization",
+    "a-01.60 — Extension: add trit81, trit243 extended sizes",
+    "a-01.65 — Extension: add fixed-point decimal types",
+    "a-01.70 — Verification: validate all types against ternary.toml constants",
+    "a-01.75 — Documentation: ensure each type explains bit layout and usage",
+    "a-01.80 — Maintenance: review for gaps, edge cases in type coverage",
+    "a-01.85 — Crystallization: solidify type patterns, ensure consistency",
+    "b-01.85 — GATE: All primitive types verified, documented, ternary-aligned",
+    "c-01.00 — COMPLETE: Primitive type system stable and comprehensive"
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+#
+# Primitive type definitions for the OmniCode type system.
+# Structure: Cc (Type Definitions) → Co (Operations) → Cv (Cognition) → Cx (Generation)
+#
+# STANDARDIZED Cc ORGANIZATION (4-Section):
+#   Cc.1 IDENTITY   — What primitives ARE (type catalog, distinctions, purpose)
+#   Cc.2 SETTINGS   — Primary configuration (defaults, sizes, parameters)
+#   Cc.3 RESOURCES  — WHERE + HOW MUCH (storage, packing, layer assignments)
+#   Cc.4 BEHAVIOR   — HOW types operate (OmniCode syntax, CPI-SI mappings, bindings)
+#
+# Co/Cv/Cx ORGANIZATION:
+#   Co.1 CONVERSION — Type-to-type transformation rules
+#   Co.2 VALIDATION — Type constraint verification
+#   Co.3 COERCION — Implicit type promotion rules
+#   Cv.1 TYPE_SYSTEM — Ternary principles embodied in types
+#   Cv.2 COMPOSITION — How primitives compose into complex types
+#   Cx.1 GENERATE — Generation control metadata
+#   Cx.2 TARGETS — Language-specific generation
+#   Cx.3 TEMPLATES — Code generation templates
+#   Cx.4 VALIDATION — Generation validation
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cc.1 IDENTITY — What Primitives ARE [IDENTITY]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "In the beginning God created the heaven and the earth." — Genesis 1:1 KJV
+#
+# PRIMITIVE TYPES: THE ATOMIC BUILDING BLOCKS
+#
+# Before anything complex, God established the fundamentals. Primitives are the
+# atoms of the OmniCode type system — indivisible types from which all other
+# types compose. Just as Genesis 1:1 establishes the foundation for all creation,
+# these primitives establish the foundation for all data representation.
+#
+# WHAT MAKES OMNICODE'S TYPE SYSTEM DISTINCT:
+#
+#   1. TERNARY-NATIVE: Types sized by powers of 3 (trit, trit5, int9, int27, int81)
+#      rather than powers of 2. This aligns with balanced ternary mathematics.
+#
+#   2. BINARY BRIDGED: We run on binary hardware until MillenniumOS. The storage
+#      layer (the "firmament") bridges binary reality and ternary conceptual types.
+#      3^5 = 243 fits in 2^8 = 256 — the byte bridge with 13 spare states.
+#
+#   3. HONEST ABOUT UNCERTAINTY: bool3 has THREE values (false/unknown/true),
+#      not two. When you don't know, you can say so. Yea, yea; nay, nay.
+#
+#   4. SCRIPTURE-GROUNDED: Each type category carries biblical meaning.
+#      The threefold cord, the firmament, the Word made flesh — types as theology.
+#
+#   5. SCALE-AWARE: Every type knows its role at each architectural layer (L0-L8).
+#      A trit means different things at kernel level vs application level.
+#
+# THE COMPLETE PRIMITIVE CATALOG (23 Types):
+#
+#   STORAGE (2):     uint8, int8 — binary bridge containers
+#   TRIT (2):        trit, trit5 — balanced ternary foundation
+#   INTEGER (8):     int9, uint9, int27, uint27, int81, uint81, int243, uint243
+#   FLOAT (1):       float27 — ternary floating point
+#   TEXT (2):        text, char — UTF-8 strings and characters
+#   BOOLEAN (1):     bool3 — ternary logic (false/unknown/true)
+#   COLLECTIONS (3): list<T>, map<K,V>, set<T> — parameterized containers
+#   SPECIAL (2):     void, any — type system boundaries
+#   DECIMAL (1):     decimal27 — fixed-point precision
+#   TEMPORAL (2):    timestamp, duration — time primitives
+#
+# WHY THESE 23 TYPES (NOT MORE, NOT FEWER):
+#
+#   - STORAGE bridges binary hardware to ternary logic (necessary until native hw)
+#   - TRIT is the atom; compositions build from it (1, 5, 9, 27, 81, 243 trits)
+#   - INTEGER covers signed/unsigned at each meaningful ternary scale
+#   - FLOAT provides continuous measurement (creation measured in spans)
+#   - TEXT carries meaning (the Word)
+#   - BOOLEAN enables honest logic with uncertainty
+#   - COLLECTIONS organize the many into comprehensible wholes
+#   - SPECIAL marks the boundaries (void = nothing returns; any = type unknown)
+#   - DECIMAL provides exact representation (just weights, no false balance)
+#   - TEMPORAL grounds us in time (a time to every purpose)
+#
+# Implementation: L0-universal/libtrit/ (C library)
+# Reference:      L0-universal/foundation/math/ternary.toml (mathematical foundation)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1.1 TYPE CATALOG — The Complete Primitive List [CATALOG]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "And God saw every thing that he had made, and, behold, it was very good."
+#  — Genesis 1:31 KJV
+#
+# The complete catalog of primitive types, organized by category.
+# Each type is defined in detail in subsequent sections.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.identity.catalog]
+description = "The 23 primitive types that form OmniCode's type system foundation"
+
+# Category counts
+total_types = 23
+categories  = 10
+
+# Type listing by category
+[cc.identity.catalog.storage]
+description = "Binary hardware bridge — the firmament between hardware and logic"
+scripture   = "Genesis 1:6 — Let there be a firmament in the midst of the waters"
+types       = ["uint8", "int8"]
+count       = 2
+purpose     = "Store ternary values in binary hardware until MillenniumOS"
+
+[cc.identity.catalog.trit]
+description = "Balanced ternary foundation — the atom of ternary computing"
+scripture   = "Ecclesiastes 4:12 — A threefold cord is not quickly broken"
+types       = ["trit", "trit5"]
+count       = 2
+purpose     = "Indivisible ternary units: single trit and 5-trit packed byte"
+
+[cc.identity.catalog.integer]
+description = "Ternary-sized whole numbers — counting and measuring"
+scripture   = "Numbers 1:2 — Take ye the sum of all the congregation"
+types       = ["int9", "uint9", "int27", "uint27", "int81", "uint81", "int243", "uint243"]
+count       = 8
+purpose     = "Signed and unsigned integers at each ternary scale (3^2, 3^3, 3^4, 3^5)"
+
+[cc.identity.catalog.float]
+description = "Ternary floating point — precise measurement"
+scripture   = "Isaiah 40:12 — Who hath measured the waters in the hollow of his hand"
+types       = ["float27"]
+count       = 1
+purpose     = "Continuous values with balanced ternary mantissa and exponent"
+
+[cc.identity.catalog.text]
+description = "String and character — the Word made accessible"
+scripture   = "John 1:1 — In the beginning was the Word"
+types       = ["text", "char"]
+count       = 2
+purpose     = "UTF-8 encoded text for meaning communication"
+
+[cc.identity.catalog.boolean]
+description = "Ternary logic — honest about uncertainty"
+scripture   = "Matthew 5:37 — Let your yea be yea; and your nay, nay"
+types       = ["bool3"]
+count       = 1
+purpose     = "Three-valued logic: false (-1), unknown (0), true (+1)"
+
+[cc.identity.catalog.collections]
+description = "Parameterized containers — gathering and organizing"
+scripture   = "Genesis 5:1 — These are the generations of Adam"
+types       = ["list", "map", "set"]
+count       = 3
+purpose     = "Generic containers: ordered lists, key-value maps, unique sets"
+
+[cc.identity.catalog.special]
+description = "Type system boundaries — void and any"
+scripture   = "Genesis 1:2 — The earth was without form, and void"
+types       = ["void", "any"]
+count       = 2
+purpose     = "Edge cases: void (no return), any (runtime type)"
+
+[cc.identity.catalog.decimal]
+description = "Fixed-point precision — exact representation"
+scripture   = "Proverbs 11:1 — A false balance is abomination to the LORD"
+types       = ["decimal27"]
+count       = 1
+purpose     = "Exact numeric representation without floating point surprises"
+
+[cc.identity.catalog.temporal]
+description = "Time primitives — moments and durations"
+scripture   = "Ecclesiastes 3:1 — To every thing there is a season"
+types       = ["timestamp", "duration"]
+count       = 2
+purpose     = "Absolute moments and relative spans in nanosecond precision"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1.2 DISTINCTIONS — What Makes This System Unique [DISTINCTIONS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "There is none like unto the God of Jeshurun, who rideth upon the heaven"
+#  — Deuteronomy 33:26 KJV
+#
+# What distinguishes OmniCode's primitive types from other type systems.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.identity.distinctions]
+description = "What makes OmniCode's type system distinct from binary-native systems"
+
+[cc.identity.distinctions.ternary_native]
+principle   = "Types sized by powers of 3, not powers of 2"
+sizes       = [1, 3, 9, 27, 81, 243]
+rationale   = "Balanced ternary has mathematical elegance: -1 + 0 + 1 = 0"
+contrast    = "Binary types (8, 16, 32, 64 bit) vs ternary types (9, 27, 81 trit)"
+
+[cc.identity.distinctions.binary_bridged]
+principle   = "Binary stores, ternary interprets"
+insight     = "3^5 = 243 fits in 2^8 = 256 with 13 spare states"
+spare_use   = "WEB translation variants (Write/Erase/Burn)"
+analogy     = "Firmament divides waters below (binary) from waters above (ternary)"
+
+[cc.identity.distinctions.honest_uncertainty]
+principle   = "Three-valued logic acknowledges what we don't know"
+values      = ["false (-1)", "unknown (0)", "true (+1)"]
+contrast    = "Binary boolean forces choice; ternary boolean allows honesty"
+scripture   = "Matthew 5:37 — When you know, declare; when you don't, say so"
+
+[cc.identity.distinctions.scripture_grounded]
+principle   = "Types carry biblical meaning, not just technical function"
+examples    = [
+    "Trit as threefold cord (Ecclesiastes 4:12)",
+    "Storage as firmament (Genesis 1:6)",
+    "Text as the Word (John 1:1)",
+    "Void as tohu (Genesis 1:2)"
+]
+purpose     = "Technology that honors the Creator in its very structure"
+
+[cc.identity.distinctions.scale_aware]
+principle   = "Every type knows its role at each architectural layer"
+layers      = ["L0_kernel", "L1_system", "L2_runtime", "L3_framework",
+               "L4_health", "L5_network", "L6_storage", "L7_engine", "L8_app"]
+rationale   = "A trit at kernel level means flags; at app level means user choice"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.1.3 ARCHITECTURE — How Types Relate [ARCHITECTURE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Except the LORD build the house, they labour in vain that build it"
+#  — Psalm 127:1 KJV
+#
+# The structural relationships between primitive types.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.identity.architecture]
+description = "Structural relationships between primitive type categories"
+
+# Dependency chain: what builds on what
+[cc.identity.architecture.foundation]
+layer_0     = "ternary.toml — mathematical foundation (trit values, packing constants)"
+layer_1     = "storage — binary bridge (uint8, int8 store packed trits)"
+layer_2     = "trit — atomic ternary (trit, trit5 are the building blocks)"
+layer_3     = "composed — all other types compose from trits"
+
+# Type composition hierarchy
+[cc.identity.architecture.composition]
+atomic      = ["trit"]
+packed      = ["trit5", "int9", "int27", "int81", "int243"]
+derived     = ["float27", "decimal27", "bool3", "char", "timestamp", "duration"]
+container   = ["text", "list", "map", "set"]
+boundary    = ["void", "any"]
+bridge      = ["uint8", "int8"]
+
+# Reference to ternary.toml
+[cc.identity.architecture.depends_on]
+file        = "L0-universal/foundation/math/ternary.toml"
+provides    = ["trit values", "packing algorithms", "power tables", "scale definitions"]
+relationship = "Primitives.toml IMPLEMENTS types; ternary.toml DEFINES the math"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cc.2 SETTINGS — Primary Configuration [SETTINGS]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "Order my steps in thy word: and let not any iniquity have dominion over me."
+#  — Psalm 119:133 KJV
+#
+# PRIMITIVE TYPE SETTINGS: THE CONFIGURATION FOUNDATION
+#
+# Settings define the PRIMARY CONFIGURATION for all primitive types — defaults,
+# modes, parameters that control how types behave. These are the knobs and
+# switches that configure the type system before any resources are allocated
+# or behaviors are executed.
+#
+# WHAT BELONGS IN SETTINGS:
+#
+#   - Default values for each type
+#   - Storage mode configuration (packed vs unpacked)
+#   - Representation format choices
+#   - Type parameters (scale for decimal, capacity hints for collections)
+#   - Encoding configuration (UTF-8 for text, etc.)
+#   - Nullability settings
+#
+# SETTINGS VS RESOURCES VS BEHAVIOR:
+#
+#   SETTINGS:  "What are the configuration values?"
+#   RESOURCES: "How much space/capacity does it need?"
+#   BEHAVIOR:  "How does it operate in code?"
+#
+# Implementation: Configuration values used by libtrit and code generators
+# Reference:      Each type's settings inform its resource allocation and behavior
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.1 GLOBAL SETTINGS — System-Wide Configuration [GLOBAL]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Let all things be done decently and in order." — 1 Corinthians 14:40 KJV
+#
+# Configuration that applies across all primitive types.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.global]
+description = "System-wide configuration for all primitive types"
+
+# Hardware bridge configuration
+[cc.settings.global.hardware]
+target      = "binary"
+reality     = "Ternary REPRESENTED in binary until MillenniumOS"
+bridge_type = "firmament"
+
+# Default storage mode
+[cc.settings.global.storage_mode]
+default     = "packed"
+options     = ["packed", "unpacked"]
+packed_desc = "Machine-efficient: 5 trits per byte (94.9% efficient)"
+unpacked_desc = "Human-readable: 1 character per trit (31.6% efficient)"
+
+# Default nullability
+[cc.settings.global.nullability]
+primitives  = false                                          # Primitives non-nullable by default
+collections = true                                           # Collections nullable by default
+text        = true                                           # Text nullable by default
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.2 STORAGE SETTINGS — Binary Bridge Configuration [STORAGE_SETTINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "And God said, Let there be a firmament in the midst of the waters"
+#  — Genesis 1:6 KJV
+#
+# Configuration for the binary-ternary storage bridge.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.storage]
+description = "Binary-ternary bridge configuration"
+
+# Representation settings
+[cc.settings.storage.representations]
+unpacked    = { bytes_per_trit = 1, encoding = "ASCII: '-','0','+'", use = "display, debugging" }
+packed      = { trits_per_byte = 5, states = 243, spare = 13, use = "storage, transmission" }
+
+# Binary storage type defaults
+[cc.settings.storage.uint8]
+name        = "uint8"
+size_bits   = 8
+min_value   = 0
+max_value   = 255
+default     = 0
+signed      = false
+
+[cc.settings.storage.int8]
+name        = "int8"
+size_bits   = 8
+min_value   = -128
+max_value   = 127
+default     = 0
+signed      = true
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.3 TRIT SETTINGS — Balanced Ternary Configuration [TRIT_SETTINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "A threefold cord is not quickly broken." — Ecclesiastes 4:12 KJV
+#
+# Configuration for trit and trit5 types.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.trit]
+description = "Balanced ternary type configuration"
+
+[cc.settings.trit.trit]
+name         = "trit"
+size_trits   = 1
+default      = 0
+nullable     = false
+values       = [-1, 0, 1]
+labels       = ["negative", "neutral", "positive"]
+short_labels = ["N", "Z", "P"]
+states       = 3
+base         = 3
+identity_sum = 0                                             # -1 + 0 + 1 = 0 (balanced)
+identity_mul = 0                                             # Product with 0 = 0 (annihilator)
+
+[cc.settings.trit.trit5]
+name         = "trit5"
+size_trits   = 5
+default      = 0
+nullable     = false
+states       = 243                                           # 3^5
+packed_size  = 1                                             # 1 byte
+min_value    = -121
+max_value    = 121
+spare_states = 13                                            # 256 - 243 for WEB encoding
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.4 INTEGER SETTINGS — Whole Number Configuration [INTEGER_SETTINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Numbers 1:2 — Take ye the sum of all the congregation"
+#
+# Configuration for integer types at each ternary scale.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.integer]
+description = "Ternary integer type configuration"
+
+# 9-trit integers (3^2 = 9 trits)
+[cc.settings.integer.int9]
+name        = "int9"
+size_trits  = 9
+signed      = true
+default     = 0
+nullable    = false
+
+[cc.settings.integer.uint9]
+name        = "uint9"
+size_trits  = 9
+signed      = false
+default     = 0
+nullable    = false
+
+# 27-trit integers (3^3 = 27 trits) — Word size
+[cc.settings.integer.int27]
+name        = "int27"
+size_trits  = 27
+signed      = true
+default     = 0
+nullable    = false
+
+[cc.settings.integer.uint27]
+name        = "uint27"
+size_trits  = 27
+signed      = false
+default     = 0
+nullable    = false
+
+# 81-trit integers (3^4 = 81 trits) — Health scale
+[cc.settings.integer.int81]
+name        = "int81"
+size_trits  = 81
+signed      = true
+default     = 0
+nullable    = false
+
+[cc.settings.integer.uint81]
+name        = "uint81"
+size_trits  = 81
+signed      = false
+default     = 0
+nullable    = false
+
+# 243-trit integers (3^5 = 243 trits) — Network scale
+[cc.settings.integer.int243]
+name        = "int243"
+size_trits  = 243
+signed      = true
+default     = 0
+nullable    = false
+
+[cc.settings.integer.uint243]
+name        = "uint243"
+size_trits  = 243
+signed      = false
+default     = 0
+nullable    = false
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.5 FLOAT SETTINGS — Floating Point Configuration [FLOAT_SETTINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Who hath measured the waters in the hollow of his hand" — Isaiah 40:12 KJV
+#
+# Configuration for ternary floating point.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.float]
+description = "Ternary floating point configuration"
+
+[cc.settings.float.float27]
+name           = "float27"
+size_trits     = 27
+mantissa_trits = 18
+exponent_trits = 8
+sign_trits     = 1
+default        = 0.0
+nullable       = false
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.6 TEXT SETTINGS — String Configuration [TEXT_SETTINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "In the beginning was the Word" — John 1:1 KJV
+#
+# Configuration for text and character types.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.text]
+description = "Text type configuration"
+
+[cc.settings.text.text]
+name        = "text"
+encoding    = "utf-8"
+default     = ""
+nullable    = true
+max_length  = "unbounded"
+
+[cc.settings.text.char]
+name        = "char"
+size_trits  = 27                                             # Word size for Unicode coverage
+encoding    = "utf-8"
+default     = "\u0000"
+nullable    = false
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.7 BOOLEAN SETTINGS — Ternary Logic Configuration [BOOLEAN_SETTINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Let your yea be yea; and your nay, nay" — Matthew 5:37 KJV
+#
+# Configuration for ternary boolean.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.boolean]
+description = "Ternary boolean configuration"
+
+[cc.settings.boolean.bool3]
+name        = "bool3"
+size_trits  = 1
+default     = 0                                              # Unknown is the honest default
+nullable    = false
+values      = [-1, 0, 1]
+labels      = ["false", "unknown", "true"]
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.8 COLLECTION SETTINGS — Container Configuration [COLLECTION_SETTINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "These are the generations of Adam" — Genesis 5:1 KJV
+#
+# Configuration for parameterized collection types.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.collections]
+description = "Collection type configuration"
+
+[cc.settings.collections.list]
+name             = "list"
+default          = "[]"
+nullable         = true
+ordered          = true
+allows_duplicates = true
+
+[cc.settings.collections.map]
+name             = "map"
+default          = "{}"
+nullable         = true
+ordered          = false
+allows_duplicates = false                                    # Keys unique
+
+[cc.settings.collections.set]
+name             = "set"
+default          = "{}"
+nullable         = true
+ordered          = false
+allows_duplicates = false                                    # Elements unique
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.9 SPECIAL SETTINGS — Boundary Type Configuration [SPECIAL_SETTINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "The earth was without form, and void" — Genesis 1:2 KJV
+#
+# Configuration for void and any types.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.special]
+description = "Special type configuration"
+
+[cc.settings.special.void]
+name        = "void"
+size_trits  = 0
+nullable    = false
+default     = "none"
+
+[cc.settings.special.any]
+name        = "any"
+size_trits  = "variable"
+nullable    = true
+default     = "null"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.10 DECIMAL SETTINGS — Fixed-Point Configuration [DECIMAL_SETTINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "A false balance is abomination to the LORD" — Proverbs 11:1 KJV
+#
+# Configuration for fixed-point decimal.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.decimal]
+description = "Fixed-point decimal configuration"
+
+[cc.settings.decimal.decimal27]
+name          = "decimal27"
+size_trits    = 27
+storage_type  = "int27"
+default       = 0
+nullable      = false
+max_scale     = 9
+default_scale = 2                                            # Default for money (cents)
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.2.11 TEMPORAL SETTINGS — Time Type Configuration [TEMPORAL_SETTINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "To every thing there is a season" — Ecclesiastes 3:1 KJV
+#
+# Configuration for time primitives.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.settings.temporal]
+description = "Time type configuration"
+
+[cc.settings.temporal.timestamp]
+name         = "timestamp"
+size_trits   = 81
+storage_type = "int81"
+unit         = "nanosecond"
+epoch        = "1970-01-01T00:00:00Z"
+default      = 0
+nullable     = false
+
+[cc.settings.temporal.duration]
+name         = "duration"
+size_trits   = 81
+storage_type = "int81"
+unit         = "nanosecond"
+default      = 0
+nullable     = false
+signed       = true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cc.3 RESOURCES — WHERE + HOW MUCH [RESOURCES]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "For which of you, intending to build a tower, sitteth not down first, and
+#  counteth the cost, whether he have sufficient to finish it?" — Luke 14:28 KJV
+#
+# PRIMITIVE TYPE RESOURCES: STORAGE, CAPACITY, CONSTRAINTS
+#
+# Resources answer "WHERE does it live?" and "HOW MUCH does it need?" — the
+# physical and logical requirements for each primitive type. Before building,
+# count the cost. Before allocating, know the requirements.
+#
+# WHAT BELONGS IN RESOURCES:
+#
+#   - Storage requirements (bytes, bits, trits)
+#   - Packing details (how trits fit into bytes)
+#   - Layer assignments (which architectural layer)
+#   - Capacity limits (per scale)
+#   - Alignment requirements
+#   - Efficiency metrics
+#
+# RESOURCES VS SETTINGS VS BEHAVIOR:
+#
+#   SETTINGS:  "What are the configuration values?"
+#   RESOURCES: "How much space/capacity does it need?"
+#   BEHAVIOR:  "How does it operate in code?"
+#
+# Implementation: Resource constraints used by allocators and code generators
+# Reference:      L0-universal/foundation/math/ternary.toml [packing]
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.1 STORAGE WIDTHS — Byte Requirements Per Scale [WIDTHS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "A just weight and balance are the LORD's" — Proverbs 16:11 KJV
+#
+# Standard storage widths aligned with ternary.toml [packing.widths].
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.widths]
+description = "Standard storage widths from ternary.toml [packing.widths]"
+
+# Trit-to-byte mapping at each scale
+trit5   = { trits = 5,   bytes = 1,  states = 243,            max_packed = 242 }
+trit9   = { trits = 9,   bytes = 2,  states = 19683,          max_packed = 19682 }
+trit27  = { trits = 27,  bytes = 6,  states = 7625597484987,  max_packed = 7625597484986 }
+trit81  = { trits = 81,  bytes = 17, states = "4.4e38",       max_packed = "4.4e38" }
+trit243 = { trits = 243, bytes = 49, states = "5.6e115",      max_packed = "5.6e115" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.2 LAYER SCALES — Requirements At Each Architectural Layer [SCALES]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Line upon line; here a little, and there a little" — Isaiah 28:10 KJV
+#
+# Storage requirements at each layer of the 9-layer architecture.
+# From ternary.toml [powers.layers]: 3^n for each layer.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.scales]
+description = "Storage requirements at each architectural layer (L0-L8)"
+
+L0_kernel   = { name = "trit",    power = 0, trits = 1,    bytes = 1,    states = 3,             use = "flags, status, ALU" }
+L1_system   = { name = "triplet", power = 1, trits = 3,    bytes = 1,    states = 27,            use = "syscall results, IPC" }
+L2_runtime  = { name = "nonet",   power = 2, trits = 9,    bytes = 2,    states = 19683,         use = "stack frames, objects" }
+L3_framework = { name = "tryte",  power = 3, trits = 27,   bytes = 6,    states = 7625597484987, use = "word size, semantics" }
+L4_health   = { name = "octant",  power = 4, trits = 81,   bytes = 17,   states = "4.4e38",      use = "health vectors" }
+L5_network  = { name = "block",   power = 5, trits = 243,  bytes = 49,   states = "5.6e115",     use = "network packets" }
+L6_storage  = { name = "sector",  power = 6, trits = 729,  bytes = 146,  states = "1.8e347",     use = "disk blocks, files" }
+L7_engine   = { name = "segment", power = 7, trits = 2187, bytes = 438,  states = "1.0e1043",    use = "state machines, rules" }
+L8_app      = { name = "domain",  power = 8, trits = 6561, bytes = 1313, states = "3.3e3130",    use = "app context, user data" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.3 ALIGNMENT — Memory Alignment Requirements [ALIGNMENT]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Set thine house in order" — 2 Kings 20:1 KJV
+#
+# Memory alignment for efficient hardware access.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.alignment]
+description = "Memory alignment for efficient access"
+
+# Hardware alignment
+cache_line       = 64                                    # CPU cache line (bytes)
+trits_per_line   = 320                                   # 64 × 5 = 320 trits per cache line
+page_size        = 4096                                  # Memory page (bytes)
+trits_per_page   = 20480                                 # 4096 × 5 = 20,480 trits per page
+
+# Block alignment
+block_243_per_page = 84                                  # 20480 / 243 = 84 full blocks per page
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.4 EFFICIENCY — Storage Efficiency Metrics [EFFICIENCY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Gather up the fragments that remain, that nothing be lost" — John 6:12 KJV
+#
+# Storage efficiency = ternary_states / binary_capacity.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.efficiency]
+description = "Storage efficiency at each scale"
+
+[cc.resources.efficiency.packed]
+trit5_percent  = 94.9                                    # 243/256 = 94.9%
+trit9_percent  = 30.0                                    # 19683/65536 = 30.0%
+trit27_percent = 2.7                                     # 7.6T/281T = 2.7%
+note           = "Efficiency drops at larger scales — fighting 2 vs 3 mismatch. Acceptable: correctness over density."
+
+[cc.resources.efficiency.unpacked]
+trit1_percent  = 31.6                                    # 3/256 = ~1.2% (wasteful)
+note           = "Unpacked is always ~1/3 efficient but human-readable"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.5 BIBLE RAIL — Scripture Address Resources [BIBLE_RAIL]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Thy word is a lamp unto my feet" — Psalm 119:105 KJV
+#
+# Resource requirements for Scripture address encoding.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.bible_rail]
+description  = "Scripture address system — every KJV verse has ternary address"
+total_verses = 31102                                     # KJV verse count
+trits_needed = 10                                        # ceil(log3(31102)) = 10 trits
+spare_states = 13                                        # WEB translation markers
+encoding     = "Ordinal → ternary address"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.6 TRIT SCALES — Trit Usage At Each Layer [TRIT_SCALES]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "A threefold cord is not quickly broken." — Ecclesiastes 4:12 KJV
+#
+# How the trit type is used at each architectural layer.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.trit_scales]
+description = "Trit usage at each architectural layer"
+L0_kernel   = { use = "register values, ALU ops",       example = "comparison result" }
+L1_system   = { use = "syscall results",                example = "-1=error, 0=ok, +1=more" }
+L2_runtime  = { use = "comparison results",             example = "a < b → -1" }
+L3_framework = { use = "decision outcomes",             example = "rule evaluation" }
+L4_health   = { use = "status indicators",              example = "-1=degraded, 0=normal, +1=optimal" }
+L5_network  = { use = "message disposition",            example = "-1=reject, 0=hold, +1=accept" }
+L6_storage  = { use = "delta indicators",               example = "-1=delete, 0=unchanged, +1=create" }
+L7_engine   = { use = "action weights",                 example = "influence direction" }
+L8_app      = { use = "tri-state controls",             example = "user preference" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.7 TRIT COMPOSITION — How Trits Combine [TRIT_COMPOSITION]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Line upon line; here a little, and there a little" — Isaiah 28:10 KJV
+#
+# How trits compose following the 3^n pattern across all 9 layers.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.trit_composition]
+description = "How trits combine following 3^n pattern across all 9 layers"
+L0_trit     = { power = 0, count = 1,    name = "trit",    states = 3,              bytes = 1,    semantic = "atom" }
+L1_triplet  = { power = 1, count = 3,    name = "triplet", states = 27,             bytes = 1,    semantic = "minimal" }
+L2_nonet    = { power = 2, count = 9,    name = "nonet",   states = 19683,          bytes = 2,    semantic = "grid" }
+L3_tryte    = { power = 3, count = 27,   name = "tryte",   states = 7625597484987,  bytes = 6,    semantic = "word" }
+L4_octant   = { power = 4, count = 81,   name = "octant",  states = "4.4e38",       bytes = 17,   semantic = "health" }
+L5_block    = { power = 5, count = 243,  name = "block",   states = "5.6e115",      bytes = 49,   semantic = "network" }
+L6_sector   = { power = 6, count = 729,  name = "sector",  states = "1.8e347",      bytes = 146,  semantic = "storage" }
+L7_segment  = { power = 7, count = 2187, name = "segment", states = "1.0e1043",     bytes = 438,  semantic = "engine" }
+L8_domain   = { power = 8, count = 6561, name = "domain",  states = "3.3e3130",     bytes = 1313, semantic = "app" }
+
+# The byte bridge constant
+[cc.resources.trit_composition.byte_bridge]
+description  = "243 = 3^5 is the critical architectural constant"
+value        = 243
+power        = 5
+layer        = "L5_network"
+significance = "Largest power of 3 that fits in a single byte (256)"
+spare_states = 13                                        # 256 - 243 = 13 for WEB encoding
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.8 TRIT5 PACKING — Byte Bridge Resources [TRIT5_PACKING]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Five smooth stones" — 1 Samuel 17:40 KJV
+#
+# How 5 trits pack into 1 byte.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.trit5_packing]
+description  = "How 5 trits pack into 1 byte"
+bytes        = 1
+min_packed   = 0
+max_packed   = 242
+spare_start  = 243
+spare_end    = 255
+spare_count  = 13
+efficiency   = 94.9                                      # 243/256 = 94.9%
+
+# WEB encoding (Write/Erase/Burn) spare states
+[cc.resources.trit5_packing.web]
+description  = "Spare states for ternary memory emulation"
+write_range  = [243, 246]
+erase_range  = [247, 250]
+burn_range   = [251, 254]
+escape       = 255
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.9 TRIT5 SCALES — Byte Bridge Usage [TRIT5_SCALES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.trit5_scales]
+description = "trit5 usage at each architectural layer"
+L0_kernel   = { use = "packed registers",       example = "memory cell value" }
+L1_system   = { use = "IPC message bytes",      example = "syscall packed arg" }
+L2_runtime  = { use = "object field storage",   example = "struct field" }
+L3_framework = { use = "serialized values",     example = "wire protocol byte" }
+L4_health   = { use = "health component",       example = "single score byte" }
+L5_network  = { use = "packet payload byte",    example = "message data" }
+L6_storage  = { use = "disk block byte",        example = "index entry" }
+L7_engine   = { use = "packed rule state",      example = "state byte" }
+L8_app      = { use = "user data byte",         example = "API payload byte" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# INTEGER RESOURCES
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.integer_packing]
+description = "Storage requirements for ternary integers"
+
+[cc.resources.integer_packing.int9]
+bytes       = 2
+bits_needed = 15
+layer       = "L2_runtime"
+
+[cc.resources.integer_packing.uint9]
+bytes       = 2
+bits_needed = 15
+layer       = "L2_runtime"
+
+[cc.resources.integer_packing.int27]
+bytes       = 6
+bits_needed = 43
+layer       = "L3_framework"
+
+[cc.resources.integer_packing.uint27]
+bytes       = 6
+bits_needed = 43
+layer       = "L3_framework"
+
+[cc.resources.integer_packing.int81]
+bytes       = 17
+bits_needed = 129
+layer       = "L4_health"
+
+[cc.resources.integer_packing.uint81]
+bytes       = 17
+bits_needed = 129
+layer       = "L4_health"
+
+[cc.resources.integer_packing.int243]
+bytes       = 49
+bits_needed = 386
+layer       = "L5_network"
+
+[cc.resources.integer_packing.uint243]
+bytes       = 49
+bits_needed = 386
+layer       = "L5_network"
+
+[cc.resources.integer_composition]
+description = "How int27 relates to other scales (THE WORD)"
+
+[cc.resources.integer_composition.int27]
+L0_trit    = { power = 0, count = 1,    name = "trit",    relationship = "27 trits = 1 Word" }
+L1_triplet = { power = 1, count = 3,    name = "triplet", relationship = "9 triplets = 1 Word" }
+L2_nonet   = { power = 2, count = 9,    name = "nonet",   relationship = "3 nonets = 1 Word" }
+L3_tryte   = { power = 3, count = 27,   name = "tryte",   relationship = "1 tryte = 1 Word" }
+L4_octant  = { power = 4, count = 81,   name = "octant",  relationship = "Word × 3 = octant" }
+L5_block   = { power = 5, count = 243,  name = "block",   relationship = "Word × 9 = block" }
+L6_sector  = { power = 6, count = 729,  name = "sector",  relationship = "Word × 27 = sector" }
+L7_segment = { power = 7, count = 2187, name = "segment", relationship = "Word × 81 = segment" }
+L8_domain  = { power = 8, count = 6561, name = "domain",  relationship = "Word × 243 = domain" }
+
+[cc.resources.integer_scales]
+description = "Integer usage at each architectural layer"
+
+[cc.resources.integer_scales.int9]
+L0_kernel   = { use = "small counters",    example = "iteration count" }
+L1_system   = { use = "resource counts",   example = "file descriptors" }
+L2_runtime  = { use = "array indices",     example = "loop variable" }
+L3_framework = { use = "small IDs",        example = "component index" }
+L4_health   = { use = "component counts",  example = "error count" }
+L5_network  = { use = "packet counts",     example = "retry count" }
+L6_storage  = { use = "small offsets",     example = "record index" }
+L7_engine   = { use = "rule indices",      example = "state number" }
+L8_app      = { use = "user quantities",   example = "item count" }
+
+[cc.resources.integer_scales.uint9]
+L0_kernel   = { use = "addresses",         example = "small pointer offset" }
+L1_system   = { use = "handles",           example = "resource handle" }
+L2_runtime  = { use = "array lengths",     example = "slice length" }
+L3_framework = { use = "collection sizes", example = "list count" }
+L4_health   = { use = "metric counts",     example = "sample count" }
+L5_network  = { use = "sequence numbers",  example = "packet sequence" }
+L6_storage  = { use = "block counts",      example = "extent length" }
+L7_engine   = { use = "state counts",      example = "transition count" }
+L8_app      = { use = "positive quantities", example = "item quantity" }
+
+[cc.resources.integer_scales.int27]
+L0_kernel   = { use = "machine word",      example = "register value" }
+L1_system   = { use = "system identifiers", example = "process ID" }
+L2_runtime  = { use = "large indices",     example = "memory offset" }
+L3_framework = { use = "object identifiers", example = "entity ID" }
+L4_health   = { use = "aggregate scores",  example = "system health" }
+L5_network  = { use = "message identifiers", example = "transaction ID" }
+L6_storage  = { use = "file positions",    example = "byte offset" }
+L7_engine   = { use = "decision values",   example = "weighted score" }
+L8_app      = { use = "user identifiers",  example = "user ID" }
+
+[cc.resources.integer_scales.uint27]
+L0_kernel   = { use = "memory addresses",  example = "pointer value" }
+L1_system   = { use = "handles",           example = "resource handle" }
+L2_runtime  = { use = "sizes",             example = "allocation size" }
+L3_framework = { use = "unique identifiers", example = "UUID component" }
+L4_health   = { use = "timestamps",        example = "health sample time" }
+L5_network  = { use = "sequence numbers",  example = "message sequence" }
+L6_storage  = { use = "block addresses",   example = "disk block number" }
+L7_engine   = { use = "state identifiers", example = "checkpoint ID" }
+L8_app      = { use = "entity identifiers", example = "record ID" }
+
+[cc.resources.integer_scales.int81]
+L0_kernel   = { use = "extended accumulators", example = "large sum" }
+L1_system   = { use = "system aggregates", example = "resource totals" }
+L2_runtime  = { use = "object aggregates", example = "collection hash" }
+L3_framework = { use = "framework totals", example = "request counts" }
+L4_health   = { use = "health aggregation", example = "composite score" }
+L5_network  = { use = "traffic totals",    example = "byte counts" }
+L6_storage  = { use = "storage totals",    example = "disk usage" }
+L7_engine   = { use = "rule aggregates",   example = "decision sums" }
+L8_app      = { use = "user aggregates",   example = "lifetime totals" }
+
+[cc.resources.integer_scales.uint81]
+L0_kernel   = { use = "large counters",    example = "cycle count" }
+L1_system   = { use = "system counters",   example = "syscall count" }
+L2_runtime  = { use = "allocation totals", example = "bytes allocated" }
+L3_framework = { use = "request totals",   example = "total requests" }
+L4_health   = { use = "health counters",   example = "sample count" }
+L5_network  = { use = "packet totals",     example = "packets sent" }
+L6_storage  = { use = "block totals",      example = "blocks written" }
+L7_engine   = { use = "execution counts",  example = "rules fired" }
+L8_app      = { use = "user counters",     example = "actions taken" }
+
+[cc.resources.integer_scales.int243]
+L0_kernel   = { use = "extended addresses", example = "256-bit-class address" }
+L1_system   = { use = "system identifiers", example = "global resource ID" }
+L2_runtime  = { use = "large object IDs",  example = "distributed object" }
+L3_framework = { use = "global identifiers", example = "cross-system ID" }
+L4_health   = { use = "health streams",    example = "health record ID" }
+L5_network  = { use = "network addresses", example = "ternary IPv6 equivalent" }
+L6_storage  = { use = "global block IDs",  example = "distributed block" }
+L7_engine   = { use = "distributed rules", example = "global rule ID" }
+L8_app      = { use = "global entities",   example = "universe-wide ID" }
+
+[cc.resources.integer_scales.uint243]
+L0_kernel   = { use = "extended counters", example = "global counter" }
+L1_system   = { use = "system sequences",  example = "global sequence" }
+L2_runtime  = { use = "large sequences",   example = "distributed seq" }
+L3_framework = { use = "global sequences", example = "cross-system seq" }
+L4_health   = { use = "health sequences",  example = "event sequence" }
+L5_network  = { use = "network sequences", example = "packet sequence" }
+L6_storage  = { use = "storage sequences", example = "write sequence" }
+L7_engine   = { use = "rule sequences",    example = "evaluation seq" }
+L8_app      = { use = "user sequences",    example = "action sequence" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# FLOAT RESOURCES
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.float_structure]
+description = "Internal layout of float27"
+
+[cc.resources.float_structure.float27]
+sign     = { trits = 1,  position = 26, role = "sign bit (explicit)" }
+exponent = { trits = 8,  position = 18, role = "exponent, base 3" }
+mantissa = { trits = 18, position = 0,  role = "precision mantissa" }
+
+[cc.resources.float_range]
+description = "Value range and precision"
+
+[cc.resources.float_range.float27]
+exponent_min    = -3280
+exponent_max    = 3280
+mantissa_states = 387420489
+precision_trits = 18
+
+[cc.resources.float_packing]
+description = "Storage requirements for floats"
+
+[cc.resources.float_packing.float27]
+bytes       = 6
+bits_needed = 43
+layer       = "L3_framework"
+
+[cc.resources.float_scales]
+description = "Float usage at each architectural layer"
+
+[cc.resources.float_scales.float27]
+L0_kernel   = { use = "FPU values",       example = "register float" }
+L1_system   = { use = "system timings",   example = "elapsed seconds" }
+L2_runtime  = { use = "computed values",  example = "calculation result" }
+L3_framework = { use = "thresholds",      example = "config limit" }
+L4_health   = { use = "percentages",      example = "health 0.0-1.0" }
+L5_network  = { use = "rates",            example = "bytes per second" }
+L6_storage  = { use = "ratios",           example = "compression ratio" }
+L7_engine   = { use = "probabilities",    example = "confidence 0.0-1.0" }
+L8_app      = { use = "measurements",     example = "price, temperature" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# TEXT RESOURCES
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.text_structure]
+description = "Internal structure of text types"
+
+[cc.resources.text_structure.text]
+length = { type = "uint27", role = "byte count" }
+data   = { type = "bytes",  role = "UTF-8 encoded content" }
+
+[cc.resources.text_encoding]
+description = "UTF-8 encoding details"
+
+[cc.resources.text_encoding.text]
+format          = "utf-8"
+standard        = "Unicode 15.0"
+byte_order      = "big-endian"
+bom             = false
+null_terminated = false
+
+[cc.resources.text_unicode]
+description = "Unicode coverage for char"
+
+[cc.resources.text_unicode.char]
+min_codepoint    = 0x0000
+max_codepoint    = 0x10FFFF
+total_codepoints = 1114112
+trits_needed     = 21
+
+[cc.resources.text_scales]
+description = "Text usage at each architectural layer"
+
+[cc.resources.text_scales.text]
+L0_kernel   = { use = "error messages",      example = "panic message" }
+L1_system   = { use = "process names",       example = "service label" }
+L2_runtime  = { use = "variable names",      example = "debug symbol" }
+L3_framework = { use = "config values",      example = "route pattern" }
+L4_health   = { use = "status descriptions", example = "health message" }
+L5_network  = { use = "message content",     example = "API payload" }
+L6_storage  = { use = "file names",          example = "path component" }
+L7_engine   = { use = "rule descriptions",   example = "state label" }
+L8_app      = { use = "user content",        example = "Scripture verse" }
+
+[cc.resources.text_scales.char]
+L0_kernel   = { use = "control codes",       example = "newline, tab" }
+L1_system   = { use = "delimiters",          example = "path separator" }
+L2_runtime  = { use = "escape codes",        example = "escape sequence" }
+L3_framework = { use = "special chars",      example = "wildcard, glob" }
+L4_health   = { use = "status symbols",      example = "checkmark, X" }
+L5_network  = { use = "protocol chars",      example = "delimiter" }
+L6_storage  = { use = "path chars",          example = "directory sep" }
+L7_engine   = { use = "operators",           example = "rule operator" }
+L8_app      = { use = "display chars",       example = "Hebrew letter" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# BOOLEAN RESOURCES
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.boolean_values]
+description = "The three truth values"
+
+[cc.resources.boolean_values.bool3]
+false_value   = { trit = -1, label = "false",   meaning = "definite no" }
+unknown_value = { trit = 0,  label = "unknown", meaning = "indeterminate" }
+true_value    = { trit = 1,  label = "true",    meaning = "definite yes" }
+
+[cc.resources.boolean_logic]
+description = "Kleene three-valued logic operations"
+
+[cc.resources.boolean_logic.bool3]
+# AND (minimum): false dominates, unknown propagates
+and_table = [
+    [-1, -1, -1],
+    [-1,  0,  0],
+    [-1,  0,  1]
+]
+# OR (maximum): true dominates, unknown propagates
+or_table = [
+    [-1,  0,  1],
+    [ 0,  0,  1],
+    [ 1,  1,  1]
+]
+# NOT (negation): flip, unknown stays unknown
+not_table = [1, 0, -1]
+
+[cc.resources.boolean_binary]
+description = "Conversion to/from binary boolean"
+
+[cc.resources.boolean_binary.bool3]
+to_binary   = "false→false, unknown→false, true→true"
+from_binary = "false→false, true→true"
+
+[cc.resources.boolean_scales]
+description = "Boolean usage at each architectural layer"
+
+[cc.resources.boolean_scales.bool3]
+L0_kernel   = { use = "comparison results",    example = "a <=> b" }
+L1_system   = { use = "service availability",  example = "up/down/unknown" }
+L2_runtime  = { use = "null checks",           example = "is_present" }
+L3_framework = { use = "validation results",   example = "is_valid" }
+L4_health   = { use = "health checks",         example = "healthy/unhealthy/unknown" }
+L5_network  = { use = "connection state",      example = "connected/disconnected/pending" }
+L6_storage  = { use = "data presence",         example = "exists/absent/unknown" }
+L7_engine   = { use = "decision outcomes",     example = "satisfied/unsatisfied/pending" }
+L8_app      = { use = "user choices",          example = "yes/no/undecided" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# COLLECTIONS RESOURCES
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.collections_structure]
+description = "Internal structure of collection types"
+
+[cc.resources.collections_structure.list]
+length   = { type = "uint27", role = "element count" }
+capacity = { type = "uint27", role = "allocated space" }
+elements = { type = "T[]",    role = "element array" }
+
+[cc.resources.collections_structure.map]
+length  = { type = "uint27",   role = "entry count" }
+buckets = { type = "uint27",   role = "hash table size" }
+entries = { type = "{K,V}[]",  role = "key-value pairs" }
+
+[cc.resources.collections_structure.set]
+length   = { type = "uint27", role = "member count" }
+buckets  = { type = "uint27", role = "hash table size" }
+elements = { type = "T[]",    role = "unique members" }
+
+[cc.resources.collections_capacity]
+description = "Capacity limits for collections at each scale"
+
+[cc.resources.collections_capacity.list]
+L0_kernel   = { max_elements = 3,      length_type = "uint9",  note = "tiny, fixed" }
+L1_system   = { max_elements = 27,     length_type = "uint9",  note = "small" }
+L2_runtime  = { max_elements = 19682,  length_type = "uint9",  note = "medium (3^9)" }
+L3_framework = { max_elements = "7.6T", length_type = "uint27", note = "large (3^27)" }
+L4_health   = { max_elements = 81,     length_type = "uint9",  note = "health vectors" }
+L5_network  = { max_elements = 243,    length_type = "uint9",  note = "packet lists" }
+L6_storage  = { max_elements = "7.6T", length_type = "uint27", note = "file records" }
+L7_engine   = { max_elements = 2187,   length_type = "uint9",  note = "rule lists" }
+L8_app      = { max_elements = "7.6T", length_type = "uint27", note = "user data" }
+
+[cc.resources.collections_capacity.map]
+L0_kernel   = { max_entries = 27,     note = "small fixed" }
+L1_system   = { max_entries = 243,    note = "system tables" }
+L2_runtime  = { max_entries = 19682,  note = "object maps" }
+L3_framework = { max_entries = "7.6T", note = "config maps" }
+L4_health   = { max_entries = 81,     note = "component maps" }
+L5_network  = { max_entries = 729,    note = "routing tables" }
+L6_storage  = { max_entries = "7.6T", note = "index maps" }
+L7_engine   = { max_entries = 2187,   note = "state maps" }
+L8_app      = { max_entries = "7.6T", note = "user preferences" }
+
+[cc.resources.collections_capacity.set]
+L0_kernel   = { max_elements = 27,     note = "flag sets" }
+L1_system   = { max_elements = 243,    note = "permission sets" }
+L2_runtime  = { max_elements = 19682,  note = "object sets" }
+L3_framework = { max_elements = "7.6T", note = "route sets" }
+L4_health   = { max_elements = 81,     note = "component sets" }
+L5_network  = { max_elements = 729,    note = "peer sets" }
+L6_storage  = { max_elements = "7.6T", note = "block sets" }
+L7_engine   = { max_elements = 2187,   note = "state sets" }
+L8_app      = { max_elements = "7.6T", note = "membership sets" }
+
+[cc.resources.collections_operations]
+description = "Set operations (mathematical)"
+
+[cc.resources.collections_operations.set]
+union          = "A ∪ B"
+intersection   = "A ∩ B"
+difference     = "A - B"
+symmetric_diff = "A △ B"
+subset         = "A ⊆ B"
+superset       = "A ⊇ B"
+
+[cc.resources.collections_scales]
+description = "Collection usage at each layer"
+
+[cc.resources.collections_scales.list]
+L0_kernel   = { use = "register arrays",   example = "interrupt vector" }
+L1_system   = { use = "process lists",     example = "child processes" }
+L2_runtime  = { use = "object arrays",     example = "stack frames" }
+L3_framework = { use = "route lists",      example = "middleware chain" }
+L4_health   = { use = "metric series",     example = "sample history" }
+L5_network  = { use = "connection lists",  example = "peer list" }
+L6_storage  = { use = "block lists",       example = "extent list" }
+L7_engine   = { use = "rule sequences",    example = "action queue" }
+L8_app      = { use = "user lists",        example = "friend list" }
+
+[cc.resources.collections_scales.map]
+L0_kernel   = { use = "interrupt tables",  example = "vector table" }
+L1_system   = { use = "process tables",    example = "PID → process" }
+L2_runtime  = { use = "symbol tables",     example = "name → address" }
+L3_framework = { use = "route maps",       example = "path → handler" }
+L4_health   = { use = "component status",  example = "component → health" }
+L5_network  = { use = "routing tables",    example = "address → next hop" }
+L6_storage  = { use = "index maps",        example = "key → block" }
+L7_engine   = { use = "state tables",      example = "state → transitions" }
+L8_app      = { use = "user settings",     example = "preference → value" }
+
+[cc.resources.collections_scales.set]
+L0_kernel   = { use = "flag sets",         example = "capability bits" }
+L1_system   = { use = "permission sets",   example = "allowed syscalls" }
+L2_runtime  = { use = "object pools",      example = "active objects" }
+L3_framework = { use = "feature flags",    example = "enabled features" }
+L4_health   = { use = "failing components", example = "unhealthy set" }
+L5_network  = { use = "connected peers",   example = "active connections" }
+L6_storage  = { use = "dirty blocks",      example = "modified set" }
+L7_engine   = { use = "active states",     example = "current states" }
+L8_app      = { use = "user memberships",  example = "group members" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.7 SPECIAL — Void and Any Resources [SPECIAL_RESOURCES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.special_meaning]
+description = "Semantic meaning of special types"
+
+[cc.resources.special_meaning.void]
+hebrew          = "תֹּהוּ"
+transliteration = "tohu"
+meaning         = "formless, empty, waste, chaos"
+scripture       = "Genesis 1:2"
+
+[cc.resources.special_meaning.any]
+concept   = "Unknown type at compile time, known at runtime"
+tradeoff  = "Flexibility vs type safety"
+guidance  = "Prefer explicit types; use any sparingly"
+scripture = "Genesis 2:19"
+
+[cc.resources.special_usage]
+description = "When to use special types"
+
+[cc.resources.special_usage.void]
+functions    = "Functions that do work but return nothing"
+side_effects = "Functions whose purpose is their effect, not their result"
+callbacks    = "Event handlers that respond but don't produce values"
+cleanup      = "Destructors, finalizers, resource release"
+
+[cc.resources.special_usage.any]
+serialization = "Deserializing data of unknown structure"
+plugins       = "Plugin interfaces where type varies"
+reflection    = "Runtime type inspection"
+dynamic       = "Dynamic languages, late binding"
+interop       = "FFI with untyped systems"
+
+[cc.resources.special_safety]
+description = "Type safety considerations for any"
+
+[cc.resources.special_safety.any]
+risks       = ["Runtime type errors", "Lost compile-time checking", "Harder debugging"]
+mitigations = ["Runtime type checks", "Type assertions", "Limit scope of any"]
+guideline   = "Narrow any to specific types as early as possible"
+
+[cc.resources.special_structure]
+description = "Internal layout of any type"
+
+[cc.resources.special_structure.any]
+type_tag  = { type = "uint9",   role = "runtime type identifier" }
+data_ptr  = { type = "pointer", role = "pointer to actual data" }
+data_size = { type = "uint27",  role = "size of actual data" }
+
+[cc.resources.special_scales]
+description = "Special type usage at each architectural layer"
+
+[cc.resources.special_scales.void]
+L0_kernel   = { use = "interrupt handlers", example = "void isr(void)" }
+L1_system   = { use = "signal handlers",    example = "void on_signal(int)" }
+L2_runtime  = { use = "cleanup functions",  example = "void finalize(obj)" }
+L3_framework = { use = "middleware",        example = "void log_request(req)" }
+L4_health   = { use = "notifications",      example = "void alert(event)" }
+L5_network  = { use = "ack handlers",       example = "void on_ack(msg)" }
+L6_storage  = { use = "sync callbacks",     example = "void on_sync()" }
+L7_engine   = { use = "side effects",       example = "void execute(action)" }
+L8_app      = { use = "event handlers",     example = "void on_click(event)" }
+
+[cc.resources.special_scales.any]
+L0_kernel   = { use = "generic pointers",   example = "void* data" }
+L1_system   = { use = "syscall args",       example = "variadic args" }
+L2_runtime  = { use = "reflection",         example = "inspect object" }
+L3_framework = { use = "plugin interfaces", example = "extension point" }
+L4_health   = { use = "metric values",      example = "gauge value" }
+L5_network  = { use = "protocol payloads",  example = "message body" }
+L6_storage  = { use = "serialized data",    example = "JSON value" }
+L7_engine   = { use = "rule parameters",    example = "action arg" }
+L8_app      = { use = "user input",         example = "form field" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.8 DECIMAL — Fixed-Point Resources [DECIMAL_RESOURCES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.decimal_precision]
+description   = "Fixed-point precision configuration"
+total_trits   = 27
+max_scale     = 9
+default_scale = 2
+
+[cc.resources.decimal_interpretation]
+description    = "How the int27 value is interpreted"
+formula        = "actual_value = stored_value / (10 ^ scale)"
+example_scale2 = "stored 12345 → actual 123.45"
+example_scale9 = "stored 1000000000 → actual 1.000000000"
+
+[cc.resources.decimal_operations]
+description = "Decimal-specific operations"
+add         = "Both operands must have same scale"
+sub         = "Both operands must have same scale"
+mul         = "Result scale = scale1 + scale2"
+div         = "Result scale configurable, may round"
+round       = "Round to specified scale"
+truncate    = "Truncate to specified scale"
+
+[cc.resources.decimal_scales]
+description = "decimal27 usage at each architectural layer"
+L0_kernel   = { use = "DSP fixed-point",     example = "signal value" }
+L1_system   = { use = "resource quotas",     example = "CPU percentage" }
+L2_runtime  = { use = "object values",       example = "calculated price" }
+L3_framework = { use = "config thresholds",  example = "rate limit" }
+L4_health   = { use = "health percentages",  example = "uptime 99.99%" }
+L5_network  = { use = "bandwidth rates",     example = "Mbps quota" }
+L6_storage  = { use = "storage quotas",      example = "GB allocation" }
+L7_engine   = { use = "rule thresholds",     example = "confidence 0.95" }
+L8_app      = { use = "money and prices",    example = "$123.45" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.3.9 TEMPORAL — Time Resources [TEMPORAL_RESOURCES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.resources.temporal_range]
+description   = "Time range with nanosecond precision"
+min_year      = "-31,000,000,000"
+max_year      = "+31,000,000,000"
+practical_min = "1970-01-01"
+practical_max = "9999-12-31"
+
+[cc.resources.temporal_precision]
+description  = "Time precision levels"
+nanosecond   = { divisor = 1,          symbol = "ns" }
+microsecond  = { divisor = 1000,       symbol = "µs" }
+millisecond  = { divisor = 1000000,    symbol = "ms" }
+second       = { divisor = 1000000000, symbol = "s" }
+
+[cc.resources.duration_constants]
+description  = "Common duration constants"
+nanosecond   = 1
+microsecond  = 1000
+millisecond  = 1000000
+second       = 1000000000
+minute       = 60000000000
+hour         = 3600000000000
+day          = 86400000000000
+
+[cc.resources.duration_operations]
+description = "Duration operations"
+add         = "duration + duration → duration"
+sub         = "duration - duration → duration"
+mul_scalar  = "duration * int → duration"
+div_scalar  = "duration / int → duration"
+compare     = "duration < duration → bool3"
+
+[cc.resources.temporal_scales]
+description = "Temporal type usage at each architectural layer"
+
+[cc.resources.temporal_scales.timestamp]
+L0_kernel   = { use = "cycle timestamps", example = "rdtsc equivalent" }
+L1_system   = { use = "system events",    example = "boot time" }
+L2_runtime  = { use = "object creation",  example = "allocated_at" }
+L3_framework = { use = "request timing",  example = "request_start" }
+L4_health   = { use = "sample time",      example = "collected_at" }
+L5_network  = { use = "packet time",      example = "received_at" }
+L6_storage  = { use = "modification time", example = "mtime" }
+L7_engine   = { use = "decision time",    example = "evaluated_at" }
+L8_app      = { use = "event time",       example = "clicked_at" }
+
+[cc.resources.temporal_scales.duration]
+L0_kernel   = { use = "cycle counts",       example = "instruction_time" }
+L1_system   = { use = "scheduling quanta",  example = "time_slice" }
+L2_runtime  = { use = "GC pause time",      example = "gc_duration" }
+L3_framework = { use = "request latency",   example = "response_time" }
+L4_health   = { use = "sample window",      example = "aggregation_period" }
+L5_network  = { use = "round-trip time",    example = "rtt" }
+L6_storage  = { use = "I/O latency",        example = "write_time" }
+L7_engine   = { use = "evaluation time",    example = "rule_latency" }
+L8_app      = { use = "session duration",   example = "time_on_page" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cc.4 BEHAVIOR — HOW Types Operate [BEHAVIOR]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "Be ye doers of the word, and not hearers only" — James 1:22 KJV
+#
+# PRIMITIVE TYPE BEHAVIOR: SYNTAX, SEMANTICS, BINDINGS
+#
+# Behavior defines HOW types operate in code — the OmniCode syntax for declaring
+# and using them, the CPI-SI cognitive mappings for understanding them, and the
+# language bindings for implementing them.
+#
+# WHAT BELONGS IN BEHAVIOR:
+#
+#   - OmniCode syntax (declare, literal, cast, operators)
+#   - CPI-SI cognitive mappings (direction, weight, action, genesis)
+#   - Language type bindings (c_repr, go_repr, rust_repr)
+#   - Type-specific operations (for collections, etc.)
+#
+# BEHAVIOR VS SETTINGS VS RESOURCES:
+#
+#   SETTINGS:  "What are the configuration values?"
+#   RESOURCES: "How much space/capacity does it need?"
+#   BEHAVIOR:  "How does it operate in code?"
+#
+# Implementation: Used by code generators and the OmniCode compiler
+# Reference:      OmniCode syntax specification
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.1 OMNICODE SYNTAX — Storage Operations [OMNICODE_STORAGE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Write the vision, and make it plain" — Habakkuk 2:2 KJV
+#
+# OmniCode syntax for storage operations.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.omnicode.storage]
+description = "OmniCode syntax for storage operations"
+
+keywords    = ["store", "load", "pack", "unpack", "encode", "decode"]
+operators   = ["→", "←", "⇄"]                            # store, load, bidirectional
+modifiers   = ["packed", "unpacked", "aligned", "raw"]
+sigils      = ["$:", "!:", "@:"]                         # packed, unpacked, aligned
+
+[cc.behavior.omnicode.storage.examples]
+pack        = "store packed $:value → $:buffer"
+unpack      = "load packed $:buffer → $:value"
+convert     = "encode unpacked !:text ⇄ packed $:bytes"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.2 CPISI MAPPINGS — Cognitive Framework [CPISI]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "For as he thinketh in his heart, so is he" — Proverbs 23:7 KJV
+#
+# How types map to the CPI-SI cognitive framework.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.cpisi]
+description = "Type semantics in CPI-SI cognitive framework"
+
+# Directional meaning (from building block method)
+[cc.behavior.cpisi.direction]
+negative    = "persist_down"                             # -1: toward material/earth
+neutral     = "bridge"                                   # 0: firmament itself
+positive    = "retrieve_up"                              # +1: toward conceptual/heaven
+
+# Cognitive weight
+[cc.behavior.cpisi.weight]
+negative    = "heavy"                                    # Persistence is commitment
+neutral     = "grounded"                                 # Bridge is stable
+positive    = "light"                                    # Retrieval is access
+
+# Action semantics
+[cc.behavior.cpisi.action]
+negative    = "commit"                                   # Write to permanent storage
+neutral     = "hold"                                     # Buffer in bridge layer
+positive    = "access"                                   # Read from storage
+
+# Genesis 1:6 mapping
+[cc.behavior.cpisi.genesis]
+negative    = "waters_below"                             # Physical storage
+neutral     = "firmament"                                # This bridge layer
+positive    = "waters_above"                             # Conceptual types
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.3 LANGUAGE BINDINGS — Target Language Types [BINDINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "To every nation, and kindred, and tongue" — Revelation 14:6 KJV
+#
+# How primitive types map to target language types.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.bindings]
+description = "Type representations in target languages"
+
+# Packed storage types
+[cc.behavior.bindings.packed5]
+c_repr      = "uint8_t"
+go_repr     = "uint8"
+rust_repr   = "u8"
+trit_count  = 5
+
+[cc.behavior.bindings.packed9]
+c_repr      = "uint16_t"
+go_repr     = "uint16"
+rust_repr   = "u16"
+trit_count  = 9
+
+[cc.behavior.bindings.packed27]
+c_repr      = "uint64_t"                                 # 6 bytes, padded to 8
+go_repr     = "uint64"
+rust_repr   = "u64"
+trit_count  = 27
+
+[cc.behavior.bindings.packed81]
+c_repr      = "__int128"                                 # or custom struct
+go_repr     = "big.Int"
+rust_repr   = "i128"
+trit_count  = 81
+
+[cc.behavior.bindings.packed243]
+c_repr      = "trit243_t"                                # Custom 49-byte struct
+go_repr     = "big.Int"
+rust_repr   = "[i8; 49]"
+trit_count  = 243
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.4 TRIT CHARACTERS — Visual Representations [TRIT_CHARS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Write the vision, and make it plain" — Habakkuk 2:2 KJV
+#
+# Character representations for trit display and parsing.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.trit_chars]
+description = "Visual representations for trit display and parsing"
+standard    = ["-", "0", "+"]                            # Mathematical notation
+ascii_safe  = ["N", "Z", "P"]                            # ASCII-safe
+arrow       = ["↓", "●", "↑"]                            # Direction indicators
+block       = ["▼", "■", "▲"]                            # Block-style visual
+wave        = ["∿", "―", "∼"]                            # Wave-style (signals)
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.5 TRIT OMNICODE — Trit Syntax [TRIT_OMNICODE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Let your speech be alway with grace" — Colossians 4:6 KJV
+#
+# OmniCode syntax for trit operations.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.trit_omnicode]
+description = "OmniCode syntax for trit operations"
+keywords    = ["break_down", "anchor", "build_up"]       # CPI-SI building block method
+operators   = ["←", "◆", "→"]                            # Directional operators
+modifiers   = ["toward", "at", "from"]                   # Positional modifiers
+sigils      = ["-:", "0:", "+:"]                         # Trit-prefixed sigils
+
+[cc.behavior.trit_omnicode.syntax]
+declare     = "let trit be balanced from -1 to +1"
+literal     = "-1 | 0 | +1"
+cast        = "as trit"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.6 TRIT CPISI — Cognitive Mappings [TRIT_CPISI]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "For as he thinketh in his heart, so is he" — Proverbs 23:7 KJV
+#
+# Trit values as cognitive operations in CPI-SI.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.trit_cpisi]
+description = "Trit values as cognitive operations in CPI-SI"
+
+# Directional meaning (building block method)
+[cc.behavior.trit_cpisi.direction]
+negative    = "toward_anchor"                            # -1: break down, trace to foundation
+neutral     = "at_anchor"                                # 0: halt, the foundation itself
+positive    = "from_anchor"                              # +1: build up, construct from foundation
+
+# Cognitive weight
+[cc.behavior.trit_cpisi.weight]
+negative    = "heavy"                                    # -1: gravity, commitment, earthly
+neutral     = "balanced"                                 # 0: stable, grounded
+positive    = "light"                                    # +1: expansion, growth, heavenly
+
+# Action semantics
+[cc.behavior.trit_cpisi.action]
+negative    = "retreat"                                  # -1: move toward foundation
+neutral     = "hold"                                     # 0: maintain position
+positive    = "advance"                                  # +1: move from foundation
+
+# Genesis 1:6 mapping
+[cc.behavior.trit_cpisi.genesis]
+negative    = "waters_below"                             # -1: earth, material, concrete
+neutral     = "firmament"                                # 0: bridge, separator, anchor
+positive    = "waters_above"                             # +1: heaven, conceptual, abstract
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.7 TRIT BINDINGS — Language Types [TRIT_BINDINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "To every nation, and kindred, and tongue" — Revelation 14:6 KJV
+#
+# Trit type representations in target languages.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.trit_bindings]
+description  = "Trit type in target languages"
+c_repr       = "int8_t"
+go_repr      = "int8"
+rust_repr    = "i8"
+bit_width    = 2                                         # Minimum bits needed (binary)
+byte_aligned = 1                                         # Bytes when aligned
+typedef      = "trit_t"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.8 TRIT5 OMNICODE — Byte Bridge Syntax [TRIT5_OMNICODE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Five smooth stones" — 1 Samuel 17:40 KJV
+#
+# OmniCode syntax for trit5 operations.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.trit5_omnicode]
+description = "OmniCode syntax for trit5"
+declare     = "let trit5 be packed from -121 to +121"
+literal     = "5t'value'"                                # 5-trit literal prefix
+cast        = "as trit5"
+pack        = "pack trits[5] → trit5"
+unpack      = "unpack trit5 → trits[5]"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.9 TRIT5 CPISI — Byte Bridge Cognitive Mapping [TRIT5_CPISI]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.trit5_cpisi]
+description = "trit5 as cognitive unit in CPI-SI"
+role        = "byte_bridge"                              # Bridges ternary to binary
+semantic    = "minimal_packed"                           # Smallest packed unit
+weight      = "light"                                    # Easy to manipulate
+action      = "transfer"                                 # Primary action is data transfer
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.10 TRIT5 BINDINGS — Byte Bridge Language Types [TRIT5_BINDINGS]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.trit5_bindings]
+description  = "trit5 type in target languages"
+c_repr       = "uint8_t"
+go_repr      = "uint8"
+rust_repr    = "u8"
+bit_width    = 8
+byte_aligned = 1
+typedef      = "trit5_t"
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# INTEGER BEHAVIOR
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.integer_omnicode]
+description = "OmniCode syntax for ternary integers"
+
+[cc.behavior.integer_omnicode.int9]
+declare = "let int9 be signed from -9841 to 9841"
+literal = "9s'value'"
+cast    = "as int9"
+
+[cc.behavior.integer_omnicode.uint9]
+declare = "let uint9 be unsigned from 0 to 19682"
+literal = "9u'value'"
+cast    = "as uint9"
+
+[cc.behavior.integer_omnicode.int27]
+declare = "let int27 be the Word signed"
+literal = "27s'value'"
+cast    = "as int27"
+keyword = "Word"
+
+[cc.behavior.integer_omnicode.uint27]
+declare = "let uint27 be the Word unsigned"
+literal = "27u'value'"
+cast    = "as uint27"
+
+[cc.behavior.integer_omnicode.int81]
+declare = "let int81 be health signed"
+literal = "81s'value'"
+cast    = "as int81"
+
+[cc.behavior.integer_omnicode.uint81]
+declare = "let uint81 be health unsigned"
+literal = "81u'value'"
+cast    = "as uint81"
+
+[cc.behavior.integer_omnicode.int243]
+declare = "let int243 be network signed"
+literal = "243s'value'"
+cast    = "as int243"
+
+[cc.behavior.integer_omnicode.uint243]
+declare = "let uint243 be network unsigned"
+literal = "243u'value'"
+cast    = "as uint243"
+
+[cc.behavior.integer_cpisi]
+description = "Integer types in CPI-SI cognitive framework"
+
+[cc.behavior.integer_cpisi.int9]
+role     = "counter"
+semantic = "runtime_scale"
+weight   = "light"
+
+[cc.behavior.integer_cpisi.uint9]
+role     = "index"
+semantic = "positive_only"
+weight   = "light"
+
+[cc.behavior.integer_cpisi.int27]
+role         = "semantic_unit"
+semantic     = "word_size"
+weight       = "grounded"
+significance = "Where meaning begins in ternary computing"
+
+[cc.behavior.integer_cpisi.uint27]
+role     = "identifier"
+semantic = "positive_word"
+weight   = "grounded"
+
+[cc.behavior.integer_cpisi.int81]
+role     = "health_aggregate"
+semantic = "wholeness_scale"
+weight   = "substantial"
+
+[cc.behavior.integer_cpisi.uint81]
+role     = "health_counter"
+semantic = "positive_health"
+weight   = "substantial"
+
+[cc.behavior.integer_cpisi.int243]
+role     = "network_address"
+semantic = "flow_scale"
+weight   = "vast"
+
+[cc.behavior.integer_cpisi.uint243]
+role     = "network_counter"
+semantic = "positive_flow"
+weight   = "vast"
+
+[cc.behavior.integer_bindings]
+description = "Integer types in target languages"
+
+[cc.behavior.integer_bindings.int9]
+c_repr   = "int16_t"
+go_repr  = "int16"
+rust_repr = "i16"
+typedef  = "trit9_t"
+
+[cc.behavior.integer_bindings.uint9]
+c_repr   = "uint16_t"
+go_repr  = "uint16"
+rust_repr = "u16"
+typedef  = "trit9_t"
+
+[cc.behavior.integer_bindings.int27]
+c_repr   = "int64_t"
+go_repr  = "int64"
+rust_repr = "i64"
+typedef  = "trit27_t"
+
+[cc.behavior.integer_bindings.uint27]
+c_repr   = "uint64_t"
+go_repr  = "uint64"
+rust_repr = "u64"
+typedef  = "trit27_t"
+
+[cc.behavior.integer_bindings.int81]
+c_repr   = "__int128"
+go_repr  = "big.Int"
+rust_repr = "i128"
+typedef  = "trit81_t"
+
+[cc.behavior.integer_bindings.uint81]
+c_repr   = "unsigned __int128"
+go_repr  = "big.Int"
+rust_repr = "u128"
+typedef  = "utrit81_t"
+
+[cc.behavior.integer_bindings.int243]
+c_repr   = "trit243_t"
+go_repr  = "big.Int"
+rust_repr = "[i8; 49]"
+typedef  = "trit243_t"
+
+[cc.behavior.integer_bindings.uint243]
+c_repr   = "trit243_t"
+go_repr  = "big.Int"
+rust_repr = "[u8; 49]"
+typedef  = "utrit243_t"
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# FLOAT BEHAVIOR
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.float_omnicode]
+description = "OmniCode syntax for floats"
+
+[cc.behavior.float_omnicode.float27]
+declare = "let float27 be decimal with 18 precision"
+literal = "27f'value'"
+cast    = "as float27"
+decimal = "3.14159f"
+
+[cc.behavior.float_cpisi]
+description = "Float types in CPI-SI cognitive framework"
+
+[cc.behavior.float_cpisi.float27]
+role     = "measurement"
+semantic = "continuous"
+weight   = "precise"
+
+[cc.behavior.float_bindings]
+description = "Float types in target languages"
+
+[cc.behavior.float_bindings.float27]
+c_repr   = "double"
+go_repr  = "float64"
+rust_repr = "f64"
+typedef  = "tfloat27_t"
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# TEXT BEHAVIOR
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.text_omnicode]
+description = "OmniCode syntax for text types"
+
+[cc.behavior.text_omnicode.text]
+declare     = "let text be string"
+literal     = "\"value\""
+multiline   = "\"\"\"multiline\"\"\""
+raw         = "r\"raw\\nstring\""
+interpolate = "f\"value is {x}\""
+
+[cc.behavior.text_omnicode.char]
+declare = "let char be character"
+literal = "'c'"
+unicode = "'\\u0041'"
+named   = "'\\N{ALEPH}'"
+
+[cc.behavior.text_cpisi]
+description = "Text types in CPI-SI cognitive framework"
+
+[cc.behavior.text_cpisi.text]
+role     = "communication"
+semantic = "meaning_carrier"
+weight   = "variable"
+
+[cc.behavior.text_cpisi.char]
+role     = "atom"
+semantic = "letter"
+weight   = "minimal"
+
+[cc.behavior.text_bindings]
+description = "Text types in target languages"
+
+[cc.behavior.text_bindings.text]
+c_repr   = "char*"
+go_repr  = "string"
+rust_repr = "String"
+typedef  = "text_t"
+
+[cc.behavior.text_bindings.char]
+c_repr   = "int32_t"
+go_repr  = "rune"
+rust_repr = "char"
+typedef  = "tchar_t"
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# BOOLEAN BEHAVIOR
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.boolean_omnicode]
+description = "OmniCode syntax for boolean"
+
+[cc.behavior.boolean_omnicode.bool3]
+declare         = "let bool3 be truth"
+literal_true    = "true"
+literal_false   = "false"
+literal_unknown = "unknown"
+cast            = "as bool3"
+
+[cc.behavior.boolean_cpisi]
+description = "Boolean in CPI-SI cognitive framework"
+
+[cc.behavior.boolean_cpisi.bool3]
+role     = "truth"
+semantic = "honest_logic"
+weight   = "decisive"
+
+[cc.behavior.boolean_cpisi.bool3.building_block]
+false_maps   = { operation = "break_down", meaning = "stop, reject, retreat" }
+unknown_maps = { operation = "anchor",     meaning = "hold, wait, uncertain" }
+true_maps    = { operation = "build_up",   meaning = "proceed, accept, advance" }
+
+[cc.behavior.boolean_bindings]
+description = "Boolean types in target languages"
+
+[cc.behavior.boolean_bindings.bool3]
+c_repr   = "int8_t"
+go_repr  = "int8"
+rust_repr = "i8"
+typedef  = "tbool_t"
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# COLLECTIONS BEHAVIOR
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.collections_omnicode]
+description = "OmniCode syntax for collections"
+
+[cc.behavior.collections_omnicode.list]
+declare = "let names be list of text"
+literal = "[a, b, c]"
+empty   = "[]"
+access  = "names[0]"
+append  = "names.append(x)"
+length  = "names.length"
+
+[cc.behavior.collections_omnicode.map]
+declare  = "let census be map from text to int27"
+literal  = "{\"key\": value}"
+empty    = "{}"
+access   = "census[\"key\"]"
+insert   = "census[\"key\"] = value"
+contains = "\"key\" in census"
+length   = "census.length"
+
+[cc.behavior.collections_omnicode.set]
+declare  = "let tribe be set of Person"
+literal  = "{a, b, c}"
+empty    = "{}"
+add      = "tribe.add(x)"
+remove   = "tribe.remove(x)"
+contains = "x in tribe"
+length   = "tribe.length"
+
+[cc.behavior.collections_cpisi]
+description = "Collections in CPI-SI cognitive framework"
+
+[cc.behavior.collections_cpisi.list]
+role     = "sequence"
+semantic = "ordered_collection"
+weight   = "variable"
+pattern  = "generations"
+
+[cc.behavior.collections_cpisi.map]
+role     = "lookup"
+semantic = "association"
+weight   = "variable"
+pattern  = "census"
+
+[cc.behavior.collections_cpisi.set]
+role     = "membership"
+semantic = "unique_collection"
+weight   = "variable"
+pattern  = "tribe"
+
+[cc.behavior.collections_bindings]
+description = "Collection types in target languages"
+
+[cc.behavior.collections_bindings.list]
+c_repr    = "struct { size_t len; T* data; }"
+go_repr   = "[]T"
+rust_repr = "Vec<T>"
+typedef   = "tlist_t"
+
+[cc.behavior.collections_bindings.map]
+c_repr    = "struct { size_t len; struct {K key; V val;}* data; }"
+go_repr   = "map[K]V"
+rust_repr = "HashMap<K, V>"
+typedef   = "tmap_t"
+
+[cc.behavior.collections_bindings.set]
+c_repr    = "struct { size_t len; T* data; }"
+go_repr   = "map[T]struct{}"
+rust_repr = "HashSet<T>"
+typedef   = "tset_t"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.7 SPECIAL — Void and Any Behavior [SPECIAL_BEHAVIOR]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.special_omnicode]
+description = "OmniCode syntax for special types"
+
+[cc.behavior.special_omnicode.void]
+declare = "let cleanup be function returning void"
+return  = "return"
+call    = "cleanup()"
+type    = "void"
+
+[cc.behavior.special_omnicode.any]
+declare = "let value be any"
+check   = "value is int27"
+cast    = "value as int27"
+typeof  = "type of value"
+
+[cc.behavior.special_cpisi]
+description = "CPI-SI cognitive framework for special types"
+
+[cc.behavior.special_cpisi.void]
+role     = "absence"
+semantic = "no_return"
+weight   = "none"
+pattern  = "tohu"
+
+[cc.behavior.special_cpisi.void.building_block]
+maps_to = "anchor"
+meaning = "Work is complete, nothing to pass on"
+analogy = "Recursion termination — halt condition"
+
+[cc.behavior.special_cpisi.any]
+role     = "dynamic"
+semantic = "unknown_type"
+weight   = "variable"
+pattern  = "naming"
+
+[cc.behavior.special_cpisi.any.building_block]
+maps_to = "unknown"
+meaning = "Type is indeterminate until runtime"
+analogy = "The question 'what type?' has no compile-time answer"
+
+[cc.behavior.special_bindings]
+description = "Language bindings for special types"
+
+[cc.behavior.special_bindings.void]
+c_repr    = "void"
+go_repr   = "()"
+rust_repr = "()"
+typedef   = "void"
+
+[cc.behavior.special_bindings.any]
+c_repr    = "void*"
+go_repr   = "interface{}"
+rust_repr = "Box<dyn Any>"
+typedef   = "tany_t"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.8 DECIMAL — Fixed-Point Behavior [DECIMAL_BEHAVIOR]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.decimal_omnicode]
+description   = "OmniCode syntax for decimal27"
+declare       = "let price be decimal27 with scale 2"
+literal       = "123.45d"
+cast          = "as decimal27"
+scale_declare = "let precise be decimal27 with scale 9"
+
+[cc.behavior.decimal_cpisi]
+description = "decimal27 in CPI-SI cognitive framework"
+role        = "exact_value"
+semantic    = "just_weight"
+weight      = "grounded"
+
+[cc.behavior.decimal_bindings]
+description = "Language bindings for decimal27"
+c_repr      = "struct { int64_t value; int8_t scale; }"
+go_repr     = "Decimal27"
+rust_repr   = "Decimal27"
+typedef     = "tdecimal27_t"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.4.9 TEMPORAL — Time Behavior [TEMPORAL_BEHAVIOR]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[cc.behavior.temporal_omnicode]
+description = "OmniCode syntax for temporal types"
+
+[cc.behavior.temporal_omnicode.timestamp]
+declare = "let created be timestamp"
+now     = "timestamp.now()"
+parse   = "timestamp.parse(\"2026-02-01T23:00:00Z\")"
+format  = "created.format(\"RFC3339\")"
+cast    = "as timestamp"
+
+[cc.behavior.temporal_omnicode.duration]
+declare     = "let timeout be duration"
+literal_ns  = "1000ns"
+literal_ms  = "100ms"
+literal_s   = "30s"
+literal_m   = "5m"
+arithmetic  = "end - start"
+cast        = "as duration"
+
+[cc.behavior.temporal_cpisi]
+description = "CPI-SI cognitive framework for temporal types"
+
+[cc.behavior.temporal_cpisi.timestamp]
+role     = "moment"
+semantic = "when"
+weight   = "substantial"
+pattern  = "season"
+
+[cc.behavior.temporal_cpisi.duration]
+role     = "span"
+semantic = "how_long"
+weight   = "substantial"
+pattern  = "season_length"
+
+[cc.behavior.temporal_bindings]
+description = "Language bindings for temporal types"
+
+[cc.behavior.temporal_bindings.timestamp]
+c_repr    = "trit81_t"
+go_repr   = "Timestamp"
+rust_repr = "Timestamp"
+typedef   = "ttimestamp_t"
+
+[cc.behavior.temporal_bindings.duration]
+c_repr    = "trit81_t"
+go_repr   = "Duration"
+rust_repr = "Duration"
+typedef   = "tduration_t"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Co TYPE OPERATIONS [OPERATIONS]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "A just weight and balance are the LORD's: all the weights of the bag are
+#  his work." — Proverbs 16:11 KJV
+#
+# TYPE OPERATIONS: HOW PRIMITIVES INTERACT AND TRANSFORM
+#
+# Types don't exist in isolation. They convert, validate, coerce. Operations
+# define how primitives relate to each other — what transformations are safe,
+# what validations catch errors, what coercions happen implicitly.
+#
+# JUST WEIGHTS:
+#   Proverbs speaks of honest measurement. Type operations ARE the weights and
+#   measures of data. Conversion must preserve meaning. Validation must catch
+#   real errors. Coercion must be explicit about what's lost.
+#
+# OPERATION CATEGORIES:
+#   CONVERSION: Explicit transformation between compatible types
+#   VALIDATION: Checking that values meet type constraints
+#   COERCION:   Implicit transformation (automatic, requires care)
+#
+# SCALE APPLICATIONS:
+#   L0 (Kernel):    Register-width conversions, bit validation
+#   L1 (System):    Syscall argument conversion, bounds checking
+#   L2 (Runtime):   Object type conversion, null validation
+#   L3 (Framework): Wire format conversion, schema validation
+#   L4 (Health):    Metric normalization, threshold validation
+#   L5 (Network):   Protocol conversion, packet validation
+#   L6 (Storage):   Serialization, data integrity validation
+#   L7 (Engine):    Rule conversion, constraint validation
+#   L8 (App):       User input conversion, form validation
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Co.1 CONVERSION — Type Conversion Rules [CONVERSION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "Divers weights are an abomination unto the LORD; and a false balance is
+#  not good." — Proverbs 20:23 KJV
+#
+# CONVERSION: EXPLICIT, HONEST TRANSFORMATION
+#
+# Conversion changes a value from one type to another. Unlike coercion, conversion
+# is EXPLICIT — the programmer states their intent. Honest conversion preserves
+# meaning; it never silently truncates or corrupts.
+#
+# CONVERSION PRINCIPLES:
+#   1. Widening is always safe (int9 → int27)
+#   2. Narrowing requires validation (int27 → int9 may overflow)
+#   3. Between families requires explicit rules (int → float)
+#   4. Conversion failures are errors, not silent corruption
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.1a WIDENING — Safe Upward Conversion [WIDENING]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[conversion.widening]
+description  = "Safe conversion to larger types — no data loss possible"
+principle    = "Widening is always safe"
+explicit     = false                                          # Can be implicit
+
+# Trit widening paths
+[conversion.widening.trit]
+description  = "Trit to larger types"
+trit_to_int9   = { safe = true,  method = "direct",    note = "trit fits in int9" }
+trit_to_int27  = { safe = true,  method = "direct",    note = "trit fits in int27" }
+trit_to_bool3  = { safe = true,  method = "interpret", note = "-1=false, 0=unknown, 1=true" }
+trit_to_float27 = { safe = true, method = "direct",    note = "integer to float" }
+
+# Integer widening paths
+[conversion.widening.integer]
+description  = "Integer to larger integers"
+int9_to_int27  = { safe = true,  method = "sign_extend", note = "9 trits → 27 trits" }
+uint9_to_uint27 = { safe = true, method = "zero_extend", note = "9 trits → 27 trits" }
+uint9_to_int27 = { safe = true,  method = "zero_extend", note = "unsigned fits in signed" }
+int9_to_float27 = { safe = true, method = "direct",      note = "integer to float" }
+int27_to_float27 = { safe = true, method = "direct",     note = "integer to float" }
+
+# Trit5 widening paths
+[conversion.widening.trit5]
+description  = "Trit5 (packed) to larger types"
+trit5_to_int9  = { safe = true,  method = "direct",    note = "243 states fit in int9" }
+trit5_to_int27 = { safe = true,  method = "direct",    note = "243 states fit in int27" }
+trit5_to_uint9 = { safe = true,  method = "direct",    note = "0-242 fits in uint9" }
+
+# Widening at each layer
+[conversion.widening.scales]
+description  = "Widening usage at each architectural layer"
+L0_kernel    = { use = "register promotion",               example = "trit → word register" }
+L1_system    = { use = "syscall argument expansion",       example = "int9 arg → int27" }
+L2_runtime   = { use = "array index promotion",            example = "uint9 → uint27 for large array" }
+L3_framework = { use = "config value normalization",       example = "small int → standard size" }
+L4_health    = { use = "metric aggregation",               example = "component score → total" }
+L5_network   = { use = "sequence number expansion",        example = "short seq → long seq" }
+L6_storage   = { use = "offset expansion",                 example = "small offset → large file" }
+L7_engine    = { use = "priority promotion",               example = "local priority → global" }
+L8_app       = { use = "quantity expansion",               example = "item count → total count" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.1b NARROWING — Checked Downward Conversion [NARROWING]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[conversion.narrowing]
+description  = "Conversion to smaller types — requires validation"
+principle    = "Narrowing may lose data; must check"
+explicit     = true                                           # MUST be explicit
+
+# Integer narrowing paths
+[conversion.narrowing.integer]
+description  = "Integer to smaller integers"
+int27_to_int9  = { safe = false, method = "checked",   overflow = "error", note = "may overflow" }
+int27_to_uint9 = { safe = false, method = "checked",   overflow = "error", note = "may overflow or be negative" }
+uint27_to_uint9 = { safe = false, method = "checked",  overflow = "error", note = "may overflow" }
+int9_to_trit   = { safe = false, method = "checked",   overflow = "error", note = "only -1, 0, +1 valid" }
+
+# Float narrowing paths
+[conversion.narrowing.float]
+description  = "Float to integer types"
+float27_to_int27 = { safe = false, method = "truncate", note = "loses fractional part" }
+float27_to_int9  = { safe = false, method = "checked",  note = "may overflow + truncate" }
+
+# Trit5 narrowing paths
+[conversion.narrowing.trit5]
+description  = "Larger types to trit5"
+int9_to_trit5  = { safe = false, method = "checked",   note = "only 0-242 valid" }
+int27_to_trit5 = { safe = false, method = "checked",   note = "only 0-242 valid" }
+
+# Narrowing behaviors
+[conversion.narrowing.behaviors]
+description  = "What happens when narrowing fails"
+error        = { action = "return error",              when = "checked narrowing fails" }
+saturate     = { action = "clamp to min/max",          when = "saturating mode enabled" }
+truncate     = { action = "keep low bits/trits",       when = "truncating mode enabled" }
+wrap         = { action = "modulo arithmetic",         when = "wrapping mode enabled" }
+
+# Narrowing at each layer
+[conversion.narrowing.scales]
+description  = "Narrowing usage at each architectural layer"
+L0_kernel    = { use = "register demotion",                example = "word → trit for flag" }
+L1_system    = { use = "return code compression",          example = "int27 result → int9" }
+L2_runtime   = { use = "index bounds check",               example = "computed index → array bound" }
+L3_framework = { use = "config validation",                example = "user value → constrained range" }
+L4_health    = { use = "score normalization",              example = "raw score → 0-100 range" }
+L5_network   = { use = "header compression",               example = "long value → wire format" }
+L6_storage   = { use = "compact storage",                  example = "large offset → extent" }
+L7_engine    = { use = "priority compression",             example = "computed priority → byte" }
+L8_app       = { use = "display formatting",               example = "precise value → rounded" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.1c CROSS_FAMILY — Between Type Families [CROSS_FAMILY]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[conversion.cross_family]
+description  = "Conversion between different type families"
+principle    = "Different families require explicit semantics"
+explicit     = true                                           # ALWAYS explicit
+
+# Integer ↔ Float
+[conversion.cross_family.integer_float]
+description  = "Integer to/from floating point"
+int_to_float = { method = "direct",   note = "exact for small integers" }
+float_to_int = { method = "truncate", note = "loses fractional part" }
+
+# Integer ↔ Boolean
+[conversion.cross_family.integer_bool]
+description  = "Integer to/from boolean"
+int_to_bool  = { method = "zero_test", note = "0→unknown, positive→true, negative→false" }
+bool_to_int  = { method = "direct",    note = "-1, 0, +1 directly" }
+
+# Text ↔ Integer
+[conversion.cross_family.text_integer]
+description  = "Text to/from integer"
+int_to_text  = { method = "format",    note = "produces decimal string" }
+text_to_int  = { method = "parse",     note = "may fail if not numeric" }
+
+# Any ↔ Specific
+[conversion.cross_family.any_specific]
+description  = "Any to/from specific types"
+specific_to_any = { method = "box",     note = "wrap value with type tag" }
+any_to_specific = { method = "unbox",   note = "extract and check type tag" }
+
+# Cross-family at each layer
+[conversion.cross_family.scales]
+description  = "Cross-family usage at each architectural layer"
+L0_kernel    = { use = "flag interpretation",              example = "int → bool for condition" }
+L1_system    = { use = "error code to string",             example = "errno → message" }
+L2_runtime   = { use = "string parsing",                   example = "\"42\" → int" }
+L3_framework = { use = "JSON conversion",                  example = "any → specific type" }
+L4_health    = { use = "metric formatting",                example = "float → display string" }
+L5_network   = { use = "protocol encoding",                example = "struct → bytes" }
+L6_storage   = { use = "serialization",                    example = "object → bytes → object" }
+L7_engine    = { use = "rule evaluation",                  example = "expression → bool" }
+L8_app       = { use = "form processing",                  example = "text input → typed value" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Co.2 VALIDATION — Type Validation Rules [VALIDATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "Prove all things; hold fast that which is good." — 1 Thessalonians 5:21 KJV
+#
+# VALIDATION: PROVING VALUES ARE CORRECT
+#
+# Validation checks that a value meets type constraints BEFORE use. It's the
+# guard at the gate — bad values don't get in, good values proceed confidently.
+#
+# VALIDATION PRINCIPLES:
+#   1. Validate at boundaries (input, API, storage)
+#   2. Trust validated values internally (no redundant checks)
+#   3. Fail fast and clear (errors describe the problem)
+#   4. Validation is NOT conversion (it checks, doesn't transform)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2a RANGE — Numeric Range Validation [RANGE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[validation.range]
+description  = "Checking numeric values are within type bounds"
+principle    = "Values must fit their declared type"
+
+# Trit validation
+[validation.range.trit]
+description  = "Trit must be exactly -1, 0, or +1"
+valid_values = [-1, 0, 1]
+check        = "value in [-1, 0, 1]"
+error        = "trit value must be -1, 0, or +1; got %d"
+
+# Trit5 validation
+[validation.range.trit5]
+description  = "Trit5 must be 0-242 (packed) or -121 to +121 (balanced)"
+packed_min   = 0
+packed_max   = 242
+balanced_min = -121
+balanced_max = 121
+check        = "(packed: 0 ≤ v ≤ 242) or (balanced: -121 ≤ v ≤ 121)"
+error        = "trit5 value out of range; got %d"
+
+# Integer validation
+[validation.range.int9]
+description  = "int9 range check"
+min          = -9841
+max          = 9841
+check        = "-9841 ≤ v ≤ 9841"
+error        = "int9 overflow; got %d, valid range [-9841, 9841]"
+
+[validation.range.uint9]
+description  = "uint9 range check"
+min          = 0
+max          = 19682
+check        = "0 ≤ v ≤ 19682"
+error        = "uint9 overflow; got %d, valid range [0, 19682]"
+
+[validation.range.int27]
+description  = "int27 (Word) range check"
+min          = -3812798742493
+max          = 3812798742493
+check        = "-3812798742493 ≤ v ≤ 3812798742493"
+error        = "int27 overflow; got %d, valid range [±3.8T]"
+
+[validation.range.uint27]
+description  = "uint27 range check"
+min          = 0
+max          = 7625597484986
+check        = "0 ≤ v ≤ 7625597484986"
+error        = "uint27 overflow; got %d, valid range [0, 7.6T]"
+
+# Range validation at each layer
+[validation.range.scales]
+description  = "Range validation at each architectural layer"
+L0_kernel    = { use = "register bounds",                  example = "ALU input validation" }
+L1_system    = { use = "syscall args",                     example = "file descriptor range" }
+L2_runtime   = { use = "array bounds",                     example = "index < length" }
+L3_framework = { use = "config limits",                    example = "port 0-65535" }
+L4_health    = { use = "score bounds",                     example = "0.0 ≤ health ≤ 1.0" }
+L5_network   = { use = "protocol fields",                  example = "TTL 0-255" }
+L6_storage   = { use = "offset bounds",                    example = "offset < file_size" }
+L7_engine    = { use = "parameter limits",                 example = "priority 0-100" }
+L8_app       = { use = "user input",                       example = "quantity > 0" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2b NULL — Null/Empty Validation [NULL]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[validation.null]
+description  = "Checking for null/empty/void values"
+principle    = "Know what emptiness means for each type"
+
+# Nullable types
+[validation.null.nullable]
+description  = "Types that can be null"
+nullable_types = ["text", "list", "map", "set", "any"]
+non_nullable  = ["trit", "trit5", "int9", "uint9", "int27", "uint27", "bool3", "void"]
+
+# Empty states
+[validation.null.empty_states]
+description  = "Empty value for each collection type"
+text_empty   = { value = "\"\"",   check = "text.length == 0" }
+list_empty   = { value = "[]",     check = "list.length == 0" }
+map_empty    = { value = "{}",     check = "map.length == 0" }
+set_empty    = { value = "{}",     check = "set.length == 0" }
+any_null     = { value = "null",   check = "any == null" }
+
+# Void handling
+[validation.null.void_handling]
+description  = "Void is not null — void means 'no value to check'"
+void_meaning = "absence of return, not null pointer"
+void_check   = "no check needed — void has no value"
+
+# Null validation at each layer
+[validation.null.scales]
+description  = "Null validation at each architectural layer"
+L0_kernel    = { use = "null pointer check",               example = "ptr != NULL" }
+L1_system    = { use = "invalid handle",                   example = "fd != -1" }
+L2_runtime   = { use = "nil check",                        example = "object != nil" }
+L3_framework = { use = "missing config",                   example = "config.get(key) != null" }
+L4_health    = { use = "missing metric",                   example = "metric.has_value()" }
+L5_network   = { use = "disconnected",                     example = "conn != null" }
+L6_storage   = { use = "missing record",                   example = "record.exists()" }
+L7_engine    = { use = "undefined state",                  example = "state.is_defined()" }
+L8_app       = { use = "empty input",                      example = "input.trim() != \"\"" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2c FORMAT — Format Validation [FORMAT]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[validation.format]
+description  = "Validating text/data format patterns"
+principle    = "Structure must match expected pattern"
+
+# Text format patterns
+[validation.format.text]
+description  = "Common text validation patterns"
+not_empty    = { pattern = ".+",                           note = "at least one character" }
+alphanumeric = { pattern = "[a-zA-Z0-9]+",                 note = "letters and digits only" }
+identifier   = { pattern = "[a-zA-Z_][a-zA-Z0-9_]*",       note = "valid identifier" }
+integer_str  = { pattern = "-?[0-9]+",                     note = "numeric string" }
+float_str    = { pattern = "-?[0-9]+\\.?[0-9]*",           note = "decimal string" }
+
+# Trit string formats
+[validation.format.trit_string]
+description  = "Ternary literal format validation"
+single_trit  = { pattern = "[T10N+-]",                     note = "single trit: T/+/1, 0, N/-" }
+trit_array   = { pattern = "[T10N+-]+",                    note = "trit sequence" }
+balanced     = { pattern = "-?[0-9]+t",                    note = "balanced ternary literal" }
+
+# Collection format
+[validation.format.collection]
+description  = "Collection structure validation"
+list_format  = { check = "ordered, allows duplicates",     note = "sequence semantics" }
+map_format   = { check = "keys unique, values associated", note = "lookup semantics" }
+set_format   = { check = "no duplicates, membership",      note = "membership semantics" }
+
+# Format validation at each layer
+[validation.format.scales]
+description  = "Format validation at each architectural layer"
+L0_kernel    = { use = "opcode format",                    example = "instruction encoding" }
+L1_system    = { use = "path format",                      example = "valid filesystem path" }
+L2_runtime   = { use = "string format",                    example = "valid UTF-8" }
+L3_framework = { use = "config syntax",                    example = "valid TOML/JSON" }
+L4_health    = { use = "metric name",                      example = "prometheus format" }
+L5_network   = { use = "address format",                   example = "valid IP address" }
+L6_storage   = { use = "record structure",                 example = "schema compliance" }
+L7_engine    = { use = "rule syntax",                      example = "valid expression" }
+L8_app       = { use = "user input",                       example = "email format" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Co.3 COERCION — Implicit Type Transformation [COERCION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "Be not deceived; God is not mocked: for whatsoever a man soweth, that shall
+#  he also reap." — Galatians 6:7 KJV
+#
+# COERCION: IMPLICIT TRANSFORMATION WITH CARE
+#
+# Coercion is automatic type conversion — the compiler/runtime does it without
+# explicit instruction. This is powerful but dangerous. Implicit coercion can
+# hide bugs, lose precision, or silently change meaning.
+#
+# COERCION PRINCIPLES:
+#   1. Only coerce when meaning is preserved
+#   2. Never coerce when precision is lost
+#   3. Make dangerous coercions explicit
+#   4. Document all coercion rules clearly
+#
+# YOU REAP WHAT YOU SOW:
+#   Coercion that loses information is deceptive. If int27 coerces to int9 and
+#   overflows silently, you've sown deception and will reap corruption. Honest
+#   systems make lossy operations explicit.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.3a SAFE_COERCION — Automatic Safe Transformations [SAFE_COERCION]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[coercion.safe]
+description  = "Coercions that are always safe — no information loss"
+principle    = "Automatic coercion only when meaning is fully preserved"
+
+# Trit coercions
+[coercion.safe.trit]
+description  = "Safe automatic trit conversions"
+trit_to_int9   = { automatic = true,  note = "trit always fits in int9" }
+trit_to_int27  = { automatic = true,  note = "trit always fits in int27" }
+trit_to_bool3  = { automatic = true,  note = "same value space" }
+
+# Integer widening coercions
+[coercion.safe.integer]
+description  = "Safe automatic integer widening"
+int9_to_int27  = { automatic = true,  note = "int9 always fits in int27" }
+uint9_to_uint27 = { automatic = true, note = "uint9 always fits in uint27" }
+uint9_to_int27 = { automatic = true,  note = "unsigned fits in larger signed" }
+
+# Trit5 coercions
+[coercion.safe.trit5]
+description  = "Safe automatic trit5 conversions"
+trit5_to_int9  = { automatic = true,  note = "243 states fit in int9" }
+trit5_to_int27 = { automatic = true,  note = "243 states fit in int27" }
+
+# Safe coercion at each layer
+[coercion.safe.scales]
+description  = "Safe coercion at each architectural layer"
+L0_kernel    = { use = "register promotion",               example = "trit → word in expression" }
+L1_system    = { use = "argument promotion",               example = "small arg in large call" }
+L2_runtime   = { use = "expression evaluation",            example = "int9 + int27 → int27" }
+L3_framework = { use = "type unification",                 example = "common type in collection" }
+L4_health    = { use = "metric combination",               example = "combine different precisions" }
+L5_network   = { use = "protocol assembly",                example = "field widening" }
+L6_storage   = { use = "index computation",                example = "offset calculation" }
+L7_engine    = { use = "rule evaluation",                  example = "operand promotion" }
+L8_app       = { use = "display preparation",              example = "value formatting" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.3b UNSAFE_COERCION — Requires Explicit Cast [UNSAFE_COERCION]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[coercion.unsafe]
+description  = "Coercions that require explicit cast — information may be lost"
+principle    = "Never automatically lose information"
+
+# Narrowing (NEVER automatic)
+[coercion.unsafe.narrowing]
+description  = "Narrowing is NEVER automatic"
+int27_to_int9  = { automatic = false, reason = "may overflow" }
+int27_to_trit  = { automatic = false, reason = "may overflow" }
+float27_to_int = { automatic = false, reason = "loses fractional part" }
+uint27_to_uint9 = { automatic = false, reason = "may overflow" }
+
+# Signed/unsigned mixing (NEVER automatic)
+[coercion.unsafe.signedness]
+description  = "Sign conversion is NEVER automatic"
+int9_to_uint9  = { automatic = false, reason = "negative values undefined" }
+int27_to_uint27 = { automatic = false, reason = "negative values undefined" }
+uint9_to_int9  = { automatic = false, reason = "large values overflow" }
+
+# Any type (NEVER automatic TO specific)
+[coercion.unsafe.any]
+description  = "Any → specific is NEVER automatic"
+any_to_int    = { automatic = false, reason = "runtime type check required" }
+any_to_text   = { automatic = false, reason = "runtime type check required" }
+any_to_list   = { automatic = false, reason = "runtime type check required" }
+
+# Unsafe at each layer
+[coercion.unsafe.scales]
+description  = "Explicit cast usage at each architectural layer"
+L0_kernel    = { use = "register demotion",                example = "cast<trit>(word)" }
+L1_system    = { use = "error code extraction",            example = "cast<int9>(result)" }
+L2_runtime   = { use = "index narrowing",                  example = "cast<uint9>(offset)" }
+L3_framework = { use = "config extraction",                example = "value as int27" }
+L4_health    = { use = "score rounding",                   example = "cast<int9>(score * 100)" }
+L5_network   = { use = "header compression",               example = "cast<trit5>(length)" }
+L6_storage   = { use = "compact encoding",                 example = "cast<uint9>(id)" }
+L7_engine    = { use = "result extraction",                example = "cast<bool3>(eval)" }
+L8_app       = { use = "form parsing",                     example = "value as int27" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.3c ARITHMETIC_COERCION — In Expressions [ARITHMETIC_COERCION]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[coercion.arithmetic]
+description  = "How types coerce in arithmetic expressions"
+principle    = "Promote to common type that preserves both operands"
+
+# Binary operator promotion
+[coercion.arithmetic.binary_ops]
+description  = "Type promotion for binary operators (+, -, *, /, %)"
+rule         = "Both operands promoted to larger type before operation"
+trit_int9    = { result = "int9",   note = "trit promotes to int9" }
+trit_int27   = { result = "int27",  note = "trit promotes to int27" }
+int9_int27   = { result = "int27",  note = "int9 promotes to int27" }
+int_float    = { result = "float27", note = "integer promotes to float" }
+
+# Comparison promotion
+[coercion.arithmetic.comparison]
+description  = "Type promotion for comparisons (<, >, ==, !=)"
+rule         = "Same as binary operators — promote to common type"
+result       = "bool3"                                        # All comparisons return bool3
+
+# Ternary expression
+[coercion.arithmetic.ternary]
+description  = "Type in ternary conditional (cond ? a : b)"
+rule         = "a and b must have common type; result is that type"
+example      = "flag ? int9_val : int27_val → int27"
+
+# Arithmetic at each layer
+[coercion.arithmetic.scales]
+description  = "Arithmetic coercion at each architectural layer"
+L0_kernel    = { use = "ALU operations",                   example = "reg1 + reg2" }
+L1_system    = { use = "resource calculations",            example = "size + offset" }
+L2_runtime   = { use = "expression evaluation",            example = "a * b + c" }
+L3_framework = { use = "config computation",               example = "timeout * multiplier" }
+L4_health    = { use = "score calculation",                example = "weight * value" }
+L5_network   = { use = "checksum computation",             example = "sum of bytes" }
+L6_storage   = { use = "offset calculation",               example = "base + index * stride" }
+L7_engine    = { use = "rule evaluation",                  example = "priority comparison" }
+L8_app       = { use = "business logic",                   example = "price * quantity" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cv PARADIGM INTERPRETATION [PARADIGM]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "And God said, Let us make man in our image, after our likeness."
+#  — Genesis 1:26 KJV
+#
+# PARADIGM INTERPRETATION: HOW PRIMITIVES EMBODY CPI-SI
+#
+# These primitives are not just technical specifications. They embody the
+# ternary paradigm that runs through all of CPI-SI. Understanding HOW they
+# reflect the paradigm is as important as knowing WHAT they are.
+#
+# IMAGE AND LIKENESS:
+#   God created with intention — every part reflects design purpose.
+#   Our type system reflects that same intentional design:
+#   - Ternary logic reflects reality better than binary
+#   - Balanced representation honors truth
+#   - Type safety prevents corruption
+#
+# PARADIGM CATEGORIES:
+#   TYPE SYSTEM:  How primitives reflect ternary principles
+#   COMPOSITION:  How primitives combine into complex types
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cv.1 TYPE_SYSTEM — How Types Embody Ternary [TYPE_SYSTEM]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "For as the heavens are higher than the earth, so are my ways higher than
+#  your ways, and my thoughts than your thoughts." — Isaiah 55:9 KJV
+#
+# TYPE SYSTEM: TERNARY FROM FOUNDATION TO APEX
+#
+# The type system is not arbitrary. Every choice reflects ternary principles:
+# - Sizes are powers of 3
+# - Boolean has three values
+# - Integers balance around zero
+#
+# This isn't just aesthetic — it's architectural. Ternary types compose more
+# naturally, handle uncertainty honestly, and align with the 9-layer system.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cv.1a TERNARY_SIZES — Powers of 3 [TERNARY_SIZES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[paradigm.ternary_sizes]
+description  = "Type sizes align with powers of 3"
+principle    = "3^n sizes create natural boundaries"
+
+# The powers
+[paradigm.ternary_sizes.powers]
+description  = "Powers of 3 in type sizes"
+power_0      = { trits = 1,    value = 3,              name = "trit",    layer = "L0" }
+power_1      = { trits = 3,    value = 27,             name = "triplet", layer = "L1" }
+power_2      = { trits = 9,    value = 19683,          name = "int9",    layer = "L2" }
+power_3      = { trits = 27,   value = 7625597484987,  name = "int27",   layer = "L3" }
+power_4      = { trits = 81,   value = "3^81",         name = "extended", layer = "L4" }
+power_5      = { trits = 243,  value = "3^243",        name = "block",   layer = "L5" }
+power_6      = { trits = 729,  value = "3^729",        name = "page",    layer = "L6" }
+power_7      = { trits = 2187, value = "3^2187",       name = "segment", layer = "L7" }
+power_8      = { trits = 6561, value = "3^6561",       name = "domain",  layer = "L8" }
+
+# Why powers of 3
+[paradigm.ternary_sizes.rationale]
+description  = "Why 3^n sizes matter"
+composition  = "Types compose naturally — 3 trits = 1 triplet, 9 triplets = 1 block"
+addressing   = "Addresses work in powers of 3, matching content"
+efficiency   = "Packing is efficient — 5 trits fit in 1 byte (243/256 = 95%)"
+alignment    = "Layer N has 3^N trits — type size matches architectural scale"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cv.1b BALANCED_REPRESENTATION — Center at Zero [BALANCED]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[paradigm.balanced]
+description  = "Balanced ternary centers at zero"
+principle    = "No artificial offset — true center"
+
+# The balance
+[paradigm.balanced.values]
+description  = "How values balance around zero"
+trit_balance = { negative = -1, center = 0, positive = 1, symmetric = true }
+int9_balance = { negative = -9841, center = 0, positive = 9841, symmetric = true }
+int27_balance = { negative = -3812798742493, center = 0, positive = 3812798742493, symmetric = true }
+
+# Why balance matters
+[paradigm.balanced.rationale]
+description  = "Why balanced representation is superior"
+no_sign_bit  = "Sign is inherent in representation — no separate bit needed"
+easy_negate  = "Negation is simple — flip all trits (0→0, 1→-1, -1→1)"
+true_center  = "Zero is genuinely at the center, not offset"
+rounding     = "Nearest-integer rounding is natural — round toward zero"
+
+# Binary comparison
+[paradigm.balanced.vs_binary]
+description  = "Comparison with binary representation"
+binary_unsigned = "0 to 2^n-1 — no negative, zero at edge"
+binary_signed   = "-2^(n-1) to 2^(n-1)-1 — asymmetric (one more negative)"
+binary_twos_comp = "Negation requires complement + 1, complex"
+ternary_balanced = "-(3^n-1)/2 to +(3^n-1)/2 — symmetric, zero at center"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cv.1c HONEST_LOGIC — Three-Valued Truth [HONEST_LOGIC]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[paradigm.honest_logic]
+description  = "Boolean has three values — honest about uncertainty"
+principle    = "Unknown is a valid truth value"
+
+# The three values
+[paradigm.honest_logic.values]
+description  = "Three truth values"
+false        = { value = -1, meaning = "definitely not true" }
+unknown      = { value = 0,  meaning = "truth cannot be determined" }
+true_val     = { value = 1,  meaning = "definitely true" }
+
+# Kleene logic
+[paradigm.honest_logic.kleene]
+description  = "Kleene's strong logic of indeterminacy"
+and_principle = "AND yields true only if both are true; false if either is false; otherwise unknown"
+or_principle  = "OR yields false only if both are false; true if either is true; otherwise unknown"
+not_principle = "NOT flips true↔false; unknown stays unknown"
+
+# Why three values
+[paradigm.honest_logic.rationale]
+description  = "Why three-valued logic is more honest"
+reality      = "Real systems have uncertainty — unknown is honest"
+database     = "NULL in SQL represents unknown, not false"
+sensors      = "Sensor failure is unknown, not false reading"
+networks     = "Unreachable host is unknown, not down"
+decisions    = "Insufficient data means unknown, not default to false"
+
+# CPI-SI mapping
+[paradigm.honest_logic.cpisi_mapping]
+description  = "Boolean maps to building block method"
+false_maps   = { direction = -1, operation = "break_down", meaning = "stop, reject" }
+unknown_maps = { direction = 0,  operation = "anchor",     meaning = "hold, uncertain" }
+true_maps    = { direction = 1,  operation = "build_up",   meaning = "proceed, accept" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cv.1d VOID_AND_ANY — Type System Boundaries [BOUNDARIES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[paradigm.boundaries]
+description  = "Void and any mark type system boundaries"
+principle    = "Every system has edges — know them explicitly"
+
+# The boundaries
+[paradigm.boundaries.void]
+description  = "Void: the absence boundary"
+meaning      = "No value to return — work is complete, nothing to pass on"
+genesis_ref  = "Genesis 1:2 — tohu, formless before creation"
+cpisi_role   = "Anchor/halt — recursion terminates"
+
+[paradigm.boundaries.any]
+description  = "Any: the dynamic boundary"
+meaning      = "Type unknown at compile time — flexibility vs safety tradeoff"
+genesis_ref  = "Genesis 2:19 — Adam naming before classification"
+cpisi_role   = "Unknown — type indeterminate until runtime"
+
+# Boundary philosophy
+[paradigm.boundaries.philosophy]
+description  = "Why explicit boundaries matter"
+void_lesson  = "Knowing when there's nothing to return prevents null confusion"
+any_lesson   = "Knowing when type is dynamic enables proper runtime checks"
+design       = "Boundaries are explicit by design — no hidden surprises"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cv.2 COMPOSITION — How Primitives Compose [COMPOSITION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "And God saw every thing that he had made, and, behold, it was very good."
+#  — Genesis 1:31 KJV
+#
+# COMPOSITION: BUILDING COMPLEX FROM SIMPLE
+#
+# Primitives are atoms. From atoms, molecules form. From molecules, structures.
+# Composition is how simple types combine into complex ones — and the composition
+# rules determine what structures are possible.
+#
+# VERY GOOD:
+#   God surveyed creation and saw it was "very good" — complete, coherent,
+#   integrated. Good composition creates systems that are more than parts.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cv.2a AGGREGATION — Structs and Tuples [AGGREGATION]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[paradigm.composition.aggregation]
+description  = "Combining primitives into compound types"
+principle    = "Aggregation creates meaning by association"
+
+# Struct pattern
+[paradigm.composition.aggregation.struct]
+description  = "Named fields with heterogeneous types"
+pattern      = "struct Person { name: text, age: uint9, active: bool3 }"
+meaning      = "Different types combined with named access"
+cpisi_role   = "The 'room' — walls holding distinct concepts together"
+
+# Tuple pattern
+[paradigm.composition.aggregation.tuple]
+description  = "Positional fields, often homogeneous"
+pattern      = "(int27, int27, int27) — a 3D coordinate"
+meaning      = "Types combined by position"
+cpisi_role   = "Minimal structure — just enough to hold together"
+
+# Aggregation at each layer
+[paradigm.composition.aggregation.scales]
+description  = "Aggregation at each architectural layer"
+L0_kernel    = { use = "register pairs",                   example = "status + value" }
+L1_system    = { use = "syscall results",                  example = "error + value" }
+L2_runtime   = { use = "object fields",                    example = "type + data" }
+L3_framework = { use = "config sections",                  example = "database settings" }
+L4_health    = { use = "health report",                    example = "scores + timestamp" }
+L5_network   = { use = "packet header",                    example = "source + dest + payload" }
+L6_storage   = { use = "record layout",                    example = "key + value + metadata" }
+L7_engine    = { use = "rule structure",                   example = "condition + action" }
+L8_app       = { use = "domain objects",                   example = "User, Order, Product" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cv.2b COLLECTION_COMPOSITION — Homogeneous Gathering [COLLECTION_COMP]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[paradigm.composition.collection]
+description  = "Gathering many values of same type"
+principle    = "Collection + element type = parameterized type"
+
+# List composition
+[paradigm.composition.collection.list]
+description  = "Ordered collection of homogeneous elements"
+pattern      = "list<int27> — sequence of integers"
+constraint   = "All elements must be same type"
+genesis_ref  = "Genealogies — ordered lists of names"
+
+# Map composition
+[paradigm.composition.collection.map]
+description  = "Association of keys to values"
+pattern      = "map<text, int27> — name to count"
+constraint   = "Keys must be unique and hashable"
+genesis_ref  = "Census records — name to count"
+
+# Set composition
+[paradigm.composition.collection.set]
+description  = "Unique membership collection"
+pattern      = "set<text> — unique names"
+constraint   = "No duplicates; elements must be hashable"
+genesis_ref  = "Tribes — each member distinct"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cv.2c NESTING — Composition of Compositions [NESTING]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[paradigm.composition.nesting]
+description  = "Types can contain types that contain types"
+principle    = "Arbitrary nesting creates rich structures"
+
+# Nesting examples
+[paradigm.composition.nesting.examples]
+description  = "Examples of nested composition"
+list_of_lists = "list<list<int27>> — 2D matrix"
+map_of_maps   = "map<text, map<text, int27>> — nested lookup"
+struct_with_list = "struct Team { members: list<Person> }"
+list_of_structs  = "list<struct Point { x: int27, y: int27 }>"
+
+# Nesting limits
+[paradigm.composition.nesting.limits]
+description  = "Practical limits on nesting depth"
+recommendation = "Avoid more than 3-4 levels of nesting"
+reason       = "Deep nesting harms readability and type checking"
+alternative  = "Create named intermediate types"
+
+# Nesting at each layer
+[paradigm.composition.nesting.scales]
+description  = "Nesting at each architectural layer"
+L0_kernel    = { use = "minimal (1-2 levels)",             example = "array of structs" }
+L1_system    = { use = "shallow (2-3 levels)",             example = "process tree" }
+L2_runtime   = { use = "moderate (2-4 levels)",            example = "object graph" }
+L3_framework = { use = "structured (3-4 levels)",          example = "config hierarchy" }
+L4_health    = { use = "moderate (2-3 levels)",            example = "nested metrics" }
+L5_network   = { use = "protocol-defined",                 example = "nested messages" }
+L6_storage   = { use = "schema-defined",                   example = "document nesting" }
+L7_engine    = { use = "rule complexity",                  example = "nested conditions" }
+L8_app       = { use = "domain complexity",                example = "deep object graph" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cv.2d TYPE_CONSTRUCTORS — Building New Types [CONSTRUCTORS]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[paradigm.composition.constructors]
+description  = "Mechanisms for constructing new types from existing ones"
+principle    = "Type constructors are functions from types to types"
+
+# Constructor patterns
+[paradigm.composition.constructors.patterns]
+description  = "Type constructor patterns"
+generic      = { pattern = "T",           meaning = "type parameter" }
+nullable     = { pattern = "T?",          meaning = "T or null" }
+array        = { pattern = "T[n]",        meaning = "fixed-size array of T" }
+slice        = { pattern = "T[]",         meaning = "variable-size slice of T" }
+pointer      = { pattern = "&T",          meaning = "reference to T" }
+function     = { pattern = "(A) → B",     meaning = "function from A to B" }
+
+# Type constructor algebra
+[paradigm.composition.constructors.algebra]
+description  = "How constructors compose"
+list_of_nullable = "list<T?> — list where elements can be null"
+nullable_list    = "list<T>? — the whole list can be null"
+func_returning_nullable = "(A) → B? — function that may return null"
+difference   = "Position of ? matters — type algebra is precise"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx CODE GENERATION [GENERATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "And the LORD answered me, and said, Write the vision, and make it plain upon
+#  tables, that he may run that readeth it." — Habakkuk 2:2 KJV
+#
+# CODE GENERATION: FROM SPECIFICATION TO IMPLEMENTATION
+#
+# These TOML specifications are not just documentation — they are the SOURCE OF
+# TRUTH from which actual code is generated. The generator reads this file and
+# produces headers, type definitions, and constants for target languages.
+#
+# WRITE THE VISION:
+#   Habakkuk was told to write clearly so runners could read while running.
+#   Generation creates code that machines can "run" — executable from vision.
+#   Specification becomes implementation. Vision becomes reality.
+#
+# GENERATION CATEGORIES:
+#   GENERATE: Control metadata for the generation process
+#   TARGETS:  Language-specific generation rules
+#   TEMPLATES: Code patterns for each primitive type
+#   GUARDS:   Header guards and namespace protection
+#
+# SCALE APPLICATIONS:
+#   L0 (Kernel):    C headers, assembly constants
+#   L1 (System):    System call types, ABI definitions
+#   L2 (Runtime):   Go types, Rust structs
+#   L3 (Framework): OmniCode type definitions
+#   L4 (Health):    Health metric types
+#   L5 (Network):   Wire format types
+#   L6 (Storage):   Serialization types
+#   L7 (Engine):    Rule engine types
+#   L8 (App):       Application-level types
+#
+# Implementation: L0-universal/tools/generate/
+# Reference:      L0-universal/foundation/math/ternary.toml [_generate]
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx.1 GENERATE — Generation Control Metadata [GENERATE]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "For which of you, intending to build a tower, sitteth not down first, and
+#  counteth the cost, whether he have sufficient to finish it?" — Luke 14:28 KJV
+#
+# GENERATION CONTROL: PLANNING BEFORE BUILDING
+#
+# Generation settings control WHAT gets generated, WHERE it goes, and in WHAT
+# ORDER. Counting the cost before building — knowing what you'll produce.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[_generate]
+description  = "Master generation control for primitives.toml"
+enabled      = true                                           # Generation is active
+version      = "b-01.00"                                      # Generator version
+
+# Output configuration
+[_generate.output]
+description  = "Where generated files go"
+directory    = "L0-universal/libtrit/include/trit/"           # Output directory
+primary      = "primitives.gen.h"                             # Primary output file
+order        = 1                                              # After math (0), before language (2)
+
+# Header guard
+[_generate.guard]
+description  = "C header guard configuration"
+name         = "PRIMITIVES_GEN_H"
+pattern      = "#ifndef {guard}\n#define {guard}\n\n{content}\n\n#endif /* {guard} */"
+
+# Generation scope
+[_generate.scope]
+description  = "What sections to generate"
+include      = ["trit", "trit5", "int9", "uint9", "int27", "uint27", "float27", "bool3", "void"]
+exclude      = ["list", "map", "set", "any", "text", "char"]  # Collections handled separately
+reason       = "Primitive types only; collections need parameterized generation"
+
+# Dependencies
+[_generate.dependencies]
+description  = "Files that must be generated first"
+requires     = ["ternary.toml"]                               # Depends on ternary constants
+provides     = ["primitives.gen.h"]                           # What this generates
+blocks       = []                                             # Nothing depends on us for generation
+
+# Generation at each layer
+[_generate.scales]
+description  = "Generation configuration at each architectural layer"
+L0_kernel    = { output = "primitives.gen.h",                 format = "C header" }
+L1_system    = { output = "primitives_sys.gen.h",             format = "C system types" }
+L2_runtime   = { output = "primitives.gen.go",                format = "Go types" }
+L3_framework = { output = "primitives.omni",                  format = "OmniCode types" }
+L4_health    = { output = "primitives_health.gen.go",         format = "Health metric types" }
+L5_network   = { output = "primitives_wire.gen.go",           format = "Wire format types" }
+L6_storage   = { output = "primitives_storage.gen.go",        format = "Serialization types" }
+L7_engine    = { output = "primitives_engine.gen.go",         format = "Engine types" }
+L8_app       = { output = "primitives_app.gen.go",            format = "Application types" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx.2 TARGETS — Language-Specific Generation [TARGETS]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "And there were dwelling at Jerusalem Jews, devout men, out of every nation
+#  under heaven... every man heard them speak in his own language."
+#  — Acts 2:5,6 KJV
+#
+# TARGETS: SPEAKING EACH LANGUAGE'S TONGUE
+#
+# Pentecost saw one message spoken in every hearer's language. Generation takes
+# one specification and produces code in each target's native tongue. Same truth,
+# different expressions.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cx.2a C_TARGET — C Language Generation [C_TARGET]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[_generate.target.c]
+description  = "C language code generation"
+enabled      = true
+priority     = 1                                              # Generated first (foundational)
+
+# Type mappings (primitive → C type)
+[_generate.target.c.types]
+description  = "How primitives map to C types"
+trit         = { type = "int8_t",   typedef = "trit_t",       comment = "single trit value" }
+trit5        = { type = "uint8_t",  typedef = "trit5_t",      comment = "5 packed trits" }
+int9         = { type = "int16_t",  typedef = "trit9_t",      comment = "9-trit signed" }
+uint9        = { type = "uint16_t", typedef = "utrit9_t",     comment = "9-trit unsigned" }
+int27        = { type = "int64_t",  typedef = "trit27_t",     comment = "27-trit signed (Word)" }
+uint27       = { type = "uint64_t", typedef = "utrit27_t",    comment = "27-trit unsigned" }
+float27      = { type = "double",   typedef = "tfloat_t",     comment = "ternary float" }
+bool3        = { type = "int8_t",   typedef = "tbool_t",      comment = "ternary boolean" }
+void_type    = { type = "void",     typedef = "void",         comment = "no value" }
+
+# Constant generation
+[_generate.target.c.constants]
+description  = "How to generate C constants"
+pattern      = "#define {NAME}_{FIELD} ({value})"
+example      = "#define TRIT_MIN (-1)"
+
+# Enum generation
+[_generate.target.c.enums]
+description  = "How to generate C enums"
+pattern      = "typedef enum { {values} } {name}_t;"
+bool3_values = "TRIT_FALSE = -1, TRIT_UNKNOWN = 0, TRIT_TRUE = 1"
+
+# C generation at each layer
+[_generate.target.c.scales]
+description  = "C generation at each architectural layer"
+L0_kernel    = { use = "core types + constants",              example = "trit_t, TRIT_MIN" }
+L1_system    = { use = "syscall types",                       example = "trit_result_t" }
+L2_runtime   = { use = "runtime structs",                     example = "trit_array_t" }
+L3_framework = { use = "framework types",                     example = "trit_config_t" }
+L4_health    = { use = "health types",                        example = "trit_health_t" }
+L5_network   = { use = "wire types",                          example = "trit_packet_t" }
+L6_storage   = { use = "storage types",                       example = "trit_block_t" }
+L7_engine    = { use = "engine types",                        example = "trit_rule_t" }
+L8_app       = { use = "app types",                           example = "trit_user_t" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cx.2b GO_TARGET — Go Language Generation [GO_TARGET]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[_generate.target.go]
+description  = "Go language code generation"
+enabled      = true
+priority     = 2                                              # After C
+
+# Package configuration
+[_generate.target.go.package]
+description  = "Go package configuration"
+name         = "trit"
+path         = "L0-universal/libtrit/pkg/trit"
+imports      = []                                             # No external imports for primitives
+
+# Type mappings (primitive → Go type)
+[_generate.target.go.types]
+description  = "How primitives map to Go types"
+trit         = { type = "int8",    alias = "Trit",            comment = "single trit value" }
+trit5        = { type = "uint8",   alias = "Trit5",           comment = "5 packed trits" }
+int9         = { type = "int16",   alias = "Int9",            comment = "9-trit signed" }
+uint9        = { type = "uint16",  alias = "UInt9",           comment = "9-trit unsigned" }
+int27        = { type = "int64",   alias = "Int27",           comment = "27-trit signed (Word)" }
+uint27       = { type = "uint64",  alias = "UInt27",          comment = "27-trit unsigned" }
+float27      = { type = "float64", alias = "Float27",         comment = "ternary float" }
+bool3        = { type = "int8",    alias = "Bool3",           comment = "ternary boolean" }
+
+# Constant generation
+[_generate.target.go.constants]
+description  = "How to generate Go constants"
+pattern      = "const {Name}{Field} {type} = {value}"
+example      = "const TritMin int8 = -1"
+
+# Method generation
+[_generate.target.go.methods]
+description  = "Methods to generate for each type"
+String       = "func (t {Type}) String() string"
+IsValid      = "func (t {Type}) IsValid() bool"
+Negate       = "func (t {Type}) Negate() {Type}"
+
+# Go generation at each layer
+[_generate.target.go.scales]
+description  = "Go generation at each architectural layer"
+L0_kernel    = { use = "core types",                          example = "type Trit int8" }
+L1_system    = { use = "syscall types",                       example = "type Result struct{}" }
+L2_runtime   = { use = "runtime types",                       example = "type Array []Trit" }
+L3_framework = { use = "framework types",                     example = "type Config struct{}" }
+L4_health    = { use = "health types",                        example = "type Health struct{}" }
+L5_network   = { use = "wire types",                          example = "type Packet struct{}" }
+L6_storage   = { use = "storage types",                       example = "type Block struct{}" }
+L7_engine    = { use = "engine types",                        example = "type Rule struct{}" }
+L8_app       = { use = "app types",                           example = "type User struct{}" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cx.2c RUST_TARGET — Rust Language Generation [RUST_TARGET]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[_generate.target.rust]
+description  = "Rust language code generation"
+enabled      = false                                          # Reserved for future
+priority     = 3                                              # After Go
+note         = "Rust generation planned for Phase 3"
+
+# Type mappings (primitive → Rust type)
+[_generate.target.rust.types]
+description  = "How primitives map to Rust types"
+trit         = { type = "i8",      alias = "Trit",            comment = "single trit value" }
+trit5        = { type = "u8",      alias = "Trit5",           comment = "5 packed trits" }
+int9         = { type = "i16",     alias = "Int9",            comment = "9-trit signed" }
+uint9        = { type = "u16",     alias = "UInt9",           comment = "9-trit unsigned" }
+int27        = { type = "i64",     alias = "Int27",           comment = "27-trit signed (Word)" }
+uint27       = { type = "u64",     alias = "UInt27",          comment = "27-trit unsigned" }
+float27      = { type = "f64",     alias = "Float27",         comment = "ternary float" }
+bool3        = { type = "i8",      alias = "Bool3",           comment = "ternary boolean" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx.3 TEMPLATES — Code Generation Templates [TEMPLATES]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "The thing that hath been, it is that which shall be; and that which is done
+#  is that which shall be done." — Ecclesiastes 1:9 KJV
+#
+# TEMPLATES: PATTERNS THAT REPEAT WITH VARIATION
+#
+# Ecclesiastes reminds us that patterns repeat. Templates capture patterns that
+# recur across types — what has been (the pattern) is what shall be (new types
+# from the pattern). Template + data = generated code.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cx.3a HEADER_TEMPLATE — C Header Template [HEADER_TEMPLATE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[_generate.template.header]
+description  = "Template for C header generation"
+
+# Header structure
+[_generate.template.header.structure]
+description  = "Structure of generated header"
+sections     = ["guard_open", "includes", "typedefs", "constants", "enums", "guard_close"]
+
+# Comment template
+[_generate.template.header.comment]
+description  = "File header comment"
+template     = """
+/*
+ * {filename} — Generated from {source}
+ *
+ * {description}
+ *
+ * DO NOT EDIT — Regenerate from TOML source.
+ * Generator: L0-universal/tools/generate/
+ * Generated: {timestamp}
+ */
+"""
+
+# Typedef template
+[_generate.template.header.typedef]
+description  = "Typedef generation template"
+template     = "typedef {base_type} {typedef_name};  /* {comment} */"
+example      = "typedef int8_t trit_t;  /* single trit value */"
+
+# Constant template
+[_generate.template.header.constant]
+description  = "Constant generation template"
+template     = "#define {PREFIX}_{NAME} ({value})"
+example      = "#define TRIT_MIN (-1)"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cx.3b TYPE_TEMPLATE — Per-Type Templates [TYPE_TEMPLATE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[_generate.template.type.trit]
+description  = "Generation template for trit type"
+constants    = ["MIN", "ZERO", "MAX", "STATES"]
+values       = [-1, 0, 1, 3]
+operations   = ["negate", "abs", "sign"]
+
+[_generate.template.type.trit5]
+description  = "Generation template for trit5 type"
+constants    = ["MIN", "MAX", "PACKED_MAX", "STATES", "SPARE_START"]
+values       = [-121, 121, 242, 243, 243]
+operations   = ["pack", "unpack", "validate"]
+
+[_generate.template.type.int9]
+description  = "Generation template for int9 type"
+constants    = ["MIN", "MAX", "STATES"]
+values       = [-9841, 9841, 19683]
+operations   = ["add", "sub", "mul", "div", "mod", "negate"]
+
+[_generate.template.type.int27]
+description  = "Generation template for int27 (Word) type"
+constants    = ["MIN", "MAX", "STATES"]
+values       = [-3812798742493, 3812798742493, 7625597484987]
+operations   = ["add", "sub", "mul", "div", "mod", "negate"]
+note         = "THE WORD — fundamental semantic unit"
+
+[_generate.template.type.bool3]
+description  = "Generation template for bool3 type"
+constants    = ["FALSE", "UNKNOWN", "TRUE"]
+values       = [-1, 0, 1]
+operations   = ["and", "or", "not", "implies"]
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cx.3c SCALE_TEMPLATES — Per-Layer Templates [SCALE_TEMPLATES]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[_generate.template.scales]
+description  = "Generation templates for each architectural layer"
+L0_kernel    = { suffix = "",           includes = ["stdint.h"],      style = "minimal" }
+L1_system    = { suffix = "_sys",       includes = ["stdint.h"],      style = "minimal" }
+L2_runtime   = { suffix = "_runtime",   includes = ["stdint.h"],      style = "verbose" }
+L3_framework = { suffix = "_framework", includes = ["stdint.h"],      style = "verbose" }
+L4_health    = { suffix = "_health",    includes = ["stdint.h"],      style = "verbose" }
+L5_network   = { suffix = "_wire",      includes = ["stdint.h"],      style = "minimal" }
+L6_storage   = { suffix = "_storage",   includes = ["stdint.h"],      style = "minimal" }
+L7_engine    = { suffix = "_engine",    includes = ["stdint.h"],      style = "verbose" }
+L8_app       = { suffix = "_app",       includes = ["stdint.h"],      style = "verbose" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cx.4 VALIDATION — Generation Validation [GEN_VALIDATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "Beloved, believe not every spirit, but try the spirits whether they are of
+#  God." — 1 John 4:1 KJV
+#
+# VALIDATION: TESTING THE GENERATED CODE
+#
+# Generated code must be tested — don't blindly trust output. Validation ensures
+# what was generated matches what was intended. Try the spirits.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[_generate.validation]
+description  = "How to validate generated code"
+enabled      = true
+
+# Syntax validation
+[_generate.validation.syntax]
+description  = "Syntax checks for generated code"
+c_compile    = "gcc -fsyntax-only -Wall -Werror {file}"
+go_build     = "go build -v {package}"
+rust_check   = "cargo check"
+
+# Content validation
+[_generate.validation.content]
+description  = "Content checks for generated code"
+has_guard    = "Header must have include guard"
+has_typedefs = "All primitives must have typedefs"
+has_constants = "All primitives must have constants"
+no_duplicates = "No duplicate definitions"
+
+# Round-trip validation
+[_generate.validation.roundtrip]
+description  = "Verify generated code matches spec"
+parse_toml   = "Load TOML, extract values"
+parse_header = "Parse generated header, extract values"
+compare      = "Values must match"
+
+# Validation at each layer
+[_generate.validation.scales]
+description  = "Validation at each architectural layer"
+L0_kernel    = { check = "compile only",                      example = "gcc -fsyntax-only" }
+L1_system    = { check = "compile only",                      example = "verify syscall types" }
+L2_runtime   = { check = "build + unit test",                 example = "go test" }
+L3_framework = { check = "build + integration test",          example = "framework tests" }
+L4_health    = { check = "build + validation",                example = "health metric tests" }
+L5_network   = { check = "build + wire tests",                example = "serialization tests" }
+L6_storage   = { check = "build + storage tests",             example = "persistence tests" }
+L7_engine    = { check = "build + engine tests",              example = "rule evaluation tests" }
+L8_app       = { check = "full test suite",                   example = "end-to-end tests" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# 3-Block Data: METADATA → CONTENT → CLOSING
+#
+# Structure: X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.1 POLICY — Modification Guidelines [POLICY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Remove not the ancient landmark, which thy fathers have set."
+#  — Proverbs 22:28 KJV
+#
+# POLICY: WHAT TO PRESERVE, WHAT MAY CHANGE
+#
+# These primitives are ancient landmarks — foundational to the entire type
+# system. Removing or changing them affects everything built upon them.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ❌ NEVER MODIFY:
+#
+#   - Primitive names (trit, int9, int27, etc.)
+#     → All references would break
+#     → Names are the identity
+#
+#   - Trit value space [-1, 0, +1]
+#     → Foundational to balanced ternary
+#     → Mathematically fixed
+#
+#   - Size relationships (3^n)
+#     → Powers of 3 are mathematical truth
+#     → Sizes derive from ternary math
+#
+#   - bool3 value mappings (-1=false, 0=unknown, +1=true)
+#     → Paradigm alignment with CPI-SI
+#     → Building block method mapping
+#
+#   - 3-block structure (METADATA → CONTENT → CLOSING)
+#     → Structural contract
+#     → Parsers depend on this
+#
+# ⚠️ MODIFY WITH CARE:
+#
+#   - Adding new primitive types
+#     → Must be mathematically justified
+#     → Must fit ternary paradigm
+#     → Requires corresponding code changes
+#
+#   - Changing min/max values
+#     → Affects all type checking
+#     → Requires libtrit updates
+#
+#   - Adding type parameters
+#     → Affects types.toml
+#     → Requires schema updates
+#
+#   - Modifying OmniCode syntax
+#     → Affects parser
+#     → Requires OmniCode spec updates
+#
+# ✅ SAFE TO ADD:
+#
+#   - Comments for clarity
+#   - Additional .scales entries (if layer exists)
+#   - Implementation notes in .cpisi
+#   - New metadata fields (if code supports)
+#   - Examples and documentation
+#
+# Policy at each layer:
+#
+#   L0 (Kernel):    FROZEN — core types never change
+#   L1 (System):    STABLE — syscall types rarely change
+#   L2 (Runtime):   STABLE — runtime types versioned
+#   L3 (Framework): EVOLVING — framework types may extend
+#   L4 (Health):    EVOLVING — health metrics may extend
+#   L5 (Network):   VERSIONED — wire types carefully versioned
+#   L6 (Storage):   VERSIONED — storage types carefully versioned
+#   L7 (Engine):    EVOLVING — engine types may extend
+#   L8 (App):       FLEXIBLE — app types most flexible
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.2 EXTENSION — Ideas for Future Sessions [EXTENSION]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Capture extension ideas discovered during work.
+# Reference: Move to M.10 Planned when ready to implement.
+#
+# ✓ IMPLEMENTED (b-01.00):
+#
+#   - int81/uint81: 81-trit integers (L4 Health scale)
+#     Location: Cc.3e, Cc.3f
+#     Rationale: Matches L4 layer, health aggregation
+#
+#   - int243/uint243: 243-trit integers (L5 Network scale)
+#     Location: Cc.3g, Cc.3h
+#     Rationale: Matches L5 layer, network addresses
+#
+#   - decimal27: Fixed-point decimal using int27 storage
+#     Location: Cc.9
+#     Rationale: Exact representation for money, quotas
+#
+#   - timestamp/duration: Ternary time primitives
+#     Location: Cc.10a, Cc.10b
+#     Rationale: Time is fundamental; uses int81 storage
+#
+# → FOR types.toml (COMPOSITE TYPES):
+#
+#   - rational: Ratio of two int27 values (numerator/denominator)
+#     Target: types.toml composite types
+#     Rationale: Exact fractions — but it's TWO primitives, so composite
+#
+#   - complex27: Complex number (real + imaginary int27)
+#     Target: types.toml composite types
+#     Rationale: Signal processing — but it's TWO primitives, so composite
+#
+# FUTURE PRIMITIVES (if needed):
+#
+#   - int729: 729-trit integer (L6 Storage scale)
+#     Status: Reserved
+#     Rationale: Would match L6, but may exceed practical needs
+#
+#   - int2187: 2187-trit integer (L7 Engine scale)
+#     Status: Reserved
+#     Rationale: Would match L7, extremely large
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "If any of you lack wisdom, let him ask of God, that giveth to all men
+#  liberally, and upbraideth not; and it shall be given him." — James 1:5 KJV
+#
+# COMMON PROBLEMS AND SOLUTIONS:
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# "Invalid TOML syntax":
+#
+#   Cause: Missing quotes around strings with special characters
+#   Fix:   String values need quotes: key = "value with spaces"
+#
+#   Cause: Duplicate keys in same section
+#   Fix:   Each key can only appear once per table
+#
+#   Cause: Bare keys with invalid characters
+#   Fix:   Use quotes for keys with dots/special chars: "my.key" = value
+
+# "Type not found":
+#
+#   Cause: Referencing type before definition
+#   Fix:   Order matters in TOML — define types before referencing
+#
+#   Cause: Typo in type name
+#   Fix:   Check spelling matches exactly (case-sensitive)
+
+# "Value out of range":
+#
+#   Cause: Assigning value outside type's min/max
+#   Fix:   Check [type].min_value and [type].max_value
+#
+#   Cause: Overflow during conversion
+#   Fix:   Use explicit checked conversion with validation
+
+# "Generation failed":
+#
+#   Cause: Missing required field
+#   Fix:   All types need: name, description, size_trits, default
+#
+#   Cause: Invalid template reference
+#   Fix:   Verify template exists in _generate.template section
+
+# "Test failures after modification":
+#
+#   Cause: Changed value without updating dependent code
+#   Fix:   Regenerate headers, rebuild libtrit, run tests
+#
+#   Cause: Modified frozen field
+#   Fix:   Revert change — some fields cannot be modified
+
+# Troubleshooting at each layer:
+#
+#   L0 (Kernel):    Recompile libtrit, check assembly
+#   L1 (System):    Check syscall compatibility
+#   L2 (Runtime):   Run unit tests: go test ./...
+#   L3 (Framework): Run integration tests
+#   L4 (Health):    Check health metric alignment
+#   L5 (Network):   Test wire format compatibility
+#   L6 (Storage):   Test serialization round-trip
+#   L7 (Engine):    Test rule evaluation
+#   L8 (App):       Run end-to-end tests
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.4 REFERENCE — Quick Lookup [REFERENCE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# QUICK REFERENCE:
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# Validation Commands:
+#
+#   # TOML syntax check
+#   python -c "import toml; toml.load('primitives.toml')"
+#   tomlv primitives.toml
+#
+#   # Full validation with custom validator
+#   ./tools/validate-toml primitives.toml --schema=primitives.schema
+
+# Type Quick Reference:
+#
+#   | Type    | Trits | States       | Range                        |
+#   |---------|-------|--------------|------------------------------|
+#   | trit    | 1     | 3            | -1 to +1                     |
+#   | trit5   | 5     | 243          | -121 to +121                 |
+#   | int9    | 9     | 19,683       | -9,841 to +9,841             |
+#   | uint9   | 9     | 19,683       | 0 to 19,682                  |
+#   | int27   | 27    | 7.6 trillion | ±3.8 trillion                |
+#   | uint27  | 27    | 7.6 trillion | 0 to 7.6 trillion            |
+#   | float27 | 27    | continuous   | ~±10^308 (double precision)  |
+#   | bool3   | 1     | 3            | false, unknown, true         |
+
+# Layer Scale Quick Reference:
+#
+#   | Layer | Power | Trits | States  | Scale Name   |
+#   |-------|-------|-------|---------|--------------|
+#   | L0    | 3^0   | 1     | 3       | trit         |
+#   | L1    | 3^1   | 3     | 27      | triplet      |
+#   | L2    | 3^2   | 9     | 19,683  | int9         |
+#   | L3    | 3^3   | 27    | 7.6T    | int27 (Word) |
+#   | L4    | 3^4   | 81    | huge    | extended     |
+#   | L5    | 3^5   | 243   | vast    | block        |
+#   | L6    | 3^6   | 729   | immense | page         |
+#   | L7    | 3^7   | 2187  | cosmic  | segment      |
+#   | L8    | 3^8   | 6561  | infinite| domain       |
+
+# Go Integration Example:
+#
+#   import "github.com/bereshit/libtrit/pkg/config"
+#
+#   type Primitive struct {
+#       Name        string `toml:"name"`
+#       Description string `toml:"description"`
+#       SizeTrits   any    `toml:"size_trits"`
+#       Default     any    `toml:"default"`
+#       Nullable    bool   `toml:"nullable"`
+#   }
+#
+#   primitives, err := config.LoadPrimitives("primitives.toml")
+#   tritSize := primitives.Trit.SizeTrits  // 1
+
+# C Integration Example:
+#
+#   #include "trit/primitives.gen.h"
+#
+#   trit_t  single = TRIT_ZERO;
+#   trit5_t packed = trit5_pack(trits);
+#   trit27_t word  = INT27_MAX / 2;
+
+# Related Files:
+#
+#   L0-universal/foundation/math/ternary.toml  — Ternary math constants
+#   L0-universal/foundation/types/types.toml   — Composite types
+#   L0-universal/libtrit/include/trit/trit.h   — C header
+#   L0-universal/libtrit/pkg/trit/trit.go      — Go package
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# X.5 NOTE — Final Guidance [NOTE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# PRIMITIVES: THE ATOMS OF THE TYPE SYSTEM
+#
+# These primitives are the atoms — they cannot be decomposed further. All
+# complex types are composed FROM these. All computation operates ON these.
+#
+# The primitives embody ternary computing principles:
+#
+#   - Sizes are powers of 3 (1, 3, 9, 27, 81, 243, 729, 2187, 6561 trits)
+#   - Boolean has three values (false, unknown, true)
+#   - Integers balance around zero (symmetric range)
+#   - The Word (27 trits) is the fundamental semantic unit
+#
+# Dependencies flow upward:
+#
+#   primitives.toml
+#       ↓
+#   types.toml (composites)
+#       ↓
+#   schemas/* (validation)
+#       ↓
+#   contracts/* (interfaces)
+#       ↓
+#   implementations/* (code)
+#
+# Changes here ripple through the entire type system. This is foundational.
+# Handle with the care due to ancient landmarks.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "In the beginning God created the heaven and the earth." — Genesis 1:1 KJV
+#
+# Before complexity, establish the fundamentals.
+# Before language, establish the primitives.
+# Before computation, establish the types.
+#
+# These primitives ARE the beginning of the OmniCode type system.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════════════════════

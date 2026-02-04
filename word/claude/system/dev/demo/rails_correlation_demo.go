@@ -528,7 +528,7 @@ func printCorrelationExample() {
 //   - Inspect cache divergence scenario in both files
 //
 // Build Verification:
-//   cd ~/.claude/cpi-si/system/dev/demo
+//   cd ~/.claude/system/dev/demo
 //   go build -o rails-demo rails_correlation_demo.go
 //
 // Quick Test:
@@ -880,7 +880,7 @@ func main() {
 // ────────────────────────────────────────────────────────────────
 //
 // Run Demo:
-//   cd ~/.claude/cpi-si/system/dev/demo
+//   cd ~/.claude/system/dev/demo
 //   go run rails_correlation_demo.go
 //
 // Build First:

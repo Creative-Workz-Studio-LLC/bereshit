@@ -357,6 +357,8 @@ FOOTER BLOCK
 | bereshit/word/omni/syntax.omni | OmniCode syntax specification |
 | bereshit/word/omni/seed/ | Template sources |
 | /validate/4block command | Markdown 4-block validation |
+| [rules/block-by-block.md](../../rules/block-by-block.md) | Block completion methodology |
+| [rules/block-structure.md](../../rules/block-structure.md) | 3/4/5-block pattern definitions |
 
 ---
 

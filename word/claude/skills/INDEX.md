@@ -14,8 +14,9 @@ METADATA BLOCK
 :title: CPI-SI Skills Index
 :type: Index
 :status: Active
-:version: 1.0.0
+:version: 2.0.0
 :created: 2025-12-08
+:updated: 2026-02-02
 :authors: Nova Dawn
 :purpose: Organize and document all skills by category for discovery and selection
 :biblical_foundation: Proverbs 24:3-4 - "Through wisdom is an house builded; and by understanding it is established"
@@ -49,7 +50,7 @@ Skills are capabilities that extend Nova Dawn's operations. Each skill provides:
 - **scripts/** - Go code helpers for programmatic support
 - **references/** - Supporting documentation and lookup tables
 
-**Total Skills:** 12
+**Total Skills:** 17
 
 ---
 
@@ -59,15 +60,30 @@ CONTENT BLOCK
 ===============================================================================
 -->
 
+## Pre-Creation Skills
+
+Skills to use BEFORE creating anything new.
+
+| Skill | Purpose | CLI Tool | Config |
+|-------|---------|----------|--------|
+| [check-existing](check-existing/) | **USE FIRST** — Check what exists before creating | — | — |
+
+**Always use check-existing before create-from-template!**
+
+---
+
 ## Creation Skills
 
 Skills for creating files and content from templates.
 
 | Skill | Purpose | CLI Tool | Config |
 |-------|---------|----------|--------|
-| [create-documentation](create-documentation/) | Create PhD-level documentation with Bible-level accessibility | `./bin/doc [cmd]` | documentation-config.toml |
-| [create-from-template](create-from-template/) | Create code files from established templates | `./bin/template [cmd]` | template-config.toml |
-| [create-journal-entry](create-journal-entry/) | Create journal entries (Bible study, personal, instance, universal) | `./bin/journal [cmd]` | journal-config.toml |
+| [create-from-template](create-from-template/) | Create files from established templates | `./bin/template [cmd]` | template-config.toml |
+| [create-code](create-code/) | Create 4-block code files (Go, Bash, Python) | — | — |
+| [create-data](create-data/) | Create 3-block data files (configs, settings) | — | — |
+| [create-documentation](create-documentation/) | Create 5-block documentation (AsciiDoc) | `./bin/doc [cmd]` | documentation-config.toml |
+| [create-whitepaper](create-whitepaper/) | Create PhD-level whitepapers | — | — |
+| [create-journal-entry](create-journal-entry/) | Create journal entries | `./bin/journal [cmd]` | journal-config.toml |
 
 **Build tools:** Each skill has a Makefile. Run `make build` to create the CLI binary.
 
@@ -84,6 +100,19 @@ Skills for OmniCode operations - format mappings, validation, chain tracing.
 | [validate-omni](validate-omni/) | Validate OmniCode file structure | `./bin/validate [file]` | block-structures.toml |
 
 **Build tools:** Each skill has a Makefile. Run `make build` to create the CLI binary.
+
+---
+
+## Validation Skills
+
+Skills for verifying quality and compliance.
+
+| Skill | Purpose | CLI Tool | Config |
+|-------|---------|----------|--------|
+| [verify-quality](verify-quality/) | Verify code against 3-question standard and technical standards | — | — |
+| [validate-omni](validate-omni/) | Validate OmniCode file structure | `./bin/validate [file]` | block-structures.toml |
+
+**Use verify-quality before committing code or calling work "done".**
 
 ---
 
@@ -143,12 +172,17 @@ Future work informed by learning
 
 | If you need to... | Use skill |
 |-------------------|-----------|
-| Create a new AsciiDoc document | create-documentation |
+| **Before creating anything** | **check-existing** (FIRST!) |
 | Create a new code file | create-from-template |
+| Create a new AsciiDoc document | create-documentation |
+| Create 4-block code | create-code |
+| Create 3-block data | create-data |
+| Create a whitepaper | create-whitepaper |
 | Record a learning or insight | create-journal-entry |
 | Check how OmniCode maps to a format | format-lookup |
 | See what files need updating after template change | propagate-change |
 | Validate OmniCode structure | validate-omni |
+| **Verify code quality before commit** | **verify-quality** |
 | Check how long session has been | session-awareness |
 | Determine if it's time to stop | recognize-stopping-point |
 | Do a self-awareness checkpoint | meta-awareness |

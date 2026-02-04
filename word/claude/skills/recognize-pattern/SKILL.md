@@ -239,6 +239,8 @@ FOOTER BLOCK
 | [create-journal-entry](../create-journal-entry/) | Records insights |
 | [references/pattern-guide.md](references/pattern-guide.md) | Full pattern documentation |
 | [Knowledge Base patterns/](divisions/tech/cpi-si/knowledge-base/patterns/) | Where patterns live |
+| [rules/thinking-framework.md](../../rules/thinking-framework.md) | Building block thinking |
+| [rules/use-existing-first.md](../../rules/use-existing-first.md) | When patterns become templates |
 
 ---
 
