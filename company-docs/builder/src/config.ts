@@ -1,166 +1,203 @@
 /**
- * CWS Manual Builder - Configuration
+ * CWS Manual Builder - Configuration Loader
  *
- * Build configuration for the Company Identity Manual.
- * Defines output formats, paths, and Asciidoctor options.
+ * This module ONLY loads configuration from build.config.yaml.
+ * All behavior is defined in the config file, not in code.
+ *
+ * Biblical Foundation:
+ *   "For which of you, intending to build a tower, sitteth not down first,
+ *    and counteth the cost, whether he have sufficient to finish it?"
+ *   — Luke 14:28
  */
 
+import { readFileSync, existsSync } from 'fs';
+import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+import { parse as parseYaml } from 'yaml';
 
 // ES Module __dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-/**
- * Supported output formats
- */
-export type OutputFormat = 'html' | 'pdf' | 'epub' | 'docbook';
+// -----------------------------------------------------------------------------
+// Type Definitions (derived from config structure)
+// -----------------------------------------------------------------------------
 
 /**
- * Build configuration interface
+ * Format configuration from YAML
+ */
+export interface FormatConfig {
+  enabled: boolean;
+  command: string;
+  backend: string;
+  extension: string;
+  install: string;
+  options: Record<string, unknown>;
+  args: string[];
+}
+
+/**
+ * Watch configuration from YAML
+ */
+export interface WatchConfig {
+  patterns: string[];
+  ignore: string[];
+  debounce_ms: number;
+  formats: string[];
+}
+
+/**
+ * Display configuration from YAML
+ */
+export interface DisplayConfig {
+  banner: boolean;
+  colors: boolean;
+  icons: Record<string, string>;
+}
+
+/**
+ * Document configuration from YAML
+ */
+export interface DocumentConfig {
+  master: string;
+  output_name: string;
+  output_dir: string;
+}
+
+/**
+ * Complete build configuration (mirrors YAML structure)
  */
 export interface BuildConfig {
-  /** Source directory containing AsciiDoc files */
-  sourceDir: string;
-
-  /** Output directory for generated files */
-  outputDir: string;
-
-  /** Main book file to compile */
-  masterDocument: string;
-
-  /** Output filename (without extension) */
-  outputName: string;
-
-  /** Document attributes passed to Asciidoctor */
+  document: DocumentConfig;
   attributes: Record<string, string>;
-
-  /** Format-specific options */
-  formatOptions: FormatOptions;
+  formats: Record<string, FormatConfig>;
+  watch: WatchConfig;
+  display: DisplayConfig;
+  version: string;
 }
 
 /**
- * Format-specific build options
+ * Runtime paths (computed from config)
  */
-export interface FormatOptions {
-  html: HtmlOptions;
-  pdf: PdfOptions;
-  epub: EpubOptions;
-  docbook: DocbookOptions;
+export interface RuntimePaths {
+  configFile: string;
+  sourceDir: string;
+  outputDir: string;
+  masterDocument: string;
 }
 
-export interface HtmlOptions {
-  /** Generate standalone HTML file */
-  standalone: boolean;
-  /** Include table of contents */
-  toc: boolean;
-  /** TOC position: left, right, auto */
-  tocPosition: 'left' | 'right' | 'auto';
-  /** Embed images as data URIs */
-  embedImages: boolean;
-  /** Custom stylesheet path */
-  stylesheet?: string;
-}
-
-export interface PdfOptions {
-  /** PDF theme file */
-  theme?: string;
-  /** Custom fonts directory */
-  fontsDir?: string;
-  /** Paper size */
-  paperSize: 'A4' | 'Letter';
-  /** Enable compression */
-  compress: boolean;
-}
-
-export interface EpubOptions {
-  /** EPUB version: 2 or 3 */
-  version: 2 | 3;
-  /** Cover image path */
-  coverImage?: string;
-  /** Custom CSS */
-  stylesheet?: string;
-}
-
-export interface DocbookOptions {
-  /** DocBook version */
-  version: '5' | '4.5';
-}
+// -----------------------------------------------------------------------------
+// Config Loading
+// -----------------------------------------------------------------------------
 
 /**
- * Default configuration for the CWS Manual
+ * Default config file location (relative to company-docs/)
  */
-export const defaultConfig: BuildConfig = {
-  sourceDir: resolve(__dirname, '../../'),
-  outputDir: resolve(__dirname, '../../output'),
-  masterDocument: 'book.adoc',
-  outputName: 'CWS-Company-Identity-Manual',
-
-  attributes: {
-    // Company branding
-    'company-name': 'Creative Workz Studio LLC',
-    'company-short': 'CWS',
-    'tagline': 'Where Creative Vision Meets Kingdom Purpose',
-
-    // Document metadata
-    'doctype': 'book',
-    'icons': 'font',
-    'icon-set': 'fa',
-    'source-highlighter': 'rouge',
-    'toc': 'auto',
-    'toclevels': '3',
-    'sectnums': '',
-    'sectnumlevels': '3',
-    'chapter-label': 'Chapter',
-    'appendix-caption': 'Appendix',
-
-    // Styling
-    'experimental': '',
-    'reproducible': '',
-    'pdf-page-size': 'A4',
-  },
-
-  formatOptions: {
-    html: {
-      standalone: true,
-      toc: true,
-      tocPosition: 'left',
-      embedImages: true,
-    },
-    pdf: {
-      paperSize: 'A4',
-      compress: true,
-    },
-    epub: {
-      version: 3,
-    },
-    docbook: {
-      version: '5',
-    },
-  },
-};
+const CONFIG_FILENAME = 'build.config.yaml';
 
 /**
- * Load and merge custom configuration
+ * Find the config file by walking up from the builder directory
  */
-export function loadConfig(customConfig?: Partial<BuildConfig>): BuildConfig {
-  if (!customConfig) {
-    return defaultConfig;
+function findConfigFile(): string {
+  // Start from builder/src, go up to company-docs
+  const companyDocsDir = resolve(__dirname, '../..');
+  const configPath = resolve(companyDocsDir, CONFIG_FILENAME);
+
+  if (!existsSync(configPath)) {
+    throw new Error(
+      `Configuration file not found: ${configPath}\n` +
+      `The build system requires a ${CONFIG_FILENAME} file in the company-docs directory.`
+    );
   }
 
+  return configPath;
+}
+
+/**
+ * Load and parse the YAML configuration file
+ */
+export function loadConfig(configPath?: string): BuildConfig {
+  const resolvedPath = configPath || findConfigFile();
+
+  const yamlContent = readFileSync(resolvedPath, 'utf-8');
+  const config = parseYaml(yamlContent) as BuildConfig;
+
+  // Validate required sections exist
+  validateConfig(config);
+
+  return config;
+}
+
+/**
+ * Validate that required config sections are present
+ */
+function validateConfig(config: BuildConfig): void {
+  const required = ['document', 'attributes', 'formats', 'watch', 'display'];
+
+  for (const section of required) {
+    if (!(section in config)) {
+      throw new Error(`Missing required config section: ${section}`);
+    }
+  }
+
+  // Validate document section
+  if (!config.document.master) {
+    throw new Error('Config missing: document.master');
+  }
+  if (!config.document.output_name) {
+    throw new Error('Config missing: document.output_name');
+  }
+  if (!config.document.output_dir) {
+    throw new Error('Config missing: document.output_dir');
+  }
+
+  // Validate at least one format exists
+  if (Object.keys(config.formats).length === 0) {
+    throw new Error('Config must define at least one format');
+  }
+}
+
+/**
+ * Compute runtime paths from configuration
+ */
+export function computePaths(config: BuildConfig, configPath?: string): RuntimePaths {
+  const configFile = configPath || findConfigFile();
+  const sourceDir = dirname(configFile);
+
   return {
-    ...defaultConfig,
-    ...customConfig,
-    attributes: {
-      ...defaultConfig.attributes,
-      ...customConfig.attributes,
-    },
-    formatOptions: {
-      html: { ...defaultConfig.formatOptions.html, ...customConfig.formatOptions?.html },
-      pdf: { ...defaultConfig.formatOptions.pdf, ...customConfig.formatOptions?.pdf },
-      epub: { ...defaultConfig.formatOptions.epub, ...customConfig.formatOptions?.epub },
-      docbook: { ...defaultConfig.formatOptions.docbook, ...customConfig.formatOptions?.docbook },
-    },
+    configFile,
+    sourceDir,
+    outputDir: resolve(sourceDir, config.document.output_dir),
+    masterDocument: resolve(sourceDir, config.document.master),
   };
+}
+
+/**
+ * Get enabled formats from config
+ */
+export function getEnabledFormats(config: BuildConfig): string[] {
+  return Object.entries(config.formats)
+    .filter(([_, format]) => format.enabled)
+    .map(([name, _]) => name);
+}
+
+/**
+ * Get all format names from config
+ */
+export function getAllFormats(config: BuildConfig): string[] {
+  return Object.keys(config.formats);
+}
+
+/**
+ * Get a specific format's configuration
+ */
+export function getFormatConfig(config: BuildConfig, format: string): FormatConfig | undefined {
+  return config.formats[format];
+}
+
+/**
+ * Get display icon from config
+ */
+export function getIcon(config: BuildConfig, key: string): string {
+  return config.display.icons[key] || '';
 }

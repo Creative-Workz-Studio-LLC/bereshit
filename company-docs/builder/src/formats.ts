@@ -1,26 +1,41 @@
 /**
- * CWS Manual Builder - Format Handlers
+ * CWS Manual Builder - Format Executor
  *
- * Handles conversion to different output formats using Asciidoctor.
- * Each format has specific command-line arguments and requirements.
+ * This module EXECUTES format builds based on configuration.
+ * It contains NO hardcoded format definitions - all behavior comes from config.
+ *
+ * The config defines:
+ *   - What command to run
+ *   - What arguments to pass
+ *   - What the output extension is
+ *
+ * This code just runs what config tells it to run.
  */
 
 import { spawn } from 'child_process';
 import { existsSync } from 'fs';
 import { mkdir } from 'fs/promises';
-import { join, dirname } from 'path';
-import type { BuildConfig, OutputFormat } from './config.js';
+import { join } from 'path';
+import type { BuildConfig, FormatConfig, RuntimePaths } from './config.js';
+
+// -----------------------------------------------------------------------------
+// Types
+// -----------------------------------------------------------------------------
 
 /**
  * Build result for a single format
  */
 export interface BuildResult {
-  format: OutputFormat;
+  format: string;
   success: boolean;
   outputPath: string;
   duration: number;
   error?: string;
 }
+
+// -----------------------------------------------------------------------------
+// Command Execution (Pure utility - no business logic)
+// -----------------------------------------------------------------------------
 
 /**
  * Execute a shell command and return a promise
@@ -53,13 +68,19 @@ function executeCommand(
   });
 }
 
+// -----------------------------------------------------------------------------
+// Argument Building (Config-driven)
+// -----------------------------------------------------------------------------
+
 /**
- * Build attribute arguments for Asciidoctor
+ * Build attribute arguments from config
+ * Transforms config.attributes into -a key=value arguments
  */
 function buildAttributeArgs(attributes: Record<string, string>): string[] {
   const args: string[] = [];
   for (const [key, value] of Object.entries(attributes)) {
     if (value === '') {
+      // Boolean attribute (just the key)
       args.push('-a', key);
     } else {
       args.push('-a', `${key}=${value}`);
@@ -69,177 +90,135 @@ function buildAttributeArgs(attributes: Record<string, string>): string[] {
 }
 
 /**
- * Format handler interface
+ * Build command arguments from format config
+ * All logic is driven by config values
  */
-interface FormatHandler {
-  command: string;
-  checkCommand: string;
-  buildArgs: (config: BuildConfig, outputPath: string) => string[];
-  extension: string;
-  installHint: string;
+function buildCommandArgs(
+  formatConfig: FormatConfig,
+  attributes: Record<string, string>,
+  outputPath: string,
+  masterDocument: string
+): string[] {
+  const args: string[] = [];
+
+  // Backend (if specified in config)
+  if (formatConfig.backend) {
+    args.push('-b', formatConfig.backend);
+  }
+
+  // Document type is always book for this manual
+  args.push('-d', 'book');
+
+  // Output path
+  args.push('-o', outputPath);
+
+  // Attributes from config
+  args.push(...buildAttributeArgs(attributes));
+
+  // Additional args from format config
+  if (formatConfig.args && formatConfig.args.length > 0) {
+    args.push(...formatConfig.args);
+  }
+
+  // Source document (always last)
+  args.push(masterDocument);
+
+  return args;
 }
 
-/**
- * Format handlers for each output type
- */
-const formatHandlers: Record<OutputFormat, FormatHandler> = {
-  html: {
-    command: 'asciidoctor',
-    checkCommand: 'asciidoctor --version',
-    extension: '.html',
-    installHint: 'gem install asciidoctor',
-    buildArgs: (config, outputPath) => {
-      const args = [
-        '-b', 'html5',
-        '-d', 'book',
-        '-o', outputPath,
-        ...buildAttributeArgs(config.attributes),
-      ];
-
-      const opts = config.formatOptions.html;
-      if (opts.standalone) args.push('-s');
-      if (opts.toc) {
-        args.push('-a', 'toc=left');
-        args.push('-a', `toc-position=${opts.tocPosition}`);
-      }
-      if (opts.embedImages) {
-        args.push('-a', 'data-uri');
-      }
-      if (opts.stylesheet) {
-        args.push('-a', `stylesheet=${opts.stylesheet}`);
-      }
-
-      args.push(join(config.sourceDir, config.masterDocument));
-      return args;
-    },
-  },
-
-  pdf: {
-    command: 'asciidoctor-pdf',
-    checkCommand: 'asciidoctor-pdf --version',
-    extension: '.pdf',
-    installHint: 'gem install asciidoctor-pdf',
-    buildArgs: (config, outputPath) => {
-      const args = [
-        '-d', 'book',
-        '-o', outputPath,
-        ...buildAttributeArgs(config.attributes),
-      ];
-
-      const opts = config.formatOptions.pdf;
-      if (opts.theme) {
-        args.push('-a', `pdf-theme=${opts.theme}`);
-      }
-      if (opts.fontsDir) {
-        args.push('-a', `pdf-fontsdir=${opts.fontsDir}`);
-      }
-      args.push('-a', `pdf-page-size=${opts.paperSize}`);
-
-      args.push(join(config.sourceDir, config.masterDocument));
-      return args;
-    },
-  },
-
-  epub: {
-    command: 'asciidoctor-epub3',
-    checkCommand: 'asciidoctor-epub3 --version',
-    extension: '.epub',
-    installHint: 'gem install asciidoctor-epub3',
-    buildArgs: (config, outputPath) => {
-      const args = [
-        '-d', 'book',
-        '-o', outputPath,
-        ...buildAttributeArgs(config.attributes),
-      ];
-
-      const opts = config.formatOptions.epub;
-      if (opts.coverImage) {
-        args.push('-a', `front-cover-image=${opts.coverImage}`);
-      }
-      if (opts.stylesheet) {
-        args.push('-a', `epub3-stylesdir=${dirname(opts.stylesheet)}`);
-      }
-
-      args.push(join(config.sourceDir, config.masterDocument));
-      return args;
-    },
-  },
-
-  docbook: {
-    command: 'asciidoctor',
-    checkCommand: 'asciidoctor --version',
-    extension: '.xml',
-    installHint: 'gem install asciidoctor',
-    buildArgs: (config, outputPath) => {
-      const args = [
-        '-b', 'docbook5',
-        '-d', 'book',
-        '-o', outputPath,
-        ...buildAttributeArgs(config.attributes),
-      ];
-
-      args.push(join(config.sourceDir, config.masterDocument));
-      return args;
-    },
-  },
-};
+// -----------------------------------------------------------------------------
+// Tool Checking (Config-driven)
+// -----------------------------------------------------------------------------
 
 /**
  * Check if a format's required tool is installed
+ * Uses the command from config
  */
-export async function checkToolInstalled(format: OutputFormat): Promise<boolean> {
-  const handler = formatHandlers[format];
-  const result = await executeCommand(handler.checkCommand, [], process.cwd());
+export async function checkToolInstalled(
+  formatConfig: FormatConfig
+): Promise<boolean> {
+  const checkCommand = `${formatConfig.command} --version`;
+  const result = await executeCommand(checkCommand, [], process.cwd());
   return result.code === 0;
 }
 
 /**
- * Get installation hint for a format
+ * Get installation hint from config
  */
-export function getInstallHint(format: OutputFormat): string {
-  return formatHandlers[format].installHint;
+export function getInstallHint(formatConfig: FormatConfig): string {
+  return formatConfig.install;
 }
+
+// -----------------------------------------------------------------------------
+// Build Execution (Config-driven)
+// -----------------------------------------------------------------------------
 
 /**
  * Build a single format
+ * All behavior is driven by config - this function just executes
  */
 export async function buildFormat(
-  format: OutputFormat,
-  config: BuildConfig
+  formatName: string,
+  config: BuildConfig,
+  paths: RuntimePaths
 ): Promise<BuildResult> {
   const startTime = Date.now();
-  const handler = formatHandlers[format];
-  const outputPath = join(
-    config.outputDir,
-    `${config.outputName}${handler.extension}`
-  );
 
-  // Ensure output directory exists
-  if (!existsSync(config.outputDir)) {
-    await mkdir(config.outputDir, { recursive: true });
-  }
-
-  // Check if tool is installed
-  const isInstalled = await checkToolInstalled(format);
-  if (!isInstalled) {
+  // Get format config
+  const formatConfig = config.formats[formatName];
+  if (!formatConfig) {
     return {
-      format,
+      format: formatName,
       success: false,
-      outputPath,
+      outputPath: '',
       duration: Date.now() - startTime,
-      error: `${handler.command} not found. Install with: ${handler.installHint}`,
+      error: `Unknown format: ${formatName}. Check build.config.yaml`,
     };
   }
 
-  // Build the document
-  const args = handler.buildArgs(config, outputPath);
-  const result = await executeCommand(handler.command, args, config.sourceDir);
+  // Compute output path from config
+  const outputPath = join(
+    paths.outputDir,
+    `${config.document.output_name}${formatConfig.extension}`
+  );
+
+  // Ensure output directory exists
+  if (!existsSync(paths.outputDir)) {
+    await mkdir(paths.outputDir, { recursive: true });
+  }
+
+  // Check if tool is installed
+  const isInstalled = await checkToolInstalled(formatConfig);
+  if (!isInstalled) {
+    return {
+      format: formatName,
+      success: false,
+      outputPath,
+      duration: Date.now() - startTime,
+      error: `${formatConfig.command} not found. Install with: ${formatConfig.install}`,
+    };
+  }
+
+  // Build command arguments from config
+  const args = buildCommandArgs(
+    formatConfig,
+    config.attributes,
+    outputPath,
+    paths.masterDocument
+  );
+
+  // Execute the command
+  const result = await executeCommand(
+    formatConfig.command,
+    args,
+    paths.sourceDir
+  );
 
   const duration = Date.now() - startTime;
 
   if (result.code !== 0) {
     return {
-      format,
+      format: formatName,
       success: false,
       outputPath,
       duration,
@@ -250,7 +229,7 @@ export async function buildFormat(
   // Verify output was created
   if (!existsSync(outputPath)) {
     return {
-      format,
+      format: formatName,
       success: false,
       outputPath,
       duration,
@@ -259,7 +238,7 @@ export async function buildFormat(
   }
 
   return {
-    format,
+    format: formatName,
     success: true,
     outputPath,
     duration,
@@ -270,16 +249,10 @@ export async function buildFormat(
  * Build multiple formats in parallel
  */
 export async function buildFormats(
-  formats: OutputFormat[],
-  config: BuildConfig
+  formatNames: string[],
+  config: BuildConfig,
+  paths: RuntimePaths
 ): Promise<BuildResult[]> {
-  const promises = formats.map((format) => buildFormat(format, config));
+  const promises = formatNames.map((format) => buildFormat(format, config, paths));
   return Promise.all(promises);
-}
-
-/**
- * Get all supported formats
- */
-export function getSupportedFormats(): OutputFormat[] {
-  return Object.keys(formatHandlers) as OutputFormat[];
 }

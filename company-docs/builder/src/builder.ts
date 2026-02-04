@@ -1,23 +1,28 @@
 /**
  * CWS Manual Builder - Build Orchestrator
  *
- * Main build orchestration for the Company Identity Manual.
- * Coordinates format handlers, watches for changes, and manages output.
+ * Coordinates format builds based on configuration.
+ * Watch patterns, debounce timing, and format selection all come from config.
  */
 
 import { watch } from 'chokidar';
 import { rm, readdir, stat } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import type { BuildConfig, OutputFormat } from './config.js';
-import { buildFormats, buildFormat, getSupportedFormats, type BuildResult } from './formats.js';
+import type { BuildConfig, RuntimePaths } from './config.js';
+import { getEnabledFormats } from './config.js';
+import { buildFormats, buildFormat, type BuildResult } from './formats.js';
+
+// -----------------------------------------------------------------------------
+// Types
+// -----------------------------------------------------------------------------
 
 /**
  * Build event types
  */
 export type BuildEvent =
-  | { type: 'start'; formats: OutputFormat[] }
-  | { type: 'format-start'; format: OutputFormat }
+  | { type: 'start'; formats: string[] }
+  | { type: 'format-start'; format: string }
   | { type: 'format-complete'; result: BuildResult }
   | { type: 'complete'; results: BuildResult[] }
   | { type: 'error'; error: string }
@@ -29,16 +34,27 @@ export type BuildEvent =
  */
 export type BuildEventCallback = (event: BuildEvent) => void;
 
+// -----------------------------------------------------------------------------
+// Builder Class
+// -----------------------------------------------------------------------------
+
 /**
  * Builder class for manual compilation
+ * All behavior is driven by config
  */
 export class ManualBuilder {
   private config: BuildConfig;
+  private paths: RuntimePaths;
   private watcher: ReturnType<typeof watch> | null = null;
   private onEvent: BuildEventCallback;
 
-  constructor(config: BuildConfig, onEvent?: BuildEventCallback) {
+  constructor(
+    config: BuildConfig,
+    paths: RuntimePaths,
+    onEvent?: BuildEventCallback
+  ) {
     this.config = config;
+    this.paths = paths;
     this.onEvent = onEvent || (() => {});
   }
 
@@ -50,10 +66,11 @@ export class ManualBuilder {
   }
 
   /**
-   * Build specified formats
+   * Build specified formats (sequential)
+   * If no formats specified, uses enabled formats from config
    */
-  async build(formats?: OutputFormat[]): Promise<BuildResult[]> {
-    const targetFormats = formats || getSupportedFormats();
+  async build(formats?: string[]): Promise<BuildResult[]> {
+    const targetFormats = formats || getEnabledFormats(this.config);
     this.emit({ type: 'start', formats: targetFormats });
 
     const results: BuildResult[] = [];
@@ -61,7 +78,7 @@ export class ManualBuilder {
     // Build sequentially to avoid resource conflicts
     for (const format of targetFormats) {
       this.emit({ type: 'format-start', format });
-      const result = await buildFormat(format, this.config);
+      const result = await buildFormat(format, this.config, this.paths);
       results.push(result);
       this.emit({ type: 'format-complete', result });
     }
@@ -73,11 +90,11 @@ export class ManualBuilder {
   /**
    * Build all formats in parallel (faster but uses more resources)
    */
-  async buildParallel(formats?: OutputFormat[]): Promise<BuildResult[]> {
-    const targetFormats = formats || getSupportedFormats();
+  async buildParallel(formats?: string[]): Promise<BuildResult[]> {
+    const targetFormats = formats || getEnabledFormats(this.config);
     this.emit({ type: 'start', formats: targetFormats });
 
-    const results = await buildFormats(targetFormats, this.config);
+    const results = await buildFormats(targetFormats, this.config, this.paths);
 
     for (const result of results) {
       this.emit({ type: 'format-complete', result });
@@ -89,22 +106,28 @@ export class ManualBuilder {
 
   /**
    * Start watching for file changes
+   * Watch patterns come from config
    */
-  startWatch(formats?: OutputFormat[]): void {
+  startWatch(formats?: string[]): void {
     if (this.watcher) {
       return;
     }
 
-    const targetFormats = formats || ['html'];
-    const watchPatterns = [
-      join(this.config.sourceDir, '**/*.adoc'),
-      join(this.config.sourceDir, '**/*.asciidoc'),
-    ];
+    // Use formats from config.watch.formats if not specified
+    const targetFormats = formats || this.config.watch.formats;
+
+    // Build watch patterns from config
+    const watchPatterns = this.config.watch.patterns.map(pattern =>
+      join(this.paths.sourceDir, pattern)
+    );
+
+    // Build ignore patterns from config
+    const ignorePatterns = this.config.watch.ignore;
 
     this.emit({ type: 'watch-start' });
 
     this.watcher = watch(watchPatterns, {
-      ignored: /(^|[\/\\])\../,
+      ignored: ignorePatterns,
       persistent: true,
       ignoreInitial: true,
     });
@@ -114,13 +137,13 @@ export class ManualBuilder {
     const handleChange = (path: string) => {
       this.emit({ type: 'file-change', path });
 
-      // Debounce builds
+      // Debounce delay from config
       if (debounceTimer) {
         clearTimeout(debounceTimer);
       }
       debounceTimer = setTimeout(() => {
         this.build(targetFormats);
-      }, 500);
+      }, this.config.watch.debounce_ms);
     };
 
     this.watcher.on('change', handleChange);
@@ -142,10 +165,10 @@ export class ManualBuilder {
    * Clean output directory
    */
   async clean(): Promise<void> {
-    if (existsSync(this.config.outputDir)) {
-      const entries = await readdir(this.config.outputDir);
+    if (existsSync(this.paths.outputDir)) {
+      const entries = await readdir(this.paths.outputDir);
       for (const entry of entries) {
-        const entryPath = join(this.config.outputDir, entry);
+        const entryPath = join(this.paths.outputDir, entry);
         await rm(entryPath, { recursive: true, force: true });
       }
     }
@@ -155,15 +178,15 @@ export class ManualBuilder {
    * Get output file info
    */
   async getOutputInfo(): Promise<Array<{ path: string; size: number; modified: Date }>> {
-    if (!existsSync(this.config.outputDir)) {
+    if (!existsSync(this.paths.outputDir)) {
       return [];
     }
 
-    const entries = await readdir(this.config.outputDir);
+    const entries = await readdir(this.paths.outputDir);
     const info: Array<{ path: string; size: number; modified: Date }> = [];
 
     for (const entry of entries) {
-      const entryPath = join(this.config.outputDir, entry);
+      const entryPath = join(this.paths.outputDir, entry);
       const stats = await stat(entryPath);
       if (stats.isFile()) {
         info.push({
@@ -178,15 +201,24 @@ export class ManualBuilder {
   }
 }
 
+// -----------------------------------------------------------------------------
+// Factory Function
+// -----------------------------------------------------------------------------
+
 /**
- * Create a builder instance with default config
+ * Create a builder instance
  */
 export function createBuilder(
   config: BuildConfig,
+  paths: RuntimePaths,
   onEvent?: BuildEventCallback
 ): ManualBuilder {
-  return new ManualBuilder(config, onEvent);
+  return new ManualBuilder(config, paths, onEvent);
 }
+
+// -----------------------------------------------------------------------------
+// Display Utilities
+// -----------------------------------------------------------------------------
 
 /**
  * Format file size for display

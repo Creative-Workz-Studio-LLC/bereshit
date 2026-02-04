@@ -1,36 +1,38 @@
 /**
  * CWS Manual Builder
  *
- * Build system for the Creative Workz Studio Company Identity Manual.
- * Compiles AsciiDoc source to HTML, PDF, EPUB, and DocBook formats.
+ * Config-driven build system for the Creative Workz Studio Company Identity Manual.
+ * All behavior is defined in build.config.yaml - this code just executes.
  *
  * @packageDocumentation
  */
 
-// Configuration
+// Configuration (loaded from build.config.yaml)
 export {
   type BuildConfig,
-  type OutputFormat,
-  type FormatOptions,
-  type HtmlOptions,
-  type PdfOptions,
-  type EpubOptions,
-  type DocbookOptions,
-  defaultConfig,
+  type FormatConfig,
+  type WatchConfig,
+  type DisplayConfig,
+  type DocumentConfig,
+  type RuntimePaths,
   loadConfig,
+  computePaths,
+  getEnabledFormats,
+  getAllFormats,
+  getFormatConfig,
+  getIcon,
 } from './config.js';
 
-// Format handlers
+// Format execution
 export {
   type BuildResult,
   buildFormat,
   buildFormats,
   checkToolInstalled,
   getInstallHint,
-  getSupportedFormats,
 } from './formats.js';
 
-// Builder
+// Builder orchestration
 export {
   ManualBuilder,
   createBuilder,
