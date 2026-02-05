@@ -5,10 +5,17 @@
 # Biblical: Ecclesiastes 3:3 - "A time to break down, and a time to build up"
 #
 # Location: Bereshit/word/claude/ - THE canonical source
-# Deploy to: ~/.claude/ via symlinks
 #
-# Structure (2026-02-02):
-#   bin/              - Compiled binaries (statusline)
+# Architecture (2026-02-04):
+#   Source (exFAT):     Bereshit/word/claude/     - All source code, configs
+#   Config (symlinks):  ~/.claude/                - Symlinks to source
+#   Binaries (ext4):    ~/.local/share/claude/    - Compiled executables
+#
+#   Why separate? exFAT doesn't support execute permissions. Binaries must
+#   live on ext4 to be executable. Source/config can stay on exFAT via symlinks.
+#
+# Structure:
+#   bin/              - Build output (intermediate, on exFAT)
 #   config/           - Human-readable configuration
 #   docs/             - Documentation
 #   hooks/            - Session and tool lifecycle hooks
@@ -20,17 +27,21 @@
 # Usage:
 #   make              - Build all modules
 #   make build        - Build all modules
-#   make bin          - Build binaries to bin/
-#   make install      - Install symlinks to ~/.claude/
-#   make fresh        - Clean stale dirs and reinstall
-#   make verify       - Verify all paths and symlinks
-#   make uninstall    - Remove symlinks from ~/.claude/
+#   make bin          - Build binaries to bin/ (local)
+#   make install-bin  - Install binaries to ~/.local/share/claude/ (ext4)
+#   make install      - Install symlinks to ~/.claude/ + binaries to ext4
+#   make fresh        - Clean and reinstall everything
+#   make verify       - Verify all paths, symlinks, and binaries
+#   make uninstall    - Remove symlinks and installed binaries
 #   make test         - Run all tests
 #   make clean        - Clean build artifacts
 #
 # ============================================================================
 
-.PHONY: all build bin test clean pkg hooks statusline system skills help install uninstall fresh verify clean-stale tidy fmt vet db db-init db-migrate
+.PHONY: all build bin test clean pkg hooks statusline system skills help \
+        install install-bin install-bin-only install-symlinks \
+        uninstall uninstall-bin uninstall-symlinks \
+        fresh verify clean-stale tidy fmt vet db db-init db-migrate setup
 
 # Default target
 all: build
@@ -41,44 +52,57 @@ all: build
 
 GO := go
 SHELL := /bin/bash
+GOFLAGS := -ldflags="-s -w"
 
-# This directory (canonical source)
+# This directory (canonical source on exFAT)
 SRC_DIR := $(shell pwd)
 
-# Deployment target
+# Symlink deployment target (config/source references)
 DEPLOY_DIR := $(HOME)/.claude
+
+# Binary install target (ext4 filesystem for execute permissions)
+# exFAT doesn't support Unix permissions, so executables must live on ext4
+INSTALL_DIR := $(HOME)/.local/share/claude
 
 # Skills
 SKILLS_DIR := skills
 SKILL_DIRS := $(wildcard $(SKILLS_DIR)/*/scripts)
 SKILL_NAMES := $(notdir $(patsubst %/scripts,%,$(SKILL_DIRS)))
 
-# Directories to symlink
-SYMLINK_DIRS := agents bin commands config data divisions docs hooks output-styles pkg plans rules skills statusline system workflow
+# Directories to symlink (source/config only - NOT bin)
+# Note: bin removed - binaries go to INSTALL_DIR, not symlinked
+SYMLINK_DIRS := agents commands config data divisions docs hooks output-styles pkg plans rules skills statusline system workflow
 
 # Files to symlink
 SYMLINK_FILES := CLAUDE.md SYSTEM-REFERENCE.md config.toml instance.jsonc Makefile go.work settings.json
 
 # Known stale directories from old setups (safe to remove)
-STALE_DIRS := cpi-si
+STALE_DIRS := cpi-si bin
 
 # ============================================================================
 # BODY - Build Targets
 # ============================================================================
 
-# Build everything
+# Build everything (compile only - use install-bin to deploy to ext4)
 build: pkg hooks statusline system skills bin
 	@echo "=== All modules built successfully ==="
+	@echo "    Run 'make install-bin' to deploy binaries to $(INSTALL_DIR)"
 
-# Build binaries to bin/
-bin: bin-statusline bin-system-cmds
+# Build binaries to local bin/ (intermediate step)
+bin: bin-statusline bin-hooks bin-system-cmds
 	@echo "=== Binaries built to bin/ ==="
 
 bin-statusline:
 	@echo "=== Building statusline ==="
 	@mkdir -p bin
-	@cd statusline && $(GO) build -o ../bin/statusline ./cmd/statusline
-	@echo "Built: bin/statusline"
+	@cd statusline && $(GO) build $(GOFLAGS) -o ../bin/statusline ./cmd/statusline
+	@echo "  Built: bin/statusline"
+
+# Build hook binaries
+bin-hooks:
+	@echo "=== Building hooks ==="
+	@cd hooks && $(MAKE) build
+	@echo "  Built: hooks/bin/*"
 
 # Build system runtime command binaries
 bin-system-cmds:
@@ -87,20 +111,20 @@ bin-system-cmds:
 	@for cmd in system/runtime/cmd/*/; do \
 		name=$$(basename $$cmd); \
 		if [ -f "$$cmd$$name.go" ] || [ -f "$$cmd/main.go" ]; then \
-			(cd $$cmd && $(GO) build -o $(SRC_DIR)/system/runtime/bin/$$name . 2>/dev/null) && \
+			(cd $$cmd && $(GO) build $(GOFLAGS) -o $(SRC_DIR)/system/runtime/bin/$$name . 2>/dev/null) && \
 			echo "  Built: system/runtime/bin/$$name"; \
 		fi; \
 	done 2>/dev/null || true
-	@echo "System commands built to system/runtime/bin/"
+	@echo "  System commands built to system/runtime/bin/"
 
 # Build shared pkg module
 pkg:
 	@echo "=== Building pkg ==="
 	@cd pkg && $(GO) build ./...
 
-# Build hooks module
+# Build hooks module (compile check only - bin-hooks builds binaries)
 hooks:
-	@echo "=== Building hooks ==="
+	@echo "=== Building hooks module ==="
 	@cd hooks && $(GO) build ./...
 
 # Build statusline module
@@ -133,9 +157,97 @@ skill-%:
 # BODY - Install/Uninstall Targets
 # ============================================================================
 
-# Install symlinks to ~/.claude/
-install: build
-	@echo "=== Installing to $(DEPLOY_DIR) ==="
+# Full install: symlinks + binaries (with step-by-step progress)
+install:
+	@echo ""
+	@echo "╔══════════════════════════════════════════════════════════════════╗"
+	@echo "║              CPI-SI / Claude Code Installation                   ║"
+	@echo "╚══════════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "Source:   $(SRC_DIR)"
+	@echo "Symlinks: $(DEPLOY_DIR)"
+	@echo "Binaries: $(INSTALL_DIR)"
+	@echo ""
+	@echo "════════════════════════════════════════════════════════════════════"
+	@echo "[Step 1/5] Building shared packages..."
+	@echo "════════════════════════════════════════════════════════════════════"
+	@$(MAKE) pkg --no-print-directory
+	@echo "  ✓ Packages built"
+	@echo ""
+	@echo "════════════════════════════════════════════════════════════════════"
+	@echo "[Step 2/5] Building binaries..."
+	@echo "════════════════════════════════════════════════════════════════════"
+	@$(MAKE) bin --no-print-directory
+	@echo "  ✓ Binaries built"
+	@echo ""
+	@echo "════════════════════════════════════════════════════════════════════"
+	@echo "[Step 3/5] Creating config symlinks in ~/.claude/..."
+	@echo "════════════════════════════════════════════════════════════════════"
+	@$(MAKE) install-symlinks --no-print-directory
+	@echo ""
+	@echo "════════════════════════════════════════════════════════════════════"
+	@echo "[Step 4/5] Installing binaries to ext4..."
+	@echo "════════════════════════════════════════════════════════════════════"
+	@$(MAKE) install-bin-only --no-print-directory
+	@echo ""
+	@echo "════════════════════════════════════════════════════════════════════"
+	@echo "[Step 5/5] Verifying installation..."
+	@echo "════════════════════════════════════════════════════════════════════"
+	@$(MAKE) verify --no-print-directory
+	@echo ""
+	@echo "╔══════════════════════════════════════════════════════════════════╗"
+	@echo "║              ✓ Installation Complete!                            ║"
+	@echo "╚══════════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "Next: Update settings.json to reference $(INSTALL_DIR)"
+	@echo ""
+
+# Install binaries to ext4 (build first, then copy)
+install-bin: bin install-bin-only
+
+# Install binaries to ext4 (copy only, no rebuild)
+install-bin-only:
+	@mkdir -p $(INSTALL_DIR)/bin
+	@mkdir -p $(INSTALL_DIR)/hooks/bin
+	@mkdir -p $(INSTALL_DIR)/system/bin
+	@echo ""
+	@echo "--- Main binaries ---"
+	@if [ -f "bin/statusline" ]; then \
+		cp bin/statusline $(INSTALL_DIR)/bin/; \
+		chmod +x $(INSTALL_DIR)/bin/statusline; \
+		echo "  ✓ statusline → $(INSTALL_DIR)/bin/statusline"; \
+	fi
+	@if [ -f "bin/cpisi" ]; then \
+		cp bin/cpisi $(INSTALL_DIR)/bin/; \
+		chmod +x $(INSTALL_DIR)/bin/cpisi; \
+		echo "  ✓ cpisi → $(INSTALL_DIR)/bin/cpisi"; \
+	fi
+	@echo ""
+	@echo "--- Hook binaries ---"
+	@for hook in hooks/bin/*; do \
+		if [ -f "$$hook" ]; then \
+			name=$$(basename $$hook); \
+			cp "$$hook" $(INSTALL_DIR)/hooks/bin/; \
+			chmod +x "$(INSTALL_DIR)/hooks/bin/$$name"; \
+			echo "  ✓ $$name → $(INSTALL_DIR)/hooks/bin/$$name"; \
+		fi; \
+	done
+	@echo ""
+	@echo "--- System binaries ---"
+	@for cmd in system/runtime/bin/*; do \
+		if [ -f "$$cmd" ]; then \
+			name=$$(basename $$cmd); \
+			cp "$$cmd" $(INSTALL_DIR)/system/bin/; \
+			chmod +x "$(INSTALL_DIR)/system/bin/$$name"; \
+			echo "  ✓ $$name → $(INSTALL_DIR)/system/bin/$$name"; \
+		fi; \
+	done 2>/dev/null || true
+	@echo ""
+	@echo "  ✓ Binaries installed with execute permissions"
+
+# Install symlinks only (source/config)
+install-symlinks:
+	@echo "=== Installing symlinks to $(DEPLOY_DIR) ==="
 	@echo ""
 	@mkdir -p $(DEPLOY_DIR)
 	@echo "--- Creating directory symlinks ---"
@@ -166,10 +278,7 @@ install: build
 		fi; \
 	done
 	@echo ""
-	@echo "=== Installation complete ==="
-	@echo ""
-	@echo "Source: $(SRC_DIR)"
-	@echo "Target: $(DEPLOY_DIR)"
+	@echo "=== Symlinks installed ==="
 
 # Show current symlink status
 install-status:
@@ -210,8 +319,12 @@ install-status:
 		fi; \
 	done
 
+# Full uninstall: symlinks + binaries
+uninstall: uninstall-symlinks uninstall-bin
+	@echo "=== Full uninstall complete ==="
+
 # Remove symlinks from ~/.claude/
-uninstall:
+uninstall-symlinks:
 	@echo "=== Removing symlinks from $(DEPLOY_DIR) ==="
 	@for dir in $(SYMLINK_DIRS); do \
 		if [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
@@ -225,10 +338,18 @@ uninstall:
 			echo "  ✓ Removed $$file"; \
 		fi; \
 	done
-	@echo "=== Uninstall complete ==="
+	@echo "=== Symlinks removed ==="
+
+# Remove installed binaries from ext4
+uninstall-bin:
+	@echo "=== Removing binaries from $(INSTALL_DIR) ==="
+	@rm -rf $(INSTALL_DIR)/bin/*
+	@rm -rf $(INSTALL_DIR)/hooks/bin/*
+	@rm -rf $(INSTALL_DIR)/system/bin/*
+	@echo "=== Binaries removed ==="
 
 # Fresh install: clean stale directories and reinstall
-fresh: clean-stale install
+fresh: clean clean-stale install
 	@echo "=== Fresh installation complete ==="
 
 # Clean known stale directories from old setups
@@ -239,16 +360,21 @@ clean-stale:
 			echo "  Removing stale: $$dir"; \
 			rm -rf "$(DEPLOY_DIR)/$$dir"; \
 			echo "  ✓ Removed $$dir"; \
+		elif [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
+			echo "  Removing stale symlink: $$dir"; \
+			rm -f "$(DEPLOY_DIR)/$$dir"; \
+			echo "  ✓ Removed $$dir"; \
 		fi; \
 	done
 	@echo "=== Stale cleanup complete ==="
 
-# Verify all paths and symlinks are correct
+# Verify all paths, symlinks, and binaries are correct
 verify:
 	@echo "=== Verifying Claude Installation ==="
 	@echo ""
-	@echo "Source: $(SRC_DIR)"
-	@echo "Target: $(DEPLOY_DIR)"
+	@echo "Source:   $(SRC_DIR)"
+	@echo "Symlinks: $(DEPLOY_DIR)"
+	@echo "Binaries: $(INSTALL_DIR)"
 	@echo ""
 	@errors=0; \
 	echo "--- Checking source directories exist ---"; \
@@ -305,10 +431,37 @@ verify:
 		fi; \
 	done; \
 	echo ""; \
+	echo "--- Checking installed binaries (ext4) ---"; \
+	for bin in statusline cpisi; do \
+		if [ -x "$(INSTALL_DIR)/bin/$$bin" ]; then \
+			echo "  ✓ $$bin installed and executable"; \
+		elif [ -f "$(INSTALL_DIR)/bin/$$bin" ]; then \
+			echo "  ✗ $$bin exists but NOT executable"; \
+			errors=$$((errors + 1)); \
+		else \
+			echo "  - $$bin not installed"; \
+		fi; \
+	done; \
+	echo ""; \
+	echo "--- Checking hook binaries (ext4) ---"; \
+	for hook in start end stop submit pre-use post-use; do \
+		if [ -x "$(INSTALL_DIR)/hooks/bin/$$hook" ]; then \
+			echo "  ✓ $$hook installed and executable"; \
+		elif [ -f "$(INSTALL_DIR)/hooks/bin/$$hook" ]; then \
+			echo "  ✗ $$hook exists but NOT executable"; \
+			errors=$$((errors + 1)); \
+		else \
+			echo "  - $$hook not installed"; \
+		fi; \
+	done; \
+	echo ""; \
 	echo "--- Checking for stale directories ---"; \
 	for dir in $(STALE_DIRS); do \
 		if [ -d "$(DEPLOY_DIR)/$$dir" ] && [ ! -L "$(DEPLOY_DIR)/$$dir" ]; then \
 			echo "  ⚠ $$dir is stale (run: make clean-stale)"; \
+			errors=$$((errors + 1)); \
+		elif [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
+			echo "  ⚠ $$dir symlink is stale (run: make clean-stale)"; \
 			errors=$$((errors + 1)); \
 		else \
 			echo "  ✓ $$dir not present (good)"; \
@@ -449,14 +602,19 @@ tidy:
 help:
 	@echo "Claude Production Build System (Bereshit)"
 	@echo ""
-	@echo "This is the CANONICAL source for Claude Code integration."
-	@echo "Location: $(SRC_DIR)"
+	@echo "This is the CANONICAL source for Claude Code / CPI-SI integration."
+	@echo ""
+	@echo "Architecture:"
+	@echo "  Source (exFAT):   $(SRC_DIR)"
+	@echo "  Symlinks:         $(DEPLOY_DIR)"
+	@echo "  Binaries (ext4):  $(INSTALL_DIR)"
 	@echo ""
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Build targets:"
-	@echo "  all, build    Build all modules and binaries"
-	@echo "  bin           Build binaries to bin/"
+	@echo "  all, build    Build all modules and binaries (local)"
+	@echo "  bin           Build binaries to local bin/"
+	@echo "  bin-hooks     Build hook binaries"
 	@echo "  pkg           Build shared pkg module"
 	@echo "  hooks         Build hooks module"
 	@echo "  statusline    Build statusline module"
@@ -465,12 +623,15 @@ help:
 	@echo "  skill-<name>  Build specific skill"
 	@echo ""
 	@echo "Install targets:"
-	@echo "  install       Create symlinks in ~/.claude/ pointing here"
-	@echo "  install-status Show current symlink status"
-	@echo "  uninstall     Remove symlinks from ~/.claude/"
-	@echo "  fresh         Clean stale dirs and reinstall (recommended)"
-	@echo "  verify        Check all paths and symlinks are correct"
-	@echo "  clean-stale   Remove known stale directories"
+	@echo "  install         Full install: symlinks + binaries to ext4"
+	@echo "  install-bin     Install binaries to ext4 (with exec permissions)"
+	@echo "  install-symlinks Create symlinks in ~/.claude/"
+	@echo "  install-status  Show current symlink status"
+	@echo "  uninstall       Remove symlinks and installed binaries"
+	@echo "  uninstall-bin   Remove installed binaries only"
+	@echo "  fresh           Clean and full reinstall (recommended)"
+	@echo "  verify          Check symlinks and binary permissions"
+	@echo "  clean-stale     Remove known stale directories"
 	@echo ""
 	@echo "Test targets:"
 	@echo "  test          Run all tests"
@@ -491,6 +652,88 @@ help:
 	@echo "  vet           Run go vet on all modules"
 	@echo "  tidy          Tidy all go.mod files"
 	@echo "  help          Show this help"
+	@echo ""
+	@echo "Quick start:"
+	@echo "  make fresh    # Full clean install"
+	@echo "  make verify   # Check everything is working"
+	@echo ""
+	@echo "Step-by-step install:"
+	@echo "  make setup    # Interactive setup guide"
+
+# Interactive setup guide
+setup:
+	@echo ""
+	@echo "╔══════════════════════════════════════════════════════════════════╗"
+	@echo "║           CPI-SI / Claude Code Installation Guide                ║"
+	@echo "╚══════════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "This will set up Claude Code with CPI-SI integration."
+	@echo ""
+	@echo "Architecture:"
+	@echo "  • Source code lives in Bereshit (can be on exFAT)"
+	@echo "  • Config symlinks go to ~/.claude/"
+	@echo "  • Binaries install to ~/.local/share/claude/ (must be ext4)"
+	@echo ""
+	@echo "────────────────────────────────────────────────────────────────────"
+	@echo "Step 1: Build all modules"
+	@echo "────────────────────────────────────────────────────────────────────"
+	@echo "  make build"
+	@echo ""
+	@echo "  This compiles:"
+	@echo "    • pkg/          - Shared Go packages"
+	@echo "    • hooks/        - Session and tool lifecycle hooks"
+	@echo "    • statusline/   - Status line binary"
+	@echo "    • system/       - System runtime commands"
+	@echo "    • skills/       - Skill implementations"
+	@echo ""
+	@echo "────────────────────────────────────────────────────────────────────"
+	@echo "Step 2: Create config symlinks"
+	@echo "────────────────────────────────────────────────────────────────────"
+	@echo "  make install-symlinks"
+	@echo ""
+	@echo "  Creates symlinks in ~/.claude/ pointing to:"
+	@echo "    $(SRC_DIR)"
+	@echo ""
+	@echo "  Symlinked: agents, commands, config, docs, hooks, output-styles,"
+	@echo "             pkg, plans, rules, skills, statusline, system, workflow,"
+	@echo "             CLAUDE.md, settings.json, etc."
+	@echo ""
+	@echo "────────────────────────────────────────────────────────────────────"
+	@echo "Step 3: Install binaries to ext4"
+	@echo "────────────────────────────────────────────────────────────────────"
+	@echo "  make install-bin"
+	@echo ""
+	@echo "  Copies compiled binaries to $(INSTALL_DIR)"
+	@echo "  and sets execute permissions."
+	@echo ""
+	@echo "  Why ext4? exFAT doesn't support Unix permissions."
+	@echo "  Binaries need +x to be executable."
+	@echo ""
+	@echo "────────────────────────────────────────────────────────────────────"
+	@echo "Step 4: Update settings.json"
+	@echo "────────────────────────────────────────────────────────────────────"
+	@echo "  Ensure settings.json references the ext4 binary paths:"
+	@echo ""
+	@echo "    hooks:      ~/.local/share/claude/hooks/bin/"
+	@echo "    statusLine: ~/.local/share/claude/bin/statusline"
+	@echo ""
+	@echo "────────────────────────────────────────────────────────────────────"
+	@echo "Step 5: Verify installation"
+	@echo "────────────────────────────────────────────────────────────────────"
+	@echo "  make verify"
+	@echo ""
+	@echo "  Checks:"
+	@echo "    • Source directories exist"
+	@echo "    • Symlinks point correctly"
+	@echo "    • Binaries are installed and executable"
+	@echo "    • Go workspace syncs"
+	@echo ""
+	@echo "════════════════════════════════════════════════════════════════════"
+	@echo ""
+	@echo "Or run everything at once:"
+	@echo "  make fresh"
+	@echo ""
+	@echo "════════════════════════════════════════════════════════════════════"
 
 # List available skills
 list-skills:

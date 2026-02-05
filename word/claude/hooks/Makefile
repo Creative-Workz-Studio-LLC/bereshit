@@ -1,31 +1,38 @@
 # ============================================================================
 # METADATA - Hooks Build System
 # ============================================================================
-# Purpose: Build and deploy Claude Code hooks
+# Purpose: Build Claude Code hooks (CPI-SI lifecycle integration)
 # Biblical: Nehemiah 3 - "So we built the wall... for the people had a mind to work"
 #
 # Config-Driven:
 #   hooks.jsonc is the source of truth for hook definitions.
 #   This Makefile reads from hooks.jsonc to know what to build.
 #
+# Architecture (2026-02-04):
+#   Source (exFAT):   hooks/cmd/         - Go source code
+#   Build (exFAT):    hooks/bin/         - Compiled binaries (intermediate)
+#   Install (ext4):   ~/.local/share/claude/hooks/bin/  - Executable binaries
+#
+#   exFAT doesn't support execute permissions, so binaries must be installed
+#   to ext4 via the root Makefile's install-bin target.
+#
 # Structure:
 #   hooks.jsonc    - Configuration (source of truth)
 #   cmd/           - Source packages for each hook
-#   bin/           - Compiled binaries (build output)
-#   session/       - Session lifecycle hook sources
-#   tool/          - Tool lifecycle hook sources
-#   prompt/        - Prompt lifecycle hook sources
-#   permission/    - Permission hook sources
+#   bin/           - Compiled binaries (local build output)
+#   session/       - Session lifecycle hook library
+#   tool/          - Tool lifecycle hook library
+#   prompt/        - Prompt lifecycle hook library
+#   permission/    - Permission hook library
 #
 # Deployment Chain:
-#   1. Build:  cmd/ → bin/ (compile Go sources)
-#   2. Deploy: Root Makefile rsyncs bin/ to production
-#   3. Read:   settings.json reads from ~/.claude/hooks/bin/
+#   1. Build:   make build → bin/ (compile Go sources, local)
+#   2. Install: root make install-bin → ~/.local/share/claude/hooks/bin/
+#   3. Execute: settings.json references ~/.local/share/claude/hooks/bin/
 #
 # Usage:
 #   make              - Build all hooks
 #   make build        - Same as make
-#   make deploy       - Build all hooks
 #   make clean        - Remove compiled binaries
 #   make status       - Show what's built
 #   make test         - Verify hooks work
@@ -66,13 +73,12 @@ endif
 # BODY - Build Targets
 # ============================================================================
 
-.PHONY: all build hooks clean sync deploy status test help list-hooks $(ALL_HOOKS)
+.PHONY: all build hooks clean install status test help list-hooks fmt vet $(ALL_HOOKS)
 
 # Default target
 all: build
-	@echo "✅ All hooks built successfully"
-	@echo "   Run 'make sync' to copy to hooks root"
-	@echo "   Run 'make deploy' for full build + sync"
+	@echo "✅ All hooks built to bin/"
+	@echo "   Run 'make install-bin' from root to install to ext4"
 
 # Build all hooks
 build: $(ALL_HOOKS) hooks
@@ -92,22 +98,15 @@ $(BIN):
 	@mkdir -p $(BIN)
 
 # ============================================================================
-# BODY - Deploy Target
+# BODY - Install Target
 # ============================================================================
 
-# Deploy: Build all hooks to bin/
-# Binaries stay in bin/ where settings.json expects them (~/.claude/hooks/bin/)
-# Called by root Makefile: make deploy (after rsync copies hooks/ to production)
-deploy: build
+# Install target (for root Makefile to call)
+# Actual installation to ext4 is handled by root Makefile's install-bin
+install: build
 	@echo ""
-	@echo "🚀 Hooks deployment complete!"
-	@echo "   Binaries in: bin/"
-	@make status --no-print-directory
-
-# Alias for backward compatibility (sync now just verifies bin/)
-sync:
-	@echo "📋 Hooks build to bin/ (settings.json reads from ~/.claude/hooks/bin/)"
-	@echo "   No sync needed - rsync from root Makefile handles deployment"
+	@echo "✅ Hooks built to bin/"
+	@echo "   Note: Install to ext4 via root Makefile's install-bin target"
 	@make status --no-print-directory
 
 # ============================================================================
@@ -176,8 +175,7 @@ help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Build targets:"
-	@echo "  all, build    Build all hooks to bin/"
-	@echo "  deploy        Build all hooks"
+	@echo "  all, build    Build all hooks to bin/ (local)"
 	@echo "  hooks         Build orchestrator only"
 	@echo "  <hook>        Build specific hook (e.g., make start)"
 	@echo ""
@@ -198,10 +196,10 @@ help:
 	@echo "Deployment chain:"
 	@echo "  hooks.jsonc (source of truth)"
 	@echo "       ↓"
-	@echo "  Makefile reads config → builds to bin/"
+	@echo "  make build → bin/ (local, exFAT)"
 	@echo "       ↓"
-	@echo "  rsync to bereshit/.../hooks/bin/"
+	@echo "  root: make install-bin"
 	@echo "       ↓"
-	@echo "  ~/.claude/hooks/bin/ (symlink)"
+	@echo "  ~/.local/share/claude/hooks/bin/ (ext4, executable)"
 	@echo "       ↓"
-	@echo "  settings.json reads hooks"
+	@echo "  settings.json references installed hooks"

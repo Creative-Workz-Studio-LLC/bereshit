@@ -82,13 +82,46 @@ func (r *SQLiteRepository) Migrate(ctx context.Context) error {
 		return fmt.Errorf("read schema: %w", err)
 	}
 
-	// Execute schema
+	// Execute schema (CREATE TABLE IF NOT EXISTS — no-ops for existing tables)
 	_, err = r.db.ExecContext(ctx, string(schema))
 	if err != nil {
 		return fmt.Errorf("execute schema: %w", err)
 	}
 
+	// Ensure exchanges table has all columns the code expects.
+	// Handles DBs created from older schema versions.
+	r.ensureExchangeColumns(ctx)
+
 	return nil
+}
+
+// ensureExchangeColumns adds any missing columns to the exchanges table.
+// Uses safe "check then add" pattern — SQLite lacks ADD COLUMN IF NOT EXISTS.
+// This bridges old schema DBs to the current column set.
+func (r *SQLiteRepository) ensureExchangeColumns(ctx context.Context) {
+	columns := []struct {
+		name    string
+		colType string
+	}{
+		{"initiative", "TEXT"},
+		{"prompt_length", "INTEGER"},
+		{"feedback_detected", "BOOLEAN DEFAULT FALSE"},
+		{"feedback_categories", "TEXT"},
+		{"depth_level", "TEXT"},
+		{"insight_type", "TEXT"},
+		{"k_align", "REAL"},
+		{"trajectory", "TEXT"},
+	}
+
+	for _, col := range columns {
+		checkQuery := fmt.Sprintf("SELECT %s FROM exchanges LIMIT 0", col.name)
+		_, err := r.db.ExecContext(ctx, checkQuery)
+		if err != nil {
+			// Column missing — add it
+			alterQuery := fmt.Sprintf("ALTER TABLE exchanges ADD COLUMN %s %s", col.name, col.colType)
+			r.db.ExecContext(ctx, alterQuery) //nolint:errcheck // intentionally ignore — column may exist in edge cases
+		}
+	}
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

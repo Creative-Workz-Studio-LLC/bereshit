@@ -269,21 +269,31 @@ ORDER BY session_count DESC;
 CREATE TABLE IF NOT EXISTS exchanges (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    timestamp DATETIME NOT NULL,
     sequence_num INTEGER NOT NULL,
-    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- Exchange classification
     exchange_type TEXT NOT NULL,  -- 'directive', 'collaborative', 'check_in', 'pushback', 'affirmation', 'question', 'context', 'unknown'
+    initiative TEXT,              -- who initiated the exchange
+    prompt_length INTEGER,        -- length of the prompt
 
-    -- CPI signals
+    -- Relational dynamics
+    feedback_detected BOOLEAN DEFAULT FALSE,
     feedback_polarity TEXT,       -- 'positive', 'negative', 'neutral', NULL
-    insight_detected INTEGER DEFAULT 0,
-    value_contribution REAL DEFAULT 0.5,  -- 0.0 to 1.0
+    feedback_categories TEXT,     -- comma-separated categories
 
-    -- Context
-    trajectory_section TEXT,      -- B.1, B.2, B.3, B.4
+    -- Quality assessment
+    value_contribution REAL,      -- 0.0 to 1.0
+    depth_level TEXT,             -- depth of engagement
+
+    -- Insight tracking
+    insight_detected BOOLEAN DEFAULT FALSE,
+    insight_type TEXT,            -- type of insight
+
+    -- State context at exchange
     hebrew_state TEXT,            -- State at exchange time
-    k_moral_direction INTEGER,    -- +1 toward God, -1 toward self, 0 neutral
+    k_align REAL,                 -- -1.0 to +1.0 (toward God / toward self)
+    trajectory TEXT,              -- B.1, B.2, B.3, B.4
 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 

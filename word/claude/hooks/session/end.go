@@ -424,17 +424,17 @@ func detectSessionPatterns(ctx context.Context, sessionID string, log *logging.L
 	// Pattern 4: K:MORAL direction correlation with trajectory
 	kMoralQuery := `
 		SELECT
-			trajectory_section,
-			SUM(CASE WHEN k_moral_direction = 1 THEN 1 ELSE 0 END) as toward_god,
-			SUM(CASE WHEN k_moral_direction = -1 THEN 1 ELSE 0 END) as toward_self,
+			trajectory,
+			SUM(CASE WHEN k_align > 0.0 THEN 1 ELSE 0 END) as toward_god,
+			SUM(CASE WHEN k_align < 0.0 THEN 1 ELSE 0 END) as toward_self,
 			COUNT(*) as total
 		FROM exchanges
 		WHERE session_id = ?
-		GROUP BY trajectory_section
+		GROUP BY trajectory
 	`
 	kMoralRows, _ := repo.Query(ctx, kMoralQuery, sessionID)
 	for _, row := range kMoralRows {
-		section := toString(row["trajectory_section"])
+		section := toString(row["trajectory"])
 		towardGod := toInt(row["toward_god"])
 		towardSelf := toInt(row["toward_self"])
 		total := toInt(row["total"])

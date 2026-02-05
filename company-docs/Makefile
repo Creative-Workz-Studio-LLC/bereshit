@@ -18,7 +18,8 @@
 # =============================================================================
 
 .PHONY: all html pdf epub docbook clean setup setup-node setup-asciidoctor \
-        watch info check help build-ts
+        watch info check help build-ts preview preview-html \
+        cover single
 
 # Default target
 all: build-ts
@@ -36,6 +37,41 @@ epub: build-ts
 
 docbook: build-ts
 	@cd builder && node dist/cli.js --format docbook
+
+# =============================================================================
+# PREVIEW TARGETS — Direct asciidoctor builds (no TypeScript builder needed)
+# =============================================================================
+
+# Frontmatter preview PDF
+preview:
+	@mkdir -p output
+	asciidoctor-pdf frontmatter-preview.adoc -o output/CWS-Frontmatter-Preview.pdf
+	@echo "Built: output/CWS-Frontmatter-Preview.pdf"
+
+# Frontmatter preview HTML
+preview-html:
+	@mkdir -p output
+	asciidoctor frontmatter-preview.adoc -o output/CWS-Frontmatter-Preview.html
+	@echo "Built: output/CWS-Frontmatter-Preview.html"
+
+# Single section preview — build one frontmatter file in isolation
+# Usage: make cover
+cover:
+	@mkdir -p output
+	asciidoctor-pdf frontmatter/00-COVER.adoc -o output/CWS-Cover-Only.pdf
+	@echo "Built: output/CWS-Cover-Only.pdf"
+
+# General single-file build — any .adoc file to PDF
+# Usage: make single FILE=frontmatter/00-COVER.adoc
+single:
+	@mkdir -p output
+	@test -n "$(FILE)" || (echo "Usage: make single FILE=path/to/file.adoc" && exit 1)
+	asciidoctor-pdf $(FILE) -o output/$$(basename $(FILE) .adoc).pdf
+	@echo "Built: output/$$(basename $(FILE) .adoc).pdf"
+
+# =============================================================================
+# BUILDER TARGETS — TypeScript builder for full manual
+# =============================================================================
 
 # Build TypeScript
 build-ts:
@@ -96,7 +132,14 @@ help:
 	@echo ""
 	@echo "Usage: make [target]"
 	@echo ""
-	@echo "Build Targets:"
+	@echo "Preview (Direct Build):"
+	@echo "  preview       Build frontmatter preview PDF    → output/"
+	@echo "  preview-html  Build frontmatter preview HTML   → output/"
+	@echo "  cover         Build cover section only (PDF)   → output/"
+	@echo "  single        Build any .adoc file (PDF)       → output/"
+	@echo "                  Usage: make single FILE=frontmatter/00-COVER.adoc"
+	@echo ""
+	@echo "Full Manual (TypeScript Builder):"
 	@echo "  all         Build all formats (HTML, PDF, EPUB, DocBook)"
 	@echo "  html        Build HTML format only"
 	@echo "  pdf         Build PDF format only"
