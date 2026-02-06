@@ -1,44 +1,29 @@
 /**
- * CWS Manual Builder - Format Executor
+ * CWS Manual Builder — Format Executor
  *
- * This module EXECUTES format builds based on configuration.
- * It contains NO hardcoded format definitions - all behavior comes from config.
+ * Executes format builds based on configuration.
+ * Contains NO hardcoded format definitions — all behavior comes from config.
  *
- * The config defines:
- *   - What command to run
- *   - What arguments to pass
- *   - What the output extension is
+ * The config defines what command to run, what arguments to pass,
+ * and what the output extension is. This code just runs it.
  *
- * This code just runs what config tells it to run.
+ * "Whatsoever thy hand findeth to do, do it with thy might."
+ *  — Ecclesiastes 9:10
  */
 
 import { spawn } from 'child_process';
 import { existsSync } from 'fs';
 import { mkdir } from 'fs/promises';
 import { join } from 'path';
-import type { BuildConfig, FormatConfig, RuntimePaths } from './config.js';
+import type { BuildConfig, FormatConfig, RuntimePaths } from '../config/types.js';
+import type { BuildResult } from './types.js';
 
-// -----------------------------------------------------------------------------
-// Types
-// -----------------------------------------------------------------------------
-
-/**
- * Build result for a single format
- */
-export interface BuildResult {
-  format: string;
-  success: boolean;
-  outputPath: string;
-  duration: number;
-  error?: string;
-}
-
-// -----------------------------------------------------------------------------
-// Command Execution (Pure utility - no business logic)
-// -----------------------------------------------------------------------------
+// =============================================================================
+// Command Execution (Pure utility)
+// =============================================================================
 
 /**
- * Execute a shell command and return a promise
+ * Execute a shell command and return a promise.
  */
 function executeCommand(
   command: string,
@@ -50,11 +35,11 @@ function executeCommand(
     let stdout = '';
     let stderr = '';
 
-    proc.stdout.on('data', (data) => {
+    proc.stdout.on('data', (data: Buffer) => {
       stdout += data.toString();
     });
 
-    proc.stderr.on('data', (data) => {
+    proc.stderr.on('data', (data: Buffer) => {
       stderr += data.toString();
     });
 
@@ -68,13 +53,13 @@ function executeCommand(
   });
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 // Argument Building (Config-driven)
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 /**
- * Build attribute arguments from config
- * Transforms config.attributes into -a key=value arguments
+ * Build attribute arguments from config.
+ * Transforms config.attributes into -a key=value arguments.
  */
 function buildAttributeArgs(attributes: Record<string, string>): string[] {
   const args: string[] = [];
@@ -90,8 +75,8 @@ function buildAttributeArgs(attributes: Record<string, string>): string[] {
 }
 
 /**
- * Build command arguments from format config
- * All logic is driven by config values
+ * Build command arguments from format config.
+ * All logic is driven by config values.
  */
 function buildCommandArgs(
   formatConfig: FormatConfig,
@@ -126,13 +111,12 @@ function buildCommandArgs(
   return args;
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 // Tool Checking (Config-driven)
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 /**
- * Check if a format's required tool is installed
- * Uses the command from config
+ * Check if a format's required tool is installed.
  */
 export async function checkToolInstalled(
   formatConfig: FormatConfig
@@ -143,19 +127,19 @@ export async function checkToolInstalled(
 }
 
 /**
- * Get installation hint from config
+ * Get installation hint from config.
  */
 export function getInstallHint(formatConfig: FormatConfig): string {
   return formatConfig.install;
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 // Build Execution (Config-driven)
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 /**
- * Build a single format
- * All behavior is driven by config - this function just executes
+ * Build a single format.
+ * All behavior is driven by config — this function just executes.
  */
 export async function buildFormat(
   formatName: string,
@@ -246,7 +230,7 @@ export async function buildFormat(
 }
 
 /**
- * Build multiple formats in parallel
+ * Build multiple formats in parallel.
  */
 export async function buildFormats(
   formatNames: string[],

@@ -1,72 +1,142 @@
 # =============================================================================
-# CWS Company Identity Manual - Build Configuration
+# CWS Company Identity Manual — Build Configuration
 # =============================================================================
 #
-# This file defines ALL build behavior. The TypeScript code is just an executor.
-# To change how the manual is built, edit THIS file - not the code.
+# Specification: editorial-style-guide.adoc (CWS-GDE-001)
 #
-# Biblical Foundation:
-#   "For which of you, intending to build a tower, sitteth not down first,
-#    and counteth the cost, whether he have sufficient to finish it?"
-#   — Luke 14:28
+# This file defines ALL behavior for the TypeScript builder (secondary build
+# system). The Makefile is the primary editorial build system — this config
+# drives multi-format publishing when the TS builder is invoked.
 #
-# Configuration before execution. Planning before building.
+# Architecture:
+#   Primary    Makefile + asciidoctor-pdf    Editorial review (PDF only)
+#   Secondary  TS builder + this config      Multi-format publishing
+#
+# The TS code is just an executor — to change behavior, edit THIS file.
+#
+# "For which of you, intending to build a tower, sitteth not down first,
+#  and counteth the cost, whether he have sufficient to finish it?"
+#  — Luke 14:28
 #
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Document Identity
-# -----------------------------------------------------------------------------
+
+# =============================================================================
+# 1. Document Identity
+# =============================================================================
+
 document:
-  # Master AsciiDoc file to compile
-  master: book.adoc
+  # Master assembly file (relative to this config's directory = build/)
+  master: ../book/book.adoc
 
-  # Output filename (without extension)
+  # Output filename stem (extensions added per format)
   output_name: CWS-Company-Identity-Manual
 
-  # Output directory (relative to company-docs/)
+  # Output directory (relative to this config's directory = build/)
+  # Matches Makefile OUTDIR: build/output → company-docs/build/output/
   output_dir: output
 
-# -----------------------------------------------------------------------------
-# Company Attributes
-# -----------------------------------------------------------------------------
-# These are passed to Asciidoctor and available in documents as {attribute-name}
-#
-attributes:
-  # Branding
-  company-name: Creative Workz Studio LLC
-  company-short: CWS
-  tagline: Where Creative Vision Meets Kingdom Purpose
 
-  # Document settings
+# =============================================================================
+# 2. Document Attributes
+# =============================================================================
+# Passed to Asciidoctor as -a key=value. Boolean attributes use empty string.
+# Must match _shared-attributes.adoc and book.adoc for consistent output.
+#
+# Canonical source: _previews/_shared-attributes.adoc
+# Specification:    editorial-style-guide.adoc §Company Conventions
+# =============================================================================
+
+attributes:
+
+  # --- Book Structure ---
   doctype: book
-  icons: font
-  icon-set: fa
-  source-highlighter: rouge
+  book: ""
+  title-page: ""
   toc: auto
   toclevels: "3"
   sectnums: ""
   sectnumlevels: "3"
-  chapter-label: Article
-  appendix-caption: Appendix
+  partnums: ""
 
-  # Styling
+  # --- Rendering & Typography ---
+  icons: font
+  icon-set: fas
   experimental: ""
   reproducible: ""
+  source-highlighter: rouge
+  rouge-style: github
 
-# -----------------------------------------------------------------------------
-# Output Formats
-# -----------------------------------------------------------------------------
-# Each format defines:
-#   - enabled: whether to build this format by default
-#   - command: the CLI tool to invoke
-#   - backend: Asciidoctor backend (if applicable)
-#   - extension: output file extension
-#   - install: how to install the required tool
-#   - args: additional command-line arguments
-#   - options: format-specific options
+  # --- Governance Hierarchy Labels ---
+  # Part > Article > Section > Subsection > Clause > Subclause
+  chapter-label: Article
+  part-label: Part
+  appendix-caption: Appendix
+
+  # --- Cross-References ---
+  xrefstyle: full
+
+  # --- Caption Labels ---
+  listing-caption: Listing
+  figure-caption: Figure
+  table-caption: Table
+
+  # --- Admonition Captions ---
+  caution-caption: Caution
+  example-caption: Example
+  important-caption: Important
+  note-caption: Note
+  tip-caption: Tip
+  warning-caption: Warning
+
+  # --- Company Attributes (Guide §Company Conventions > Standard Attributes) ---
+  company-name: CreativeWorkzStudio LLC
+  company-short: CWS
+  manual-title: Company Identity Manual
+  tagline: Building for the Kingdom to come.
+  founding-scripture: Genesis 1:1
+
+  # --- Entity Attributes (used in Cover, TOC, Colophon) ---
+  entity-type: Limited Liability Company (LLC)
+  jurisdiction: State of Missouri
+  formation-date: November 2, 2024
+  filing-number: LC014587426
+  founding-year: "2024"
+  manual-doc-id: CWS-CIM-00-COVER
+
+
+# =============================================================================
+# 3. Output Formats
+# =============================================================================
+# Organized by build mode priority:
+#   Primary:     PDF — Editorial review, board distribution
+#   Secondary:   HTML, EPUB — Publishing and digital distribution
+#   Interchange: DocBook, manpage — Format exchange and reference
 #
+# Each format: enabled, command, backend, extension, install, options, args
+# =============================================================================
+
 formats:
+
+  # --- Primary: Editorial & Board Distribution ---
+
+  pdf:
+    enabled: true
+    command: asciidoctor-pdf
+    backend: pdf
+    extension: .pdf
+    install: gem install asciidoctor-pdf
+    options:
+      paper_size: Letter
+      compress: true
+    args:
+      - "-a"
+      - "pdf-theme=build/themes/cws-manual-theme.yml"
+      - "-a"
+      - "pdf-fontsdir=/usr/share/fonts/truetype/noto;GEM_FONTS_DIR"
+
+  # --- Secondary: Publishing & Digital Distribution ---
+
   html:
     enabled: true
     command: asciidoctor
@@ -82,19 +152,8 @@ formats:
       - "-a"
       - "data-uri"
 
-  pdf:
-    enabled: true
-    command: asciidoctor-pdf
-    backend: pdf
-    extension: .pdf
-    install: gem install asciidoctor-pdf
-    options:
-      paper_size: Letter
-      compress: true
-    args: []
-
   epub:
-    enabled: true
+    enabled: false
     command: asciidoctor-epub3
     backend: epub3
     extension: .epub
@@ -102,6 +161,8 @@ formats:
     options:
       version: 3
     args: []
+
+  # --- Interchange: Format Exchange & Reference ---
 
   docbook:
     enabled: false
@@ -116,15 +177,13 @@ formats:
     enabled: false
     command: asciidoctor
     backend: manpage
-    extension: ""           # Man pages use section numbers (e.g., .1, .5, .7)
+    extension: ""
     install: gem install asciidoctor
     options:
       # Man page sections:
-      #   1 = User commands
-      #   5 = File formats and conventions
-      #   7 = Miscellaneous (overview, concepts)
-      #   8 = System administration
-      section: 7            # Default section for documentation
+      #   1 = User commands      5 = File formats
+      #   7 = Miscellaneous      8 = System admin
+      section: 7
     args: []
     # Note: Man pages require specific document structure:
     #   = command(section)
@@ -132,14 +191,18 @@ formats:
     #   :manmanual: Manual Title
     #   :mansource: Source
 
-# -----------------------------------------------------------------------------
-# Watch Configuration
-# -----------------------------------------------------------------------------
+
+# =============================================================================
+# 4. Watch Configuration
+# =============================================================================
+# Used by TS builder's watch mode. For editorial watch, use `make watch-pdf`.
+
 watch:
   # File patterns to watch for changes
   patterns:
     - "**/*.adoc"
     - "**/*.asciidoc"
+    - "**/*.yml"
 
   # Patterns to ignore
   ignore:
@@ -154,23 +217,24 @@ watch:
   formats:
     - html
 
-# -----------------------------------------------------------------------------
-# CLI Display
-# -----------------------------------------------------------------------------
-display:
-  # Show banner on startup
-  banner: true
 
-  # Use colors in output
+# =============================================================================
+# 5. CLI Display
+# =============================================================================
+
+display:
+  banner: true
   colors: true
 
-  # Format icons for display
   icons:
-    html: "🌐"
+    # Format indicators
     pdf: "📄"
+    html: "🌐"
     epub: "📚"
     docbook: "📋"
     manpage: "📟"
+
+    # Status indicators
     success: "✓"
     failure: "✗"
     start: "▶"
@@ -179,21 +243,93 @@ display:
     clean: "🧹"
     check: "🔍"
 
-# -----------------------------------------------------------------------------
-# Assets (Required Files)
-# -----------------------------------------------------------------------------
-# These files must exist in the assets/ directory for complete builds.
-# Missing assets will cause warnings but won't stop the build.
-#
-assets:
-  directory: assets
-  required:
-    - filename: cws-logo.png
-      purpose: Company logo for cover and title pages
-      specifications: 600x600px recommended, transparent background
-      status: pending  # pending | placeholder | final
 
-# -----------------------------------------------------------------------------
+# =============================================================================
+# 6. Assets
+# =============================================================================
+# Required files for complete builds. Missing assets produce warnings,
+# not errors.
+
+assets:
+  directory: 00-assets
+  logos:
+    directory: logos
+    items:
+      - filename: logos/cws-logo.png
+        purpose: Company logo for cover and title pages
+        specifications: 276 KB, transparent background
+        status: present
+
+      - filename: logos/cws-logo.svg
+        purpose: Vector logo for scalable contexts
+        specifications: 4.5 KB, infinite resolution
+        status: present
+
+  figures:
+    png_directory: figures/png
+    svg_directory: figures/svg
+    grayscale_directory: figures/grayscale
+    sources: sources/diagrams
+    config: sources/config
+    format: dual                    # SVG (HTML) + PNG (PDF)
+    png_scale: 3                    # 3x for print quality (300+ DPI)
+    renderer: mmdc                  # @mermaid-js/mermaid-cli
+    theme: sources/config/mermaid-config.json
+
+    catalog:
+      - id: fig-manual-structure
+        content: 4-part manual hierarchy
+        used_in: book.adoc, Document Map appendix
+
+      - id: fig-bereshit-stack
+        content: 6-layer technology stack (L0-L5)
+        used_in: Article 03 — What CWS Builds
+
+      - id: fig-org-chart
+        content: Organizational structure
+        used_in: Article 09 — The Team
+
+      - id: fig-timeline-phases
+        content: 5-phase timeline
+        used_in: Article 10 — Timeline Perspective
+
+      - id: fig-publishing-model
+        content: Publishing house model
+        used_in: Article 02 — Publishing House Model
+
+      - id: fig-revenue-streams
+        content: 4-pillar revenue model
+        used_in: Article 06 — Business Model
+
+      - id: fig-asset-directory
+        content: 4-tier asset directory structure
+        used_in: Asset Catalog (00-assets/README.adoc)
+
+  # Derived assets — generated by `make assets` or `cws-build assets`
+  derived:
+    # Grayscale variants (auto-generated for all fig-*.png except exclusions)
+    grayscale:
+      enabled: true
+      exclude:
+        - fig-color-palette.png
+        - fig-title-page-mockup.png
+
+    # Brand color palette swatch
+    palette:
+      enabled: true
+      output: figures/png/fig-color-palette.png
+      width: 900
+      height: 220
+      font_bold: Noto-Sans-Bold
+      font_regular: Noto-Sans-Regular
+
+    # Title page mockup
+    mockup:
+      enabled: true
+      output: figures/png/fig-title-page-mockup.png
+
+
+# =============================================================================
 # Version
-# -----------------------------------------------------------------------------
-version: "1.0.0"
+# =============================================================================
+version: "2.0.0"

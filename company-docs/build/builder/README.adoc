@@ -1,121 +1,171 @@
-// ============================================================================
-// CWS COMPANY IDENTITY MANUAL - BUILD SYSTEM
-// ============================================================================
-// Document: README.adoc
-// Location: company-docs/builder/
-// Purpose:  TypeScript build system for compiling the manual to multiple formats
-// ============================================================================
+// =============================================================================
+// CWS Manual Builder — README
+// =============================================================================
+// Specification: editorial-style-guide.adoc (CWS-GDE-001)
+// Location:      company-docs/build/builder/
+// Version:       2.0.0
+// =============================================================================
 
-= icon:cogs[] CWS Manual Builder
-// Note: doctype inherited from master book.adoc when included
+= CWS Manual Builder
+CreativeWorkzStudio LLC
 :icons: font
-:icon-set: fa
+:icon-set: fas
 :toc: left
 :toclevels: 3
 :source-highlighter: rouge
 :experimental:
-
 // Company Attributes
-:company-name: Creative Workz Studio LLC
+:company-name: CreativeWorkzStudio LLC
 :company-short: CWS
-:tagline: Where Creative Vision Meets Kingdom Purpose
-
+:tagline: Building for the Kingdom to come.
 // Document Attributes
-:builder-version: 1.0.0
-:node-version: 18.0.0
+:builder-version: 2.0.0
+:node-version: 20.0.0
+:url-editorial-guide: ../../../editorial-style-guide.adoc
 
 [.lead]
-*Build system for the {company-name} Company Identity Manual.*
+*Config-driven build system for the {company-name} Company Identity Manual.*
 
-Compiles AsciiDoc source files into multiple professional output formats with a single command.
+Supports both editorial review (spine discovery, validation, inventory) and
+multi-format publishing (PDF, HTML, EPUB, DocBook) — all driven by
+`build.config.yaml`.
 
 '''
 
-== icon:book[] Overview
+== Overview
 
 [sidebar]
 .Biblical Foundation
 ****
-[quote, Ecclesiastes 9:10a]
+[quote, Habakkuk 2:2]
 ____
-"Whatsoever thy hand findeth to do, do it with thy might..."
+"Write the vision, and make it plain upon tables, that he may run that readeth it."
 ____
 
-The builder embodies diligent craftsmanship — transforming source documents into polished, professional outputs across multiple formats. Each format serves a different purpose in making the manual accessible.
+The builder serves two modes: editorial review for page-by-page refinement,
+and multi-format publishing for final distribution. Both are config-driven —
+behavior lives in YAML, code just executes.
 ****
 
-=== What This Does
+=== Dual Build Architecture
 
-The CWS Manual Builder takes the AsciiDoc source files that comprise the Company Identity Manual and compiles them into publication-ready formats:
+The build system operates in two modes, each optimized for its purpose:
 
-[cols="^1,2,4",options="header",frame=all,grid=all]
+[cols="^1h,3,3",options="header",frame=all,grid=all]
 |===
-| icon:file[] Format | Extension | Purpose
+| Mode | Primary (Editorial) | Secondary (Publishing)
 
-| icon:globe[role=blue] HTML
-| `.html`
-| Web-ready single-page document with embedded styles, navigation, and searchability
+| Engine
+| Makefile + asciidoctor-pdf
+| TypeScript builder + build.config.yaml
 
-| icon:file-pdf[role=red] PDF
-| `.pdf`
-| Print-ready document with professional typography, headers, footers, and page numbers
+| Purpose
+| Page-by-page editorial review
+| Multi-format final output
 
-| icon:book[role=green] EPUB
-| `.epub`
-| E-reader format for Kindle, Apple Books, Kobo, and other digital reading devices
+| Formats
+| PDF only (scoped previews)
+| PDF, HTML, EPUB, DocBook, manpage
 
-| icon:code[role=purple] DocBook
-| `.xml`
-| XML interchange format for integration with other documentation systems
+| Scopes
+| Full book, Part, Article, Section
+| Full book only
+
+| Entry point
+| `make <target>`
+| `cws-build [command]`
 |===
 
-=== Why TypeScript
+The Makefile is the primary editorial tool — fast, scoped PDF builds for
+review. The TypeScript builder handles multi-format publishing and adds
+editorial intelligence: spine scanning, inventory tracking, and structure
+validation.
 
-The build system is written in TypeScript for several reasons:
+=== Editorial Commands (NEW in 2.0)
 
-* *Type Safety* — Catches configuration errors at compile time
-* *Modern Tooling* — Integrates with Node.js ecosystem
-* *Readable Code* — Clear structure for future maintenance
-* *No Python* — Avoids dependency on Python runtime
+[cols="2,4",options="header",frame=all,grid=all]
+|===
+| Command | Description
 
-The TypeScript code orchestrates the Asciidoctor CLI tools (written in Ruby) which perform the actual document conversion.
+| `cws-build inventory`
+| Show complete parts list with file counts and letter ranges
+
+| `cws-build spine`
+| Display full book structure tree (every file in every article)
+
+| `cws-build validate`
+| Base skeleton validation (book.adoc, spine dirs, theme, attributes)
+
+| `cws-build validate -t manual-l`
+| Legal hierarchy naming validation (Part/Article/Section patterns)
+
+| `cws-build validate -t manual-l -b operational`
+| Full editorial validation (assets, previews, naming consistency)
+|===
 
 '''
 
-== icon:rocket[] Quick Start
+== Quick Start
 
 [TIP]
 ====
-All commands are run from the `company-docs/` directory.
+All Make commands run from `company-docs/`. +
+All `cws-build` commands run from `company-docs/build/builder/`.
 ====
+
+=== Editorial Review (Primary)
 
 [source,bash]
 ----
-# One-time setup (installs all dependencies)
-make setup
-
-# Build commands
-make html     # Build HTML version
-make pdf      # Build PDF version
-make all      # Build all formats
+# From company-docs/
+make book              # Full book PDF
+make A                 # Frontmatter only
+make B                 # All content Parts
+make part PART=1       # Single Part
+make article ARTICLE=01  # Single Article
+make validate TYPE=manual-l BONUS=operational  # Full validation
 ----
 
-Output files appear in `company-docs/output/`:
+=== Publishing & Editorial Intelligence (Secondary)
 
-[source]
+[source,bash]
 ----
-output/
-├── CWS-Company-Identity-Manual.html
-├── CWS-Company-Identity-Manual.pdf
-├── CWS-Company-Identity-Manual.epub
-└── CWS-Company-Identity-Manual.xml
+# From company-docs/build/builder/
+node dist/cli.js inventory           # Parts list
+node dist/cli.js spine               # Structure tree
+node dist/cli.js validate -t manual-l  # Validation
+node dist/cli.js --format pdf        # Build PDF
+node dist/cli.js --format all        # Build all formats
+node dist/cli.js --check             # Check prerequisites
 ----
+
+=== npm Script Shortcuts
+
+[source,bash]
+----
+# From company-docs/build/builder/
+
+# Editorial (delegates to Makefile)
+npm run editorial:book               # make book
+npm run editorial:frontmatter        # make A
+npm run editorial:content            # make B
+npm run editorial:validate           # make validate TYPE=manual-l
+npm run editorial:validate:full      # make validate TYPE=manual-l BONUS=operational
+npm run editorial:watch              # make watch-pdf
+
+# Publishing (delegates to TS builder)
+npm run publish:pdf                  # Build PDF
+npm run publish:html                 # Build HTML
+npm run publish:all                  # Build all formats
+npm run publish:check                # Check prerequisites
+npm run publish:info                 # Show output file info
+----
+
+Output files appear in `company-docs/build/output/`.
 
 '''
 
-== icon:download[] Prerequisites
-
-Before using the build system, ensure these tools are installed:
+== Prerequisites
 
 === Required Software
 
@@ -123,558 +173,406 @@ Before using the build system, ensure these tools are installed:
 |===
 | Tool | Version | Purpose
 
-| icon:node[role=green] Node.js
+| Node.js
 | >= {node-version}
-| JavaScript runtime for the build orchestration
+| TypeScript builder runtime
 
-| icon:gem[role=red] Ruby
+| Ruby
 | Any recent
-| Required for Asciidoctor tools
+| Asciidoctor tools runtime
 
-| icon:terminal[] gem
-| (with Ruby)
-| Ruby package manager for installing Asciidoctor
+| asciidoctor-pdf
+| >= 2.3
+| PDF generation (primary editorial format)
+
+| asciidoctor
+| >= 2.0
+| HTML generation and core processing
 |===
 
-=== Checking Your System
+=== Checking Dependencies
 
 [source,bash]
 ----
-# Check Node.js
-node --version    # Should show v18.x.x or higher
+# From company-docs/
+make deps              # Check all editorial + publishing dependencies
 
-# Check Ruby
-ruby --version    # Should show ruby 2.x or 3.x
-
-# Check gem
-gem --version     # Should show 3.x.x
+# Or from builder/
+node dist/cli.js --check   # Check publishing prerequisites only
 ----
 
 '''
 
-== icon:wrench[] Installation
+== Installation
 
-=== Option 1: Using Make (Recommended)
-
-The simplest approach — one command installs everything:
+=== Using Make (Recommended)
 
 [source,bash]
 ----
-make setup
+# From company-docs/
+make setup             # Install Asciidoctor tools
+make setup-node        # Install Node.js dependencies + compile builder
 ----
 
-This command:
-
-1. Installs Node.js dependencies (`npm install`)
-2. Compiles the TypeScript build system
-3. Installs Asciidoctor and format converters
-4. Installs syntax highlighting support
-
-=== Option 2: Manual Installation
-
-For more control over the installation process:
-
-==== Step 1: Node.js Dependencies
+=== Manual Installation
 
 [source,bash]
 ----
-cd builder
+# Asciidoctor tools
+gem install asciidoctor --user-install
+gem install asciidoctor-pdf --user-install
+gem install asciidoctor-epub3 --user-install
+gem install rouge --user-install
+
+# Node.js builder
+cd company-docs/build/builder
 npm install
 npm run build
 ----
 
-==== Step 2: Asciidoctor Tools
-
-[source,bash]
-----
-# Core Asciidoctor
-gem install asciidoctor
-
-# PDF generation
-gem install asciidoctor-pdf
-
-# EPUB generation
-gem install asciidoctor-epub3
-
-# Syntax highlighting
-gem install rouge
-----
-
 [NOTE]
 ====
-If you encounter permission errors with `gem install`, use the `--user-install` flag:
-
-[source,bash]
-----
-gem install asciidoctor --user-install
-----
+The project drive uses exFAT which cannot create symlinks. The `.npmrc` file
+includes `bin-links=false` to handle this automatically.
 ====
 
 '''
 
-== icon:terminal[] Usage
+== Configuration
 
-=== Make Commands (Recommended)
+All builder behavior is defined in `build/build.config.yaml` — the TypeScript
+code is just an executor. To change behavior, edit the config file.
 
-The Makefile provides the simplest interface:
+=== Config Sections
+
+[cols="1,4",options="header",frame=all,grid=all]
+|===
+| Section | Purpose
+
+| `document`
+| Master file path, output filename, output directory
+
+| `attributes`
+| AsciiDoc attributes passed as `-a key=value` to Asciidoctor
+
+| `formats`
+| Output format definitions (command, backend, extension, install hint)
+
+| `watch`
+| File patterns, ignore patterns, debounce timing for watch mode
+
+| `display`
+| Banner toggle, color toggle, icon map for CLI output
+
+| `assets`
+| Required asset files (logo, etc.) with specifications
+
+| `version`
+| Config version (currently 2.0.0)
+|===
+
+=== Canonical Attribute Sources
 
 [cols="2,4",options="header",frame=all,grid=all]
 |===
-| Command | Description
+| File | Role
 
-| `make html`
-| Build HTML format only
+| `build/build.config.yaml`
+| TS builder attributes (publishing)
 
-| `make pdf`
-| Build PDF format only
+| `build/_previews/_shared-attributes.adoc`
+| Preview build attributes (editorial)
 
-| `make epub`
-| Build EPUB format only
-
-| `make docbook`
-| Build DocBook XML format only
-
-| `make all`
-| Build all formats
-
-| `make watch`
-| Watch mode — auto-rebuild HTML on file changes
-
-| `make clean`
-| Remove all generated files
-
-| `make check`
-| Verify all prerequisites are installed
-
-| `make info`
-| Show information about output files
-
-| `make setup`
-| Install all dependencies
-
-| `make help`
-| Display help information
+| `book/book.adoc`
+| Master assembly attributes (full book)
 |===
 
-=== npm Commands
+All three must stay in sync. The editorial style guide
+(`editorial-style-guide.adoc`, CWS-GDE-001) is the specification.
 
-For those who prefer npm:
+'''
 
-[source,bash]
-----
-cd builder
+== CLI Reference
 
-npm run manual:html     # Build HTML
-npm run manual:pdf      # Build PDF
-npm run manual:epub     # Build EPUB
-npm run manual:all      # Build all formats
-npm run manual:watch    # Watch mode
-npm run clean           # Clean output
-----
-
-=== CLI Tool
-
-For advanced usage and scripting:
-
-[source,bash]
-----
-cd builder
-node dist/cli.js --help
-----
-
-==== CLI Examples
-
-[source,bash]
-----
-# Build single format
-node dist/cli.js --format html
-
-# Build multiple formats
-node dist/cli.js --format pdf,epub
-
-# Build all formats in parallel (faster)
-node dist/cli.js --format all --parallel
-
-# Watch for changes
-node dist/cli.js --watch
-
-# Clean output
-node dist/cli.js --clean
-
-# Check prerequisites
-node dist/cli.js --check
-
-# Show output info
-node dist/cli.js --info
-----
-
-==== CLI Options
+=== Publishing Options (Default Action)
 
 [cols="2,4",options="header",frame=all,grid=all]
 |===
 | Option | Description
 
 | `-f, --format <format>`
-| Output format: `html`, `pdf`, `epub`, `docbook`, or `all`
+| Output format: `pdf`, `html`, `epub`, `docbook`, `manpage`, `all`, or `enabled` (default)
 
 | `-w, --watch`
-| Watch for changes and rebuild (HTML only)
+| Watch for changes and rebuild
 
 | `-c, --clean`
 | Clean output directory before building
 
 | `-i, --info`
-| Show output file information
+| Show output file information (path, size, date)
 
 | `-p, --parallel`
-| Build formats in parallel (faster)
+| Build formats in parallel
 
 | `--check`
 | Check prerequisites without building
-
-| `-o, --output <dir>`
-| Specify output directory
 
 | `-q, --quiet`
 | Suppress banner and non-essential output
 |===
 
+=== Editorial Subcommands
+
+==== `cws-build inventory`
+
+Shows a complete parts list with file counts and section letter ranges.
+
+[source]
+----
+Book Inventory
+==============
+
+  Frontmatter: 5 files
+  Appendices: 4 files
+  Backmatter: 3 files
+
+  Content:
+    Part 1 (identity): 2 articles, 15 sections
+      Art. 01 (entity-overview): 8 sections (A–H)
+      Art. 02 (publishing-house-model): 7 sections (A–G)
+    ...
+
+  Summary:
+    4 parts, 11 articles, 87 sections
+    99 total files (1.6 MB)
+----
+
+==== `cws-build spine`
+
+Displays the full book structure tree — every scope, part, article, and
+section file.
+
+==== `cws-build validate [options]`
+
+Three-layer validation matching the Makefile's `validate` target:
+
+[cols="2,4",options="header",frame=all,grid=all]
+|===
+| Option | Layer
+
+| (none)
+| Base skeleton — book.adoc, spine dirs, theme, attributes
+
+| `-t manual`
+| Manual minimums — parts, articles, content files exist
+
+| `-t manual-l`
+| Legal hierarchy — Part/Article/Section naming conventions, sequential letters
+
+| `-b operational`
+| Bonus — scope content, assets, previews, naming consistency
+|===
+
+Exit code 4 on validation failure (matches Makefile convention).
+
 '''
 
-== icon:code[] Programmatic Usage
+== Programmatic Usage
 
-The build system can be imported as a library for integration into other tools:
+The builder exports a full library API for integration:
 
 [source,typescript]
 ----
 import {
-  createBuilder,
-  loadConfig,
-  type OutputFormat
+  // Config
+  loadConfig, computePaths, type BuildConfig, type RuntimePaths,
+
+  // Spine
+  scanSpine, buildInventory, type SpineTree,
+
+  // Validation
+  runValidation, type ValidationResult,
+
+  // Publishing
+  createBuilder, type BuildResult,
+
+  // Display
+  formatFileSize, formatDuration,
 } from '@cws/manual-builder';
 
-// Load configuration with optional overrides
-const config = loadConfig({
-  outputDir: './custom-output',
-});
+// Load config and compute paths
+const config = loadConfig();
+const paths = computePaths(config);
 
-// Create builder with event callback
-const builder = createBuilder(config, (event) => {
-  switch (event.type) {
-    case 'start':
-      console.log('Building formats:', event.formats);
-      break;
-    case 'format-complete':
-      console.log(`${event.result.format}: ${event.result.success ? 'OK' : 'FAILED'}`);
-      break;
-    case 'complete':
-      console.log('Build complete');
-      break;
-  }
-});
+// Scan the book spine
+const tree = await scanSpine(paths.bookDir);
+const inventory = buildInventory(tree);
 
-// Build specific formats
-const results = await builder.build(['html', 'pdf']);
+// Validate structure
+const result = await runValidation(paths, { type: 'manual-l' });
 
-// Or build all formats in parallel
-const allResults = await builder.buildParallel();
-
-// Watch for changes
-builder.startWatch(['html']);
-----
-
-=== Exported Types
-
-[source,typescript]
-----
-// Configuration
-type BuildConfig = {
-  sourceDir: string;
-  outputDir: string;
-  masterDocument: string;
-  outputName: string;
-  attributes: Record<string, string>;
-  formatOptions: FormatOptions;
-};
-
-// Output formats
-type OutputFormat = 'html' | 'pdf' | 'epub' | 'docbook';
-
-// Build result
-type BuildResult = {
-  format: OutputFormat;
-  success: boolean;
-  outputPath: string;
-  duration: number;
-  error?: string;
-};
+// Build formats
+const builder = createBuilder(config, paths);
+const results = await builder.build(['pdf', 'html']);
 ----
 
 '''
 
-== icon:sliders[] Configuration
-
-Edit `builder/src/config.ts` to customize the build:
-
-=== Output Settings
-
-[source,typescript]
-----
-// Output filename (without extension)
-outputName: 'CWS-Company-Identity-Manual',
-
-// Output directory
-outputDir: resolve(__dirname, '../../output'),
-----
-
-=== Document Attributes
-
-[source,typescript]
-----
-attributes: {
-  // Company branding
-  'company-name': 'Creative Workz Studio LLC',
-  'company-short': 'CWS',
-  'tagline': 'Where Creative Vision Meets Kingdom Purpose',
-
-  // Document settings
-  'doctype': 'book',
-  'icons': 'font',
-  'toc': 'auto',
-  'toclevels': '3',
-  'sectnums': '',
-  'chapter-label': 'Chapter',
-},
-----
-
-=== Format-Specific Options
-
-==== HTML Options
-
-[source,typescript]
-----
-html: {
-  standalone: true,       // Single HTML file
-  toc: true,              // Include table of contents
-  tocPosition: 'left',    // TOC on left side
-  embedImages: true,      // Embed images as data URIs
-  stylesheet: undefined,  // Custom CSS (optional)
-}
-----
-
-==== PDF Options
-
-[source,typescript]
-----
-pdf: {
-  paperSize: 'A4',        // Or 'Letter'
-  compress: true,         // Compress output
-  theme: undefined,       // Custom PDF theme (optional)
-  fontsDir: undefined,    // Custom fonts directory (optional)
-}
-----
-
-==== EPUB Options
-
-[source,typescript]
-----
-epub: {
-  version: 3,             // EPUB 3 format
-  coverImage: undefined,  // Cover image path (optional)
-  stylesheet: undefined,  // Custom CSS (optional)
-}
-----
-
-'''
-
-== icon:exclamation-triangle[] Troubleshooting
-
-=== "asciidoctor: command not found"
-
-The Asciidoctor tool is not installed or not in PATH.
-
-*Solution:*
-
-[source,bash]
-----
-# Install via gem
-gem install asciidoctor
-
-# Or via system package manager:
-# Ubuntu/Debian
-sudo apt install asciidoctor
-
-# macOS
-brew install asciidoctor
-----
-
-=== "asciidoctor-pdf: command not found"
-
-The PDF converter is not installed.
-
-*Solution:*
-
-[source,bash]
-----
-gem install asciidoctor-pdf
-----
-
-=== "asciidoctor-epub3: command not found"
-
-The EPUB converter is not installed.
-
-*Solution:*
-
-[source,bash]
-----
-gem install asciidoctor-epub3
-----
-
-=== Ruby gem Permission Errors
-
-Cannot install gems due to permission restrictions.
-
-*Solution:*
-
-[source,bash]
-----
-# Use user installation
-gem install asciidoctor --user-install
-
-# Or configure gem for user directory
-echo 'gem: --user-install' >> ~/.gemrc
-----
-
-=== Build Completes But Output Missing
-
-The build reported success but files are not in the output directory.
-
-*Possible Causes:*
-
-1. Wrong working directory — run from `company-docs/`
-2. Output directory permissions
-3. Disk space issues
-
-*Solution:*
-
-[source,bash]
-----
-# Check output directory
-ls -la output/
-
-# Rebuild with verbose output
-cd builder && node dist/cli.js --format html
-----
-
-=== Watch Mode Not Detecting Changes
-
-Files are being modified but watch mode doesn't rebuild.
-
-*Possible Causes:*
-
-1. File is outside watched directories
-2. File extension not `.adoc` or `.asciidoc`
-3. Editor using atomic saves (writes to temp file first)
-
-*Solution:*
-
-Watch mode monitors `**/*.adoc` and `**/*.asciidoc` in the source directory. Ensure your files have these extensions.
-
-'''
-
-== icon:folder-open[] Project Structure
+== Project Structure
 
 [source]
 ----
 builder/
 ├── src/
-│   ├── cli.ts           # Command-line interface
-│   │                    # - Argument parsing
-│   │                    # - Progress display
-│   │                    # - Color output
+│   ├── cli.ts                  # CLI entry — subcommands + default action
+│   ├── index.ts                # Library API — exports all modules
 │   │
-│   ├── config.ts        # Build configuration
-│   │                    # - Default settings
-│   │                    # - Document attributes
-│   │                    # - Format options
+│   ├── config/                 # Configuration layer
+│   │   ├── types.ts            # BuildConfig, FormatConfig, RuntimePaths
+│   │   ├── loader.ts           # YAML loading, validation, path computation
+│   │   └── index.ts            # Barrel re-exports
 │   │
-│   ├── formats.ts       # Format handlers
-│   │                    # - HTML, PDF, EPUB, DocBook
-│   │                    # - Tool detection
-│   │                    # - Command building
+│   ├── spine/                  # Book structure discovery
+│   │   ├── types.ts            # SpineTree, SpinePart, SpineArticle, etc.
+│   │   ├── scanner.ts          # Filesystem walker for all 4 scopes
+│   │   ├── inventory.ts        # Parts list builder from scan results
+│   │   └── index.ts            # Barrel re-exports
 │   │
-│   ├── builder.ts       # Build orchestration
-│   │                    # - Sequential/parallel builds
-│   │                    # - Watch mode
-│   │                    # - Event emission
+│   ├── validate/               # Structure validation (3-layer)
+│   │   ├── types.ts            # BookType, ValidationFinding, etc.
+│   │   ├── base.ts             # Skeleton checks (always runs)
+│   │   ├── manual.ts           # Manual type minimums
+│   │   ├── manual-l.ts         # Legal hierarchy naming
+│   │   ├── operational.ts      # Bonus editorial checks
+│   │   ├── runner.ts           # Orchestrates all layers
+│   │   └── index.ts            # Barrel re-exports
 │   │
-│   └── index.ts         # Library exports
-│                        # - Public API
+│   ├── publish/                # Multi-format publishing
+│   │   ├── types.ts            # BuildResult, BuildEvent, etc.
+│   │   ├── executor.ts         # Command execution, format building
+│   │   ├── orchestrator.ts     # ManualBuilder (sequential/parallel)
+│   │   ├── watcher.ts          # File change watcher
+│   │   └── index.ts            # Barrel re-exports
+│   │
+│   └── display/                # CLI output
+│       ├── types.ts            # EventHandler types
+│       ├── banner.ts           # Config-driven startup banner
+│       ├── progress.ts         # Build event handler
+│       ├── format.ts           # formatFileSize, formatDuration, pluralize
+│       └── index.ts            # Barrel re-exports
 │
-├── dist/                # Compiled JavaScript (generated)
-│   ├── cli.js
-│   ├── config.js
-│   ├── formats.js
-│   ├── builder.js
-│   └── index.js
-│
-├── package.json         # Node.js dependencies
-├── tsconfig.json        # TypeScript configuration
-├── .gitignore           # Ignore node_modules, dist
-└── README.adoc          # This documentation
+├── dist/                       # Compiled JavaScript (26 files, generated)
+├── node_modules/               # Dependencies (generated)
+├── package.json                # Dependencies, scripts, metadata
+├── tsconfig.json               # TypeScript configuration (strict mode)
+├── .npmrc                      # exFAT symlink workaround
+├── .gitignore                  # Excludes dist/, node_modules/, etc.
+└── README.adoc                 # This documentation
 ----
 
-=== Source File Responsibilities
+=== Module Responsibilities
 
 [cols="2,4",options="header",frame=all,grid=all]
 |===
-| File | Responsibility
+| Module | Responsibility
 
-| `cli.ts`
-| User-facing command-line interface with colored output and progress indicators
+| `config/`
+| Loads `build.config.yaml`, validates required sections, computes runtime paths,
+  provides query functions (enabled formats, format config, icons)
 
-| `config.ts`
-| Centralized configuration for all build settings, document attributes, and format options
+| `spine/`
+| Walks the `book/` directory tree, discovers all 4 scopes (A-D), parts,
+  articles, and sections. Builds structured inventory reports with counts,
+  sizes, and letter ranges
 
-| `formats.ts`
-| Low-level handlers for each output format; builds Asciidoctor command lines
+| `validate/`
+| Three-layer validation: base skeleton, book type minimums (manual, manual-l),
+  bonus editorial checks (operational). Matches Makefile's `validate` target
 
-| `builder.ts`
-| High-level orchestration; manages builds, watches files, emits events
+| `publish/`
+| Executes format builds via Asciidoctor CLI tools. Sequential or parallel
+  execution. File watching with configurable debounce
 
-| `index.ts`
-| Public API exports for programmatic usage
+| `display/`
+| Config-driven CLI output: startup banner, build progress events, file size
+  and duration formatting
 |===
 
 '''
 
-== icon:history[] Version History
+== Governance Hierarchy
+
+The Company Identity Manual uses a 6-level legal hierarchy:
+
+[cols="^1,2,3",options="header",frame=all,grid=all]
+|===
+| Level | Element | Filesystem Pattern
+
+| 1
+| Part
+| `Part-{N}-{name}/`
+
+| 2
+| Article
+| `Article-{NN}-{name}/`
+
+| 3
+| Section
+| `{LETTER}-{NAME}.adoc`
+
+| 4
+| Subsection
+| (within section files)
+
+| 5
+| Clause
+| (within section files)
+
+| 6
+| Subclause
+| (within section files)
+|===
+
+The `validate -t manual-l` command enforces levels 1-3 at the filesystem
+level. Levels 4-6 exist within AsciiDoc heading structure.
+
+'''
+
+== Version History
 
 [cols="1,2,4",options="header",frame=all,grid=all]
 |===
 | Version | Date | Changes
 
+| 2.0.0
+| 2026-02-06
+| Modular architecture (5 modules, 26 files). Added spine scanner, inventory
+  builder, 3-layer validation engine, editorial CLI subcommands. Config-driven
+  via `build.config.yaml`. Dual build mode system.
+
 | 1.0.0
 | 2026-02-04
-| Initial release with HTML, PDF, EPUB, DocBook support
+| Initial release with HTML, PDF, EPUB, DocBook support.
 |===
 
 '''
 
-== icon:gavel[] License
+== License
 
 [IMPORTANT]
 ====
 *Proprietary* — {company-name}
 
-This build system is part of the CWS Company Identity Manual and is proprietary to {company-name}. It is not licensed for use outside the organization.
+This build system is part of the CWS Company Identity Manual project and is
+proprietary to {company-name}. Not licensed for external use.
 ====
 
 '''
 
 [.text-center]
-_"Whatsoever thy hand findeth to do, do it with thy might."_ +
-— Ecclesiastes 9:10a
+_"Write the vision, and make it plain upon tables, that he may run that readeth it."_ +
+— Habakkuk 2:2
 
 [.text-center]
-icon:hammer[] Built for *{company-name}* icon:hammer[]
+Built for *{company-name}* — {tagline}
