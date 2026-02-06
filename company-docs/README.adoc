@@ -1,0 +1,273 @@
+= CWS Company Identity Manual — Build System
+:author: Seanje Lenox-Wise & Nova Dawn
+:revdate: 2026-02-06
+:toc: macro
+:toclevels: 2
+:icons: font
+:source-highlighter: rouge
+
+[quote, Habakkuk 2:2]
+____
+Write the vision, and make it plain upon tables, that he may run that readeth it.
+____
+
+toc::[]
+
+== Overview
+
+Build system for the *CreativeWorkzStudio LLC Company Identity Manual*.
+Four editorial scopes, unified path resolution, layered validation.
+
+Built with GNU Make and https://docs.asciidoctor.org/asciidoctor/latest/[Asciidoctor PDF].
+
+
+== Quick Start
+
+[source,bash]
+----
+# Install dependencies (first time only)
+make setup
+
+# Build full book PDF
+make book
+
+# See all targets
+make help
+----
+
+
+== Build Scopes
+
+Four levels of granularity for editorial review.
+Output mirrors the book spine under `build/output/`.
+
+[cols="1,3,2"]
+|===
+| Scope | Command | Output
+
+| *Full Book*
+| `make book` or `make create`
+| `build/output/CWS-Company-Identity-Manual.pdf`
+
+| *Part*
+| `make part PART=1`
+| `build/output/B-content/Part-1-identity/CWS-Part1-Identity.pdf`
+
+| *Article*
+| `make article ARTICLE=01`
+| `build/output/B-content/Part-1-identity/Article-01-.../CWS-Article-01.pdf`
+
+| *Section*
+| `make section FILE=A-COVER`
+| `build/output/A-frontmatter/A-COVER.pdf`
+|===
+
+
+=== Spine Targets
+
+Letter-based shortcuts mapping directly to the book spine.
+
+[source,bash]
+----
+make A   # Frontmatter
+make B   # Content (all Parts)
+make C   # Appendices
+make D   # Backmatter
+----
+
+Aliases also work: `make frontmatter`, `make content`, `make appendices`, `make backmatter`.
+
+
+== 3-Mode Resolution
+
+All scoped targets (`part`, `article`, `section`) share a unified resolution engine.
+You never have to remember the exact path — the system finds it.
+
+[cols="1,2,3"]
+|===
+| Mode | Detection | Example
+
+| *Path*
+| Input contains `/`
+| `make part PART=B-content/Part-1-identity`
+
+| *Search*
+| Input has no `/`
+| `make part PART=1` (ID) or `make part PART=identity` (name)
+
+| *Compat*
+| Input starts with `book/`
+| `make section FILE=book/A-frontmatter/A-COVER` (prefix stripped)
+|===
+
+The search cascade:
+
+. *Exact name* — matches the full directory/file name
+. *Prefix + ID* — matches `Part-{ID}-\*` or `Article-{ID}-*`
+. *Fuzzy* — case-insensitive `\*{input}*` match
+
+Extensions (`.adoc`) and trailing slashes are handled automatically.
+
+
+=== Part Examples
+
+[source,bash]
+----
+make part PART=1                            # ID mode
+make part PART=identity                     # Name search
+make part PART=Part-1-identity              # Exact basename
+make part PART=B-content/Part-1-identity    # Path mode
+make part PART=book/B-content/Part-1-identity  # Backward compat
+make part PART=1 NAME=Identity              # Override output name
+----
+
+
+=== Article Examples
+
+[source,bash]
+----
+make article ARTICLE=01                     # ID mode
+make article ARTICLE=entity-overview        # Name search
+make article ARTICLE=Article-01-entity-overview  # Exact basename
+make article ARTICLE=B-content/Part-1-identity/Article-01-entity-overview  # Path mode
+----
+
+
+=== Section Examples
+
+[source,bash]
+----
+make section FILE=A-COVER                   # Search mode
+make section FILE=A-frontmatter/A-COVER.adoc  # Path mode
+make section FILE=book/A-frontmatter/A-COVER   # Compat (strips book/, adds .adoc)
+----
+
+
+== Validation
+
+Three-layer validation checks the book structure against type minimums.
+
+[source,bash]
+----
+make validate                              # Base skeleton
+make validate TYPE=manual                  # Manual book type
+make validate TYPE=manual BONUS=operational  # Full editorial
+----
+
+=== Base (Skeleton)
+
+Checks that the minimum file structure exists:
+
+* `book/book.adoc` — master assembly
+* Spine folders: `A-frontmatter/`, `B-content/`, `C-appendices/`, `D-backmatter/`
+* Theme file and shared attributes
+
+=== TYPE=manual
+
+Bare minimums for a manual-type book:
+
+* At least one Part directory in `B-content/`
+* At least one Article directory in any Part
+* At least one `.adoc` content file
+
+=== BONUS=operational
+
+Full editorial checks specific to this operational manual:
+
+* Frontmatter, appendices, backmatter have content
+* Assets directory exists
+* Preview files exist for each Part
+* No empty Article directories
+* Naming convention consistency (letter vs number)
+* Per-Part article counts and per-Article section counts
+
+
+== Exit Codes
+
+[cols="1,3"]
+|===
+| Code | Meaning
+
+| `0` | Success
+| `1` | Usage error — missing or invalid arguments
+| `2` | Missing dependency — `asciidoctor-pdf`, preview file, or source file not found
+| `3` | Build failure — `asciidoctor-pdf` returned an error
+|===
+
+
+== Book Structure
+
+The book follows a hierarchical spine organization:
+
+----
+book/
+  book.adoc                  # Master assembly
+  00-assets/                 # Shared images, logos
+  A-frontmatter/             # Cover, TOC, Dedication, Preface, Glossary
+  B-content/                 # Main body
+    Part-1-identity/
+      Article-01-entity-overview/
+        01-00-ENTITY-OVERVIEW.adoc
+        01-01-WHAT-IS-CWS.adoc
+        ...
+      Article-02-publishing-house-model/
+        ...
+    Part-2-operations/
+    Part-3-business/
+    Part-4-direction/
+  C-appendices/              # Document Map, Scripture Index, etc.
+  D-backmatter/              # Acknowledgments, Colophon, Contact
+
+build/
+  _previews/                 # AsciiDoc preview files (per-scope builds)
+    _shared-attributes.adoc  # Common document attributes
+    frontmatter-preview.adoc
+    part1-preview.adoc ... part4-preview.adoc
+    appendices-preview.adoc
+    backmatter-preview.adoc
+  _drafts/                   # Markdown drafts (source material)
+  builder/                   # TypeScript build tooling
+  output/                    # Generated PDFs (gitignored)
+  themes/
+    cws-manual-theme.yml     # PDF theme (fonts, colors, layout)
+----
+
+=== Naming Conventions
+
+Spine sections use *letter-based* naming for reading order:
+
+* `A-COVER.adoc`, `B-TABLE-OF-CONTENTS.adoc`, `C-DEDICATION.adoc`
+* `A-ACKNOWLEDGMENTS.adoc`, `B-COLOPHON.adoc`, `C-CONTACT.adoc`
+
+Content uses *number-based* naming for article/section ordering:
+
+* `Part-1-identity/`, `Article-01-entity-overview/`
+* `01-00-ENTITY-OVERVIEW.adoc`, `01-01-WHAT-IS-CWS.adoc`
+
+Both conventions are supported by the resolution engine.
+
+
+== Dependencies
+
+* https://rubygems.org/gems/asciidoctor-pdf[asciidoctor-pdf] — PDF generation
+* https://rubygems.org/gems/rouge[rouge] — Syntax highlighting
+* Ruby (for gem installation)
+* GNU Make
+
+Optional (for TypeScript builder):
+
+* Node.js 18+
+* npm
+
+Install everything with `make setup`.
+
+
+== Development
+
+[source,bash]
+----
+make clean    # Remove all generated output
+make watch    # Watch for changes, rebuild HTML (TypeScript builder)
+make info     # Show output file information
+make check    # Check prerequisites
+----
