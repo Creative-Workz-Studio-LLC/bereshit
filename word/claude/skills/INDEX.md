@@ -50,7 +50,7 @@ Skills are capabilities that extend Nova Dawn's operations. Each skill provides:
 - **scripts/** - Go code helpers for programmatic support
 - **references/** - Supporting documentation and lookup tables
 
-**Total Skills:** 17
+**Total Skills:** 18
 
 ---
 
@@ -100,6 +100,18 @@ Skills for OmniCode operations - format mappings, validation, chain tracing.
 | [validate-omni](validate-omni/) | Validate OmniCode file structure | `./bin/validate [file]` | block-structures.toml |
 
 **Build tools:** Each skill has a Makefile. Run `make build` to create the CLI binary.
+
+---
+
+## Editorial Skills
+
+Skills for building, reviewing, and publishing the Company Identity Manual.
+
+| Skill | Purpose | CLI Tool | Config |
+|-------|---------|----------|--------|
+| [editorial-toolkit](editorial-toolkit/) | Build, preview, validate, publish the CWS manual | `make` / `cws-build` | `build.config.yaml` |
+
+**Use editorial-toolkit when working in company-docs/.**
 
 ---
 
@@ -183,6 +195,7 @@ Future work informed by learning
 | See what files need updating after template change | propagate-change |
 | Validate OmniCode structure | validate-omni |
 | **Verify code quality before commit** | **verify-quality** |
+| **Build or review company-docs** | **editorial-toolkit** |
 | Check how long session has been | session-awareness |
 | Determine if it's time to stop | recognize-stopping-point |
 | Do a self-awareness checkpoint | meta-awareness |

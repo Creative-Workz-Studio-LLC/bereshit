@@ -103,16 +103,29 @@ The letter-based filesystem convention is for the editorial team and build syste
 == Book Structure
 
 ----
+Makefile                         # Primary editorial build system
+editorial-style-guide.adoc       # CWS-GDE-001 — publishing house standard
+page-index.adoc                  # Editorial page reference
+
 book/
-  book.adoc                    # Master assembly
-  00-assets/                   # Shared images, logos
-  A-frontmatter/               # Cover, TOC, Dedication, Preface, Glossary
+  book.adoc                      # Master assembly
+  00-assets/                     # Visual assets
+    README.adoc                  # Asset Catalog (29-page reference)
+    logos/                       # Company logo (PNG + SVG)
+    figures/
+      png/                       # Raster figures (3x, 300+ DPI)
+      svg/                       # Vector figures (HTML builds)
+      grayscale/                 # Grayscale variants (print fidelity)
+    sources/
+      diagrams/                  # Mermaid .mmd source files
+      config/                    # Rendering configs (Puppeteer, theme)
+  A-frontmatter/                 # Cover, TOC, Dedication, Preface, Glossary
     A-COVER.adoc
     B-TABLE-OF-CONTENTS.adoc
     C-DEDICATION.adoc
     D-PREFACE.adoc
     E-GLOSSARY.adoc
-  B-content/                   # Main body (4 Parts, 11 Articles, 87 Sections)
+  B-content/                     # Main body (4 Parts, 11 Articles, 87 Sections)
     Part-1-identity/
       Article-01-entity-overview/
         A-ENTITY-OVERVIEW.adoc
@@ -122,30 +135,33 @@ book/
       Article-02-publishing-house-model/
         A-PUBLISHING-HOUSE-MODEL.adoc
         ...G-PARTNER-JOURNEY.adoc
-    Part-2-operations/         # Articles 03–05
-    Part-3-business/           # Articles 06–07
-    Part-4-direction/          # Articles 08–11
-  C-appendices/                # Document Map, Scripture Index, etc.
+    Part-2-operations/           # Articles 03–05
+    Part-3-business/             # Articles 06–07
+    Part-4-direction/            # Articles 08–11
+  C-appendices/
     A-DOCUMENT-MAP.adoc
-    ...D-IMPLEMENTATION-GUIDE.adoc
-  D-backmatter/                # Acknowledgments, Colophon, Contact
+    B-SCRIPTURE-INDEX.adoc
+    C-DECISION-FRAMEWORKS.adoc
+    D-ANTI-PATTERNS-CATALOG.adoc
+  D-backmatter/
     A-ACKNOWLEDGMENTS.adoc
     B-COLOPHON.adoc
     C-CONTACT.adoc
 
 build/
-  _previews/                   # AsciiDoc preview files (per-scope builds)
-    _shared-attributes.adoc    # Common document attributes
-    frontmatter-preview.adoc
-    part1-preview.adoc
-    ...part4-preview.adoc
-    appendices-preview.adoc
-    backmatter-preview.adoc
-  _drafts/                     # Markdown drafts (source material)
-  builder/                     # TypeScript build tooling (optional)
-  output/                      # Generated PDFs (gitignored)
+  build.config.yaml              # Shared configuration (both build systems)
+  _previews/                     # Letter-prefixed preview assembly files
+    _shared-attributes.adoc      # Common document attributes
+    A-frontmatter-preview.adoc
+    B-part1-preview.adoc
+    ...B-part4-preview.adoc
+    C-appendices-preview.adoc
+    D-backmatter-preview.adoc
+  _drafts/                       # Markdown drafts (source material)
+  builder/                       # TypeScript builder (multi-format publishing)
+  output/                        # Generated PDFs (gitignored)
   themes/
-    cws-manual-theme.yml       # PDF theme (fonts, colors, layout)
+    cws-manual-theme.yml         # PDF theme (fonts, colors, layout)
 ----
 
 
@@ -314,7 +330,36 @@ Full editorial checks specific to this operational manual:
 * Per-Part article counts and per-Article section counts
 
 
+== Asset Generation
+
+The `assets` target runs a 3-phase pipeline to generate all derived visual assets:
+
+[source,bash]
+----
+make assets              # Generate (skips up-to-date assets)
+make assets FORCE=1      # Force regeneration
+----
+
+*Phases:*
+
+. *Diagrams* — Mermaid `.mmd` sources → PNG (3x) + SVG per figure (`mmdc`)
+. *Grayscale* — Color PNGs → grayscale variants for print fidelity (`magick`)
+. *Palette* — Brand colors → color palette swatch image (`magick`)
+
+Requires: `mmdc` (Mermaid CLI) and `magick` (ImageMagick).
+Phase 1 runs independently; Phases 2–3 require ImageMagick.
+
+See `book/00-assets/README.adoc` for the full Asset Catalog.
+
+
 == Development
+
+=== Status Dashboard
+
+[source,bash]
+----
+make status    # Show all PDFs, sizes, timestamps, staleness
+----
 
 === Editorial Workflow
 
@@ -325,6 +370,10 @@ make watch-pdf
 
 # Check all dependencies (required + optional)
 make deps
+
+# Safe targeted removal
+make remove SCOPE=A          # Remove frontmatter output
+make remove FILE=A-COVER     # Remove single section output
 
 # Remove all generated output and temp files
 make clean
@@ -337,9 +386,9 @@ make setup
 rebuilding the full book PDF on every save. Pair with a PDF viewer that auto-reloads
 (Evince, Okular, or Zathura) for real-time editorial review.
 
-=== Publishing (Optional)
+=== Publishing (TypeScript Builder)
 
-Multi-format output via the TypeScript builder.
+Multi-format output via the TypeScript builder (`cws-build`).
 Requires separate setup with `make setup-node`.
 
 [source,bash]
@@ -348,6 +397,16 @@ make html      # Build HTML format
 make pdf       # Build PDF via builder
 make epub      # Build EPUB format
 make docbook   # Build DocBook XML
+----
+
+The TypeScript builder also provides structural tools:
+
+[source,bash]
+----
+cws-build spine              # Show book structure tree
+cws-build inventory          # Show book parts list
+cws-build validate           # Validate book structure
+cws-build assets             # Generate derived assets (same pipeline as Makefile)
 ----
 
 
@@ -396,7 +455,9 @@ for quick identification. Make reports the recipe exit code in its
 === Optional
 
 * https://github.com/eradman/entr[entr] — File watcher for `watch-pdf`
-* Node.js 18+ and npm — TypeScript builder for multi-format publishing
+* Node.js 20+ and npm — TypeScript builder for multi-format publishing
+* https://imagemagick.org[ImageMagick] 7+ — Grayscale and palette asset generation
+* https://github.com/mermaid-js/mermaid-cli[@mermaid-js/mermaid-cli] — Diagram rendering
 
 Install required dependencies:
 
@@ -457,7 +518,11 @@ make deps
 
 == Related Documents
 
-* `editorial-style-guide.adoc` — Comprehensive publishing house standard (typography, tone, legal language, page layout)
+* `editorial-style-guide.adoc` — Comprehensive publishing house standard (CWS-GDE-001)
+* `page-index.adoc` — Page-by-page editorial reference
 * `book/book.adoc` — Master assembly file
+* `book/00-assets/README.adoc` — Asset Catalog (29-page visual reference)
+* `build/build.config.yaml` — Shared configuration for both build systems
 * `build/themes/cws-manual-theme.yml` — PDF theme configuration
 * `build/_previews/_shared-attributes.adoc` — Common document attributes
+* `build/builder/README.adoc` — TypeScript builder documentation
