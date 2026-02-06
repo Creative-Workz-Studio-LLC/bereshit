@@ -182,8 +182,8 @@ func mockContext(scenario string) types.SessionContext {
 	}
 
 	// Set model
-	ctx.Model.ID = "claude-opus-4-5-20251101"
-	ctx.Model.DisplayName = "Claude Opus 4.5"
+	ctx.Model.ID = "claude-opus-4-6"
+	ctx.Model.DisplayName = "Claude Opus 4.6"
 
 	// Set output style
 	ctx.OutputStyle.Name = "Nova Dawn"
