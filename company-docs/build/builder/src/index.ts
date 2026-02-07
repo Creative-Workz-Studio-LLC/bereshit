@@ -24,8 +24,19 @@ export type {
   DocumentConfig,
   AssetsConfig,
   LogoEntry,
+  LogosConfig,
   FigureCatalogEntry,
   FiguresConfig,
+  GrayscaleConfig,
+  PaletteConfig,
+  MockupConfig,
+  DerivedAssetsConfig,
+  ScriptureConfig,
+  PathsConfig,
+  ScopeDefinition,
+  ScopesConfig,
+  BrandColorsConfig,
+  BrandConfig,
   RuntimePaths,
 } from './config/index.js';
 
@@ -36,6 +47,11 @@ export {
   getAllFormats,
   getFormatConfig,
   getIcon,
+  getScopeKeys,
+  getScopeConfig,
+  getBrandColors,
+  getScriptureBasePath,
+  getDefaultTranslation,
 } from './config/index.js';
 
 // =============================================================================
@@ -86,9 +102,34 @@ export {
   validateManual,
   validateManualL,
   validateOperational,
+  runPageParse,
+  runPageStatus,
+  runTocFill,
+  runTocCheck,
 } from './validate/index.js';
 
-export type { BaseValidationPaths } from './validate/index.js';
+export type {
+  BaseValidationPaths,
+  PageMarker,
+  TocSection,
+  TocArticle,
+  FilePageResult,
+  PageParseResult,
+  PageIssue,
+  PageParseOptions,
+  TocPipelineResult,
+} from './validate/index.js';
+
+// Editorial lint
+export { runEditorialLint } from './validate/index.js';
+export type {
+  EditorialSeverity,
+  CheckCategory,
+  EditorialFinding,
+  EditorialFileResult,
+  EditorialResult,
+  EditorialLintOptions,
+} from './validate/index.js';
 
 // =============================================================================
 // Publishing
@@ -140,4 +181,37 @@ export {
   formatFileSize,
   formatDuration,
   pluralize,
+  displayFindings,
+  displayEditorialResults,
+  displayBibleFindings,
+  displayTocResults,
+  displayTocFillResult,
+  displayTocCheckResult,
+  displaySpineTree,
+  displayAssetReport,
 } from './display/index.js';
+
+// =============================================================================
+// Error Handling
+// =============================================================================
+
+export type {
+  ErrorCategory,
+  ErrorSeverity,
+  ErrorCode,
+  BuildError,
+  SectionType,
+  ScopeCategory,
+} from './errors.js';
+
+export {
+  ERROR_CODES,
+  createError,
+  formatError,
+  formatErrors,
+  ErrorCollector,
+  detectSectionType,
+  detectScope,
+  sectionTypeLabel,
+  sectionTypeFlag,
+} from './errors.js';

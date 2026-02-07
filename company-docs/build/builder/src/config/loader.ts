@@ -15,7 +15,13 @@ import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { parse as parseYaml } from 'yaml';
-import type { BuildConfig, RuntimePaths, FormatConfig } from './types.js';
+import type {
+  BuildConfig,
+  RuntimePaths,
+  FormatConfig,
+  ScopeDefinition,
+  BrandColorsConfig,
+} from './types.js';
 
 // =============================================================================
 // Setup
@@ -111,17 +117,28 @@ export function loadConfig(configPath?: string): BuildConfig {
 /**
  * Compute runtime paths from configuration.
  * Resolves all relative paths to absolute.
+ *
+ * When config.paths is present (v3.0.0+), uses its values.
+ * Otherwise falls back to convention-based defaults.
  */
 export function computePaths(config: BuildConfig, configPath?: string): RuntimePaths {
   const configFile = configPath || findConfigFile();
   const sourceDir = dirname(configFile);
+
+  // company-docs/ is one level up from build/ (where config lives)
+  const projectDir = resolve(sourceDir, '..');
+
+  // Use config.paths when available, fall back to conventions
+  const bookDir = config.paths?.book_dir
+    ? resolve(projectDir, config.paths.book_dir)
+    : resolve(projectDir, 'book');
 
   return {
     configFile,
     sourceDir,
     outputDir: resolve(sourceDir, config.document.output_dir),
     masterDocument: resolve(sourceDir, config.document.master),
-    bookDir: resolve(sourceDir, '..', 'book'),
+    bookDir,
   };
 }
 
@@ -157,4 +174,52 @@ export function getFormatConfig(config: BuildConfig, format: string): FormatConf
  */
 export function getIcon(config: BuildConfig, key: string): string {
   return config.display.icons[key] || '';
+}
+
+// =============================================================================
+// Scope Queries (§9)
+// =============================================================================
+
+/**
+ * Get all scope keys (e.g., ["A", "C", "D"]).
+ */
+export function getScopeKeys(config: BuildConfig): string[] {
+  return config.scopes ? Object.keys(config.scopes) : [];
+}
+
+/**
+ * Get a specific scope definition by key.
+ */
+export function getScopeConfig(config: BuildConfig, key: string): ScopeDefinition | undefined {
+  return config.scopes?.[key];
+}
+
+// =============================================================================
+// Brand Queries (§10)
+// =============================================================================
+
+/**
+ * Get brand color palette.
+ * Returns undefined if brand config is absent.
+ */
+export function getBrandColors(config: BuildConfig): BrandColorsConfig | undefined {
+  return config.brand?.colors;
+}
+
+// =============================================================================
+// Scripture Queries (§7)
+// =============================================================================
+
+/**
+ * Get the scripture base path for Bible verse validation.
+ */
+export function getScriptureBasePath(config: BuildConfig): string | undefined {
+  return config.scripture?.base_path;
+}
+
+/**
+ * Get the default Bible translation.
+ */
+export function getDefaultTranslation(config: BuildConfig): string {
+  return config.scripture?.default_translation ?? 'KJV';
 }

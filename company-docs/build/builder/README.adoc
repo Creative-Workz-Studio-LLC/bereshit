@@ -3,7 +3,7 @@
 // =============================================================================
 // Specification: editorial-style-guide.adoc (CWS-GDE-001)
 // Location:      company-docs/build/builder/
-// Version:       2.0.0
+// Version:       3.0.0
 // =============================================================================
 
 = CWS Manual Builder
@@ -19,7 +19,7 @@ CreativeWorkzStudio LLC
 :company-short: CWS
 :tagline: Building for the Kingdom to come.
 // Document Attributes
-:builder-version: 2.0.0
+:builder-version: 3.0.0
 :node-version: 20.0.0
 :url-editorial-guide: ../../../editorial-style-guide.adoc
 
@@ -81,7 +81,7 @@ review. The TypeScript builder handles multi-format publishing and adds
 editorial intelligence: spine scanning, inventory tracking, and structure
 validation.
 
-=== Editorial Commands (NEW in 2.0)
+=== Editorial Commands
 
 [cols="2,4",options="header",frame=all,grid=all]
 |===
@@ -101,6 +101,30 @@ validation.
 
 | `cws-build validate -t manual-l -b operational`
 | Full editorial validation (assets, previews, naming consistency)
+
+| `cws-build lint`
+| Editorial lint — 17 checks in 4 categories (editorial, style, structure, conversion)
+
+| `cws-build lint --bible`
+| Bible verse validation — check citations against KJV/WEB scripture data
+
+| `cws-build lint --toc`
+| Page marker validation — sequence, banners, content-full markers
+
+| `cws-build toc`
+| Parse and display TOC structure with page status
+
+| `cws-build toc --fill`
+| Fill `p. __` placeholders with computed page numbers
+
+| `cws-build toc --verify`
+| Check existing page numbers against computed values
+
+| `cws-build config`
+| Inspect, validate, or regenerate derived config files
+
+| `cws-build assets`
+| Generate derived visual assets (diagrams, grayscale, palette)
 |===
 
 '''
@@ -425,12 +449,28 @@ const results = await builder.build(['pdf', 'html']);
 ----
 builder/
 ├── src/
-│   ├── cli.ts                  # CLI entry — subcommands + default action
+│   ├── cli.ts                  # Entry point shim (preserves dist/cli.js path)
 │   ├── index.ts                # Library API — exports all modules
+│   ├── errors.ts               # Error codes, formatting, section detection
+│   │
+│   ├── cli/                    # Command-line interface
+│   │   ├── index.ts            # Commander program setup + command registration
+│   │   ├── utils.ts            # exitWithError, delegateToMake, checkPrereqs, parseFormat
+│   │   └── commands/           # Per-domain command handlers
+│   │       ├── build.ts        # Default action — multi-format publishing
+│   │       ├── editorial.ts    # Make-delegated: status, section, article, part, pages
+│   │       ├── lint.ts         # Editorial lint, Bible validation, TOC validation
+│   │       ├── toc.ts          # TOC parse, fill placeholders, verify page numbers
+│   │       ├── validate.ts     # Structural book validation
+│   │       ├── spine.ts        # Spine tree + inventory commands
+│   │       ├── assets.ts       # Asset generation command
+│   │       └── config.ts       # Config inspect, validate, generate
 │   │
 │   ├── config/                 # Configuration layer
-│   │   ├── types.ts            # BuildConfig, FormatConfig, RuntimePaths
-│   │   ├── loader.ts           # YAML loading, validation, path computation
+│   │   ├── types.ts            # BuildConfig, FormatConfig, RuntimePaths, all §1-10 types
+│   │   ├── loader.ts           # YAML loading, validation, path computation, query functions
+│   │   ├── gen-types.ts        # TypeScript type generator from YAML
+│   │   ├── generated-types.ts  # Auto-generated types (from gen-types)
 │   │   └── index.ts            # Barrel re-exports
 │   │
 │   ├── spine/                  # Book structure discovery
@@ -439,33 +479,48 @@ builder/
 │   │   ├── inventory.ts        # Parts list builder from scan results
 │   │   └── index.ts            # Barrel re-exports
 │   │
-│   ├── validate/               # Structure validation (3-layer)
+│   ├── validate/               # All validation (structure, editorial, Bible, pages)
 │   │   ├── types.ts            # BookType, ValidationFinding, etc.
 │   │   ├── base.ts             # Skeleton checks (always runs)
 │   │   ├── manual.ts           # Manual type minimums
 │   │   ├── manual-l.ts         # Legal hierarchy naming
 │   │   ├── operational.ts      # Bonus editorial checks
-│   │   ├── runner.ts           # Orchestrates all layers
+│   │   ├── runner.ts           # Orchestrates structural layers
+│   │   ├── editorial.ts        # 17 editorial lint checks in 4 categories
+│   │   ├── bible.ts            # Bible verse validation (KJV/WEB)
+│   │   ├── pages.ts            # Page markers, TOC pipeline (fill/verify)
 │   │   └── index.ts            # Barrel re-exports
 │   │
 │   ├── publish/                # Multi-format publishing
 │   │   ├── types.ts            # BuildResult, BuildEvent, etc.
-│   │   ├── executor.ts         # Command execution, format building
+│   │   ├── executor.ts         # Command execution, format building, pipeline
 │   │   ├── orchestrator.ts     # ManualBuilder (sequential/parallel)
 │   │   ├── watcher.ts          # File change watcher
 │   │   └── index.ts            # Barrel re-exports
 │   │
-│   └── display/                # CLI output
+│   ├── assets/                 # Derived asset generation
+│   │   ├── types.ts            # GenerationReport, AssetResult, etc.
+│   │   ├── generator.ts        # 3-phase pipeline (diagrams, grayscale, palette)
+│   │   └── index.ts            # Barrel re-exports
+│   │
+│   └── display/                # All display formatting for CLI output
 │       ├── types.ts            # EventHandler types
 │       ├── banner.ts           # Config-driven startup banner
 │       ├── progress.ts         # Build event handler
 │       ├── format.ts           # formatFileSize, formatDuration, pluralize
+│       ├── validation.ts       # Structural validation findings display
+│       ├── editorial.ts        # Editorial lint results display
+│       ├── bible.ts            # Bible validation results display
+│       ├── toc.ts              # TOC/page results, fill, check display
+│       ├── spine.ts            # Spine tree display
+│       ├── assets-report.ts    # Asset generation results display
 │       └── index.ts            # Barrel re-exports
 │
-├── dist/                       # Compiled JavaScript (26 files, generated)
+├── dist/                       # Compiled JavaScript (51 files, generated)
 ├── node_modules/               # Dependencies (generated)
 ├── package.json                # Dependencies, scripts, metadata
 ├── tsconfig.json               # TypeScript configuration (strict mode)
+├── REFACTOR.md                 # Build system consolidation roadmap
 ├── .npmrc                      # exFAT symlink workaround
 ├── .gitignore                  # Excludes dist/, node_modules/, etc.
 └── README.adoc                 # This documentation
@@ -477,9 +532,15 @@ builder/
 |===
 | Module | Responsibility
 
+| `cli/`
+| Command-line interface. Thin entry shim + Commander program setup.
+  Each subcommand lives in its own file under `commands/`. Shared utilities
+  (error exit, Make delegation, format parsing) in `utils.ts`
+
 | `config/`
-| Loads `build.config.yaml`, validates required sections, computes runtime paths,
-  provides query functions (enabled formats, format config, icons)
+| Loads `build.config.yaml` (10 sections), validates required sections,
+  computes runtime paths, provides query functions. Type generator
+  produces TypeScript interfaces from YAML schema
 
 | `spine/`
 | Walks the `book/` directory tree, discovers all 4 scopes (A-D), parts,
@@ -487,16 +548,26 @@ builder/
   sizes, and letter ranges
 
 | `validate/`
-| Three-layer validation: base skeleton, book type minimums (manual, manual-l),
-  bonus editorial checks (operational). Matches Makefile's `validate` target
+| All validation: 3-layer structural (base → type → bonus),
+  17-check editorial lint (4 categories), Bible verse verification
+  (KJV/WEB), and page/TOC pipeline (fill, verify, cross-validation)
 
 | `publish/`
-| Executes format builds via Asciidoctor CLI tools. Sequential or parallel
-  execution. File watching with configurable debounce
+| Executes format builds via Asciidoctor CLI tools and pandoc pipeline.
+  Sequential or parallel execution. File watching with configurable debounce
+
+| `assets/`
+| 3-phase derived asset generation: Mermaid diagrams → grayscale variants →
+  palette swatch. Timestamp-based caching
 
 | `display/`
-| Config-driven CLI output: startup banner, build progress events, file size
-  and duration formatting
+| All terminal output formatting: startup banner, build progress,
+  and result display for every command (validation, editorial, Bible,
+  TOC, spine, assets)
+
+| `errors.ts`
+| Cross-cutting error system: typed error codes (E0-E4x), severity levels,
+  structured formatting, error collection, section type detection
 |===
 
 '''
@@ -544,6 +615,15 @@ level. Levels 4-6 exist within AsciiDoc heading structure.
 [cols="1,2,4",options="header",frame=all,grid=all]
 |===
 | Version | Date | Changes
+
+| 3.0.0
+| 2026-02-07
+| Folder restructure (8 modules, 51 files). CLI split into `cli/` directory
+  with per-command modules. Display formatters extracted into `display/`.
+  Added: 17-check editorial lint (4 categories), Bible verse validation,
+  TOC fill/verify pipeline, PDF cross-validation via qpdf, config management
+  command, type generator. Config aligned to build.config.yaml v3.0.0
+  (10 sections). Makefile consolidated (toc-status/toc-parse → toc).
 
 | 2.0.0
 | 2026-02-06

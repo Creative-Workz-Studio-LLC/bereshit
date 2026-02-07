@@ -22,3 +22,27 @@ export { validateBase, type BaseValidationPaths } from './base.js';
 export { validateManual } from './manual.js';
 export { validateManualL } from './manual-l.js';
 export { validateOperational } from './operational.js';
+
+// Page & TOC validation
+export { runPageParse, runPageStatus, runTocFill, runTocCheck } from './pages.js';
+export type {
+  PageMarker,
+  TocSection,
+  TocArticle,
+  FilePageResult,
+  PageParseResult,
+  PageIssue,
+  PageParseOptions,
+  TocPipelineResult,
+} from './pages.js';
+
+// Editorial lint validation
+export { runEditorialLint } from './editorial.js';
+export type {
+  EditorialSeverity,
+  CheckCategory,
+  EditorialFinding,
+  EditorialFileResult,
+  EditorialResult,
+  EditorialLintOptions,
+} from './editorial.js';

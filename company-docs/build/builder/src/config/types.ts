@@ -40,6 +40,14 @@ export interface FormatConfig {
 
   /** Additional CLI arguments passed to the command */
   args: string[];
+
+  /**
+   * Pipeline strategy for multi-step conversions.
+   * - undefined: Direct command execution (default)
+   * - 'docbook-intermediate': AsciiDoc → DocBook XML → pandoc → target format
+   *   Pandoc's DocBook reader is excellent; its AsciiDoc reader is not.
+   */
+  pipeline?: string;
 }
 
 // =============================================================================
@@ -122,6 +130,18 @@ export interface LogoEntry {
 }
 
 /**
+ * Logos configuration — wraps logo entries with directory context.
+ * Mirrors build.config.yaml assets.logos structure.
+ */
+export interface LogosConfig {
+  /** Logos subdirectory within assets */
+  directory: string;
+
+  /** Individual logo entries */
+  items: LogoEntry[];
+}
+
+/**
  * Figure catalog entry — a single diagram in the manual.
  */
 export interface FigureCatalogEntry {
@@ -178,17 +198,187 @@ export interface FiguresConfig {
 }
 
 /**
+ * Grayscale generation configuration.
+ */
+export interface GrayscaleConfig {
+  /** Enable grayscale variant generation */
+  enabled: boolean;
+
+  /** Filenames to exclude from grayscale conversion */
+  exclude: string[];
+}
+
+/**
+ * Palette swatch generation configuration.
+ */
+export interface PaletteConfig {
+  /** Enable palette swatch generation */
+  enabled: boolean;
+
+  /** Output path (relative to assets directory) */
+  output: string;
+
+  /** Swatch image width in pixels */
+  width: number;
+
+  /** Swatch image height in pixels */
+  height: number;
+
+  /** Bold font name for labels */
+  font_bold: string;
+
+  /** Regular font name for values */
+  font_regular: string;
+}
+
+/**
+ * Title page mockup generation configuration.
+ */
+export interface MockupConfig {
+  /** Enable mockup generation */
+  enabled: boolean;
+
+  /** Output path (relative to assets directory) */
+  output: string;
+}
+
+/**
+ * Derived assets configuration — auto-generated from source assets.
+ * Mirrors build.config.yaml assets.derived section.
+ */
+export interface DerivedAssetsConfig {
+  /** Grayscale variant generation */
+  grayscale: GrayscaleConfig;
+
+  /** Brand color palette swatch */
+  palette: PaletteConfig;
+
+  /** Title page mockup */
+  mockup: MockupConfig;
+}
+
+/**
  * Assets configuration — mirrors build.config.yaml assets section.
  */
 export interface AssetsConfig {
   /** Assets directory name (relative to book/) */
   directory: string;
 
-  /** Logo files */
-  logos: LogoEntry[];
+  /** Logo configuration (directory + entries) */
+  logos: LogosConfig;
 
   /** Figures configuration and catalog */
   figures: FiguresConfig;
+
+  /** Derived asset generation settings */
+  derived?: DerivedAssetsConfig;
+}
+
+// =============================================================================
+// Scripture Configuration (§7)
+// =============================================================================
+
+/**
+ * Scripture validation configuration.
+ * Used by `cws-build lint --bible` to validate cited verses against
+ * canonical text from the Bereshit scripture data.
+ *
+ * "All scripture is given by inspiration of God..." — 2 Timothy 3:16
+ */
+export interface ScriptureConfig {
+  /** Path to scripture data (relative to company-docs/) */
+  base_path: string;
+
+  /** Supported translation identifiers (e.g., ["KJV", "WEB"]) */
+  translations: string[];
+
+  /** Default translation when citation doesn't specify */
+  default_translation: string;
+}
+
+// =============================================================================
+// Paths Configuration (§8)
+// =============================================================================
+
+/**
+ * Makefile project layout paths.
+ * All paths relative to company-docs/ (Makefile working directory).
+ * The config.mk generator translates these into Make variables.
+ */
+export interface PathsConfig {
+  /** Book source directory */
+  book_dir: string;
+
+  /** Preview build directory */
+  preview_dir: string;
+
+  /** Shared attributes file path */
+  shared_attributes: string;
+
+  /** Theme file path */
+  theme_file: string;
+
+  /** Font directory (semicolon-separated for asciidoctor-pdf) */
+  font_dir: string;
+}
+
+// =============================================================================
+// Scopes Configuration (§9)
+// =============================================================================
+
+/**
+ * Single scope definition — maps a book directory to an editorial preview build.
+ */
+export interface ScopeDefinition {
+  /** Human-readable scope name */
+  name: string;
+
+  /** Book subdirectory for this scope */
+  directory: string;
+
+  /** Preview assembly file name */
+  preview: string;
+
+  /** Output PDF filename */
+  output: string;
+}
+
+/**
+ * All scope definitions, keyed by scope letter (A, B, C, D).
+ */
+export type ScopesConfig = Record<string, ScopeDefinition>;
+
+// =============================================================================
+// Brand Configuration (§10)
+// =============================================================================
+
+/**
+ * Brand color definitions.
+ * Hex values with # prefix.
+ */
+export interface BrandColorsConfig {
+  /** Deep blue — primary brand color */
+  deep_blue: string;
+
+  /** Medium blue — secondary brand color */
+  medium_blue: string;
+
+  /** Gold — accent color */
+  gold: string;
+
+  /** Dark — text and dark backgrounds */
+  dark: string;
+
+  /** Light — light backgrounds */
+  light: string;
+}
+
+/**
+ * Brand configuration — visual identity parameters.
+ */
+export interface BrandConfig {
+  /** Brand color palette */
+  colors: BrandColorsConfig;
 }
 
 // =============================================================================
@@ -196,27 +386,45 @@ export interface AssetsConfig {
 // =============================================================================
 
 /**
- * Complete build configuration — mirrors build.config.yaml structure.
+ * Complete build configuration — mirrors build.config.yaml structure (v3.0.0).
  * The TypeScript builder loads this and executes what it defines.
+ *
+ * Sections 1-6:  Core builder config (document, attributes, formats, watch, display, assets)
+ * Section 7:     Scripture validation
+ * Section 8:     Makefile paths
+ * Section 9:     Scope definitions
+ * Section 10:    Brand colors
  */
 export interface BuildConfig {
-  /** Document identity and paths */
+  /** §1 — Document identity and paths */
   document: DocumentConfig;
 
-  /** Asciidoctor attributes (passed as -a key=value) */
+  /** §2 — Asciidoctor attributes (passed as -a key=value) */
   attributes: Record<string, string>;
 
-  /** Output format definitions */
+  /** §3 — Output format definitions */
   formats: Record<string, FormatConfig>;
 
-  /** Watch mode configuration */
+  /** §4 — Watch mode configuration */
   watch: WatchConfig;
 
-  /** CLI display settings */
+  /** §5 — CLI display settings */
   display: DisplayConfig;
 
-  /** Asset requirements */
+  /** §6 — Asset requirements and catalog */
   assets?: AssetsConfig;
+
+  /** §7 — Scripture validation (Bible verse checking) */
+  scripture?: ScriptureConfig;
+
+  /** §8 — Makefile project layout paths */
+  paths?: PathsConfig;
+
+  /** §9 — Flat scope definitions (A, C, D) */
+  scopes?: ScopesConfig;
+
+  /** §10 — Brand visual identity */
+  brand?: BrandConfig;
 
   /** Config version */
   version: string;

@@ -183,6 +183,11 @@ export async function buildFormat(
     };
   }
 
+  // Check for multi-step pipeline (e.g., docbook-intermediate)
+  if (formatConfig.pipeline === 'docbook-intermediate') {
+    return buildViaPipeline(formatName, formatConfig, config, paths, outputPath, startTime);
+  }
+
   // Build command arguments from config
   const args = buildCommandArgs(
     formatConfig,
@@ -218,6 +223,136 @@ export async function buildFormat(
       outputPath,
       duration,
       error: 'Build completed but output file not found',
+    };
+  }
+
+  return {
+    format: formatName,
+    success: true,
+    outputPath,
+    duration,
+  };
+}
+
+// =============================================================================
+// Pipeline Execution (Multi-step conversions)
+// =============================================================================
+
+/**
+ * Build via docbook-intermediate pipeline:
+ *   Step 1: AsciiDoc → DocBook XML (using existing docbook config)
+ *   Step 2: DocBook XML → target format (using pandoc)
+ *
+ * Pandoc's DocBook reader is excellent; its AsciiDoc reader is not.
+ * This pipeline gets the best of both: Asciidoctor for parsing, pandoc for conversion.
+ */
+async function buildViaPipeline(
+  formatName: string,
+  formatConfig: FormatConfig,
+  config: BuildConfig,
+  paths: RuntimePaths,
+  outputPath: string,
+  startTime: number,
+): Promise<BuildResult> {
+  // Step 1: Build DocBook XML as intermediate
+  const docbookConfig = config.formats['docbook'];
+  if (!docbookConfig) {
+    return {
+      format: formatName,
+      success: false,
+      outputPath,
+      duration: Date.now() - startTime,
+      error: 'Pipeline requires docbook format in config (for intermediate XML generation)',
+    };
+  }
+
+  const xmlPath = join(
+    paths.outputDir,
+    `${config.document.output_name}.xml`
+  );
+
+  const docbookArgs = buildCommandArgs(
+    docbookConfig,
+    config.attributes,
+    xmlPath,
+    paths.masterDocument,
+  );
+
+  // Check asciidoctor is available
+  const asciidoctorAvailable = await checkToolInstalled(docbookConfig);
+  if (!asciidoctorAvailable) {
+    return {
+      format: formatName,
+      success: false,
+      outputPath,
+      duration: Date.now() - startTime,
+      error: `${docbookConfig.command} not found (needed for DocBook intermediate). Install with: ${docbookConfig.install}`,
+    };
+  }
+
+  // Execute Step 1: AsciiDoc → DocBook XML
+  const step1 = await executeCommand(docbookConfig.command, docbookArgs, paths.sourceDir);
+  if (step1.code !== 0) {
+    return {
+      format: formatName,
+      success: false,
+      outputPath,
+      duration: Date.now() - startTime,
+      error: `Pipeline step 1 failed (AsciiDoc → DocBook): ${step1.stderr}`,
+    };
+  }
+
+  // Verify XML was created
+  if (!existsSync(xmlPath)) {
+    return {
+      format: formatName,
+      success: false,
+      outputPath,
+      duration: Date.now() - startTime,
+      error: 'Pipeline step 1 completed but DocBook XML not found',
+    };
+  }
+
+  // Check pandoc is available
+  const pandocAvailable = await checkToolInstalled(formatConfig);
+  if (!pandocAvailable) {
+    return {
+      format: formatName,
+      success: false,
+      outputPath,
+      duration: Date.now() - startTime,
+      error: `${formatConfig.command} not found. Install with: ${formatConfig.install}`,
+    };
+  }
+
+  // Execute Step 2: DocBook XML → target format (pandoc)
+  const pandocArgs = [
+    ...formatConfig.args,
+    '-o', outputPath,
+    xmlPath,
+  ];
+
+  const step2 = await executeCommand(formatConfig.command, pandocArgs, paths.sourceDir);
+  const duration = Date.now() - startTime;
+
+  if (step2.code !== 0) {
+    return {
+      format: formatName,
+      success: false,
+      outputPath,
+      duration,
+      error: `Pipeline step 2 failed (DocBook → ${formatName}): ${step2.stderr}`,
+    };
+  }
+
+  // Verify output was created
+  if (!existsSync(outputPath)) {
+    return {
+      format: formatName,
+      success: false,
+      outputPath,
+      duration,
+      error: `Pipeline completed but output file not found: ${outputPath}`,
     };
   }
 

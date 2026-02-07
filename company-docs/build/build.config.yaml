@@ -4,15 +4,20 @@
 #
 # Specification: editorial-style-guide.adoc (CWS-GDE-001)
 #
-# This file defines ALL behavior for the TypeScript builder (secondary build
-# system). The Makefile is the primary editorial build system — this config
-# drives multi-format publishing when the TS builder is invoked.
+# THE SINGLE SOURCE OF TRUTH for all build parameters.
+# Both the Makefile (primary) and TS builder (secondary) read from this file.
 #
 # Architecture:
-#   Primary    Makefile + asciidoctor-pdf    Editorial review (PDF only)
-#   Secondary  TS builder + this config      Multi-format publishing
+#   This config  →  config.mk (generated)  →  Makefile (pure logic)
+#   This config  →  TS builder (reads directly)
 #
-# The TS code is just an executor — to change behavior, edit THIS file.
+# To change build behavior, edit THIS file. Neither the Makefile nor the
+# TS builder contain editable configuration — they are pure engines.
+#
+# Path conventions:
+#   Sections 1-7:  Paths relative to build/ (TS builder working directory)
+#   Section 8:     Paths relative to company-docs/ (Makefile working directory)
+#   Section 9-10:  Data values (no paths)
 #
 # "For which of you, intending to build a tower, sitteth not down first,
 #  and counteth the cost, whether he have sufficient to finish it?"
@@ -191,6 +196,41 @@ formats:
     #   :manmanual: Manual Title
     #   :mansource: Source
 
+  # --- Conversion: Multi-step pipeline via pandoc ---
+  # These formats use a two-step pipeline:
+  #   1. AsciiDoc → DocBook XML (via asciidoctor)
+  #   2. DocBook XML → target format (via pandoc)
+  # Pandoc's DocBook reader is excellent; its AsciiDoc reader is not.
+
+  markdown:
+    enabled: false
+    command: pandoc
+    backend: markdown
+    extension: .md
+    install: apt install pandoc
+    pipeline: docbook-intermediate
+    options: {}
+    args:
+      - "--from"
+      - "docbook"
+      - "--to"
+      - "gfm"
+      - "--wrap=none"
+
+  docx:
+    enabled: false
+    command: pandoc
+    backend: docx
+    extension: .docx
+    install: apt install pandoc
+    pipeline: docbook-intermediate
+    options: {}
+    args:
+      - "--from"
+      - "docbook"
+      - "--to"
+      - "docx"
+
 
 # =============================================================================
 # 4. Watch Configuration
@@ -330,6 +370,100 @@ assets:
 
 
 # =============================================================================
+# 7. Scripture (Bible Verse Validation)
+# =============================================================================
+# Used by `cws-build lint --bible` to validate cited Scripture against
+# canonical text from the Bereshit scripture data.
+#
+# Translations: KJV (primary), WEB (alternate)
+# Data format:  {translation}/Book/Chapter_N/Verse_N.txt
+# Location:     Relative to Bereshit repo root (../../word/scripture/)
+#
+# "All scripture is given by inspiration of God..." — 2 Timothy 3:16
+
+scripture:
+  # Path to scripture data (relative to company-docs/)
+  # Resolved at runtime — the Bereshit repo root is two levels up from build/
+  base_path: ../../word/scripture
+
+  # Supported translations for verse lookup
+  translations:
+    - KJV
+    - WEB
+
+  # Default translation when citation doesn't specify
+  default_translation: KJV
+
+
+# =============================================================================
+# 8. Paths (Makefile Project Layout)
+# =============================================================================
+# All paths relative to company-docs/ (Makefile working directory).
+# The config.mk generator translates these into Make variables.
+#
+# These define WHERE things live. Formats (§3) define HOW to build them.
+
+paths:
+  # Source directories
+  book_dir: book
+  preview_dir: build/_previews
+  shared_attributes: build/_previews/_shared-attributes.adoc
+
+  # Theme and fonts
+  theme_file: build/themes/cws-manual-theme.yml
+  font_dir: "/usr/share/fonts/truetype/noto;GEM_FONTS_DIR"
+
+
+# =============================================================================
+# 9. Scopes (Flat Scope Definitions)
+# =============================================================================
+# Each scope maps a book directory to an editorial preview build.
+# The Makefile's build_flat_scope function reads these to:
+#   1. Build all .adoc files in the directory as individual sections
+#   2. Assemble a scope-level PDF from the preview file
+#
+# To add a new scope:
+#   1. Add entry here with directory, preview, and output
+#   2. Run `make config` to regenerate config.mk
+#   3. Add a Make target that calls build_flat_scope with the new scope vars
+
+scopes:
+  A:
+    name: frontmatter
+    directory: A-frontmatter
+    preview: A-frontmatter-preview.adoc
+    output: CWS-Frontmatter.pdf
+
+  C:
+    name: appendices
+    directory: C-appendices
+    preview: C-appendices-preview.adoc
+    output: CWS-Appendices.pdf
+
+  D:
+    name: backmatter
+    directory: D-backmatter
+    preview: D-backmatter-preview.adoc
+    output: CWS-BackMatter.pdf
+
+
+# =============================================================================
+# 10. Brand Colors
+# =============================================================================
+# Canonical source: Brand Color Palette in the manual.
+# Used by asset generation (palette swatch, mermaid themes).
+# Hex values with # prefix.
+
+brand:
+  colors:
+    deep_blue: "#1A365D"
+    medium_blue: "#2C5282"
+    gold: "#D69E2E"
+    dark: "#2D3748"
+    light: "#F7FAFC"
+
+
+# =============================================================================
 # Version
 # =============================================================================
-version: "2.0.0"
+version: "3.0.0"

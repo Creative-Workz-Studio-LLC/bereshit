@@ -2,6 +2,17 @@
 # CWS Company Identity Manual — Build System
 # =============================================================================
 #
+# Architecture: 9 sections
+#   §1  PROJECT CONFIGURATION    All editable values in one place
+#   §2  FILESYSTEM DISCOVERY     Derived from config + filesystem
+#   §3  CORE ENGINES             Resolution, caching, dependency check
+#   §4  EDITORIAL TARGETS        book, scope, article, section, pages
+#   §5  VALIDATION & LINT        Structure validation + TS delegation
+#   §6  PUBLISHING               Multi-format via TS builder
+#   §7  ASSET GENERATION         Diagrams, grayscale, palette
+#   §8  DEVELOPMENT              config, watch, deps, status, clean, remove, setup
+#   §9  HELP                     Self-documentation
+#
 # Four build scopes for editorial review:
 #   1. Full book       make book | make create
 #   2. Part-level      make part PART=1 | make content | make A | make B | ...
@@ -25,11 +36,33 @@
 #   make validate TYPE=manual-l BONUS=operational  Full legal + editorial
 #
 # Exit codes:
-#   E0  Success — target completed without errors
-#   E1  Usage error — missing or invalid arguments (bad PART=, ARTICLE=, FILE=)
-#   E2  Missing dependency — required tool or source file not found
-#   E3  Build failure — asciidoctor-pdf returned a non-zero exit code
-#   E4  Validation failure — structure checks found errors (validate target only)
+#   E0   Success — target completed without errors
+#
+#   E1x  Usage errors — arguments, scope, user input
+#     E10  Missing required argument (FILE=, PART=, ARTICLE=, PAGES=)
+#     E11  Invalid argument value (bad scope, unknown part, out-of-range pages)
+#     E12  Conflicting arguments (mutually exclusive options)
+#
+#   E2x  Dependency errors — files, tools, paths
+#     E20  Source file not found (resolved FILE= does not exist)
+#     E21  Tool not found (asciidoctor-pdf, qpdf, entr, node, etc.)
+#     E22  Directory not found (BOOK_DIR, scope dir, output dir)
+#     E23  No matching files (scope/glob returned empty)
+#
+#   E3x  Build errors — compilation, rendering, extraction
+#     E30  PDF build failed (asciidoctor-pdf non-zero exit)
+#     E31  Asset generation failed (mermaid, imagemagick, etc.)
+#     E32  Page extraction failed (qpdf error)
+#     E33  TypeScript build failed (tsc/npm error)
+#     E34  Partial build — some files failed in batch (continues, warns)
+#
+#   E4x  Validation errors — structural, editorial, data
+#     E40  Validation failure — structure checks found errors
+#     E41  Page marker validation failed (gaps, missing banners)
+#     E42  TOC structure validation failed (missing sections, placeholders)
+#     E43  Editorial lint failure (style violations found)
+#
+#   Legacy mapping: E1→E10/E11, E2→E20/E21, E3→E30, E4→E40
 #
 # "Write the vision, and make it plain upon tables,
 #  that he may run that readeth it." — Habakkuk 2:2
@@ -39,48 +72,67 @@
 .PHONY: all book create \
         A B C D \
         frontmatter part content appendices backmatter \
-        article section \
-        assets \
-        validate \
-        watch-pdf deps \
+        article section pages \
+        validate lint toc toc-fill toc-verify \
         html pdf epub docbook build-ts \
+        markdown docx convert \
+        assets \
+        config watch-pdf deps \
         clean remove setup setup-node setup-asciidoctor \
         status help
 
 
 # =============================================================================
-# VARIABLES
+# §1  PROJECT CONFIGURATION — Loaded from build.config.yaml
+# =============================================================================
+# All configuration lives in build/build.config.yaml (single source of truth).
+# Run `make config` to regenerate config.mk from the YAML.
+#
+# To change behavior:  Edit build/build.config.yaml, then run `make config`.
+# Bootstrap (no config.mk):  ?= defaults below ensure the Makefile always works.
 # =============================================================================
 
-ADOC_PDF    = asciidoctor-pdf
-ADOC_HTML   = asciidoctor
-OUTDIR      = build/output
-BOOK_DIR    = book
-PREVIEW_DIR = build/_previews
-THEME_FILE  = build/themes/cws-manual-theme.yml
-ATTRS_FILE  = $(PREVIEW_DIR)/_shared-attributes.adoc
+# Load generated config (dash-include = no error if missing)
+-include config.mk
 
-# Theme arguments for standalone section builds (files without their own header).
-# imagesdir uses absolute path so files in subdirectories find assets correctly.
-THEME_ARGS = -a pdf-theme=$(THEME_FILE) \
-             -a pdf-fontsdir='/usr/share/fonts/truetype/noto;GEM_FONTS_DIR' \
-             -a imagesdir=$(CURDIR)/$(BOOK_DIR)/00-assets
+# --- Defaults (used only when config.mk is absent) ---
+ADOC_PDF    ?= asciidoctor-pdf
+ADOC_HTML   ?= asciidoctor
+OUTDIR      ?= build/output
+BOOK_DIR    ?= book
+PREVIEW_DIR ?= build/_previews
+THEME_FILE  ?= build/themes/cws-manual-theme.yml
+ATTRS_FILE  ?= $(PREVIEW_DIR)/_shared-attributes.adoc
+OUTPUT_STEM ?= CWS-Company-Identity-Manual
+THEME_ARGS  ?= -a pdf-theme=$(THEME_FILE) \
+               -a pdf-fontsdir='/usr/share/fonts/truetype/noto;GEM_FONTS_DIR' \
+               -a imagesdir=$(CURDIR)/$(BOOK_DIR)/00-assets
+SCOPE_A_DIR     ?= A-frontmatter
+SCOPE_A_PREVIEW ?= A-frontmatter-preview.adoc
+SCOPE_A_OUTPUT  ?= CWS-Frontmatter.pdf
+SCOPE_C_DIR     ?= C-appendices
+SCOPE_C_PREVIEW ?= C-appendices-preview.adoc
+SCOPE_C_OUTPUT  ?= CWS-Appendices.pdf
+SCOPE_D_DIR     ?= D-backmatter
+SCOPE_D_PREVIEW ?= D-backmatter-preview.adoc
+SCOPE_D_OUTPUT  ?= CWS-BackMatter.pdf
+ASSETS_DIR  ?= $(BOOK_DIR)/00-assets
+ASSETS_PNG  ?= $(ASSETS_DIR)/figures/png
+ASSETS_SVG  ?= $(ASSETS_DIR)/figures/svg
+ASSETS_GRAY ?= $(ASSETS_DIR)/figures/grayscale
+ASSETS_SRC  ?= $(ASSETS_DIR)/sources/diagrams
+MERMAID_CFG ?= $(ASSETS_DIR)/sources/config/mermaid-config.json
+PUPPET_CFG  ?= $(ASSETS_DIR)/sources/config/puppeteer-config.json
+BRAND_DEEP_BLUE   ?= \#1A365D
+BRAND_MEDIUM_BLUE ?= \#2C5282
+BRAND_GOLD        ?= \#D69E2E
+BRAND_DARK        ?= \#2D3748
+BRAND_LIGHT       ?= \#F7FAFC
 
-# Asset generation paths
-ASSETS_DIR  = $(BOOK_DIR)/00-assets
-ASSETS_PNG  = $(ASSETS_DIR)/figures/png
-ASSETS_SVG  = $(ASSETS_DIR)/figures/svg
-ASSETS_GRAY = $(ASSETS_DIR)/figures/grayscale
-ASSETS_SRC  = $(ASSETS_DIR)/sources/diagrams
-MERMAID_CFG = $(ASSETS_DIR)/sources/config/mermaid-config.json
-PUPPET_CFG  = $(ASSETS_DIR)/sources/config/puppeteer-config.json
 
-# Brand colors (canonical source: Brand Color Palette / mermaid-config.json)
-BRAND_DEEP_BLUE   = \#1A365D
-BRAND_MEDIUM_BLUE = \#2C5282
-BRAND_GOLD        = \#D69E2E
-BRAND_DARK        = \#2D3748
-BRAND_LIGHT       = \#F7FAFC
+# =============================================================================
+# §2  FILESYSTEM DISCOVERY — Derived from config + filesystem
+# =============================================================================
 
 # Part discovery — extracts Part IDs from directory names.
 # Supports Part-0, non-sequential numbering, letter or number IDs.
@@ -90,8 +142,12 @@ PART_IDS   := $(shell for d in $(PART_DIRS); do basename "$$d" | sed 's/Part-\([
 
 
 # =============================================================================
-# RESOLUTION ENGINE — Unified 3-mode path resolution
+# §3  CORE ENGINES — Resolution, caching, dependency check
 # =============================================================================
+
+# -----------------------------------------------------------------------------
+# RESOLUTION ENGINE — Unified 3-mode path resolution
+# -----------------------------------------------------------------------------
 # All scoped targets use these defines for consistent resolution:
 #
 #   Mode 1 — Path     (input has /)   Spine-relative, resolves directly
@@ -106,7 +162,7 @@ PART_IDS   := $(shell for d in $(PART_DIRS); do basename "$$d" | sed 's/Part-\([
 #   resolve_file  — finds a file (section)
 #
 # Both expect shell variable INPUT to be set. Both set RESOLVED.
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 # Resolve a directory using 3-mode resolution.
 # Expects INPUT set in calling shell. Sets RESOLVED.
@@ -149,21 +205,19 @@ else \
 fi
 endef
 
-
-# =============================================================================
+# -----------------------------------------------------------------------------
 # DEPENDENCY CHECK
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 define check_dep
 	@command -v $(ADOC_PDF) >/dev/null 2>&1 || \
-	    { echo "Error [E2]: $(ADOC_PDF) not found."; \
+	    { echo "Error [E21]: $(ADOC_PDF) not found."; \
 	      echo "  Run 'make setup' to install dependencies."; exit 2; }
 endef
 
-
-# =============================================================================
+# -----------------------------------------------------------------------------
 # CACHE ENGINE — Skip rebuilds when sources haven't changed
-# =============================================================================
+# -----------------------------------------------------------------------------
 # Timestamp-based: compares output PDF mtime against newest source file.
 # Override with FORCE=1 on any target to force rebuild.
 #
@@ -174,7 +228,7 @@ endef
 #
 # Sets CACHE_HIT=1 if up to date (caller should exit 0).
 # Sets CACHE_HIT=0 if stale or missing (caller should rebuild).
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 FORCE ?=
 
@@ -200,169 +254,18 @@ endef
 
 
 # =============================================================================
-# EDITORIAL TARGETS — Scoped PDF builds for page-by-page review
+# §4  EDITORIAL TARGETS — Scoped PDF builds for page-by-page review
 # =============================================================================
 # Each preview file is self-contained (includes _shared-attributes.adoc).
 # No extra flags needed — theme, fonts, and attributes are baked in.
 # =============================================================================
-
-# =============================================================================
-# ASSET GENERATION — Derived visual assets from source files
-# =============================================================================
-# Generates derived assets that don't exist in source form:
-#
-#   Phase 1 — Mermaid diagrams:      sources/diagrams/*.mmd → figures/png/*.png + figures/svg/*.svg
-#   Phase 2 — Grayscale variants:    figures/png/fig-*.png → figures/grayscale/fig-*-grayscale.png
-#   Phase 3 — Color palette swatch:  Brand colors → fig-color-palette.png
-#
-# Requirements:
-#   mmdc          @mermaid-js/mermaid-cli (Phase 1)
-#   magick        ImageMagick 7+ (Phases 2-3)
-#
-# Usage:
-#   make assets              Generate all derived assets
-#   make assets FORCE=1      Force regeneration (ignore cache)
-# =============================================================================
-
-assets:
-	@echo ""
-	@echo "Asset Generation"
-	@echo "================"
-	@echo ""
-	@GENERATED=0; SKIPPED=0; FAILED=0; \
-	\
-	echo "--- Phase 1: Mermaid diagrams ---"; \
-	echo ""; \
-	if command -v mmdc >/dev/null 2>&1; then \
-	    for f in $(ASSETS_SRC)/fig-*.mmd; do \
-	        [ -f "$$f" ] || continue; \
-	        NAME=$$(basename "$$f" .mmd); \
-	        PNG="$(ASSETS_PNG)/$$NAME.png"; \
-	        SVG="$(ASSETS_SVG)/$$NAME.svg"; \
-	        if [ "$(FORCE)" != "1" ] && [ -f "$$PNG" ] && [ "$$PNG" -nt "$$f" ]; then \
-	            echo "  OK    $$NAME.png (up to date)"; \
-	            SKIPPED=$$((SKIPPED + 1)); \
-	        else \
-	            if mmdc -i "$$f" -o "$$PNG" \
-	                -b white -p $(PUPPET_CFG) -s 3 >/dev/null 2>&1; then \
-	                echo "  GEN   $$NAME.png"; \
-	                GENERATED=$$((GENERATED + 1)); \
-	            else \
-	                echo "  FAIL  $$NAME.png"; \
-	                FAILED=$$((FAILED + 1)); \
-	            fi; \
-	        fi; \
-	        if [ "$(FORCE)" != "1" ] && [ -f "$$SVG" ] && [ "$$SVG" -nt "$$f" ]; then \
-	            echo "  OK    $$NAME.svg (up to date)"; \
-	            SKIPPED=$$((SKIPPED + 1)); \
-	        else \
-	            if mmdc -i "$$f" -o "$$SVG" \
-	                -b transparent -p $(PUPPET_CFG) >/dev/null 2>&1; then \
-	                echo "  GEN   $$NAME.svg"; \
-	                GENERATED=$$((GENERATED + 1)); \
-	            else \
-	                echo "  FAIL  $$NAME.svg"; \
-	                FAILED=$$((FAILED + 1)); \
-	            fi; \
-	        fi; \
-	    done; \
-	else \
-	    echo "  SKIP  mmdc not found (install @mermaid-js/mermaid-cli)"; \
-	fi; \
-	\
-	echo ""; \
-	echo "--- Phase 2: Grayscale variants ---"; \
-	echo ""; \
-	if command -v magick >/dev/null 2>&1; then \
-	    for f in $(ASSETS_PNG)/fig-*.png; do \
-	        [ -f "$$f" ] || continue; \
-	        case "$$(basename $$f)" in *-grayscale.png|fig-color-palette.png|fig-title-page-mockup.png) continue ;; esac; \
-	        NAME=$$(basename "$$f" .png); \
-	        OUT="$(ASSETS_GRAY)/$${NAME}-grayscale.png"; \
-	        if [ "$(FORCE)" != "1" ] && [ -f "$$OUT" ] && [ "$$OUT" -nt "$$f" ]; then \
-	            echo "  OK    $${NAME}-grayscale.png (up to date)"; \
-	            SKIPPED=$$((SKIPPED + 1)); \
-	        else \
-	            if magick "$$f" -colorspace Gray "$$OUT" 2>/dev/null; then \
-	                echo "  GEN   $${NAME}-grayscale.png"; \
-	                GENERATED=$$((GENERATED + 1)); \
-	            else \
-	                echo "  FAIL  $${NAME}-grayscale.png"; \
-	                FAILED=$$((FAILED + 1)); \
-	            fi; \
-	        fi; \
-	    done; \
-	else \
-	    echo "  SKIP  ImageMagick (magick) not found"; \
-	fi; \
-	\
-	echo ""; \
-	echo "--- Phase 3: Color palette swatch ---"; \
-	echo ""; \
-	if command -v magick >/dev/null 2>&1; then \
-	    OUT="$(ASSETS_PNG)/fig-color-palette.png"; \
-	    if [ "$(FORCE)" != "1" ] && [ -f "$$OUT" ] && [ -f "$(MERMAID_CFG)" ] && [ "$$OUT" -nt "$(MERMAID_CFG)" ]; then \
-	        echo "  OK    fig-color-palette.png (up to date)"; \
-	        SKIPPED=$$((SKIPPED + 1)); \
-	    else \
-	        if magick -size 900x220 xc:white \
-	            \( -size 150x120 xc:'$(BRAND_DEEP_BLUE)' \) -geometry +30+20 -composite \
-	            \( -size 150x120 xc:'$(BRAND_MEDIUM_BLUE)' \) -geometry +195+20 -composite \
-	            \( -size 150x120 xc:'$(BRAND_GOLD)' \) -geometry +360+20 -composite \
-	            \( -size 150x120 xc:'$(BRAND_DARK)' \) -geometry +525+20 -composite \
-	            \( -size 150x120 xc:'$(BRAND_LIGHT)' -bordercolor '$(BRAND_DARK)' -border 1 \) -geometry +690+19 -composite \
-	            -font 'Noto-Sans-Bold' -pointsize 14 \
-	            -fill white -annotate +72+110 'Deep Blue' \
-	            -annotate +223+110 'Medium Blue' \
-	            -fill '$(BRAND_DEEP_BLUE)' -annotate +410+110 'Gold' \
-	            -fill white -annotate +585+110 'Dark' \
-	            -fill '$(BRAND_DARK)' -annotate +740+110 'Light' \
-	            -font 'Noto-Sans-Regular' -pointsize 12 \
-	            -fill '$(BRAND_DARK)' \
-	            -annotate +62+165 '$(BRAND_DEEP_BLUE)' \
-	            -annotate +225+165 '$(BRAND_MEDIUM_BLUE)' \
-	            -annotate +393+165 '$(BRAND_GOLD)' \
-	            -annotate +558+165 '$(BRAND_DARK)' \
-	            -annotate +723+165 '$(BRAND_LIGHT)' \
-	            -font 'Noto-Sans-Regular' -pointsize 11 \
-	            -fill gray \
-	            -annotate +56+190 'Primary' \
-	            -annotate +218+190 'Secondary' \
-	            -annotate +400+190 'Accent' \
-	            -annotate +560+190 'Borders' \
-	            -annotate +710+190 'Backgrounds' \
-	            -depth 8 \
-	            "$$OUT" 2>/dev/null; then \
-	            echo "  GEN   fig-color-palette.png"; \
-	            GENERATED=$$((GENERATED + 1)); \
-	        else \
-	            echo "  FAIL  fig-color-palette.png"; \
-	            FAILED=$$((FAILED + 1)); \
-	        fi; \
-	    fi; \
-	else \
-	    echo "  SKIP  ImageMagick (magick) not found"; \
-	fi; \
-	\
-	echo ""; \
-	echo "--- Summary ---"; \
-	echo ""; \
-	echo "  Generated: $$GENERATED  Skipped: $$SKIPPED  Failed: $$FAILED"; \
-	if [ "$$FAILED" -gt 0 ]; then \
-	    echo "  Warning: $$FAILED asset(s) failed to generate."; \
-	fi; \
-	echo ""
-
 
 # Default: build full book PDF
 all: book
 
 # --- Full Book ---------------------------------------------------------------
 
-# Full editorial build: validate → scopes (cascade to articles/sections) →
-# asset docs → master → status
-#
-# Cascade: scope → articles → sections (each parent builds its children first)
+# Full editorial build: validate → assets → scopes (cascade) → master → status
 book:
 	@echo ""
 	@echo "Building complete editorial set..."
@@ -393,7 +296,7 @@ book:
 	    mkdir -p "$$OUTPATH"; \
 	    $(ADOC_PDF) $(THEME_ARGS) "$$f" -o "$$OUTPATH/$$FNAME.pdf" 2>&1 || \
 	        { rm -f "$$OUTPATH/$$FNAME.pdf"; \
-	          echo "Error [E3]: Build failed for asset doc '$$f'."; continue; }; \
+	          echo "Error [E31]: Build failed for asset doc '$$f'."; continue; }; \
 	    echo "Built: $$OUTPATH/$$FNAME.pdf"; \
 	done
 	@echo ""
@@ -403,20 +306,21 @@ book:
 	@echo ""
 	@$(MAKE) --no-print-directory status
 
-# Master PDF only (used by book target and standalone)
+# --- Master PDF --------------------------------------------------------------
+
 create:
 	$(check_dep)
 	@test -f "$(BOOK_DIR)/book.adoc" || \
-	    { echo "Error [E2]: $(BOOK_DIR)/book.adoc not found."; exit 2; }
-	@CACHE_OUT="$(OUTDIR)/CWS-Company-Identity-Manual.pdf"; \
+	    { echo "Error [E20]: $(BOOK_DIR)/book.adoc not found."; exit 2; }
+	@CACHE_OUT="$(OUTDIR)/$(OUTPUT_STEM).pdf"; \
 	CACHE_SRCS="$(BOOK_DIR)/"; \
 	$(call check_cache); \
 	if [ "$$CACHE_HIT" = "1" ]; then exit 0; fi; \
 	mkdir -p $(OUTDIR); \
-	$(ADOC_PDF) $(BOOK_DIR)/book.adoc -o $(OUTDIR)/CWS-Company-Identity-Manual.pdf 2>&1 || \
-	    { rm -f "$(OUTDIR)/CWS-Company-Identity-Manual.pdf"; \
-	      echo "Error [E3]: Full book build failed."; exit 3; }; \
-	echo "Built: $(OUTDIR)/CWS-Company-Identity-Manual.pdf"
+	$(ADOC_PDF) $(BOOK_DIR)/book.adoc -o $(OUTDIR)/$(OUTPUT_STEM).pdf 2>&1 || \
+	    { rm -f "$(OUTDIR)/$(OUTPUT_STEM).pdf"; \
+	      echo "Error [E30]: Full book build failed."; exit 3; }; \
+	echo "Built: $(OUTDIR)/$(OUTPUT_STEM).pdf"
 
 # --- Spine Targets (Letter-Based) -------------------------------------------
 # Maps directly to the book spine:
@@ -427,6 +331,53 @@ A: frontmatter
 B: content
 C: appendices
 D: backmatter
+
+# --- Flat Scope Function ------------------------------------------------------
+# Shared logic for flat scope builds (frontmatter, appendices, backmatter).
+# Each scope: build all sections in directory → assemble scope PDF from preview.
+# Config-driven via SCOPE_X_DIR, SCOPE_X_PREVIEW, SCOPE_X_OUTPUT in §1.
+# Add new flat scopes: define SCOPE_X variables in §1, add 2-line target below.
+#
+# $(1) = scope directory   $(2) = preview filename   $(3) = output filename
+define build_flat_scope
+FAILED=0; \
+for f in $$(ls $(BOOK_DIR)/$(1)/*.adoc 2>/dev/null | sort); do \
+    FNAME=$$(basename "$$f"); \
+    $(MAKE) --no-print-directory section FILE="$$FNAME" FORCE=$(FORCE) 2>&1 || { \
+        echo "  WARN [E34]: Build failed for $$FNAME (continuing batch)"; \
+        FAILED=$$((FAILED + 1)); \
+    }; \
+done; \
+if [ "$$FAILED" -gt 0 ]; then \
+    echo ""; echo "Warning [E34]: $$FAILED file(s) failed in $(1) batch."; \
+fi; \
+SRC="$(PREVIEW_DIR)/$(2)"; \
+test -f "$$SRC" || \
+    { echo "Error [E20]: $$SRC not found."; exit 2; }; \
+CACHE_OUT="$(OUTDIR)/$(1)/$(3)"; \
+CACHE_SRCS="$(BOOK_DIR)/$(1)/ $(PREVIEW_DIR)/$(2)"; \
+$(call check_cache); \
+if [ "$$CACHE_HIT" = "1" ]; then exit 0; fi; \
+mkdir -p "$(OUTDIR)/$(1)"; \
+$(ADOC_PDF) "$$SRC" -o "$(OUTDIR)/$(1)/$(3)" 2>&1 || \
+    { rm -f "$(OUTDIR)/$(1)/$(3)"; \
+      echo "Error [E30]: $(1) build failed."; exit 3; }; \
+echo "Built: $(OUTDIR)/$(1)/$(3)"
+endef
+
+# --- Flat Scope Targets ------------------------------------------------------
+
+frontmatter:
+	$(check_dep)
+	@$(call build_flat_scope,$(SCOPE_A_DIR),$(SCOPE_A_PREVIEW),$(SCOPE_A_OUTPUT))
+
+appendices:
+	$(check_dep)
+	@$(call build_flat_scope,$(SCOPE_C_DIR),$(SCOPE_C_PREVIEW),$(SCOPE_C_OUTPUT))
+
+backmatter:
+	$(check_dep)
+	@$(call build_flat_scope,$(SCOPE_D_DIR),$(SCOPE_D_PREVIEW),$(SCOPE_D_OUTPUT))
 
 # --- Part-Level Previews ----------------------------------------------------
 # Uses resolve_dir for 3-mode resolution against B-content/Part-*/.
@@ -439,28 +390,17 @@ D: backmatter
 # Also accepts full basename: make part PART=Part-1-identity
 # book/ prefix stripped automatically.
 
-frontmatter:
-	$(check_dep)
-	@for f in $$(ls $(BOOK_DIR)/A-frontmatter/*.adoc 2>/dev/null | sort); do \
-	    FNAME=$$(basename "$$f"); \
-	    $(MAKE) --no-print-directory section FILE="$$FNAME" FORCE=$(FORCE) 2>&1 || true; \
+# Build all content Parts — iterates actual Part IDs from spine.
+content:
+	@test "$(PART_COUNT)" -gt 0 || \
+	    { echo "Error [E22]: No Part directories found in $(BOOK_DIR)/B-content/."; exit 2; }
+	@for N in $(PART_IDS); do \
+	    $(MAKE) --no-print-directory part PART=$$N || exit $$?; \
 	done
-	@SRC="$(PREVIEW_DIR)/A-frontmatter-preview.adoc"; \
-	test -f "$$SRC" || \
-	    { echo "Error [E2]: $$SRC not found."; exit 2; }; \
-	CACHE_OUT="$(OUTDIR)/A-frontmatter/CWS-Frontmatter.pdf"; \
-	CACHE_SRCS="$(BOOK_DIR)/A-frontmatter/ $(PREVIEW_DIR)/A-frontmatter-preview.adoc"; \
-	$(call check_cache); \
-	if [ "$$CACHE_HIT" = "1" ]; then exit 0; fi; \
-	mkdir -p "$(OUTDIR)/A-frontmatter"; \
-	$(ADOC_PDF) "$$SRC" -o "$(OUTDIR)/A-frontmatter/CWS-Frontmatter.pdf" 2>&1 || \
-	    { rm -f "$(OUTDIR)/A-frontmatter/CWS-Frontmatter.pdf"; \
-	      echo "Error [E3]: Frontmatter build failed."; exit 3; }; \
-	echo "Built: $(OUTDIR)/A-frontmatter/CWS-Frontmatter.pdf"
 
 part:
 	@test -n "$(PART)" || \
-	    { echo "Error [E1]: Missing PART argument."; \
+	    { echo "Error [E10]: Missing PART argument."; \
 	      echo "  Path:   make part PART=B-content/Part-1-identity"; \
 	      echo "  ID:     make part PART=1"; \
 	      echo "  Search: make part PART=identity"; \
@@ -469,7 +409,7 @@ part:
 	@INPUT="$(PART)"; \
 	$(call resolve_dir,B-content,Part-,1); \
 	if [ -z "$$RESOLVED" ]; then \
-	    echo "Error [E1]: Part '$(PART)' not found."; \
+	    echo "Error [E11]: Part '$(PART)' not found."; \
 	    echo "  Available IDs: $(PART_IDS)"; \
 	    for d in $(PART_DIRS); do echo "    $$(basename $$d)"; done; \
 	    exit 1; \
@@ -479,10 +419,17 @@ part:
 	if [ -z "$$PNAME" ]; then \
 	    PNAME=$$(basename "$$RESOLVED" | sed 's/Part-[^-]*-//' | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
 	fi; \
+	BATCHFAIL=0; \
 	for ADIR in $$(ls -d "$$RESOLVED"/Article-*/ 2>/dev/null | sort); do \
 	    ANAME=$$(basename "$$ADIR"); \
-	    $(MAKE) --no-print-directory article ARTICLE="$$ANAME" FORCE=$(FORCE) 2>&1 || true; \
+	    $(MAKE) --no-print-directory article ARTICLE="$$ANAME" FORCE=$(FORCE) 2>&1 || { \
+	        echo "  WARN [E34]: Build failed for $$ANAME (continuing batch)"; \
+	        BATCHFAIL=$$((BATCHFAIL + 1)); \
+	    }; \
 	done; \
+	if [ "$$BATCHFAIL" -gt 0 ]; then \
+	    echo "Warning [E34]: $$BATCHFAIL article(s) failed in Part batch."; \
+	fi; \
 	RELDIR=$$(echo "$$RESOLVED" | sed 's|^$(BOOK_DIR)/||'); \
 	SRC="$(PREVIEW_DIR)/B-part$$PID-preview.adoc"; \
 	if [ ! -f "$$SRC" ]; then \
@@ -496,54 +443,8 @@ part:
 	mkdir -p "$(OUTDIR)/$$RELDIR"; \
 	$(ADOC_PDF) "$$SRC" -o "$(OUTDIR)/$$RELDIR/CWS-Part$$PID-$$PNAME.pdf" 2>&1 || \
 	    { rm -f "$(OUTDIR)/$$RELDIR/CWS-Part$$PID-$$PNAME.pdf"; \
-	      echo "Error [E3]: Build failed for Part $$PID."; exit 3; }; \
+	      echo "Error [E30]: Build failed for Part $$PID."; exit 3; }; \
 	echo "Built: $(OUTDIR)/$$RELDIR/CWS-Part$$PID-$$PNAME.pdf"
-
-# Build all content Parts — iterates actual Part IDs from spine.
-content:
-	@test "$(PART_COUNT)" -gt 0 || \
-	    { echo "Error [E2]: No Part directories found in $(BOOK_DIR)/B-content/."; exit 2; }
-	@for N in $(PART_IDS); do \
-	    $(MAKE) --no-print-directory part PART=$$N || exit $$?; \
-	done
-
-appendices:
-	$(check_dep)
-	@for f in $$(ls $(BOOK_DIR)/C-appendices/*.adoc 2>/dev/null | sort); do \
-	    FNAME=$$(basename "$$f"); \
-	    $(MAKE) --no-print-directory section FILE="$$FNAME" FORCE=$(FORCE) 2>&1 || true; \
-	done
-	@SRC="$(PREVIEW_DIR)/C-appendices-preview.adoc"; \
-	test -f "$$SRC" || \
-	    { echo "Error [E2]: $$SRC not found."; exit 2; }; \
-	CACHE_OUT="$(OUTDIR)/C-appendices/CWS-Appendices.pdf"; \
-	CACHE_SRCS="$(BOOK_DIR)/C-appendices/ $(PREVIEW_DIR)/C-appendices-preview.adoc"; \
-	$(call check_cache); \
-	if [ "$$CACHE_HIT" = "1" ]; then exit 0; fi; \
-	mkdir -p "$(OUTDIR)/C-appendices"; \
-	$(ADOC_PDF) "$$SRC" -o "$(OUTDIR)/C-appendices/CWS-Appendices.pdf" 2>&1 || \
-	    { rm -f "$(OUTDIR)/C-appendices/CWS-Appendices.pdf"; \
-	      echo "Error [E3]: Appendices build failed."; exit 3; }; \
-	echo "Built: $(OUTDIR)/C-appendices/CWS-Appendices.pdf"
-
-backmatter:
-	$(check_dep)
-	@for f in $$(ls $(BOOK_DIR)/D-backmatter/*.adoc 2>/dev/null | sort); do \
-	    FNAME=$$(basename "$$f"); \
-	    $(MAKE) --no-print-directory section FILE="$$FNAME" FORCE=$(FORCE) 2>&1 || true; \
-	done
-	@SRC="$(PREVIEW_DIR)/D-backmatter-preview.adoc"; \
-	test -f "$$SRC" || \
-	    { echo "Error [E2]: $$SRC not found."; exit 2; }; \
-	CACHE_OUT="$(OUTDIR)/D-backmatter/CWS-BackMatter.pdf"; \
-	CACHE_SRCS="$(BOOK_DIR)/D-backmatter/ $(PREVIEW_DIR)/D-backmatter-preview.adoc"; \
-	$(call check_cache); \
-	if [ "$$CACHE_HIT" = "1" ]; then exit 0; fi; \
-	mkdir -p "$(OUTDIR)/D-backmatter"; \
-	$(ADOC_PDF) "$$SRC" -o "$(OUTDIR)/D-backmatter/CWS-BackMatter.pdf" 2>&1 || \
-	    { rm -f "$(OUTDIR)/D-backmatter/CWS-BackMatter.pdf"; \
-	      echo "Error [E3]: Backmatter build failed."; exit 3; }; \
-	echo "Built: $(OUTDIR)/D-backmatter/CWS-BackMatter.pdf"
 
 # --- Article-Level (All Sections in an Article) -----------------------------
 # Uses resolve_dir for 3-mode resolution against B-content/*/Article-*/.
@@ -559,7 +460,7 @@ backmatter:
 
 article:
 	@test -n "$(ARTICLE)" || \
-	    { echo "Error [E1]: Missing ARTICLE argument."; \
+	    { echo "Error [E10]: Missing ARTICLE argument."; \
 	      echo "  Path:   make article ARTICLE=B-content/Part-1-identity/Article-01-entity-overview"; \
 	      echo "  ID:     make article ARTICLE=01"; \
 	      echo "  Search: make article ARTICLE=entity-overview"; exit 1; }
@@ -567,7 +468,7 @@ article:
 	@INPUT="$(ARTICLE)"; \
 	$(call resolve_dir,B-content,Article-,2); \
 	if [ -z "$$RESOLVED" ]; then \
-	    echo "Error [E2]: Article '$(ARTICLE)' not found in $(BOOK_DIR)/B-content/."; \
+	    echo "Error [E20]: Article '$(ARTICLE)' not found in $(BOOK_DIR)/B-content/."; \
 	    echo "  Available:"; \
 	    for d in $$(ls -1d $(BOOK_DIR)/B-content/*/Article-* 2>/dev/null | sort); do \
 	        echo "    $$(basename $$d)"; \
@@ -578,10 +479,17 @@ article:
 	if [ "$$ADOC_COUNT" -eq 0 ]; then \
 	    echo "Warning: $$RESOLVED is empty (no .adoc files). Skipping."; exit 0; \
 	fi; \
+	BATCHFAIL=0; \
 	for f in $$(ls "$$RESOLVED"/*.adoc 2>/dev/null | sort); do \
 	    FNAME=$$(basename "$$f"); \
-	    $(MAKE) --no-print-directory section FILE="$$FNAME" FORCE=$(FORCE) 2>&1 || true; \
+	    $(MAKE) --no-print-directory section FILE="$$FNAME" FORCE=$(FORCE) 2>&1 || { \
+	        echo "  WARN [E34]: Build failed for $$FNAME (continuing batch)"; \
+	        BATCHFAIL=$$((BATCHFAIL + 1)); \
+	    }; \
 	done; \
+	if [ "$$BATCHFAIL" -gt 0 ]; then \
+	    echo "Warning [E34]: $$BATCHFAIL file(s) failed in article batch."; \
+	fi; \
 	ARTBASE=$$(basename "$$RESOLVED"); \
 	ARTID=$$(echo "$$ARTBASE" | sed 's/Article-\([^-]*\)-.*/\1/'); \
 	ARTNAME=$$(echo "$$ARTBASE" | sed 's/Article-[^-]*-//' | tr '-' ' '); \
@@ -605,7 +513,7 @@ article:
 	rm -f "$$TMPFILE"; \
 	if [ "$$EC" -ne 0 ]; then \
 	    rm -f "$$OUTPATH/CWS-Article-$$ARTID.pdf"; \
-	    echo "Error [E3]: Build failed for Article $$ARTID ($$ARTNAME)."; \
+	    echo "Error [E30]: Build failed for Article $$ARTID ($$ARTNAME)."; \
 	    echo "  Check the AsciiDoc source for syntax errors."; exit 3; \
 	fi; \
 	echo "Built: $$OUTPATH/CWS-Article-$$ARTID.pdf"
@@ -622,14 +530,14 @@ article:
 
 section:
 	@test -n "$(FILE)" || \
-	    { echo "Error [E1]: Missing FILE argument."; \
+	    { echo "Error [E10]: Missing FILE argument."; \
 	      echo "  Path:   make section FILE=A-frontmatter/A-COVER.adoc"; \
 	      echo "  Search: make section FILE=A-COVER"; exit 1; }
 	$(check_dep)
 	@INPUT="$(FILE)"; \
 	$(call resolve_file,.adoc); \
 	if [ -z "$$RESOLVED" ] || [ ! -f "$$RESOLVED" ]; then \
-	    echo "Error [E2]: '$(FILE)' not found in $(BOOK_DIR)/."; exit 2; \
+	    echo "Error [E20]: '$(FILE)' not found in $(BOOK_DIR)/."; exit 2; \
 	fi; \
 	OUTPATH=$$(dirname "$$RESOLVED" | sed 's|^$(BOOK_DIR)/||'); \
 	OUTNAME=$$(basename "$$RESOLVED" .adoc); \
@@ -640,14 +548,70 @@ section:
 	mkdir -p "$(OUTDIR)/$$OUTPATH"; \
 	$(ADOC_PDF) $(THEME_ARGS) "$$RESOLVED" -o "$(OUTDIR)/$$OUTPATH/$$OUTNAME.pdf" 2>&1 || \
 	    { rm -f "$(OUTDIR)/$$OUTPATH/$$OUTNAME.pdf"; \
-	      echo "Error [E3]: Build failed for '$$RESOLVED'."; \
+	      echo "Error [E30]: Build failed for '$$RESOLVED'."; \
 	      echo "  Check the AsciiDoc source for syntax errors."; exit 3; }; \
 	echo "Built: $(OUTDIR)/$$OUTPATH/$$OUTNAME.pdf"
 
+# --- Page Extraction (Specific Pages from a Section PDF) -------------------
+# Extracts a page range from an already-built section PDF.
+# Requires qpdf. Builds the section first if the PDF doesn't exist.
+#
+# Usage:
+#   make pages FILE=A-COVER PAGES=17-19      Extract pages 17-19
+#   make pages FILE=A-COVER PAGES=5          Extract single page 5
+#   make pages FILE=A-COVER PAGES=1-3,17-19  Extract disjoint ranges
+#
+# Output: build/output/<path>/<name>-p<PAGES>.pdf
+# Bounds-checked: refuses if page range exceeds the PDF's page count.
+
+pages:
+	@test -n "$(FILE)" || \
+	    { echo "Error [E10]: Missing FILE argument."; \
+	      echo "  make pages FILE=A-COVER PAGES=17-19"; exit 1; }
+	@test -n "$(PAGES)" || \
+	    { echo "Error [E10]: Missing PAGES argument."; \
+	      echo "  make pages FILE=A-COVER PAGES=17-19"; \
+	      echo "  make pages FILE=A-COVER PAGES=5"; \
+	      echo "  make pages FILE=A-COVER PAGES=1-3,17-19"; exit 1; }
+	@command -v qpdf >/dev/null 2>&1 || \
+	    { echo "Error [E21]: qpdf not found."; \
+	      echo "  Install: sudo apt install qpdf"; exit 2; }
+	@INPUT="$(FILE)"; \
+	$(call resolve_file,.adoc); \
+	if [ -z "$$RESOLVED" ] || [ ! -f "$$RESOLVED" ]; then \
+	    echo "Error [E20]: '$(FILE)' not found in $(BOOK_DIR)/."; exit 2; \
+	fi; \
+	OUTPATH=$$(dirname "$$RESOLVED" | sed 's|^$(BOOK_DIR)/||'); \
+	OUTNAME=$$(basename "$$RESOLVED" .adoc); \
+	SRCPDF="$(OUTDIR)/$$OUTPATH/$$OUTNAME.pdf"; \
+	if [ ! -f "$$SRCPDF" ]; then \
+	    echo "Section PDF not found — building first..."; \
+	    $(MAKE) --no-print-directory section FILE="$(FILE)" FORCE=$(FORCE) || exit $$?; \
+	fi; \
+	TOTAL=$$(qpdf --show-npages "$$SRCPDF" 2>/dev/null); \
+	if [ -z "$$TOTAL" ] || [ "$$TOTAL" -eq 0 ]; then \
+	    echo "Error [E32]: Cannot read page count from $$SRCPDF."; exit 3; \
+	fi; \
+	MAX=$$(echo "$(PAGES)" | tr ',' '\n' | tr '-' '\n' | sort -n | tail -1); \
+	if [ "$$MAX" -gt "$$TOTAL" ]; then \
+	    echo "Error [E11]: Page $$MAX exceeds PDF bounds ($$TOTAL pages)."; \
+	    echo "  Valid range: 1-$$TOTAL"; exit 1; \
+	fi; \
+	PAGESAFE=$$(echo "$(PAGES)" | tr ',' '_'); \
+	DESTPDF="$(OUTDIR)/$$OUTPATH/$${OUTNAME}-p$${PAGESAFE}.pdf"; \
+	qpdf "$$SRCPDF" --pages . $(PAGES) -- "$$DESTPDF" 2>&1 || \
+	    { rm -f "$$DESTPDF"; \
+	      echo "Error [E32]: qpdf extraction failed."; exit 3; }; \
+	echo "Extracted: $$DESTPDF (pages $(PAGES) of $$TOTAL)"
+
 
 # =============================================================================
-# BOOK TYPE VALIDATION
+# §5  VALIDATION & LINT — Structure validation + TS delegation
 # =============================================================================
+
+# -----------------------------------------------------------------------------
+# BOOK TYPE VALIDATION
+# -----------------------------------------------------------------------------
 # Three-layer validation system:
 #
 #   make validate                           Base skeleton check
@@ -683,7 +647,7 @@ section:
 #   - No empty Article directories
 #   - Naming convention consistency
 #   - Per-Part and per-Article structure details
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 validate:
 	@echo ""
@@ -959,15 +923,88 @@ validate:
 	else \
 	    echo "  $$SCOPE: INVALID ($$ERRORS errors, $$WARNINGS warnings)"; \
 	    echo ""; \
+	    echo "Error [E40]: Validation failed with $$ERRORS error(s). Fix and re-run."; \
 	    exit 4; \
 	fi
 
+# -----------------------------------------------------------------------------
+# EDITORIAL LINT — Content validation against style guide patterns
+# -----------------------------------------------------------------------------
+# Delegates to TS builder for all 17 editorial checks across 4 categories:
+#   editorial   (1-8)  — shall, spacers, markers, old-comments, lead, title-page, heading guard
+#   style       (9-13) — company-name, chapter-language, all-caps, gold-text, register-mixing
+#   structure   (14-15) — unlabeled-breaks, xref-resolution
+#   conversion  (16-17) — icon-macros, admonition-frontmatter
+#
+# Usage:
+#   make lint FILE=A-COVER              Lint a specific section
+#   make lint SCOPE=A                   Lint all frontmatter sections
+#   make lint                           Lint all sections (all categories)
+#   make lint CHECK=style               Lint with specific category only
+#   make lint CHECK=editorial FILE=X    Combine category + file
+#
+# Error codes:
+#   E43 — Editorial style violations found (exit 4)
+# -----------------------------------------------------------------------------
+
+lint: build-ts
+	@cd build/builder && node dist/cli.js lint \
+	    $(if $(FILE),--file $(FILE)) \
+	    $(if $(SCOPE),--scope $(SCOPE)) \
+	    $(if $(CHECK),--category $(CHECK))
+
+# -----------------------------------------------------------------------------
+# TOC — Page markers, § sections, and content-full status
+# -----------------------------------------------------------------------------
+# Unified TOC command — shows page markers, § section entries, and structure.
+# Delegates to TS builder for parsing and display.
+#
+# Usage:
+#   make toc FILE=B-TABLE-OF-CONTENTS    Single section
+#   make toc SCOPE=A                      All frontmatter
+#   make toc                              All sections
+# -----------------------------------------------------------------------------
+
+toc: build-ts
+	@cd build/builder && node dist/cli.js toc \
+	    $(if $(FILE),$(FILE)) \
+	    $(if $(SCOPE),--scope $(SCOPE))
+
+# -----------------------------------------------------------------------------
+# TOC FILL — Fill p. __ placeholders with computed page numbers
+# -----------------------------------------------------------------------------
+# Computes page numbers from // end p.N markers in content files,
+# then writes them into the TOC's p. __ placeholders.
+#
+# Usage:
+#   make toc-fill              Fill placeholders (writes TOC file)
+#   make toc-fill DRYRUN=1     Report what would change without writing
+# -----------------------------------------------------------------------------
+
+toc-fill: build-ts
+	@cd build/builder && node dist/cli.js toc --fill \
+	    $(if $(filter 1,$(DRYRUN)),--dry-run)
+
+# -----------------------------------------------------------------------------
+# TOC VERIFY — Check existing page numbers against computed values
+# -----------------------------------------------------------------------------
+# Compares page numbers already written in the TOC against current
+# computed values. Reports stale numbers that have shifted.
+#
+# Usage:
+#   make toc-verify            Check all page numbers
+# Error code: E41 if stale page numbers found.
+# -----------------------------------------------------------------------------
+
+toc-verify: build-ts
+	@cd build/builder && node dist/cli.js toc --verify
+
 
 # =============================================================================
-# FULL BUILD TARGETS — TypeScript builder for publishing
+# §6  PUBLISHING — Multi-format via TS builder
 # =============================================================================
 # These use the TypeScript builder for complete multi-format output.
-# For editorial review, use the targets above instead.
+# For editorial review, use the targets in §4 instead.
 # =============================================================================
 
 html: build-ts
@@ -982,22 +1019,195 @@ epub: build-ts
 docbook: build-ts
 	@cd build/builder && node dist/cli.js --format docbook
 
+# --- Format Conversion (via docbook-intermediate pipeline) ---
+# AsciiDoc → DocBook XML → pandoc → target format
+# Pandoc's DocBook reader is excellent; its AsciiDoc reader is not.
+
+markdown: build-ts
+	@cd build/builder && node dist/cli.js --format markdown
+
+docx: build-ts
+	@cd build/builder && node dist/cli.js --format docx
+
+convert: build-ts
+	@test -n "$(FORMAT)" || \
+	    { echo "Error [E10]: Missing FORMAT= argument."; \
+	      echo "  Usage: make convert FORMAT=markdown"; \
+	      echo "  Available: markdown, docx"; exit 1; }
+	@cd build/builder && node dist/cli.js --format $(FORMAT)
+
 build-ts:
 	@cd build/builder && npm run build 2>/dev/null || (npm install && npm run build)
 
 
 # =============================================================================
-# EDITORIAL DEVELOPMENT TARGETS
+# §7  ASSET GENERATION — Diagrams, grayscale, palette
 # =============================================================================
+# Generates derived assets that don't exist in source form:
+#
+#   Phase 1 — Mermaid diagrams:      sources/diagrams/*.mmd → figures/png/*.png + figures/svg/*.svg
+#   Phase 2 — Grayscale variants:    figures/png/fig-*.png → figures/grayscale/fig-*-grayscale.png
+#   Phase 3 — Color palette swatch:  Brand colors → fig-color-palette.png
+#
+# Requirements:
+#   mmdc          @mermaid-js/mermaid-cli (Phase 1)
+#   magick        ImageMagick 7+ (Phases 2-3)
+#
+# Usage:
+#   make assets              Generate all derived assets
+#   make assets FORCE=1      Force regeneration (ignore cache)
+# =============================================================================
+
+assets:
+	@echo ""
+	@echo "Asset Generation"
+	@echo "================"
+	@echo ""
+	@GENERATED=0; SKIPPED=0; FAILED=0; \
+	\
+	echo "--- Phase 1: Mermaid diagrams ---"; \
+	echo ""; \
+	if command -v mmdc >/dev/null 2>&1; then \
+	    for f in $(ASSETS_SRC)/fig-*.mmd; do \
+	        [ -f "$$f" ] || continue; \
+	        NAME=$$(basename "$$f" .mmd); \
+	        PNG="$(ASSETS_PNG)/$$NAME.png"; \
+	        SVG="$(ASSETS_SVG)/$$NAME.svg"; \
+	        if [ "$(FORCE)" != "1" ] && [ -f "$$PNG" ] && [ "$$PNG" -nt "$$f" ]; then \
+	            echo "  OK    $$NAME.png (up to date)"; \
+	            SKIPPED=$$((SKIPPED + 1)); \
+	        else \
+	            if mmdc -i "$$f" -o "$$PNG" \
+	                -b white -p $(PUPPET_CFG) -s 3 >/dev/null 2>&1; then \
+	                echo "  GEN   $$NAME.png"; \
+	                GENERATED=$$((GENERATED + 1)); \
+	            else \
+	                echo "  FAIL  $$NAME.png"; \
+	                FAILED=$$((FAILED + 1)); \
+	            fi; \
+	        fi; \
+	        if [ "$(FORCE)" != "1" ] && [ -f "$$SVG" ] && [ "$$SVG" -nt "$$f" ]; then \
+	            echo "  OK    $$NAME.svg (up to date)"; \
+	            SKIPPED=$$((SKIPPED + 1)); \
+	        else \
+	            if mmdc -i "$$f" -o "$$SVG" \
+	                -b transparent -p $(PUPPET_CFG) >/dev/null 2>&1; then \
+	                echo "  GEN   $$NAME.svg"; \
+	                GENERATED=$$((GENERATED + 1)); \
+	            else \
+	                echo "  FAIL  $$NAME.svg"; \
+	                FAILED=$$((FAILED + 1)); \
+	            fi; \
+	        fi; \
+	    done; \
+	else \
+	    echo "  SKIP  mmdc not found (install @mermaid-js/mermaid-cli)"; \
+	fi; \
+	\
+	echo ""; \
+	echo "--- Phase 2: Grayscale variants ---"; \
+	echo ""; \
+	if command -v magick >/dev/null 2>&1; then \
+	    for f in $(ASSETS_PNG)/fig-*.png; do \
+	        [ -f "$$f" ] || continue; \
+	        case "$$(basename $$f)" in *-grayscale.png|fig-color-palette.png|fig-title-page-mockup.png) continue ;; esac; \
+	        NAME=$$(basename "$$f" .png); \
+	        OUT="$(ASSETS_GRAY)/$${NAME}-grayscale.png"; \
+	        if [ "$(FORCE)" != "1" ] && [ -f "$$OUT" ] && [ "$$OUT" -nt "$$f" ]; then \
+	            echo "  OK    $${NAME}-grayscale.png (up to date)"; \
+	            SKIPPED=$$((SKIPPED + 1)); \
+	        else \
+	            if magick "$$f" -colorspace Gray "$$OUT" 2>/dev/null; then \
+	                echo "  GEN   $${NAME}-grayscale.png"; \
+	                GENERATED=$$((GENERATED + 1)); \
+	            else \
+	                echo "  FAIL  $${NAME}-grayscale.png"; \
+	                FAILED=$$((FAILED + 1)); \
+	            fi; \
+	        fi; \
+	    done; \
+	else \
+	    echo "  SKIP  ImageMagick (magick) not found"; \
+	fi; \
+	\
+	echo ""; \
+	echo "--- Phase 3: Color palette swatch ---"; \
+	echo ""; \
+	if command -v magick >/dev/null 2>&1; then \
+	    OUT="$(ASSETS_PNG)/fig-color-palette.png"; \
+	    if [ "$(FORCE)" != "1" ] && [ -f "$$OUT" ] && [ -f "$(MERMAID_CFG)" ] && [ "$$OUT" -nt "$(MERMAID_CFG)" ]; then \
+	        echo "  OK    fig-color-palette.png (up to date)"; \
+	        SKIPPED=$$((SKIPPED + 1)); \
+	    else \
+	        if magick -size 900x220 xc:white \
+	            \( -size 150x120 xc:'$(BRAND_DEEP_BLUE)' \) -geometry +30+20 -composite \
+	            \( -size 150x120 xc:'$(BRAND_MEDIUM_BLUE)' \) -geometry +195+20 -composite \
+	            \( -size 150x120 xc:'$(BRAND_GOLD)' \) -geometry +360+20 -composite \
+	            \( -size 150x120 xc:'$(BRAND_DARK)' \) -geometry +525+20 -composite \
+	            \( -size 150x120 xc:'$(BRAND_LIGHT)' -bordercolor '$(BRAND_DARK)' -border 1 \) -geometry +690+19 -composite \
+	            -font 'Noto-Sans-Bold' -pointsize 14 \
+	            -fill white -annotate +72+110 'Deep Blue' \
+	            -annotate +223+110 'Medium Blue' \
+	            -fill '$(BRAND_DEEP_BLUE)' -annotate +410+110 'Gold' \
+	            -fill white -annotate +585+110 'Dark' \
+	            -fill '$(BRAND_DARK)' -annotate +740+110 'Light' \
+	            -font 'Noto-Sans-Regular' -pointsize 12 \
+	            -fill '$(BRAND_DARK)' \
+	            -annotate +62+165 '$(BRAND_DEEP_BLUE)' \
+	            -annotate +225+165 '$(BRAND_MEDIUM_BLUE)' \
+	            -annotate +393+165 '$(BRAND_GOLD)' \
+	            -annotate +558+165 '$(BRAND_DARK)' \
+	            -annotate +723+165 '$(BRAND_LIGHT)' \
+	            -font 'Noto-Sans-Regular' -pointsize 11 \
+	            -fill gray \
+	            -annotate +56+190 'Primary' \
+	            -annotate +218+190 'Secondary' \
+	            -annotate +400+190 'Accent' \
+	            -annotate +560+190 'Borders' \
+	            -annotate +710+190 'Backgrounds' \
+	            -depth 8 \
+	            "$$OUT" 2>/dev/null; then \
+	            echo "  GEN   fig-color-palette.png"; \
+	            GENERATED=$$((GENERATED + 1)); \
+	        else \
+	            echo "  FAIL  fig-color-palette.png"; \
+	            FAILED=$$((FAILED + 1)); \
+	        fi; \
+	    fi; \
+	else \
+	    echo "  SKIP  ImageMagick (magick) not found"; \
+	fi; \
+	\
+	echo ""; \
+	echo "--- Summary ---"; \
+	echo ""; \
+	echo "  Generated: $$GENERATED  Skipped: $$SKIPPED  Failed: $$FAILED"; \
+	if [ "$$FAILED" -gt 0 ]; then \
+	    echo "  Warning: $$FAILED asset(s) failed to generate."; \
+	fi; \
+	echo ""
+
+
+# =============================================================================
+# §8  DEVELOPMENT — config, watch, deps, status, clean, remove, setup
+# =============================================================================
+
+# Regenerate config.mk from build.config.yaml (single source of truth)
+config:
+	@command -v yq >/dev/null 2>&1 || \
+	    { echo "Error [E21]: yq not found."; \
+	      echo "  Install: pip install yq"; exit 2; }
+	@bash build/scripts/gen-config-mk.sh > config.mk
+	@echo "Generated: config.mk (from build/build.config.yaml)"
 
 # Watch for changes and rebuild full book PDF (requires entr)
 watch-pdf:
 	@command -v entr >/dev/null 2>&1 || \
-	    { echo "Error [E2]: entr not found."; \
+	    { echo "Error [E21]: entr not found."; \
 	      echo "  Install: sudo apt install entr"; exit 2; }
 	$(check_dep)
 	@echo "Watching for changes... (Ctrl+C to stop)"
-	@echo "  Rebuilding: $(OUTDIR)/CWS-Company-Identity-Manual.pdf"
+	@echo "  Rebuilding: $(OUTDIR)/$(OUTPUT_STEM).pdf"
 	@echo ""
 	@find $(BOOK_DIR)/ build/themes/ build/_previews/ \
 	    \( -name "*.adoc" -o -name "*.yml" \) 2>/dev/null | \
@@ -1050,6 +1260,13 @@ deps:
 	    echo "  MISS  ruby: not found (setup-asciidoctor disabled)"; \
 	fi; \
 	echo ""; \
+	echo "Optional (format conversion):"; \
+	if command -v pandoc >/dev/null 2>&1; then \
+	    echo "  OK    pandoc: $$(pandoc --version 2>&1 | head -1) (markdown, docx conversion)"; \
+	else \
+	    echo "  MISS  pandoc: not found (apt install pandoc — make markdown/docx disabled)"; \
+	fi; \
+	echo ""; \
 	echo "Optional (publishing):"; \
 	if [ -d "build/builder/node_modules" ]; then \
 	    echo "  OK    TypeScript builder: installed"; \
@@ -1085,7 +1302,7 @@ remove:
 	    INPUT="$(FILE)"; \
 	    $(call resolve_file,.adoc); \
 	    if [ -z "$$RESOLVED" ]; then \
-	        echo "Error [E1]: '$(FILE)' not found."; exit 1; \
+	        echo "Error [E20]: '$(FILE)' not found."; exit 2; \
 	    fi; \
 	    OUTPATH=$$(dirname "$$RESOLVED" | sed 's|^$(BOOK_DIR)/||'); \
 	    OUTNAME=$$(basename "$$RESOLVED" .adoc); \
@@ -1100,7 +1317,7 @@ remove:
 	    INPUT="$(ARTICLE)"; \
 	    $(call resolve_dir,B-content,Article-,2); \
 	    if [ -z "$$RESOLVED" ]; then \
-	        echo "Error [E1]: Article '$(ARTICLE)' not found."; exit 1; \
+	        echo "Error [E11]: Article '$(ARTICLE)' not found."; exit 1; \
 	    fi; \
 	    OUTPATH=$$(echo "$$RESOLVED" | sed 's|^$(BOOK_DIR)/||'); \
 	    TARGET="$(OUTDIR)/$$OUTPATH"; \
@@ -1115,7 +1332,7 @@ remove:
 	    INPUT="$(PART)"; \
 	    $(call resolve_dir,B-content,Part-,1); \
 	    if [ -z "$$RESOLVED" ]; then \
-	        echo "Error [E1]: Part '$(PART)' not found."; exit 1; \
+	        echo "Error [E11]: Part '$(PART)' not found."; exit 1; \
 	    fi; \
 	    OUTPATH=$$(echo "$$RESOLVED" | sed 's|^$(BOOK_DIR)/||'); \
 	    TARGET="$(OUTDIR)/$$OUTPATH"; \
@@ -1128,13 +1345,13 @@ remove:
 	    fi; \
 	elif [ -n "$(SCOPE)" ]; then \
 	    case "$(SCOPE)" in \
-	        A|frontmatter) TARGET="$(OUTDIR)/A-frontmatter" ;; \
+	        A|frontmatter) TARGET="$(OUTDIR)/$(SCOPE_A_DIR)" ;; \
 	        B|content)     TARGET="$(OUTDIR)/B-content" ;; \
-	        C|appendices)  TARGET="$(OUTDIR)/C-appendices" ;; \
-	        D|backmatter)  TARGET="$(OUTDIR)/D-backmatter" ;; \
+	        C|appendices)  TARGET="$(OUTDIR)/$(SCOPE_C_DIR)" ;; \
+	        D|backmatter)  TARGET="$(OUTDIR)/$(SCOPE_D_DIR)" ;; \
 	        assets)        TARGET="$(OUTDIR)/00-assets" ;; \
-	        master)        TARGET="$(OUTDIR)/CWS-Company-Identity-Manual.pdf" ;; \
-	        *) echo "Error [E1]: Unknown scope '$(SCOPE)'."; \
+	        master)        TARGET="$(OUTDIR)/$(OUTPUT_STEM).pdf" ;; \
+	        *) echo "Error [E11]: Unknown scope '$(SCOPE)'."; \
 	           echo "  Valid: A, B, C, D, frontmatter, content, appendices, backmatter, assets, master"; \
 	           exit 1 ;; \
 	    esac; \
@@ -1149,7 +1366,7 @@ remove:
 	        echo "Not found: $$TARGET"; \
 	    fi; \
 	else \
-	    echo "Error [E1]: Missing argument."; \
+	    echo "Error [E10]: Missing argument."; \
 	    echo "  make remove SCOPE=A           Frontmatter outputs"; \
 	    echo "  make remove SCOPE=B           All content outputs"; \
 	    echo "  make remove PART=1            Part 1 outputs"; \
@@ -1179,10 +1396,10 @@ status:
 	    BUILT=$$(date -r "$$PDF" '+%Y-%m-%d %H:%M' 2>/dev/null); \
 	    SCOPE_DIR=""; \
 	    case "$$REL" in \
-	        CWS-Company-Identity-Manual.pdf) SCOPE_DIR="$(BOOK_DIR)/" ;; \
-	        A-frontmatter/*) SCOPE_DIR="$(BOOK_DIR)/A-frontmatter/" ;; \
-	        C-appendices/*) SCOPE_DIR="$(BOOK_DIR)/C-appendices/" ;; \
-	        D-backmatter/*) SCOPE_DIR="$(BOOK_DIR)/D-backmatter/" ;; \
+	        $(OUTPUT_STEM).pdf) SCOPE_DIR="$(BOOK_DIR)/" ;; \
+	        $(SCOPE_A_DIR)/*) SCOPE_DIR="$(BOOK_DIR)/$(SCOPE_A_DIR)/" ;; \
+	        $(SCOPE_C_DIR)/*) SCOPE_DIR="$(BOOK_DIR)/$(SCOPE_C_DIR)/" ;; \
+	        $(SCOPE_D_DIR)/*) SCOPE_DIR="$(BOOK_DIR)/$(SCOPE_D_DIR)/" ;; \
 	        B-content/*) \
 	            PARTDIR=$$(echo "$$REL" | sed 's|^\(B-content/[^/]*/\).*|\1|'); \
 	            if echo "$$REL" | grep -q 'Article-'; then \
@@ -1234,7 +1451,7 @@ setup-node:
 
 setup-asciidoctor:
 	@echo "Installing Asciidoctor tools..."
-	@which gem > /dev/null || (echo "Error [E2]: Ruby gem not found. Please install Ruby first." && exit 2)
+	@which gem > /dev/null || (echo "Error [E21]: Ruby gem not found. Please install Ruby first." && exit 2)
 	gem install asciidoctor --user-install || gem install asciidoctor
 	gem install asciidoctor-pdf --user-install || gem install asciidoctor-pdf
 	gem install asciidoctor-epub3 --user-install || gem install asciidoctor-epub3
@@ -1243,13 +1460,16 @@ setup-asciidoctor:
 
 
 # =============================================================================
-# HELP
+# §9  HELP — Self-documentation
 # =============================================================================
 
 help:
 	@echo ""
 	@echo "CWS Company Identity Manual — Build System"
 	@echo "==========================================="
+	@echo ""
+	@echo "Architecture: §1 Config → §2 Discovery → §3 Engines → §4 Targets"
+	@echo "              §5 Validation → §6 Publishing → §7 Assets → §8 Dev → §9 Help"
 	@echo ""
 	@echo "Resolution (all scoped targets):"
 	@echo "  Path mode    (has /)    Spine-relative path, resolves directly"
@@ -1258,10 +1478,10 @@ help:
 	@echo ""
 	@echo "Editorial Review (PDF):"
 	@echo "  book | create     Full book PDF                 → build/output/"
-	@echo "  A | frontmatter   Frontmatter                   → build/output/A-frontmatter/"
+	@echo "  A | frontmatter   Frontmatter                   → build/output/$(SCOPE_A_DIR)/"
 	@echo "  B | content       All content Parts             → build/output/B-content/<part>/"
-	@echo "  C | appendices    Appendices                    → build/output/C-appendices/"
-	@echo "  D | backmatter    Back matter                   → build/output/D-backmatter/"
+	@echo "  C | appendices    Appendices                    → build/output/$(SCOPE_C_DIR)/"
+	@echo "  D | backmatter    Back matter                   → build/output/$(SCOPE_D_DIR)/"
 	@echo ""
 	@echo "  part PART=...     Single Part (IDs: $(PART_IDS), NAME= to override)"
 	@echo "                      make part PART=1"
@@ -1276,12 +1496,35 @@ help:
 	@echo "                      make section FILE=A-COVER"
 	@echo "                      make section FILE=A-frontmatter/A-COVER.adoc"
 	@echo ""
+	@echo "  pages FILE= PAGES=  Extract specific pages from a section PDF"
+	@echo "                      make pages FILE=A-COVER PAGES=17-19"
+	@echo "                      make pages FILE=A-COVER PAGES=5"
+	@echo "                      make pages FILE=A-COVER PAGES=1-3,17-19"
+	@echo "                      Requires: qpdf. Bounds-checked."
+	@echo ""
 	@echo "Validation:"
 	@echo "  validate                                        Base skeleton"
 	@echo "  validate TYPE=manual                            Book type minimums"
 	@echo "  validate TYPE=manual-l                          Legal hierarchy naming"
 	@echo "  validate TYPE=manual   BONUS=operational        Full editorial"
 	@echo "  validate TYPE=manual-l BONUS=operational        Full legal + editorial"
+	@echo ""
+	@echo "  lint FILE=A-COVER    Editorial style lint (single file)"
+	@echo "  lint SCOPE=A         Lint all frontmatter"
+	@echo "  lint                 Lint all sections"
+	@echo "  lint CHECK=editorial Checks 1-8: shall, spacers, markers, old-comments, lead, title-page, guard"
+	@echo "  lint CHECK=style     Checks 9-13: company-name, chapter-language, all-caps, gold-text, register"
+	@echo "  lint CHECK=structure Checks 14-15: unlabeled-breaks, xref-resolution"
+	@echo "  lint CHECK=conversion Checks 16-17: icon-macros, admonition-frontmatter"
+	@echo "  lint CHECK=all       All 17 checks (default)"
+	@echo ""
+	@echo "TOC & Page Navigation:"
+	@echo "  toc FILE=...         Page markers, § sections, content-full status"
+	@echo "  toc SCOPE=A          All frontmatter page status"
+	@echo "  toc                  All sections with page markers"
+	@echo "  toc-fill             Fill p. __ placeholders with computed page numbers"
+	@echo "  toc-fill DRYRUN=1    Report fills without writing"
+	@echo "  toc-verify           Check existing page numbers against computed values"
 	@echo ""
 	@echo "Asset Generation:"
 	@echo "  assets         Generate derived assets (diagrams, grayscale, palette)"
@@ -1292,6 +1535,7 @@ help:
 	@echo "  FORCE=1      Force rebuild:  make frontmatter FORCE=1"
 	@echo ""
 	@echo "Editorial Development:"
+	@echo "  config       Regenerate config.mk from build/build.config.yaml"
 	@echo "  status       Build dashboard (current/stale PDFs, sizes, timestamps)"
 	@echo "  remove ...   Safe targeted removal:"
 	@echo "                 SCOPE=A|B|C|D|assets|master  FILE=  PART=  ARTICLE="
@@ -1306,12 +1550,18 @@ help:
 	@echo "  epub         Build EPUB format"
 	@echo "  docbook      Build DocBook XML"
 	@echo ""
-	@echo "Exit Codes:"
-	@echo "  E0 (0)  Success           Target completed without errors"
-	@echo "  E1 (1)  Usage error       Missing or invalid arguments"
-	@echo "  E2 (2)  Missing dep       Required tool or source file not found"
-	@echo "  E3 (3)  Build failure     asciidoctor-pdf returned an error"
-	@echo "  E4 (4)  Validation fail   Structure checks found errors (validate only)"
+	@echo "Format Conversion (requires pandoc + TypeScript builder):"
+	@echo "  markdown           Convert to GitHub-Flavored Markdown"
+	@echo "  docx               Convert to Word document (.docx)"
+	@echo "  convert FORMAT=    Generic: make convert FORMAT=markdown"
+	@echo "                     Pipeline: AsciiDoc → DocBook XML → pandoc → target"
+	@echo ""
+	@echo "Error Codes:"
+	@echo "  E0  (0)  Success"
+	@echo "  E1x (1)  Usage:       E10 missing arg, E11 invalid value, E12 conflict"
+	@echo "  E2x (2)  Dependency:  E20 source file, E21 tool, E22 directory, E23 empty"
+	@echo "  E3x (3)  Build:       E30 PDF, E31 asset, E32 extraction, E33 TS, E34 batch"
+	@echo "  E4x (4)  Validation:  E40 structure, E41 pages, E42 TOC, E43 lint"
 	@echo ""
 	@echo "Output: ./build/output/"
 	@echo ""
