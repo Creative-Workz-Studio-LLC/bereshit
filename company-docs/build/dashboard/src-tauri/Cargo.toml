@@ -1,0 +1,32 @@
+[package]
+name = "cws-dashboard"
+version = "0.1.0"
+description = "CWS Manual Builder Dashboard — native GUI + web interface"
+authors = ["CreativeWorkzStudio LLC"]
+edition = "2021"
+
+[lib]
+name = "cws_dashboard_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+tokio = { version = "1", features = ["process", "io-util"] }
+strip-ansi-escapes = "0.2"
+libc = "0.2"
+
+[profile.release]
+opt-level = "z"       # Optimize for binary size (small desktop app)
+lto = true            # Link-time optimization — smaller + faster binary
+codegen-units = 1     # Single codegen unit for maximum optimization
+strip = true          # Strip debug symbols from release binary
+panic = "abort"       # Smaller binary, no unwinding overhead

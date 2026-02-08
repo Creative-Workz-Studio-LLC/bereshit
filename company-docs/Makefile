@@ -1077,6 +1077,27 @@ witness: build-ts
 	    $(if $(REGISTER),--register $(REGISTER)) \
 	    $(if $(filter 1,$(VERBOSE)),--verbose)
 
+# Page fill workflow: Source → PDF → Measure → Annotate source → Index reads annotations
+#                     Source → Predict (estimated, no PDF) → Compare with measured
+#
+# MEASURE:  make fill PDF=build/output/A-frontmatter/A-COVER.pdf [PAGES=1-5] [THRESHOLD=85] [JSON=1] [MARK=1]
+# PREDICT:  make fill PREDICT=book/A-frontmatter/A-COVER.adoc              (estimated from source, no PDF)
+# COMPARE:  make fill PDF=... PREDICT=book/A-frontmatter/A-COVER.adoc      (predicted vs measured)
+# CHECK:    make fill PDF=... CHECK=book/A-frontmatter/A-COVER.adoc        (validate annotations vs PDF)
+# INDEX:    make fill INDEX=book/A-frontmatter/A-COVER.adoc [JSON=1]       (cached annotations, instant)
+fill: build-ts
+	@node build/builder/dist/cli.js fill \
+	    $(PDF) \
+	    $(if $(PAGES),--pages $(PAGES)) \
+	    $(if $(THRESHOLD),--threshold $(THRESHOLD)) \
+	    $(if $(WARN),--warn $(WARN)) \
+	    $(if $(filter 1,$(JSON)),--json) \
+	    $(if $(filter 1,$(MARK)),--mark) \
+	    $(if $(CHECK),--cross-check $(CHECK)) \
+	    $(if $(PREDICT),--predict $(PREDICT)) \
+	    $(if $(INDEX),--index $(INDEX)) \
+	    $(if $(MODE),--mode $(MODE))
+
 
 # =============================================================================
 # §6  PUBLISHING — Multi-format via TS builder

@@ -1,0 +1,8 @@
+/media/seanje-lenox-wise/Project/Bereshit/company-docs/build/dashboard/src-tauri/target/debug/build/target-lexicon-f9861df7a1adc8c4/build_script_build-f9861df7a1adc8c4.d: /home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/build.rs /home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/src/data_model.rs /home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/src/triple.rs /home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/src/targets.rs
+
+/media/seanje-lenox-wise/Project/Bereshit/company-docs/build/dashboard/src-tauri/target/debug/build/target-lexicon-f9861df7a1adc8c4/build_script_build-f9861df7a1adc8c4: /home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/build.rs /home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/src/data_model.rs /home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/src/triple.rs /home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/src/targets.rs
+
+/home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/build.rs:
+/home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/src/data_model.rs:
+/home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/src/triple.rs:
+/home/seanje-lenox-wise/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/target-lexicon-0.12.16/src/targets.rs:

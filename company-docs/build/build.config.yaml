@@ -59,9 +59,9 @@ attributes:
   book: ""
   title-page: ""
   toc: auto
-  toclevels: "3"
+  toclevels: "5"
   sectnums: ""
-  sectnumlevels: "3"
+  sectnumlevels: "5"
   partnums: ""
 
   # --- Rendering & Typography ---
@@ -1460,6 +1460,44 @@ theme_variants:
       margin_left: "0.75in"
       header_height: "0.5in"
       footer_height: "0.5in"
+
+
+# =============================================================================
+# §20 — Page Fill Analysis (Content density thresholds)
+# =============================================================================
+# Configurable ranges for classifying page content density.
+# Used by `cws-build fill` and cross-checked against source markers.
+# Thresholds are percentages of usable content area (between margins).
+#
+# Legal document calibration:
+#   - Legal/governance pages should be dense. Sparse pages (<35%) look
+#     unprofessional in formal documents.
+#   - "Full" starts at 75% — content is complete, page looks professional.
+#   - "Overfull" at 92% — editing room is gone. Any addition risks bleed.
+#   - Bleed threshold at 95% — at this point, adding even a short line
+#     may push content to the next page, creating a "2-pager."
+
+page_fill:
+  ranges:
+    sparse:   { min: 0,  max: 35  }     # Unusually empty for a legal page
+    normal:   { min: 35, max: 75  }     # Comfortable — room for edits
+    full:     { min: 75, max: 92  }     # Content complete — safe
+    overfull: { min: 92, max: 100 }     # Editing room gone — handle with care
+
+  # Fill % at or above which bleed is imminent (2-pager risk)
+  bleed_threshold: 95
+
+  # Source marker pattern — regex matching end-of-page comments
+  marker_pattern: "// end p\\.(\\d+)(?: — content full)?"
+
+  # Cross-check settings
+  cross_check:
+    # Flag pages marked "content full" below this fill %
+    stale_marker_below: 75
+    # Flag unmarked pages above this fill %
+    missing_marker_above: 92
+    # Warn on page count mismatch between source markers and PDF
+    page_count_drift: true
 
 
 # =============================================================================

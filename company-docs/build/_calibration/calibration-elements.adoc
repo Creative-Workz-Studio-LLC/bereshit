@@ -1,0 +1,299 @@
+// Calibration Document — Render Ratio Measurement
+//
+// Each page isolates a single element type with known instance counts.
+// The measurement engine reads the rendered PDF and maps element positions
+// back to this known structure to derive per-element render heights.
+//
+// DO NOT modify element counts without updating the calibration spec.
+//
+// Page Index:
+//   1  — Title page (skip)
+//   2  — Auto-TOC (skip)
+//   3  — Body paragraphs (4 specimens: 1-line, 2-line, 3-line, 5-line)
+//   4  — Heading levels (3 specimens: ==, ===, ==== each with 1-line para)
+//   5  — Ordered lists (2 specimens: 3-item, 5-item)
+//   6  — Unordered lists (2 specimens: 3-item, 5-item)
+//   7  — Labeled provisions (5 specimens: *(1)* through *(5)*)
+//   8  — Small text and scripture blocks (3 specimens)
+//   9  — Thematic breaks and discrete headings (4 specimens)
+//  10  — Tables (2 specimens: 3-row and 5-row)
+//  11  — Mixed elements (realistic page — validation baseline)
+= Calibration Elements
+:author: Nova Dawn
+:revdate: 2026-02-08
+:doctype: book
+:book:
+:title-page:
+:toc:
+:toclevels: 3
+:sectnums:
+:sectnumlevels: 5
+:icons: font
+:experimental:
+:pdf-theme: build/themes/cws-manual-legal-theme.yml
+:pdf-fontsdir: /usr/share/fonts/truetype/noto;GEM_FONTS_DIR
+:chapter-label: Article
+:imagesdir: ../../book/00-assets
+
+// ============================================================================
+// PAGE 3 — BODY PARAGRAPHS
+// ============================================================================
+
+== Body Paragraphs
+
+// CAL:ELEMENT body-paragraph-1line COUNT=1
+This is a single-line body paragraph used for baseline text measurement.
+
+// CAL:ELEMENT body-paragraph-2line COUNT=1
+This is a two-line body paragraph that wraps to a second line in the rendered output to measure how paragraph height scales with line count.
+
+// CAL:ELEMENT body-paragraph-3line COUNT=1
+This is a three-line body paragraph designed to demonstrate how content density scales vertically across three rendered lines of standard body text at the configured font size and leading.
+
+// CAL:ELEMENT body-paragraph-5line COUNT=1
+This is a five-line body paragraph created specifically for calibration purposes. It contains enough text to fill approximately five lines in the rendered PDF output using the standard body font at eleven points with one-point-five line height. The exact number of rendered lines depends on the available content width between left and right margins, which is determined by the page layout configuration in build.config.yaml section twenty, but should be close to five.
+
+// CAL:ELEMENT body-paragraph-1line COUNT=1
+A second single-line paragraph for measuring inter-paragraph spacing independently of element height.
+
+// end calibration page 3
+
+<<<
+
+// ============================================================================
+// PAGE 4 — HEADING LEVELS
+// ============================================================================
+
+== Heading Level Two
+
+// CAL:ELEMENT heading-2 COUNT=1
+// The `==` heading above forced this page. Followed by a body paragraph.
+This paragraph follows a level-two heading to measure the combined height of heading plus first-paragraph spacing.
+
+=== Heading Level Three
+
+// CAL:ELEMENT heading-3 COUNT=1
+This paragraph follows a level-three heading to measure the heading height and the spacing between heading and first body paragraph below it.
+
+==== Heading Level Four
+
+// CAL:ELEMENT heading-4 COUNT=1
+This paragraph follows a level-four heading, the deepest heading level used in the governance document structure.
+
+// end calibration page 4
+
+<<<
+
+// ============================================================================
+// PAGE 5 — ORDERED LISTS
+// ============================================================================
+
+=== Ordered Lists
+
+// CAL:ELEMENT ordered-list-3item COUNT=1
+. First item in a three-item ordered list for measuring per-item height.
+. Second item in the ordered list, kept to a single line per item.
+. Third and final item in this three-item calibration specimen.
+
+// CAL:ELEMENT ordered-list-5item COUNT=1
+. First item in a five-item ordered list for measuring scaling behavior.
+. Second item in the five-item list, single line.
+. Third item, maintaining consistent single-line length.
+. Fourth item in the ordered list calibration specimen.
+. Fifth and final item, completing the five-item measurement block.
+
+// end calibration page 5
+
+<<<
+
+// ============================================================================
+// PAGE 6 — UNORDERED LISTS
+// ============================================================================
+
+=== Unordered Lists
+
+// CAL:ELEMENT unordered-list-3item COUNT=1
+* First item in a three-item unordered list for baseline bullet measurement.
+* Second bullet item, kept to a single rendered line.
+* Third and final bullet in this three-item specimen.
+
+// CAL:ELEMENT unordered-list-5item COUNT=1
+* First item in a five-item unordered list for scaling measurement.
+* Second bullet item in the five-item measurement block.
+* Third bullet item, maintaining consistent length.
+* Fourth bullet item in the calibration specimen.
+* Fifth and final bullet, completing the five-item block.
+
+// end calibration page 6
+
+<<<
+
+// ============================================================================
+// PAGE 7 — LABELED PROVISIONS
+// ============================================================================
+
+=== Labeled Provisions
+
+// CAL:ELEMENT labeled-provision COUNT=5
+*(1)* First labeled provision in the governance document style, measuring the height of inline-numbered items used in legal sections.
+
+*(2)* Second labeled provision, maintaining consistent single-paragraph length for accurate per-item height measurement.
+
+*(3)* Third labeled provision, matching the format used throughout the Company Identity Manual for enumerated clauses.
+
+*(4)* Fourth labeled provision, continuing the calibration sequence for provision-style numbered items.
+
+*(5)* Fifth and final labeled provision, completing the measurement block for inline-numbered governance content.
+
+// end calibration page 7
+
+<<<
+
+// ============================================================================
+// PAGE 8 — SMALL TEXT AND SCRIPTURE BLOCKS
+// ============================================================================
+
+=== Small Text and Scripture
+
+// CAL:ELEMENT small-text COUNT=1
+[.small]
+This is a small-text block used for footnotes, fine print, and supplementary information in the governance document format.
+
+// CAL:ELEMENT scripture-block COUNT=1
+[.text-center]
+[.small]
+_"In the beginning God created the heaven and the earth."_ — Genesis 1:1
+
+// CAL:ELEMENT scripture-block-2line COUNT=1
+[.text-center]
+[.small]
+_"Write the vision, and make it plain upon tables, that he may run that readeth it."_ — Habakkuk 2:2
+
+// CAL:ELEMENT body-paragraph-1line COUNT=1
+A standard body paragraph after scripture blocks, for measuring return-to-normal spacing.
+
+// end calibration page 8
+
+<<<
+
+// ============================================================================
+// PAGE 9 — THEMATIC BREAKS AND DISCRETE HEADINGS
+// ============================================================================
+
+=== Thematic Breaks and Discrete Headings
+
+// CAL:ELEMENT body-paragraph-1line COUNT=1
+A paragraph before the first thematic break for spacing reference.
+
+// CAL:ELEMENT thematic-break COUNT=1
+'''
+
+// CAL:ELEMENT body-paragraph-1line COUNT=1
+A paragraph between thematic breaks, measuring break-to-paragraph spacing.
+
+// CAL:ELEMENT thematic-break COUNT=1
+'''
+
+// CAL:ELEMENT discrete-heading-center COUNT=1
+[.text-center]
+[discrete]
+=== Discrete Centered Heading
+
+// CAL:ELEMENT body-paragraph-1line COUNT=1
+A paragraph following a discrete centered heading, used in Cover and ceremonial pages.
+
+// CAL:ELEMENT discrete-heading COUNT=1
+[discrete]
+=== Discrete Left-Aligned Heading
+
+// CAL:ELEMENT body-paragraph-1line COUNT=1
+A paragraph following a discrete left-aligned heading.
+
+// end calibration page 9
+
+<<<
+
+// ============================================================================
+// PAGE 10 — TABLES
+// ============================================================================
+
+=== Tables
+
+// CAL:ELEMENT table-3row COUNT=1
+[cols="1,2"]
+|===
+| Header A | Header B
+
+| Cell A1
+| Cell B1
+
+| Cell A2
+| Cell B2
+
+| Cell A3
+| Cell B3
+|===
+
+// CAL:ELEMENT table-5row COUNT=1
+[cols="1,1,2"]
+|===
+| Col 1 | Col 2 | Col 3
+
+| R1C1
+| R1C2
+| Row one content in column three
+
+| R2C1
+| R2C2
+| Row two content in column three
+
+| R3C1
+| R3C2
+| Row three content in column three
+
+| R4C1
+| R4C2
+| Row four content in column three
+
+| R5C1
+| R5C2
+| Row five content in column three
+|===
+
+// end calibration page 10
+
+<<<
+
+// ============================================================================
+// PAGE 11 — MIXED ELEMENTS (VALIDATION BASELINE)
+// ============================================================================
+
+=== Mixed Elements
+
+This page contains a realistic mix of elements as found in governance document pages, serving as a validation baseline for prediction accuracy.
+
+// CAL:ELEMENT mixed-page START
+[.text-center]
+[discrete]
+=== Section Title
+
+The following provisions establish the operational principles for this calibration section. These principles are binding and serve as the reference for measuring prediction accuracy across mixed element types.
+
+'''
+
+[.text-center]
+[.small]
+_"Diverse weights and diverse measures — both of them alike are an abomination to the LORD."_ — Proverbs 20:10
+
+*(1)* *First Provision.* The calibration system measures actual render heights against predicted heights derived from isolated element measurements.
+
+*(2)* *Second Provision.* Prediction accuracy degrades when element interaction effects (spacing collapse, orphan prevention) are not accounted for in the model.
+
+*(3)* *Third Provision.* The mixed-page specimen provides ground truth for validating the composite prediction algorithm.
+
+'''
+
+The provisions enumerated above constitute the complete calibration validation baseline.
+
+// CAL:ELEMENT mixed-page END
+// end calibration page 11

@@ -74,6 +74,7 @@ import { registerTocCommand } from './commands/toc.js';
 import { registerAssetsCommand } from './commands/assets.js';
 import { registerConfigCommand } from './commands/config.js';
 import { registerWitnessCommand } from './commands/witness.js';
+import { registerFillCommand } from './commands/fill.js';
 
 // =============================================================================
 // Main CLI
@@ -114,6 +115,7 @@ async function main(): Promise<void> {
   registerAssetsCommand(program, config, paths);
   registerConfigCommand(program, config, paths);
   registerWitnessCommand(program, config, paths);
+  registerFillCommand(program, config, paths);
   registerBuildCommand(program, config, paths);  // Default action — must be last
 
   // Parse and route

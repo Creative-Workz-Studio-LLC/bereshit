@@ -1656,6 +1656,39 @@ export type ThemeVariantsConfig = Record<string, ThemeVariantOverrides>;
 
 
 // =============================================================================
+// §20 — Page Fill Analysis
+// =============================================================================
+
+/** Fill range definition — min/max percentages */
+export interface FillRange {
+  min: number;
+  max: number;
+}
+
+/** Cross-check settings for source marker validation */
+export interface FillCrossCheck {
+  /** Flag pages marked "content full" below this fill % */
+  stale_marker_below: number;
+  /** Flag unmarked pages above this fill % */
+  missing_marker_above: number;
+  /** Warn on page count mismatch between source markers and PDF */
+  page_count_drift: boolean;
+}
+
+/** §20 — Page fill analysis configuration */
+export interface PageFillConfig {
+  /** Named fill ranges with min/max percentages */
+  ranges: Record<string, FillRange>;
+  /** Regex pattern for matching end-of-page markers in source */
+  marker_pattern: string;
+  /** Cross-check settings */
+  cross_check: FillCrossCheck;
+  /** Percentage at or above which bleed is imminent (default: 95) */
+  bleed_threshold?: number;
+}
+
+
+// =============================================================================
 // Complete Build Configuration
 // =============================================================================
 
@@ -1735,6 +1768,9 @@ export interface BuildConfig {
 
   /** §19 — Theme variant overrides (per-theme expected values) */
   theme_variants?: ThemeVariantsConfig;
+
+  /** §20 — Page fill analysis config */
+  page_fill?: PageFillConfig;
 
   /** Config version */
   version: string;
