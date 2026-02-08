@@ -1,251 +1,163 @@
-# Plan: CWS Server — Company Infrastructure Foundation
+# Plan: CWS Server — Deflatten, Document, Expand
 
 ## Context
 
-CWS can't afford cloud hosting yet, so we build our own server infrastructure on-premise. The server starts by serving two real dashboards that already exist, proving the architecture works with actual traffic and real data. This becomes the foundation all future CWS services build on.
+The CWS Go server (14 files, 2,606 lines) is deployed and working. Seanje asked for three things:
+1. **README.adoc** following CWS documentation standards
+2. **Support docs** (architecture, API, deployment)
+3. **Deflatten code** — split flat handler files, extract duplicated helpers, expand docstrings
 
-**Two services from day 1:**
-1. **Builder Dashboard** — serves the company-docs manual builder GUI (replaces Express dev server)
-2. **CPI-SI Dashboard** — serves CPI-SI state machine data (wraps existing Go DashboardService)
-
-**Why Go:** Compiled (CWS preference), single binary, Go 1.24.4 on system, existing CPI-SI Go infrastructure at `~/.claude/pkg/`, stdlib HTTP server with method routing (Go 1.22+).
+Order matters: deflatten first (changes file structure), then comments (targets final files), then docs (references final structure).
 
 ---
 
-## Architecture
+## Phase 1: Deflatten (4 steps, `make check` gate after each)
 
-### Location: `Bereshit/server/`
+### 1.1 Extract shared HTTP helpers → `internal/server/response.go` (NEW)
 
-Top-level in the repo. This is the CWS server — it deserves visibility, not to be buried 4 levels deep.
+`decodeJSON`, `writeJSON`, `writeError` are identical in both `builder/handler.go:266-285` and `cpisi/handler.go:359-389`. `queryInt` only in cpisi but belongs with the others.
+
+Export as `server.DecodeJSON`, `server.WriteJSON`, `server.WriteError`, `server.QueryInt`. Both service packages import `"cws.studio/server/internal/server"`.
+
+### 1.2 Split `builder/handler.go` (290 lines → 3 files)
+
+| File | Content | Lines from original |
+|------|---------|-----|
+| `handler.go` (TRIM) | Service struct, NewService, RegisterRoutes | 37-63 |
+| `handler_commands.go` (NEW) | runCommandRequest, handleRunCommand, runMakeRequest, handleRunMake, cancelRequest, handleCancelProcess, handleActiveProcesses | 69-138 |
+| `handler_config.go` (NEW) | handleReadConfig, handleUpdateConfigSection, handleReadPreferences, handleWritePreferences | 144-260 |
+
+Remove local helpers (replaced by 1.1). `handler_config.go` keeps yaml and config imports.
+
+### 1.3 Split `cpisi/handler.go` (393 lines → 3 files)
+
+| File | Content | Lines from original |
+|------|---------|-----|
+| `handler.go` (TRIM) | Service struct, NewService, RegisterRoutes | 34-71 |
+| `handler_state.go` (NEW) | 9 state handlers (handleState through handleSystemData) | 77-162 |
+| `handler_journal.go` (NEW) | 8 journal handlers + importEntry struct + splitTags helper | 168-353 |
+
+Remove local helpers (replaced by 1.1).
+
+### 1.4 Refactor `builder/process.go` — extract `spawnProcess`
+
+`RunCLI` (88-155) and `RunMake` (158-223) share ~65 identical lines (pipe setup, start, stream, wait, exit broadcast). Extract into private `spawnProcess(cmd *exec.Cmd) string`. `RunCLI` and `RunMake` become thin wrappers that build `exec.Cmd` then call `spawnProcess`.
+
+---
+
+## Phase 2: Expand Docstrings & Comments (all 19 files)
+
+Every file gets:
+- **Biblical reference** in METADATA (most are missing this — main.go has Nehemiah 2:18, extend to all)
+- **Package doc comment** on primary file per package
+- **Group-purpose comments** before `───` section dividers
+- **Field comments** on struct fields that lack them
+- **Inline comments** on non-obvious logic (YAML node manipulation, process group kill, FTS5 triggers, SPA fallback logic)
+
+Key specific additions:
+
+| File | Additions |
+|------|-----------|
+| `config/paths.go` | Document upward-walk algorithm, XDG compliance |
+| `config/preferences.go` | Note "missing file is not error" design choice |
+| `server/middleware.go` | Middleware ordering contract, CORS dev-mode note |
+| `server/spa.go` | SPA fallback decision tree (file exists → serve; has ext → 404; no ext → index.html) |
+| `ws/hub.go` | Channel buffer sizes (256), slow client drop, shutdown |
+| `ws/client.go` | Write pump timeout rationale, readPump future expansion |
+| `builder/process.go` | Process group management (Setpgid + negative PID), ANSI stripping rationale |
+| `cpisi/bridge.go` | Event streaming lifecycle, journal store optionality |
+| `cpisi/journal.go` | FTS5 sync trigger pattern, WAL mode choice, ID generation format |
+
+---
+
+## Phase 3: Documentation (4 AsciiDoc files)
+
+### 3.1 `server/README.adoc` — Primary project README
+
+Follow builder README pattern (practical, not full 5-block template):
+- AsciiDoc attributes, `.lead` paragraph, biblical sidebar (Nehemiah 2:18)
+- Overview (unified server, 3 services, key tech)
+- Quick Start (`make build && make run`, `make deploy`)
+- Architecture overview (service composition, host routing, WebSocket hub)
+- Services section (Builder, CPI-SI, Website — route prefixes, key features)
+- API summary table (all endpoints)
+- Deployment section (production target, partial deploys, health monitoring)
+- Project structure tree (final 19-file layout)
+
+### 3.2 `server/docs/ARCHITECTURE.adoc`
+
+- Service composition diagram (main.go wiring)
+- Request flow: HTTP → middleware chain → host router → service handler → response
+- WebSocket lifecycle: upgrade → Hub → writePump/readPump → broadcast
+- CPI-SI bridge: DashboardService → EventBus → Bridge.streamEvents → Hub
+- Process management: spawn → streamPipe → Wait → ExitMessage
+- Configuration resolution: flags → env → defaults → auto-detect
+- Caching strategy by content type
+
+### 3.3 `server/docs/API.adoc`
+
+Complete endpoint reference:
+- Builder: 8 endpoints (commands CRUD, config CRUD, preferences)
+- CPI-SI: 9 state endpoints + 8 journal endpoints
+- Shared: /healthz, /api/version, /ws
+- WebSocket protocol (OutputMessage, ExitMessage, state_update)
+- Request/response JSON schemas
+
+### 3.4 `server/docs/DEPLOYMENT.adoc`
+
+- Production server (Dell Inspiron, seanje@192.168.1.99)
+- systemd service + Cloudflare tunnel
+- Deploy workflow (full + partial)
+- Health monitoring (healthcheck.sh, cron, prod-health)
+- Troubleshooting guide
+
+---
+
+## Final File Structure (19 Go + 4 docs)
 
 ```
 server/
-  cmd/cws-server/
-    main.go                      # Entry point, flags, signals, graceful shutdown
-  internal/
-    server/
-      server.go                  # HTTP server setup, lifecycle, route registration
-      middleware.go              # Recovery, logging, request-ID, CORS
-      response.go                # JSON response helpers, error responses
-      spa.go                     # SPA static file handler (try file, fallback index.html)
-    ws/
-      hub.go                     # WebSocket hub: register, unregister, broadcast
-      client.go                  # Individual WebSocket connection, read/write pumps
-    services/
-      builder/
-        handler.go               # Routes: /api/builder/commands/*, /api/builder/config/*
-        process.go               # CLI process spawning, streaming, cancellation
-      cpisi/
-        handler.go               # Routes: /api/cpisi/state, /sessions, /choices, etc.
-        bridge.go                # Wraps pkg/dashboard.DashboardService
-    config/
-      server.go                  # Server config (ports, paths, feature flags)
-      paths.go                   # Multi-project path resolution
-      preferences.go             # XDG preferences read/write
-  go.mod
-  go.sum
-  Makefile
+├── README.adoc                              # NEW (Phase 3)
+├── Makefile
+├── go.mod / go.sum
+├── cmd/cws-server/
+│   └── main.go                              # Phase 2 comments
+├── internal/
+│   ├── config/
+│   │   ├── server.go                        # Phase 2 comments
+│   │   ├── paths.go                         # Phase 2 comments
+│   │   └── preferences.go                   # Phase 2 comments
+│   ├── server/
+│   │   ├── hostrouter.go                    # Phase 2 comments
+│   │   ├── middleware.go                    # Phase 2 comments
+│   │   ├── response.go                      # NEW (Phase 1.1)
+│   │   └── spa.go                           # Phase 2 comments
+│   ├── services/
+│   │   ├── builder/
+│   │   │   ├── handler.go                   # TRIMMED (Phase 1.2)
+│   │   │   ├── handler_commands.go          # NEW (Phase 1.2)
+│   │   │   ├── handler_config.go            # NEW (Phase 1.2)
+│   │   │   └── process.go                   # REFACTORED (Phase 1.4)
+│   │   └── cpisi/
+│   │       ├── handler.go                   # TRIMMED (Phase 1.3)
+│   │       ├── handler_state.go             # NEW (Phase 1.3)
+│   │       ├── handler_journal.go           # NEW (Phase 1.3)
+│   │       ├── bridge.go                    # Phase 2 comments
+│   │       └── journal.go                   # Phase 2 comments
+│   └── ws/
+│       ├── hub.go                           # Phase 2 comments
+│       └── client.go                        # Phase 2 comments
+├── docs/
+│   ├── ARCHITECTURE.adoc                    # NEW (Phase 3)
+│   ├── API.adoc                             # NEW (Phase 3)
+│   └── DEPLOYMENT.adoc                      # NEW (Phase 3)
+├── scripts/healthcheck.sh
+└── website/
 ```
-
-**~16 Go files.** Clean `internal/` boundaries. Each service is a self-contained package.
-
-### Dependencies (3 external)
-
-| Dependency | Purpose |
-|------------|---------|
-| `nhooyr.io/websocket` | WebSocket (modern, context-aware) |
-| `gopkg.in/yaml.v3` | YAML config read/write with `yaml.Node` |
-| `github.com/creativeworkzstudio/claude-global/pkg` | DashboardService for CPI-SI state |
-
-Everything else: stdlib (`net/http`, `os/exec`, `log/slog`, `encoding/json`, `sync`).
-
----
-
-## Service Architecture
-
-### Service 1: Builder Dashboard (`/api/builder/`)
-
-Drop-in replacement for the Express server. Zero frontend changes — the WebAdapter contract is preserved exactly.
-
-**REST Endpoints:**
-
-| Method | Path | Purpose |
-|--------|------|---------|
-| POST | `/api/builder/commands/run` | Execute builder CLI command |
-| POST | `/api/builder/commands/make` | Execute Makefile target |
-| POST | `/api/builder/commands/cancel` | Cancel running process |
-| GET | `/api/builder/commands/active` | List active processes |
-| GET | `/api/builder/config` | Read build.config.yaml |
-| PATCH | `/api/builder/config/{section}` | Update config section |
-| GET | `/api/builder/config/preferences` | Read dashboard preferences |
-| PUT | `/api/builder/config/preferences` | Write dashboard preferences |
-
-**WebSocket messages (via shared `/ws`):**
-- `{ type: "output", processId, stream, line, timestamp }`
-- `{ type: "exit", processId, exitCode, success }`
-
-**Note:** Frontend currently hits `/api/commands/run` (no `/builder/` prefix). Two options:
-1. Update frontend WebAdapter to use `/api/builder/` prefix (clean, ~5 line change)
-2. Register routes at both paths during transition
-
-Option 1 is cleaner. Single 5-line edit to `adapter-web.ts`: `const API_BASE = '/api/builder'`.
-
-### Service 2: CPI-SI Dashboard (`/api/cpisi/`)
-
-Wraps the existing Go `DashboardService` from `~/.claude/pkg/dashboard/`.
-
-**REST Endpoints:**
-
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/api/cpisi/state` | Current StateSnapshot (30+ fields) |
-| GET | `/api/cpisi/sessions?limit=N` | Recent session history |
-| GET | `/api/cpisi/sessions/{id}/kalign` | K:ALIGN evolution for session |
-| GET | `/api/cpisi/sessions/{id}/hebrew` | Hebrew state transitions |
-| GET | `/api/cpisi/choices?limit=N` | Recent choices across sessions |
-| GET | `/api/cpisi/patterns` | Active detected patterns |
-| GET | `/api/cpisi/temporal` | Work pattern heatmap data |
-| GET | `/api/cpisi/events?limit=N` | Recent log events |
-| GET | `/api/cpisi/data/{path...}` | System data browser |
-
-**WebSocket messages (via shared `/ws`):**
-- `{ type: "state_update", snapshot: {...}, timestamp }`
-- `{ type: "log_event", event: {...}, timestamp }`
-
-The DashboardService's `Subscribe()` channel feeds directly into the WebSocket hub. Real-time state updates flow to connected browsers.
-
-### Shared: WebSocket Hub (`/ws`)
-
-One WebSocket endpoint serves all services. Messages are distinguished by `type` field:
-- `output` / `exit` → Builder process streaming
-- `state_update` / `log_event` → CPI-SI real-time updates
-
-### Shared: Health & Info
-
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/healthz` | Health check (200 OK) |
-| GET | `/api/version` | Server version, uptime, active services |
-
-### Static File Serving
-
-| Path | Serves | Source |
-|------|--------|--------|
-| `/` | Builder Dashboard | `company-docs/build/dashboard/src-web/` |
-| `/cpisi/` | CPI-SI Dashboard | Frontend built by parallel session (or placeholder) |
-
-Both use SPA fallback (unknown routes → `index.html` under that prefix).
-
----
-
-## Server Startup Flow
-
-```
-main.go:
-  1. Parse flags (--port, --builder-dir, --cpisi, --dev)
-  2. Resolve paths (project dirs, config files, builder CLI)
-  3. Create WebSocket hub → hub.Run() goroutine
-  4. Create Builder service (ProcessManager + config paths)
-  5. Create CPI-SI service (DashboardService → Subscribe → hub)
-  6. Create http.ServeMux → register all service routes
-  7. Wrap with middleware: Recovery(Logger(RequestID(CORS(mux))))
-  8. http.Server{Handler, Addr: ":port"}
-  9. Signal handler: SIGINT/SIGTERM → graceful shutdown
-  10. server.ListenAndServe()
-  On shutdown: cancel processes, close DashboardService, close hub, drain (5s)
-```
-
-**Flags:**
-- `--port` / `CWS_SERVER_PORT` (default: 3847)
-- `--builder-dir` / `CWS_BUILDER_DIR` (auto-detect: walk up for `build/build.config.yaml`)
-- `--cpisi` — enable CPI-SI service (default: true if DashboardService initializes)
-- `--dev` — serve frontends from filesystem (vs embedded)
-
----
-
-## Key Design Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| Top-level `server/` | Visible, company infrastructure deserves prominence |
-| Service pattern | Each service is a package with its own `RegisterRoutes(mux)` |
-| Shared WebSocket hub | One connection per browser, messages routed by `type` |
-| Own `go.mod` | Independent from `word/work/` module and claude-global |
-| Import pkg/dashboard | Reuse existing Go DashboardService — don't reimplement |
-| Middleware chain | stdlib `http.Handler` wrapping — composable, no framework |
-| `log/slog` JSON | Structured logging, stdlib, production-ready |
-| Graceful shutdown | Context cancellation propagates through all goroutines |
-| Feature flags | `--cpisi` flag lets server run with just builder service |
-
----
-
-## Implementation Steps
-
-### Phase 1: Foundation + Builder Service
-
-| # | Step | Files |
-|:-:|------|-------|
-| 1 | Init Go module, directory structure, Makefile | `go.mod`, dirs, Makefile |
-| 2 | `internal/config/` — paths, server config, preferences | 3 files |
-| 3 | `internal/ws/` — WebSocket hub + client | 2 files |
-| 4 | `internal/services/builder/process.go` — process spawn/stream | 1 file |
-| 5 | `internal/services/builder/handler.go` — all builder routes | 1 file |
-| 6 | `internal/server/` — middleware, response helpers, SPA handler | 4 files |
-| 7 | `cmd/cws-server/main.go` — entry point, lifecycle | 1 file |
-| 8 | Update dashboard `adapter-web.ts` — `/api/builder/` prefix | 1 frontend file |
-| 9 | Update dashboard Makefile — `dev-server` points to Go binary | 1 file |
-| 10 | Test: builder dashboard works through Go server | verification |
-
-### Phase 2: CPI-SI Service
-
-| # | Step | Files |
-|:-:|------|-------|
-| 11 | `internal/services/cpisi/bridge.go` — wrap DashboardService | 1 file |
-| 12 | `internal/services/cpisi/handler.go` — all CPI-SI routes | 1 file |
-| 13 | Wire CPI-SI EventBus → WebSocket hub | integration |
-| 14 | Health + version endpoints | in server.go |
-| 15 | Test: CPI-SI API returns real state data | verification |
-
-### Phase 3: Production Hardening (future)
-
-- `//go:embed` frontends into binary (single binary deployment)
-- Rate limiting, body size limits
-- Systemd unit file (`cws-server.service`)
-- TLS support (Let's Encrypt or self-signed)
-- Auth middleware (JWT — when external access needed)
-
----
-
-## Critical Reference Files
-
-| File | Why |
-|------|-----|
-| `company-docs/build/dashboard/server/routes/commands.ts` | Express command handlers — process spawn, ANSI strip, WS broadcast |
-| `company-docs/build/dashboard/server/routes/config.ts` | Express config handlers — YAML section update, XDG preferences |
-| `company-docs/build/dashboard/src-web/scripts/adapter-web.ts` | Frontend API contract — wire protocol |
-| `company-docs/build/dashboard/src-web/types/adapter.ts` | TypeScript types for request/response shapes |
-| `~/.claude/pkg/dashboard/dashboard.go` | DashboardService — CPI-SI data layer |
-| `~/.claude/pkg/dashboard/state.go` | StateSnapshot type — 30+ JSON-tagged fields |
-| `~/.claude/pkg/dashboard/events.go` | EventBus pattern — pub/sub for state changes |
-| `company-docs/build/dashboard/Makefile` | Existing targets to update |
-
----
 
 ## Verification
 
-**Phase 1 (Builder):**
-1. `make server` in `server/` compiles binary, zero errors
-2. `make run` starts on port 3847
-3. `http://localhost:3847/` loads full builder dashboard
-4. Click "Spine" → output streams via WebSocket
-5. Click "Lint" with file → results stream correctly
-6. Config read/write works
-7. Cancel process → SIGTERM, exit event
-8. Ctrl+C → graceful shutdown, processes cleaned
-
-**Phase 2 (CPI-SI):**
-9. `curl localhost:3847/api/cpisi/state` returns full StateSnapshot JSON
-10. `curl localhost:3847/api/cpisi/sessions?limit=5` returns session history
-11. WebSocket receives `state_update` when runtime files change
-12. `curl localhost:3847/healthz` returns 200
-13. `curl localhost:3847/api/version` returns server info with both services listed
+- **After each Phase 1 step:** `make check` (go vet + build)
+- **After Phase 2:** `make check` (comments don't break compilation, but verify no typos in code)
+- **After Phase 3:** Review docs for accuracy against final code structure
+- **Final:** `make deploy` to production
