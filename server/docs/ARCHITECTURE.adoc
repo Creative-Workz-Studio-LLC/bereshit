@@ -1,0 +1,359 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// CWS Server — Architecture Guide
+// ═══════════════════════════════════════════════════════════════════════════
+// Location: server/docs/
+// Version:  0.1.0
+// ═══════════════════════════════════════════════════════════════════════════
+
+= CWS Server Architecture
+CreativeWorkzStudio LLC
+:icons: font
+:toc: left
+:toclevels: 3
+:source-highlighter: rouge
+
+[.lead]
+*How the CWS Server is structured, how data flows, and why it's built this way.*
+
+'''
+
+== Service Composition
+
+The server composes three independent services into a single binary in `main.go`:
+
+[source]
+----
+                     ┌───────────────┐
+                     │    main.go    │
+                     │  (wiring)     │
+                     └───┬───┬───┬──┘
+                         │   │   │
+              ┌──────────┘   │   └──────────┐
+              ↓              ↓              ↓
+     ┌────────────┐  ┌────────────┐  ┌───────────┐
+     │  Builder   │  │  CPI-SI    │  │  Website  │
+     │  Service   │  │  Service   │  │  (SPA)    │
+     └──────┬─────┘  └──────┬─────┘  └───────────┘
+            │               │
+     ┌──────┘        ┌──────┘
+     ↓               ↓
+┌─────────┐   ┌────────────┐
+│ Process │   │   Bridge   │
+│ Manager │   │ Dashboard  │
+└────┬────┘   │  Service   │
+     │        └──────┬─────┘
+     ↓               ↓
+┌─────────────────────────┐
+│      WebSocket Hub      │
+│   (fan-in / fan-out)    │
+└─────────────────────────┘
+----
+
+Each service:
+
+* Has its own package under `internal/services/`
+* Registers routes on a shared `http.ServeMux`
+* Can be enabled/disabled independently
+* Shares the WebSocket hub for real-time output
+
+=== Startup Sequence
+
+[source]
+----
+1. Parse flags + env → ServerConfig
+2. Configure slog (JSON, level based on --dev)
+3. Create signal context (SIGINT, SIGTERM)
+4. Resolve builder paths (explicit or auto-detect)
+5. Create WebSocket Hub → go hub.Run()
+6. Initialize services:
+   a. Builder: ProcessManager + Service → RegisterRoutes
+   b. CPI-SI: Bridge (DashboardService + JournalStore) → Service → RegisterRoutes
+   c. Website: SPAHandler if --website-dir set
+7. Register shared endpoints (/healthz, /api/version, /ws)
+8. Configure host routing (if website enabled)
+9. Build middleware chain
+10. Start HTTP server
+11. Wait for shutdown signal
+12. Graceful shutdown (cancel processes → close bridge → close hub → drain HTTP)
+----
+
+'''
+
+== Request Flow
+
+=== HTTP Pipeline
+
+Every request passes through the middleware chain before reaching a handler:
+
+[source]
+----
+Client → TCP → HTTP Server
+                    ↓
+            Recovery Middleware
+            (catch panics → 500)
+                    ↓
+            RequestLogger Middleware
+            (wrap ResponseWriter, log on return)
+                    ↓
+            RequestID Middleware
+            (crypto/rand → X-Request-ID header)
+                    ↓
+            CORS Middleware
+            (Allow-Origin: * for tunnel/dev)
+            (OPTIONS → 204 short-circuit)
+                    ↓
+            SecurityHeaders Middleware
+            (nosniff, deny frame, referrer-policy)
+            (API paths → Cache-Control: no-store)
+                    ↓
+            HostRouter (if website enabled)
+              ├─ creativeworkzstudio.com → Website SPAHandler
+              ├─ www.creativeworkzstudio.com → Website SPAHandler
+              └─ * (catch-all) → ServeMux
+                    ↓
+            ServeMux Pattern Matching
+              ├─ POST /api/builder/commands/run → handleRunCommand
+              ├─ GET /api/cpisi/state → handleState
+              ├─ GET /ws → hub.HandleUpgrade
+              ├─ GET /healthz → inline handler
+              └─ / → Dashboard SPAHandler (fallback)
+----
+
+=== SPA Routing Decision
+
+The SPAHandler implements a three-way decision for each request:
+
+[source]
+----
+Incoming path: /settings
+  1. Check: does /path/to/webroot/settings exist on disk?
+     → NO
+  2. Check: does "/settings" have a file extension?
+     → NO (no dot in basename)
+  3. Decision: serve index.html (SPA client-side route)
+
+Incoming path: /assets/app.js
+  1. Check: does /path/to/webroot/assets/app.js exist?
+     → YES
+  2. Decision: set Cache-Control by extension (.js → 1 hour), serve file
+
+Incoming path: /broken-script.js
+  1. Check: does /path/to/webroot/broken-script.js exist?
+     → NO
+  2. Check: does "/broken-script.js" have a file extension?
+     → YES (.js)
+  3. Decision: 404 (genuinely missing asset, not a client route)
+----
+
+'''
+
+== WebSocket Architecture
+
+=== Hub Pattern
+
+The Hub implements classic fan-in/fan-out with a single coordinating goroutine:
+
+[source]
+----
+                Producers                    Hub.Run()              Consumers
+          ┌──────────────┐            ┌─────────────────┐     ┌──────────────┐
+          │ ProcessMgr   │──broadcast──→               │     │   Browser    │
+          │ (stdout/err) │            │  select {       │     │   Client 1   │
+          └──────────────┘            │    register     │──→  └──────────────┘
+                                      │    unregister   │     ┌──────────────┐
+          ┌──────────────┐            │    broadcast    │──→  │   Browser    │
+          │ CPI-SI       │──broadcast──→    ctx.Done   │     │   Client 2   │
+          │ Bridge       │            │  }              │     └──────────────┘
+          └──────────────┘            └─────────────────┘     ┌──────────────┐
+                                                          ──→  │   Browser    │
+                                                              │   Client N   │
+                                                              └──────────────┘
+----
+
+=== Channel Buffer Sizes
+
+[cols="1,1,3"]
+|===
+| Channel | Buffer | Rationale
+
+| `hub.broadcast`
+| 256
+| Absorbs bursts from process output. If full, message is dropped with warning
+  rather than blocking the producer.
+
+| `client.send`
+| 256
+| Per-client outbound queue. If full, client is considered "slow" — disconnected
+  to prevent one slow client from blocking broadcasts to all others.
+
+| `hub.register`
+| unbuffered
+| Registration is infrequent and should be immediate.
+
+| `hub.unregister`
+| unbuffered
+| Unregistration is infrequent and should be immediate.
+|===
+
+=== Connection Lifecycle
+
+[source]
+----
+1. Client sends HTTP upgrade to /ws
+2. Hub.HandleUpgrade: Accept → create Client → register with Hub
+3. Two goroutines start per client:
+   a. writePump: hub.send channel → WebSocket.Write (10s timeout per write)
+   b. readPump:  WebSocket.Read → detect disconnect (messages discarded for now)
+4. On disconnect (read error, context cancel, or slow-client eviction):
+   a. writePump: close WebSocket, send unregister to Hub
+   b. readPump:  send unregister to Hub
+5. Hub removes client from map, closes send channel
+----
+
+'''
+
+== Process Management
+
+=== Spawn + Stream Lifecycle
+
+[source]
+----
+HTTP POST /api/builder/commands/run
+  → handleRunCommand (parse request)
+    → ProcessManager.RunCLI
+      → Build exec.Cmd (node cws-build <command> <args>)
+      → Set Setpgid=true (process group isolation)
+      → spawnProcess(cmd):
+          1. Create StdoutPipe, StderrPipe
+          2. cmd.Start()
+          3. Store in processes map (sync.Map)
+          4. go streamPipe("stdout", scanner) → Hub.Broadcast(OutputMessage)
+          5. go streamPipe("stderr", scanner) → Hub.Broadcast(OutputMessage)
+          6. go cmd.Wait() → Hub.Broadcast(ExitMessage)
+      → Return processID immediately (non-blocking)
+----
+
+=== Process Group Isolation
+
+Commands run with `Setpgid=true`, creating a new process group:
+
+[source]
+----
+Server process (PID 100)
+  └─ make -C /path target (PID 200, PGID 200)  ← new group
+       └─ node cws-build lint (PID 201, PGID 200)
+            └─ asciidoctor (PID 202, PGID 200)
+
+Cancel: kill(-200, SIGTERM)  ← negative PID kills entire group
+  → PID 200, 201, 202 all receive SIGTERM
+----
+
+Without process groups, cancelling `make` would leave orphaned child processes.
+
+'''
+
+== CPI-SI Bridge
+
+=== Event Streaming
+
+[source]
+----
+DashboardService
+  └─ EventBus (Go channel)
+       └─ Bridge.streamEvents (subscriber goroutine)
+            └─ json.Marshal(change)
+                 └─ Hub.BroadcastRaw(data)
+                      └─ All connected WebSocket clients
+----
+
+The bridge is a long-lived goroutine that:
+
+1. Subscribes to the DashboardService's EventBus channel
+2. For each event: marshal to JSON → broadcast to WebSocket hub
+3. Exits when parent context is cancelled (server shutdown)
+4. Marshal errors are logged but don't stop the stream
+
+=== Journal Store
+
+SQLite with WAL mode and FTS5 full-text search:
+
+[source]
+----
+journals (table)                    journals_fts (FTS5 virtual table)
+├─ id (TEXT PK)                    ├─ id (UNINDEXED)
+├─ type (CHECK constraint)         ├─ title (searchable)
+├─ title                           ├─ content (searchable)
+├─ content                         └─ tags (searchable)
+├─ tags (comma-separated)
+├─ session_id                      Sync triggers:
+├─ metadata (JSON)                   journals_ai → INSERT into FTS
+├─ created_at                        journals_ad → DELETE from FTS
+└─ updated_at                        journals_au → DELETE old + INSERT new
+----
+
+'''
+
+== Configuration Resolution
+
+[source]
+----
+Priority: Flags > Environment > Defaults
+
+┌─────────────────────┐
+│     Defaults        │  port=3847, cpisi=true, dev=false
+└──────────┬──────────┘
+           ↓
+┌─────────────────────┐
+│   Environment       │  CWS_SERVER_PORT, CWS_BUILDER_DIR
+└──────────┬──────────┘
+           ↓
+┌─────────────────────┐
+│   Command Flags     │  --port, --builder-dir, --dev, --cpisi
+└──────────┬──────────┘
+           ↓
+┌─────────────────────┐
+│  Path Resolution    │  FindProjectDir (walk up) or explicit --builder-dir
+└──────────┬──────────┘
+           ↓
+  Builder enabled if paths resolve
+  CPI-SI enabled if flag set (default: true)
+  Website enabled if --website-dir set
+----
+
+'''
+
+== Cache Strategy
+
+[cols="1,1,2"]
+|===
+| Content Type | Cache-Control | Rationale
+
+| HTML
+| `no-cache`
+| Always revalidate — Go handles 304 efficiently
+
+| JS, CSS, .map
+| `public, max-age=3600`
+| 1 hour — changes on most deploys
+
+| Images, SVG, ICO
+| `public, max-age=86400`
+| 1 day — rarely change
+
+| Fonts
+| `public, max-age=604800, immutable`
+| 1 week, never revalidate — font files never change
+
+| API responses
+| `no-store`
+| Set by SecurityHeaders middleware — API data is always fresh
+
+| Unknown
+| `public, max-age=3600`
+| 1 hour fallback
+|===
+
+'''
+
+[.text-center]
+_Building for the Kingdom to come._

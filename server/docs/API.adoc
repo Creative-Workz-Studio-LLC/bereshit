@@ -1,0 +1,675 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// CWS Server — API Reference
+// ═══════════════════════════════════════════════════════════════════════════
+// Location: server/docs/
+// Version:  0.1.0
+// ═══════════════════════════════════════════════════════════════════════════
+
+= CWS Server API Reference
+CreativeWorkzStudio LLC
+:icons: font
+:toc: left
+:toclevels: 3
+:source-highlighter: rouge
+
+[.lead]
+*Complete endpoint documentation for the CWS Server REST API and WebSocket protocol.*
+
+Base URL: `https://dashboard.creativeworkzstudio.com` (production) +
+Base URL: `http://localhost:3847` (development)
+
+'''
+
+== Shared Endpoints
+
+=== Health Check
+
+[source]
+----
+GET /healthz
+----
+
+Returns server health status. Used by the cron watchdog and deploy verification.
+
+*Response:* `200 OK`
+[source,json]
+----
+{"status": "ok"}
+----
+
+=== Version
+
+[source]
+----
+GET /api/version
+----
+
+Returns server version, uptime, and runtime stats.
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "version": "0.1.0",
+  "uptime": "2h15m30s",
+  "services": 3,
+  "wsClients": 2
+}
+----
+
+=== WebSocket
+
+[source]
+----
+GET /ws
+----
+
+Upgrades to WebSocket connection. No authentication required.
+Origin checking is handled by CORS middleware and Cloudflare Tunnel.
+
+Messages are JSON objects with a `type` field for routing.
+
+'''
+
+== Builder Dashboard API
+
+=== Run CLI Command
+
+[source]
+----
+POST /api/builder/commands/run
+----
+
+Spawns a builder CLI command (`node cws-build <command> <args>`).
+Returns immediately with a process ID; output streams via WebSocket.
+
+*Request:*
+[source,json]
+----
+{
+  "command": "lint",
+  "args": ["--file", "book/B-articles/A-ARTICLE-ONE.adoc"]
+}
+----
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "processId": "m7k2x9p3"
+}
+----
+
+=== Run Make Target
+
+[source]
+----
+POST /api/builder/commands/make
+----
+
+Spawns a Makefile target with optional variable overrides.
+
+*Request:*
+[source,json]
+----
+{
+  "target": "lint",
+  "vars": {
+    "CHECK": "tone",
+    "VERBOSE": "1"
+  }
+}
+----
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "processId": "m7k3a1b2"
+}
+----
+
+=== Cancel Process
+
+[source]
+----
+POST /api/builder/commands/cancel
+----
+
+Sends SIGTERM to a running process and its entire process group.
+
+*Request:*
+[source,json]
+----
+{
+  "processId": "m7k2x9p3"
+}
+----
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "status": "cancelled"
+}
+----
+
+*Error:* `404 Not Found` if process ID is unknown.
+
+=== Active Processes
+
+[source]
+----
+GET /api/builder/commands/active
+----
+
+Returns list of currently running process IDs.
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "processes": ["m7k2x9p3", "m7k3a1b2"]
+}
+----
+
+=== Read Config
+
+[source]
+----
+GET /api/builder/config
+----
+
+Returns the full `build.config.yaml` as parsed YAML (JSON-serialized).
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "config": { ... },
+  "path": "/home/seanje/cws/build/build.config.yaml"
+}
+----
+
+=== Update Config Section
+
+[source]
+----
+PATCH /api/builder/config/{section}
+----
+
+Updates a specific top-level section of `build.config.yaml`.
+Uses YAML node-level manipulation to preserve comments and formatting.
+
+*Request:*
+[source,json]
+----
+{
+  "key": "value"
+}
+----
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "status": "updated",
+  "section": "tone_and_voice"
+}
+----
+
+=== Read Preferences
+
+[source]
+----
+GET /api/builder/config/preferences
+----
+
+Returns dashboard user preferences from the XDG config directory.
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "theme": "dark",
+  "sidebar_width": 280
+}
+----
+
+=== Write Preferences
+
+[source]
+----
+PUT /api/builder/config/preferences
+----
+
+Writes dashboard preferences. Creates the config directory if needed.
+
+*Request:* Full preferences object (replaces existing).
+[source,json]
+----
+{
+  "theme": "dark",
+  "sidebar_width": 320
+}
+----
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "status": "saved"
+}
+----
+
+'''
+
+== CPI-SI API
+
+=== State Snapshot
+
+[source]
+----
+GET /api/cpisi/state
+----
+
+Returns the current CPI-SI state machine snapshot (30+ fields).
+
+*Response:* `200 OK` — Full StateSnapshot from DashboardService.
+
+=== Session History
+
+[source]
+----
+GET /api/cpisi/sessions?limit=20
+----
+
+Returns recent session records ordered by start time.
+
+*Query params:*
+[cols="1,1,1,2"]
+|===
+| Param | Type | Default | Description
+
+| `limit`
+| int
+| 20
+| Maximum sessions to return
+|===
+
+=== K:ALIGN History
+
+[source]
+----
+GET /api/cpisi/sessions/{id}/kalign
+----
+
+Returns K:ALIGN evolution records for a specific session.
+
+=== Hebrew Transitions
+
+[source]
+----
+GET /api/cpisi/sessions/{id}/hebrew
+----
+
+Returns Hebrew state transitions for a session. States flow through
+the 7 positions: shavar(-1) → yashar(0) → tov(+1).
+
+=== Recent Choices
+
+[source]
+----
+GET /api/cpisi/choices?limit=20
+----
+
+Returns recent choice records across all sessions.
+
+=== Active Patterns
+
+[source]
+----
+GET /api/cpisi/patterns
+----
+
+Returns currently active detected patterns.
+
+=== Temporal Work Patterns
+
+[source]
+----
+GET /api/cpisi/temporal
+----
+
+Returns temporal work pattern data, formatted for heatmap visualization.
+
+=== Recent Events
+
+[source]
+----
+GET /api/cpisi/events?limit=50
+----
+
+Returns recent log events from the CPI-SI runtime.
+
+=== System Data
+
+[source]
+----
+GET /api/cpisi/data/{path...}
+----
+
+Returns a specific data entry from the CPI-SI system.
+The `{path...}` wildcard captures the full remaining URL path.
+
+*Error:* `404 Not Found` if the data path doesn't exist.
+
+'''
+
+== Journal API
+
+All journal endpoints require the journal store to be initialized (data directory
+must be configured). If disabled, these routes are not registered.
+
+=== Create Journal
+
+[source]
+----
+POST /api/cpisi/journals
+----
+
+Creates a new journal entry. Generates a unique ID (`j-<unix_nano>` format).
+
+*Request:*
+[source,json]
+----
+{
+  "type": "bible-study",
+  "title": "Proverbs 3:5-6 — Trust in the Lord",
+  "content": "## Key Insight\n\nThis passage grounds...",
+  "tags": ["trust", "wisdom", "proverbs"],
+  "sessionId": "abc123"
+}
+----
+
+*Required fields:* `type`, `title`, `content`
+
+*Valid types:* `bible-study`, `personal`, `instance`, `universal`
+
+*Response:* `201 Created` — Returns the created entry with ID and timestamps.
+
+=== List Journals
+
+[source]
+----
+GET /api/cpisi/journals?type=bible-study&tag=wisdom&limit=50&offset=0
+----
+
+Returns filtered journal entries ordered by creation date (newest first).
+
+*Query params:*
+[cols="1,1,1,2"]
+|===
+| Param | Type | Default | Description
+
+| `type`
+| string
+| —
+| Filter by journal type
+
+| `tag`
+| string
+| —
+| Filter by tag (exact match)
+
+| `from`
+| string
+| —
+| Filter by creation date (YYYY-MM-DD)
+
+| `to`
+| string
+| —
+| Filter by creation date (YYYY-MM-DD)
+
+| `session`
+| string
+| —
+| Filter by session ID
+
+| `limit`
+| int
+| 50
+| Maximum entries to return
+
+| `offset`
+| int
+| 0
+| Pagination offset
+|===
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "entries": [ ... ],
+  "count": 12,
+  "query": { "type": "bible-study", "limit": 50, "offset": 0 }
+}
+----
+
+=== Search Journals
+
+[source]
+----
+GET /api/cpisi/journals/search?q=covenant+wisdom&limit=20
+----
+
+FTS5 full-text search across title, content, and tags.
+Results ranked by BM25 relevance.
+
+Supports FTS5 syntax: quoted phrases (`"exact match"`), prefix queries (`grow*`),
+boolean operators (`growth AND pattern`).
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "entries": [ ... ],
+  "count": 5,
+  "query": "covenant wisdom"
+}
+----
+
+=== Journal Stats
+
+[source]
+----
+GET /api/cpisi/journals/stats
+----
+
+Returns entry counts grouped by journal type.
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "bible-study": 33,
+  "personal": 7,
+  "instance": 40,
+  "universal": 18,
+  "total": 98
+}
+----
+
+=== Get Journal
+
+[source]
+----
+GET /api/cpisi/journals/{id}
+----
+
+Returns a single journal entry by ID.
+
+*Error:* `404 Not Found` if ID doesn't exist.
+
+=== Update Journal
+
+[source]
+----
+PUT /api/cpisi/journals/{id}
+----
+
+Updates an existing journal entry. The ID from the URL path takes precedence
+over any ID in the request body.
+
+*Request:* Full journal entry object (partial updates not supported).
+
+*Error:* `404 Not Found` if ID doesn't exist.
+
+=== Delete Journal
+
+[source]
+----
+DELETE /api/cpisi/journals/{id}
+----
+
+Removes a journal entry. The FTS5 index is automatically updated via
+database triggers.
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "status": "deleted",
+  "id": "j-1707350400000000000"
+}
+----
+
+*Error:* `404 Not Found` if ID doesn't exist.
+
+=== Import Journals
+
+[source]
+----
+POST /api/cpisi/journals/import
+----
+
+Bulk import from existing markdown journal files.
+
+*Request:*
+[source,json]
+----
+[
+  {
+    "type": "bible-study",
+    "title": "Proverbs 3:5-6",
+    "content": "Full markdown content...",
+    "tags": "trust,wisdom",
+    "filename": "2026-01-15_proverbs-3-5-6.md",
+    "createdAt": "2026-01-15"
+  }
+]
+----
+
+*Response:* `200 OK`
+[source,json]
+----
+{
+  "created": 95,
+  "failed": 3,
+  "errors": [
+    "2026-01-20_broken.md: insert journal: UNIQUE constraint failed"
+  ]
+}
+----
+
+'''
+
+== WebSocket Protocol
+
+=== Connection
+
+[source,javascript]
+----
+const ws = new WebSocket('ws://localhost:3847/ws');
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+  switch (msg.type) {
+    case 'output': handleOutput(msg); break;
+    case 'exit':   handleExit(msg);   break;
+    default:       handleStateUpdate(msg); break;
+  }
+};
+----
+
+=== Message Types
+
+==== OutputMessage
+
+Streamed during process execution — one message per line of stdout/stderr.
+
+[source,json]
+----
+{
+  "type": "output",
+  "processId": "m7k2x9p3",
+  "stream": "stdout",
+  "line": "Check 1/57: shall language... OK",
+  "timestamp": "2026-02-08T15:30:00.123456789Z"
+}
+----
+
+ANSI escape sequences are stripped before broadcasting.
+Empty lines are filtered out.
+
+==== ExitMessage
+
+Broadcast when a process completes.
+
+[source,json]
+----
+{
+  "type": "exit",
+  "processId": "m7k2x9p3",
+  "exitCode": 0,
+  "success": true
+}
+----
+
+==== State Update
+
+CPI-SI state machine changes, forwarded from the DashboardService EventBus.
+Format depends on the specific event type from `claude-global/pkg/dashboard`.
+
+'''
+
+== Error Responses
+
+All errors follow a consistent JSON format:
+
+[source,json]
+----
+{
+  "error": "description of what went wrong"
+}
+----
+
+[cols="1,2"]
+|===
+| Status | When
+
+| `400 Bad Request`
+| Missing required fields, invalid JSON, missing query params
+
+| `404 Not Found`
+| Process ID not found, journal ID not found, data path not found
+
+| `500 Internal Server Error`
+| Database errors, service failures, unexpected conditions
+|===
+
+'''
+
+[.text-center]
+_Building for the Kingdom to come._

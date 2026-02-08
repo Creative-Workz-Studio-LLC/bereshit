@@ -1,0 +1,447 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// CWS Server — README
+// ═══════════════════════════════════════════════════════════════════════════
+// Location: server/
+// Version:  0.1.0
+// ═══════════════════════════════════════════════════════════════════════════
+
+= CWS Server
+CreativeWorkzStudio LLC
+:icons: font
+:icon-set: fas
+:toc: left
+:toclevels: 3
+:source-highlighter: rouge
+:experimental:
+// Company Attributes
+:company-name: CreativeWorkzStudio LLC
+:company-short: CWS
+:tagline: Building for the Kingdom to come.
+// Document Attributes
+:server-version: 0.1.0
+:go-version: 1.24.4
+:prod-host: seanje@192.168.1.99
+:prod-url: https://creativeworkzstudio.com
+:dash-url: https://dashboard.creativeworkzstudio.com
+
+[.lead]
+*Unified HTTP server for {company-name} — serving the builder dashboard, CPI-SI state machine, and company website from a single Go binary.*
+
+'''
+
+== Overview
+
+[sidebar]
+.Biblical Foundation
+****
+[quote, Nehemiah 2:18]
+____
+"Let us rise up and build. So they strengthened their hands for this good work."
+____
+
+One server. Three services. Zero framework dependencies. Built with Go's standard
+library because infrastructure should be as reliable as the foundation it stands on.
+****
+
+The CWS Server unifies company infrastructure into a single binary:
+
+[cols="1,3,2"]
+|===
+| Service | Purpose | Route Prefix
+
+| *Builder Dashboard*
+| Process execution, build config, editorial tooling
+| `/api/builder/*`
+
+| *CPI-SI*
+| State machine queries, journal CRUD, FTS5 search
+| `/api/cpisi/*`
+
+| *Company Website*
+| Static site with host-based routing
+| Root domain
+|===
+
+=== Key Design Decisions
+
+* *Standard library HTTP* — No Gin, Echo, or Chi. Go 1.22's pattern-based routing
+  (`GET /api/builder/commands/run`) is expressive enough without third-party routers.
+* *WebSocket via nhooyr.io/websocket* — Process output and CPI-SI state changes
+  stream to browser clients in real-time through a fan-in/fan-out hub.
+* *Pure Go SQLite* — `modernc.org/sqlite` compiles without CGO, making cross-compilation
+  trivial and deployments single-binary.
+* *Host-based routing* — The root domain serves the company website; subdomains
+  serve the dashboard. One server, multiple sites.
+* *Graceful degradation* — Each service initializes independently. If builder can't
+  find a project directory, it disables itself without affecting CPI-SI or the website.
+
+'''
+
+== Quick Start
+
+=== Development
+
+[source,bash]
+----
+# Build and run in dev mode (auto-detects project directory)
+make run
+
+# Or specify the project directory
+make run BUILDER_DIR=/path/to/company-docs PORT=3847
+
+# Check code compiles (go vet + build)
+make check
+----
+
+=== Production Deploy
+
+[source,bash]
+----
+# Full deploy: build → compile TS → sync → restart
+make deploy
+
+# Partial deploys (targeted, faster)
+make deploy-binary   # Go binary only (restarts service)
+make deploy-dash     # Dashboard frontend + config (no restart)
+make deploy-site     # Website static files (no restart)
+make deploy-builder  # Builder CLI + node_modules
+----
+
+=== Production Monitoring
+
+[source,bash]
+----
+make prod-status     # Health check + version info
+make prod-logs       # Tail journalctl
+make prod-health     # View watchdog health log
+make prod-ssh        # SSH into Dell server
+----
+
+'''
+
+== Architecture
+
+=== Service Composition
+
+Services are composed in `main.go` at startup:
+
+[source]
+----
+Flags/Env → Config → Resolve Paths
+                         ↓
+                    WebSocket Hub ← shared by all services
+                         ↓
+              ┌──────────┼──────────┐
+              ↓          ↓          ↓
+          Builder     CPI-SI     Website
+         (if paths   (if flag    (if dir
+          resolve)    enabled)    exists)
+              ↓          ↓          ↓
+              └──→ ServeMux ←──────┘
+                      ↓
+              Middleware Chain
+         Recovery → Logger → RequestID
+              → CORS → SecurityHeaders
+                      ↓
+              HostRouter (if website)
+                   or
+              ServeMux directly
+----
+
+=== Request Flow
+
+[source]
+----
+HTTP Request
+  → Recovery (catch panics)
+    → RequestLogger (timing, status capture)
+      → RequestID (crypto/rand hex)
+        → CORS (permissive for tunnel/dev)
+          → SecurityHeaders (nosniff, deny frame, API no-store)
+            → HostRouter
+              ├─ creativeworkzstudio.com → Website SPA
+              ├─ dashboard.* → Builder Dashboard SPA + API
+              └─ * (catch-all) → API ServeMux
+----
+
+=== WebSocket Protocol
+
+The `/ws` endpoint provides real-time streaming. Messages are JSON with a `type` field:
+
+[cols="1,1,3"]
+|===
+| Type | Source | Description
+
+| `output`
+| Builder
+| Process stdout/stderr line (ANSI stripped)
+
+| `exit`
+| Builder
+| Process completed with exit code
+
+| `state_update`
+| CPI-SI
+| State machine change from DashboardService
+|===
+
+'''
+
+== Services
+
+=== Builder Dashboard
+
+Process execution and build configuration management.
+
+[cols="1,2,3"]
+|===
+| Method | Endpoint | Description
+
+| `POST`
+| `/api/builder/commands/run`
+| Spawn a builder CLI command
+
+| `POST`
+| `/api/builder/commands/make`
+| Run a Makefile target
+
+| `POST`
+| `/api/builder/commands/cancel`
+| Cancel a running process (SIGTERM)
+
+| `GET`
+| `/api/builder/commands/active`
+| List running process IDs
+
+| `GET`
+| `/api/builder/config`
+| Read build.config.yaml
+
+| `PATCH`
+| `/api/builder/config/{section}`
+| Update a config section (preserves YAML comments)
+
+| `GET`
+| `/api/builder/config/preferences`
+| Read dashboard preferences
+
+| `PUT`
+| `/api/builder/config/preferences`
+| Write dashboard preferences
+|===
+
+=== CPI-SI Service
+
+State machine queries and journal persistence.
+
+==== State Machine Endpoints
+
+[cols="1,2,3"]
+|===
+| Method | Endpoint | Description
+
+| `GET`
+| `/api/cpisi/state`
+| Current state snapshot (30+ fields)
+
+| `GET`
+| `/api/cpisi/sessions`
+| Session history (paginated)
+
+| `GET`
+| `/api/cpisi/sessions/{id}/kalign`
+| K:ALIGN evolution for a session
+
+| `GET`
+| `/api/cpisi/sessions/{id}/hebrew`
+| Hebrew state transitions for a session
+
+| `GET`
+| `/api/cpisi/choices`
+| Recent choices across sessions
+
+| `GET`
+| `/api/cpisi/patterns`
+| Active detected patterns
+
+| `GET`
+| `/api/cpisi/temporal`
+| Work pattern heatmap data
+
+| `GET`
+| `/api/cpisi/events`
+| Recent log events
+
+| `GET`
+| `/api/cpisi/data/{path...}`
+| System data browser
+|===
+
+==== Journal Endpoints
+
+[cols="1,2,3"]
+|===
+| Method | Endpoint | Description
+
+| `POST`
+| `/api/cpisi/journals`
+| Create journal entry
+
+| `GET`
+| `/api/cpisi/journals`
+| List journals (filter by type, tag, date, session)
+
+| `GET`
+| `/api/cpisi/journals/search?q=`
+| FTS5 full-text search
+
+| `GET`
+| `/api/cpisi/journals/stats`
+| Entry counts by type
+
+| `GET`
+| `/api/cpisi/journals/{id}`
+| Get single journal
+
+| `PUT`
+| `/api/cpisi/journals/{id}`
+| Update journal
+
+| `DELETE`
+| `/api/cpisi/journals/{id}`
+| Delete journal
+
+| `POST`
+| `/api/cpisi/journals/import`
+| Bulk import from markdown files
+|===
+
+=== Shared Endpoints
+
+[cols="1,2,3"]
+|===
+| Method | Endpoint | Description
+
+| `GET`
+| `/healthz`
+| Health check (`{"status":"ok"}`)
+
+| `GET`
+| `/api/version`
+| Version, uptime, service count, WS clients
+
+| `GET`
+| `/ws`
+| WebSocket upgrade
+|===
+
+'''
+
+== Deployment
+
+=== Production Server
+
+[cols="1,3"]
+|===
+| Component | Details
+
+| *Host*
+| Dell Inspiron — `{prod-host}`
+
+| *Binary*
+| `/usr/local/bin/cws-server`
+
+| *Project*
+| `/home/seanje/cws/`
+
+| *Data*
+| `/home/seanje/cws/data/cpisi.db`
+
+| *Service*
+| `cws-server.service` (systemd)
+
+| *Tunnel*
+| `cloudflared.service` → Cloudflare Tunnel
+
+| *URLs*
+| {prod-url} + {dash-url}
+|===
+
+=== Health Monitoring
+
+A cron-based watchdog runs every 5 minutes, checking:
+
+* HTTP health endpoint (`/healthz`)
+* Service process status via systemd
+* Automatic restart on failure with logging
+
+Health events are logged to `/home/seanje/cws/logs/health.log`.
+
+'''
+
+== Project Structure
+
+[source]
+----
+server/
+├── README.adoc                        # This file
+├── Makefile                           # Build, run, deploy, monitor
+├── go.mod / go.sum                    # Go module definition
+├── cmd/cws-server/
+│   └── main.go                        # Entry point, service composition
+├── internal/
+│   ├── config/
+│   │   ├── server.go                  # ServerConfig, DefaultConfig
+│   │   ├── paths.go                   # BuilderPaths, path resolution
+│   │   └── preferences.go            # XDG preferences read/write
+│   ├── server/
+│   │   ├── hostrouter.go              # Host-based routing
+│   │   ├── middleware.go              # Recovery, logger, CORS, security
+│   │   ├── response.go               # Shared JSON helpers
+│   │   └── spa.go                    # SPA file server + cache headers
+│   ├── services/
+│   │   ├── builder/
+│   │   │   ├── handler.go            # Service struct, route registration
+│   │   │   ├── handler_commands.go   # Process execution handlers
+│   │   │   ├── handler_config.go     # Config CRUD handlers
+│   │   │   └── process.go           # Process spawning + WebSocket streaming
+│   │   └── cpisi/
+│   │       ├── handler.go            # Service struct, route registration
+│   │       ├── handler_state.go      # State machine query handlers
+│   │       ├── handler_journal.go    # Journal CRUD + search handlers
+│   │       ├── bridge.go            # DashboardService ↔ WebSocket bridge
+│   │       └── journal.go           # SQLite store, FTS5 search
+│   └── ws/
+│       ├── hub.go                    # WebSocket connection hub
+│       └── client.go                # Read/write pump per connection
+├── docs/
+│   ├── ARCHITECTURE.adoc             # Deep architecture documentation
+│   ├── API.adoc                      # Complete endpoint reference
+│   └── DEPLOYMENT.adoc              # Production deploy guide
+├── scripts/
+│   └── healthcheck.sh               # Cron watchdog script
+└── website/                          # Company website static files
+----
+
+'''
+
+== Related Documents
+
+[cols="1,3"]
+|===
+| Document | Purpose
+
+| link:docs/ARCHITECTURE.adoc[Architecture]
+| Service composition, data flow, component relationships
+
+| link:docs/API.adoc[API Reference]
+| Complete endpoint documentation with request/response schemas
+
+| link:docs/DEPLOYMENT.adoc[Deployment]
+| Production deploy procedures, monitoring, troubleshooting
+|===
+
+'''
+
+[.text-center]
+_{tagline}_

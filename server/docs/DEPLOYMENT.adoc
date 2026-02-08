@@ -1,0 +1,364 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// CWS Server — Deployment Guide
+// ═══════════════════════════════════════════════════════════════════════════
+// Location: server/docs/
+// Version:  0.1.0
+// ═══════════════════════════════════════════════════════════════════════════
+
+= CWS Server Deployment Guide
+CreativeWorkzStudio LLC
+:icons: font
+:toc: left
+:toclevels: 3
+:source-highlighter: rouge
+
+[.lead]
+*Production deployment, monitoring, and troubleshooting for the CWS Server.*
+
+'''
+
+== Production Environment
+
+=== Server
+
+[cols="1,3"]
+|===
+| Component | Details
+
+| *Machine*
+| Dell Inspiron (home network)
+
+| *OS*
+| Ubuntu Server
+
+| *Access*
+| `ssh seanje@192.168.1.99`
+
+| *Binary*
+| `/usr/local/bin/cws-server`
+
+| *Project dir*
+| `/home/seanje/cws/`
+
+| *Data dir*
+| `/home/seanje/cws/data/`
+
+| *Database*
+| `/home/seanje/cws/data/cpisi.db` (SQLite)
+
+| *Logs*
+| `journalctl -u cws-server`
+
+| *Health log*
+| `/home/seanje/cws/logs/health.log`
+|===
+
+=== Services
+
+[cols="1,2,2"]
+|===
+| Service | Unit | Purpose
+
+| *CWS Server*
+| `cws-server.service`
+| The Go binary — all HTTP/WS endpoints
+
+| *Cloudflare Tunnel*
+| `cloudflared.service`
+| Exposes server to the internet via Cloudflare
+|===
+
+=== URLs
+
+[cols="1,2"]
+|===
+| URL | Serves
+
+| `https://creativeworkzstudio.com`
+| Company website (static)
+
+| `https://dashboard.creativeworkzstudio.com`
+| Builder dashboard + CPI-SI + API
+|===
+
+=== Directory Layout (Production)
+
+[source]
+----
+/home/seanje/cws/
+├── Makefile                        # Synced from workstation (for builder CLI)
+├── build/
+│   ├── build.config.yaml           # Editorial configuration
+│   ├── themes/                     # Theme YAMLs (5 themes)
+│   ├── builder/
+│   │   ├── dist/                   # Compiled TS builder CLI
+│   │   ├── node_modules/           # Builder dependencies
+│   │   └── package.json            # For npm install
+│   └── dashboard/
+│       └── src-web/                # Dashboard frontend (HTML/JS/CSS)
+├── data/
+│   └── cpisi.db                    # SQLite journal database
+├── website/                        # Company website static files
+├── scripts/
+│   └── healthcheck.sh              # Cron watchdog
+└── logs/
+    └── health.log                  # Watchdog event log
+----
+
+'''
+
+== Deploy Workflows
+
+=== Full Deploy
+
+Builds everything locally, syncs to production, restarts the service.
+
+[source,bash]
+----
+make deploy
+----
+
+This runs:
+
+1. `build-release` — Compile Go binary with `-ldflags="-s -w"` (stripped)
+2. `frontend` — Compile dashboard TypeScript
+3. Deploy binary via scp + install
+4. Sync dashboard frontend via rsync (excludes .ts, tsconfig, .tsbuildinfo)
+5. Sync builder CLI dist
+6. Compare `package.json` checksums — only `npm install` if changed
+7. Sync website static files
+8. Sync config, themes, Makefile
+9. Restart `cws-server.service`
+10. Health check via curl
+
+=== Partial Deploys
+
+Use these for targeted, faster deployments:
+
+[cols="1,2,1"]
+|===
+| Target | What it does | Restarts?
+
+| `make deploy-binary`
+| Go binary only
+| Yes
+
+| `make deploy-dash`
+| Dashboard frontend + config + themes
+| No
+
+| `make deploy-site`
+| Website static files
+| No
+
+| `make deploy-builder`
+| Builder CLI + node_modules + Makefile
+| No
+
+| `make deploy-scripts`
+| Monitoring scripts
+| No
+|===
+
+*When to use each:*
+
+* Changed Go code → `deploy-binary`
+* Changed frontend JS/CSS → `deploy-dash`
+* Changed website → `deploy-site`
+* Changed builder TS → `deploy-builder`
+* Changed everything → `deploy` (full)
+
+=== Build Caching
+
+Two caching mechanisms speed up deploys:
+
+==== npm Install Caching
+
+The deploy compares `package.json` checksums before running `npm install`:
+
+[source,bash]
+----
+# Local checksum
+LOCAL_SUM=$(md5sum package.json | cut -d' ' -f1)
+
+# Remote checksum
+REMOTE_SUM=$(ssh prod "md5sum .../package.json | cut -d' ' -f1")
+
+# Only install if different
+if [ "$LOCAL_SUM" != "$REMOTE_SUM" ]; then
+  npm install --omit=dev --no-bin-links
+fi
+----
+
+This saves 30-60 seconds on deploys where only Go or frontend code changed.
+
+==== TypeScript Incremental Compilation
+
+`tsconfig.web.json` has `"incremental": true`, producing a `.tsbuildinfo` file.
+Subsequent `npx tsc` only recompiles changed files.
+
+'''
+
+== Health Monitoring
+
+=== Watchdog Script
+
+`scripts/healthcheck.sh` runs via cron every 5 minutes:
+
+[source,bash]
+----
+*/5 * * * * /home/seanje/cws/scripts/healthcheck.sh
+----
+
+The script:
+
+1. Curls `http://localhost:3847/healthz` (2-second timeout)
+2. If unreachable: restarts `cws-server.service`
+3. Logs events to `/home/seanje/cws/logs/health.log`
+4. If restart also fails: logs critical error
+
+=== Manual Monitoring
+
+[source,bash]
+----
+# Quick status check
+make prod-status
+
+# Tail live logs
+make prod-logs
+
+# View watchdog health log
+make prod-health
+
+# SSH into server
+make prod-ssh
+----
+
+=== Checking Service Status
+
+[source,bash]
+----
+# On workstation
+ssh seanje@192.168.1.99 "sudo systemctl status cws-server"
+
+# Check API version
+curl -s https://dashboard.creativeworkzstudio.com/api/version | python3 -m json.tool
+
+# Direct health check (bypassing Cloudflare)
+curl -s http://192.168.1.99:3847/healthz
+----
+
+'''
+
+== Troubleshooting
+
+=== Server Won't Start
+
+[source,bash]
+----
+# Check logs for error
+ssh seanje@192.168.1.99 "sudo journalctl -u cws-server -n 50 --no-pager"
+
+# Common causes:
+# - Port already in use (another cws-server process)
+# - Missing project directory
+# - DashboardService initialization failure
+----
+
+=== Health Check Failing
+
+[source,bash]
+----
+# Test directly against server (bypass Cloudflare)
+curl -v http://192.168.1.99:3847/healthz
+
+# If direct works but HTTPS doesn't: Cloudflare Tunnel issue
+ssh seanje@192.168.1.99 "sudo systemctl status cloudflared"
+ssh seanje@192.168.1.99 "sudo systemctl restart cloudflared"
+----
+
+=== WebSocket Not Connecting
+
+[source,bash]
+----
+# Test WebSocket upgrade directly
+curl -i -N \
+  -H "Connection: Upgrade" \
+  -H "Upgrade: websocket" \
+  -H "Sec-WebSocket-Version: 13" \
+  -H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" \
+  http://192.168.1.99:3847/ws
+
+# Common causes:
+# - Cloudflare WebSocket setting disabled
+# - Browser CORS issue (check console)
+----
+
+=== Cache Headers Not Working
+
+[source,bash]
+----
+# Test against Dell IP directly (Cloudflare overrides headers)
+curl -I http://192.168.1.99:3847/index.html
+curl -I http://192.168.1.99:3847/assets/app.js
+
+# Expected:
+#   .html  → Cache-Control: no-cache
+#   .js    → Cache-Control: public, max-age=3600
+#   .woff2 → Cache-Control: public, max-age=604800, immutable
+#   /api/* → Cache-Control: no-store
+----
+
+=== Database Issues
+
+[source,bash]
+----
+# Check database exists and has data
+ssh seanje@192.168.1.99 "ls -la /home/seanje/cws/data/cpisi.db"
+
+# Check journal count
+ssh seanje@192.168.1.99 "sqlite3 /home/seanje/cws/data/cpisi.db 'SELECT type, COUNT(*) FROM journals GROUP BY type'"
+
+# Check WAL mode is active
+ssh seanje@192.168.1.99 "sqlite3 /home/seanje/cws/data/cpisi.db 'PRAGMA journal_mode'"
+----
+
+=== Process Won't Cancel
+
+[source,bash]
+----
+# Check for orphaned processes
+ssh seanje@192.168.1.99 "ps aux | grep cws-build"
+
+# Manual kill if needed
+ssh seanje@192.168.1.99 "pkill -f cws-build"
+----
+
+'''
+
+== Backup
+
+=== Journal Database
+
+The SQLite database at `/home/seanje/cws/data/cpisi.db` contains all journal
+entries. Back up periodically:
+
+[source,bash]
+----
+# Copy database (safe with WAL mode)
+ssh seanje@192.168.1.99 "sqlite3 /home/seanje/cws/data/cpisi.db '.backup /home/seanje/cws/data/cpisi-backup.db'"
+
+# Download to workstation
+scp seanje@192.168.1.99:/home/seanje/cws/data/cpisi-backup.db /media/seanje-lenox-wise/Project/Bereshit/server/backups/
+----
+
+=== Configuration
+
+Build config and themes are always available on the workstation at
+`company-docs/build/`. The production copies are derived from the workstation
+via `make deploy`.
+
+'''
+
+[.text-center]
+_Building for the Kingdom to come._
