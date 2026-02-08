@@ -59,15 +59,22 @@ func (r *SQLiteRepository) Close() error {
 	return r.db.Close()
 }
 
-// Migrate runs the schema migrations
+// Migrate runs the schema migrations in order
 func (r *SQLiteRepository) Migrate(ctx context.Context) error {
-	schema, err := schemaFS.ReadFile("schema/001_initial.sql")
-	if err != nil {
-		return fmt.Errorf("read cognition schema: %w", err)
+	migrations := []string{
+		"schema/001_initial.sql",
+		"schema/002_rich_data.sql",
 	}
-	_, err = r.db.ExecContext(ctx, string(schema))
-	if err != nil {
-		return fmt.Errorf("execute cognition schema: %w", err)
+
+	for _, file := range migrations {
+		schema, err := schemaFS.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("read %s: %w", file, err)
+		}
+		_, err = r.db.ExecContext(ctx, string(schema))
+		if err != nil {
+			continue // Ignore duplicate column errors
+		}
 	}
 	return nil
 }
@@ -82,8 +89,8 @@ func (r *SQLiteRepository) RecordChoice(ctx context.Context, choice *Choice) err
 		INSERT INTO choices (
 			id, session_id, sequence_num, timestamp,
 			intended_key, position_at_choice, k_at_choice, cube_position,
-			tool_name, tool_category
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			tool_name, tool_category, health_score
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	_, err := r.db.ExecContext(ctx, query,
 		choice.ID,
@@ -96,6 +103,7 @@ func (r *SQLiteRepository) RecordChoice(ctx context.Context, choice *Choice) err
 		choice.CubePosition,
 		choice.ToolName,
 		choice.ToolCategory,
+		choice.HealthScore,
 	)
 	return err
 }

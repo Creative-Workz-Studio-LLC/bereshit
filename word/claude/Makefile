@@ -41,7 +41,8 @@
         db-init-all db-split \
         setup list-skills list-system-cmds \
         force cache-clean cache-warm \
-        fast-build remote-build
+        fast-build remote-build \
+        deps deps-check deps-install server-setup
 
 GO      := go
 SHELL   := /bin/bash
@@ -750,6 +751,131 @@ list-system-cmds:
 	@for cmd in $(SYS_CMD_NAMES); do echo "    $$cmd"; done
 
 # ============================================================================
+# BODY — Dependency Management
+# ============================================================================
+
+# Required system packages for each build target
+# Core: go, make, git
+# Dashboard frontend: node, npm
+# Dashboard GTK4: libgtk-4-dev, libgirepository1.0-dev, pkg-config
+# System: sqlite3 (for db-init, db-split)
+
+# Check all dependencies — reports missing without installing
+deps-check:
+	@echo "  Checking dependencies..."
+	@echo ""
+	@missing=0; \
+	echo "  Core (required):"; \
+	check_ver() { \
+		case "$$1" in \
+			go)  go version 2>/dev/null | head -1 ;; \
+			gcc) gcc --version 2>/dev/null | head -1 ;; \
+			*)   $$1 --version 2>/dev/null | head -1 ;; \
+		esac; \
+	}; \
+	for cmd in go make git gcc; do \
+		if command -v $$cmd >/dev/null 2>&1; then \
+			ver=$$(check_ver $$cmd); \
+			echo "    + $$cmd  ($$ver)"; \
+		else echo "    x $$cmd  MISSING"; missing=$$((missing+1)); fi; \
+	done; \
+	echo ""; \
+	echo "  Frontend (dashboard-frontend):"; \
+	for cmd in node npm; do \
+		if command -v $$cmd >/dev/null 2>&1; then \
+			echo "    + $$cmd  ($$($$cmd --version 2>/dev/null))"; \
+		else echo "    x $$cmd  MISSING (install nodejs)"; missing=$$((missing+1)); fi; \
+	done; \
+	echo ""; \
+	echo "  GTK4 (dashboard-gtk):"; \
+	if pkg-config --exists gtk4 2>/dev/null; then \
+		echo "    + gtk4  ($$(pkg-config --modversion gtk4))"; \
+	else echo "    x gtk4  MISSING (install libgtk-4-dev)"; missing=$$((missing+1)); fi; \
+	if pkg-config --exists gobject-introspection-1.0 2>/dev/null; then \
+		echo "    + gobject-introspection"; \
+	else echo "    x gobject-introspection  MISSING (install libgirepository1.0-dev)"; missing=$$((missing+1)); fi; \
+	echo ""; \
+	echo "  Database:"; \
+	if command -v sqlite3 >/dev/null 2>&1; then \
+		echo "    + sqlite3  ($$(sqlite3 --version | cut -d' ' -f1))"; \
+	else echo "    x sqlite3  MISSING"; missing=$$((missing+1)); fi; \
+	echo ""; \
+	if [ $$missing -eq 0 ]; then echo "  All dependencies satisfied."; \
+	else echo "  $$missing missing. Run 'make deps-install' to install."; fi
+
+# Install all dependencies (requires elevated permissions)
+deps-install:
+	@echo "  Installing dependencies..."
+	@echo ""
+	@echo "  [1/4] System packages..."
+	@pkexec apt install -y build-essential git sqlite3 curl wget pkg-config 2>&1 | tail -1
+	@echo "  [2/4] GTK4 development libraries..."
+	@pkexec apt install -y libgtk-4-dev libgirepository1.0-dev 2>&1 | tail -1
+	@echo "  [3/4] Go $(shell go version 2>/dev/null | grep -oP 'go[\d.]+' || echo '1.24.4')..."
+	@if command -v go >/dev/null 2>&1; then \
+		echo "    Already installed: $$(go version)"; \
+	else \
+		echo "    Downloading Go 1.24.4..."; \
+		wget -q https://go.dev/dl/go1.24.4.linux-amd64.tar.gz -O /tmp/go.tar.gz; \
+		pkexec tar -C /usr/local -xzf /tmp/go.tar.gz; \
+		rm /tmp/go.tar.gz; \
+		pkexec ln -sf /usr/local/go/bin/go /usr/local/bin/go; \
+		echo "    Installed: $$(go version)"; \
+	fi
+	@echo "  [4/4] Node.js..."
+	@if command -v node >/dev/null 2>&1; then \
+		echo "    Already installed: node $$(node --version)"; \
+	else \
+		echo "    Installing Node.js 20.x..."; \
+		curl -fsSL https://deb.nodesource.com/setup_20.x | pkexec bash - >/dev/null 2>&1; \
+		pkexec apt install -y nodejs 2>&1 | tail -1; \
+		echo "    Installed: node $$(node --version)"; \
+	fi
+	@echo ""
+	@$(MAKE) deps-check --no-print-directory
+
+# Shorthand: check deps, install if needed, then build
+deps: deps-check
+
+# Set up CWS server for remote builds (run once)
+# Usage: make server-setup  (requires: ssh cws-server works)
+server-setup:
+	@echo "  Setting up CWS server for remote builds..."
+	@echo ""
+	@echo "  [1/5] System packages..."
+	@ssh $(REMOTE_HOST) 'sudo DEBIAN_FRONTEND=noninteractive apt update -qq && \
+		sudo DEBIAN_FRONTEND=noninteractive apt install -y -qq \
+		build-essential git sqlite3 curl wget pkg-config \
+		libgtk-4-dev libgirepository1.0-dev 2>&1 | tail -1'
+	@echo "  [2/5] Go 1.24.4..."
+	@ssh $(REMOTE_HOST) 'if command -v go >/dev/null 2>&1; then \
+		echo "    Already installed: $$(go version)"; \
+	else \
+		wget -q https://go.dev/dl/go1.24.4.linux-amd64.tar.gz -O /tmp/go.tar.gz && \
+		sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf /tmp/go.tar.gz && \
+		rm /tmp/go.tar.gz && sudo ln -sf /usr/local/go/bin/go /usr/local/bin/go && \
+		echo "    Installed: $$(go version)"; \
+	fi'
+	@echo "  [3/5] Node.js..."
+	@ssh $(REMOTE_HOST) 'if command -v node >/dev/null 2>&1; then \
+		echo "    Already installed: node $$(node --version)"; \
+	else \
+		curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - >/dev/null 2>&1 && \
+		sudo DEBIAN_FRONTEND=noninteractive apt install -y nodejs 2>&1 | tail -1 && \
+		echo "    Installed: node $$(node --version)"; \
+	fi'
+	@echo "  [4/5] Build directory..."
+	@ssh $(REMOTE_HOST) 'mkdir -p $(REMOTE_DIR) && echo "    $(REMOTE_DIR) ready"'
+	@echo "  [5/5] Verifying..."
+	@ssh $(REMOTE_HOST) 'echo "    Go: $$(go version)" && \
+		echo "    GCC: $$(gcc --version | head -1)" && \
+		echo "    Node: $$(node --version)" && \
+		echo "    GTK4: $$(pkg-config --modversion gtk4)" && \
+		echo "    Disk: $$(df -h / | tail -1 | awk "{print \$$4}") free"'
+	@echo ""
+	@echo "  Server ready. Use 'make remote-build' to build."
+
+# ============================================================================
 # CLOSING — Help & Setup
 # ============================================================================
 
@@ -817,6 +943,11 @@ help:
 	@echo "  fast-build         Persistent mirror to ~/.cache/cpisi/, build there"
 	@echo "  fast-sys-<name>    Fast build one system command"
 	@echo "  remote-build       Build on CWS server via SSH (full ext4)"
+	@echo ""
+	@echo "Dependencies:"
+	@echo "  deps-check         Check all dependencies (reports missing)"
+	@echo "  deps-install       Install all dependencies (local, requires pkexec)"
+	@echo "  server-setup       Install deps on CWS server (run once)"
 	@echo ""
 	@echo "Cache:"
 	@echo "  cache-warm         Pre-compile all deps (speeds up single-target builds)"

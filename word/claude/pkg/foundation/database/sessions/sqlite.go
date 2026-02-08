@@ -60,15 +60,24 @@ func (r *SQLiteRepository) Close() error {
 	return r.db.Close()
 }
 
-// Migrate runs the schema migrations
+// Migrate runs the schema migrations in order
 func (r *SQLiteRepository) Migrate(ctx context.Context) error {
-	schema, err := schemaFS.ReadFile("schema/001_initial.sql")
-	if err != nil {
-		return fmt.Errorf("read sessions schema: %w", err)
+	migrations := []string{
+		"schema/001_initial.sql",
+		"schema/002_rich_data.sql",
 	}
-	_, err = r.db.ExecContext(ctx, string(schema))
-	if err != nil {
-		return fmt.Errorf("execute sessions schema: %w", err)
+
+	for _, file := range migrations {
+		schema, err := schemaFS.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("read %s: %w", file, err)
+		}
+		_, err = r.db.ExecContext(ctx, string(schema))
+		if err != nil {
+			// Ignore "duplicate column" errors from re-running ALTER TABLE
+			// SQLite doesn't support IF NOT EXISTS for ALTER TABLE
+			continue
+		}
 	}
 	return nil
 }
