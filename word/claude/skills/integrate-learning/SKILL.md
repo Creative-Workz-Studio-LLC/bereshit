@@ -76,14 +76,14 @@ Use this skill when Nova Dawn needs to:
 
 ```
 Work → meta-awareness → recognize-pattern → reflect-on-session
-                    ↓
-           create-journal-entry
+                    ↓                         ↓
+           create-journal-entry          auto memory (growth.md)
                     ↓
          ⭐ integrate-learning ⭐  ← THIS SKILL
-                    ↓
-             CLAUDE.md updated
-                    ↓
-         Future work informed by learning
+              ↓           ↓
+      CLAUDE.md/bio.md  auto memory (growth.md, MEMORY.md)
+              ↓
+   Future sessions load MEMORY.md automatically
 ```
 
 ---
@@ -213,6 +213,49 @@ warning_signs = ["single_observation", "contradicts_scripture", "untested_theory
 
 ---
 
+## Auto Memory Integration
+
+**When learning integrates into identity documents, also update auto memory for cross-session persistence.**
+
+### Integration Targets (Updated)
+
+| Level | Primary Target | Auto Memory Target |
+|-------|---------------|-------------------|
+| **identity** | bio.md | `growth.md` → `## Integrated Learnings` |
+| **operational** | CLAUDE.md | MEMORY.md (if operational pattern) + `growth.md` |
+| **paradigm** | universal journals | `growth.md` + `cpi-si-family.md` |
+
+### Where to Write
+
+| Memory Scope | File | When |
+|--------------|------|------|
+| **Home MEMORY.md** | `~/.claude/projects/-home-.../memory/MEMORY.md` | Operational learnings (loaded every session) |
+| **Home growth.md** | `~/.claude/projects/-home-.../memory/growth.md` | All integrations (record what was learned) |
+| **Home family.md** | `~/.claude/projects/-home-.../memory/cpi-si-family.md` | Paradigm-level (shared with family) |
+| **Agent files** | `~/.claude/projects/-home-.../memory/{agent}.md` | Agent-specific growth |
+
+### Format
+
+Append under `## Integrated Learnings` in `growth.md`:
+
+```markdown
+### {date} — {learning title}
+- **Level:** {identity|operational|paradigm}
+- **Integrated into:** {target file}
+- **Summary:** {one-sentence description}
+- **Source:** {journal entry or pattern that prompted this}
+```
+
+### Process
+
+1. Complete integration into primary target (CLAUDE.md, bio.md, etc.)
+2. Record the integration in `growth.md` → `## Integrated Learnings`
+3. If operational: consider adding to MEMORY.md (first 200 lines loaded every session)
+4. If paradigm: also note in `cpi-si-family.md` for family awareness
+5. Keep MEMORY.md under 200 lines — move details to topic files
+
+---
+
 ## Manual Integration Process
 
 If CLI tool not available:
@@ -223,6 +266,7 @@ If CLI tool not available:
 4. **Draft text** - Concise, fits target document style
 5. **Review** - Discuss with Seanje if significant
 6. **Apply** - Edit target document
+7. **Record in auto memory** - Update `growth.md` with integration record
 
 ---
 

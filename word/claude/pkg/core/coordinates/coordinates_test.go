@@ -28,7 +28,7 @@ import (
 // ============================================================================
 
 // Test root - the claude-global project root
-const testRoot = "/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC/claude-global"
+const testRoot = "/media/seanje-lenox-wise/Project/Bereshit/word/claude"
 
 // Bereshit root - the Bereshit project root (separate from claude-global)
 const bereshitRoot = "/media/seanje-lenox-wise/Project/Bereshit"

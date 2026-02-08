@@ -143,6 +143,40 @@ CONTENT BLOCK
 
 ---
 
+## Auto Memory Integration
+
+**When a pattern reaches "established" strength (4+ occurrences), persist it to auto memory.**
+
+### Where to Write
+
+| Memory Scope | File | When |
+|--------------|------|------|
+| **Home project** | `~/.claude/projects/-home-seanje-lenox-wise/memory/growth.md` | Always (loaded every session) |
+| **Bereshit project** | `~/.claude/projects/-media-...-Bereshit/memory/growth.md` | When pattern is Bereshit-specific |
+| **Agent-specific** | `~/.claude/projects/-home-.../memory/{agent}.md` | When pattern is agent-specific |
+
+### Format
+
+Append under `## Established Patterns` in `growth.md`:
+
+```markdown
+### {Pattern Name} ({date})
+- **Category:** {thinking|behavioral|technical|relational|error}
+- **Strength:** {established|core} ({count} occurrences)
+- **Description:** {concise description}
+- **Response:** {reinforce|break|systematize}
+```
+
+### Process
+
+1. Notice pattern (normal recognition flow)
+2. Count occurrences — if 4+, it's established
+3. Read `growth.md` — check if already recorded
+4. If new: append entry under `## Established Patterns`
+5. If existing: update occurrence count and strength
+
+---
+
 ## CLI Tool
 
 ### Build

@@ -215,6 +215,41 @@ Signals for when to integrate learning.
 
 ---
 
+## Auto Memory Integration
+
+**After reflection, persist key learnings to auto memory so they carry forward.**
+
+### Where to Write
+
+| Memory Scope | File | When |
+|--------------|------|------|
+| **Home project** | `~/.claude/projects/-home-seanje-lenox-wise/memory/growth.md` | Always for standard/deep reflections |
+| **Bereshit project** | `~/.claude/projects/-media-...-Bereshit/memory/growth.md` | When session was Bereshit work |
+
+### Format
+
+Append under `## Session Learnings` in `growth.md`:
+
+```markdown
+### Session: {date} — {brief description}
+- **Depth:** {quick|standard|deep}
+- **Key learning:** {one-sentence insight}
+- **Pattern noticed:** {if any, reference recognize-pattern}
+- **Growth dimension:** {accomplishments|learning|patterns|quality|growth}
+```
+
+### Process
+
+1. Complete reflection (normal flow)
+2. If depth is standard or deep:
+   a. Read `growth.md` in appropriate scope
+   b. Append learning under `## Session Learnings`
+3. If breakthrough insight occurred:
+   a. Also note in `## Established Patterns` if pattern-related
+   b. Consider triggering `integrate-learning` for identity-level insights
+
+---
+
 ## Manual Reflection Process
 
 If CLI tool not available:
@@ -223,7 +258,8 @@ If CLI tool not available:
 2. **CHOOSE DEPTH** - Quick, standard, or deep
 3. **WALK THROUGH DIMENSIONS** - Answer dimension questions
 4. **NOTICE INTEGRATION SIGNALS** - Anything for identity?
-5. **DECIDE OUTPUT** - Mental note, journal, or integration proposal
+5. **UPDATE AUTO MEMORY** - Persist key learnings to `growth.md`
+6. **DECIDE OUTPUT** - Mental note, journal, or integration proposal
 
 ---
 

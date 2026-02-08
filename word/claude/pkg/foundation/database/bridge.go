@@ -28,7 +28,9 @@ package database
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
@@ -277,16 +279,41 @@ func (b *Bridge) LoadLiveState() (*types.RuntimeState, error) {
 	return &state, nil
 }
 
-// saveLiveState writes state to live file
+// saveLiveState writes state to live file using atomic write (temp + rename)
+// to prevent corruption from concurrent hook writes.
 func (b *Bridge) saveLiveState(state *types.RuntimeState) error {
-	path := paths.StateMachineRuntimeState()
+	target := paths.StateMachineRuntimeState()
 
 	data, err := json.MarshalIndent(state, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0644)
+	dir := filepath.Dir(target)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("ensure dir: %w", err)
+	}
+
+	tmp, err := os.CreateTemp(dir, filepath.Base(target)+".tmp.*")
+	if err != nil {
+		return fmt.Errorf("create temp: %w", err)
+	}
+	tmpName := tmp.Name()
+
+	if _, err := tmp.Write(data); err != nil {
+		tmp.Close()
+		os.Remove(tmpName)
+		return fmt.Errorf("write temp: %w", err)
+	}
+	if err := tmp.Close(); err != nil {
+		os.Remove(tmpName)
+		return fmt.Errorf("close temp: %w", err)
+	}
+	if err := os.Rename(tmpName, target); err != nil {
+		os.Remove(tmpName)
+		return fmt.Errorf("rename: %w", err)
+	}
+	return nil
 }
 
 // defaultState returns a new default state

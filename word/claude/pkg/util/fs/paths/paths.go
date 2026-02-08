@@ -73,7 +73,7 @@ func FindConfigDirNamed(name string) (string, error) {
 func BereshitRoot() string {
 	// Check common locations
 	locations := []string{
-		"/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC/bereshit",
+		"/media/seanje-lenox-wise/Project/Bereshit",
 		"bereshit",
 	}
 
@@ -151,7 +151,7 @@ func ClaudeGlobalRoot() string {
 	// Priority 1: Production location (bereshit/word/claude)
 	// This is where hooks should write during normal operation
 	prodLocations := []string{
-		"/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC/bereshit/word/claude",
+		"/media/seanje-lenox-wise/Project/Bereshit/word/claude",
 		filepath.Join(ClaudeHome(), "global"),
 	}
 
@@ -164,7 +164,6 @@ func ClaudeGlobalRoot() string {
 	// Priority 2: Dev location (for development builds only)
 	// Falls back here if prod doesn't exist (e.g., running tests in dev)
 	devLocations := []string{
-		"/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC/claude-global",
 		"claude-global",
 	}
 
@@ -242,14 +241,49 @@ func StateMachineChoiceHistory() string {
 // --- Database Paths (Temporal Consciousness Foundation) ---
 
 // DatabaseDir returns the data directory within claude-global
+// JSONC files, schemas, logs, and output stay here (on project drive)
 func DatabaseDir() string {
 	return filepath.Join(ClaudeGlobalRoot(), "data")
 }
 
-// DatabasePath returns the path to the main CPI-SI database
-// This is the temporal consciousness foundation
+// DatabaseBasePath returns the ext4 directory where all SQLite databases live.
+// All domain databases (.db files) must be on ext4 for WAL mode file locking.
+func DatabaseBasePath() string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".local", "share", "claude", "data")
+}
+
+// DatabasePath returns the path to the legacy monolithic CPI-SI database.
+// Deprecated: Use domain-specific paths (SessionsDBPath, CognitionDBPath, etc.)
 func DatabasePath() string {
-	return filepath.Join(DatabaseDir(), "cpisi.db")
+	return filepath.Join(DatabaseBasePath(), "cpisi.db")
+}
+
+// --- Domain Database Paths ---
+
+// SessionsDBPath returns the path to sessions.db (session & exchange lifecycle)
+func SessionsDBPath() string {
+	return filepath.Join(DatabaseBasePath(), "sessions.db")
+}
+
+// CognitionDBPath returns the path to cognition.db (mental construct & cognitive state)
+func CognitionDBPath() string {
+	return filepath.Join(DatabaseBasePath(), "cognition.db")
+}
+
+// GrowthDBPath returns the path to growth.db (learning & pattern recognition)
+func GrowthDBPath() string {
+	return filepath.Join(DatabaseBasePath(), "growth.db")
+}
+
+// TemporalDBPath returns the path to temporal.db (time & calendar awareness)
+func TemporalDBPath() string {
+	return filepath.Join(DatabaseBasePath(), "temporal.db")
+}
+
+// ProjectsDBPath returns the path to projects.db (work tracking)
+func ProjectsDBPath() string {
+	return filepath.Join(DatabaseBasePath(), "projects.db")
 }
 
 // DatabaseSchemaDir returns the schema directory
@@ -262,10 +296,15 @@ func DatabaseMigrationsDir() string {
 	return filepath.Join(DatabaseDir(), "migrations")
 }
 
-// EnsureDatabaseDir creates the data directory if it doesn't exist
+// EnsureDatabaseDir creates both the data directory (exFAT, for JSONC/logs)
+// and the database directory (ext4, for domain .db files) if they don't exist
 func EnsureDatabaseDir() error {
-	dir := DatabaseDir()
-	return os.MkdirAll(dir, 0755)
+	// Data dir on project drive (JSONC, logs, output)
+	if err := os.MkdirAll(DatabaseDir(), 0755); err != nil {
+		return err
+	}
+	// DB dir on ext4 (SQLite needs proper file locking)
+	return os.MkdirAll(DatabaseBasePath(), 0755)
 }
 
 // --- Logging Paths (Organized CPI-SI Tracking) ---
@@ -340,9 +379,31 @@ func HealthConfigDir() string {
 	return filepath.Join(ClaudeGlobalConfig(), "health")
 }
 
-// HealthRuntimeDir returns the health runtime directory
-func HealthRuntimeDir() string {
-	return filepath.Join(HealthConfigDir(), "runtime")
+// --- Output Paths ---
+
+// OutputDir returns the structured output directory
+func OutputDir() string {
+	return filepath.Join(DatabaseDir(), "output")
+}
+
+// OutputExportsDir returns the exports subdirectory for data exports
+func OutputExportsDir() string {
+	return filepath.Join(OutputDir(), "exports")
+}
+
+// OutputReportsDir returns the reports subdirectory for generated reports
+func OutputReportsDir() string {
+	return filepath.Join(OutputDir(), "reports")
+}
+
+// OutputSnapshotsDir returns the snapshots subdirectory for state snapshots
+func OutputSnapshotsDir() string {
+	return filepath.Join(OutputDir(), "snapshots")
+}
+
+// OutputTemplatesDir returns the templates subdirectory for output format templates
+func OutputTemplatesDir() string {
+	return filepath.Join(OutputDir(), "templates")
 }
 
 // --- Directory Initialization ---
@@ -390,6 +451,23 @@ func EnsureFormatsDir() error {
 	return os.MkdirAll(FormatsDir(), 0755)
 }
 
+// EnsureOutputDir creates the output directories if they don't exist
+func EnsureOutputDir() error {
+	dirs := []string{
+		OutputDir(),
+		OutputExportsDir(),
+		OutputReportsDir(),
+		OutputSnapshotsDir(),
+		OutputTemplatesDir(),
+	}
+	for _, dir := range dirs {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // EnsureAllDataDirs creates all data subdirectories
 func EnsureAllDataDirs() error {
 	if err := EnsureDatabaseDir(); err != nil {
@@ -405,6 +483,9 @@ func EnsureAllDataDirs() error {
 		return err
 	}
 	if err := EnsureFormatsDir(); err != nil {
+		return err
+	}
+	if err := EnsureOutputDir(); err != nil {
 		return err
 	}
 	return nil

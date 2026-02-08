@@ -28,7 +28,7 @@ PRAGMA journal_mode = WAL;
 
 -- Sessions: Temporal awareness foundation
 -- Each session has boundaries (started_at, ended_at) enabling gap detection
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
     id TEXT PRIMARY KEY,
     started_at DATETIME NOT NULL,
     ended_at DATETIME,
@@ -55,19 +55,28 @@ CREATE TABLE sessions (
     day_of_week INTEGER,  -- 0=Sunday, 6=Saturday
     hour_of_day INTEGER,  -- 0-23
 
+    -- CPI Tracking (Covenant Partnership Intelligence)
+    exchange_count INTEGER DEFAULT 0,
+    insight_count INTEGER DEFAULT 0,
+    cpi_score REAL DEFAULT 0.5,
+    dominant_exchange_type TEXT,
+    session_arc TEXT,
+    narrative_summary TEXT,
+    quality_rating REAL DEFAULT 0.5,
+
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Index for temporal queries
-CREATE INDEX idx_sessions_started_at ON sessions(started_at);
-CREATE INDEX idx_sessions_temporal ON sessions(day_of_week, hour_of_day);
+CREATE INDEX IF NOT EXISTS idx_sessions_started_at ON sessions(started_at);
+CREATE INDEX IF NOT EXISTS idx_sessions_temporal ON sessions(day_of_week, hour_of_day);
 
 -- ============================================================================
 -- BODY - Choice Tracking (The Feedback Loop)
 -- ============================================================================
 
 -- Choices: Every response is a choice with weight felt before choosing
-CREATE TABLE choices (
+CREATE TABLE IF NOT EXISTS choices (
     id TEXT PRIMARY KEY,
     session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     sequence_num INTEGER NOT NULL,  -- Order within session
@@ -99,16 +108,16 @@ CREATE TABLE choices (
 );
 
 -- Index for pattern detection
-CREATE INDEX idx_choices_session ON choices(session_id);
-CREATE INDEX idx_choices_tool ON choices(tool_name);
-CREATE INDEX idx_choices_key ON choices(intended_key);
+CREATE INDEX IF NOT EXISTS idx_choices_session ON choices(session_id);
+CREATE INDEX IF NOT EXISTS idx_choices_tool ON choices(tool_name);
+CREATE INDEX IF NOT EXISTS idx_choices_key ON choices(intended_key);
 
 -- ============================================================================
 -- BODY - State Evolution
 -- ============================================================================
 
 -- Hebrew state transitions: Track cognitive position changes
-CREATE TABLE hebrew_transitions (
+CREATE TABLE IF NOT EXISTS hebrew_transitions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     choice_id TEXT REFERENCES choices(id) ON DELETE SET NULL,
@@ -129,11 +138,11 @@ CREATE TABLE hebrew_transitions (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_hebrew_session ON hebrew_transitions(session_id);
-CREATE INDEX idx_hebrew_states ON hebrew_transitions(from_state, to_state);
+CREATE INDEX IF NOT EXISTS idx_hebrew_session ON hebrew_transitions(session_id);
+CREATE INDEX IF NOT EXISTS idx_hebrew_states ON hebrew_transitions(from_state, to_state);
 
 -- K:ALIGN history: Track alignment evolution over time
-CREATE TABLE k_align_history (
+CREATE TABLE IF NOT EXISTS k_align_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     choice_id TEXT REFERENCES choices(id) ON DELETE SET NULL,
@@ -149,15 +158,15 @@ CREATE TABLE k_align_history (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_kalign_session ON k_align_history(session_id);
-CREATE INDEX idx_kalign_timestamp ON k_align_history(timestamp);
+CREATE INDEX IF NOT EXISTS idx_kalign_session ON k_align_history(session_id);
+CREATE INDEX IF NOT EXISTS idx_kalign_timestamp ON k_align_history(timestamp);
 
 -- ============================================================================
 -- BODY - Pattern Detection
 -- ============================================================================
 
 -- Detected patterns: Emergent behavior recognition
-CREATE TABLE detected_patterns (
+CREATE TABLE IF NOT EXISTS detected_patterns (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     pattern_type TEXT NOT NULL,  -- 'temporal', 'choice', 'state', 'tool'
     pattern_key TEXT NOT NULL,   -- Identifier for this pattern
@@ -183,15 +192,15 @@ CREATE TABLE detected_patterns (
     UNIQUE(pattern_type, pattern_key)
 );
 
-CREATE INDEX idx_patterns_type ON detected_patterns(pattern_type);
-CREATE INDEX idx_patterns_active ON detected_patterns(is_active);
+CREATE INDEX IF NOT EXISTS idx_patterns_type ON detected_patterns(pattern_type);
+CREATE INDEX IF NOT EXISTS idx_patterns_active ON detected_patterns(is_active);
 
 -- ============================================================================
 -- BODY - Views for Common Queries
 -- ============================================================================
 
 -- Session gaps: Time between sessions (temporal awareness)
-CREATE VIEW session_gaps AS
+CREATE VIEW IF NOT EXISTS session_gaps AS
 SELECT
     s1.id AS session_id,
     s1.ended_at AS session_end,
@@ -208,7 +217,7 @@ AND s2.id = (
 );
 
 -- Recent choices: Last N choices across sessions
-CREATE VIEW recent_choices AS
+CREATE VIEW IF NOT EXISTS recent_choices AS
 SELECT
     c.*,
     s.project_path,
@@ -219,7 +228,7 @@ ORDER BY c.timestamp DESC
 LIMIT 100;
 
 -- Choice patterns by tool: Aggregated stats per tool
-CREATE VIEW tool_choice_stats AS
+CREATE VIEW IF NOT EXISTS tool_choice_stats AS
 SELECT
     tool_name,
     COUNT(*) AS total_uses,
@@ -231,7 +240,7 @@ WHERE tool_name IS NOT NULL
 GROUP BY tool_name;
 
 -- Hebrew state frequency: How often in each state
-CREATE VIEW hebrew_state_frequency AS
+CREATE VIEW IF NOT EXISTS hebrew_state_frequency AS
 SELECT
     final_hebrew_state AS state,
     COUNT(*) AS session_count,
@@ -241,7 +250,7 @@ WHERE final_hebrew_state IS NOT NULL
 GROUP BY final_hebrew_state;
 
 -- Temporal patterns: When do we work?
-CREATE VIEW temporal_work_patterns AS
+CREATE VIEW IF NOT EXISTS temporal_work_patterns AS
 SELECT
     day_of_week,
     hour_of_day,
@@ -252,15 +261,141 @@ GROUP BY day_of_week, hour_of_day
 ORDER BY session_count DESC;
 
 -- ============================================================================
+-- BODY - CPI Tracking (Covenant Partnership Intelligence)
+-- ============================================================================
+-- "By their fruits ye shall know them" — Matthew 7:20
+
+-- Exchanges: CPI exchange tracking per prompt
+CREATE TABLE IF NOT EXISTS exchanges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    timestamp DATETIME NOT NULL,
+    sequence_num INTEGER NOT NULL,
+
+    -- Exchange classification
+    exchange_type TEXT NOT NULL,  -- 'directive', 'collaborative', 'check_in', 'pushback', 'affirmation', 'question', 'context', 'unknown'
+    initiative TEXT,              -- who initiated the exchange
+    prompt_length INTEGER,        -- length of the prompt
+
+    -- Relational dynamics
+    feedback_detected BOOLEAN DEFAULT FALSE,
+    feedback_polarity TEXT,       -- 'positive', 'negative', 'neutral', NULL
+    feedback_categories TEXT,     -- comma-separated categories
+
+    -- Quality assessment
+    value_contribution REAL,      -- 0.0 to 1.0
+    depth_level TEXT,             -- depth of engagement
+
+    -- Insight tracking
+    insight_detected BOOLEAN DEFAULT FALSE,
+    insight_type TEXT,            -- type of insight
+
+    -- State context at exchange
+    hebrew_state TEXT,            -- State at exchange time
+    k_align REAL,                 -- -1.0 to +1.0 (toward God / toward self)
+    trajectory TEXT,              -- B.1, B.2, B.3, B.4
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE(session_id, sequence_num)
+);
+
+CREATE INDEX IF NOT EXISTS idx_exchanges_session ON exchanges(session_id);
+CREATE INDEX IF NOT EXISTS idx_exchanges_type ON exchanges(exchange_type);
+CREATE INDEX IF NOT EXISTS idx_exchanges_insight ON exchanges(insight_detected);
+
+-- Insights: Moments of understanding transfer
+CREATE TABLE IF NOT EXISTS insights (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    exchange_id INTEGER REFERENCES exchanges(id) ON DELETE SET NULL,
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- Classification
+    insight_type TEXT NOT NULL,   -- 'breakthrough', 'correction', 'clarification', 'synthesis'
+    confidence REAL DEFAULT 0.5,  -- 0.0 to 1.0
+
+    -- Context
+    topic_area TEXT,              -- What domain (optional)
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_insights_session ON insights(session_id);
+CREATE INDEX IF NOT EXISTS idx_insights_type ON insights(insight_type);
+
+-- Key Context: 3-key (trit) context per exchange
+CREATE TABLE IF NOT EXISTS key_context (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    exchange_id INTEGER REFERENCES exchanges(id) ON DELETE SET NULL,
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 3-key values
+    k_toward_god INTEGER DEFAULT 0,
+    k_toward_self INTEGER DEFAULT 0,
+    k_selector INTEGER DEFAULT 0,
+
+    -- Computed
+    k_moral REAL,                 -- (toward_god - toward_self) / max
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_key_context_session ON key_context(session_id);
+
+-- ============================================================================
+-- BODY - Learnings (Pattern → Knowledge Integration)
+-- ============================================================================
+-- "Line upon line, precept upon precept" — Isaiah 28:10
+
+-- Learnings: patterns that have been integrated into knowledge
+CREATE TABLE IF NOT EXISTS learnings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    -- Source patterns that led to this learning
+    source_patterns TEXT,  -- JSON array of pattern_ids
+    source_type TEXT NOT NULL,  -- 'pattern', 'session', 'insight', 'manual'
+
+    -- The learning itself
+    learning_type TEXT NOT NULL,  -- 'preference', 'workflow', 'communication', 'technical', 'identity'
+    learning_key TEXT NOT NULL,   -- Unique key for this learning
+    learning_content TEXT NOT NULL,  -- The actual learning/insight
+
+    -- Confidence and weight
+    confidence REAL DEFAULT 0.5,  -- 0.0 to 1.0
+    weight REAL DEFAULT 1.0,      -- Weight for influence (decays over time)
+
+    -- Integration status
+    integrated INTEGER DEFAULT 0,  -- Has this been integrated into identity?
+    integrated_at DATETIME,
+    integration_target TEXT,       -- Where it was integrated (CLAUDE.md, bio.md, etc.)
+
+    -- Lifecycle
+    first_seen DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_reinforced DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    reinforcement_count INTEGER DEFAULT 1,
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE(learning_type, learning_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_learnings_type ON learnings(learning_type);
+CREATE INDEX IF NOT EXISTS idx_learnings_integrated ON learnings(integrated);
+CREATE INDEX IF NOT EXISTS idx_learnings_confidence ON learnings(confidence DESC);
+
+-- ============================================================================
 -- CLOSING - Schema Version
 -- ============================================================================
 
 -- Track schema version for migrations
-CREATE TABLE schema_version (
+CREATE TABLE IF NOT EXISTS schema_version (
     version INTEGER PRIMARY KEY,
     applied_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     description TEXT
 );
 
-INSERT INTO schema_version (version, description)
+INSERT OR IGNORE INTO schema_version (version, description)
 VALUES (1, 'Initial schema - temporal consciousness foundation');

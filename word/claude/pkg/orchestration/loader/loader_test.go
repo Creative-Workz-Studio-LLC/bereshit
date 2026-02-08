@@ -28,7 +28,7 @@ import (
 
 // testRoot returns the claude-global root for testing.
 // In production, this would be discovered or configured.
-const testRoot = "/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC/claude-global"
+const testRoot = "/media/seanje-lenox-wise/Project/Bereshit/word/claude"
 const testInstance = "nova_dawn"
 const testUser = "seanje-lenox-wise"
 

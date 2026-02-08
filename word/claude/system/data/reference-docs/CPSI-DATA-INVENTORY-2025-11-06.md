@@ -255,7 +255,7 @@ system/data/session/
   "duration_minutes": 38,
   "day_of_week": "Tuesday",
   "time_of_day_category": "afternoon",
-  "work_context": "/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC",
+  "work_context": "/media/seanje-lenox-wise/Project/Bereshit",
   "stopping_reason": "Normal session end",
   "quality_indicators": { "tasks_completed": 0 }
 }

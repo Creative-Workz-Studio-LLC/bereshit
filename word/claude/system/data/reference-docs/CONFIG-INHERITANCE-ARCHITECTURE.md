@@ -402,7 +402,7 @@ Validated patterns can suggest config updates:
 
   "start_time": "2025-11-07T09:00:00-06:00",
   "circadian_phase": "morning",
-  "work_context": "/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC",
+  "work_context": "/media/seanje-lenox-wise/Project/Bereshit",
 
   "inherited_preferences": {
     "user_timezone": "America/Chicago",
@@ -457,7 +457,7 @@ Validated patterns can suggest config updates:
   },
 
   "workspace": {
-    "path": "/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC",
+    "path": "/media/seanje-lenox-wise/Project/Bereshit",
     "repository_url": "github.com/creativeworkzstudio/cpi-si",
     "branch": "main"
   },

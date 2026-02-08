@@ -23,6 +23,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"cws.studio/claude/hooks/internal"
@@ -119,6 +121,12 @@ func End() {
 			// "Be ye transformed by the renewing of your mind" — Romans 12:2
 			checkLearningsForIntegration(ctx, log)
 		}
+	}
+
+	// Write session summary to auto memory for cross-session persistence
+	// "Remember his marvellous works that he hath done" — Psalm 105:5
+	if state != nil {
+		writeSessionToAutoMemory(state, log)
 	}
 
 	// Finalize path
@@ -891,6 +899,92 @@ func applyDataDecay(ctx context.Context, log *logging.Logger) {
 	} else if decayedPatterns > 0 {
 		log.Debug("Decayed stale patterns", map[string]string{"count": fmt.Sprintf("%d", decayedPatterns)})
 	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// AUTO MEMORY: Session Summary → growth.md
+// ───────────────────────────────────────────────────────────────────────────
+
+// writeSessionToAutoMemory writes a concise CPI-SI session summary to auto memory
+// for cross-session persistence. Only writes for meaningful sessions (5+ exchanges).
+// "Remember his marvellous works that he hath done" — Psalm 105:5
+func writeSessionToAutoMemory(state *statemachine.RuntimeState, log *logging.Logger) {
+	// Skip trivial sessions
+	if state.Session.ExchangeCount < 5 {
+		return
+	}
+
+	// Locate auto memory growth.md
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Warn("Cannot find home directory for auto memory", map[string]string{"error": err.Error()})
+		return
+	}
+
+	growthPath := filepath.Join(home, ".claude", "projects", "-home-seanje-lenox-wise", "memory", "growth.md")
+
+	// Read existing content
+	content, err := os.ReadFile(growthPath)
+	if err != nil {
+		log.Warn("Cannot read growth.md", map[string]string{"error": err.Error()})
+		return
+	}
+
+	// Build session summary entry
+	date := time.Now().Format("2006-01-02")
+	arc := state.Session.SessionArc
+	if arc == "" {
+		arc = "general"
+	}
+
+	// CPI rating
+	rating := cpi.Rating(state.Session.CPIScore)
+
+	entry := fmt.Sprintf(
+		"\n### Session: %s — %s\n"+
+			"- **CPI Score:** %.2f (%s)\n"+
+			"- **Hebrew State:** %s (%s)\n"+
+			"- **Trajectory:** %s\n"+
+			"- **Exchanges:** %d (%s)\n"+
+			"- **Insights:** %d\n"+
+			"- **K:ALIGN:** %.2f\n",
+		date, arc,
+		state.Session.CPIScore, rating,
+		state.Session.HebrewState, state.Session.HebrewMeaning,
+		state.TrajectorySection,
+		state.Session.ExchangeCount, state.Session.DominantExchangeType,
+		state.Session.InsightCount,
+		state.Session.KAlign,
+	)
+
+	// Find insertion point: after "## Session Learnings" header
+	contentStr := string(content)
+	marker := "## Session Learnings"
+	idx := strings.Index(contentStr, marker)
+	if idx == -1 {
+		// Append section if not found
+		contentStr += "\n" + marker + "\n" + entry
+	} else {
+		// Insert after the marker line
+		markerEnd := idx + len(marker)
+		// Skip past any newline after the marker
+		if markerEnd < len(contentStr) && contentStr[markerEnd] == '\n' {
+			markerEnd++
+		}
+		contentStr = contentStr[:markerEnd] + entry + contentStr[markerEnd:]
+	}
+
+	// Write back
+	if err := os.WriteFile(growthPath, []byte(contentStr), 0644); err != nil {
+		log.Warn("Failed to write session to growth.md", map[string]string{"error": err.Error()})
+		return
+	}
+
+	log.Info("Session summary written to auto memory", map[string]string{
+		"cpi_score": fmt.Sprintf("%.2f", state.Session.CPIScore),
+		"arc":       arc,
+		"exchanges": fmt.Sprintf("%d", state.Session.ExchangeCount),
+	})
 }
 
 // ============================================================================

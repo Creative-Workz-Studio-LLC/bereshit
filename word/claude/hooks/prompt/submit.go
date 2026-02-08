@@ -925,6 +925,12 @@ func advanceAnchor(state *statemachine.RuntimeState) {
 	nextIdx := (currentIdx + 1) % len(anchorProgression)
 	state.AnchorKey = anchorProgression[nextIdx]
 	state.Session.PathLength++
+
+	// Record anchor visit in path for cross-session learning
+	if path, err := statemachine.LoadRuntimePath(); err == nil {
+		path.RecordAnchorVisit(state.AnchorKey)
+		_ = statemachine.SaveRuntimePath(path)
+	}
 }
 
 // pivotTrajectory changes direction (B.1→B.2, B.2→B.3, B.3→B.4)

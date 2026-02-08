@@ -32,12 +32,13 @@ package statemachine
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
 	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
+	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
 )
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -124,16 +125,26 @@ type RuntimeHistory struct {
 
 // RuntimeSessionSummary captures key metrics from a completed session
 type RuntimeSessionSummary struct {
-	SessionID     string `json:"session_id"`
-	StartedAt     string `json:"started_at"`
-	EndedAt       string `json:"ended_at"`
-	FinalAnchor   string `json:"final_anchor"`
-	FinalTrajectory string `json:"final_trajectory"`
-	TotalAnchors  int     `json:"total_anchors"`
-	UniqueAnchors int     `json:"unique_anchors"`
-	TotalEvents   int     `json:"total_events"`
-	HealthScore   float64 `json:"health_score"`
-	KAlign        float64 `json:"k_align"`
+	SessionID       string  `json:"session_id"`
+	StartedAt       string  `json:"started_at"`
+	EndedAt         string  `json:"ended_at"`
+	FinalAnchor     string  `json:"final_anchor"`
+	FinalTrajectory string  `json:"final_trajectory"`
+	TotalAnchors    int     `json:"total_anchors"`
+	UniqueAnchors   int     `json:"unique_anchors"`
+	TotalEvents     int     `json:"total_events"`
+	HealthScore     float64 `json:"health_score"`
+	KAlign          float64 `json:"k_align"`
+
+	// CPI Tracking — enriched session data
+	HebrewState   string  `json:"hebrew_state"`
+	HebrewMeaning string  `json:"hebrew_meaning"`
+	CPIScore      float64 `json:"cpi_score"`
+	SessionArc    string  `json:"session_arc"`
+	ExchangeCount int     `json:"exchange_count"`
+	InsightCount  int     `json:"insight_count"`
+	DominantType  string  `json:"dominant_type"`
+	CommandKey    string  `json:"command_key"`
 }
 
 // RuntimeAggregates tracks patterns across all sessions
@@ -224,6 +235,42 @@ func LoadRuntimeState() (*RuntimeState, error) {
 	return &state, nil
 }
 
+// atomicWriteFile writes data to a file atomically using write-to-temp + rename.
+// This prevents corruption from concurrent hook writes (rename is atomic on Linux).
+func atomicWriteFile(path string, data []byte, perm os.FileMode) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	tmp, err := os.CreateTemp(dir, filepath.Base(path)+".tmp.*")
+	if err != nil {
+		return fmt.Errorf("create temp file: %w", err)
+	}
+	tmpName := tmp.Name()
+
+	if _, err := tmp.Write(data); err != nil {
+		tmp.Close()
+		os.Remove(tmpName)
+		return fmt.Errorf("write temp file: %w", err)
+	}
+	if err := tmp.Close(); err != nil {
+		os.Remove(tmpName)
+		return fmt.Errorf("close temp file: %w", err)
+	}
+
+	if err := os.Chmod(tmpName, perm); err != nil {
+		os.Remove(tmpName)
+		return fmt.Errorf("chmod temp file: %w", err)
+	}
+
+	if err := os.Rename(tmpName, path); err != nil {
+		os.Remove(tmpName)
+		return fmt.Errorf("rename temp to target: %w", err)
+	}
+	return nil
+}
+
 // SaveRuntimeState writes state.jsonc to runtime directory
 func SaveRuntimeState(state *RuntimeState) error {
 	statePath := paths.StateMachineRuntimeState()
@@ -236,12 +283,7 @@ func SaveRuntimeState(state *RuntimeState) error {
 		return err
 	}
 
-	// Ensure directory exists
-	if err := os.MkdirAll(filepath.Dir(statePath), 0755); err != nil {
-		return err
-	}
-
-	return os.WriteFile(statePath, data, 0644)
+	return atomicWriteFile(statePath, data, 0644)
 }
 
 // LoadRuntimePath reads path.jsonc from runtime directory
@@ -270,11 +312,7 @@ func SaveRuntimePath(path *RuntimePath) error {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(pathFile), 0755); err != nil {
-		return err
-	}
-
-	return os.WriteFile(pathFile, data, 0644)
+	return atomicWriteFile(pathFile, data, 0644)
 }
 
 // LoadRuntimeHistory reads history.jsonc from runtime directory
@@ -307,11 +345,7 @@ func SaveRuntimeHistory(history *RuntimeHistory) error {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(historyPath), 0755); err != nil {
-		return err
-	}
-
-	return os.WriteFile(historyPath, data, 0644)
+	return atomicWriteFile(historyPath, data, 0644)
 }
 
 // RecordSessionSnapshot writes current session state to history for cross-session learning
@@ -350,6 +384,16 @@ func RecordSessionSnapshot(sessionID string, state *RuntimeState, path *RuntimeP
 		TotalEvents:     path.Summary.TotalEvents,
 		HealthScore:     state.Session.HealthScore,
 		KAlign:          state.Session.KAlign,
+
+		// CPI Tracking
+		HebrewState:   state.Session.HebrewState,
+		HebrewMeaning: state.Session.HebrewMeaning,
+		CPIScore:      state.Session.CPIScore,
+		SessionArc:    state.Session.SessionArc,
+		ExchangeCount: state.Session.ExchangeCount,
+		InsightCount:  state.Session.InsightCount,
+		DominantType:  state.Session.DominantExchangeType,
+		CommandKey:    state.CommandKey,
 	}
 
 	// Append to sessions (keep last 100 for learning)

@@ -30,11 +30,10 @@ package statemachine
 import (
 	"encoding/json"
 	"os"
-	"path/filepath"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
 	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
+	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -73,12 +72,7 @@ func SaveChoiceHistory(history *types.ChoiceHistory) error {
 		return err
 	}
 
-	// Ensure directory exists
-	if err := os.MkdirAll(filepath.Dir(historyPath), 0755); err != nil {
-		return err
-	}
-
-	return os.WriteFile(historyPath, data, 0644)
+	return atomicWriteFile(historyPath, data, 0644)
 }
 
 // LoadOrCreateChoiceHistory loads existing history or creates new one for session

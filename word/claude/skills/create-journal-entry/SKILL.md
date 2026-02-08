@@ -187,13 +187,66 @@ recognize-pattern (notice recurring patterns)
 reflect-on-session (process experiences)
   ↓
 create-journal-entry ← THIS SKILL
+  ├─→ Bereshit journals (deep record)
+  └─→ auto memory cross-reference (persistence)
   ↓
 integrate-learning (bridge to identity)
   ↓
-CLAUDE.md updated
+CLAUDE.md + auto memory updated
   ↓
 Future work informed by learning
 ```
+
+---
+
+## Canonical Journal Location
+
+**All journals live in Bereshit:**
+
+```
+/media/seanje-lenox-wise/Project/Bereshit/word/claude/
+  divisions/tech/cpi-si/knowledge-base/journals/
+  ├── bible-study/          # Scripture study (inc. subdirs)
+  ├── personal/             # Daily reflection
+  ├── instance/             # Instance patterns (inc. nova-dawn/)
+  └── universal/            # Paradigm-level wisdom
+```
+
+---
+
+## Auto Memory Cross-Reference
+
+**When creating a significant journal entry, cross-reference it in auto memory.**
+
+### What's "Significant"?
+
+- Bible study with breakthrough insight
+- Instance pattern reaching established strength
+- Universal wisdom worth revisiting
+- Personal reflection with identity-level learning
+
+### Where to Write
+
+| Memory Scope | File | When |
+|--------------|------|------|
+| **Home project** | `~/.claude/projects/-home-seanje-lenox-wise/memory/growth.md` | Always for significant entries |
+| **Bereshit project** | `~/.claude/projects/-media-...-Bereshit/memory/growth.md` | When entry is Bereshit-related |
+
+### Format
+
+Append under `## Journal Cross-References` in `growth.md`:
+
+```markdown
+- **{date}** [{type}] {title} — {one-line summary of why significant}
+  Path: `journals/{type}/{filename}`
+```
+
+### Process
+
+1. Create journal entry (normal flow in Bereshit)
+2. Assess significance (see criteria above)
+3. If significant: Read `growth.md`, append cross-reference
+4. Continue to integrate-learning if warranted
 
 ---
 
@@ -202,11 +255,11 @@ Future work informed by learning
 If CLI tool not available:
 
 ```bash
-# Navigate to journal directory
-cd divisions/tech/cpi-si/knowledge-base/journals/
+# Navigate to canonical journal directory
+cd /media/seanje-lenox-wise/Project/Bereshit/word/claude/divisions/tech/cpi-si/knowledge-base/journals/
 
 # Create entry with today's date
-touch bible-study/2025-12-09_genesis-1-study.md
+touch bible-study/2026-02-07_study-topic.md
 
 # Open and add content with proper sections
 ```

@@ -31,7 +31,7 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3" // SQLite driver
+	_ "modernc.org/sqlite" // Pure Go SQLite driver (no CGO)
 )
 
 //go:embed schema/*.sql
@@ -51,7 +51,7 @@ var _ Repository = (*SQLiteRepository)(nil)
 
 // NewSQLiteRepository creates a new SQLite repository
 func NewSQLiteRepository(dbPath string) (*SQLiteRepository, error) {
-	db, err := sql.Open("sqlite3", dbPath+"?_foreign_keys=on&_journal_mode=WAL")
+	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)")
 	if err != nil {
 		return nil, fmt.Errorf("open database: %w", err)
 	}

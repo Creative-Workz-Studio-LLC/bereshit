@@ -36,6 +36,7 @@ import (
 
 	"cws.studio/claude/hooks/internal"
 	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
+	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database"
 	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/cognition"
 	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/logging"
 	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/hookoutput"
@@ -284,6 +285,9 @@ func handleResume(log *logging.Logger, catLog *logging.CategoryLogger, input Sta
 		state.TrajectoryMetrics.AccumulatedWorkMs = 0
 		state.TrajectoryMetrics.MomentumScore = 0
 		// Keep pivot_count and reset_count as cross-session learning
+
+		// Record new session in database (temporal consciousness)
+		ensureSessionInDB(input.SessionID, state, log, catLog)
 	}
 
 	// Mark as active
@@ -348,6 +352,9 @@ func handleClear(log *logging.Logger, catLog *logging.CategoryLogger, input Star
 		path.RecordEvent("session_clear", "", state.TrajectorySection)
 		_ = statemachine.SaveRuntimePath(path)
 	}
+
+	// Ensure session exists in database after clear
+	ensureSessionInDB(input.SessionID, state, log, catLog)
 
 	log.Info("Session cleared, state reset", map[string]string{
 		"session_id": input.SessionID,
@@ -439,8 +446,9 @@ func handleCompact(log *logging.Logger, catLog *logging.CategoryLogger, input St
 	// Reset: session counters
 	now := time.Now().Format(time.RFC3339)
 
-	// Update session ID if changed
-	if input.SessionID != "" && input.SessionID != state.Session.ID {
+	// Update session ID if changed — new post-compact session needs DB record
+	sessionIDChanged := input.SessionID != "" && input.SessionID != state.Session.ID
+	if sessionIDChanged {
 		state.Session.ID = input.SessionID
 	}
 	state.Session.InitializedAt = now
@@ -519,6 +527,11 @@ func handleCompact(log *logging.Logger, catLog *logging.CategoryLogger, input St
 		log.LogFailure("Failed to save reset state", map[string]string{"error": saveErr.Error()})
 	}
 
+	// Record new post-compact session in database if ID changed
+	if sessionIDChanged {
+		ensureSessionInDB(state.Session.ID, state, log, catLog)
+	}
+
 	log.Info("Post-compact reset complete", map[string]string{
 		"session_id": input.SessionID,
 		"anchor":     state.AnchorKey,
@@ -541,6 +554,49 @@ func handleCompact(log *logging.Logger, catLog *logging.CategoryLogger, input St
 // ============================================================================
 // CLOSING
 // ============================================================================
+
+// ensureSessionInDB creates a session record in the database.
+// Bridges the gap between state.jsonc (always created by hooks) and the DB
+// (only created by handleStartup). Called from handleResume, handleCompact,
+// and handleClear to ensure exchanges can reference the session.
+func ensureSessionInDB(sessionID string, state *statemachine.RuntimeState, log *logging.Logger, catLog *logging.CategoryLogger) {
+	bridge, err := internal.GetBridge()
+	if err != nil {
+		return // DB unavailable — not critical
+	}
+
+	ctx := context.Background()
+	now := time.Now()
+	repo := bridge.GetRepository()
+
+	dbSession := &database.Session{
+		ID:                 sessionID,
+		StartedAt:          now,
+		InitialHebrewState: state.Session.HebrewState,
+		InitialKAlign:      state.Session.KAlign,
+		DayOfWeek:          int(now.Weekday()),
+		HourOfDay:          now.Hour(),
+	}
+
+	if err := repo.CreateSession(ctx, dbSession); err != nil {
+		log.Warn("Failed to record session in database", map[string]string{
+			"error": err.Error(),
+		})
+		if catLog != nil {
+			catLog.Warn("database_error", "Failed to record session in database", map[string]string{
+				"error": err.Error(),
+			})
+		}
+		return
+	}
+
+	if catLog != nil {
+		catLog.Success("database_session", "Session recorded in database", map[string]string{
+			"session_id": sessionID,
+		})
+	}
+}
+
 // Environment: CLAUDE_ENV_FILE available for persisting env vars
 
 // WezTermState represents state written by WezTerm for two-way sync

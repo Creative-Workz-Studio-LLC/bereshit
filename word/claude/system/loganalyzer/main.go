@@ -33,7 +33,7 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite" // Pure Go SQLite driver (no CGO)
 )
 
 // LogEvent represents a parsed JSONL log entry
@@ -53,12 +53,13 @@ type LogEvent struct {
 
 // Config holds runtime configuration
 type Config struct {
-	DBPath   string
-	LogsDir  string
-	Command  string
-	LogType  string
-	LogDate  string
-	Verbose  bool
+	SessionsDB  string
+	CognitionDB string
+	LogsDir     string
+	Command     string
+	LogType     string
+	LogDate     string
+	Verbose     bool
 }
 
 // ============================================================================
@@ -85,15 +86,30 @@ func main() {
 	}
 }
 
+// domainDBPath returns the path to a domain database.
+func domainDBPath(domain string) string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".local", "share", "claude", "data", domain+".db")
+}
+
+// openDB opens a SQLite database with standard pragmas.
+func openDB(path string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite", path+"?_pragma=journal_mode(WAL)&_pragma=foreign_keys(1)")
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
 func parseFlags() Config {
 	cfg := Config{}
 
 	// Default paths
 	home, _ := os.UserHomeDir()
-	defaultDB := filepath.Join(home, ".claude", "data", "cpisi.db")
-	defaultLogs := filepath.Join(home, ".claude", "data", "logs")
+	defaultLogs := filepath.Join(home, ".local", "share", "claude", "data", "logs")
 
-	flag.StringVar(&cfg.DBPath, "db", defaultDB, "Path to SQLite database")
+	flag.StringVar(&cfg.SessionsDB, "sessions-db", domainDBPath("sessions"), "Path to sessions database")
+	flag.StringVar(&cfg.CognitionDB, "cognition-db", domainDBPath("cognition"), "Path to cognition database")
 	flag.StringVar(&cfg.LogsDir, "logs", defaultLogs, "Path to logs directory")
 	flag.StringVar(&cfg.LogType, "type", "all", "Log type to import: session, tools, context, all")
 	flag.StringVar(&cfg.LogDate, "date", "", "Specific date to import (YYYY-MM-DD)")
@@ -110,12 +126,19 @@ func parseFlags() Config {
 // --- Import Command ---
 
 func runImport(cfg Config) {
-	db, err := sql.Open("sqlite3", cfg.DBPath)
+	sessDB, err := openDB(cfg.SessionsDB)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error opening database: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error opening sessions database: %v\n", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer sessDB.Close()
+
+	cogDB, err := openDB(cfg.CognitionDB)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error opening cognition database: %v\n", err)
+		os.Exit(1)
+	}
+	defer cogDB.Close()
 
 	logTypes := []string{"session", "tools", "context"}
 	if cfg.LogType != "all" {
@@ -129,6 +152,12 @@ func runImport(cfg Config) {
 			continue
 		}
 
+		// Route to correct database: tools → cognition.db, session/context → sessions.db
+		db := sessDB
+		if logType == "tools" {
+			db = cogDB
+		}
+
 		files, _ := filepath.Glob(filepath.Join(dir, "*.jsonl"))
 		for _, file := range files {
 			// Extract date from filename
@@ -140,8 +169,8 @@ func runImport(cfg Config) {
 				continue
 			}
 
-			// Check if already imported
-			if isImported(db, logType, date) {
+			// Check if already imported (log_imports lives in sessions.db)
+			if isImported(sessDB, logType, date) {
 				if cfg.Verbose {
 					fmt.Printf("Skipping %s/%s (already imported)\n", logType, date)
 				}
@@ -154,8 +183,8 @@ func runImport(cfg Config) {
 				continue
 			}
 
-			// Record import
-			recordImport(db, logType, date, file, count)
+			// Record import in sessions.db (canonical import tracker)
+			recordImport(sessDB, logType, date, file, count)
 			totalImported += count
 
 			if cfg.Verbose {
@@ -279,21 +308,28 @@ func insertEvent(tx *sql.Tx, event *LogEvent, logType, date string) error {
 // --- Analyze Command ---
 
 func runAnalyze(cfg Config) {
-	db, err := sql.Open("sqlite3", cfg.DBPath)
+	sessDB, err := openDB(cfg.SessionsDB)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error opening database: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error opening sessions database: %v\n", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer sessDB.Close()
+
+	cogDB, err := openDB(cfg.CognitionDB)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error opening cognition database: %v\n", err)
+		os.Exit(1)
+	}
+	defer cogDB.Close()
 
 	fmt.Println("═══════════════════════════════════════════════════════════════")
 	fmt.Println("                    CPI-SI Log Analysis")
 	fmt.Println("═══════════════════════════════════════════════════════════════")
 
-	// Key Distribution
+	// Key Distribution (cognition.db)
 	fmt.Println("\n📊 Key Distribution (which keys are we picking?):")
 	fmt.Println("─────────────────────────────────────────────────────────────────")
-	rows, err := db.Query(`
+	rows, err := cogDB.Query(`
 		SELECT intended_key_label, COUNT(*) as picks,
 		       ROUND(AVG(health_delta), 2) as avg_delta
 		FROM tool_events
@@ -311,10 +347,10 @@ func runAnalyze(cfg Config) {
 		}
 	}
 
-	// Tool Patterns
+	// Tool Patterns (cognition.db)
 	fmt.Println("\n🔧 Top Tools by Usage:")
 	fmt.Println("─────────────────────────────────────────────────────────────────")
-	rows, err = db.Query(`
+	rows, err = cogDB.Query(`
 		SELECT tool_name, COUNT(*) as uses,
 		       SUM(CASE WHEN health_delta > 0 THEN 1 ELSE 0 END) as positive,
 		       ROUND(AVG(health_delta), 2) as avg_delta
@@ -336,10 +372,10 @@ func runAnalyze(cfg Config) {
 		}
 	}
 
-	// Session Events
+	// Session Events (sessions.db)
 	fmt.Println("\n📋 Session Event Types:")
 	fmt.Println("─────────────────────────────────────────────────────────────────")
-	rows, err = db.Query(`
+	rows, err = sessDB.Query(`
 		SELECT event_type, COUNT(*) as count,
 		       ROUND(AVG(health_delta), 2) as avg_delta
 		FROM session_events
@@ -360,10 +396,10 @@ func runAnalyze(cfg Config) {
 		}
 	}
 
-	// Feedback Analysis
+	// Feedback Analysis (sessions.db)
 	fmt.Println("\n⚠️  Feedback Events (user corrections):")
 	fmt.Println("─────────────────────────────────────────────────────────────────")
-	rows, err = db.Query(`
+	rows, err = sessDB.Query(`
 		SELECT COUNT(*) as total,
 		       ROUND(AVG(health_delta), 2) as avg_impact
 		FROM session_events
@@ -386,34 +422,41 @@ func runAnalyze(cfg Config) {
 // --- Report Command ---
 
 func runReport(cfg Config) {
-	db, err := sql.Open("sqlite3", cfg.DBPath)
+	sessDB, err := openDB(cfg.SessionsDB)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error opening database: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error opening sessions database: %v\n", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer sessDB.Close()
+
+	cogDB, err := openDB(cfg.CognitionDB)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error opening cognition database: %v\n", err)
+		os.Exit(1)
+	}
+	defer cogDB.Close()
 
 	fmt.Println("═══════════════════════════════════════════════════════════════")
 	fmt.Printf("           CPI-SI State Machine Report - %s\n", time.Now().Format("2006-01-02"))
 	fmt.Println("═══════════════════════════════════════════════════════════════")
 
-	// Summary stats
+	// Summary stats from both databases
 	var totalSessions, totalChoices, totalToolEvents, totalSessionEvents int
-	db.QueryRow("SELECT COUNT(*) FROM sessions").Scan(&totalSessions)
-	db.QueryRow("SELECT COUNT(*) FROM choices").Scan(&totalChoices)
-	db.QueryRow("SELECT COUNT(*) FROM tool_events").Scan(&totalToolEvents)
-	db.QueryRow("SELECT COUNT(*) FROM session_events").Scan(&totalSessionEvents)
+	sessDB.QueryRow("SELECT COUNT(*) FROM sessions").Scan(&totalSessions)
+	cogDB.QueryRow("SELECT COUNT(*) FROM choices").Scan(&totalChoices)
+	cogDB.QueryRow("SELECT COUNT(*) FROM tool_events").Scan(&totalToolEvents)
+	sessDB.QueryRow("SELECT COUNT(*) FROM session_events").Scan(&totalSessionEvents)
 
 	fmt.Println("\n📈 Database Summary:")
-	fmt.Printf("  Sessions:       %d\n", totalSessions)
-	fmt.Printf("  Choices:        %d\n", totalChoices)
-	fmt.Printf("  Tool Events:    %d\n", totalToolEvents)
-	fmt.Printf("  Session Events: %d\n", totalSessionEvents)
+	fmt.Printf("  Sessions:       %d  (sessions.db)\n", totalSessions)
+	fmt.Printf("  Choices:        %d  (cognition.db)\n", totalChoices)
+	fmt.Printf("  Tool Events:    %d  (cognition.db)\n", totalToolEvents)
+	fmt.Printf("  Session Events: %d  (sessions.db)\n", totalSessionEvents)
 
-	// Key balance
+	// Key balance (cognition.db)
 	fmt.Println("\n⚖️  Key Balance (are we choosing wisely?):")
 	var growth, lateral, completion int
-	db.QueryRow(`SELECT
+	cogDB.QueryRow(`SELECT
 		SUM(CASE WHEN intended_key = 1 THEN 1 ELSE 0 END),
 		SUM(CASE WHEN intended_key = 0 THEN 1 ELSE 0 END),
 		SUM(CASE WHEN intended_key = -1 THEN 1 ELSE 0 END)

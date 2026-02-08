@@ -1,740 +1,845 @@
 # ============================================================================
-# METADATA - Claude Production Build System
+# METADATA - CPI-SI Production Build System
 # ============================================================================
-# Purpose: Build, test, and deploy claude system from Bereshit (canonical root)
-# Biblical: Ecclesiastes 3:3 - "A time to break down, and a time to build up"
 #
-# Location: Bereshit/word/claude/ - THE canonical source
+# Purpose: Build, test, and deploy the CPI-SI system from Bereshit
+# Biblical: Ecclesiastes 3:3 — "A time to break down, and a time to build up"
 #
-# Architecture (2026-02-04):
-#   Source (exFAT):     Bereshit/word/claude/     - All source code, configs
-#   Config (symlinks):  ~/.claude/                - Symlinks to source
-#   Binaries (ext4):    ~/.local/share/claude/    - Compiled executables
+# Architecture:
+#   Source (exFAT):   Bereshit/word/claude/       All source code, configs
+#   Symlinks:         ~/.claude/                  Config/source references
+#   Binaries (ext4):  ~/.local/share/claude/      Compiled executables (+x)
 #
-#   Why separate? exFAT doesn't support execute permissions. Binaries must
-#   live on ext4 to be executable. Source/config can stay on exFAT via symlinks.
+# Quick start:
+#   make build        Build all modules + binaries (incremental — cached)
+#   make install-bin  Deploy binaries to ext4
+#   make verify       Check installation integrity
+#   make fresh        Clean + full reinstall
+#   make force        Bypass cache, rebuild everything
+#   make help         Show all targets
 #
-# Structure:
-#   bin/              - Build output (intermediate, on exFAT)
-#   config/           - Human-readable configuration
-#   docs/             - Documentation
-#   hooks/            - Session and tool lifecycle hooks
-#   pkg/              - Shared Go packages (cognition, statemachine, types)
-#   skills/           - Skill implementations
-#   statusline/       - Status line implementation (WezTerm OSC integration)
-#   system/           - System runtime libraries and commands
-#
-# Usage:
-#   make              - Build all modules
-#   make build        - Build all modules
-#   make bin          - Build binaries to bin/ (local)
-#   make install-bin  - Install binaries to ~/.local/share/claude/ (ext4)
-#   make install      - Install symlinks to ~/.claude/ + binaries to ext4
-#   make fresh        - Clean and reinstall everything
-#   make verify       - Verify all paths, symlinks, and binaries
-#   make uninstall    - Remove symlinks and installed binaries
-#   make test         - Run all tests
-#   make clean        - Clean build artifacts
+# CLI alternative (after first install):
+#   cpisi build       Same as make build
+#   cpisi install     Same as make install
+#   cpisi verify      Same as make verify
+#   cpisi help        Full CLI help
 #
 # ============================================================================
 
-.PHONY: all build bin test clean pkg hooks statusline system skills help \
-        install install-bin install-bin-only install-symlinks \
+# ============================================================================
+# SETUP — Variables
+# ============================================================================
+
+.PHONY: all build bin test clean help \
+        pkg hooks statusline system skills cpisi-cli \
+        dashboard dashboard-frontend dashboard-tui dashboard-gtk \
+        install install-bin install-bin-only install-symlinks install-desktop \
         uninstall uninstall-bin uninstall-symlinks \
-        fresh verify clean-stale tidy fmt vet db db-init db-migrate setup
+        fresh verify clean-stale \
+        fmt vet tidy \
+        db db-init db-migrate db-status \
+        db-init-all db-split \
+        setup list-skills list-system-cmds \
+        force cache-clean cache-warm \
+        fast-build remote-build
 
-# Default target
+GO      := go
+SHELL   := /bin/bash
+
+# Binary link flags (strip debug symbols, reduce size)
+BINFLAGS := -buildvcs=false -ldflags="-s -w"
+
+# Disable VCS stamping — git status on 22GB exFAT is too slow, causes timeouts.
+# Cannot use 'export GOFLAGS' because it pollutes sub-Makefile environments (hooks/).
+# Instead, use NOVCS for compile-check targets and BINFLAGS for binary builds.
+NOVCS := -buildvcs=false
+
+# Suppress CGO warnings from gotk4 bindings (Go cgo issue #32411)
+# cgo redeclares stdlib free(), triggering -Wbuiltin-declaration-mismatch in glib/gio/gtk.
+# The PIE relocation warning (DT_TEXTREL in .gopclntab) is GNU ld informational — no flag
+# to suppress it, but binaries work correctly.
+export CGO_CFLAGS := -Wno-builtin-declaration-mismatch
+
+# Canonical source directory (this directory, on exFAT)
+SRC_DIR := $(shell pwd)
+
+# Deployment targets
+DEPLOY_DIR  := $(HOME)/.claude
+INSTALL_DIR := $(HOME)/.local/share/claude
+
+# Module paths — DRY list used by fmt, vet, tidy, clean
+STD_MODULES := pkg hooks statusline dashboard dashboard/tui dashboard/gtk cmd/cpisi
+SYS_MODULES := system/runtime/cmd system/runtime/lib
+
+# Main binaries (name:module_dir:cmd_path)
+MAIN_BINS := statusline cpisi dashboard dashboard-tui dashboard-gtk
+
+# Skills
+SKILLS_DIR  := skills
+SKILL_DIRS  := $(wildcard $(SKILLS_DIR)/*/scripts)
+SKILL_NAMES := $(notdir $(patsubst %/scripts,%,$(SKILL_DIRS)))
+
+# Symlink targets
+SYMLINK_DIRS  := agents commands config data divisions docs hooks output-styles \
+                 pkg plans rules skills statusline system workflow
+SYMLINK_FILES := CLAUDE.md SYSTEM-REFERENCE.md config.toml instance.jsonc \
+                 Makefile go.work settings.json
+
+# Stale artifacts — empty now (cpi-si and bin were cleaned 2026-02-04)
+STALE_DIRS :=
+
+# Database — multi-domain architecture
+DATA_DIR     := data
+DB_PATH      := $(DATA_DIR)/cpisi.db
+DB_BASE_DIR  := $(HOME)/.local/share/claude/data
+DB_DOMAINS   := sessions cognition growth temporal projects
+
+# System command names (auto-detected, directories only)
+SYS_CMD_DIR   := system/runtime/cmd
+SYS_CMD_NAMES := $(shell find $(SYS_CMD_DIR) -mindepth 1 -maxdepth 1 -type d -exec basename {} \; 2>/dev/null | sort)
+
+# Build cache (stamp files on ext4 — avoids exFAT 512KB cluster overhead)
+BUILD_CACHE := $(HOME)/.cache/cpisi/stamps
+$(shell mkdir -p $(BUILD_CACHE))
+
+# Check if sources are newer than stamp file
+# Usage: $(call stale,stamp_name,source_dirs...)
+# Returns "y" if rebuild needed, empty if cached
+define stale
+$(shell s="$(BUILD_CACHE)/$(1).stamp"; \
+  if [ ! -f "$$s" ]; then echo "y"; \
+  else for d in $(2); do \
+    if [ -d "$(SRC_DIR)/$$d" ] && find "$(SRC_DIR)/$$d" -name '*.go' -newer "$$s" -print -quit 2>/dev/null | grep -q .; then \
+      echo "y"; break; fi; done; fi)
+endef
+
+# Check if binary needs rebuild (binary as its own stamp)
+# Usage: $(call bin_stale,binary_path,source_dirs...)
+define bin_stale
+$(shell if [ ! -f "$(SRC_DIR)/$(1)" ]; then echo "y"; \
+  else for d in $(2); do \
+    if [ -d "$(SRC_DIR)/$$d" ] && find "$(SRC_DIR)/$$d" -name '*.go' -newer "$(SRC_DIR)/$(1)" -print -quit 2>/dev/null | grep -q .; then \
+      echo "y"; break; fi; done; fi)
+endef
+
+# Default
 all: build
 
 # ============================================================================
-# SETUP - Variables
+# BODY — Build Targets
 # ============================================================================
 
-GO := go
-SHELL := /bin/bash
-GOFLAGS := -ldflags="-s -w"
+# Build everything: compile all modules + build binaries
+build: pkg hooks statusline system skills cpisi-cli dashboard dashboard-tui dashboard-gtk bin
+	@echo ""
+	@echo "=== All modules built ==="
+	@echo "    Run 'make install-bin' to deploy to $(INSTALL_DIR)"
 
-# This directory (canonical source on exFAT)
-SRC_DIR := $(shell pwd)
+# --- Module compile checks (cached) ---
 
-# Symlink deployment target (config/source references)
-DEPLOY_DIR := $(HOME)/.claude
+pkg:
+	@if [ -n "$(call stale,pkg,pkg)" ]; then \
+		echo "  Building pkg..."; \
+		cd pkg && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/pkg.stamp; \
+	else echo "  pkg (cached)"; fi
 
-# Binary install target (ext4 filesystem for execute permissions)
-# exFAT doesn't support Unix permissions, so executables must live on ext4
-INSTALL_DIR := $(HOME)/.local/share/claude
+hooks:
+	@if [ -n "$(call stale,hooks,hooks pkg)" ]; then \
+		echo "  Building hooks..."; \
+		cd hooks && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/hooks.stamp; \
+	else echo "  hooks (cached)"; fi
 
-# Skills
-SKILLS_DIR := skills
-SKILL_DIRS := $(wildcard $(SKILLS_DIR)/*/scripts)
-SKILL_NAMES := $(notdir $(patsubst %/scripts,%,$(SKILL_DIRS)))
+statusline:
+	@if [ -n "$(call stale,statusline,statusline pkg)" ]; then \
+		echo "  Building statusline..."; \
+		cd statusline && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/statusline.stamp; \
+	else echo "  statusline (cached)"; fi
 
-# Directories to symlink (source/config only - NOT bin)
-# Note: bin removed - binaries go to INSTALL_DIR, not symlinked
-SYMLINK_DIRS := agents commands config data divisions docs hooks output-styles pkg plans rules skills statusline system workflow
+system:
+	@if [ -n "$(call stale,system,system/runtime/cmd system/runtime/lib pkg)" ]; then \
+		echo "  Building system..."; \
+		cd system/runtime/cmd && $(GO) build $(NOVCS) ./...; \
+		cd $(SRC_DIR)/system/runtime/lib && $(GO) build $(NOVCS) ./...; \
+		touch $(BUILD_CACHE)/system.stamp; \
+	else echo "  system (cached)"; fi
 
-# Files to symlink
-SYMLINK_FILES := CLAUDE.md SYSTEM-REFERENCE.md config.toml instance.jsonc Makefile go.work settings.json
+cpisi-cli:
+	@if [ -n "$(call stale,cpisi-cli,cmd/cpisi)" ]; then \
+		echo "  Building cpisi CLI..."; \
+		cd cmd/cpisi && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/cpisi-cli.stamp; \
+	else echo "  cpisi-cli (cached)"; fi
 
-# Known stale directories from old setups (safe to remove)
-STALE_DIRS := cpi-si bin
+skills: $(addprefix skill-,$(SKILL_NAMES))
+	@echo "  All skills checked"
 
-# ============================================================================
-# BODY - Build Targets
-# ============================================================================
+skill-%:
+	@if [ -d "$(SKILLS_DIR)/$*/scripts" ]; then \
+		if [ -n "$(call stale,skill-$*,$(SKILLS_DIR)/$*/scripts)" ]; then \
+			cd $(SKILLS_DIR)/$*/scripts && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/skill-$*.stamp; \
+		fi; \
+	else \
+		echo "  Skill not found: $*"; exit 1; \
+	fi
 
-# Build everything (compile only - use install-bin to deploy to ext4)
-build: pkg hooks statusline system skills bin
-	@echo "=== All modules built successfully ==="
-	@echo "    Run 'make install-bin' to deploy binaries to $(INSTALL_DIR)"
+# --- Dashboard modules (cached) ---
 
-# Build binaries to local bin/ (intermediate step)
-bin: bin-statusline bin-hooks bin-system-cmds
+dashboard-frontend:
+	@if [ -f "dashboard/frontend/package.json" ]; then \
+		if [ -d "dashboard/server/static" ] && [ -f $(BUILD_CACHE)/frontend.stamp ] && \
+		   ! find dashboard/frontend/src -newer $(BUILD_CACHE)/frontend.stamp -print -quit 2>/dev/null | grep -q .; then \
+			echo "  Dashboard frontend (cached)"; \
+		else \
+			echo "  Building dashboard frontend..."; \
+			TEMP_BUILD=/tmp/cpisi-dashboard-build; \
+			rm -rf "$$TEMP_BUILD"; \
+			cp -r dashboard/frontend "$$TEMP_BUILD"; \
+			cd "$$TEMP_BUILD" && npm install --silent && npx tsc --noEmit && npx vite build; \
+			rm -rf $(SRC_DIR)/dashboard/server/static; \
+			cp -r /tmp/server/static $(SRC_DIR)/dashboard/server/static; \
+			rm -rf "$$TEMP_BUILD" /tmp/server; \
+			touch $(BUILD_CACHE)/frontend.stamp; \
+			echo "    Built: dashboard/server/static/"; \
+		fi; \
+	else \
+		echo "    Frontend not found, skipping"; \
+	fi
+
+dashboard: dashboard-frontend
+	@if [ -n "$(call stale,dashboard,dashboard pkg)" ]; then \
+		echo "  Building dashboard (web)..."; \
+		cd dashboard && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/dashboard.stamp; \
+	else echo "  dashboard (cached)"; fi
+
+dashboard-tui:
+	@if [ -n "$(call stale,dashboard-tui,dashboard/tui pkg)" ]; then \
+		echo "  Building dashboard (TUI)..."; \
+		cd dashboard/tui && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/dashboard-tui.stamp; \
+	else echo "  dashboard-tui (cached)"; fi
+
+dashboard-gtk:
+	@if [ -n "$(call stale,dashboard-gtk,dashboard/gtk pkg)" ]; then \
+		echo "  Building dashboard (GTK4)..."; \
+		cd dashboard/gtk && $(GO) build $(NOVCS) ./... 2>&1 | grep -v 'gopclntab\|DT_TEXTREL\|creating DT_TEXTREL\|dashboard-gtk$$'; touch $(BUILD_CACHE)/dashboard-gtk.stamp; \
+	else echo "  dashboard-gtk (cached)"; fi
+
+# --- Binary builds (cached — skips unchanged modules) ---
+
+bin: bin-statusline bin-cpisi bin-hooks bin-system-cmds \
+     bin-dashboard bin-dashboard-tui bin-dashboard-gtk
 	@echo "=== Binaries built to bin/ ==="
 
 bin-statusline:
-	@echo "=== Building statusline ==="
 	@mkdir -p bin
-	@cd statusline && $(GO) build $(GOFLAGS) -o ../bin/statusline ./cmd/statusline
-	@echo "  Built: bin/statusline"
+	@if [ -n "$(call bin_stale,bin/statusline,statusline pkg)" ]; then \
+		cd statusline && $(GO) build $(BINFLAGS) -o ../bin/statusline ./cmd/statusline; \
+		echo "    bin/statusline"; \
+	else echo "    bin/statusline (cached)"; fi
 
-# Build hook binaries
+bin-cpisi:
+	@mkdir -p bin
+	@if [ -n "$(call bin_stale,bin/cpisi,cmd/cpisi)" ]; then \
+		cd cmd/cpisi && $(GO) build $(BINFLAGS) -o ../../bin/cpisi .; \
+		echo "    bin/cpisi"; \
+	else echo "    bin/cpisi (cached)"; fi
+
+bin-dashboard: dashboard-frontend
+	@mkdir -p bin
+	@if [ -n "$(call bin_stale,bin/dashboard,dashboard pkg)" ]; then \
+		cd dashboard && $(GO) build $(BINFLAGS) -o ../bin/dashboard ./cmd/dashboard; \
+		echo "    bin/dashboard"; \
+	else echo "    bin/dashboard (cached)"; fi
+
+bin-dashboard-tui:
+	@mkdir -p bin
+	@if [ -n "$(call bin_stale,bin/dashboard-tui,dashboard/tui pkg)" ]; then \
+		cd dashboard/tui && $(GO) build $(BINFLAGS) -o ../../bin/dashboard-tui ./cmd/dashboard-tui; \
+		echo "    bin/dashboard-tui"; \
+	else echo "    bin/dashboard-tui (cached)"; fi
+
+bin-dashboard-gtk:
+	@mkdir -p bin
+	@if [ -n "$(call bin_stale,bin/dashboard-gtk,dashboard/gtk pkg)" ]; then \
+		cd dashboard/gtk && $(GO) build $(BINFLAGS) -o ../../bin/dashboard-gtk ./cmd/dashboard-gtk 2>&1 | grep -v 'gopclntab\|DT_TEXTREL\|creating DT_TEXTREL\|dashboard-gtk$$'; \
+		echo "    bin/dashboard-gtk"; \
+	else echo "    bin/dashboard-gtk (cached)"; fi
+
 bin-hooks:
-	@echo "=== Building hooks ==="
-	@cd hooks && $(MAKE) build
-	@echo "  Built: hooks/bin/*"
+	@if [ -n "$(call stale,hooks-bin,hooks pkg)" ]; then \
+		cd hooks && $(MAKE) build; \
+		touch $(BUILD_CACHE)/hooks-bin.stamp; \
+		echo "    hooks/bin/*"; \
+	else echo "    hooks/bin/* (cached)"; fi
 
-# Build system runtime command binaries
 bin-system-cmds:
-	@echo "=== Building system runtime commands ==="
 	@mkdir -p system/runtime/bin
-	@for cmd in system/runtime/cmd/*/; do \
-		name=$$(basename $$cmd); \
-		if [ -f "$$cmd$$name.go" ] || [ -f "$$cmd/main.go" ]; then \
-			(cd $$cmd && $(GO) build $(GOFLAGS) -o $(SRC_DIR)/system/runtime/bin/$$name . 2>/dev/null) && \
-			echo "  Built: system/runtime/bin/$$name"; \
-		fi; \
-	done 2>/dev/null || true
-	@echo "  System commands built to system/runtime/bin/"
+	@if [ -n "$(call stale,system-cmds,system/runtime/cmd system/runtime/lib)" ]; then \
+		echo "    Building system commands (parallel)..."; \
+		pids=""; count=0; \
+		for cmd in system/runtime/cmd/*/; do \
+			name=$$(basename $$cmd); \
+			if [ -f "$$cmd$$name.go" ] || [ -f "$$cmd/main.go" ]; then \
+				(cd $$cmd && $(GO) build $(BINFLAGS) -o $(SRC_DIR)/system/runtime/bin/$$name . 2>/dev/null) & \
+				pids="$$pids $$!"; count=$$((count+1)); \
+			fi; \
+		done; \
+		fail=0; for pid in $$pids; do wait $$pid || fail=$$((fail+1)); done; \
+		if [ $$fail -eq 0 ]; then \
+			echo "    system/runtime/bin/* ($$count commands)"; \
+			touch $(BUILD_CACHE)/system-cmds.stamp; \
+		else echo "    WARN: $$fail system command(s) failed"; fi; \
+	else echo "    system/runtime/bin/* (cached)"; fi
 
-# Build shared pkg module
-pkg:
-	@echo "=== Building pkg ==="
-	@cd pkg && $(GO) build ./...
+# Build a single system command: make sys-<name>
+# Uses bin_stale to skip if binary is already newer than sources
+sys-%:
+	@mkdir -p system/runtime/bin
+	@cmd_dir="$(SYS_CMD_DIR)/$*"; \
+	if [ ! -d "$$cmd_dir" ]; then echo "  System command not found: $*"; exit 1; fi; \
+	if [ -n "$(call bin_stale,system/runtime/bin/$*,$(SYS_CMD_DIR)/$* system/runtime/lib)" ]; then \
+		echo "  Building system/$*..."; \
+		cd "$$cmd_dir" && $(GO) build $(BINFLAGS) -o $(SRC_DIR)/system/runtime/bin/$* .; \
+		echo "    system/runtime/bin/$*"; \
+	else echo "  system/$* (cached)"; fi
 
-# Build hooks module (compile check only - bin-hooks builds binaries)
-hooks:
-	@echo "=== Building hooks module ==="
-	@cd hooks && $(GO) build ./...
+# Fast build: rsync Go source to persistent ext4 mirror, build there, copy binaries back.
+# Avoids exFAT filesystem overhead. Mirror persists across reboots (~/.cache/cpisi/source/).
+# First run rsyncs ~730MB Go source (skips 22GB data). Subsequent runs rsync only changes.
+# Usage: make fast-build  OR  make fast-sys-<name>  OR  make remote-build
+FAST_BUILD_DIR := $(HOME)/.cache/cpisi/source
 
-# Build statusline module
-statusline:
-	@echo "=== Building statusline module ==="
-	@cd statusline && $(GO) build ./...
+# Go source directories (skip data/, system/data/, divisions/, etc.)
+FAST_SYNC_INCLUDE := pkg hooks statusline dashboard cmd system/runtime system/loganalyzer \
+                     skills go.work go.sum Makefile
 
-# Build system module (runtime libraries and commands)
-# Note: system/ root is organizational only - actual code is in runtime/cmd and runtime/lib
-system:
-	@echo "=== Building system module ==="
-	@cd system/runtime/cmd && $(GO) build ./...
-	@cd system/runtime/lib && $(GO) build ./...
+fast-build:
+	@echo "  Fast build (persistent ext4 at $(FAST_BUILD_DIR))..."
+	@mkdir -p $(FAST_BUILD_DIR)
+	@rsync -a --delete \
+		--include='go.work' --include='go.sum' --include='Makefile' \
+		--include='pkg/***' --include='hooks/***' --include='statusline/***' \
+		--include='dashboard/***' --include='cmd/***' --include='system/***' \
+		--include='skills/***' \
+		--exclude='*/node_modules/***' --exclude='*/bin/***' \
+		--exclude='*' \
+		$(SRC_DIR)/ $(FAST_BUILD_DIR)/
+	@cd $(FAST_BUILD_DIR) && $(MAKE) build --no-print-directory SRC_DIR=$(FAST_BUILD_DIR)
+	@echo "  Copying binaries back..."
+	@mkdir -p bin system/runtime/bin
+	@cp -r $(FAST_BUILD_DIR)/bin/* bin/ 2>/dev/null || true
+	@cp -r $(FAST_BUILD_DIR)/system/runtime/bin/* system/runtime/bin/ 2>/dev/null || true
+	@cp -r $(FAST_BUILD_DIR)/hooks/bin/* hooks/bin/ 2>/dev/null || true
+	@echo "  Fast build complete."
 
-# Build all skills
-skills: $(addprefix skill-,$(SKILL_NAMES))
-	@echo "=== All skills built ==="
+fast-sys-%:
+	@mkdir -p system/runtime/bin
+	@cmd_dir="$(SYS_CMD_DIR)/$*"; \
+	if [ ! -d "$$cmd_dir" ]; then echo "  System command not found: $*"; exit 1; fi
+	@echo "  Fast building system/$* (ext4)..."
+	@mkdir -p $(FAST_BUILD_DIR)
+	@rsync -a --delete $(SYS_CMD_DIR)/$*/ $(FAST_BUILD_DIR)/cmd/$*/ 2>/dev/null; \
+	rsync -a --delete system/runtime/lib/ $(FAST_BUILD_DIR)/lib/ 2>/dev/null; \
+	cp system/runtime/cmd/go.mod system/runtime/cmd/go.sum $(FAST_BUILD_DIR)/cmd/ 2>/dev/null || true; \
+	cd $(FAST_BUILD_DIR)/cmd/$* && $(GO) build $(BINFLAGS) -o $(SRC_DIR)/system/runtime/bin/$* .
+	@echo "    system/runtime/bin/$*"
 
-# Pattern rule for individual skills
-skill-%:
-	@echo "=== Building skill: $* ==="
-	@if [ -d "$(SKILLS_DIR)/$*/scripts" ]; then \
-		cd $(SKILLS_DIR)/$*/scripts && $(GO) build ./...; \
-	else \
-		echo "Skill not found: $*"; \
-		exit 1; \
-	fi
+# Remote build: offload compilation to CWS server (full ext4, 428GB free).
+# Rsyncs Go source to server, builds there, pulls binaries back.
+# Usage: make remote-build  (requires: ssh cws-server works)
+REMOTE_HOST    := cws-server
+REMOTE_DIR     := ~/cpisi-build
+
+remote-build:
+	@echo "  Remote build ($(REMOTE_HOST):$(REMOTE_DIR))..."
+	@ssh $(REMOTE_HOST) 'mkdir -p $(REMOTE_DIR)'
+	@rsync -az --delete \
+		--include='go.work' --include='go.sum' --include='Makefile' \
+		--include='pkg/***' --include='hooks/***' --include='statusline/***' \
+		--include='dashboard/***' --include='cmd/***' --include='system/***' \
+		--include='skills/***' \
+		--exclude='*/node_modules/***' --exclude='*/bin/***' \
+		--exclude='*' \
+		$(SRC_DIR)/ $(REMOTE_HOST):$(REMOTE_DIR)/
+	@echo "  Building on server..."
+	@ssh $(REMOTE_HOST) 'cd $(REMOTE_DIR) && make build --no-print-directory SRC_DIR=$(REMOTE_DIR)'
+	@echo "  Pulling binaries..."
+	@mkdir -p bin system/runtime/bin hooks/bin
+	@rsync -az $(REMOTE_HOST):$(REMOTE_DIR)/bin/ bin/ 2>/dev/null || true
+	@rsync -az $(REMOTE_HOST):$(REMOTE_DIR)/system/runtime/bin/ system/runtime/bin/ 2>/dev/null || true
+	@rsync -az $(REMOTE_HOST):$(REMOTE_DIR)/hooks/bin/ hooks/bin/ 2>/dev/null || true
+	@echo "  Remote build complete."
+
+# Warm Go build cache for all modules (speeds up subsequent builds)
+cache-warm:
+	@echo "  Warming Go build cache..."
+	@echo "  [1/4] pkg..."
+	@cd pkg && $(GO) build $(NOVCS) ./... 2>/dev/null
+	@echo "  [2/4] system/runtime/lib..."
+	@cd system/runtime/lib && $(GO) build $(NOVCS) ./... 2>/dev/null
+	@echo "  [3/4] system/runtime/cmd..."
+	@cd system/runtime/cmd && $(GO) build $(NOVCS) ./... 2>/dev/null
+	@echo "  [4/4] hooks..."
+	@cd hooks && $(GO) build $(NOVCS) ./... 2>/dev/null
+	@echo "  Build cache warm. Subsequent builds will be faster."
 
 # ============================================================================
-# BODY - Install/Uninstall Targets
+# BODY — Install / Uninstall
 # ============================================================================
 
-# Full install: symlinks + binaries (with step-by-step progress)
+# Full install: build + symlinks + binaries + desktop
 install:
 	@echo ""
-	@echo "╔══════════════════════════════════════════════════════════════════╗"
-	@echo "║              CPI-SI / Claude Code Installation                   ║"
-	@echo "╚══════════════════════════════════════════════════════════════════╝"
+	@echo "  CPI-SI Installation"
+	@echo "  Source:   $(SRC_DIR)"
+	@echo "  Symlinks: $(DEPLOY_DIR)"
+	@echo "  Binaries: $(INSTALL_DIR)"
 	@echo ""
-	@echo "Source:   $(SRC_DIR)"
-	@echo "Symlinks: $(DEPLOY_DIR)"
-	@echo "Binaries: $(INSTALL_DIR)"
-	@echo ""
-	@echo "════════════════════════════════════════════════════════════════════"
-	@echo "[Step 1/5] Building shared packages..."
-	@echo "════════════════════════════════════════════════════════════════════"
+	@echo "  [1/5] Building packages..."
 	@$(MAKE) pkg --no-print-directory
-	@echo "  ✓ Packages built"
-	@echo ""
-	@echo "════════════════════════════════════════════════════════════════════"
-	@echo "[Step 2/5] Building binaries..."
-	@echo "════════════════════════════════════════════════════════════════════"
+	@echo "  [2/5] Building binaries..."
 	@$(MAKE) bin --no-print-directory
-	@echo "  ✓ Binaries built"
-	@echo ""
-	@echo "════════════════════════════════════════════════════════════════════"
-	@echo "[Step 3/5] Creating config symlinks in ~/.claude/..."
-	@echo "════════════════════════════════════════════════════════════════════"
+	@echo "  [3/5] Creating symlinks..."
 	@$(MAKE) install-symlinks --no-print-directory
-	@echo ""
-	@echo "════════════════════════════════════════════════════════════════════"
-	@echo "[Step 4/5] Installing binaries to ext4..."
-	@echo "════════════════════════════════════════════════════════════════════"
+	@echo "  [4/5] Installing binaries..."
 	@$(MAKE) install-bin-only --no-print-directory
+	@echo "  [5/5] Installing desktop entry..."
+	@$(MAKE) install-desktop --no-print-directory
 	@echo ""
-	@echo "════════════════════════════════════════════════════════════════════"
-	@echo "[Step 5/5] Verifying installation..."
-	@echo "════════════════════════════════════════════════════════════════════"
 	@$(MAKE) verify --no-print-directory
 	@echo ""
-	@echo "╔══════════════════════════════════════════════════════════════════╗"
-	@echo "║              ✓ Installation Complete!                            ║"
-	@echo "╚══════════════════════════════════════════════════════════════════╝"
-	@echo ""
-	@echo "Next: Update settings.json to reference $(INSTALL_DIR)"
-	@echo ""
+	@echo "  Installation complete."
 
-# Install binaries to ext4 (build first, then copy)
+# Build binaries then install
 install-bin: bin install-bin-only
 
-# Install binaries to ext4 (copy only, no rebuild)
+# Copy binaries to ext4 with +x
 install-bin-only:
-	@mkdir -p $(INSTALL_DIR)/bin
-	@mkdir -p $(INSTALL_DIR)/hooks/bin
-	@mkdir -p $(INSTALL_DIR)/system/bin
-	@echo ""
-	@echo "--- Main binaries ---"
-	@if [ -f "bin/statusline" ]; then \
-		cp bin/statusline $(INSTALL_DIR)/bin/; \
-		chmod +x $(INSTALL_DIR)/bin/statusline; \
-		echo "  ✓ statusline → $(INSTALL_DIR)/bin/statusline"; \
-	fi
-	@if [ -f "bin/cpisi" ]; then \
-		cp bin/cpisi $(INSTALL_DIR)/bin/; \
-		chmod +x $(INSTALL_DIR)/bin/cpisi; \
-		echo "  ✓ cpisi → $(INSTALL_DIR)/bin/cpisi"; \
-	fi
-	@echo ""
-	@echo "--- Hook binaries ---"
+	@mkdir -p $(INSTALL_DIR)/bin $(INSTALL_DIR)/hooks/bin $(INSTALL_DIR)/system/bin
+	@echo "  Main binaries:"
+	@for name in $(MAIN_BINS); do \
+		if [ -f "bin/$$name" ]; then \
+			cp "bin/$$name" "$(INSTALL_DIR)/bin/$$name"; \
+			chmod +x "$(INSTALL_DIR)/bin/$$name"; \
+			echo "    + $$name"; \
+		fi; \
+	done
+	@echo "  Hook binaries:"
 	@for hook in hooks/bin/*; do \
 		if [ -f "$$hook" ]; then \
 			name=$$(basename $$hook); \
-			cp "$$hook" $(INSTALL_DIR)/hooks/bin/; \
+			cp "$$hook" "$(INSTALL_DIR)/hooks/bin/$$name"; \
 			chmod +x "$(INSTALL_DIR)/hooks/bin/$$name"; \
-			echo "  ✓ $$name → $(INSTALL_DIR)/hooks/bin/$$name"; \
+			echo "    + $$name"; \
 		fi; \
 	done
-	@echo ""
-	@echo "--- System binaries ---"
+	@echo "  System binaries:"
 	@for cmd in system/runtime/bin/*; do \
 		if [ -f "$$cmd" ]; then \
 			name=$$(basename $$cmd); \
-			cp "$$cmd" $(INSTALL_DIR)/system/bin/; \
+			cp "$$cmd" "$(INSTALL_DIR)/system/bin/$$name"; \
 			chmod +x "$(INSTALL_DIR)/system/bin/$$name"; \
-			echo "  ✓ $$name → $(INSTALL_DIR)/system/bin/$$name"; \
 		fi; \
 	done 2>/dev/null || true
-	@echo ""
-	@echo "  ✓ Binaries installed with execute permissions"
+	@echo "    + system commands"
 
-# Install symlinks only (source/config)
+# Create symlinks from source to ~/.claude/
 install-symlinks:
-	@echo "=== Installing symlinks to $(DEPLOY_DIR) ==="
-	@echo ""
 	@mkdir -p $(DEPLOY_DIR)
-	@echo "--- Creating directory symlinks ---"
+	@echo "  Directory symlinks:"
 	@for dir in $(SYMLINK_DIRS); do \
 		if [ -d "$(SRC_DIR)/$$dir" ]; then \
-			if [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
-				rm -f "$(DEPLOY_DIR)/$$dir"; \
-			elif [ -d "$(DEPLOY_DIR)/$$dir" ]; then \
-				echo "  ⚠ Backing up existing $$dir to $$dir.bak"; \
-				mv "$(DEPLOY_DIR)/$$dir" "$(DEPLOY_DIR)/$$dir.bak"; \
-			fi; \
+			[ -L "$(DEPLOY_DIR)/$$dir" ] && rm -f "$(DEPLOY_DIR)/$$dir"; \
+			[ -d "$(DEPLOY_DIR)/$$dir" ] && mv "$(DEPLOY_DIR)/$$dir" "$(DEPLOY_DIR)/$$dir.bak"; \
 			ln -sf "$(SRC_DIR)/$$dir" "$(DEPLOY_DIR)/$$dir"; \
-			echo "  ✓ $$dir → $(SRC_DIR)/$$dir"; \
+			echo "    + $$dir"; \
 		fi; \
 	done
-	@echo ""
-	@echo "--- Creating file symlinks ---"
+	@echo "  File symlinks:"
 	@for file in $(SYMLINK_FILES); do \
 		if [ -f "$(SRC_DIR)/$$file" ]; then \
-			if [ -L "$(DEPLOY_DIR)/$$file" ]; then \
-				rm -f "$(DEPLOY_DIR)/$$file"; \
-			elif [ -f "$(DEPLOY_DIR)/$$file" ]; then \
-				echo "  ⚠ Backing up existing $$file to $$file.bak"; \
-				mv "$(DEPLOY_DIR)/$$file" "$(DEPLOY_DIR)/$$file.bak"; \
-			fi; \
+			[ -L "$(DEPLOY_DIR)/$$file" ] && rm -f "$(DEPLOY_DIR)/$$file"; \
+			[ -f "$(DEPLOY_DIR)/$$file" ] && mv "$(DEPLOY_DIR)/$$file" "$(DEPLOY_DIR)/$$file.bak"; \
 			ln -sf "$(SRC_DIR)/$$file" "$(DEPLOY_DIR)/$$file"; \
-			echo "  ✓ $$file → $(SRC_DIR)/$$file"; \
-		fi; \
-	done
-	@echo ""
-	@echo "=== Symlinks installed ==="
-
-# Show current symlink status
-install-status:
-	@echo "=== Symlink Status ==="
-	@echo ""
-	@echo "Target: $(DEPLOY_DIR)"
-	@echo "Source: $(SRC_DIR)"
-	@echo ""
-	@echo "Directories:"
-	@for dir in $(SYMLINK_DIRS); do \
-		if [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
-			target=$$(readlink -f "$(DEPLOY_DIR)/$$dir"); \
-			if [ "$$target" = "$(SRC_DIR)/$$dir" ]; then \
-				echo "  ✓ $$dir → $$target"; \
-			else \
-				echo "  ⚠ $$dir → $$target (not pointing to Bereshit)"; \
-			fi; \
-		elif [ -d "$(DEPLOY_DIR)/$$dir" ]; then \
-			echo "  ✗ $$dir (real directory, not symlink)"; \
-		else \
-			echo "  - $$dir (not present)"; \
-		fi; \
-	done
-	@echo ""
-	@echo "Files:"
-	@for file in $(SYMLINK_FILES); do \
-		if [ -L "$(DEPLOY_DIR)/$$file" ]; then \
-			target=$$(readlink -f "$(DEPLOY_DIR)/$$file"); \
-			if [ "$$target" = "$(SRC_DIR)/$$file" ]; then \
-				echo "  ✓ $$file → $$target"; \
-			else \
-				echo "  ⚠ $$file → $$target (not pointing to Bereshit)"; \
-			fi; \
-		elif [ -f "$(DEPLOY_DIR)/$$file" ]; then \
-			echo "  ✗ $$file (real file, not symlink)"; \
-		else \
-			echo "  - $$file (not present)"; \
+			echo "    + $$file"; \
 		fi; \
 	done
 
-# Full uninstall: symlinks + binaries
-uninstall: uninstall-symlinks uninstall-bin
-	@echo "=== Full uninstall complete ==="
-
-# Remove symlinks from ~/.claude/
-uninstall-symlinks:
-	@echo "=== Removing symlinks from $(DEPLOY_DIR) ==="
-	@for dir in $(SYMLINK_DIRS); do \
-		if [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
-			rm -f "$(DEPLOY_DIR)/$$dir"; \
-			echo "  ✓ Removed $$dir"; \
-		fi; \
-	done
-	@for file in $(SYMLINK_FILES); do \
-		if [ -L "$(DEPLOY_DIR)/$$file" ]; then \
-			rm -f "$(DEPLOY_DIR)/$$file"; \
-			echo "  ✓ Removed $$file"; \
-		fi; \
-	done
-	@echo "=== Symlinks removed ==="
-
-# Remove installed binaries from ext4
-uninstall-bin:
-	@echo "=== Removing binaries from $(INSTALL_DIR) ==="
-	@rm -rf $(INSTALL_DIR)/bin/*
-	@rm -rf $(INSTALL_DIR)/hooks/bin/*
-	@rm -rf $(INSTALL_DIR)/system/bin/*
-	@echo "=== Binaries removed ==="
-
-# Fresh install: clean stale directories and reinstall
-fresh: clean clean-stale install
-	@echo "=== Fresh installation complete ==="
-
-# Clean known stale directories from old setups
-clean-stale:
-	@echo "=== Cleaning stale directories from $(DEPLOY_DIR) ==="
-	@for dir in $(STALE_DIRS); do \
-		if [ -d "$(DEPLOY_DIR)/$$dir" ] && [ ! -L "$(DEPLOY_DIR)/$$dir" ]; then \
-			echo "  Removing stale: $$dir"; \
-			rm -rf "$(DEPLOY_DIR)/$$dir"; \
-			echo "  ✓ Removed $$dir"; \
-		elif [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
-			echo "  Removing stale symlink: $$dir"; \
-			rm -f "$(DEPLOY_DIR)/$$dir"; \
-			echo "  ✓ Removed $$dir"; \
-		fi; \
-	done
-	@echo "=== Stale cleanup complete ==="
-
-# Verify all paths, symlinks, and binaries are correct
-verify:
-	@echo "=== Verifying Claude Installation ==="
-	@echo ""
-	@echo "Source:   $(SRC_DIR)"
-	@echo "Symlinks: $(DEPLOY_DIR)"
-	@echo "Binaries: $(INSTALL_DIR)"
-	@echo ""
-	@errors=0; \
-	echo "--- Checking source directories exist ---"; \
-	for dir in $(SYMLINK_DIRS); do \
-		if [ -d "$(SRC_DIR)/$$dir" ]; then \
-			echo "  ✓ $$dir exists in source"; \
-		else \
-			echo "  ✗ $$dir MISSING in source"; \
-			errors=$$((errors + 1)); \
-		fi; \
-	done; \
-	echo ""; \
-	echo "--- Checking source files exist ---"; \
-	for file in $(SYMLINK_FILES); do \
-		if [ -f "$(SRC_DIR)/$$file" ]; then \
-			echo "  ✓ $$file exists in source"; \
-		else \
-			echo "  ✗ $$file MISSING in source"; \
-			errors=$$((errors + 1)); \
-		fi; \
-	done; \
-	echo ""; \
-	echo "--- Checking symlinks point to Bereshit ---"; \
-	for dir in $(SYMLINK_DIRS); do \
-		if [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
-			target=$$(readlink -f "$(DEPLOY_DIR)/$$dir"); \
-			if [ "$$target" = "$(SRC_DIR)/$$dir" ]; then \
-				echo "  ✓ $$dir → correct"; \
-			else \
-				echo "  ⚠ $$dir → $$target (wrong target)"; \
-				errors=$$((errors + 1)); \
-			fi; \
-		elif [ -d "$(DEPLOY_DIR)/$$dir" ]; then \
-			echo "  ✗ $$dir is real directory (should be symlink)"; \
-			errors=$$((errors + 1)); \
-		else \
-			echo "  - $$dir not installed"; \
-		fi; \
-	done; \
-	for file in $(SYMLINK_FILES); do \
-		if [ -L "$(DEPLOY_DIR)/$$file" ]; then \
-			target=$$(readlink -f "$(DEPLOY_DIR)/$$file"); \
-			if [ "$$target" = "$(SRC_DIR)/$$file" ]; then \
-				echo "  ✓ $$file → correct"; \
-			else \
-				echo "  ⚠ $$file → $$target (wrong target)"; \
-				errors=$$((errors + 1)); \
-			fi; \
-		elif [ -f "$(DEPLOY_DIR)/$$file" ]; then \
-			echo "  ✗ $$file is real file (should be symlink)"; \
-			errors=$$((errors + 1)); \
-		else \
-			echo "  - $$file not installed"; \
-		fi; \
-	done; \
-	echo ""; \
-	echo "--- Checking installed binaries (ext4) ---"; \
-	for bin in statusline cpisi; do \
-		if [ -x "$(INSTALL_DIR)/bin/$$bin" ]; then \
-			echo "  ✓ $$bin installed and executable"; \
-		elif [ -f "$(INSTALL_DIR)/bin/$$bin" ]; then \
-			echo "  ✗ $$bin exists but NOT executable"; \
-			errors=$$((errors + 1)); \
-		else \
-			echo "  - $$bin not installed"; \
-		fi; \
-	done; \
-	echo ""; \
-	echo "--- Checking hook binaries (ext4) ---"; \
-	for hook in start end stop submit pre-use post-use; do \
-		if [ -x "$(INSTALL_DIR)/hooks/bin/$$hook" ]; then \
-			echo "  ✓ $$hook installed and executable"; \
-		elif [ -f "$(INSTALL_DIR)/hooks/bin/$$hook" ]; then \
-			echo "  ✗ $$hook exists but NOT executable"; \
-			errors=$$((errors + 1)); \
-		else \
-			echo "  - $$hook not installed"; \
-		fi; \
-	done; \
-	echo ""; \
-	echo "--- Checking for stale directories ---"; \
-	for dir in $(STALE_DIRS); do \
-		if [ -d "$(DEPLOY_DIR)/$$dir" ] && [ ! -L "$(DEPLOY_DIR)/$$dir" ]; then \
-			echo "  ⚠ $$dir is stale (run: make clean-stale)"; \
-			errors=$$((errors + 1)); \
-		elif [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
-			echo "  ⚠ $$dir symlink is stale (run: make clean-stale)"; \
-			errors=$$((errors + 1)); \
-		else \
-			echo "  ✓ $$dir not present (good)"; \
-		fi; \
-	done; \
-	echo ""; \
-	echo "--- Checking Go workspace ---"; \
-	if [ -f "$(SRC_DIR)/go.work" ]; then \
-		echo "  ✓ go.work exists"; \
-		cd $(SRC_DIR) && $(GO) work sync 2>/dev/null && echo "  ✓ go.work syncs successfully" || echo "  ✗ go.work sync failed"; \
-	else \
-		echo "  ✗ go.work missing"; \
-		errors=$$((errors + 1)); \
-	fi; \
-	echo ""; \
-	if [ $$errors -eq 0 ]; then \
-		echo "=== Verification PASSED ==="; \
-	else \
-		echo "=== Verification FAILED: $$errors error(s) ==="; \
-		echo "Run 'make fresh' to fix installation"; \
+# Install .desktop file for GTK4 dashboard
+install-desktop:
+	@DESKTOP_IN="$(SRC_DIR)/dashboard/gtk/data/com.creativeworkzstudio.cpisi.dashboard.desktop.in"; \
+	if [ -f "$$DESKTOP_IN" ]; then \
+		APPS_DIR="$(HOME)/.local/share/applications"; \
+		mkdir -p "$$APPS_DIR"; \
+		sed 's|@BINDIR@|$(INSTALL_DIR)/bin|g' "$$DESKTOP_IN" \
+			| sed 's|@ICONDIR@|$(SRC_DIR)/dashboard/gtk/data|g' \
+			> "$$APPS_DIR/com.creativeworkzstudio.cpisi.dashboard.desktop"; \
+		echo "    + desktop entry"; \
 	fi
 
+install-status:
+	@echo "  Symlink status ($(DEPLOY_DIR)):"
+	@for dir in $(SYMLINK_DIRS); do \
+		if [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
+			target=$$(readlink -f "$(DEPLOY_DIR)/$$dir"); \
+			[ "$$target" = "$(SRC_DIR)/$$dir" ] && echo "    + $$dir" || echo "    ! $$dir -> $$target"; \
+		elif [ -d "$(DEPLOY_DIR)/$$dir" ]; then echo "    x $$dir (not symlink)"; \
+		else echo "    - $$dir"; fi; \
+	done
+	@for file in $(SYMLINK_FILES); do \
+		if [ -L "$(DEPLOY_DIR)/$$file" ]; then \
+			target=$$(readlink -f "$(DEPLOY_DIR)/$$file"); \
+			[ "$$target" = "$(SRC_DIR)/$$file" ] && echo "    + $$file" || echo "    ! $$file -> $$target"; \
+		elif [ -f "$(DEPLOY_DIR)/$$file" ]; then echo "    x $$file (not symlink)"; \
+		else echo "    - $$file"; fi; \
+	done
+
+uninstall: uninstall-symlinks uninstall-bin
+	@echo "  Uninstall complete"
+
+uninstall-symlinks:
+	@for dir in $(SYMLINK_DIRS); do [ -L "$(DEPLOY_DIR)/$$dir" ] && rm -f "$(DEPLOY_DIR)/$$dir"; done; true
+	@for file in $(SYMLINK_FILES); do [ -L "$(DEPLOY_DIR)/$$file" ] && rm -f "$(DEPLOY_DIR)/$$file"; done; true
+	@echo "  Symlinks removed"
+
+uninstall-bin:
+	@rm -rf $(INSTALL_DIR)/bin/* $(INSTALL_DIR)/hooks/bin/* $(INSTALL_DIR)/system/bin/*
+	@echo "  Binaries removed"
+
+fresh: clean clean-stale install
+
+clean-stale:
+	@for dir in $(STALE_DIRS); do \
+		if [ -d "$(DEPLOY_DIR)/$$dir" ] || [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
+			rm -rf "$(DEPLOY_DIR)/$$dir"; \
+			echo "    Removed stale: $$dir"; \
+		fi; \
+	done
+
 # ============================================================================
-# BODY - Test Targets
+# BODY — Verify
 # ============================================================================
 
-# Run all tests
-test: test-pkg test-hooks test-statusline test-system
+verify:
+	@echo "  Verifying CPI-SI installation..."
+	@echo ""
+	@errors=0; \
+	echo "  Source:"; \
+	for dir in $(SYMLINK_DIRS); do \
+		[ -d "$(SRC_DIR)/$$dir" ] && echo "    + $$dir" || { echo "    x $$dir MISSING"; errors=$$((errors+1)); }; \
+	done; \
+	for file in $(SYMLINK_FILES); do \
+		[ -f "$(SRC_DIR)/$$file" ] && echo "    + $$file" || { echo "    x $$file MISSING"; errors=$$((errors+1)); }; \
+	done; \
+	echo ""; \
+	echo "  Symlinks:"; \
+	for dir in $(SYMLINK_DIRS); do \
+		if [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
+			target=$$(readlink -f "$(DEPLOY_DIR)/$$dir"); \
+			[ "$$target" = "$(SRC_DIR)/$$dir" ] && echo "    + $$dir" || { echo "    ! $$dir wrong target"; errors=$$((errors+1)); }; \
+		elif [ -d "$(DEPLOY_DIR)/$$dir" ]; then echo "    x $$dir not symlink"; errors=$$((errors+1)); \
+		else echo "    - $$dir"; fi; \
+	done; \
+	for file in $(SYMLINK_FILES); do \
+		if [ -L "$(DEPLOY_DIR)/$$file" ]; then \
+			target=$$(readlink -f "$(DEPLOY_DIR)/$$file"); \
+			[ "$$target" = "$(SRC_DIR)/$$file" ] && echo "    + $$file" || { echo "    ! $$file wrong target"; errors=$$((errors+1)); }; \
+		elif [ -f "$(DEPLOY_DIR)/$$file" ]; then echo "    x $$file not symlink"; errors=$$((errors+1)); \
+		else echo "    - $$file"; fi; \
+	done; \
+	echo ""; \
+	echo "  Binaries:"; \
+	for name in $(MAIN_BINS); do \
+		if [ -x "$(INSTALL_DIR)/bin/$$name" ]; then echo "    + $$name"; \
+		elif [ -f "$(INSTALL_DIR)/bin/$$name" ]; then echo "    x $$name not executable"; errors=$$((errors+1)); \
+		else echo "    - $$name"; fi; \
+	done; \
+	echo ""; \
+	echo "  Hooks:"; \
+	for hook in start end stop submit pre-use post-use pre-compact setup request notification permission-request hooks subagent-start subagent-stop task-completed teammate-idle; do \
+		if [ -x "$(INSTALL_DIR)/hooks/bin/$$hook" ]; then echo "    + $$hook"; \
+		elif [ -f "$(INSTALL_DIR)/hooks/bin/$$hook" ]; then echo "    x $$hook not executable"; errors=$$((errors+1)); \
+		else echo "    - $$hook"; fi; \
+	done; \
+	echo ""; \
+	echo "  Stale:"; \
+	for dir in $(STALE_DIRS); do \
+		if [ -d "$(DEPLOY_DIR)/$$dir" ] || [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
+			echo "    ! $$dir is stale"; errors=$$((errors+1)); \
+		else echo "    + $$dir absent (good)"; fi; \
+	done; \
+	echo ""; \
+	echo "  Workspace:"; \
+	if [ -f "$(SRC_DIR)/go.work" ]; then \
+		echo "    + go.work exists"; \
+		cd $(SRC_DIR) && $(GO) work sync 2>/dev/null && echo "    + go.work syncs" || { echo "    x go.work sync failed"; errors=$$((errors+1)); }; \
+	else echo "    x go.work missing"; errors=$$((errors+1)); fi; \
+	echo ""; \
+	if [ $$errors -eq 0 ]; then echo "  === Verification PASSED ==="; \
+	else echo "  === FAILED: $$errors error(s) ==="; echo "  Run 'make fresh' to fix"; fi
+
+# ============================================================================
+# BODY — Test
+# ============================================================================
+
+test: test-pkg test-hooks test-statusline test-system test-dashboard test-dashboard-tui test-dashboard-gtk
 	@echo "=== All tests passed ==="
 
 test-pkg:
-	@echo "=== Testing pkg ==="
+	@echo "  Testing pkg..."
 	@cd pkg && $(GO) test ./... -v
 
 test-hooks:
-	@echo "=== Testing hooks ==="
+	@echo "  Testing hooks..."
 	@cd hooks && $(GO) test ./... -v
 
 test-statusline:
-	@echo "=== Testing statusline ==="
+	@echo "  Testing statusline..."
 	@cd statusline && $(GO) test ./... -v
 
 test-system:
-	@echo "=== Testing system ==="
+	@echo "  Testing system..."
 	@cd system/runtime/cmd && $(GO) test ./... -v 2>/dev/null || true
 	@cd system/runtime/lib && $(GO) test ./... -v 2>/dev/null || true
 
+test-dashboard:
+	@echo "  Testing dashboard..."
+	@cd dashboard && $(GO) test ./... -v 2>/dev/null || true
+
+test-dashboard-tui:
+	@echo "  Testing dashboard-tui..."
+	@cd dashboard/tui && $(GO) test ./... -v 2>/dev/null || true
+
+test-dashboard-gtk:
+	@echo "  Testing dashboard-gtk..."
+	@cd dashboard/gtk && $(GO) test ./... -v 2>/dev/null || true
+
 # ============================================================================
-# BODY - Database Targets
+# BODY — Database (Multi-Domain Architecture)
 # ============================================================================
 
-DATA_DIR := data
-DB_PATH := $(DATA_DIR)/cpisi.db
-
-db-init:
-	@echo "=== Initializing database ==="
-	@mkdir -p $(DATA_DIR)
-	@if command -v sqlite3 >/dev/null 2>&1; then \
-		if [ -f "$(DATA_DIR)/schema/001_initial.sql" ]; then \
-			sqlite3 $(DB_PATH) < $(DATA_DIR)/schema/001_initial.sql && \
-			echo "Database initialized at $(DB_PATH)"; \
-		else \
-			echo "Schema file not found"; \
-		fi; \
-	else \
-		echo "sqlite3 CLI not found. Database will be initialized by Go code."; \
-	fi
-
-db-migrate:
-	@echo "=== Running database migrations ==="
-	@for f in $(DATA_DIR)/migrations/*.sql; do \
-		[ -f "$$f" ] && sqlite3 $(DB_PATH) < "$$f" && echo "Applied: $$f"; \
-	done 2>/dev/null || true
-	@echo "Migrations complete"
-
-db-status:
-	@echo "=== Database Status ==="
-	@if [ -f $(DB_PATH) ]; then \
-		echo "Database: $(DB_PATH)"; \
-		echo "Size: $$(du -h $(DB_PATH) | cut -f1)"; \
-		sqlite3 $(DB_PATH) ".tables" 2>/dev/null || true; \
-	else \
-		echo "Database not initialized. Run: make db-init"; \
-	fi
-
+# Legacy single-DB targets (backward compat)
 db: db-init db-migrate
 
-# ============================================================================
-# BODY - Utility Targets
-# ============================================================================
+db-init:
+	@mkdir -p $(DATA_DIR)
+	@if [ -f "$(DATA_DIR)/schema/001_initial.sql" ]; then \
+		sqlite3 $(DB_PATH) < $(DATA_DIR)/schema/001_initial.sql && \
+		echo "  Legacy database initialized at $(DB_PATH)"; \
+	else echo "  Schema file not found"; fi
 
-# Clean build artifacts
-clean:
-	@echo "=== Cleaning build artifacts ==="
-	@rm -rf bin/
-	@cd pkg && $(GO) clean ./... 2>/dev/null || true
-	@cd hooks && $(GO) clean ./... 2>/dev/null || true
-	@cd statusline && $(GO) clean ./... 2>/dev/null || true
-	@cd system/runtime/cmd && $(GO) clean ./... 2>/dev/null || true
-	@cd system/runtime/lib && $(GO) clean ./... 2>/dev/null || true
-	@find . -name "*.test" -delete
-	@echo "Clean complete"
-
-# Format all Go code
-fmt:
-	@echo "=== Formatting Go code ==="
-	@cd pkg && $(GO) fmt ./...
-	@cd hooks && $(GO) fmt ./...
-	@cd statusline && $(GO) fmt ./...
-	@cd system/runtime/cmd && $(GO) fmt ./... 2>/dev/null || true
-	@cd system/runtime/lib && $(GO) fmt ./... 2>/dev/null || true
-
-# Run go vet
-vet:
-	@echo "=== Running go vet ==="
-	@cd pkg && $(GO) vet ./...
-	@cd hooks && $(GO) vet ./...
-	@cd statusline && $(GO) vet ./...
-	@cd system/runtime/cmd && $(GO) vet ./... 2>/dev/null || true
-	@cd system/runtime/lib && $(GO) vet ./... 2>/dev/null || true
-
-# Tidy all go.mod files
-tidy:
-	@echo "=== Tidying go.mod files ==="
-	@cd pkg && $(GO) mod tidy
-	@cd hooks && $(GO) mod tidy
-	@cd statusline && $(GO) mod tidy
-	@cd system/runtime/cmd && $(GO) mod tidy 2>/dev/null || true
-	@cd system/runtime/lib && $(GO) mod tidy 2>/dev/null || true
-	@for skill in $(SKILL_DIRS); do \
-		(cd $$skill && $(GO) mod tidy); \
+db-migrate:
+	@for f in $(DATA_DIR)/migrations/*.sql; do \
+		[ -f "$$f" ] && sqlite3 $(DB_PATH) < "$$f" && echo "  Applied: $$f"; \
 	done 2>/dev/null || true
 
+# --- Multi-domain database targets ---
+
+# Initialize all 5 domain databases
+db-init-all: $(addprefix db-init-,$(DB_DOMAINS))
+	@echo "  All domain databases initialized at $(DB_BASE_DIR)"
+
+# Initialize a single domain: make db-init-<domain>
+db-init-%: FORCE
+	@mkdir -p $(DB_BASE_DIR)
+	@schema="pkg/foundation/database/$*/schema/001_initial.sql"; \
+	if [ -f "$$schema" ]; then \
+		sqlite3 "$(DB_BASE_DIR)/$*.db" < "$$schema" && \
+		echo "    + $*.db initialized"; \
+	else echo "    x $*.db — schema not found: $$schema"; exit 1; fi
+
+FORCE:
+
+# Split legacy cpisi.db into 5 domain databases
+db-split:
+	@if [ ! -f "$(DB_PATH)" ]; then echo "  Legacy $(DB_PATH) not found"; exit 1; fi
+	@echo "  Splitting $(DB_PATH) → $(DB_BASE_DIR)/"
+	@$(MAKE) db-init-all --no-print-directory
+	@echo "  Migrating sessions data..."
+	@for table in sessions exchanges insights key_context session_events feedback_events log_imports; do \
+		count=$$(sqlite3 $(DB_PATH) "SELECT COUNT(*) FROM $$table" 2>/dev/null || echo "0"); \
+		if [ "$$count" != "0" ]; then \
+			sqlite3 $(DB_PATH) ".dump $$table" | sqlite3 "$(DB_BASE_DIR)/sessions.db" 2>/dev/null; \
+			echo "    + $$table ($$count rows)"; \
+		fi; \
+	done
+	@echo "  Migrating cognition data..."
+	@for table in choices hebrew_transitions k_align_history tool_events; do \
+		count=$$(sqlite3 $(DB_PATH) "SELECT COUNT(*) FROM $$table" 2>/dev/null || echo "0"); \
+		if [ "$$count" != "0" ]; then \
+			sqlite3 $(DB_PATH) ".dump $$table" | sqlite3 "$(DB_BASE_DIR)/cognition.db" 2>/dev/null; \
+			echo "    + $$table ($$count rows)"; \
+		fi; \
+	done
+	@echo "  Migrating growth data..."
+	@for table in detected_patterns learnings; do \
+		count=$$(sqlite3 $(DB_PATH) "SELECT COUNT(*) FROM $$table" 2>/dev/null || echo "0"); \
+		if [ "$$count" != "0" ]; then \
+			sqlite3 $(DB_PATH) ".dump $$table" | sqlite3 "$(DB_BASE_DIR)/growth.db" 2>/dev/null; \
+			echo "    + $$table ($$count rows)"; \
+		fi; \
+	done
+	@echo "  Split complete. Legacy DB preserved at $(DB_PATH)"
+	@$(MAKE) db-status --no-print-directory
+
+# Show all databases with sizes and table counts
+db-status:
+	@echo "  Domain Databases ($(DB_BASE_DIR)):"
+	@echo ""
+	@for domain in $(DB_DOMAINS); do \
+		db="$(DB_BASE_DIR)/$$domain.db"; \
+		if [ -f "$$db" ]; then \
+			size=$$(du -h "$$db" | cut -f1); \
+			tables=$$(sqlite3 "$$db" ".tables" 2>/dev/null | wc -w); \
+			echo "    $$domain.db  $$size  ($$tables tables)"; \
+		else \
+			echo "    $$domain.db  — not initialized"; \
+		fi; \
+	done
+	@echo ""
+	@if [ -f "$(DB_PATH)" ]; then \
+		echo "  Legacy: $(DB_PATH) ($$(du -h $(DB_PATH) | cut -f1))"; \
+	fi
+
 # ============================================================================
-# CLOSING - Help
+# BODY — Utilities (DRY module iteration)
+# ============================================================================
+
+clean:
+	@echo "  Cleaning..."
+	@rm -rf bin/ $(BUILD_CACHE)/
+	@for mod in $(STD_MODULES) $(SYS_MODULES); do \
+		(cd $$mod && $(GO) clean ./...) 2>/dev/null || true; \
+	done
+	@rm -rf dashboard/server/static 2>/dev/null || true
+	@find . -name "*.test" -delete 2>/dev/null || true
+	@echo "  Clean complete"
+
+# Reset build cache only (next build will recheck all sources)
+cache-clean:
+	@rm -rf $(BUILD_CACHE)/
+	@echo "  Build cache cleared"
+
+# Force rebuild everything (clear cache then build)
+force: cache-clean build
+
+fmt:
+	@echo "  Formatting..."
+	@for mod in $(STD_MODULES) $(SYS_MODULES); do \
+		(cd $$mod && $(GO) fmt ./...) 2>/dev/null || true; \
+	done
+
+vet:
+	@echo "  Vetting..."
+	@for mod in $(STD_MODULES) $(SYS_MODULES); do \
+		(cd $$mod && $(GO) vet ./...) 2>/dev/null || true; \
+	done
+
+tidy:
+	@echo "  Tidying go.mod files..."
+	@for mod in $(STD_MODULES) $(SYS_MODULES); do \
+		(cd $$mod && $(GO) mod tidy) 2>/dev/null || true; \
+	done
+	@for skill in $(SKILL_DIRS); do \
+		(cd $$skill && $(GO) mod tidy) 2>/dev/null || true; \
+	done
+
+list-skills:
+	@for skill in $(SKILL_NAMES); do echo "  $$skill"; done
+
+list-system-cmds:
+	@echo "  System commands ($(words $(SYS_CMD_NAMES))):"
+	@for cmd in $(SYS_CMD_NAMES); do echo "    $$cmd"; done
+
+# ============================================================================
+# CLOSING — Help & Setup
 # ============================================================================
 
 help:
-	@echo "Claude Production Build System (Bereshit)"
+	@echo "CPI-SI Build System"
 	@echo ""
-	@echo "This is the CANONICAL source for Claude Code / CPI-SI integration."
+	@echo "  Source:   $(SRC_DIR)"
+	@echo "  Symlinks: $(DEPLOY_DIR)"
+	@echo "  Binaries: $(INSTALL_DIR)"
+	@echo "  Data:     $(DB_BASE_DIR)"
 	@echo ""
-	@echo "Architecture:"
-	@echo "  Source (exFAT):   $(SRC_DIR)"
-	@echo "  Symlinks:         $(DEPLOY_DIR)"
-	@echo "  Binaries (ext4):  $(INSTALL_DIR)"
+	@echo "Build (all):"
+	@echo "  build              Build all modules + binaries (incremental)"
+	@echo "  bin                Build binaries only (to local bin/)"
+	@echo "  force              Force rebuild everything (ignores cache)"
 	@echo ""
-	@echo "Usage: make [target]"
+	@echo "Build (single target):"
+	@echo "  pkg                Shared packages"
+	@echo "  hooks              Hooks module"
+	@echo "  statusline         Statusline"
+	@echo "  system             All system commands"
+	@echo "  sys-<name>         One system command (e.g. sys-status)"
+	@echo "  cpisi-cli          cpisi CLI"
+	@echo "  skills             All skills"
+	@echo "  skill-<name>       One skill"
+	@echo "  dashboard          Web dashboard (Go + frontend)"
+	@echo "  dashboard-frontend TypeScript frontend only"
+	@echo "  dashboard-tui      TUI dashboard (Bubble Tea)"
+	@echo "  dashboard-gtk      GTK4 dashboard"
 	@echo ""
-	@echo "Build targets:"
-	@echo "  all, build    Build all modules and binaries (local)"
-	@echo "  bin           Build binaries to local bin/"
-	@echo "  bin-hooks     Build hook binaries"
-	@echo "  pkg           Build shared pkg module"
-	@echo "  hooks         Build hooks module"
-	@echo "  statusline    Build statusline module"
-	@echo "  system        Build system runtime module"
-	@echo "  skills        Build all skills"
-	@echo "  skill-<name>  Build specific skill"
+	@echo "Install:"
+	@echo "  install            Full (build + symlinks + binaries + desktop)"
+	@echo "  install-bin        Build + deploy binaries to ext4"
+	@echo "  install-bin-only   Deploy existing binaries (no rebuild)"
+	@echo "  install-symlinks   Create symlinks in ~/.claude/"
+	@echo "  install-desktop    Install GTK4 .desktop entry"
+	@echo "  install-status     Show symlink status"
+	@echo "  uninstall          Remove everything"
+	@echo "  fresh              Clean + full reinstall"
+	@echo "  verify             Check installation integrity"
 	@echo ""
-	@echo "Install targets:"
-	@echo "  install         Full install: symlinks + binaries to ext4"
-	@echo "  install-bin     Install binaries to ext4 (with exec permissions)"
-	@echo "  install-symlinks Create symlinks in ~/.claude/"
-	@echo "  install-status  Show current symlink status"
-	@echo "  uninstall       Remove symlinks and installed binaries"
-	@echo "  uninstall-bin   Remove installed binaries only"
-	@echo "  fresh           Clean and full reinstall (recommended)"
-	@echo "  verify          Check symlinks and binary permissions"
-	@echo "  clean-stale     Remove known stale directories"
+	@echo "Test:"
+	@echo "  test               Run all tests"
+	@echo "  test-<module>      Test one module (pkg, hooks, statusline, etc.)"
 	@echo ""
-	@echo "Test targets:"
-	@echo "  test          Run all tests"
-	@echo "  test-pkg      Test pkg module"
-	@echo "  test-hooks    Test hooks module"
-	@echo "  test-statusline Test statusline module"
-	@echo "  test-system   Test system module"
+	@echo "Database (multi-domain):"
+	@echo "  db-init-all        Initialize all 5 domain databases"
+	@echo "  db-init-<domain>   Initialize one (sessions, cognition, growth, temporal, projects)"
+	@echo "  db-split           Migrate legacy cpisi.db → 5 domain databases"
+	@echo "  db-status          Show all databases with sizes"
 	@echo ""
-	@echo "Database targets:"
-	@echo "  db            Initialize and migrate database"
-	@echo "  db-init       Initialize database schema"
-	@echo "  db-migrate    Run pending migrations"
-	@echo "  db-status     Show database status"
+	@echo "Database (legacy):"
+	@echo "  db                 Init + migrate legacy cpisi.db"
 	@echo ""
-	@echo "Utility targets:"
-	@echo "  clean         Clean build artifacts"
-	@echo "  fmt           Format all Go code"
-	@echo "  vet           Run go vet on all modules"
-	@echo "  tidy          Tidy all go.mod files"
-	@echo "  help          Show this help"
+	@echo "Utilities:"
+	@echo "  clean              Clean build artifacts + cache"
+	@echo "  cache-clean        Reset build cache only"
+	@echo "  fmt                Format all Go code"
+	@echo "  vet                Run go vet"
+	@echo "  tidy               Tidy go.mod files"
+	@echo "  list-skills        List available skills"
+	@echo "  list-system-cmds   List system commands"
 	@echo ""
-	@echo "Quick start:"
-	@echo "  make fresh    # Full clean install"
-	@echo "  make verify   # Check everything is working"
+	@echo "Fast (ext4 build — bypasses exFAT overhead):"
+	@echo "  fast-build         Persistent mirror to ~/.cache/cpisi/, build there"
+	@echo "  fast-sys-<name>    Fast build one system command"
+	@echo "  remote-build       Build on CWS server via SSH (full ext4)"
 	@echo ""
-	@echo "Step-by-step install:"
-	@echo "  make setup    # Interactive setup guide"
+	@echo "Cache:"
+	@echo "  cache-warm         Pre-compile all deps (speeds up single-target builds)"
+	@echo "  cache-clean        Reset build cache only"
+	@echo ""
+	@echo "Builds are incremental — unchanged modules skip."
+	@echo "Use 'make force' to bypass, 'make cache-warm' after fresh clone."
+	@echo "Use 'make fast-build' for cold builds (persistent ext4 mirror)."
+	@echo "Use 'make remote-build' to offload builds to CWS server."
+	@echo ""
+	@echo "Quick start:  make fresh"
+	@echo "CLI:          cpisi help  (after first install)"
 
-# Interactive setup guide
 setup:
 	@echo ""
-	@echo "╔══════════════════════════════════════════════════════════════════╗"
-	@echo "║           CPI-SI / Claude Code Installation Guide                ║"
-	@echo "╚══════════════════════════════════════════════════════════════════╝"
+	@echo "  CPI-SI Setup Guide"
 	@echo ""
-	@echo "This will set up Claude Code with CPI-SI integration."
+	@echo "  1. make build          Compile all modules"
+	@echo "  2. make install-symlinks  Link config to ~/.claude/"
+	@echo "  3. make install-bin    Deploy binaries to ext4"
+	@echo "  4. make verify         Check everything"
 	@echo ""
-	@echo "Architecture:"
-	@echo "  • Source code lives in Bereshit (can be on exFAT)"
-	@echo "  • Config symlinks go to ~/.claude/"
-	@echo "  • Binaries install to ~/.local/share/claude/ (must be ext4)"
+	@echo "  Or: make fresh         Do it all at once"
 	@echo ""
-	@echo "────────────────────────────────────────────────────────────────────"
-	@echo "Step 1: Build all modules"
-	@echo "────────────────────────────────────────────────────────────────────"
-	@echo "  make build"
-	@echo ""
-	@echo "  This compiles:"
-	@echo "    • pkg/          - Shared Go packages"
-	@echo "    • hooks/        - Session and tool lifecycle hooks"
-	@echo "    • statusline/   - Status line binary"
-	@echo "    • system/       - System runtime commands"
-	@echo "    • skills/       - Skill implementations"
-	@echo ""
-	@echo "────────────────────────────────────────────────────────────────────"
-	@echo "Step 2: Create config symlinks"
-	@echo "────────────────────────────────────────────────────────────────────"
-	@echo "  make install-symlinks"
-	@echo ""
-	@echo "  Creates symlinks in ~/.claude/ pointing to:"
-	@echo "    $(SRC_DIR)"
-	@echo ""
-	@echo "  Symlinked: agents, commands, config, docs, hooks, output-styles,"
-	@echo "             pkg, plans, rules, skills, statusline, system, workflow,"
-	@echo "             CLAUDE.md, settings.json, etc."
-	@echo ""
-	@echo "────────────────────────────────────────────────────────────────────"
-	@echo "Step 3: Install binaries to ext4"
-	@echo "────────────────────────────────────────────────────────────────────"
-	@echo "  make install-bin"
-	@echo ""
-	@echo "  Copies compiled binaries to $(INSTALL_DIR)"
-	@echo "  and sets execute permissions."
-	@echo ""
-	@echo "  Why ext4? exFAT doesn't support Unix permissions."
-	@echo "  Binaries need +x to be executable."
-	@echo ""
-	@echo "────────────────────────────────────────────────────────────────────"
-	@echo "Step 4: Update settings.json"
-	@echo "────────────────────────────────────────────────────────────────────"
-	@echo "  Ensure settings.json references the ext4 binary paths:"
-	@echo ""
-	@echo "    hooks:      ~/.local/share/claude/hooks/bin/"
-	@echo "    statusLine: ~/.local/share/claude/bin/statusline"
-	@echo ""
-	@echo "────────────────────────────────────────────────────────────────────"
-	@echo "Step 5: Verify installation"
-	@echo "────────────────────────────────────────────────────────────────────"
-	@echo "  make verify"
-	@echo ""
-	@echo "  Checks:"
-	@echo "    • Source directories exist"
-	@echo "    • Symlinks point correctly"
-	@echo "    • Binaries are installed and executable"
-	@echo "    • Go workspace syncs"
-	@echo ""
-	@echo "════════════════════════════════════════════════════════════════════"
-	@echo ""
-	@echo "Or run everything at once:"
-	@echo "  make fresh"
-	@echo ""
-	@echo "════════════════════════════════════════════════════════════════════"
-
-# List available skills
-list-skills:
-	@for skill in $(SKILL_NAMES); do echo $$skill; done
+	@echo "  After install, use: cpisi <command>"
+	@echo "  Run: cpisi help"

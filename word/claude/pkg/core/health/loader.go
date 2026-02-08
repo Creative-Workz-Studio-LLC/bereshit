@@ -443,7 +443,7 @@ func defaultDisplayConfig() DisplayConfig {
 // This loader is the FRAMEWORK for the health system:
 //   - ANCHOR: pkg/foundation/schema/config/l2/health/*.toml
 //   - FRAMEWORK: This loader (you are here)
-//   - RUNTIME: config/health/runtime/*.jsonc
+//   - RUNTIME: data/output/ (structured output destination)
 //
 // Change the TOML → everything that uses this loader gets new values.
 // The loader stays stable. The config is where change happens.
