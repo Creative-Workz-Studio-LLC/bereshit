@@ -7,8 +7,8 @@
  *  — Colossians 4:6
  */
 
-import type { BuildConfig } from '../config/types.js';
-import type { BuildEvent } from '../publish/types.js';
+import type { BuildConfig } from '../../config/types.js';
+import type { BuildEvent } from '../../publish/types.js';
 
 // =============================================================================
 // Display Types

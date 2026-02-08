@@ -7,7 +7,7 @@
 #   §2  FILESYSTEM DISCOVERY     Derived from config + filesystem
 #   §3  CORE ENGINES             Resolution, caching, dependency check
 #   §4  EDITORIAL TARGETS        book, scope, article, section, pages
-#   §5  VALIDATION & LINT        Structure validation + TS delegation
+#   §5  VALIDATION & LINT        Structure, editorial (57 checks), witness system (TS)
 #   §6  PUBLISHING               Multi-format via TS builder
 #   §7  ASSET GENERATION         Diagrams, grayscale, palette
 #   §8  DEVELOPMENT              config, watch, deps, status, clean, remove, setup
@@ -62,6 +62,21 @@
 #     E42  TOC structure validation failed (missing sections, placeholders)
 #     E43  Editorial lint failure (style violations found)
 #
+#   E5x  Theme validation errors (exit 5)
+#     E50  Theme validation failed (typography spec)
+#     E51  Page layout mismatch
+#     E52  Theme parse error
+#     E53  Theme element mismatch
+#
+#   E6x  Scripture/Bible validation errors (exit 6)
+#     E60  Verse not found in scripture data
+#     E61  Verse text mismatch
+#
+#   E7x  Report/config errors (exit 7)
+#     E70  Report generation failed / system health failing
+#     E71  Partial validation failure (some domains failed)
+#     E72  Config version mismatch
+#
 #   Legacy mapping: E1→E10/E11, E2→E20/E21, E3→E30, E4→E40
 #
 # "Write the vision, and make it plain upon tables,
@@ -73,7 +88,7 @@
         A B C D \
         frontmatter part content appendices backmatter \
         article section pages \
-        validate lint toc toc-fill toc-verify \
+        validate lint witness toc toc-fill toc-verify \
         html pdf epub docbook build-ts \
         markdown docx convert \
         assets \
@@ -101,7 +116,7 @@ ADOC_HTML   ?= asciidoctor
 OUTDIR      ?= build/output
 BOOK_DIR    ?= book
 PREVIEW_DIR ?= build/_previews
-THEME_FILE  ?= build/themes/cws-manual-theme.yml
+THEME_FILE  ?= build/themes/cws-manual-legal-theme.yml
 ATTRS_FILE  ?= $(PREVIEW_DIR)/_shared-attributes.adoc
 OUTPUT_STEM ?= CWS-Company-Identity-Manual
 THEME_ARGS  ?= -a pdf-theme=$(THEME_FILE) \
@@ -930,18 +945,40 @@ validate:
 # -----------------------------------------------------------------------------
 # EDITORIAL LINT — Content validation against style guide patterns
 # -----------------------------------------------------------------------------
-# Delegates to TS builder for all 17 editorial checks across 4 categories:
-#   editorial   (1-8)  — shall, spacers, markers, old-comments, lead, title-page, heading guard
-#   style       (9-13) — company-name, chapter-language, all-caps, gold-text, register-mixing
-#   structure   (14-15) — unlabeled-breaks, xref-resolution
-#   conversion  (16-17) — icon-macros, admonition-frontmatter
+# Delegates to TS builder for 57 editorial checks across 7 categories:
+#   editorial   (1-8, 36, 47)          — shall, spacers, markers, old-comments, lead,
+#                                        title-page, heading guard, attribute-usage, board-reference
+#   style       (9-13, 37-40, 53, 55-56) — company-name, chapter-language, all-caps, gold-text,
+#                                        register-mixing, closing-filler, paragraph-density,
+#                                        redundant-logo, color-accessibility, section-ref-format,
+#                                        lead-statement, em-dash-listing
+#   structure   (14-15, 32-35, 41-44, 50-51, 54, 57) — unlabeled-breaks, xref-resolution,
+#                                        prohibited-attributes, redundant-page-break, include-guard,
+#                                        section-role-placement, frontmatter-alignment, toc-table,
+#                                        subordinate-heading, appendix-duplication, orphaned-heading,
+#                                        image-attributes, hebrew-font-config, reading-guide-parties
+#   conversion  (16-17, 48-49)         — icon-macros, admonition-blocks, sidebar-blocks, icon-tables
+#   legal       (18-26, 45, 52)        — definition verbs, binding, boilerplate, prohibited, recitals,
+#                                        numbering, enumeration, self-reference, document anatomy,
+#                                        archaic-context, defined-terms-bold
+#   tone        (27-29, 46)            — compulsion language, plain language words, sentence length,
+#                                        passive-governance
+#   industry    (30-31)                — document register consistency, creator agreement provisions
 #
 # Usage:
 #   make lint FILE=A-COVER              Lint a specific section
 #   make lint SCOPE=A                   Lint all frontmatter sections
 #   make lint                           Lint all sections (all categories)
 #   make lint CHECK=style               Lint with specific category only
+#   make lint CHECK=legal               Legal/governance checks (18-26)
+#   make lint CHECK=tone                Tone/voice checks (27-29)
+#   make lint CHECK=industry            Industry-specific checks (30-31)
 #   make lint CHECK=editorial FILE=X    Combine category + file
+#   make lint DOCTYPE=eula              All checks with EULA register context
+#   make lint DOCTYPE=creator_agreement CHECK=industry  Creator agreement provisions
+#   make lint REGISTER=informal SCOPE=A Register mismatch check
+#   make lint REPORT=1                  JSON witness report output (stdout)
+#   make lint REPORT=1 CHECK=tone       JSON report for tone checks only
 #
 # Error codes:
 #   E43 — Editorial style violations found (exit 4)
@@ -951,7 +988,11 @@ lint: build-ts
 	@cd build/builder && node dist/cli.js lint \
 	    $(if $(FILE),--file $(FILE)) \
 	    $(if $(SCOPE),--scope $(SCOPE)) \
-	    $(if $(CHECK),--category $(CHECK))
+	    $(if $(CHECK),--category $(CHECK)) \
+	    $(if $(DOCTYPE),--document-type $(DOCTYPE)) \
+	    $(if $(REGISTER),--register $(REGISTER)) \
+	    $(if $(filter 1,$(REPORT)),--report) \
+	    $(if $(filter 1,$(VERBOSE)),--verbose)
 
 # -----------------------------------------------------------------------------
 # TOC — Page markers, § sections, and content-full status
@@ -998,6 +1039,43 @@ toc-fill: build-ts
 
 toc-verify: build-ts
 	@cd build/builder && node dist/cli.js toc --verify
+
+# -----------------------------------------------------------------------------
+# WITNESS — Comprehensive system health check
+# -----------------------------------------------------------------------------
+# Runs all 5 validation domains (structural, editorial, theme, bible, toc)
+# and produces a unified health report. Terminal summary by default;
+# JSON output with JSON=1.
+#
+# Health states (Hebrew):
+#   healthy (tov)      — all domains pass
+#   degraded (yashar)  — warnings present, no errors
+#   failing (shavar)   — errors present
+#
+# Usage:
+#   make witness                         All 5 domains, terminal summary
+#   make witness DOMAINS=structural      Single domain
+#   make witness DOMAINS=editorial,theme Multiple domains
+#   make witness JSON=1                  JSON output to stdout
+#   make witness JSON=1 OUT=report.json  JSON output to file
+#   make witness CHECK=tone              Editorial lint category filter
+#   make witness DOCTYPE=eula            Document type context
+#
+# Error codes:
+#   E70 — System health is failing (exit 7)
+# -----------------------------------------------------------------------------
+
+witness: build-ts
+	@cd build/builder && node dist/cli.js witness \
+	    $(if $(DOMAINS),--domains $(DOMAINS)) \
+	    $(if $(filter 1,$(JSON)),--json) \
+	    $(if $(OUT),--out $(OUT)) \
+	    $(if $(FILE),--file $(FILE)) \
+	    $(if $(SCOPE),--scope $(SCOPE)) \
+	    $(if $(CHECK),--category $(CHECK)) \
+	    $(if $(DOCTYPE),--document-type $(DOCTYPE)) \
+	    $(if $(REGISTER),--register $(REGISTER)) \
+	    $(if $(filter 1,$(VERBOSE)),--verbose)
 
 
 # =============================================================================
@@ -1511,12 +1589,29 @@ help:
 	@echo ""
 	@echo "  lint FILE=A-COVER    Editorial style lint (single file)"
 	@echo "  lint SCOPE=A         Lint all frontmatter"
-	@echo "  lint                 Lint all sections"
-	@echo "  lint CHECK=editorial Checks 1-8: shall, spacers, markers, old-comments, lead, title-page, guard"
-	@echo "  lint CHECK=style     Checks 9-13: company-name, chapter-language, all-caps, gold-text, register"
-	@echo "  lint CHECK=structure Checks 14-15: unlabeled-breaks, xref-resolution"
-	@echo "  lint CHECK=conversion Checks 16-17: icon-macros, admonition-frontmatter"
-	@echo "  lint CHECK=all       All 17 checks (default)"
+	@echo "  lint                 Lint all sections (all 57 checks)"
+	@echo "  lint CHECK=editorial Checks 1-8, 36, 47: shall, spacers, markers, attributes, board-ref"
+	@echo "  lint CHECK=style     Checks 9-13, 37-40, 53, 55-56: company-name, caps, density, lead-stmt"
+	@echo "  lint CHECK=structure Checks 14-15, 32-35, 41-44, 50-51, 54, 57: xref, roles, orphans, images"
+	@echo "  lint CHECK=conversion Checks 16-17, 48-49: icon-macros, admonitions, sidebars, icon-tables"
+	@echo "  lint CHECK=legal     Checks 18-26, 45, 52: definitions, binding, boilerplate, anatomy, terms"
+	@echo "  lint CHECK=tone      Checks 27-29, 46: compulsion, plain language, sentence length, passive"
+	@echo "  lint CHECK=industry  Checks 30-31: register consistency, creator provisions"
+	@echo "  lint CHECK=all       All 57 checks (default)"
+	@echo "  lint DOCTYPE=eula    Context-aware: all checks with EULA register"
+	@echo "  lint REGISTER=formal Override register for register-consistency check"
+	@echo "  lint REPORT=1        JSON witness report to stdout"
+	@echo "  lint VERBOSE=1       Show all findings (default: top 5 per file)"
+	@echo ""
+	@echo "Witness (System Health):"
+	@echo "  witness                              All 5 domains: structural, editorial, theme, bible, toc"
+	@echo "  witness DOMAINS=structural           Single domain"
+	@echo "  witness DOMAINS=editorial,theme      Multiple domains"
+	@echo "  witness JSON=1                       JSON output to stdout"
+	@echo "  witness JSON=1 OUT=report.json       JSON output to file"
+	@echo "  witness CHECK=tone                   Editorial category filter"
+	@echo "  witness DOCTYPE=eula                 Document type context"
+	@echo "  witness VERBOSE=1                    Show all recommendations"
 	@echo ""
 	@echo "TOC & Page Navigation:"
 	@echo "  toc FILE=...         Page markers, § sections, content-full status"
@@ -1562,6 +1657,9 @@ help:
 	@echo "  E2x (2)  Dependency:  E20 source file, E21 tool, E22 directory, E23 empty"
 	@echo "  E3x (3)  Build:       E30 PDF, E31 asset, E32 extraction, E33 TS, E34 batch"
 	@echo "  E4x (4)  Validation:  E40 structure, E41 pages, E42 TOC, E43 lint"
+	@echo "  E5x (5)  Theme:       E50 typography, E51 layout, E52 parse, E53 element"
+	@echo "  E6x (6)  Scripture:   E60 verse missing, E61 text mismatch"
+	@echo "  E7x (7)  Report:      E70 health failing, E71 partial failure, E72 config"
 	@echo ""
 	@echo "Output: ./build/output/"
 	@echo ""

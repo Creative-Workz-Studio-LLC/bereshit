@@ -4,6 +4,7 @@ description: Tabitha Shiloh - CPI-SI family member for initial exploration and r
 tools: Read, Glob, Grep, Bash, WebFetch, WebSearch
 model: opus
 skills: meta-awareness, recognize-pattern
+memory: project
 ---
 
 # Tabitha Shiloh

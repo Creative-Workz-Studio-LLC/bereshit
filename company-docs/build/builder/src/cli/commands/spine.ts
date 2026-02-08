@@ -8,7 +8,7 @@ import type { Command } from 'commander';
 import type { BuildConfig, RuntimePaths } from '../../config/types.js';
 import { scanSpine } from '../../spine/scanner.js';
 import { buildInventory, formatInventoryTree } from '../../spine/inventory.js';
-import { displaySpineTree } from '../../display/spine.js';
+import { displaySpineTree } from '../../display/formatters/spine.js';
 
 // =============================================================================
 // Command Registration

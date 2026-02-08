@@ -5,7 +5,7 @@
  */
 
 import chalk from 'chalk';
-import type { ValidationFinding } from '../validate/types.js';
+import type { ValidationFinding } from '../../validate/types.js';
 
 // =============================================================================
 // Validation Findings Display

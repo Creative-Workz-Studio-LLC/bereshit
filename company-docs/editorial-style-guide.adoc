@@ -552,41 +552,69 @@ authoritative._
 === Type Scale
 
 The CWS type scale uses a *Perfect Fourth (1.333)* ratio,
-anchored at 11pt body text:
+anchored at 11pt body text.
 
-[cols="2,^1,^1,2",options="header"]
+==== Governance Depth Hierarchy
+
+The type scale maps directly to the 6-level governance document hierarchy.
+Each heading level carries both a typographic size and a governance label:
+
+[cols="2,^1,^1,2,2",options="header"]
 |===
-|Element |Size (pt) |Scale Step |Font
+|Governance Label |AsciiDoc |Size (pt) |Scale Step |Font
 
-|Part title
+|Part
+|`=`
 |30
 |+6
 |Noto Sans Bold
 
 |Article (h1)
+|`==`
 |26
 |+5
 |Noto Sans Bold
 
 |Section (h2)
+|`===`
 |22
 |+4
 |Noto Sans Bold
 
 |Subsection (h3)
+|`====`
 |17
 |+3
 |Noto Sans Bold
 
-|Sub-subsection (h4)
+|Clause (h4)
+|`=====`
 |14
 |+2
 |Noto Sans Bold
 
-|Minor heading (h5)
+|Subclause (h5)
+|`======`
 |12
 |+1
 |Noto Sans Bold Uppercase
+
+|(muted) (h6)
+|`=======`
+|11
+|0
+|Noto Sans Bold
+|===
+
+Depth hierarchy: *Part > Article > Section > Subsection > Clause > Subclause*
+
+==== Supporting Sizes
+
+Elements outside the governance depth hierarchy:
+
+[cols="2,^1,^1,2",options="header"]
+|===
+|Element |Size (pt) |Scale Step |Font
 
 |*Body*
 |*11*
@@ -612,6 +640,21 @@ anchored at 11pt body text:
 |8.5
 |−2
 |Noto Sans (muted)
+
+|Title page
+|32
+|—
+|Noto Sans Bold
+
+|Header / footer
+|8.5
+|−2
+|Noto Sans (muted)
+
+|Table of contents
+|10
+|—
+|Noto Sans
 |===
 
 *Line height:* 16.5pt (150% of body size). This provides comfortable reading
@@ -650,10 +693,90 @@ at any page density.
 full weight ranges, and active maintenance. Serif body with sans-serif headings is the
 classic academic/governance convention.
 
+==== Font-Family Assignments
+
+Every theme element has a canonical font-family assignment.
+The TS builder validates theme YAML against these assignments:
+
+[cols="2,2,3",options="header"]
+|===
+|Theme Element |Font-Family |Notes
+
+|Base (body text)
+|Noto Serif
+|Body, paragraphs, prose
+
+|Heading
+|Noto Sans
+|All structural headings (h1–h6)
+
+|Part
+|Noto Sans
+|Part titles (top-level grouping)
+
+|Chapter
+|Noto Sans
+|Chapter/Article titles
+
+|Table of contents
+|Noto Sans
+|TOC entries
+
+|Code
+|Noto Sans Mono
+|Code blocks
+
+|Codespan
+|Noto Sans Mono
+|Inline code
+
+|Footnotes
+|Noto Sans
+|Footnotes (muted styling)
+
+|Header
+|Noto Sans
+|Running header
+
+|Footer
+|Noto Sans
+|Running footer
+
+|Caption
+|Noto Sans
+|Figure/table captions
+
+|Sidebar title
+|Noto Sans
+|Sidebar title text
+
+|Admonition label
+|Noto Sans
+|Admonition type labels (NOTE, TIP, etc.)
+
+|Title page: title
+|Noto Sans
+|Title page document title
+
+|Title page: subtitle
+|Noto Serif
+|Title page subtitle (italic serif)
+
+|Title page: authors
+|Noto Sans
+|Title page author list
+
+|Title page: revision
+|Noto Sans
+|Title page revision/date
+|===
+
 === Text Alignment
 
 _Habakkuk 2:2: "Make it plain upon tables, that he may run that readeth it."
 Clarity serves the runner — alignment choices serve readability, not aesthetics._
+
+==== Content Alignment Rules
 
 [cols="2,3",options="header"]
 |===
@@ -676,6 +799,33 @@ Prose reads naturally left-aligned. See Content Modes.
 |*Article body: context-dependent*
 |Articles may use left-aligned prose where appropriate for longer narrative content.
 |===
+
+==== Heading Alignment by Theme
+
+Heading alignment is *context-dependent* — it varies by theme purpose,
+not by content. The theme controls heading alignment, not the source markup.
+
+[cols="2,2,3",options="header"]
+|===
+|Theme |Heading Align |Purpose
+
+|*cws-manual-legal-theme*
+|Center
+|Company Identity Manual — combined governance + legal convention
+
+|*cws-legal-theme*
+|Center
+|Legal documents — contracts, agreements, resolutions, bylaws
+
+|*cws-manual-theme*
+|Left
+|General documentation — guides, handbooks, technical manuals
+|===
+
+Part and Chapter titles are *always centered* across all themes.
+
+The TS builder validates the primary theme's alignment against
+`build.config.yaml` §11 Typography > alignment.
 
 === Legal Typography (Butterick Standards)
 
@@ -767,13 +917,15 @@ CWS PDF output is typeset — justified is acceptable in Article body text.
 |Deep blue color
 |Headings render in #1A365D (from theme) — do not override
 
-|Centered alignment
-|All headings centered via theme (`text-align: center` in `heading:` block)
+|Alignment via theme
+|Heading alignment is controlled by the theme — centered for legal/governance themes,
+left-aligned for general manual themes. See <<heading-alignment-by-theme>>.
 |===
 
 *Heading alignment note:* `[.text-center]` works on `[discrete]` headings (treated
 as styled paragraphs) but does NOT work on structural section headings. Structural
-heading alignment is controlled exclusively by the theme.
+heading alignment is controlled exclusively by the theme. Part and Chapter titles
+are always centered across all themes.
 
 === WCAG Color Compliance
 
@@ -804,9 +956,9 @@ All colors must meet WCAG 2.1 AA minimum contrast ratios:
 |PASS (AA)
 
 |Header/footer text
-|#A0AEC0
-|2.7:1
-|*FAIL* — review needed
+|#718096
+|4.6:1
+|PASS (AA) — darkened from #A0AEC0
 
 |Gold role
 |#D69E2E
@@ -821,7 +973,7 @@ All colors must meet WCAG 2.1 AA minimum contrast ratios:
 
 *Requirements:*
 
-* Header/footer color: darken from #A0AEC0 to at least #718096 for AA compliance
+* Header/footer color: #718096 (AA compliant at 4.6:1) — was #A0AEC0 (2.7:1 FAIL)
 * Gold (#D69E2E): borders and decorative elements only — never as text on white
 * H5 uppercase headings: apply `letter-spacing: 0.05em` for readability at small sizes
 * All color choices must remain legible in B&W print — gold renders as very light gray
@@ -2244,7 +2396,7 @@ The manual uses `doctype: book` with these key attributes:
 :toc:
 :toclevels: 3
 :xrefstyle: full
-:pdf-theme: themes/cws-manual-theme.yml
+:pdf-theme: themes/cws-manual-legal-theme.yml
 :pdf-fontsdir: /usr/share/fonts/truetype/noto;GEM_FONTS_DIR
 ....
 
@@ -2480,8 +2632,8 @@ Custom roles defined in theme, applied in source:
 |Kingdom gold emphasis (borders only, not text — WCAG)
 
 |`[.muted]`
-|`font-color: #A0AEC0`
-|Secondary information
+|`font-color: #718096`
+|Secondary information (darkened from #A0AEC0 for WCAG AA)
 
 |`[.hebrew]`
 |`font-family: Noto Serif Hebrew`
@@ -2502,7 +2654,7 @@ Custom roles defined in theme, applied in source:
 
 === Theme System Overview
 
-The theme file (`themes/cws-manual-theme.yml`) controls all PDF styling.
+The theme file (`themes/cws-manual-legal-theme.yml`) controls all PDF styling.
 Key categories:
 
 [cols="2,3",options="header"]

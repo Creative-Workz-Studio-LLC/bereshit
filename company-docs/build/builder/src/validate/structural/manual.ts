@@ -9,8 +9,8 @@
  * Maps to Makefile's `validate TYPE=manual` layer.
  */
 
-import type { SpineTree } from '../spine/types.js';
-import type { ValidationFinding } from './types.js';
+import type { SpineTree } from '../../spine/types.js';
+import type { ValidationFinding } from '../types.js';
 
 // =============================================================================
 // Manual Type Validation

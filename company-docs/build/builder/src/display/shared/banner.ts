@@ -5,7 +5,7 @@
  */
 
 import chalk from 'chalk';
-import type { BuildConfig } from '../config/types.js';
+import type { BuildConfig } from '../../config/types.js';
 
 // =============================================================================
 // Banner

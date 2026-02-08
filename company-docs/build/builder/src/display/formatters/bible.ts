@@ -5,7 +5,7 @@
  */
 
 import chalk from 'chalk';
-import type { BibleValidationResult } from '../validate/bible.js';
+import type { BibleValidationResult } from '../../validate/bible/index.js';
 
 // =============================================================================
 // Bible Validation Display

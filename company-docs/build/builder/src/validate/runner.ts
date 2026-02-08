@@ -11,7 +11,7 @@
  */
 
 import { join } from 'path';
-import type { RuntimePaths } from '../config/types.js';
+import type { RuntimePaths, TypographyConfig, PageLayoutConfig } from '../config/types.js';
 import type { SpineTree } from '../spine/types.js';
 import { scanSpine } from '../spine/scanner.js';
 import type {
@@ -20,10 +20,21 @@ import type {
   ValidationFinding,
   ValidationSeverity,
 } from './types.js';
-import { validateBase, type BaseValidationPaths } from './base.js';
-import { validateManual } from './manual.js';
-import { validateManualL } from './manual-l.js';
-import { validateOperational } from './operational.js';
+import { validateBase, type BaseValidationPaths } from './structural/base.js';
+import { validateManual } from './structural/manual.js';
+import { validateManualL } from './structural/manual-l.js';
+import { validateOperational } from './structural/operational.js';
+import {
+  validateThemeFontSizes,
+  validateThemeFontFamilies,
+  validateThemeAlignment,
+  validateLegalTypography,
+  validateThemeColors,
+  validateThemeRoles,
+  validateThemeStyles,
+  validatePageLayout,
+  validateThemeElements,
+} from './theme/index.js';
 
 // =============================================================================
 // Validation Runner
@@ -35,7 +46,9 @@ import { validateOperational } from './operational.js';
  */
 export async function runValidation(
   paths: RuntimePaths,
-  options: ValidationOptions = {}
+  options: ValidationOptions = {},
+  typography?: TypographyConfig,
+  pageLayout?: PageLayoutConfig,
 ): Promise<ValidationResult> {
   const startTime = Date.now();
   const findings: ValidationFinding[] = [];
@@ -43,12 +56,29 @@ export async function runValidation(
   // Compute validation paths
   const basePaths: BaseValidationPaths = {
     bookDir: paths.bookDir,
-    themeFile: join(paths.sourceDir, 'themes', 'cws-manual-theme.yml'),
+    themeFile: join(paths.sourceDir, 'themes', 'cws-manual-legal-theme.yml'),
     attrsFile: join(paths.sourceDir, '_previews', '_shared-attributes.adoc'),
   };
 
   // Layer 1: Base (always runs)
   findings.push(...validateBase(basePaths));
+
+  // Layer 1b: Theme typography (runs when typography config is available)
+  if (typography) {
+    findings.push(...validateThemeFontSizes(basePaths.themeFile, typography));
+    findings.push(...validateThemeFontFamilies(basePaths.themeFile, typography));
+    findings.push(...validateThemeAlignment(basePaths.themeFile, typography));
+    findings.push(...validateLegalTypography(basePaths.themeFile, typography));
+    findings.push(...validateThemeColors(basePaths.themeFile, typography));
+    findings.push(...validateThemeRoles(basePaths.themeFile, typography));
+    findings.push(...validateThemeStyles(basePaths.themeFile, typography));
+    findings.push(...validateThemeElements(basePaths.themeFile, typography));
+  }
+
+  // Layer 1c: Page layout (runs when page_layout config is available)
+  if (pageLayout) {
+    findings.push(...validatePageLayout(basePaths.themeFile, pageLayout));
+  }
 
   // Scan spine (needed for type and bonus layers)
   let tree: SpineTree | undefined;

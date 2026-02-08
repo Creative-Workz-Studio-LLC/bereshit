@@ -9,6 +9,9 @@
  *   E2x — Dependency (files, tools, paths)
  *   E3x — Build (compilation, rendering, extraction)
  *   E4x — Validation (structural, editorial, data)
+ *   E5x — Theme (typography, page layout, elements)
+ *   E6x — Scripture (verse lookup, text matching)
+ *   E7x — Report (witness generation, config drift)
  *
  * "Surely the Lord GOD will do nothing, but he revealeth
  *  his secret unto his servants the prophets." — Amos 3:7
@@ -18,8 +21,8 @@
 // Error Code Definitions
 // =============================================================================
 
-/** Error categories matching Makefile exit code groups. */
-export type ErrorCategory = 'usage' | 'dependency' | 'build' | 'validation';
+/** Error categories matching exit code groups. */
+export type ErrorCategory = 'usage' | 'dependency' | 'build' | 'validation' | 'theme' | 'scripture' | 'report';
 
 /** Error severity levels. */
 export type ErrorSeverity = 'error' | 'warn' | 'info';
@@ -35,7 +38,13 @@ export type ErrorCode =
   // Build errors (exit 3)
   | 'E30' | 'E31' | 'E32' | 'E33' | 'E34'
   // Validation errors (exit 4)
-  | 'E40' | 'E41' | 'E42' | 'E43';
+  | 'E40' | 'E41' | 'E42' | 'E43'
+  // Theme validation errors (exit 5)
+  | 'E50' | 'E51' | 'E52' | 'E53'
+  // Scripture/Bible validation errors (exit 6)
+  | 'E60' | 'E61'
+  // Report/config management errors (exit 7)
+  | 'E70' | 'E71' | 'E72';
 
 /** Metadata for each error code. */
 interface ErrorCodeDef {
@@ -86,6 +95,21 @@ export const ERROR_CODES: Record<ErrorCode, ErrorCodeDef> = {
   E41: { code: 'E41', label: 'Page validation failed', category: 'validation', exitCode: 4, severity: 'error', description: 'Page marker gaps, missing banners, sequence errors' },
   E42: { code: 'E42', label: 'TOC validation failed', category: 'validation', exitCode: 4, severity: 'error', description: 'TOC structure issues (missing sections, placeholders)' },
   E43: { code: 'E43', label: 'Lint failure',          category: 'validation', exitCode: 4, severity: 'warn',  description: 'Editorial style violations found' },
+
+  // Theme validation errors (exit 5)
+  E50: { code: 'E50', label: 'Theme validation failed',   category: 'theme',     exitCode: 5, severity: 'error', description: 'Theme YAML fails typography spec validation' },
+  E51: { code: 'E51', label: 'Page layout mismatch',      category: 'theme',     exitCode: 5, severity: 'error', description: 'Theme page layout diverges from config spec' },
+  E52: { code: 'E52', label: 'Theme parse error',         category: 'theme',     exitCode: 5, severity: 'error', description: 'Theme YAML cannot be parsed' },
+  E53: { code: 'E53', label: 'Theme element mismatch',    category: 'theme',     exitCode: 5, severity: 'warn',  description: 'Theme element settings diverge from spec' },
+
+  // Scripture/Bible validation errors (exit 6)
+  E60: { code: 'E60', label: 'Verse not found',           category: 'scripture', exitCode: 6, severity: 'error', description: 'Cited verse not found in scripture data' },
+  E61: { code: 'E61', label: 'Verse text mismatch',       category: 'scripture', exitCode: 6, severity: 'warn',  description: 'Cited text differs from canonical scripture' },
+
+  // Report/config management errors (exit 7)
+  E70: { code: 'E70', label: 'Report generation failed',  category: 'report',    exitCode: 7, severity: 'error', description: 'Witness report could not be generated' },
+  E71: { code: 'E71', label: 'Partial validation failure', category: 'report',   exitCode: 7, severity: 'warn',  description: 'Some validation domains failed to run' },
+  E72: { code: 'E72', label: 'Config version mismatch',   category: 'report',    exitCode: 7, severity: 'warn',  description: 'Config version does not match builder version' },
 };
 
 // =============================================================================

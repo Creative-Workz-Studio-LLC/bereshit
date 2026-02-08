@@ -189,7 +189,42 @@ export {
   displayTocCheckResult,
   displaySpineTree,
   displayAssetReport,
+  displayWitnessReport,
 } from './display/index.js';
+
+// =============================================================================
+// Witness (Unified System Observation)
+// =============================================================================
+
+export type {
+  SystemHealth,
+  DomainHealth,
+  ActiveHealth,
+  DomainName,
+  WitnessMetadata,
+  DomainSummary,
+  DomainResult,
+  StructuralDomainResult,
+  EditorialDomainResult,
+  ThemeDomainResult,
+  ThemeFileResult,
+  BibleDomainResult,
+  TocDomainResult,
+  SkippedDomainResult,
+  Recommendation,
+  WitnessReport,
+  WitnessOptions,
+} from './witness/index.js';
+
+export {
+  WITNESS_SCHEMA_VERSION,
+  ALL_DOMAINS,
+  WitnessCollector,
+  generateRecommendations,
+  serializeWitnessReport,
+  writeWitnessReport,
+  runWitness,
+} from './witness/index.js';
 
 // =============================================================================
 // Error Handling

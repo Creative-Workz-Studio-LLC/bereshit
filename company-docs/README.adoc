@@ -1,7 +1,7 @@
 = CWS Company Identity Manual — Build System
 :author: Seanje Lenox-Wise & Nova Dawn
 :revdate: 2026-02-07
-:revnumber: 3.0.0
+:revnumber: 5.2.0
 :toc: macro
 :toclevels: 3
 :icons: font
@@ -28,7 +28,10 @@ Built with GNU Make and https://docs.asciidoctor.org/asciidoctor/latest/[Asciido
 * Four editorial build scopes (book, part, article, section)
 * Unified 3-mode path resolution on all scoped targets
 * Layered validation with legal hierarchy enforcement
+* 57-check editorial lint across 7 categories (editorial, style, structure, conversion, legal, tone, industry)
+* Theme validation against typographic and page-layout standards
 * Editorial watch mode for live PDF rebuild
+* Five PDF themes (manual-legal, manual, legal, plain, informal)
 * Letter-based spine and section naming throughout
 
 
@@ -158,10 +161,14 @@ build/
     C-appendices-preview.adoc
     D-backmatter-preview.adoc
   _drafts/                       # Markdown drafts (source material)
-  builder/                       # TypeScript builder (multi-format publishing)
+  builder/                       # TypeScript builder (publishing + editorial lint)
   output/                        # Generated PDFs (gitignored)
   themes/
-    cws-manual-theme.yml         # PDF theme (fonts, colors, layout)
+    cws-manual-legal-theme.yml   # Primary: governance docs (manual + legal)
+    cws-manual-theme.yml         # Manuals without legal structure
+    cws-legal-theme.yml          # Pure legal documents (contracts, EULA)
+    cws-plain-theme.yml          # Clean minimal (internal memos)
+    cws-informal-theme.yml       # Conversational (guides, onboarding)
 ----
 
 
@@ -292,7 +299,7 @@ Always runs. Checks that the minimum file structure exists:
 
 * `book/book.adoc` — master assembly file
 * Spine folders: `A-frontmatter/`, `B-content/`, `C-appendices/`, `D-backmatter/`
-* Theme file (`build/themes/cws-manual-theme.yml`)
+* Theme file (`build/themes/cws-manual-legal-theme.yml`)
 * Shared attributes file (`build/_previews/_shared-attributes.adoc`)
 
 
@@ -403,16 +410,33 @@ The TypeScript builder also provides structural and editorial tools:
 
 [source,bash]
 ----
+# Structure & inventory
 cws-build spine              # Show book structure tree
 cws-build inventory          # Show book parts list
 cws-build validate           # Validate book structure
 cws-build assets             # Generate derived assets (same pipeline as Makefile)
-cws-build lint               # 17 editorial checks in 4 categories
+
+# Editorial lint — 57 checks across 7 categories
+cws-build lint               # All 57 checks on all files
+cws-build lint --file F      # Lint a single file
+cws-build lint --scope A     # Lint a scope (A-frontmatter, B-content, etc.)
+cws-build lint --category C  # Filter by category (editorial, style, structure,
+                             #   conversion, legal, tone, industry)
+cws-build lint --tone        # Shorthand for --category tone
+cws-build lint --industry    # Shorthand for --category industry
 cws-build lint --bible       # Bible verse validation (KJV/WEB)
-cws-build toc                # TOC page structure
+cws-build lint --toc         # TOC page marker validation
+
+# TOC pipeline
+cws-build toc                # Parse and display TOC structure
 cws-build toc --fill         # Fill page number placeholders
 cws-build toc --verify       # Check page numbers against computed
-cws-build config --validate  # Validate config structure
+
+# Configuration management
+cws-build config             # Show resolved configuration
+cws-build config --validate  # Validate all 18 config sections
+cws-build config --types     # Generate TypeScript types from YAML
+cws-build config --make      # Regenerate config.mk from YAML
 ----
 
 
@@ -445,6 +469,18 @@ for quick identification. Make reports the recipe exit code in its
 |*E4*
 |Validation failure
 |Structure checks found errors (`validate` target only)
+
+|*E10–E19*
+|Config errors
+|Missing config file, invalid YAML, required section absent
+
+|*E20–E29*
+|Validation errors
+|Structure validation failures (builder `validate` command)
+
+|*E30–E39*
+|Editorial lint
+|Lint check failures (57 checks across 7 categories)
 |===
 
 
@@ -511,14 +547,20 @@ make deps
 |*Backmatter*
 |3 files (Acknowledgments, Colophon, Contact)
 
-|*Theme*
+|*Themes*
+|5 PDF themes (manual-legal, manual, legal, plain, informal)
+
+|*Typography*
 |Noto Serif body, Noto Sans headings, Noto Serif Hebrew fallback
 
 |*Base Style*
 |Chicago Manual of Style, 18th Edition
 
-|*Build Tool*
-|Asciidoctor PDF 2.3.24
+|*Build Tools*
+|Asciidoctor PDF 2.3.24 (editorial) + TypeScript builder 5.2.0 (publishing + lint)
+
+|*Editorial Lint*
+|57 checks across 7 categories (config 5.2.0)
 |===
 
 
@@ -528,7 +570,8 @@ make deps
 * `page-index.adoc` — Page-by-page editorial reference
 * `book/book.adoc` — Master assembly file
 * `book/00-assets/README.adoc` — Asset Catalog (29-page visual reference)
-* `build/build.config.yaml` — Shared configuration for both build systems
-* `build/themes/cws-manual-theme.yml` — PDF theme configuration
+* `build/build.config.yaml` — Shared configuration (18 sections, v5.2.0)
+* `build/themes/` — 5 PDF themes (manual-legal, manual, legal, plain, informal)
 * `build/_previews/_shared-attributes.adoc` — Common document attributes
 * `build/builder/README.adoc` — TypeScript builder documentation
+* `config.mk` — Auto-generated Makefile variables from build.config.yaml

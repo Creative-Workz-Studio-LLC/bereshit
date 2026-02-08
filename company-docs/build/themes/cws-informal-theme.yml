@@ -1,0 +1,555 @@
+# =============================================================================
+# CWS INFORMAL — PDF THEME
+# =============================================================================
+#
+# CreativeWorkzStudio LLC
+# Theme ID: cws-informal-theme
+#
+# "Write the vision, and make it plain upon tables,
+#  that he may run that readeth it." — Habakkuk 2:2
+#
+# -----------------------------------------------------------------------------
+# PURPOSE
+# -----------------------------------------------------------------------------
+# Informal theme for internal memos, community guidelines, and warm
+# relational documents. Prioritizes approachability and speed of reading.
+#
+# Key differences from manual theme:
+#   - Sans-serif body (Noto Sans — informal, approachable)
+#   - Smaller margins (0.75in all sides — more content space)
+#   - Left-aligned headings
+#   - Minimal header/footer (company name only)
+#   - No confidential marking
+#   - Lighter, more open feel
+#
+# DOCUMENT TYPES: internal_memo, community_guidelines
+# REGISTER: informal, warm
+# SPECIFICATION SOURCE: Editorial Style Guide (CWS-GDE-001) §Tone & Voice
+#
+# -----------------------------------------------------------------------------
+# FONT STACK (Guide §Typography > Font Stack)
+# -----------------------------------------------------------------------------
+#   Body:     Noto Sans       — clean, approachable (informal override)
+#   Headings: Noto Sans       — matches body for cohesion
+#   Code:     Noto Sans Mono  — monospace, technical
+#   Hebrew:   Noto Serif Hebrew — fallback for biblical text
+#   Symbol:   M+ 1p Fallback  — glyph coverage
+#
+# -----------------------------------------------------------------------------
+# COLOR PALETTE (Guide §Typography > WCAG Color Compliance)
+# -----------------------------------------------------------------------------
+#   Deep Blue    #1A365D — Authority, trust          (12.1:1 — AAA)
+#   Medium Blue  #2B6CB0 — Links, interactive
+#   Forest Green #276749 — Growth, stewardship
+#   Gold         #D69E2E — Borders/decorative ONLY   (3.2:1 — FAIL on text)
+#   Text         #2D2D2D — Body text                 (14.5:1 — AAA)
+#   Lead/Quote   #4A5568 — Lead text, quotes         (7.4:1  — AAA)
+#   Secondary    #718096 — Muted, footers             (4.6:1  — AA)
+#   Light Gray   #E2E8F0 — Borders, dividers
+#   Soft BG      #F7FAFC — Sidebar, code backgrounds
+#
+# WCAG 2.1 AA: 4.5:1 normal text, 3:1 large text.
+# Gold (#D69E2E) MUST NOT be used as text color on white.
+#
+# -----------------------------------------------------------------------------
+# VERSION
+# -----------------------------------------------------------------------------
+# Version: 1.0.0
+# Authors: Nova Dawn, Seanje Lenox-Wise
+# Updated: 2026-02-07
+# Derived from: cws-manual-theme v1.0.0
+# =============================================================================
+
+extends: default
+
+
+# =============================================================================
+# 1. FONT CATALOG
+# =============================================================================
+# Guide §Typography > Font Stack
+# =============================================================================
+
+font:
+  catalog:
+    merge: true
+
+    # --- Body: Noto Serif ---
+    Noto Serif:
+      normal: NotoSerif-Regular.ttf
+      bold: NotoSerif-Bold.ttf
+      italic: NotoSerif-Italic.ttf
+      bold_italic: NotoSerif-BoldItalic.ttf
+
+    # --- Headings: Noto Sans ---
+    Noto Sans:
+      normal: NotoSans-Regular.ttf
+      bold: NotoSans-Bold.ttf
+      italic: NotoSans-Italic.ttf
+      bold_italic: NotoSans-BoldItalic.ttf
+
+    # --- Code: Noto Sans Mono ---
+    Noto Sans Mono:
+      normal: NotoSansMono-Regular.ttf
+      bold: NotoSansMono-Bold.ttf
+      italic: NotoSansMono-Regular.ttf
+      bold_italic: NotoSansMono-Bold.ttf
+
+    # --- Hebrew: Noto Serif Hebrew (biblical text fallback) ---
+    Noto Serif Hebrew:
+      normal: NotoSerifHebrew-Regular.ttf
+      bold: NotoSerifHebrew-Bold.ttf
+      italic: NotoSerifHebrew-Regular.ttf
+      bold_italic: NotoSerifHebrew-Bold.ttf
+
+    # --- Symbol: Built-in fallback ---
+    M+ 1p Fallback: GEM_FONTS_DIR/mplus1p-regular-fallback.ttf
+
+  fallbacks:
+    - Noto Serif Hebrew
+    - M+ 1p Fallback
+
+
+# =============================================================================
+# 2. PAGE LAYOUT
+# =============================================================================
+# Guide §Page Layout > Margins and Spacing
+# =============================================================================
+
+page:
+  layout: portrait
+  size: Letter                   # 8.5 x 11 in
+  margin: [0.75in, 0.75in, 0.75in, 0.75in]   # Tighter margins — more content space
+  background-color: #FFFFFF
+
+
+# =============================================================================
+# 3. BASE TYPOGRAPHY
+# =============================================================================
+# Guide §Typography > Type Scale
+# Anchor: 11pt body, sans-serif for informal documents
+# =============================================================================
+
+base:
+  font-family: Noto Sans         # Sans-serif — approachable, informal
+  font-color: #2D2D2D            # 14.5:1 — AAA
+  font-size: 11                  # Standard body size
+  line-height-length: 16.5       # 150% of body size
+  line-height: $base-line-height-length / $base-font-size
+  font-size-large: round($base-font-size * 1.25)   # ~14pt
+  font-size-small: round($base-font-size * 0.85)   # ~9pt
+  font-size-min: $base-font-size * 0.75
+  border-color: #E2E8F0
+  border-width: 0.5
+
+vertical-spacing: 12
+
+
+# =============================================================================
+# 4. HEADINGS
+# =============================================================================
+# Guide §Typography > Type Scale + §Typography > Headings
+# Informal theme: LEFT-aligned (standard for memos and guidelines)
+# Depth: Part(=) > Article(==) > Section(===) > Subsection(====) > Clause(=====) > Subclause(======)
+# =============================================================================
+
+heading:
+  font-family: Noto Sans
+  font-color: #1A365D            # 12.1:1 — AAA
+  font-style: bold
+  text-align: left               # Left-aligned for general manuals
+  line-height: 1.2
+  margin-top: 18
+  margin-bottom: 10
+  min-height-after: 0.5in        # Orphan prevention
+
+  # Article (h1) — == — Scale step +5, 26pt
+  h1:
+    font-size: 26
+    margin-top: 0
+    margin-bottom: 14
+
+  # Section (h2) — === — Scale step +4, 22pt
+  h2:
+    font-size: 22
+    margin-top: 24
+    margin-bottom: 12
+
+  # Subsection (h3) — ==== — Scale step +3, 17pt
+  h3:
+    font-size: 17
+    margin-top: 18
+    margin-bottom: 8
+
+  # Clause (h4) — ===== — Scale step +2, 14pt
+  h4:
+    font-size: 14
+    font-style: bold
+    margin-top: 14
+    margin-bottom: 6
+
+  # Subclause (h5) — ====== — Scale step +1, 12pt UPPERCASE
+  h5:
+    font-size: 12
+    font-style: bold
+    text-transform: uppercase
+    letter-spacing: 0.05em
+    margin-top: 12
+    margin-bottom: 4
+
+  # (muted) (h6) — ======= — Body size
+  h6:
+    font-size: $base-font-size
+    font-style: bold
+    font-color: #4A5568
+
+
+# =============================================================================
+# 5. TITLE PAGE
+# =============================================================================
+
+title-page:
+  background-color: #FFFFFF
+  font-color: #1A365D
+  text-align: center
+  logo:
+    image: image:cws-logo.png[pdfwidth=2in]
+    top: 5%
+    align: center
+  title:
+    font-family: Noto Sans
+    font-color: #1A365D
+    font-size: 32
+    font-style: bold
+    line-height: 1.1
+    top: 40%
+    margin-bottom: 8
+  subtitle:
+    font-family: Noto Serif
+    font-color: #4A5568
+    font-size: 18
+    font-style: italic
+    line-height: 1.3
+    margin-top: 8
+  authors:
+    font-family: Noto Sans
+    font-color: #718096
+    font-size: 12
+    font-style: normal
+    margin-top: 24
+  revision:
+    font-family: Noto Sans
+    font-color: #718096
+    font-size: 10
+    font-style: normal
+    margin-top: 8
+
+
+# =============================================================================
+# 6. TABLE OF CONTENTS
+# =============================================================================
+
+toc:
+  font-family: Noto Sans
+  font-size: 10
+  font-color: #2D2D2D
+  line-height: 1.6
+  indent: 16
+  dot-leader:
+    font-color: #CBD5E0
+    content: '. '
+    levels: 2 3
+
+  h1-font-color: #1A365D
+  h1-font-style: bold
+  h1-font-size: 13
+
+  h2-font-color: #2D3748
+  h2-font-style: bold
+  h2-font-size: 11
+
+  h3-font-color: #4A5568
+  h3-font-style: normal
+  h3-font-size: 10
+
+
+# =============================================================================
+# 7. RUNNING CONTENT — HEADERS & FOOTERS
+# =============================================================================
+# Minimal: company name and page number only — no ceremony
+# =============================================================================
+
+running_content:
+  start_at: 2
+
+header:
+  height: 0.5in
+  font-family: Noto Sans
+  font-size: 8
+  font-color: #718096
+  line-height: 1
+  border-width: 0                # No header border — informal feel
+  recto:
+    right:
+      content: '{company-name}'
+  verso:
+    left:
+      content: '{company-name}'
+
+footer:
+  height: 0.5in
+  font-family: Noto Sans
+  font-size: 8
+  font-color: #718096
+  line-height: 1
+  border-color: #E2E8F0
+  border-width: 0.25
+  recto:
+    right:
+      content: '{page-number}'
+  verso:
+    left:
+      content: '{page-number}'
+
+
+# =============================================================================
+# 8. CONTENT ELEMENTS — PARAGRAPHS & TEXT
+# =============================================================================
+
+prose:
+  margin-bottom: $vertical-spacing
+
+lead:
+  font-size: $base-font-size-large
+  line-height: 1.4
+  font-color: #4A5568
+
+abstract:
+  font-size: $base-font-size-large
+  font-style: italic
+  font-color: #4A5568
+
+link:
+  font-color: #2B6CB0
+
+
+# =============================================================================
+# 9. CONTENT ELEMENTS — BLOCKQUOTE & SCRIPTURE
+# =============================================================================
+
+quote:
+  font-size: $base-font-size
+  font-style: italic
+  font-color: #4A5568
+  border-color: #D69E2E
+  border-width: 3
+  padding: [0, 0, 0, 12]
+  cite:
+    font-size: $base-font-size-small
+    font-color: #718096
+    font-style: normal
+
+
+# =============================================================================
+# 10. CONTENT ELEMENTS — TABLES
+# =============================================================================
+
+table:
+  font-size: $base-font-size
+  border-color: #CBD5E0
+  border-width: 0.5
+  grid-color: #E2E8F0
+  grid-width: $table-border-width
+  cell-padding: [5, 8, 5, 8]
+
+  head:
+    font-family: Noto Sans
+    font-style: bold
+    font-color: #FFFFFF
+    background-color: #1A365D
+    border-bottom-width: 1.25
+    border-bottom-color: #2C5282
+
+  body:
+    background-color: #FFFFFF
+    stripe-background-color: #F7FAFC
+
+  foot:
+    font-style: bold
+    font-color: #2D3748
+    background-color: #EDF2F7
+
+
+# =============================================================================
+# 11. CONTENT ELEMENTS — LISTS
+# =============================================================================
+
+list:
+  indent: $base-font-size * 1.5
+  item-spacing: 6                 # Guide §List Conventions: at least 0.5em
+  marker-font-color: #1A365D
+
+description-list:
+  term-font-style: bold
+  term-font-color: #2D3748
+  description-indent: $base-font-size * 2
+
+
+# =============================================================================
+# 12. CONTENT ELEMENTS — CODE
+# =============================================================================
+
+code:
+  font-family: Noto Sans Mono
+  font-color: #2D3748
+  font-size: 9.5
+  padding: 12
+  line-height: 1.45
+  background-color: #F7FAFC
+  border-color: #E2E8F0
+  border-radius: 3
+  border-width: 0.5
+
+codespan:
+  font-family: Noto Sans Mono
+  font-color: #C53030
+  font-size: 0.9em
+  background-color: #F7FAFC
+  border-color: #E2E8F0
+  border-offset: 2
+  border-radius: 2
+  border-width: 0.5
+
+kbd:
+  font-family: $codespan-font-family
+  font-size: 0.9em
+  font-color: #2D3748
+  background-color: #EDF2F7
+  border-color: #CBD5E0
+  border-offset: 2
+  border-radius: 2
+  border-width: 0.5
+
+mark:
+  background-color: #FEFCBF
+  font-color: #2D2D2D
+  border-offset: 2
+
+
+# =============================================================================
+# 13. CONTENT ELEMENTS — ADMONITIONS
+# =============================================================================
+
+admonition:
+  font-size: $base-font-size
+  padding: [8, 12, 8, 12]
+  border-width: 0.75
+  border-radius: 3
+
+  label:
+    font-family: Noto Sans
+    font-style: bold
+    font-size: $base-font-size
+    text-transform: uppercase
+
+  icon:
+    note:
+      stroke-color: #2B6CB0
+    tip:
+      stroke-color: #276749
+    important:
+      stroke-color: #D69E2E
+    warning:
+      stroke-color: #C53030
+    caution:
+      stroke-color: #9B2C2C
+
+  column-rule-color: #E2E8F0
+  column-rule-width: 0.5
+
+
+# =============================================================================
+# 14. STRUCTURAL ELEMENTS
+# =============================================================================
+
+thematic-break:
+  border-color: #CBD5E0
+  border-width: 0.25
+  margin-top: 20
+  margin-bottom: 20
+
+sidebar:
+  background-color: #F7FAFC
+  border-color: #E2E8F0
+  border-radius: 3
+  border-width: 0.75
+  font-size: $base-font-size
+  padding: [10, 14, 10, 14]
+  title:
+    font-family: Noto Sans
+    font-style: bold
+    font-color: #1A365D
+    font-size: $base-font-size
+
+example:
+  background-color: #FFFFF0
+  border-color: #D69E2E
+  border-radius: 3
+  border-width: 0.75
+  padding: [10, 14, 10, 14]
+
+image:
+  align: center
+  border-color: #E2E8F0
+
+caption:
+  font-family: Noto Sans
+  font-style: italic
+  font-size: $base-font-size-small
+  font-color: #718096
+  align: center
+  margin-inside: 4
+
+footnotes:
+  font-family: Noto Sans
+  font-size: 8.5
+  font-color: #718096
+  item-spacing: 4
+
+
+# =============================================================================
+# 15. CUSTOM ROLES
+# =============================================================================
+
+role:
+  gold:
+    font-color: #D69E2E
+
+  muted:
+    font-color: #718096
+
+  blue:
+    font-color: #2B6CB0
+
+  green:
+    font-color: #276749
+
+  purple:
+    font-color: #6B46C1
+
+  red:
+    font-color: #C53030
+
+  hebrew:
+    font-family: Noto Serif Hebrew
+    font-color: #4A5568
+
+  big:
+    font-size: $base-font-size-large
+
+  small:
+    font-size: $base-font-size-small
+
+
+# =============================================================================
+# END OF THEME
+# =============================================================================

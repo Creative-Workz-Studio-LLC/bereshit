@@ -8,9 +8,9 @@
 import chalk from 'chalk';
 import type { Command } from 'commander';
 import type { BuildConfig, RuntimePaths } from '../../config/types.js';
-import { getBanner } from '../../display/banner.js';
-import { createEventHandler } from '../../display/progress.js';
-import { formatFileSize } from '../../display/format.js';
+import { getBanner } from '../../display/shared/banner.js';
+import { createEventHandler } from '../../display/shared/progress.js';
+import { formatFileSize } from '../../display/shared/format.js';
 import { createBuilder } from '../../publish/orchestrator.js';
 import { exitWithError, checkPrerequisites, parseFormat } from '../utils.js';
 

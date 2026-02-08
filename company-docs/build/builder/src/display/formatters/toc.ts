@@ -6,8 +6,8 @@
  */
 
 import chalk from 'chalk';
-import { sectionTypeFlag } from '../errors.js';
-import type { PageParseResult, FilePageResult, TocPipelineResult } from '../validate/pages.js';
+import { sectionTypeFlag } from '../../errors.js';
+import type { PageParseResult, FilePageResult, TocPipelineResult } from '../../validate/toc/index.js';
 
 // =============================================================================
 // TOC Parse Display

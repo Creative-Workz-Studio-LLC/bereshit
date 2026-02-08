@@ -73,6 +73,7 @@ import { registerLintCommand } from './commands/lint.js';
 import { registerTocCommand } from './commands/toc.js';
 import { registerAssetsCommand } from './commands/assets.js';
 import { registerConfigCommand } from './commands/config.js';
+import { registerWitnessCommand } from './commands/witness.js';
 
 // =============================================================================
 // Main CLI
@@ -112,6 +113,7 @@ async function main(): Promise<void> {
   registerTocCommand(program, config, paths);
   registerAssetsCommand(program, config, paths);
   registerConfigCommand(program, config, paths);
+  registerWitnessCommand(program, config, paths);
   registerBuildCommand(program, config, paths);  // Default action — must be last
 
   // Parse and route

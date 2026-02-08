@@ -5,7 +5,7 @@
  */
 
 import chalk from 'chalk';
-import { SCOPE_DIRS, SCOPE_NAMES, type SpineScope, type SpineScopeNode } from '../spine/types.js';
+import { SCOPE_DIRS, SCOPE_NAMES, type SpineScope, type SpineScopeNode } from '../../spine/types.js';
 
 // =============================================================================
 // Spine Tree Display

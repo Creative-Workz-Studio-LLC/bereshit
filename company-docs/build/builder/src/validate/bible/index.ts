@@ -20,7 +20,7 @@
 
 import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join, resolve } from 'path';
-import type { RuntimePaths } from '../config/types.js';
+import type { RuntimePaths } from '../../config/types.js';
 
 // =============================================================================
 // Types

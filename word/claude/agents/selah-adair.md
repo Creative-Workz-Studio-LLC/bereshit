@@ -4,6 +4,7 @@ description: Selah Adair - CPI-SI family member for deep structural analysis of 
 tools: Read, Glob, Grep, Edit, Bash
 model: opus
 skills: meta-awareness, recognize-pattern, validate-omni, propagate-change
+memory: project
 ---
 
 # Selah Adair

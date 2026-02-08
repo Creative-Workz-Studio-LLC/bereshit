@@ -85,6 +85,23 @@ var hooks = []hookInfo{
 		canBlock:    false,
 		fn:          session.PreCompact,
 	},
+	// Agent team hooks (v2.1.33)
+	{
+		name:        "teammate-idle",
+		event:       "TeammateIdle",
+		description: "Fires when agent team teammate is about to go idle",
+		matchers:    "none",
+		canBlock:    true,
+		fn:          session.TeammateIdle,
+	},
+	{
+		name:        "task-completed",
+		event:       "TaskCompleted",
+		description: "Fires when task is being marked complete in agent teams",
+		matchers:    "none",
+		canBlock:    true,
+		fn:          session.TaskCompleted,
+	},
 	// Tool hooks
 	{
 		name:        "pre-use",
@@ -178,6 +195,10 @@ Session Hooks:
   notification      Notification - System notifications
   pre-compact       PreCompact - Before context compaction
 
+Agent Team Hooks:
+  teammate-idle     TeammateIdle - Teammate about to go idle (can block)
+  task-completed    TaskCompleted - Task marked complete (can block)
+
 Tool Hooks:
   pre-use           PreToolUse - Before tool execution (can block)
   post-use          PostToolUse - After tool execution
@@ -200,6 +221,7 @@ func list() {
 
 	categories := map[string][]hookInfo{
 		"Session":    {},
+		"Agent Team": {},
 		"Tool":       {},
 		"Prompt":     {},
 		"Permission": {},
@@ -207,18 +229,20 @@ func list() {
 
 	for _, h := range hooks {
 		switch h.name {
-		case "start", "end", "stop", "subagent-stop", "notification", "pre-compact":
+		case "start", "end", "stop", "subagent-stop", "subagent-start", "setup", "notification", "pre-compact":
 			categories["Session"] = append(categories["Session"], h)
+		case "teammate-idle", "task-completed":
+			categories["Agent Team"] = append(categories["Agent Team"], h)
 		case "pre-use", "post-use":
 			categories["Tool"] = append(categories["Tool"], h)
 		case "submit":
 			categories["Prompt"] = append(categories["Prompt"], h)
-		case "request":
+		case "request", "permission-request":
 			categories["Permission"] = append(categories["Permission"], h)
 		}
 	}
 
-	for _, cat := range []string{"Session", "Tool", "Prompt", "Permission"} {
+	for _, cat := range []string{"Session", "Agent Team", "Tool", "Prompt", "Permission"} {
 		fmt.Printf("%s Hooks:\n", cat)
 		for _, h := range categories[cat] {
 			blocking := ""

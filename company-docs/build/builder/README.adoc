@@ -3,7 +3,7 @@
 // =============================================================================
 // Specification: editorial-style-guide.adoc (CWS-GDE-001)
 // Location:      company-docs/build/builder/
-// Version:       3.0.0
+// Version:       5.2.0
 // =============================================================================
 
 = CWS Manual Builder
@@ -19,7 +19,7 @@ CreativeWorkzStudio LLC
 :company-short: CWS
 :tagline: Building for the Kingdom to come.
 // Document Attributes
-:builder-version: 3.0.0
+:builder-version: 5.2.0
 :node-version: 20.0.0
 :url-editorial-guide: ../../../editorial-style-guide.adoc
 
@@ -103,7 +103,16 @@ validation.
 | Full editorial validation (assets, previews, naming consistency)
 
 | `cws-build lint`
-| Editorial lint — 17 checks in 4 categories (editorial, style, structure, conversion)
+| Editorial lint — 57 checks in 7 categories (editorial, style, structure, conversion, legal, tone, industry)
+
+| `cws-build lint --category C`
+| Filter by category: editorial, style, structure, conversion, legal, tone, industry
+
+| `cws-build lint --tone`
+| Shorthand for `--category tone` (covenant language, plain language, sentence length)
+
+| `cws-build lint --industry`
+| Shorthand for `--category industry` (document register, creator agreements)
 
 | `cws-build lint --bible`
 | Bible verse validation — check citations against KJV/WEB scripture data
@@ -121,7 +130,7 @@ validation.
 | Check existing page numbers against computed values
 
 | `cws-build config`
-| Inspect, validate, or regenerate derived config files
+| Inspect, validate, or regenerate derived config files (--show, --validate, --types, --make)
 
 | `cws-build assets`
 | Generate derived visual assets (diagrams, grayscale, palette)
@@ -267,9 +276,11 @@ includes `bin-links=false` to handle this automatically.
 All builder behavior is defined in `build/build.config.yaml` — the TypeScript
 code is just an executor. To change behavior, edit the config file.
 
-=== Config Sections
+=== Config Sections (18 + version)
 
-[cols="1,4",options="header",frame=all,grid=all]
+*Required* — must be present for the builder to start:
+
+[cols="2,5",options="header",frame=all,grid=all]
 |===
 | Section | Purpose
 
@@ -280,20 +291,62 @@ code is just an executor. To change behavior, edit the config file.
 | AsciiDoc attributes passed as `-a key=value` to Asciidoctor
 
 | `formats`
-| Output format definitions (command, backend, extension, install hint)
+| Output format definitions (PDF, HTML, EPUB, DocBook, manpage, Markdown, DOCX)
 
 | `watch`
 | File patterns, ignore patterns, debounce timing for watch mode
 
 | `display`
 | Banner toggle, color toggle, icon map for CLI output
+|===
+
+*Optional* — enable additional capabilities when present:
+
+[cols="2,5",options="header",frame=all,grid=all]
+|===
+| Section | Purpose
 
 | `assets`
-| Required asset files (logo, etc.) with specifications
+| Asset directories, logo catalog, figure pipeline, derived asset generation
 
-| `version`
-| Config version (currently 2.0.0)
+| `scripture`
+| Bible data path, translation list, default translation (KJV/WEB)
+
+| `paths`
+| Override computed paths (output, book, theme directories)
+
+| `scopes`
+| Named build scopes (frontmatter, appendices, backmatter) with preview files
+
+| `brand`
+| Brand color palette (deep-blue, gold, dark, light, medium-blue)
+
+| `typography`
+| Font families, sizes, scale ratio, heading depth, alignment, colors, roles, styles, legal typography, tables/lists/figures styling
+
+| `page_layout`
+| Page size, margins, header/footer height, vertical spacing, thematic breaks, heading spacing
+
+| `legal_language`
+| Obligation verbs, defined terms, construction rules, binding requirements, amendment tiers, governance notation, cross-references, recitals, numbering, enumeration, boilerplate
+
+| `industry_specific`
+| Game development (IP, EULA, three-license) and publishing house (creator agreements, governance) standards
+
+| `tone_and_voice`
+| CWS voice attributes, tone spectrum, covenant language replacements, plain language words, closing filler, paragraph density, passive voice, readability targets
+
+| `document_types`
+| Document type → register → theme mapping (governance, policy, contract, EULA, guide, etc.)
+
+| `asciidoc_publishing`
+| Prohibited attributes, section roles, include guards, page flow rules, required book attributes
+
+| `company_conventions`
+| Legal name, raw name variants, board members, contact emails, reading guide parties
 |===
+
+Config version: `5.2.0` — run `cws-build config --validate` to verify all sections.
 
 === Canonical Attribute Sources
 
@@ -467,10 +520,11 @@ builder/
 │   │       └── config.ts       # Config inspect, validate, generate
 │   │
 │   ├── config/                 # Configuration layer
-│   │   ├── types.ts            # BuildConfig, FormatConfig, RuntimePaths, all §1-10 types
+│   │   ├── types.ts            # BuildConfig, FormatConfig, RuntimePaths, all §1-18 types
 │   │   ├── loader.ts           # YAML loading, validation, path computation, query functions
 │   │   ├── gen-types.ts        # TypeScript type generator from YAML
-│   │   ├── generated-types.ts  # Auto-generated types (from gen-types)
+│   │   ├── generated-types.ts  # Auto-generated types (from gen-types, v5.2.0)
+│   │   ├── type-bridge.ts      # Compile-time drift detection (generated ↔ hand-written)
 │   │   └── index.ts            # Barrel re-exports
 │   │
 │   ├── spine/                  # Book structure discovery
@@ -479,14 +533,15 @@ builder/
 │   │   ├── inventory.ts        # Parts list builder from scan results
 │   │   └── index.ts            # Barrel re-exports
 │   │
-│   ├── validate/               # All validation (structure, editorial, Bible, pages)
+│   ├── validate/               # All validation (structure, editorial, theme, Bible, pages)
 │   │   ├── types.ts            # BookType, ValidationFinding, etc.
 │   │   ├── base.ts             # Skeleton checks (always runs)
 │   │   ├── manual.ts           # Manual type minimums
 │   │   ├── manual-l.ts         # Legal hierarchy naming
 │   │   ├── operational.ts      # Bonus editorial checks
-│   │   ├── runner.ts           # Orchestrates structural layers
-│   │   ├── editorial.ts        # 17 editorial lint checks in 4 categories
+│   │   ├── runner.ts           # Orchestrates structural + theme validation layers
+│   │   ├── editorial.ts        # 57 editorial lint checks in 7 categories
+│   │   ├── theme.ts            # Theme YAML validation (typography, colors, layout)
 │   │   ├── bible.ts            # Bible verse validation (KJV/WEB)
 │   │   ├── pages.ts            # Page markers, TOC pipeline (fill/verify)
 │   │   └── index.ts            # Barrel re-exports
@@ -516,7 +571,7 @@ builder/
 │       ├── assets-report.ts    # Asset generation results display
 │       └── index.ts            # Barrel re-exports
 │
-├── dist/                       # Compiled JavaScript (51 files, generated)
+├── dist/                       # Compiled JavaScript (53 files, generated)
 ├── node_modules/               # Dependencies (generated)
 ├── package.json                # Dependencies, scripts, metadata
 ├── tsconfig.json               # TypeScript configuration (strict mode)
@@ -538,9 +593,10 @@ builder/
   (error exit, Make delegation, format parsing) in `utils.ts`
 
 | `config/`
-| Loads `build.config.yaml` (10 sections), validates required sections,
+| Loads `build.config.yaml` (18 sections), validates required sections,
   computes runtime paths, provides query functions. Type generator
-  produces TypeScript interfaces from YAML schema
+  produces TypeScript interfaces from YAML schema. Type bridge provides
+  compile-time drift detection between generated and hand-written types
 
 | `spine/`
 | Walks the `book/` directory tree, discovers all 4 scopes (A-D), parts,
@@ -549,8 +605,9 @@ builder/
 
 | `validate/`
 | All validation: 3-layer structural (base → type → bonus),
-  17-check editorial lint (4 categories), Bible verse verification
-  (KJV/WEB), and page/TOC pipeline (fill, verify, cross-validation)
+  57-check editorial lint (7 categories), theme YAML validation
+  (typography, colors, layout), Bible verse verification (KJV/WEB),
+  and page/TOC pipeline (fill, verify, cross-validation)
 
 | `publish/`
 | Executes format builds via Asciidoctor CLI tools and pandoc pipeline.
@@ -616,14 +673,26 @@ level. Levels 4-6 exist within AsciiDoc heading structure.
 |===
 | Version | Date | Changes
 
+| 5.2.0
+| 2026-02-07
+| Full editorial coverage: 57-check lint system across 7 categories
+  (editorial, style, structure, conversion, legal, tone, industry).
+  Config expanded to 18 sections (added typography, page_layout, legal_language,
+  tone_and_voice, industry_specific, document_types, asciidoc_publishing,
+  company_conventions). Theme YAML validation (typography, colors, layout).
+  5 PDF themes (manual-legal, manual, legal, plain, informal).
+  Type bridge for compile-time drift detection between generated and
+  hand-written types. Config management: `--types` and `--make` generation.
+  Lint CLI: `--category`, `--tone`, `--industry`, `--document-type`, `--register`.
+
 | 3.0.0
 | 2026-02-07
 | Folder restructure (8 modules, 51 files). CLI split into `cli/` directory
   with per-command modules. Display formatters extracted into `display/`.
-  Added: 17-check editorial lint (4 categories), Bible verse validation,
+  Added: 31-check editorial lint (7 categories), Bible verse validation,
   TOC fill/verify pipeline, PDF cross-validation via qpdf, config management
-  command, type generator. Config aligned to build.config.yaml v3.0.0
-  (10 sections). Makefile consolidated (toc-status/toc-parse → toc).
+  command, type generator. Config aligned to build.config.yaml v3.0.0.
+  Makefile consolidated (toc-status/toc-parse → toc).
 
 | 2.0.0
 | 2026-02-06

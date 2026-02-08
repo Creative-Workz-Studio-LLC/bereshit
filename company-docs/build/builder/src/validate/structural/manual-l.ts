@@ -14,8 +14,8 @@
  * Governance hierarchy: Part > Article > Section > Subsection > Clause > Subclause
  */
 
-import type { SpineTree, SpinePart, SpineArticle } from '../spine/types.js';
-import type { ValidationFinding } from './types.js';
+import type { SpineTree, SpinePart, SpineArticle } from '../../spine/types.js';
+import type { ValidationFinding } from '../types.js';
 import { validateManual } from './manual.js';
 
 // =============================================================================

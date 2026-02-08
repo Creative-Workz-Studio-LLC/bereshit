@@ -9,7 +9,7 @@ import type { Command } from 'commander';
 import type { BuildConfig, RuntimePaths } from '../../config/types.js';
 import { generateAssets } from '../../assets/generator.js';
 import type { GenerationReport } from '../../assets/types.js';
-import { displayAssetReport } from '../../display/assets-report.js';
+import { displayAssetReport } from '../../display/formatters/assets-report.js';
 import { exitWithError } from '../utils.js';
 
 // =============================================================================

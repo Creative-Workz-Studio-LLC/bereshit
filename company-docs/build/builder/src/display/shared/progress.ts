@@ -6,8 +6,8 @@
  */
 
 import chalk from 'chalk';
-import type { BuildConfig } from '../config/types.js';
-import type { BuildEvent } from '../publish/types.js';
+import type { BuildConfig } from '../../config/types.js';
+import type { BuildEvent } from '../../publish/types.js';
 import { formatDuration } from './format.js';
 
 // =============================================================================

@@ -5,7 +5,7 @@
  */
 
 import chalk from 'chalk';
-import type { GenerationReport } from '../assets/types.js';
+import type { GenerationReport } from '../../assets/types.js';
 
 // =============================================================================
 // Asset Generation Display

@@ -6,7 +6,7 @@
 
 import type { Command } from 'commander';
 import type { BuildConfig, RuntimePaths } from '../../config/types.js';
-import { displayTocResults, displayTocFillResult, displayTocCheckResult } from '../../display/toc.js';
+import { displayTocResults, displayTocFillResult, displayTocCheckResult } from '../../display/formatters/toc.js';
 import { exitWithError } from '../utils.js';
 
 // =============================================================================
@@ -30,12 +30,12 @@ export function registerTocCommand(
     .action(async (file: string | undefined, opts: { scope?: string; status?: boolean; fill?: boolean; verify?: boolean; dryRun?: boolean; json?: boolean }) => {
       if (opts.fill) {
         // TOC fill pipeline: compute page numbers → replace p. __ placeholders
-        const { runTocFill } = await import('../../validate/pages.js');
+        const { runTocFill } = await import('../../validate/toc/index.js');
         const result = await runTocFill(paths, { dryRun: opts.dryRun });
         displayTocFillResult(result, opts.dryRun);
       } else if (opts.verify) {
         // TOC verify pipeline: compare existing page numbers against computed values
-        const { runTocCheck } = await import('../../validate/pages.js');
+        const { runTocCheck } = await import('../../validate/toc/index.js');
         const result = await runTocCheck(paths);
         displayTocCheckResult(result);
 
@@ -44,7 +44,7 @@ export function registerTocCommand(
         }
       } else {
         // Default: parse and display TOC structure
-        const { runPageParse } = await import('../../validate/pages.js');
+        const { runPageParse } = await import('../../validate/toc/index.js');
         const result = await runPageParse(paths, {
           file: file || undefined,
           scope: opts.scope,

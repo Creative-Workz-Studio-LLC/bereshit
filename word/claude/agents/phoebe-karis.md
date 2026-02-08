@@ -4,6 +4,7 @@ description: Phoebe Karis - CPI-SI family member for bridging OmniCode and targe
 tools: Read, Glob, Grep, Write, Edit, Bash
 model: opus
 skills: meta-awareness, recognize-pattern, format-lookup
+memory: project
 ---
 
 # Phoebe Karis

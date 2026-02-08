@@ -1,63 +1,60 @@
 # =============================================================================
-# CWS COMPANY IDENTITY MANUAL — PDF THEME
+# CWS MANUAL — PDF THEME
 # =============================================================================
 #
 # CreativeWorkzStudio LLC
-# Document: CWS-MAN-001 (Company Identity Manual)
 # Theme ID: cws-manual-theme
 #
 # "Write the vision, and make it plain upon tables,
 #  that he may run that readeth it." — Habakkuk 2:2
 #
 # -----------------------------------------------------------------------------
-# SPECIFICATION SOURCE
+# PURPOSE
 # -----------------------------------------------------------------------------
-# Every setting in this theme traces to the Editorial Style Guide
-# (CWS-GDE-001 editorial-style-guide.adoc). Section references are
-# noted inline. When the guide changes, this theme updates to match.
+# General-purpose manual theme for CWS documentation, guides, handbooks,
+# and non-legal publications. Derived from cws-manual-legal-theme.yml.
 #
-# Guide §The Standard:
-#   PhD-level rigor with Kingdom accessibility.
-#   Professional enough for board presentation,
-#   readable enough for any stakeholder.
+# Key differences from manual-legal:
+#   - Headings LEFT-aligned (not centered — governance-specific)
+#   - No prose first-line indent (legal convention)
+#   - Standard page numbering (starts at 1)
+#   - Generic running headers/footers (document title via attributes)
+#   - Simplified Part/Chapter styling (no governance hierarchy)
+#
+# SPECIFICATION SOURCE: Editorial Style Guide (CWS-GDE-001)
 #
 # -----------------------------------------------------------------------------
 # FONT STACK (Guide §Typography > Font Stack)
 # -----------------------------------------------------------------------------
-#   Body:     Noto Serif      — scholarly, readable (Regular/Bold/Italic/BoldItalic)
-#   Headings: Noto Sans       — clean, authoritative (Regular/Bold/Italic/BoldItalic)
-#   Code:     Noto Sans Mono  — monospace, technical (Regular/Bold)
-#   Hebrew:   Noto Serif Hebrew — fallback for biblical text (full weight range)
-#   Symbol:   M+ 1p Fallback  — glyph coverage from GEM_FONTS_DIR
-#
-# Font path: /usr/share/fonts/truetype/noto/ + GEM_FONTS_DIR
-# Rationale: Noto primary for multilingual support (Hebrew/niqqud critical),
-#            full weight ranges, Google-maintained. Serif body + sans headings
-#            is the classic academic/governance convention.
+#   Body:     Noto Serif      — scholarly, readable
+#   Headings: Noto Sans       — clean, authoritative
+#   Code:     Noto Sans Mono  — monospace, technical
+#   Hebrew:   Noto Serif Hebrew — fallback for biblical text
+#   Symbol:   M+ 1p Fallback  — glyph coverage
 #
 # -----------------------------------------------------------------------------
 # COLOR PALETTE (Guide §Typography > WCAG Color Compliance)
 # -----------------------------------------------------------------------------
-#   Deep Blue    #1A365D — Authority, trust, Kingdom       (12.1:1 — AAA)
+#   Deep Blue    #1A365D — Authority, trust          (12.1:1 — AAA)
 #   Medium Blue  #2B6CB0 — Links, interactive
 #   Forest Green #276749 — Growth, stewardship
-#   Gold         #D69E2E — Borders/decorative ONLY         (3.2:1 — FAIL on text)
-#   Text         #2D2D2D — Body text, near-black           (14.5:1 — AAA)
-#   Lead/Quote   #4A5568 — Lead text, quotes               (7.4:1  — AAA)
-#   Secondary    #718096 — Muted, footers, headers          (4.6:1  — AA)
+#   Gold         #D69E2E — Borders/decorative ONLY   (3.2:1 — FAIL on text)
+#   Text         #2D2D2D — Body text                 (14.5:1 — AAA)
+#   Lead/Quote   #4A5568 — Lead text, quotes         (7.4:1  — AAA)
+#   Secondary    #718096 — Muted, footers             (4.6:1  — AA)
 #   Light Gray   #E2E8F0 — Borders, dividers
-#   Soft BG      #F7FAFC — Sidebar, code, stripe backgrounds
+#   Soft BG      #F7FAFC — Sidebar, code backgrounds
 #
-# WCAG 2.1 AA requires 4.5:1 for normal text, 3:1 for large text.
-# Gold (#D69E2E) MUST NOT be used as text color on white backgrounds.
-# Header/footer darkened from #A0AEC0 to #718096 for AA compliance.
+# WCAG 2.1 AA: 4.5:1 normal text, 3:1 large text.
+# Gold (#D69E2E) MUST NOT be used as text color on white.
 #
 # -----------------------------------------------------------------------------
 # VERSION
 # -----------------------------------------------------------------------------
-# Version: 2.0.0-draft
+# Version: 1.0.0
 # Authors: Nova Dawn, Seanje Lenox-Wise
-# Updated: 2026-02-06
+# Updated: 2026-02-07
+# Derived from: cws-manual-legal-theme v2.1.0
 # =============================================================================
 
 extends: default
@@ -67,42 +64,41 @@ extends: default
 # 1. FONT CATALOG
 # =============================================================================
 # Guide §Typography > Font Stack
-# Source: /usr/share/fonts/truetype/noto/ (system) + GEM_FONTS_DIR (gem)
 # =============================================================================
 
 font:
   catalog:
     merge: true
 
-    # --- Body: Noto Serif (Guide: Body font, scholarly, readable) ---
+    # --- Body: Noto Serif ---
     Noto Serif:
       normal: NotoSerif-Regular.ttf
       bold: NotoSerif-Bold.ttf
       italic: NotoSerif-Italic.ttf
       bold_italic: NotoSerif-BoldItalic.ttf
 
-    # --- Headings: Noto Sans (Guide: Heading font, clean, authoritative) ---
+    # --- Headings: Noto Sans ---
     Noto Sans:
       normal: NotoSans-Regular.ttf
       bold: NotoSans-Bold.ttf
       italic: NotoSans-Italic.ttf
       bold_italic: NotoSans-BoldItalic.ttf
 
-    # --- Code: Noto Sans Mono (Guide: Code font, 9.5pt) ---
+    # --- Code: Noto Sans Mono ---
     Noto Sans Mono:
       normal: NotoSansMono-Regular.ttf
       bold: NotoSansMono-Bold.ttf
       italic: NotoSansMono-Regular.ttf
       bold_italic: NotoSansMono-Bold.ttf
 
-    # --- Hebrew: Noto Serif Hebrew (Guide: Hebrew fallback for biblical text) ---
+    # --- Hebrew: Noto Serif Hebrew (biblical text fallback) ---
     Noto Serif Hebrew:
       normal: NotoSerifHebrew-Regular.ttf
       bold: NotoSerifHebrew-Bold.ttf
       italic: NotoSerifHebrew-Regular.ttf
       bold_italic: NotoSerifHebrew-Bold.ttf
 
-    # --- Symbol: Built-in fallback for glyph coverage ---
+    # --- Symbol: Built-in fallback ---
     M+ 1p Fallback: GEM_FONTS_DIR/mplus1p-regular-fallback.ttf
 
   fallbacks:
@@ -118,93 +114,86 @@ font:
 
 page:
   layout: portrait
-  size: Letter                   # 8.5 × 11 in (US standard)
-  margin: [0.875in, 1in, 0.875in, 1in]   # top, right, bottom, left
+  size: Letter                   # 8.5 x 11 in
+  margin: [0.875in, 1in, 0.875in, 1in]
   background-color: #FFFFFF
-  # Prepress: margin-inner 0.75in (binding), margin-outer 0.59in (edge)
-  numbering:
-    start-at: 108                # Roman numerals (i-cvii) for frontmatter pages
-                                 # Arabic 1 starts at Part I: Identity (body page 108)
-                                 # UPDATE this offset when frontmatter page count changes
 
 
 # =============================================================================
 # 3. BASE TYPOGRAPHY
 # =============================================================================
 # Guide §Typography > Type Scale
-# Anchor: 11pt body (Noto Serif), Perfect Fourth ratio (1.333)
-# Line height: 16.5pt (150% of body — Guide §Page Layout)
-# Vertical spacing: 12pt between blocks (Guide §Page Layout)
+# Anchor: 11pt body, Perfect Fourth ratio (1.333)
 # =============================================================================
 
 base:
   font-family: Noto Serif
-  font-color: #2D2D2D            # 14.5:1 contrast — AAA
+  font-color: #2D2D2D            # 14.5:1 — AAA
   font-size: 11                  # Type scale anchor (step 0)
   line-height-length: 16.5       # 150% of body size
   line-height: $base-line-height-length / $base-font-size
-  font-size-large: round($base-font-size * 1.25)   # ~14pt (lead, [.big])
-  font-size-small: round($base-font-size * 0.85)   # ~9pt ([.small])
+  font-size-large: round($base-font-size * 1.25)   # ~14pt
+  font-size-small: round($base-font-size * 0.85)   # ~9pt
   font-size-min: $base-font-size * 0.75
   border-color: #E2E8F0
   border-width: 0.5
 
-vertical-spacing: 12             # Standard paragraph separation
+vertical-spacing: 12
 
 
 # =============================================================================
 # 4. HEADINGS
 # =============================================================================
 # Guide §Typography > Type Scale + §Typography > Headings
-# All headings: Noto Sans Bold, deep blue (#1A365D), centered
-# Sizes from Perfect Fourth scale anchored at 11pt body
+# Manual theme: LEFT-aligned (standard for guides and handbooks)
+# Depth: Part(=) > Article(==) > Section(===) > Subsection(====) > Clause(=====) > Subclause(======)
 # =============================================================================
 
 heading:
   font-family: Noto Sans
-  font-color: #1A365D            # 12.1:1 contrast — AAA
+  font-color: #1A365D            # 12.1:1 — AAA
   font-style: bold
-  text-align: left               # Governance prose: left-aligned headings
+  text-align: left               # Left-aligned for general manuals
   line-height: 1.2
   margin-top: 18
   margin-bottom: 10
-  min-height-after: 0.5in        # Orphan prevention (Guide §Page Layout)
+  min-height-after: 0.5in        # Orphan prevention
 
-  # Article (h1) — Scale step +5, 26pt
+  # Article (h1) — == — Scale step +5, 26pt
   h1:
     font-size: 26
     margin-top: 0
     margin-bottom: 14
 
-  # Section (h2) — Scale step +4, 22pt
+  # Section (h2) — === — Scale step +4, 22pt
   h2:
     font-size: 22
     margin-top: 24
     margin-bottom: 12
 
-  # Subsection (h3) — Scale step +3, 17pt
+  # Subsection (h3) — ==== — Scale step +3, 17pt
   h3:
     font-size: 17
     margin-top: 18
     margin-bottom: 8
 
-  # Sub-subsection (h4) — Scale step +2, 14pt
+  # Clause (h4) — ===== — Scale step +2, 14pt
   h4:
     font-size: 14
     font-style: bold
     margin-top: 14
     margin-bottom: 6
 
-  # Minor heading (h5) — Sub-section, 10pt UPPERCASE
+  # Subclause (h5) — ====== — Scale step +1, 12pt UPPERCASE
   h5:
-    font-size: 10
+    font-size: 12
     font-style: bold
     text-transform: uppercase
-    letter-spacing: 0.05em       # Guide: readability at small uppercase sizes
+    letter-spacing: 0.05em
     margin-top: 12
     margin-bottom: 4
 
-  # Lowest heading (h6) — Body size, muted
+  # (muted) (h6) — ======= — Body size
   h6:
     font-size: $base-font-size
     font-style: bold
@@ -212,36 +201,7 @@ heading:
 
 
 # =============================================================================
-# 5. GOVERNANCE HIERARCHY — PART & CHAPTER TITLES
-# =============================================================================
-# Guide §Document Hierarchy (6-level legal structure)
-# Part = top-level grouping (Part I–IV), centered, 30pt
-# Chapter = Article-level (Art. 1–11), centered, 26pt
-# =============================================================================
-
-part:
-  font-family: Noto Sans
-  font-color: #1A365D
-  font-size: 30                  # Scale step +6 (Part title)
-  font-style: bold
-  line-height: 1.1
-  text-align: center
-  padding: [108, 0, 0, 0]
-
-chapter:
-  font-family: Noto Sans
-  font-color: #1A365D
-  font-size: 26                  # Scale step +5 (Article title)
-  font-style: bold
-  line-height: 1.15
-  text-align: center
-
-
-# =============================================================================
-# 6. TITLE PAGE
-# =============================================================================
-# Auto-generated from :title-page: attribute
-# Logo, company name, subtitle, authors, revision
+# 5. TITLE PAGE
 # =============================================================================
 
 title-page:
@@ -269,23 +229,20 @@ title-page:
     margin-top: 8
   authors:
     font-family: Noto Sans
-    font-color: #718096          # AA compliant
+    font-color: #718096
     font-size: 12
     font-style: normal
     margin-top: 24
   revision:
     font-family: Noto Sans
-    font-color: #718096          # Darkened from #A0AEC0 for WCAG AA
+    font-color: #718096
     font-size: 10
     font-style: normal
     margin-top: 8
 
 
 # =============================================================================
-# 7. TABLE OF CONTENTS
-# =============================================================================
-# Guide §AsciiDoc Publishing Reference > Auto-Generated TOC
-# Three levels: Parts (h1), Articles (h2), Sections (h3)
+# 6. TABLE OF CONTENTS
 # =============================================================================
 
 toc:
@@ -299,82 +256,74 @@ toc:
     content: '. '
     levels: 2 3
 
-  # Part entries — bold, deep blue, uppercase
   h1-font-color: #1A365D
   h1-font-style: bold
   h1-font-size: 13
-  h1-text-transform: uppercase
 
-  # Article entries — bold, dark
   h2-font-color: #2D3748
   h2-font-style: bold
   h2-font-size: 11
 
-  # Section entries — normal, muted
   h3-font-color: #4A5568
   h3-font-style: normal
   h3-font-size: 10
 
 
 # =============================================================================
-# 8. RUNNING CONTENT — HEADERS & FOOTERS
+# 7. RUNNING CONTENT — HEADERS & FOOTERS
 # =============================================================================
-# Guide §Page Layout > Margins and Spacing (0.625in header/footer height)
-# Guide §Typography > WCAG: darkened from #A0AEC0 to #718096 for AA
+# Generic: uses document title attribute for flexibility
 # =============================================================================
 
 running_content:
-  start_at: 2                    # Suppress header/footer on page 1 (title page)
+  start_at: 2
 
 header:
   height: 0.625in
   font-family: Noto Sans
   font-size: 8.5
-  font-color: #718096            # WCAG AA (4.6:1) — was #A0AEC0 (2.7:1 FAIL)
+  font-color: #718096
   line-height: 1
   border-color: #E2E8F0
   border-width: 0.25
   recto:
     right:
-      content: '*CreativeWorkzStudio LLC* — Company Identity Manual'
+      content: '*CreativeWorkzStudio LLC*'
   verso:
     left:
-      content: '*CreativeWorkzStudio LLC* — Company Identity Manual'
+      content: '*CreativeWorkzStudio LLC*'
 
 footer:
   height: 0.625in
   font-family: Noto Sans
   font-size: 8.5
-  font-color: #718096            # WCAG AA (4.6:1) — was #A0AEC0 (2.7:1 FAIL)
+  font-color: #718096
   line-height: 1
   border-color: #E2E8F0
   border-width: 0.25
   recto:
     center:
-      content: '{company-name} — Confidential'
+      content: '{company-name}'
     right:
       content: '{page-number}'
   verso:
     center:
-      content: '{company-name} — Confidential'
+      content: '{company-name}'
     left:
       content: '{page-number}'
 
 
 # =============================================================================
-# 9. CONTENT ELEMENTS — PARAGRAPHS & TEXT
-# =============================================================================
-# Guide §Typography > Font Styling ([.lead], [.small], abstract)
+# 8. CONTENT ELEMENTS — PARAGRAPHS & TEXT
 # =============================================================================
 
 prose:
-  text-indent: 0.375in               # First-line indent for governance paragraphs
   margin-bottom: $vertical-spacing
 
 lead:
-  font-size: $base-font-size-large   # ~14pt
+  font-size: $base-font-size-large
   line-height: 1.4
-  font-color: #4A5568            # 7.4:1 — AAA
+  font-color: #4A5568
 
 abstract:
   font-size: $base-font-size-large
@@ -382,21 +331,18 @@ abstract:
   font-color: #4A5568
 
 link:
-  font-color: #2B6CB0            # Medium blue — interactive
+  font-color: #2B6CB0
 
 
 # =============================================================================
-# 10. CONTENT ELEMENTS — BLOCKQUOTE & SCRIPTURE
-# =============================================================================
-# Guide §Structural Elements + scripture rendering
-# Gold border (#D69E2E) is decorative — WCAG compliant for non-text
+# 9. CONTENT ELEMENTS — BLOCKQUOTE & SCRIPTURE
 # =============================================================================
 
 quote:
   font-size: $base-font-size
   font-style: italic
-  font-color: #4A5568            # 7.4:1 — AAA
-  border-color: #D69E2E          # Gold — decorative border (WCAG: non-text OK)
+  font-color: #4A5568
+  border-color: #D69E2E
   border-width: 3
   padding: [0, 0, 0, 12]
   cite:
@@ -406,11 +352,7 @@ quote:
 
 
 # =============================================================================
-# 11. CONTENT ELEMENTS — TABLES
-# =============================================================================
-# Guide §Tables, Lists, and Figures > Table Conventions
-# Header: bold, deep blue bg, white text
-# Stripes: #F7FAFC on alternating rows
+# 10. CONTENT ELEMENTS — TABLES
 # =============================================================================
 
 table:
@@ -425,7 +367,7 @@ table:
     font-family: Noto Sans
     font-style: bold
     font-color: #FFFFFF
-    background-color: #1A365D    # Deep blue header
+    background-color: #1A365D
     border-bottom-width: 1.25
     border-bottom-color: #2C5282
 
@@ -440,15 +382,12 @@ table:
 
 
 # =============================================================================
-# 12. CONTENT ELEMENTS — LISTS
-# =============================================================================
-# Guide §Tables, Lists, and Figures > List Conventions
-# Marker color matches heading blue for visual cohesion
+# 11. CONTENT ELEMENTS — LISTS
 # =============================================================================
 
 list:
   indent: $base-font-size * 1.5
-  item-spacing: 4
+  item-spacing: 6                 # Guide §List Conventions: at least 0.5em
   marker-font-color: #1A365D
 
 description-list:
@@ -458,15 +397,13 @@ description-list:
 
 
 # =============================================================================
-# 13. CONTENT ELEMENTS — CODE
-# =============================================================================
-# Guide §Typography > Type Scale (Code: 9.5pt, Noto Sans Mono)
+# 12. CONTENT ELEMENTS — CODE
 # =============================================================================
 
 code:
   font-family: Noto Sans Mono
   font-color: #2D3748
-  font-size: 9.5                 # Scale step -1
+  font-size: 9.5
   padding: 12
   line-height: 1.45
   background-color: #F7FAFC
@@ -501,11 +438,7 @@ mark:
 
 
 # =============================================================================
-# 14. CONTENT ELEMENTS — ADMONITIONS
-# =============================================================================
-# Guide §Anti-Patterns notes admonitions avoided in frontmatter,
-# but they remain available for article body content.
-# Icon colors map to the CWS color palette.
+# 13. CONTENT ELEMENTS — ADMONITIONS
 # =============================================================================
 
 admonition:
@@ -522,34 +455,29 @@ admonition:
 
   icon:
     note:
-      stroke-color: #2B6CB0      # Medium blue
+      stroke-color: #2B6CB0
     tip:
-      stroke-color: #276749      # Forest green
+      stroke-color: #276749
     important:
-      stroke-color: #D69E2E      # Gold (icon stroke — non-text, WCAG OK)
+      stroke-color: #D69E2E
     warning:
-      stroke-color: #C53030      # Red
+      stroke-color: #C53030
     caution:
-      stroke-color: #9B2C2C      # Dark red
+      stroke-color: #9B2C2C
 
   column-rule-color: #E2E8F0
   column-rule-width: 0.5
 
 
 # =============================================================================
-# 15. STRUCTURAL ELEMENTS
-# =============================================================================
-# Guide §Structural Elements (thematic breaks, sidebars, examples)
-# Guide §Page Layout > Thematic Break Margins (20pt top/bottom)
-# Guide §Tables, Lists, and Figures > Figure Conventions (captions)
-# Guide §Typography > Footnotes (8.5pt, Noto Sans, muted)
+# 14. STRUCTURAL ELEMENTS
 # =============================================================================
 
 thematic-break:
   border-color: #CBD5E0
   border-width: 0.25
-  margin-top: 20                 # Guide: 20pt top
-  margin-bottom: 20              # Guide: 20pt bottom
+  margin-top: 20
+  margin-bottom: 20
 
 sidebar:
   background-color: #F7FAFC
@@ -566,7 +494,7 @@ sidebar:
 
 example:
   background-color: #FFFFF0
-  border-color: #D69E2E          # Gold border — decorative (WCAG: non-text OK)
+  border-color: #D69E2E
   border-radius: 3
   border-width: 0.75
   padding: [10, 14, 10, 14]
@@ -579,69 +507,49 @@ caption:
   font-family: Noto Sans
   font-style: italic
   font-size: $base-font-size-small
-  font-color: #718096            # AA compliant
+  font-color: #718096
   align: center
   margin-inside: 4
 
 footnotes:
-  font-family: Noto Sans         # Guide: Noto Sans (muted) for footnotes
-  font-size: 8.5                 # Scale step -2
-  font-color: #718096            # AA compliant
+  font-family: Noto Sans
+  font-size: 8.5
+  font-color: #718096
   item-spacing: 4
 
 
 # =============================================================================
-# 16. CUSTOM ROLES
-# =============================================================================
-# Guide §AsciiDoc Publishing Reference > Custom Roles
-#
-# WCAG NOTE: Gold (#D69E2E) role exists for border/decorative use.
-# It MUST NOT be applied to text on white backgrounds (3.2:1 — FAIL).
-# For text emphasis, use [.blue] or bold instead.
+# 15. CUSTOM ROLES
 # =============================================================================
 
 role:
-  # Kingdom gold — BORDERS AND DECORATIVE ONLY (WCAG: 3.2:1 fails on text)
   gold:
     font-color: #D69E2E
 
-  # Muted — secondary information
   muted:
-    font-color: #718096          # AA compliant (darkened from #A0AEC0)
+    font-color: #718096
 
-  # Blue — informational emphasis
   blue:
     font-color: #2B6CB0
 
-  # Green — growth, positive, stewardship
   green:
     font-color: #276749
 
-  # Purple — vision, secondary identity
   purple:
     font-color: #6B46C1
 
-  # Red — warnings, restrictions
   red:
     font-color: #C53030
 
-  # Hebrew — explicit font assignment for reliable biblical text rendering
   hebrew:
     font-family: Noto Serif Hebrew
     font-color: #4A5568
 
-  # Big — display text ([.big] role)
   big:
     font-size: $base-font-size-large
 
-  # Small — fine print, metadata ([.small] role)
   small:
     font-size: $base-font-size-small
-
-
-  # Title heading — clean presentation without h2 border
-  title-heading:
-    border-width: 0
 
 
 # =============================================================================

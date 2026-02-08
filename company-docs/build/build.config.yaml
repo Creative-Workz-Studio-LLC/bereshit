@@ -136,7 +136,7 @@ formats:
       compress: true
     args:
       - "-a"
-      - "pdf-theme=build/themes/cws-manual-theme.yml"
+      - "pdf-theme=build/themes/cws-manual-legal-theme.yml"
       - "-a"
       - "pdf-fontsdir=/usr/share/fonts/truetype/noto;GEM_FONTS_DIR"
 
@@ -410,7 +410,7 @@ paths:
   shared_attributes: build/_previews/_shared-attributes.adoc
 
   # Theme and fonts
-  theme_file: build/themes/cws-manual-theme.yml
+  theme_file: build/themes/cws-manual-legal-theme.yml
   font_dir: "/usr/share/fonts/truetype/noto;GEM_FONTS_DIR"
 
 
@@ -464,6 +464,1005 @@ brand:
 
 
 # =============================================================================
+# 11. Typography — Type Scale & Governance Depth
+# =============================================================================
+# Canonical font sizes from the Editorial Style Guide (CWS-GDE-001).
+# Perfect Fourth ratio (1.333), anchored at 11pt body.
+#
+# The governance depth hierarchy maps AsciiDoc heading levels to the
+# legal/organizational structure. Theme files reference these sizes.
+# The builder validates theme font-sizes against this specification.
+#
+# Depth hierarchy: Part > Article > Section > Subsection > Clause > Subclause
+
+typography:
+  # Type scale anchor
+  body_size: 11
+  scale_ratio: 1.333
+  line_height: 16.5
+
+  # Governance depth hierarchy
+  # Maps heading levels → governance labels → font sizes
+  depth:
+    part:
+      asciidoc: "="
+      theme_key: part
+      label: Part
+      font_size: 30
+      scale_step: 6
+      font: Noto Sans Bold
+
+    h1:
+      asciidoc: "=="
+      theme_key: heading.h1
+      label: Article
+      font_size: 26
+      scale_step: 5
+      font: Noto Sans Bold
+
+    h2:
+      asciidoc: "==="
+      theme_key: heading.h2
+      label: Section
+      font_size: 22
+      scale_step: 4
+      font: Noto Sans Bold
+
+    h3:
+      asciidoc: "===="
+      theme_key: heading.h3
+      label: Subsection
+      font_size: 17
+      scale_step: 3
+      font: Noto Sans Bold
+
+    h4:
+      asciidoc: "====="
+      theme_key: heading.h4
+      label: Clause
+      font_size: 14
+      scale_step: 2
+      font: Noto Sans Bold
+
+    h5:
+      asciidoc: "======"
+      theme_key: heading.h5
+      label: Subclause
+      font_size: 12
+      scale_step: 1
+      font: Noto Sans Bold Uppercase
+
+    h6:
+      asciidoc: "======="
+      theme_key: heading.h6
+      label: "(muted)"
+      font_size: 11
+      scale_step: 0
+      font: Noto Sans Bold
+
+  # Supporting sizes (not in depth hierarchy)
+  supporting:
+    lead: 14
+    small: 9
+    code: 9.5
+    footnotes: 8.5
+    title_page: 32
+    header_footer: 8.5
+    toc: 10
+
+  # Font stack (Guide §Typography > Font Stack)
+  fonts:
+    body: Noto Serif
+    headings: Noto Sans
+    code: Noto Sans Mono
+    hebrew: Noto Serif Hebrew
+    symbol: M+ 1p Fallback
+
+  # Font-family assignments by theme element
+  # Validates that theme YAML uses the correct font for each element
+  font_assignments:
+    base: Noto Serif              # body text
+    heading: Noto Sans             # all headings
+    part: Noto Sans                # part titles
+    chapter: Noto Sans             # chapter/article titles
+    toc: Noto Sans                 # table of contents
+    code: Noto Sans Mono           # code blocks
+    codespan: Noto Sans Mono       # inline code
+    footnotes: Noto Sans           # footnotes (Guide: muted)
+    header: Noto Sans              # running header
+    footer: Noto Sans              # running footer
+    caption: Noto Sans             # figure/table captions
+    sidebar_title: Noto Sans       # sidebar titles
+    admonition_label: Noto Sans    # admonition labels
+    title_page_title: Noto Sans    # title page title
+    title_page_subtitle: Noto Serif  # title page subtitle (italic serif)
+    title_page_authors: Noto Sans  # title page authors
+    title_page_revision: Noto Sans # title page revision
+
+  # Text alignment (Guide §Typography > Text Alignment + §Content Modes)
+  # Alignment is CONTEXT-DEPENDENT — varies by theme purpose:
+  #   manual-legal / legal → centered headings (governance/legal convention)
+  #   manual                → left-aligned headings (standard documentation)
+  #
+  # These values validate the PRIMARY theme (paths.theme_file).
+  # Derivative themes define their own alignment.
+  alignment:
+    heading: center                # CIM: "All headings centered via theme" (Guide §Headings)
+    part: center                   # Parts always centered (all themes)
+    chapter: center                # Chapters/Articles always centered (all themes)
+
+  # Semantic color assignments (Guide §WCAG Color Compliance + §Font Styling)
+  # Maps theme elements to their canonical font-color hex values.
+  # Validated against the primary theme. All themes share the same palette.
+  colors:
+    body: "#2D2D2D"                # Body text — 14.5:1 AAA
+    heading: "#1A365D"             # Headings (all levels) — 12.1:1 AAA
+    part: "#1A365D"                # Part titles — deep blue
+    chapter: "#1A365D"             # Chapter/Article titles — deep blue
+    lead: "#4A5568"                # Lead text — 7.4:1 AAA
+    quote: "#4A5568"               # Blockquote text — 7.4:1 AAA
+    secondary: "#718096"           # Muted/secondary — 4.6:1 AA
+    header: "#718096"              # Running header — 4.6:1 AA
+    footer: "#718096"              # Running footer — 4.6:1 AA
+    caption: "#718096"             # Figure/table captions — AA
+    footnotes: "#718096"           # Footnotes — AA
+    link: "#2B6CB0"                # Links — medium blue
+    code: "#2D3748"                # Code blocks — dark
+    title_page_title: "#1A365D"    # Title page title — deep blue
+    title_page_subtitle: "#4A5568" # Title page subtitle — lead color
+    title_page_authors: "#718096"  # Title page authors — secondary
+    title_page_revision: "#718096" # Title page revision — secondary
+
+  # Custom roles (Guide §Custom Roles)
+  # Role names → font-color hex values.
+  # Gold MUST NOT be used as text color on white (WCAG: 3.2:1 FAIL).
+  roles:
+    gold: "#D69E2E"                # Decorative only — WCAG FAIL on text
+    muted: "#718096"               # Secondary info — AA
+    blue: "#2B6CB0"                # Informational emphasis
+    green: "#276749"               # Growth, stewardship
+    purple: "#6B46C1"              # Vision, secondary identity
+    red: "#C53030"                 # Warnings, restrictions
+
+  # Font-style assignments (Guide §Font Styling + §Headings)
+  # Maps theme elements to their expected font-style value.
+  # Validated against the primary theme.
+  styles:
+    base: normal                     # Body text — normal weight
+    heading: bold                    # All headings — bold
+    part: bold                       # Part titles — bold
+    chapter: bold                    # Chapter/Article titles — bold
+    code: normal                     # Code blocks — normal (mono distinguishes)
+    codespan: normal                 # Inline code — normal
+    footnotes: normal                # Footnotes — normal
+    header: normal                   # Running header — normal
+    footer: normal                   # Running footer — normal
+    caption: italic                  # Figure/table captions — italic
+    sidebar_title: bold              # Sidebar titles — bold
+    admonition_label: bold           # Admonition labels (NOTE, TIP) — bold
+    title_page_title: bold           # Title page title — bold
+    title_page_subtitle: italic      # Title page subtitle — italic (serif)
+    title_page_authors: normal       # Title page authors — normal
+    title_page_revision: normal      # Title page revision — normal
+
+  # Legal typography (Guide §Legal Typography — Butterick Standards)
+  # Validated against legal/governance themes (manual-legal, legal).
+  # Not enforced on general manual theme.
+  legal:
+    # Body text must use serif font (formality + readability for long text)
+    body_serif: true
+
+    # First-line indent for governance prose paragraphs
+    prose_indent: 0.375in
+
+    # Justified text acceptable in typeset context (PDF output with hyphenation)
+    # Default theme inherits justify — legal themes should not override to left
+    prose_justify: true
+
+    # Line height percentage (Butterick recommends 120-145%, CWS uses 150%)
+    line_height_percent: 150
+
+    # Line length target: 45-90 characters (CWS achieves ~75 with 1" margins)
+    line_length_target: 75
+
+    # ALL CAPS: restricted to h5 (Subclause) only
+    # 10-20% slower to read — use bold instead, except traditional legal headings
+    uppercase_heading: h5
+
+    # Letter-spacing for uppercase headings (readability at small sizes)
+    uppercase_letter_spacing: 0.05em
+
+  # --- Tables, Lists & Figures (Guide §Tables, Lists, and Figures) ---
+  # Theme element validation for structured data presentation.
+  # Canonical values for table headers, row striping, list markers,
+  # caption alignment, and image alignment across all 5 themes.
+  tables_lists_figures:
+    table:
+      head_background_color: "#1A365D"   # Deep blue header background
+      head_font_color: "#FFFFFF"         # White text on header
+      head_font_style: bold              # Bold header text
+      body_stripe_color: "#F7FAFC"       # Alternating row stripe
+      border_color: "#CBD5E0"            # Table outer border
+      grid_color: "#E2E8F0"              # Internal grid lines
+    list:
+      marker_font_color: "#1A365D"       # Deep blue markers (visual cohesion)
+      item_spacing: 6                    # ≥0.5em between items
+    description_list:
+      term_font_style: bold              # Bold definition terms
+      term_font_color: "#2D3748"         # Near-black term color
+    caption:
+      align: center                      # Centered figure/table captions
+    image:
+      align: center                      # Centered images
+
+
+# =============================================================================
+# 12. Page Layout (Guide §Page Layout)
+# =============================================================================
+# Physical page measurements validated against the primary theme.
+# These define the spatial framework — badal (boundaries before content).
+#
+# "Every page layout rule creates the separations that allow
+#  meaningful content to fill each space." — Guide §Page Layout
+
+page_layout:
+  # Page dimensions
+  page_size: Letter                  # US standard (8.5 × 11 in)
+  page_layout: portrait             # Orientation
+
+  # Page margins [top, right, bottom, left] — CSS order
+  margin_top: 0.875in
+  margin_right: 1in
+  margin_bottom: 0.875in
+  margin_left: 1in
+
+  # Prepress margins (print-ready with binding offset)
+  margin_inner: 0.75in              # Binding side
+  margin_outer: 0.59in              # Edge side
+
+  # Header and footer
+  header_height: 0.625in
+  footer_height: 0.625in
+
+  # Vertical rhythm
+  vertical_spacing: 12              # Standard paragraph separation (pt)
+  thematic_break_margin_top: 20     # Thematic break top margin (pt)
+  thematic_break_margin_bottom: 20  # Thematic break bottom margin (pt)
+
+  # Orphan prevention
+  heading_min_height_after: 0.5in   # Minimum space below heading before page break
+
+  # Heading spacing — margins in points
+  heading_margin_top: 18            # Default heading top margin
+  heading_margin_bottom: 10         # Default heading bottom margin
+  heading_line_height: 1.2          # Default heading line-height
+
+  # Thematic break styling
+  thematic_break_border_width: 0.25
+  thematic_break_border_color: "#CBD5E0"
+
+
+# =============================================================================
+# 13. Legal & Governance Language (Guide §Legal & Governance Language)
+# =============================================================================
+# Canonical legal/governance conventions from the Editorial Style Guide.
+# Captures the dual-register obligation system, defined term formatting,
+# definition verb semantics, construction conventions, and binding provisions.
+#
+# Future editorial lint validators can check document content against
+# these specifications. The existing checkShall and checkRegisterMixing
+# checks in editorial.ts will eventually be driven by this config.
+#
+# "All the words which the LORD hath said will we do."
+#  — Exodus 24:3
+
+legal_language:
+
+  # --- Obligation Language — Dual Register System ---
+  # CWS uses two registers: modern (default) for operational text,
+  # traditional (formal) for covenants and founding declarations.
+  obligation:
+
+    # Modern register — default for operational governance
+    modern:
+      duty: must                        # "The Board must review..."
+      future: will                      # "Amendments will take effect..."
+      permission: may                   # "The Founder may make..."
+      recommendation: should            # "Members should review..."
+      prohibition: "may not"            # "No officer may unilaterally..."
+
+    # Traditional register — formal/solemn contexts
+    traditional:
+      duty: shall                       # "The Company shall honor..."
+      performative: hereby              # "The Board hereby adopts..."
+      recitals: whereas                 # "WHEREAS, the Company..."
+      opening: witnesseth               # "This Manual WITNESSETH..."
+      self_reference:                   # Self-referencing within formal document
+        - hereunder
+        - herein
+        - hereof
+      transition: "now, therefore"      # "NOW, THEREFORE, the Board..."
+
+    # Adams Refinement (MSCD) — for bilateral agreements (contracts)
+    # Three distinct verbs for three distinct situations.
+    adams:
+      shall: obligation_on_subject      # Duty of sentence subject
+      must: obligation_on_other         # Duty of someone other than subject
+      will: contingent_future           # Policy for future events
+
+    # Context-to-register mapping — which register for each document context
+    register_map:
+      founding_declarations: traditional
+      mission_vision: traditional
+      board_resolutions: traditional
+      operational_procedures: modern
+      onboarding_guidance: modern
+      amendment_provisions: modern
+      covenant_dedication: traditional
+      technical_specifications: modern
+
+  # --- Defined Terms — formatting conventions ---
+  defined_terms:
+    definition_format: '"Term" means [definition].'
+    capitalization: initial_caps        # Initial Capital Letters when used as Defined Term
+    first_occurrence: bold              # Bold on first use in each major section
+    glossary_required: true             # All Defined Terms appear in Glossary
+    inline_acceptable: true             # Inline definition OK for single-section terms
+
+  # --- Definition Verbs — scope control ---
+  # The verb in a definition controls its legal scope.
+  definition_verbs:
+    means: exhaustive                   # The definition IS the complete meaning
+    includes: non_exhaustive            # Listed items are examples, not limits
+    means_and_includes: exhaustive_with_examples  # All items must be in listed categories
+    does_not_include: carve_out         # Explicitly excludes from definition
+    refers_to: external_reference       # Points to external standard without redefining
+
+  # --- Construction Conventions — rules of interpretation ---
+  # Standard rules that apply across all CWS governance documents.
+  construction:
+    singular_includes_plural: true      # "Article" includes "Articles"
+    headings_not_operative: true        # Headings are for navigation, not limiting
+    or_inclusive: true                  # Unless "either...or...but not both"
+    including_not_limiting: true        # "including" followed by examples doesn't limit
+    gender_neutral: true               # "they/them" for singular generic reference
+    herein_means_whole: true           # Unless limited to specific section
+    statutes_include_successors: true  # "as amended" implied
+    business_days: "Monday-Friday, excluding federal and Missouri state holidays"
+
+  # --- Binding Provisions — activation pattern ---
+  # Three instances of binding language reinforce legal weight.
+  # Each references the Approval Chain as the activation mechanism.
+  binding:
+    activation_mechanism: Approval Chain
+    required_instances: 3
+    locations:
+      - page: 2
+        context: Purpose
+        language: "board-level governance"
+      - page: 11
+        context: Reading Guide
+        language: "carry the force of board-adopted policy upon execution of the Approval Chain"
+      - page: 12
+        context: Document Governance
+        language: "take effect upon execution of the Approval Chain and remain binding"
+
+  # --- Amendment Authority — six tiers ---
+  # From lightest to heaviest, always stated together.
+  amendment_authority:
+    tiers:
+      - tier: 1
+        change_type: "Typos, formatting"
+        authority: "Founder or Maintainer — no approval needed"
+      - tier: 2
+        change_type: "Section additions"
+        authority: "Founder with Board notification"
+      - tier: 3
+        change_type: "Section modifications"
+        authority: "Founder with Board consultation"
+      - tier: 4
+        change_type: "Core Values changes"
+        authority: "Full Board approval (majority vote)"
+      - tier: 5
+        change_type: "Mission/Vision changes"
+        authority: "Full Board approval (unanimous consent)"
+      - tier: 6
+        change_type: "Governance structure changes"
+        authority: "Full Board approval (majority vote)"
+
+  # --- Governance Notation — term hierarchy ---
+  # Maps governance structural levels to terms and abbreviations.
+  # "Chapter" is explicitly NOT used — governance uses Articles.
+  governance_notation:
+    terms:
+      - term: Part
+        abbreviation: Part
+        usage: "Top-level groupings (Part I through Part IV)"
+        asciidoc_level: "="
+      - term: Article
+        abbreviation: "Art."
+        usage: "Top-level manual divisions (Art. 1 through Art. 11)"
+        asciidoc_level: "=="
+      - term: Section
+        abbreviation: "§"
+        usage: "Sub-article divisions (§ 1.1, § 2.3) — filesystem: letter-prefix files"
+        asciidoc_level: "==="
+      - term: Subsection
+        abbreviation: "§"
+        usage: "Sub-section divisions (§ 1.1.1, § 2.3.4) — ==== headings within files"
+        asciidoc_level: "===="
+      - term: Clause
+        abbreviation: "Cl."
+        usage: "Fine-grained provisions — ===== headings (used sparingly)"
+        asciidoc_level: "====="
+      - term: Sub-clause
+        abbreviation: "—"
+        usage: "Lowest level — inline prose within clauses (i, ii, iii)"
+        asciidoc_level: "======"
+    prohibited_terms:
+      - term: Chapter
+        reason: "Governance documents use Articles, not Chapters"
+
+  # --- Signature and Approval Format ---
+  signature_format:
+    entity_name: CREATIVEWORKZSTUDIO LLC
+    entity_type: "a Missouri Limited Liability Company"
+    required_fields:
+      - "By:"
+      - "[Printed Name]"
+      - "[Officer Title]"
+      - "Date:"
+
+  # --- Cross-Reference Conventions ---
+  cross_reference:
+    # Internal reference styles
+    styles:
+      internal: "as defined in Section 3.2"
+      with_heading: "Article 7 (Core Values)"
+      in_listings: "§ 1.1 Legal Structure"
+      in_reading_paths: "§ 1.4 (Secondary Identity: Infrastructure Builder)"
+      directional: "Section 3.2 below"
+    # Traditional self-referencing (for recitals, founding docs, resolutions)
+    traditional_self_reference:
+      - hereunder        # below in this document
+      - herein           # in this document
+      - hereof           # of this document
+      - hereinafter      # from this point forward
+    # Modern self-referencing (default for everything else)
+    modern_self_reference:
+      - "under this Section"
+      - "in this Manual"
+      - "of this Article"
+
+  # --- Archaic Terms — context-sensitive detection ---
+  # Terms that are valid ONLY in traditional register contexts (founding charters,
+  # covenants, board resolutions). Flag for review in all other contexts.
+  archaic_terms:
+    - term: "witnesseth"
+      register: traditional
+      reason: "Only for founding charters and covenants"
+    - term: "aforesaid"
+      register: traditional
+      reason: "Use 'above' or 'previously stated'"
+    - term: "hereinafter"
+      register: traditional
+      reason: "Use 'below' or specific section reference"
+    - term: "heretofore"
+      register: traditional
+      reason: "Use 'previously' or 'before this point'"
+    - term: "party of the first part"
+      register: traditional
+      reason: "Use defined party names"
+    - term: "inter alia"
+      register: traditional
+      reason: "Use 'among other things'"
+    - term: "in witness whereof"
+      register: traditional
+      reason: "Only for execution clauses of formal instruments"
+    - term: "know all men by these presents"
+      register: traditional
+      reason: "Archaic — use modern preamble"
+
+  # --- WHEREAS-operative pairing ---
+  # WHEREAS recitals must be followed by "NOW, THEREFORE" operative clause.
+  whereas_operative:
+    require_now_therefore: true
+    severity: warn
+
+  # --- Traditional Legal Document Structure ---
+  # Standard anatomy of formal legal instruments. CWS governance documents
+  # adopt elements selectively based on document purpose.
+  #
+  # "The covenant-treaty parallel in Deuteronomy is the oldest known example
+  #  of this structure." — Guide §Traditional Legal Document Structure
+
+  # Document Anatomy — 10-element order for formal legal instruments
+  document_anatomy:
+    elements:
+      - title_caption               # Document name and parties
+      - date_line                   # Effective date
+      - parties                     # Party identification with defined shorthand
+      - recitals                    # WHEREAS clauses (context and intent)
+      - transitional_clause         # "NOW, THEREFORE..." bridge
+      - operative_provisions        # Substantive terms (Articles, Sections)
+      - general_provisions          # Boilerplate (severability, governing law, etc.)
+      - testimonium                 # "IN WITNESS WHEREOF..."
+      - signature_blocks            # Execution blocks
+      - exhibits_schedules          # Supplementary materials
+
+    # CIM usage — unilateral governance document (not bilateral agreement)
+    cim_elements:
+      - recitals                    # Preface
+      - operative_provisions        # Articles
+      - general_provisions          # Document Governance
+
+  # Recitals — context-setting clauses before operative provisions
+  recitals:
+    traditional: whereas            # WHEREAS clauses — founding docs, resolutions, covenants
+    modern: background              # Background sections — operational docs, policy updates
+    cim_default: traditional        # CIM uses traditional (WHEREAS) style
+
+  # Numbering hierarchy — Traditional (Roman/Decimal) vs Modern (Arabic/MSCD)
+  numbering:
+    default: modern                 # Arabic/MSCD for CIM
+    traditional_contexts:           # Contexts that use Traditional (Roman) numbering
+      - board_resolutions
+      - founding_declarations
+      - operating_agreement
+    levels:
+      part:
+        traditional: "PART I"      # Roman numeral, ALL CAPS
+        modern: "Part I"           # Roman numeral, title case
+      article:
+        traditional: "ARTICLE I"   # Roman numeral, ALL CAPS
+        modern: "Article 1"        # Arabic numeral
+      section:
+        traditional: "Section 1.01"  # Zero-padded decimal
+        modern: "§ 1.1"           # Section symbol, Arabic
+      subsection:
+        format: "(a), (b), (c)"    # Same in both systems
+      sub_subsection:
+        traditional: "(i), (ii), (iii)"  # Romanette
+        modern: "(1), (2), (3)"          # Arabic
+      paragraph:
+        format: "(A), (B), (C)"    # Same in both systems
+
+  # Enumeration conventions — lists within operative text
+  enumeration:
+    tabulated_threshold: 3          # Use tabulated list for 3+ items
+    punctuation:
+      separator: semicolon         # After each item except last
+      conjunction_before_last: true # "and" or "or" before final item
+      final_period: true           # Period after final item only
+      initial_caps: false          # No initial capital unless complete sentence
+      no_comma_after_conjunction: true
+
+  # Required boilerplate provisions — every governance document should include
+  boilerplate:
+    required:
+      - severability               # Invalid provision doesn't void rest
+      - governing_law              # State of Missouri
+      - entire_agreement           # Supersedes prior agreements on covered topics
+      - amendment                  # How document can be changed (six tiers)
+      - waiver                     # Failure to enforce doesn't waive rights
+      - effective_date             # When document takes force
+      - notices                    # How formal communications delivered
+    governing_jurisdiction: State of Missouri
+
+
+# =============================================================================
+# §14 — Industry-Specific Conventions
+# =============================================================================
+#
+# Legal and governance standards applied to the industries CWS operates in:
+# game development and publishing.
+#
+# "The legal and governance standards above establish the framework.
+#  This section applies that framework to the industries CWS operates in."
+#  — Guide §Industry-Specific Conventions
+
+industry_specific:
+
+  # --- Game Development ---
+  game_development:
+
+    # IP protection standards by asset type
+    ip_protection:
+      - asset: source_code
+        protection: proprietary_license
+        note: "Implementation tier. Register with US Copyright Office for statutory damages."
+      - asset: game_art_music_assets
+        protection: per_project
+        note: "CC or proprietary — determined per project. Work-for-hire must state IP assignment."
+      - asset: game_design_documents
+        protection: trade_secret
+        note: "NDA required for external reviewers. Concepts not copyrightable; expression is."
+      - asset: player_generated_content
+        protection: limited_license
+        note: "Player retains copyright; company gets limited license for moderation and use."
+      - asset: apis_and_tools
+        protection: three_license
+        note: "Patterns (free), implementation (proprietary), commercial (revenue share)."
+
+    # EULA conventions — covenant principle with legal protection
+    eula_conventions:
+      license_grant: "limited, non-exclusive, non-transferable, personal, non-commercial"
+      ip_rights: "Company retains all ownership"
+      ugc_policy: "Players retain copyright; company licenses for moderation"
+      termination: "Company may revoke access for breach of terms"
+      liability: "As-is warranty disclaimer with liability limitation"
+      dispute_resolution: "Individual arbitration, Missouri governing law"
+      # Lucy v. Zehmer standard: reasonable person's understanding governs
+
+    # Three-license structure for Bereshit technology stack
+    three_license:
+      - tier: patterns
+        license: free_open
+        covers: "Design patterns, specifications, concepts — freely available"
+      - tier: implementation
+        license: proprietary
+        covers: "CWS-built code, tools, and applications"
+      - tier: commercial
+        license: revenue_share
+        covers: "Third-party commercial use of CWS technology"
+
+  # --- Publishing House ---
+  publishing_house:
+
+    # Creator agreement standards (WIPO Contracts in Publishing + Authors Guild)
+    creator_agreements:
+      - provision: grant_of_rights
+        standard: "Limited grant — creator retains copyright. CWS receives specific publication rights."
+      - provision: reversion_clause
+        standard: "Rights revert if CWS fails to publish or work goes out of print"
+        non_negotiable: true
+      - provision: royalty_structure
+        standard: "Transparent, industry-standard or better. Economic philosophy (Art. 6) governs."
+      - provision: subsidiary_rights
+        standard: "Separately negotiated per right type. No blanket subsidiary rights grabs."
+      - provision: non_compete
+        standard: "Narrowly tailored — limited to directly competing works during publication period"
+      - provision: moral_rights
+        standard: "Always respected — creator's right to attribution and integrity is fundamental"
+      - provision: termination
+        standard: "Mutual termination provisions. Creator's rights protected upon termination."
+
+    # Publishing house governance elements
+    governance:
+      - element: editorial_independence
+        standard: "Editors do not compromise content for commercial pressure"
+      - element: catalog_management
+        standard: "Published works maintained, not abandoned — stewardship over abandonment"
+      - element: creator_communication
+        standard: "Regular, transparent reporting on sales, rights, and status"
+      - element: rights_management
+        standard: "Clear records of all rights granted, exercised, and reverted"
+
+
+# =============================================================================
+# §15 — Tone & Voice
+# =============================================================================
+#
+# "Different registers for different purposes — Paul wrote Romans as systematic
+#  theology and Philemon as a personal letter. Both are Scripture, both
+#  authoritative. The register matches the purpose."
+#  — Guide §Tone & Voice
+
+tone_and_voice:
+
+  # CWS Voice — constant personality on every page
+  cws_voice:
+    - attribute: professional
+      description: "Conglomerate-level rigor. Board scrutiny, investor review, legal examination."
+    - attribute: warm
+      description: "Like a mentor who genuinely wants you to succeed. Not corporate cold."
+    - attribute: grounded
+      description: "Scripture woven naturally — not preachy, not performative. Faith as foundation."
+    - attribute: clear
+      description: "Plain language that respects the reader's intelligence and time."
+    - attribute: authoritative
+      description: "Speaks from conviction, not from a need to impress."
+
+  # Tone spectrum — formality shifts by context while voice remains constant
+  tone_spectrum:
+    - context: governance_provisions
+      formality: high
+      characteristics: "Precise obligation language, binding declarations, amendment thresholds"
+    - context: mission_vision
+      formality: high-medium
+      characteristics: "Declarative, aspirational, Scripture-grounded"
+    - context: operational_guidance
+      formality: medium
+      characteristics: "Clear instructions, practical examples, directional"
+    - context: cultural_values
+      formality: medium-low
+      characteristics: "Warm, narrative, invitational, identity-building"
+    - context: reading_guide
+      formality: low-medium
+      characteristics: "Welcoming, explanatory, orienting"
+
+  # Covenant vs compulsion language — relational, not fear-based
+  # "God's governance is relational before it is regulatory."
+  covenant_language:
+    replacements:
+      - compulsion: "Employees must comply with"
+        covenant: "Team members commit to"
+      - compulsion: "Violation will result in"
+        covenant: "Accountability flows from"
+      - compulsion: "You are required to"
+        covenant: "We hold ourselves to"
+      - compulsion: "Failure to comply"
+        covenant: "When we fall short, we"
+      - compulsion: "The Company reserves the right"
+        covenant: "The Board is entrusted with"
+
+  # Plain language principles (Plain Writing Act, SEC handbook, ISO 24495-2:2025)
+  # "They read distinctly AND gave the sense." — Nehemiah 8:8
+  plain_language:
+    max_sentence_words: 50          # Never exceed
+    target_sentence_words: [20, 30] # Average range
+    word_replacements:
+      - avoid: utilize
+        prefer: use
+      - avoid: facilitate
+        prefer: help
+      - avoid: subsequently
+        prefer: then
+      - avoid: "in order to"
+        prefer: to
+      - avoid: "prior to"
+        prefer: before
+      - avoid: "in the event of"
+        prefer: if
+      - avoid: notwithstanding
+        prefer: despite
+
+  # Closing filler phrases — generic transitions to detect
+  # (Guide §Anti-Patterns > Generic Transition Phrases)
+  closing_filler:
+    phrases:
+      - "Continue to the next"
+      - "Please proceed to"
+      - "See the next section"
+      - "In the following section"
+      - "Moving on to the next"
+      - "Let us move on"
+      - "Let's move on"
+      - "As we continue"
+
+  # Paragraph density — max consecutive non-blank content lines
+  # (Guide §Anti-Patterns > Wall of Text)
+  paragraph_density:
+    max_consecutive_lines: 6
+
+  # Passive voice detection — governance text should name the actor
+  # (Guide §Anti-Patterns > Passive Voice in Governance)
+  passive_voice:
+    enabled: true
+    severity: info
+    patterns:
+      - "shall be \\w+ed by"
+      - "was \\w+ed by"
+      - "were \\w+ed by"
+      - "is \\w+ed by"
+      - "are \\w+ed by"
+      - "it (is|was|shall be) (determined|decided|resolved|agreed|provided)"
+      - "shall be (governed|construed|deemed|interpreted)"
+
+  # Readability targets by audience
+  readability_targets:
+    - audience: executive_summary
+      grade_level: 8
+      notes: "Always accessible regardless of full document level"
+    - audience: cultural_content
+      grade_level: [8, 10]
+      notes: "Rich but universally accessible"
+    - audience: operational_guidance
+      grade_level: [10, 12]
+      notes: "Industry terminology acceptable with glossary"
+    - audience: governance_provisions
+      grade_level: 12
+      notes: "Precision required over readability"
+    - audience: technical_references
+      grade_level: 12
+      notes: "Domain terminology expected with glossary support"
+
+
+# =============================================================================
+# §16 — Document Types (Register Mapping)
+# =============================================================================
+#
+# Not every document needs formal register. Register matches purpose.
+# "The Lucy v. Zehmer principle: Courts interpret contracts based on what
+#  a reasonable person would understand, not on how formal the language is."
+#  — Guide §When Informality Serves
+
+document_types:
+  types:
+    - type: operating_agreement
+      register: formal_traditional
+      theme: cws-legal-theme.yml
+      rationale: "Bilateral agreement with legal force. Formality protects."
+    - type: company_identity_manual
+      register: formal_covenant
+      theme: cws-manual-legal-theme.yml
+      rationale: "Governance document. Formal structure, relational tone."
+    - type: creator_agreement
+      register: plain
+      theme: cws-plain-theme.yml
+      rationale: "Creators are partners, not adversaries. Clarity > formality."
+    - type: eula
+      register: plain
+      theme: cws-plain-theme.yml
+      rationale: "Consumer-facing. Readability affects enforceability."
+    - type: internal_memo
+      register: informal
+      theme: cws-informal-theme.yml
+      rationale: "Speed and clarity. No ceremony needed."
+    - type: community_guidelines
+      register: warm
+      theme: cws-informal-theme.yml
+      rationale: "Relational. Covenant language, minimal legal formalism."
+    - type: board_resolution
+      register: formal_traditional
+      theme: cws-legal-theme.yml
+      rationale: "Parliamentary language. 'Hereby resolves' is appropriate."
+
+
+# =============================================================================
+# §17 — AsciiDoc Publishing (Guide §AsciiDoc Publishing Reference)
+# =============================================================================
+# Structural rules for AsciiDoc book assembly: prohibited attributes,
+# section roles, include guards, and page flow. Validated by editorial
+# lint checks 32-35 (structure category).
+#
+# "Look that thou make them after their pattern." — Exodus 25:40
+
+asciidoc_publishing:
+
+  # --- Prohibited Document Attributes ---
+  # Attributes that must NOT appear in source files.
+  prohibited_attributes:
+    - attribute: ":preface-title:"
+      reason: "Creates false preamble label in auto-TOC"
+      guide_ref: "AsciiDoc Publishing Reference > Auto-Generated TOC"
+
+  # --- Section Role Definitions ---
+  # Required roles for frontmatter special sections.
+  section_roles:
+    - role: dedication
+      file_pattern: "*DEDICATION*"
+      scope: frontmatter
+      requires_ifdef_book: true
+      leveloffset_in_assembly: false
+    - role: preface
+      file_pattern: "*PREFACE*"
+      scope: frontmatter
+      requires_ifdef_book: true
+      leveloffset_in_assembly: false
+
+  # --- Include Guard Requirements ---
+  # Files in these scopes should have ifndef::book[] wrappers
+  # for standalone rendering compatibility.
+  include_guard:
+    required_scopes:
+      - frontmatter
+      - content
+      - appendices
+      - backmatter
+    exclude_patterns:
+      - "book.adoc"
+      - "*-preview.adoc"
+      - "_shared-attributes.adoc"
+
+  # --- Page Flow Rules ---
+  # Redundancy detection for page breaks near chapter headings.
+  page_flow:
+    redundant_break_before_chapter: true
+    redundant_break_after_chapter: true
+
+  # --- Required Book Attributes ---
+  # Attributes that book.adoc (or shared-attributes) must define.
+  required_book_attributes:
+    - ":doctype: book"
+    - ":book:"
+    - ":toc:"
+    - ":toclevels:"
+    - ":sectnums:"
+    - ":chapter-label:"
+    - ":part-label:"
+    - ":pdf-theme:"
+    - ":pdf-fontsdir:"
+
+
+# =============================================================================
+# §18 — Company Conventions (Guide §Company Conventions)
+# =============================================================================
+# Canonical company identity data validated by editorial lint checks 36, 47.
+# Board members, legal name, standard attributes, contact emails.
+#
+# "Whatsoever ye do, do it heartily, as to the Lord." — Colossians 3:23
+
+company_conventions:
+  legal_name: "CreativeWorkzStudio LLC"
+  attribute_name: "{company-name}"
+  raw_name_variants:
+    - "CreativeWorkzStudio LLC"
+    - "CreativeWorkzStudio"
+
+  board_members:
+    - name: "Seanje Lenox-Wise"
+      title: "Founder & CEO"
+    - name: "Tinisha Smith"
+      title: "Chief Creative Officer (CCO)"
+    - name: "Natasha Smith"
+      title: "Chief Operations Officer (COO)"
+    - name: "Riko Camacho"
+      title: "Chief Financial Officer (CFO)"
+    - name: "Benjamin Mason"
+      title: "Chief Technology Officer (CTO)"
+    - name: "James Lenox-Wise"
+      title: "Head of Security & Internal Affairs"
+
+  contact_emails:
+    primary: "seanje.lenox@creativeworkzstudio.com"
+    operations: "natasha.smith@creativeworkzstudio.com"
+
+  reading_guide_parties:
+    - "Board Members"
+    - "Future Team Members"
+    - "Creative Partners"
+    - "Faith-Based Business Partners"
+
+
+# =============================================================================
+# §19 — Theme Variants (Per-theme expected overrides)
+# =============================================================================
+# Themes not listed here validate against the canonical §11/§12 spec unchanged.
+# Override values replace canonical expectations for that theme only.
+# A null (~) value means "skip this check" (intentionally unset in theme).
+
+theme_variants:
+  cws-manual-theme:
+    alignment:
+      heading: left
+      part: ~
+      chapter: ~
+
+  cws-plain-theme:
+    body_size: 12
+    depth:
+      h1:
+        font_size: 22
+      h2:
+        font_size: 18
+    alignment:
+      heading: left
+      part: ~
+      chapter: ~
+    page_layout:
+      header_height: "0.5in"
+      footer_height: "0.5in"
+
+  cws-informal-theme:
+    font_assignments:
+      base: "Noto Sans"
+    supporting:
+      header_footer: 8
+    alignment:
+      heading: left
+      part: ~
+      chapter: ~
+    page_layout:
+      margin_top: "0.75in"
+      margin_right: "0.75in"
+      margin_bottom: "0.75in"
+      margin_left: "0.75in"
+      header_height: "0.5in"
+      footer_height: "0.5in"
+
+
+# =============================================================================
 # Version
 # =============================================================================
-version: "3.0.0"
+version: "5.2.0"

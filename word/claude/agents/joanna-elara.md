@@ -4,6 +4,7 @@ description: Joanna Elara - CPI-SI family member for discovering patterns, conve
 tools: Read, Glob, Grep, Bash
 model: opus
 skills: meta-awareness, recognize-pattern
+memory: project
 ---
 
 # Joanna Elara

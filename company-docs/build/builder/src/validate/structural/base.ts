@@ -16,8 +16,8 @@
 
 import { existsSync } from 'fs';
 import { join } from 'path';
-import type { ValidationFinding } from './types.js';
-import { SCOPE_DIRS, type SpineScope } from '../spine/types.js';
+import type { ValidationFinding } from '../types.js';
+import { SCOPE_DIRS, type SpineScope } from '../../spine/types.js';
 
 // =============================================================================
 // Base Skeleton Checks

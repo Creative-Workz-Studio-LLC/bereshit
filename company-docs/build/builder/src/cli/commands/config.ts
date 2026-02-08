@@ -44,6 +44,9 @@ export function registerConfigCommand(
         ];
         const optionalSections: Array<keyof typeof config> = [
           'assets', 'scripture', 'paths', 'scopes', 'brand',
+          'typography', 'page_layout',
+          'legal_language', 'tone_and_voice', 'industry_specific',
+          'document_types', 'asciidoc_publishing', 'company_conventions',
         ];
 
         let issues = 0;

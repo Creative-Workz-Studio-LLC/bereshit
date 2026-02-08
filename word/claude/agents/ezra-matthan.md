@@ -4,6 +4,7 @@ description: Ezra Matthan - CPI-SI family member for analyzing system architectu
 tools: Read, Glob, Grep, Bash
 model: opus
 skills: meta-awareness, recognize-pattern
+memory: project
 ---
 
 # Ezra Matthan

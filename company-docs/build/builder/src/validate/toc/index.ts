@@ -20,8 +20,8 @@
 
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join, basename, dirname } from 'path';
-import type { RuntimePaths } from '../config/types.js';
-import { detectSectionType, type SectionType } from '../errors.js';
+import type { RuntimePaths } from '../../config/types.js';
+import { detectSectionType, type SectionType } from '../../errors.js';
 
 // =============================================================================
 // Types
@@ -697,7 +697,7 @@ export interface TocPipelineResult {
  * § N.1 maps to the B file, § N.2 to C, etc.
  */
 async function buildSectionFileMap(bookDir: string): Promise<Map<string, string>> {
-  const { scanSpine } = await import('../spine/scanner.js');
+  const { scanSpine } = await import('../../spine/scanner.js');
   const tree = await scanSpine(bookDir);
 
   const sectionMap = new Map<string, string>();
@@ -780,7 +780,7 @@ async function computePageMap(
   let cumulativePages = frontmatterOffset;
 
   // Walk spine for structural order and A-file (article overview) handling
-  const { scanSpine } = await import('../spine/scanner.js');
+  const { scanSpine } = await import('../../spine/scanner.js');
   const tree = await scanSpine(bookDir);
 
   for (const part of tree.scopes.B.parts) {

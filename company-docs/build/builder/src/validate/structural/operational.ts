@@ -14,9 +14,9 @@
 
 import { existsSync } from 'fs';
 import { join } from 'path';
-import type { SpineTree, SpineScope } from '../spine/types.js';
-import { SCOPE_DIRS, SCOPE_NAMES } from '../spine/types.js';
-import type { ValidationFinding } from './types.js';
+import type { SpineTree, SpineScope } from '../../spine/types.js';
+import { SCOPE_DIRS, SCOPE_NAMES } from '../../spine/types.js';
+import type { ValidationFinding } from '../types.js';
 
 // =============================================================================
 // Constants
