@@ -4,8 +4,9 @@
 //
 // Key: cws-server-config-preferences
 // Purpose: XDG-compliant user preferences read/write
+// Biblical: Psalm 119:30 — "I have chosen the way of truth"
 // Authors: Nova Dawn
-// Version: 1.0.0
+// Version: 1.1.0
 // Created: 2026-02-08
 //
 // ═══════════════════════════════════════════════════════════════════════════
@@ -31,7 +32,9 @@ import (
 const prefsFilename = "preferences.json"
 
 // ReadPreferences reads dashboard preferences from the XDG config directory.
-// Returns empty map if file doesn't exist (not an error).
+// Returns an empty map if the file doesn't exist — this is intentional, not
+// an error. A missing preferences file simply means the user hasn't customized
+// anything yet, and the dashboard should use its built-in defaults.
 func ReadPreferences() (map[string]any, error) {
 	path := filepath.Join(PreferencesDir(), prefsFilename)
 	data, err := os.ReadFile(path)

@@ -6,11 +6,25 @@
 // Purpose: CWS Server entry point — company infrastructure foundation
 // Biblical: Nehemiah 2:18 — "Let us rise up and build"
 // Authors: Nova Dawn
-// Version: 1.0.0
+// Version: 1.1.0
 // Created: 2026-02-08
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
+// CWS Server is the unified HTTP server for CreativeWorkzStudio LLC.
+// It serves three services from a single binary:
+//
+//   - Builder Dashboard: Process execution, build config, and editorial tooling
+//   - CPI-SI Service: State machine queries, journal CRUD, and FTS5 search
+//   - Company Website: Static site serving with host-based routing
+//
+// Service composition is determined at startup based on available resources:
+// builder requires a valid project directory, CPI-SI requires the DashboardService
+// from claude-global, and the website requires a static files directory.
+// Services that can't initialize are gracefully disabled without affecting others.
+//
+// The server supports graceful shutdown via SIGINT/SIGTERM, cancelling all
+// running processes and draining HTTP connections within a 5-second window.
 package main
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -25,6 +39,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -46,13 +61,21 @@ func main() {
 	cfg := config.DefaultConfig()
 
 	var websiteDir string
+	var dataDir string
 
 	flag.IntVar(&cfg.Port, "port", cfg.Port, "Server port")
 	flag.StringVar(&cfg.BuilderDir, "builder-dir", cfg.BuilderDir, "Path to company-docs/ project directory")
 	flag.StringVar(&websiteDir, "website-dir", "", "Path to company website static files")
+	flag.StringVar(&dataDir, "data-dir", "", "Path to persistent data directory (default: ~/cws/data)")
 	flag.BoolVar(&cfg.EnableCPISI, "cpisi", cfg.EnableCPISI, "Enable CPI-SI service")
 	flag.BoolVar(&cfg.DevMode, "dev", cfg.DevMode, "Development mode (filesystem serving)")
 	flag.Parse()
+
+	// Default data-dir based on environment.
+	if dataDir == "" {
+		home, _ := os.UserHomeDir()
+		dataDir = filepath.Join(home, "cws", "data")
+	}
 
 	// ── Logging ───────────────────────────────────────────────────────
 	level := slog.LevelInfo
@@ -120,15 +143,15 @@ func main() {
 	// CPI-SI service
 	var cpisiBridge *cpisi.Bridge
 	if cfg.EnableCPISI {
-		bridge, err := cpisi.NewBridge(ctx, hub)
+		bridge, err := cpisi.NewBridge(ctx, hub, dataDir)
 		if err != nil {
 			slog.Warn("cpisi service disabled", "error", err)
 		} else {
 			cpisiBridge = bridge
-			cpisiSvc := cpisi.NewService(bridge)
+			cpisiSvc := cpisi.NewService(bridge, bridge.Journals())
 			cpisiSvc.RegisterRoutes(mux)
 			activeServices = append(activeServices, "cpisi")
-			slog.Info("cpisi service enabled")
+			slog.Info("cpisi service enabled", "dataDir", dataDir)
 		}
 	}
 
@@ -204,14 +227,23 @@ func main() {
 		server.RequestLogger,
 		server.RequestID,
 		server.CORS,
+		server.SecurityHeaders,
 	)
 
 	// ── HTTP Server ───────────────────────────────────────────────────
+	//
+	// Timeout rationale:
+	//   ReadHeaderTimeout: 10s — enough for slow clients, short enough to
+	//     prevent slowloris attacks that hold connections with partial headers.
+	//   WriteTimeout: 0 (disabled) — WebSocket connections and process output
+	//     streaming are long-lived; a write timeout would kill them mid-stream.
+	//   IdleTimeout: 120s — keep-alive connections are recycled after 2 minutes
+	//     of inactivity to prevent resource exhaustion from abandoned connections.
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.Port),
 		Handler:           handler,
 		ReadHeaderTimeout: 10 * time.Second,
-		WriteTimeout:      0, // Disabled for WebSocket + streaming
+		WriteTimeout:      0,
 		IdleTimeout:       120 * time.Second,
 	}
 

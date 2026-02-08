@@ -4,12 +4,27 @@
 //
 // Key: cws-server-ws-hub
 // Purpose: WebSocket connection hub — register, unregister, broadcast
+// Biblical: Acts 2:1 — "They were all with one accord in one place"
 // Authors: Nova Dawn
-// Version: 1.0.0
+// Version: 1.1.0
 // Created: 2026-02-08
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Package ws implements a fan-in/fan-out WebSocket hub for real-time
+// communication between the CWS server and browser clients.
+//
+// Architecture: The Hub is a single goroutine that manages all client
+// registrations and message broadcasts via channels. This avoids mutex
+// contention on the hot path (broadcasting) while using RWMutex only
+// for the client map during concurrent broadcast delivery.
+//
+// Two services produce messages for the hub:
+//   - Builder ProcessManager: stdout/stderr lines and exit status
+//   - CPI-SI Bridge: state machine changes from DashboardService
+//
+// The hub is agnostic to message content — it broadcasts raw []byte
+// frames and lets clients parse the JSON type field to route messages.
 package ws
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -31,17 +46,23 @@ import (
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Hub manages WebSocket connections and broadcasts messages to all clients.
+// It follows the classic Go concurrency pattern of a single coordinating
+// goroutine (Run) communicating via channels.
 type Hub struct {
-	clients    map[*Client]bool
-	broadcast  chan []byte
-	register   chan *Client
-	unregister chan *Client
-	mu         sync.RWMutex
-	ctx        context.Context
-	cancel     context.CancelFunc
+	clients    map[*Client]bool      // Active client connections (presence set)
+	broadcast  chan []byte            // Incoming messages to fan out (buffered: 256)
+	register   chan *Client           // New client connections
+	unregister chan *Client           // Client disconnections
+	mu         sync.RWMutex          // Protects clients map during concurrent broadcast
+	ctx        context.Context       // Parent context for shutdown propagation
+	cancel     context.CancelFunc    // Cancels ctx to trigger graceful shutdown
 }
 
 // NewHub creates a new WebSocket hub.
+// The broadcast channel is buffered to 256 messages to absorb bursts from
+// process output without blocking the sender. If the channel fills (e.g.,
+// many processes streaming simultaneously), messages are dropped with a warning
+// rather than blocking the producing goroutine.
 func NewHub(ctx context.Context) *Hub {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Hub{
@@ -88,7 +109,9 @@ func (h *Hub) Run() {
 				select {
 				case client.send <- msg:
 				default:
-					// Slow client — drop and disconnect
+					// Slow client — its send buffer (256) is full. Rather than
+					// blocking the broadcast for all clients, disconnect the slow
+					// one. The frontend will auto-reconnect and catch up.
 					close(client.send)
 					delete(h.clients, client)
 				}
@@ -121,10 +144,17 @@ func (h *Hub) BroadcastRaw(data []byte) {
 	}
 }
 
+// ───────────────────────────────────────────────────────────────────────────
+// HTTP Upgrade — WebSocket connection establishment
+// ───────────────────────────────────────────────────────────────────────────
+
 // HandleUpgrade is the HTTP handler for WebSocket upgrade requests.
+// InsecureSkipVerify is set because CORS origin checking is handled by the
+// CORS middleware and Cloudflare Tunnel — the WebSocket library doesn't need
+// to duplicate that check.
 func (h *Hub) HandleUpgrade(w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-		InsecureSkipVerify: true, // Accept connections from any origin (dev mode)
+		InsecureSkipVerify: true,
 	})
 	if err != nil {
 		slog.Error("ws upgrade failed", "error", err)

@@ -4,12 +4,16 @@
 //
 // Key: cws-server-hostrouter
 // Purpose: Route requests by hostname — serve different sites on subdomains
+// Biblical: John 14:2 — "In my Father's house are many mansions"
 // Authors: Nova Dawn
-// Version: 1.0.0
+// Version: 1.1.0
 // Created: 2026-02-08
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Package server provides HTTP infrastructure for the CWS server: middleware
+// chain, host-based routing, SPA file serving, and shared response helpers.
+// It is used by all service packages but contains no business logic itself.
 package server
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -28,10 +32,16 @@ import (
 // HostRouter routes requests to different handlers based on the Host header.
 // This enables serving the company website on the root domain and the
 // builder dashboard on a subdomain from a single server.
+//
+// Routing priority:
+//  1. Exact hostname match (e.g., "creativeworkzstudio.com")
+//  2. Catch-all "*" handler (for subdomains, localhost, direct IP)
+//  3. 404 if no match and no catch-all
+//
+// Port numbers are stripped from the Host header before matching, so
+// "localhost:3847" matches a route registered for "localhost".
 type HostRouter struct {
-	// routes maps hostname patterns to handlers.
-	// Use "*" as a catch-all default.
-	routes map[string]http.Handler
+	routes map[string]http.Handler // hostname → handler (use "*" for catch-all)
 }
 
 // NewHostRouter creates a new host-based router.
