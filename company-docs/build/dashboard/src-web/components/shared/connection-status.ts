@@ -26,17 +26,9 @@ export function createConnectionStatus(): HTMLElement {
   wrapper.appendChild(dot);
   wrapper.appendChild(label);
 
-  // Poll WebSocket state periodically.
-  setInterval(() => {
-    // Check if any WebSocket is open on the page.
-    // The WebAdapter creates one; we can check via a simple fetch test.
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${location.host}/ws`;
-
-    // We can't directly check WebSocket state from outside the adapter,
-    // so we use the presence of active connections as a proxy.
-    // A lightweight approach: test if the API is reachable.
-    fetch('/api/commands/active', { method: 'GET' })
+  // Poll backend health periodically.
+  const checkConnection = () => {
+    fetch('/healthz', { method: 'GET' })
       .then((res) => {
         if (res.ok) {
           dot.style.background = 'var(--color-success)';
@@ -50,7 +42,11 @@ export function createConnectionStatus(): HTMLElement {
         dot.style.background = 'var(--color-error)';
         label.textContent = 'Disconnected';
       });
-  }, 10000);
+  };
+
+  // Check immediately, then every 10 seconds.
+  checkConnection();
+  setInterval(checkConnection, 10000);
 
   return wrapper;
 }

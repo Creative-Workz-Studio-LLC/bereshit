@@ -35,9 +35,16 @@ export class WebAdapter implements Adapter {
   private exitCallbacks: Array<(result: CommandResult) => void> = [];
   // Pending exit promises keyed by processId.
   private pendingExits = new Map<string, (result: CommandResult) => void>();
+  private wsConnected = false;
+  private reconnectAttempts = 0;
 
   constructor() {
     this.connectWebSocket();
+  }
+
+  /** Check if WebSocket is currently connected. */
+  isConnected(): boolean {
+    return this.wsConnected;
   }
 
   getMode(): 'tauri' | 'web' {
@@ -122,7 +129,26 @@ export class WebAdapter implements Adapter {
 
   private connectWebSocket(): void {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    this.ws = new WebSocket(`${protocol}//${location.host}/ws`);
+    const wsUrl = `${protocol}//${location.host}/ws`;
+
+    try {
+      this.ws = new WebSocket(wsUrl);
+    } catch (err) {
+      console.error('[WS] Failed to create WebSocket:', err);
+      this.wsConnected = false;
+      this.scheduleReconnect();
+      return;
+    }
+
+    this.ws.onopen = () => {
+      this.wsConnected = true;
+      if (this.reconnectAttempts > 0) {
+        console.log(`[WS] Reconnected after ${this.reconnectAttempts} attempt(s)`);
+      } else {
+        console.log('[WS] Connected');
+      }
+      this.reconnectAttempts = 0;
+    };
 
     this.ws.onmessage = (event) => {
       try {
@@ -161,9 +187,30 @@ export class WebAdapter implements Adapter {
       }
     };
 
-    this.ws.onclose = () => {
-      // Reconnect after a short delay.
-      setTimeout(() => this.connectWebSocket(), 2000);
+    this.ws.onerror = (event) => {
+      console.error('[WS] Connection error:', event);
     };
+
+    this.ws.onclose = () => {
+      this.wsConnected = false;
+
+      // Reject any pending exits with a connection error.
+      if (this.pendingExits.size > 0) {
+        for (const [id, resolve] of this.pendingExits.entries()) {
+          resolve({ processId: id, exitCode: -1, success: false });
+        }
+        this.pendingExits.clear();
+      }
+
+      this.scheduleReconnect();
+    };
+  }
+
+  private scheduleReconnect(): void {
+    this.reconnectAttempts++;
+    // Exponential backoff: 1s, 2s, 4s, 8s, max 15s.
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 15000);
+    console.log(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})...`);
+    setTimeout(() => this.connectWebSocket(), delay);
   }
 }
