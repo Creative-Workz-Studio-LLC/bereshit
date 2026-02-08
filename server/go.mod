@@ -5,6 +5,7 @@ go 1.24.4
 require (
 	github.com/creativeworkzstudio/claude-global/pkg v0.0.0
 	gopkg.in/yaml.v3 v3.0.1
+	modernc.org/sqlite v1.44.3
 	nhooyr.io/websocket v1.8.17
 )
 
