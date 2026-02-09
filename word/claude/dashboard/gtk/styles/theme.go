@@ -293,6 +293,21 @@ scrollbar slider:hover {
 	padding: 2px 8px;
 	font-size: 0.85em;
 }
+
+/* --- Valence bar segments --- */
+.valence-positive {
+	background-color: ` + ColorAccentGreen + `;
+	border-radius: 2px 0 0 2px;
+}
+
+.valence-neutral {
+	background-color: ` + ColorAccentBlue + `;
+}
+
+.valence-negative {
+	background-color: ` + ColorAccentRed + `;
+	border-radius: 0 2px 2px 0;
+}
 `
 }
 

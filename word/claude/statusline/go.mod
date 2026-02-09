@@ -4,14 +4,14 @@
 // Purpose: CPI-SI Statusline display system
 // Biblical: 1 Corinthians 14:40 - "Let all things be done decently and in order"
 
-module github.com/creativeworkzstudio/claude-global/statusline
+module cws.studio/statusline
 
 go 1.24.0
 
 toolchain go1.24.4
 
 require (
-	github.com/creativeworkzstudio/claude-global/pkg v0.0.0
+	cws.studio/pkg v0.0.0
 	golang.org/x/term v0.27.0
 )
 
@@ -30,4 +30,4 @@ require (
 	modernc.org/sqlite v1.44.3 // indirect
 )
 
-replace github.com/creativeworkzstudio/claude-global/pkg => ../pkg
+replace cws.studio/pkg => ../pkg

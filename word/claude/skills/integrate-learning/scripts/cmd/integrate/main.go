@@ -25,10 +25,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/cli"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/output"
-	"github.com/creativeworkzstudio/claude-global/skills/integrate-learning/scripts/pkg/config"
-	"github.com/creativeworkzstudio/claude-global/skills/integrate-learning/scripts/pkg/integration"
+	"cws.studio/pkg/util/pure/cli"
+	"cws.studio/pkg/util/pure/output"
+	"cws.studio/skills/integrate-learning/scripts/pkg/config"
+	"cws.studio/skills/integrate-learning/scripts/pkg/integration"
 )
 
 // ============================================================================

@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
-	"github.com/creativeworkzstudio/claude-global/statusline/lib/session"
+	"cws.studio/pkg/util/term/display"
+	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/foundation/types"
+	"cws.studio/statusline/lib/session"
 )
 
 // ============================================================================

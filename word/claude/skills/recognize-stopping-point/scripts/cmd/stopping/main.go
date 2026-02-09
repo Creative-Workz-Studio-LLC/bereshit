@@ -24,10 +24,10 @@ package main
 import (
 	"os"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/cli"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/output"
-	"github.com/creativeworkzstudio/claude-global/skills/recognize-stopping-point/scripts/pkg/analyze"
-	"github.com/creativeworkzstudio/claude-global/skills/recognize-stopping-point/scripts/pkg/config"
+	"cws.studio/pkg/util/pure/cli"
+	"cws.studio/pkg/util/pure/output"
+	"cws.studio/skills/recognize-stopping-point/scripts/pkg/analyze"
+	"cws.studio/skills/recognize-stopping-point/scripts/pkg/config"
 )
 
 // ============================================================================

@@ -28,11 +28,12 @@ import (
 	"time"
 
 	"cws.studio/claude/hooks/internal"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/cpisi/cpi"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/cognition"
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/logging"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/hookoutput"
+	"cws.studio/pkg/core/cpisi/cpi"
+	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/foundation/database"
+	"cws.studio/pkg/orchestration/cognition"
+	"cws.studio/pkg/orchestration/logging"
+	"cws.studio/pkg/util/pure/hookoutput"
 )
 
 // ============================================================================
@@ -180,6 +181,14 @@ type ExchangeRecord struct {
 	HebrewState string
 	KAlign      float64
 	Trajectory  string
+
+	// Rich data (v2)
+	HealthScore   *int // Health at time of exchange
+	ContextTokens *int // Estimated context tokens at exchange
+
+	// Message text (v3) — for journal generation
+	UserMessageText string // Truncated prompt text (max 2000 chars)
+	Valence         string // "positive", "neutral", "negative"
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -339,6 +348,13 @@ func Submit() {
 
 		// --- CPI Tracking: Classify exchange and detect insights ---
 		exchange := classifyExchange(input, s, feedbackPolarity, feedbackCategories)
+
+		// Attach rich data (v2) — health and token state at exchange time
+		healthAtExchange := int(s.Session.HealthScore)
+		exchange.HealthScore = &healthAtExchange
+		contextTokensAtExchange := s.Session.CurrentContextTokens
+		exchange.ContextTokens = &contextTokensAtExchange
+
 		recordExchangeToDatabase(exchange, log)
 
 		// --- BREAKING DOWN SIGNAL: Unknown = uncertainty = -1 ---
@@ -385,6 +401,11 @@ func Submit() {
 		// --- Drive Trajectory Movement Based on Exchange/Insight ---
 		// "The path of the just is as the shining light" — Proverbs 4:18
 		evaluateTrajectoryMovement(s, exchange, feedbackPolarity, log)
+
+		// --- Live Pattern Detection: Real-Time Triggers ---
+		// "Precept upon precept; line upon line" — Isaiah 28:10
+		// Patterns detected DURING the session, not just at session end
+		detectLivePatterns(s, exchange, feedbackPolarity, log)
 
 		_ = statemachine.SaveRuntimeState(s)
 	}
@@ -530,6 +551,20 @@ func applyUserFeedback(state *statemachine.RuntimeState, prompt string, log *log
 	// Record feedback in last_feedback field
 	state.Session.LastFeedback = fmt.Sprintf("%s:%v delta:%.2f", feedbackType, allCategories, totalDelta)
 
+	// Apply health impact from feedback
+	// Corrections are health signals — they reveal misalignment
+	// "Faithful are the wounds of a friend" — Proverbs 27:6
+	healthDelta := totalDelta * 30.0 // Scale: ±0.20 K:ALIGN → ±6.0 health
+	if healthDelta != 0 {
+		newHealth := state.Session.HealthScore + healthDelta
+		if newHealth > 100 {
+			newHealth = 100
+		} else if newHealth < -100 {
+			newHealth = -100
+		}
+		state.Session.HealthScore = newHealth
+	}
+
 	// Update normalized scores
 	trueScore := (newAlign + 1.0) / 2.0
 	state.Session.LastTrueScore = trueScore
@@ -600,6 +635,20 @@ func classifyExchange(input SubmitInput, state *statemachine.RuntimeState, feedb
 		record.InsightDetected = true
 		record.InsightType = insightType
 		record.InsightConf = insightConf
+	}
+
+	// Message text (v3) — truncate to 2000 chars for storage
+	if len(prompt) <= 2000 {
+		record.UserMessageText = prompt
+	} else {
+		record.UserMessageText = prompt[:2000]
+	}
+
+	// Valence classification using canonical schema
+	record.Valence = string(cpi.ExchangeValence(record.ExchangeType))
+	// Override with feedback valence if feedback detected (stronger signal)
+	if feedbackPolarity != "" {
+		record.Valence = string(cpi.FeedbackValence(feedbackPolarity))
 	}
 
 	return record
@@ -708,6 +757,23 @@ func recordExchangeToDatabase(record *ExchangeRecord, log *logging.Logger) {
 	ctx := context.Background()
 	repo := bridge.GetRepository()
 
+	// Resolve sequence_num: after compaction, PathLength resets to 0 but
+	// old exchanges still exist with those sequence numbers. Use the max
+	// of the provided value and DB max+1 to ensure uniqueness.
+	seqRows, _ := repo.Query(ctx, `SELECT COALESCE(MAX(sequence_num), 0) as max_seq FROM exchanges WHERE session_id = ?`, record.SessionID)
+	if len(seqRows) > 0 {
+		dbMax := 0
+		switch v := seqRows[0]["max_seq"].(type) {
+		case int64:
+			dbMax = int(v)
+		case float64:
+			dbMax = int(v)
+		}
+		if record.SequenceNum <= dbMax {
+			record.SequenceNum = dbMax + 1
+		}
+	}
+
 	// Convert categories to JSON
 	categoriesJSON := "[]"
 	if len(record.FeedbackCategories) > 0 {
@@ -716,15 +782,17 @@ func recordExchangeToDatabase(record *ExchangeRecord, log *logging.Logger) {
 		}
 	}
 
-	// Insert exchange record
+	// Insert exchange record (v3: includes message text + valence)
 	query := `
 		INSERT INTO exchanges (
 			session_id, timestamp, sequence_num, prompt_length,
 			exchange_type, initiative, depth_level,
 			feedback_detected, feedback_polarity, feedback_categories,
 			insight_detected, insight_type,
-			hebrew_state, k_align, trajectory
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			hebrew_state, k_align, trajectory,
+			health_score, context_tokens,
+			user_message_text, valence
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err = repo.Exec(ctx, query,
@@ -743,6 +811,10 @@ func recordExchangeToDatabase(record *ExchangeRecord, log *logging.Logger) {
 		record.HebrewState,
 		record.KAlign,
 		record.Trajectory,
+		record.HealthScore,
+		record.ContextTokens,
+		record.UserMessageText,
+		record.Valence,
 	)
 
 	if err != nil {
@@ -1138,6 +1210,172 @@ func recordKeyContextToDatabase(record *KeyContextRecord, log *logging.Logger) {
 		"domain":     string(record.Domain),
 		"importance": fmt.Sprintf("%.2f", record.Importance),
 	})
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// LIVE PATTERN DETECTION: Real-Time Growth Triggers
+// ───────────────────────────────────────────────────────────────────────────
+// "Precept upon precept; line upon line" — Isaiah 28:10
+//
+// Detects patterns as they FORM during a session, not just at end.
+// Writes to growth.db via the Bridge → LegacyAdapter → MultiDB chain.
+// Thresholds are conservative — patterns need consistency to register.
+
+// detectLivePatterns checks running session counts against thresholds
+// and records emerging patterns to growth.db in real-time.
+func detectLivePatterns(state *statemachine.RuntimeState, exchange *ExchangeRecord, feedbackPolarity string, log *logging.Logger) {
+	if state == nil || exchange == nil {
+		return
+	}
+
+	// Only start detecting after enough data (3+ exchanges)
+	if state.Session.ExchangeCount < 3 {
+		return
+	}
+
+	bridge, err := internal.GetBridge()
+	if err != nil {
+		return
+	}
+	ctx := context.Background()
+	repo := bridge.GetRepository()
+
+	now := time.Now()
+
+	// --- Trigger 1: Feedback streak patterns ---
+	// 3+ consecutive same-polarity feedback = emerging feedback pattern
+	if feedbackPolarity == "positive" && state.Session.KTowardGod >= 3 {
+		valence := cpi.FeedbackValence(feedbackPolarity)
+		_ = repo.RecordPattern(ctx, &database.Pattern{
+			PatternType:     "live_feedback_streak",
+			PatternKey:      "positive_streak",
+			Description:     fmt.Sprintf("Positive feedback streak (%d toward God, valence: %s)", state.Session.KTowardGod, valence),
+			PatternData:     fmt.Sprintf(`{"k_toward_god":%d,"exchange_count":%d,"valence":"%s"}`, state.Session.KTowardGod, state.Session.ExchangeCount, valence),
+			FirstSeen:       now,
+			LastSeen:        now,
+			OccurrenceCount: 1,
+			Confidence:      0.6,
+			IsActive:        true,
+		})
+		log.Debug("Live pattern: positive feedback streak", map[string]string{
+			"k_toward_god": fmt.Sprintf("%d", state.Session.KTowardGod),
+		})
+	}
+	if feedbackPolarity == "negative" && state.Session.KTowardSelf >= 3 {
+		valence := cpi.FeedbackValence(feedbackPolarity)
+		_ = repo.RecordPattern(ctx, &database.Pattern{
+			PatternType:     "live_feedback_streak",
+			PatternKey:      "correction_streak",
+			Description:     fmt.Sprintf("Correction streak (%d toward self, valence: %s)", state.Session.KTowardSelf, valence),
+			PatternData:     fmt.Sprintf(`{"k_toward_self":%d,"exchange_count":%d,"valence":"%s"}`, state.Session.KTowardSelf, state.Session.ExchangeCount, valence),
+			FirstSeen:       now,
+			LastSeen:        now,
+			OccurrenceCount: 1,
+			Confidence:      0.6,
+			IsActive:        true,
+		})
+		log.Debug("Live pattern: correction streak", map[string]string{
+			"k_toward_self": fmt.Sprintf("%d", state.Session.KTowardSelf),
+		})
+	}
+
+	// --- Trigger 2: Exchange type dominance ---
+	// When one exchange type dominates 70%+ of exchanges, that's a session mode
+	if state.Session.ExchangeCount >= 5 {
+		dominant := state.Session.DominantExchangeType
+		if dominant != "" && dominant != string(ExchangeUnknown) {
+			valence := cpi.ExchangeValence(cpi.ExchangeType(dominant))
+			_ = repo.RecordPattern(ctx, &database.Pattern{
+				PatternType:     "live_exchange_mode",
+				PatternKey:      dominant,
+				Description:     fmt.Sprintf("Session dominated by %s exchanges (valence: %s)", dominant, valence),
+				PatternData:     fmt.Sprintf(`{"type":"%s","exchange_count":%d,"valence":"%s"}`, dominant, state.Session.ExchangeCount, valence),
+				FirstSeen:       now,
+				LastSeen:        now,
+				OccurrenceCount: 1,
+				Confidence:      0.5,
+				IsActive:        true,
+			})
+		}
+	}
+
+	// --- Trigger 3: Insight emergence ---
+	// 2+ insights in a session = insight-rich session
+	if state.Session.InsightCount >= 2 && exchange.InsightDetected {
+		_ = repo.RecordPattern(ctx, &database.Pattern{
+			PatternType:     "live_insight_emergence",
+			PatternKey:      fmt.Sprintf("insight_rich_%s", state.Session.SessionArc),
+			Description:     fmt.Sprintf("Multiple insights emerging (%d total, arc: %s)", state.Session.InsightCount, state.Session.SessionArc),
+			PatternData:     fmt.Sprintf(`{"insight_count":%d,"last_type":"%s","arc":"%s"}`, state.Session.InsightCount, exchange.InsightType, state.Session.SessionArc),
+			FirstSeen:       now,
+			LastSeen:        now,
+			OccurrenceCount: 1,
+			Confidence:      0.7,
+			IsActive:        true,
+		})
+		log.Debug("Live pattern: insight emergence", map[string]string{
+			"insight_count": fmt.Sprintf("%d", state.Session.InsightCount),
+		})
+	}
+
+	// --- Trigger 4: K:ALIGN momentum ---
+	// High alignment (>=0.8) sustained for 5+ exchanges = alignment pattern
+	if state.Session.KAlign >= 0.8 && state.Session.ExchangeCount >= 5 {
+		_ = repo.RecordPattern(ctx, &database.Pattern{
+			PatternType:     "live_alignment",
+			PatternKey:      "sustained_high_align",
+			Description:     fmt.Sprintf("Sustained high K:ALIGN (%.2f over %d exchanges)", state.Session.KAlign, state.Session.ExchangeCount),
+			PatternData:     fmt.Sprintf(`{"k_align":%.2f,"exchange_count":%d,"trajectory":"%s"}`, state.Session.KAlign, state.Session.ExchangeCount, state.TrajectorySection),
+			FirstSeen:       now,
+			LastSeen:        now,
+			OccurrenceCount: 1,
+			Confidence:      0.7,
+			IsActive:        true,
+		})
+	}
+
+	// --- Trigger 5: Health drift detection ---
+	// Health dropping below 40 during session = degradation pattern
+	if state.Session.HealthScore < 40 && state.Session.ExchangeCount >= 3 {
+		_ = repo.RecordPattern(ctx, &database.Pattern{
+			PatternType:     "live_health_drift",
+			PatternKey:      "session_degradation",
+			Description:     fmt.Sprintf("Health degraded to %.0f during session", state.Session.HealthScore),
+			PatternData:     fmt.Sprintf(`{"health":%.0f,"exchange_count":%d,"hebrew":"%s"}`, state.Session.HealthScore, state.Session.ExchangeCount, state.Session.HebrewState),
+			FirstSeen:       now,
+			LastSeen:        now,
+			OccurrenceCount: 1,
+			Confidence:      0.8,
+			IsActive:        true,
+		})
+		log.Info("Live pattern: health degradation detected", map[string]string{
+			"health": fmt.Sprintf("%.0f", state.Session.HealthScore),
+		})
+	}
+
+	// --- Trigger 6: Flow state detection ---
+	// 5+ exchanges with high CPI ratio and insights = flow state
+	cpiRatio := 0.0
+	totalK := state.Session.KTowardGod + state.Session.KTowardSelf
+	if totalK > 0 {
+		cpiRatio = float64(state.Session.KTowardGod) / float64(totalK)
+	}
+	if state.Session.ExchangeCount >= 5 && cpiRatio > 0.7 && state.Session.InsightCount >= 1 {
+		_ = repo.RecordPattern(ctx, &database.Pattern{
+			PatternType:     "live_flow_state",
+			PatternKey:      "covenant_flow",
+			Description:     fmt.Sprintf("Flow state: CPI ratio %.0f%%, %d insights, %d exchanges", cpiRatio*100, state.Session.InsightCount, state.Session.ExchangeCount),
+			PatternData:     fmt.Sprintf(`{"cpi_ratio":%.2f,"insights":%d,"exchanges":%d,"trajectory":"%s"}`, cpiRatio, state.Session.InsightCount, state.Session.ExchangeCount, state.TrajectorySection),
+			FirstSeen:       now,
+			LastSeen:        now,
+			OccurrenceCount: 1,
+			Confidence:      0.8,
+			IsActive:        true,
+		})
+		log.Debug("Live pattern: flow state detected", map[string]string{
+			"cpi_ratio": fmt.Sprintf("%.2f", cpiRatio),
+		})
+	}
 }
 
 // ============================================================================

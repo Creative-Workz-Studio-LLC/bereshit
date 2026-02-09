@@ -21,8 +21,8 @@ package cognition
 import (
 	"math"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/schema"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
+	"cws.studio/pkg/foundation/schema"
+	"cws.studio/pkg/foundation/types"
 )
 
 // ───────────────────────────────────────────────────────────────────────────

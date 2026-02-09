@@ -23,7 +23,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/skills/recognize-stopping-point/scripts/pkg/config"
+	"cws.studio/skills/recognize-stopping-point/scripts/pkg/config"
 )
 
 // CurrentSession represents the current session metadata

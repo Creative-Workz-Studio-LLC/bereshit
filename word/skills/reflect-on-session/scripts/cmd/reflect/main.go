@@ -24,10 +24,10 @@ package main
 import (
 	"os"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/cli"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/output"
-	"github.com/creativeworkzstudio/claude-global/skills/reflect-on-session/scripts/pkg/config"
-	"github.com/creativeworkzstudio/claude-global/skills/reflect-on-session/scripts/pkg/reflection"
+	"cws.studio/pkg/util/pure/cli"
+	"cws.studio/pkg/util/pure/output"
+	"cws.studio/skills/reflect-on-session/scripts/pkg/config"
+	"cws.studio/skills/reflect-on-session/scripts/pkg/reflection"
 )
 
 // ============================================================================

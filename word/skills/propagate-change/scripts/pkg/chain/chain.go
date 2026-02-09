@@ -24,7 +24,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/skills/propagate-change/scripts/pkg/config"
+	"cws.studio/skills/propagate-change/scripts/pkg/config"
 )
 
 // Link represents one file in the derives_from chain

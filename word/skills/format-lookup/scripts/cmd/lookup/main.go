@@ -25,10 +25,10 @@ import (
 	"os"
 	"sort"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/cli"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/output"
-	"github.com/creativeworkzstudio/claude-global/skills/format-lookup/scripts/pkg/config"
-	"github.com/creativeworkzstudio/claude-global/skills/format-lookup/scripts/pkg/mappings"
+	"cws.studio/pkg/util/pure/cli"
+	"cws.studio/pkg/util/pure/output"
+	"cws.studio/skills/format-lookup/scripts/pkg/config"
+	"cws.studio/skills/format-lookup/scripts/pkg/mappings"
 )
 
 // ============================================================================

@@ -4,14 +4,14 @@
 // Purpose: Web dashboard server for CPI-SI state visualization
 // Biblical: Habakkuk 2:2 - "Write the vision, and make it plain upon tables"
 
-module github.com/creativeworkzstudio/claude-global/dashboard
+module cws.studio/dashboard
 
 go 1.24.0
 
 toolchain go1.24.4
 
 require (
-	github.com/creativeworkzstudio/claude-global/pkg v0.0.0
+	cws.studio/pkg v0.0.0
 	github.com/gorilla/websocket v1.5.3
 )
 
@@ -31,4 +31,4 @@ require (
 	modernc.org/sqlite v1.44.3 // indirect
 )
 
-replace github.com/creativeworkzstudio/claude-global/pkg => ../pkg
+replace cws.studio/pkg => ../pkg

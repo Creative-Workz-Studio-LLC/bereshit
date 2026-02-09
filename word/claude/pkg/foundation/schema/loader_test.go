@@ -3,7 +3,7 @@ package schema_test
 import (
 	"testing"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/schema"
+	"cws.studio/pkg/foundation/schema"
 )
 
 // ============================================================================

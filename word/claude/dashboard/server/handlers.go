@@ -27,7 +27,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/pkg/dashboard"
 )
 
 // ============================================================================
@@ -112,7 +112,7 @@ func handleAnalytics(svc *dashboard.DashboardService) http.HandlerFunc {
 			sessionID = snap.SessionID
 		}
 
-		bundle, err := dashboard.LoadAnalytics(r.Context(), svc.DB(), sessionID)
+		bundle, err := dashboard.LoadAnalyticsWithMultiDB(r.Context(), svc, sessionID)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "Failed to load analytics: "+err.Error())
 			return
@@ -161,6 +161,71 @@ func handlePath() http.HandlerFunc {
 			return
 		}
 		writeJSON(w, http.StatusOK, pathData)
+	}
+}
+
+// handleExchanges returns recent exchanges with message text and valence.
+// GET /api/exchanges?session_id=xxx&limit=50
+func handleExchanges(svc *dashboard.DashboardService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sessionID := r.URL.Query().Get("session_id")
+		limit := parseIntParam(r, "limit", 50)
+
+		// If no session_id provided, use current session
+		if sessionID == "" {
+			snap, _ := svc.CurrentState()
+			if snap != nil {
+				sessionID = snap.SessionID
+			}
+		}
+
+		exchanges, err := svc.RecentExchanges(sessionID, limit)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "Failed to read exchanges: "+err.Error())
+			return
+		}
+		writeJSON(w, http.StatusOK, exchanges)
+	}
+}
+
+// handleLivePatterns returns real-time detected patterns from growth.db.
+// GET /api/live-patterns
+func handleLivePatterns(svc *dashboard.DashboardService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		patterns, err := svc.LivePatterns()
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "Failed to read live patterns: "+err.Error())
+			return
+		}
+		writeJSON(w, http.StatusOK, patterns)
+	}
+}
+
+// handleValence returns valence distribution for a session.
+// GET /api/valence?session_id=xxx
+func handleValence(svc *dashboard.DashboardService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sessionID := r.URL.Query().Get("session_id")
+
+		// If no session_id provided, use current session
+		if sessionID == "" {
+			snap, _ := svc.CurrentState()
+			if snap != nil {
+				sessionID = snap.SessionID
+			}
+		}
+
+		if sessionID == "" {
+			writeJSON(w, http.StatusOK, map[string]int{"positive": 0, "neutral": 0, "negative": 0})
+			return
+		}
+
+		dist, err := svc.ValenceDistribution(sessionID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "Failed to read valence: "+err.Error())
+			return
+		}
+		writeJSON(w, http.StatusOK, dist)
 	}
 }
 

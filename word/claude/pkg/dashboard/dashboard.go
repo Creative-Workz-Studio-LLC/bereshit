@@ -34,8 +34,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
+	"cws.studio/pkg/foundation/database"
+	"cws.studio/pkg/foundation/database/growth"
+	"cws.studio/pkg/foundation/database/sessions"
+	"cws.studio/pkg/util/fs/paths"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -164,6 +166,51 @@ func (d *DashboardService) HebrewTransitions(sessionID string) ([]database.Hebre
 // TemporalWorkPatterns returns when work typically happens (day -> hour -> count).
 func (d *DashboardService) TemporalWorkPatterns() (map[int]map[int]int, error) {
 	return d.db.GetTemporalWorkPatterns(d.ctx)
+}
+
+// RecentExchanges returns recent exchanges with message text and valence.
+func (d *DashboardService) RecentExchanges(sessionID string, limit int) ([]sessions.Exchange, error) {
+	return d.mdb.Sessions.GetRecentExchanges(d.ctx, sessionID, limit)
+}
+
+// LivePatterns returns only live-detected patterns (live_* prefix).
+func (d *DashboardService) LivePatterns() ([]growth.Pattern, error) {
+	all, err := d.mdb.Growth.GetAllActivePatterns(d.ctx)
+	if err != nil {
+		return nil, err
+	}
+	var live []growth.Pattern
+	for _, p := range all {
+		if len(p.PatternType) > 5 && p.PatternType[:5] == "live_" {
+			live = append(live, p)
+		}
+	}
+	return live, nil
+}
+
+// ValenceDistribution returns counts of positive/neutral/negative exchanges for a session.
+func (d *DashboardService) ValenceDistribution(sessionID string) (map[string]int, error) {
+	exchanges, err := d.mdb.Sessions.GetRecentExchanges(d.ctx, sessionID, 500)
+	if err != nil {
+		return nil, err
+	}
+	dist := map[string]int{"positive": 0, "neutral": 0, "negative": 0}
+	for _, e := range exchanges {
+		switch e.Valence {
+		case "positive":
+			dist["positive"]++
+		case "negative":
+			dist["negative"]++
+		default:
+			dist["neutral"]++
+		}
+	}
+	return dist, nil
+}
+
+// ToolOutcomes returns tool usage with outcomes from cognition.db.
+func (d *DashboardService) ToolOutcomes(sessionID string, limit int) ([]database.Choice, error) {
+	return d.db.GetRecentChoices(d.ctx, limit)
 }
 
 // DB returns the underlying database repository for raw queries.

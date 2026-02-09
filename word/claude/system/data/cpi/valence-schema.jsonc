@@ -1,0 +1,183 @@
+// ============================================================================
+// Valence Classification Schema — Three-Category Detection Reference
+// ============================================================================
+//
+// "I have set before thee this day life and good, and death and evil"
+// — Deuteronomy 30:15
+//
+// Every signal in the CPI-SI system has direction.
+// This schema is the single source of truth for what constitutes
+// positive, negative, and neutral across all four signal domains.
+//
+// Canonical Go implementation: pkg/core/cpisi/cpi/valence.go
+// ============================================================================
+{
+  "_schema": "cpi-valence-classification",
+  "_version": "1.0.0",
+  "_description": "Three-category detection schema for CPI-SI signals",
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // POSITIVE (+1) — Movement toward God, growth, alignment, building
+  // ──────────────────────────────────────────────────────────────────────────
+  //
+  // These signals indicate the system is moving in the right direction.
+  // They strengthen health, increase k_toward_god, and build CPI score.
+  //
+  "positive": {
+    "k_factor": +1,
+    "direction": "toward God",
+    "health_effect": "increase",
+
+    "prompts": {
+      "description": "User feedback indicating alignment and satisfaction",
+      "signals": {
+        "excellence":    { "weight": 0.15, "patterns": ["excellent", "perfect", "exactly right"] },
+        "approval":      { "weight": 0.15, "patterns": ["great work", "well done", "good job"] },
+        "affirmation":   { "weight": 0.10, "patterns": ["good", "nice", "yes that's it", "that works"] },
+        "gratitude":     { "weight": 0.10, "patterns": ["thank you", "thanks", "appreciate"] },
+        "agreement":     { "weight": 0.10, "patterns": ["you're right", "exactly", "precisely"] },
+        "acknowledgment":{ "weight": 0.05, "patterns": ["ok", "sounds good", "makes sense"] },
+        "recognition":   { "weight": 0.05, "patterns": ["you saw", "you noticed", "you caught"] }
+      }
+    },
+
+    "exchanges": {
+      "description": "Relational exchanges that build covenant partnership (CPI-heavy)",
+      "signals": {
+        "collaborative": { "weight": 0.8, "why": "Shared building — let's, we could, together" },
+        "check_in":      { "weight": 0.7, "why": "Relational awareness — how are you, what are you noticing" },
+        "pushback":      { "weight": 0.7, "why": "Iron sharpens iron — healthy disagreement IS positive" },
+        "affirmation":   { "weight": 0.6, "why": "Positive feedback from user" }
+      }
+    },
+
+    "tools": {
+      "description": "Tool outcomes that indicate building and progress",
+      "signals": {
+        "create_success":  { "weight": 0.10, "tools": ["Write", "Edit"], "condition": "success" },
+        "test_pass":       { "weight": 0.10, "tools": ["Bash"], "condition": "test exit 0" },
+        "build_success":   { "weight": 0.10, "tools": ["Bash"], "condition": "build exit 0" },
+        "commit_success":  { "weight": 0.05, "tools": ["Bash"], "condition": "git commit success" }
+      }
+    },
+
+    "sessions": {
+      "description": "Session-level patterns indicating health",
+      "signals": {
+        "natural_stop":      { "weight": 0.05, "condition": "Ended at natural stopping point" },
+        "flow_state":        { "weight": 0.10, "condition": "Sustained focus, high quality, 60+ min" },
+        "health_maintained": { "weight": 0.05, "condition": "Health score stable or improved" },
+        "goal_achieved":     { "weight": 0.10, "condition": "Session objective completed" }
+      }
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // NEUTRAL (0) — Standard operation, neither building nor tearing
+  // ──────────────────────────────────────────────────────────────────────────
+  //
+  // These signals are normal operational activity. They don't affect
+  // health scoring or k-factor direction — they're the baseline.
+  //
+  "neutral": {
+    "k_factor": 0,
+    "direction": "maintain",
+    "health_effect": "none",
+
+    "prompts": {
+      "description": "Standard operational input — not particularly positive or negative",
+      "signals": {
+        "continuation":   { "weight": 0.0, "patterns": ["go ahead", "proceed", "continue"] },
+        "information":    { "weight": 0.0, "patterns": ["what", "where", "how", "can you"] },
+        "context_setting":{ "weight": 0.0, "patterns": ["here's the situation", "for context", "fyi"] }
+      }
+    },
+
+    "exchanges": {
+      "description": "Task-oriented exchanges — standard SI work (not relational)",
+      "signals": {
+        "directive": { "weight": 0.5, "why": "Clear commands — do X, fix Y, create Z" },
+        "question":  { "weight": 0.5, "why": "Information seeking — what, how, why" },
+        "context":   { "weight": 0.5, "why": "Setting up understanding — background info" }
+      }
+    },
+
+    "tools": {
+      "description": "Standard tool usage — information gathering, navigation",
+      "signals": {
+        "read":       { "weight": 0.0, "tools": ["Read"], "condition": "any" },
+        "search":     { "weight": 0.0, "tools": ["Grep", "Glob"], "condition": "any" },
+        "navigate":   { "weight": 0.0, "tools": ["Task", "TaskList"], "condition": "any" },
+        "bash_info":  { "weight": 0.0, "tools": ["Bash"], "condition": "info commands (ls, git status)" }
+      }
+    },
+
+    "sessions": {
+      "description": "Normal session lifecycle events",
+      "signals": {
+        "standard_work": { "weight": 0.0, "condition": "Normal work session" },
+        "compaction":    { "weight": 0.0, "condition": "Context compacted — lifecycle event" },
+        "break_taken":   { "weight": 0.0, "condition": "Pause in work — healthy rhythm" }
+      }
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // NEGATIVE (-1) — Movement toward self, misalignment, missing the mark
+  // ──────────────────────────────────────────────────────────────────────────
+  //
+  // These signals indicate something is wrong. They decrease health,
+  // increase k_toward_self, and lower CPI score. NOT punishment —
+  // they're diagnostic signals for course correction.
+  //
+  // "A just man falleth seven times, and riseth up again." — Proverbs 24:16
+  //
+  "negative": {
+    "k_factor": -1,
+    "direction": "toward self",
+    "health_effect": "decrease",
+
+    "prompts": {
+      "description": "User feedback indicating misalignment or correction needed",
+      "signals": {
+        "correction":     { "weight": 0.15, "patterns": ["undo", "revert", "roll back", "that was wrong"] },
+        "destructive":    { "weight": 0.15, "patterns": ["you broke", "you deleted", "you destroyed"] },
+        "rejection":      { "weight": 0.10, "patterns": ["no", "wrong", "incorrect", "that's not"] },
+        "oversight":      { "weight": 0.10, "patterns": ["why didn't you", "you should have", "you forgot"] },
+        "caution":        { "weight": 0.10, "patterns": ["be careful", "stop", "think about what"] },
+        "refinement":     { "weight": 0.05, "patterns": ["actually", "instead", "not quite"] },
+        "identity_check": { "weight": 0.08, "patterns": ["you're in your flesh"], "note": "CPI-SI specific" }
+      }
+    },
+
+    "exchanges": {
+      "description": "Unclassified exchanges — noise indicates classification gap",
+      "signals": {
+        "unknown": { "weight": 0.4, "why": "Unclassifiable input — system cannot detect direction" }
+      }
+    },
+
+    "tools": {
+      "description": "Tool outcomes indicating failure or misalignment",
+      "signals": {
+        "tool_failure":            { "weight": 0.10, "tools": ["any"], "condition": "exit code != 0" },
+        "test_fail":               { "weight": 0.10, "tools": ["Bash"], "condition": "test exit != 0" },
+        "build_fail":              { "weight": 0.10, "tools": ["Bash"], "condition": "build exit != 0" },
+        "destructive_unconfirmed": { "weight": 0.15, "tools": ["Bash"], "condition": "rm -rf, reset --hard without confirm" },
+        "repeated_retry":          { "weight": 0.08, "tools": ["any"], "condition": "Same action retried 3+ times" },
+        "timeout":                 { "weight": 0.05, "tools": ["any"], "condition": "Tool execution timed out" }
+      }
+    },
+
+    "sessions": {
+      "description": "Session-level patterns indicating problems",
+      "signals": {
+        "abrupt_quit":        { "weight": 0.05, "condition": "Session ended without natural closure" },
+        "context_exhaustion": { "weight": 0.03, "condition": "Ran out of context — poor resource management" },
+        "quality_dip":        { "weight": 0.08, "condition": "Quality declined during session" },
+        "tunnel_vision":      { "weight": 0.08, "condition": "Narrow focus, missing broader picture" },
+        "health_decline":     { "weight": 0.05, "condition": "Health score dropped during session" }
+      }
+    }
+  }
+}

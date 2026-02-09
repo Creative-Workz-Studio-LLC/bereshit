@@ -35,11 +35,11 @@ import (
 	"time"
 
 	"cws.studio/claude/hooks/internal"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database"
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/cognition"
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/logging"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/hookoutput"
+	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/foundation/database"
+	"cws.studio/pkg/orchestration/cognition"
+	"cws.studio/pkg/orchestration/logging"
+	"cws.studio/pkg/util/pure/hookoutput"
 )
 
 // ============================================================================

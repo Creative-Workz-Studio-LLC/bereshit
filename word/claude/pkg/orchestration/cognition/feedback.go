@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
+	"cws.studio/pkg/foundation/types"
 )
 
 // ToolOutcome represents what happened with a tool execution

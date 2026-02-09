@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
+	"cws.studio/pkg/util/fs/paths"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════

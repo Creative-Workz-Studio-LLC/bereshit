@@ -24,7 +24,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
+	"cws.studio/pkg/util/term/display"
 )
 
 // Load holds system load info

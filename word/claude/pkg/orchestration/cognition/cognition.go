@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/core/health"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
+	"cws.studio/pkg/core/health"
+	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/foundation/types"
 )
 
 // ContextBuilder assembles cognition context from multiple sources

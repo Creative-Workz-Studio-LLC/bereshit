@@ -65,8 +65,8 @@ package coordinates
 import (
 	"math"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/core/cpisi/compute"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/schema"
+	"cws.studio/pkg/core/cpisi/compute"
+	"cws.studio/pkg/foundation/schema"
 )
 
 // ───────────────────────────────────────────────────────────────────────────

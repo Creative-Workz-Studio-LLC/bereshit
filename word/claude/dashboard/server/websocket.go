@@ -30,7 +30,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/pkg/dashboard"
 )
 
 // Constants for WebSocket management.

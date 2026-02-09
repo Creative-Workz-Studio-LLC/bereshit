@@ -31,12 +31,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/cognition"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/growth"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/projects"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/sessions"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/temporal"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
+	"cws.studio/pkg/foundation/database/cognition"
+	"cws.studio/pkg/foundation/database/growth"
+	"cws.studio/pkg/foundation/database/projects"
+	"cws.studio/pkg/foundation/database/sessions"
+	"cws.studio/pkg/foundation/database/temporal"
+	"cws.studio/pkg/util/fs/paths"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════

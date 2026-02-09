@@ -30,11 +30,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/cognition"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/growth"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/sessions"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
+	"cws.studio/pkg/foundation/database/cognition"
+	"cws.studio/pkg/foundation/database/growth"
+	"cws.studio/pkg/foundation/database/sessions"
+	"cws.studio/pkg/foundation/types"
+	"cws.studio/pkg/util/fs/paths"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -119,6 +119,7 @@ func (b *MultiBridge) EndSession(ctx context.Context, sessionID string, state *t
 func (b *MultiBridge) RecordChoice(ctx context.Context, record *types.ChoiceRecord, state *types.RuntimeState) error {
 	now := time.Now()
 
+	healthScore := int(state.Session.HealthScore)
 	choice := &cognition.Choice{
 		ID:               record.ID,
 		SessionID:        record.SessionID,
@@ -129,6 +130,7 @@ func (b *MultiBridge) RecordChoice(ctx context.Context, record *types.ChoiceReco
 		KAtChoice:        float64(record.Context.KAtChoice),
 		ToolName:         record.Context.Tool,
 		ToolCategory:     categoryFromKey(int(record.Context.IntendedKey)),
+		HealthScore:      &healthScore,
 	}
 
 	if err := b.mdb.Cognition.RecordChoice(ctx, choice); err != nil {

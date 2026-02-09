@@ -21,7 +21,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/logging"
+	"cws.studio/pkg/orchestration/logging"
 )
 
 // ============================================================================

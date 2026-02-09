@@ -44,6 +44,9 @@ type Choice struct {
 	TrueScore        float64
 	KAlignDelta      float64
 	KAlignAfter      float64
+
+	// Rich data (v2)
+	HealthScore *int // Health at time of choice
 }
 
 // HebrewTransition records a cognitive state change

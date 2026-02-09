@@ -9,12 +9,14 @@ import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
-type TabName = 'kalign' | 'keys' | 'hebrew' | 'patterns' | 'work';
+type TabName = 'kalign' | 'keys' | 'hebrew' | 'patterns' | 'work' | 'valence' | 'exchanges';
 
 const TABS: { id: TabName; label: string }[] = [
     { id: 'kalign', label: 'K:ALIGN' },
     { id: 'keys', label: 'Keys' },
     { id: 'hebrew', label: 'Hebrew' },
+    { id: 'valence', label: 'Valence' },
+    { id: 'exchanges', label: 'Exchanges' },
     { id: 'patterns', label: 'Patterns' },
     { id: 'work', label: 'Activity' },
 ];
@@ -102,10 +104,14 @@ export class AnalyticsCharts {
     }
 
     private renderCurrentTab(): void {
-        if (this.activeTab === 'patterns') {
+        if (this.activeTab === 'patterns' || this.activeTab === 'exchanges') {
             this.chartContainer.style.display = 'none';
             this.patternsList.style.display = 'block';
-            this.renderPatternsList();
+            if (this.activeTab === 'patterns') {
+                this.renderPatternsList();
+            } else {
+                this.renderExchangesList();
+            }
             return;
         }
 
@@ -131,6 +137,9 @@ export class AnalyticsCharts {
                 break;
             case 'hebrew':
                 this.renderHebrewChart();
+                break;
+            case 'valence':
+                this.renderValenceChart();
                 break;
             case 'work':
                 this.renderWorkChart();
@@ -323,13 +332,45 @@ export class AnalyticsCharts {
 
     private renderPatternsList(): void {
         const patterns = this.data?.activePatterns ?? [];
+        const livePatterns = this.data?.livePatterns ?? [];
 
-        if (patterns.length === 0) {
+        if (patterns.length === 0 && livePatterns.length === 0) {
             this.patternsList.innerHTML = '<div class="analytics-empty">No active patterns detected</div>';
             return;
         }
 
         let html = '';
+
+        // Live patterns first (real-time triggers)
+        if (livePatterns.length > 0) {
+            html += '<div class="pattern-section-header" style="color:var(--accent-gold);margin-bottom:8px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Live Triggers</div>';
+            for (const lp of livePatterns) {
+                const confidence = Math.round(lp.Confidence * 100);
+                const confColor = confidence >= 70 ? 'var(--accent-green)'
+                    : confidence >= 40 ? 'var(--accent-gold)'
+                    : 'var(--text-muted)';
+
+                html += `
+                    <div class="pattern-card" style="border-left:2px solid var(--accent-gold);">
+                        <div class="pattern-header">
+                            <span class="pattern-type">${this.escapeHtml(lp.PatternType)}</span>
+                            <span class="pattern-confidence" style="color:${confColor}">${confidence}%</span>
+                        </div>
+                        <div class="pattern-key">${this.escapeHtml(lp.PatternKey)}</div>
+                        <div class="pattern-desc">${this.escapeHtml(lp.Description)}</div>
+                        <div class="pattern-meta">
+                            <span>${lp.OccurrenceCount} occurrences</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Session-end patterns
+        if (patterns.length > 0 && livePatterns.length > 0) {
+            html += '<div class="pattern-section-header" style="color:var(--text-muted);margin:12px 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Session Patterns</div>';
+        }
+
         for (const p of patterns) {
             const confidence = Math.round(p.Confidence * 100);
             const confColor = confidence >= 70 ? 'var(--accent-green)'
@@ -346,6 +387,85 @@ export class AnalyticsCharts {
                     <div class="pattern-desc">${this.escapeHtml(p.Description)}</div>
                     <div class="pattern-meta">
                         <span>${p.OccurrenceCount} occurrences</span>
+                    </div>
+                </div>
+            `;
+        }
+        this.patternsList.innerHTML = html;
+    }
+
+    private renderValenceChart(): void {
+        const dist = this.data?.valenceDistribution;
+        if (!dist || (dist.positive === 0 && dist.neutral === 0 && dist.negative === 0)) {
+            this.renderEmpty('No valence data for current session');
+            return;
+        }
+
+        const labels = ['Positive', 'Neutral', 'Negative'];
+        const values = [dist.positive ?? 0, dist.neutral ?? 0, dist.negative ?? 0];
+        const colors = ['#66bb6a', '#4fc3f7', '#ef5350'];
+
+        this.chart = new Chart(this.canvas, {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors.map((c) => c + '80'),
+                    borderColor: colors,
+                    borderWidth: 2,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: '#a0a0a0', font: { size: 11 } },
+                    },
+                    title: {
+                        display: true,
+                        text: 'Exchange Valence Distribution',
+                        color: '#e0e0e0',
+                        font: { size: 13 },
+                    },
+                },
+            },
+        });
+    }
+
+    private renderExchangesList(): void {
+        const exchanges = this.data?.recentExchanges ?? [];
+
+        if (exchanges.length === 0) {
+            this.patternsList.innerHTML = '<div class="analytics-empty">No exchange data yet</div>';
+            return;
+        }
+
+        let html = '';
+        for (const e of exchanges.slice().reverse()) {
+            const valenceColor = e.Valence === 'positive' ? 'var(--accent-green)'
+                : e.Valence === 'negative' ? 'var(--accent-red)'
+                : 'var(--accent-blue)';
+            const valenceIcon = e.Valence === 'positive' ? '+' : e.Valence === 'negative' ? '-' : '~';
+            const msgPreview = e.UserMessageText
+                ? (e.UserMessageText.length > 120 ? e.UserMessageText.slice(0, 120) + '...' : e.UserMessageText)
+                : '(no message)';
+            const time = new Date(e.Timestamp).toLocaleTimeString();
+
+            html += `
+                <div class="pattern-card">
+                    <div class="pattern-header">
+                        <span class="pattern-type">#${e.SequenceNum} ${this.escapeHtml(e.ExchangeType)}</span>
+                        <span class="pattern-confidence" style="color:${valenceColor}">${valenceIcon} ${this.escapeHtml(e.Valence || 'neutral')}</span>
+                    </div>
+                    <div class="pattern-desc">${this.escapeHtml(msgPreview)}</div>
+                    <div class="pattern-meta">
+                        <span>${time}</span>
+                        <span>${this.escapeHtml(e.HebrewState || '?')}</span>
+                        <span>K:${e.KAlign?.toFixed(2) ?? '?'}</span>
+                        ${e.InsightDetected ? '<span style="color:var(--accent-gold)">Insight</span>' : ''}
                     </div>
                 </div>
             `;

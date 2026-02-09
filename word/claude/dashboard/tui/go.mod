@@ -4,7 +4,7 @@
 // Purpose: Bubble Tea terminal UI for CPI-SI state visualization
 // Biblical: Habakkuk 2:2 - "Write the vision, and make it plain upon tables"
 
-module github.com/creativeworkzstudio/claude-global/dashboard/tui
+module cws.studio/dashboard/tui
 
 go 1.24.0
 
@@ -13,7 +13,7 @@ toolchain go1.24.4
 require (
 	github.com/charmbracelet/bubbletea v1.3.4
 	github.com/charmbracelet/lipgloss v1.1.0
-	github.com/creativeworkzstudio/claude-global/pkg v0.0.0
+	cws.studio/pkg v0.0.0
 )
 
 require (
@@ -48,4 +48,4 @@ require (
 	modernc.org/sqlite v1.44.3 // indirect
 )
 
-replace github.com/creativeworkzstudio/claude-global/pkg => ../../pkg
+replace cws.studio/pkg => ../../pkg

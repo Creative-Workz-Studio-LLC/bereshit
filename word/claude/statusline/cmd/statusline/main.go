@@ -31,10 +31,10 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/core/health"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
-	"github.com/creativeworkzstudio/claude-global/statusline/lib/builder"
+	"cws.studio/pkg/core/health"
+	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/foundation/types"
+	"cws.studio/statusline/lib/builder"
 )
 
 // ============================================================================

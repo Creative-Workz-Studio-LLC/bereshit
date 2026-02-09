@@ -3,8 +3,8 @@ package statemachine_test
 import (
 	"testing"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/schema"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
+	"cws.studio/pkg/foundation/schema"
+	"cws.studio/pkg/core/statemachine"
 )
 
 // ============================================================================

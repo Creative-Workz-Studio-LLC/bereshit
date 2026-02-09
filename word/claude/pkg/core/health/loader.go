@@ -30,7 +30,7 @@ import (
 	"sync"
 
 	"github.com/BurntSushi/toml"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
+	"cws.studio/pkg/util/fs/paths"
 )
 
 // --- Schema File Constants ---

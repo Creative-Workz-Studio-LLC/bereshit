@@ -27,8 +27,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/creativeworkzstudio/claude-global/dashboard/gtk/app"
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/dashboard/gtk/app"
+	"cws.studio/pkg/dashboard"
 )
 
 // Build-time variables

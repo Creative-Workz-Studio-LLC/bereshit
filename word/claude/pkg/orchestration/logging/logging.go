@@ -38,7 +38,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/core/health"
+	"cws.studio/pkg/core/health"
 )
 
 // --- Constants ---

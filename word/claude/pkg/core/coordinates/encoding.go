@@ -60,7 +60,7 @@ package coordinates
 // ============================================================================
 
 import (
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/schema"
+	"cws.studio/pkg/foundation/schema"
 )
 
 // ───────────────────────────────────────────────────────────────────────────

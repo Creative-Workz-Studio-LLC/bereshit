@@ -155,6 +155,41 @@ export interface AggregatesSummary {
     trajectoryAvgTime: Record<string, number>;
 }
 
+export interface AnalyticsExchange {
+    ID: number;
+    SessionID: string;
+    Timestamp: string;
+    SequenceNum: number;
+    ExchangeType: string;
+    Initiative: string;
+    PromptLength: number;
+    FeedbackDetected: boolean;
+    FeedbackPolarity: string;
+    ValueContribution: number;
+    DepthLevel: string;
+    InsightDetected: boolean;
+    HebrewState: string;
+    KAlign: number;
+    Trajectory: string;
+    HealthScore?: number;
+    ContextTokens?: number;
+    UserMessageText: string;
+    ResponseSummary: string;
+    Valence: string;
+}
+
+export interface LivePattern {
+    ID: number;
+    PatternType: string;
+    PatternKey: string;
+    Description: string;
+    OccurrenceCount: number;
+    Confidence: number;
+    IsActive: boolean;
+    FirstSeen: string;
+    LastSeen: string;
+}
+
 export interface AnalyticsBundle {
     recentSessions: AnalyticsSession[];
     sessionGaps: unknown[];
@@ -164,6 +199,9 @@ export interface AnalyticsBundle {
     activePatterns: AnalyticsPattern[];
     workPatterns: Record<string, Record<string, number>>;
     aggregates?: AggregatesSummary;
+    livePatterns?: LivePattern[];
+    recentExchanges?: AnalyticsExchange[];
+    valenceDistribution?: Record<string, number>;
 }
 
 // ---- System Data Types ----

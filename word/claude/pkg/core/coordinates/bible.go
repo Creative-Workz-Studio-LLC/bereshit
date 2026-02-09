@@ -65,7 +65,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/schema"
+	"cws.studio/pkg/foundation/schema"
 )
 
 // ───────────────────────────────────────────────────────────────────────────

@@ -4,7 +4,7 @@
 // Purpose: Go module for recognize-pattern skill
 // Biblical: Ecclesiastes 1:9 - "There is no new thing under the sun"
 
-module github.com/creativeworkzstudio/claude-global/skills/recognize-pattern/scripts
+module cws.studio/skills/recognize-pattern/scripts
 
 go 1.23
 

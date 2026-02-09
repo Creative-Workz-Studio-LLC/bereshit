@@ -17,7 +17,7 @@ package statemachine
 // ============================================================================
 
 import (
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
+	"cws.studio/pkg/util/term/display"
 )
 
 // CommandInfo contains display information for a command state

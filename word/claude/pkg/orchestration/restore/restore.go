@@ -32,8 +32,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
+	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/util/fs/paths"
 )
 
 // --- Detection Types ---

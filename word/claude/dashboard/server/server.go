@@ -14,9 +14,12 @@
 //   GET /api/history    → Session history (?limit=N, default 50)
 //   GET /api/analytics  → AnalyticsBundle
 //   GET /api/systemdata → SystemDataEntry (?path=)
-//   GET /api/events     → Recent LogEvents (?limit=N, default 100)
-//   GET /api/path       → Current session PathSummary
-//   GET /ws             → WebSocket upgrade
+//   GET /api/events        → Recent LogEvents (?limit=N, default 100)
+//   GET /api/path          → Current session PathSummary
+//   GET /api/exchanges     → Recent exchanges with message text (?session_id=, ?limit=50)
+//   GET /api/live-patterns → Real-time detected patterns from growth.db
+//   GET /api/valence       → Valence distribution for session (?session_id=)
+//   GET /ws                → WebSocket upgrade
 //   GET /               → Static frontend files
 //
 // ============================================================================
@@ -33,7 +36,7 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/pkg/dashboard"
 )
 
 // ============================================================================
@@ -63,6 +66,9 @@ func New(svc *dashboard.DashboardService, port int) *Server {
 	mux.HandleFunc("GET /api/systemdata", s.withCORS(handleSystemData(svc)))
 	mux.HandleFunc("GET /api/events", s.withCORS(handleEvents(svc)))
 	mux.HandleFunc("GET /api/path", s.withCORS(handlePath()))
+	mux.HandleFunc("GET /api/exchanges", s.withCORS(handleExchanges(svc)))
+	mux.HandleFunc("GET /api/live-patterns", s.withCORS(handleLivePatterns(svc)))
+	mux.HandleFunc("GET /api/valence", s.withCORS(handleValence(svc)))
 
 	// WebSocket
 	mux.HandleFunc("GET /ws", s.handleWebSocket)

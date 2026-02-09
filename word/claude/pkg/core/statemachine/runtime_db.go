@@ -26,7 +26,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database"
+	"cws.studio/pkg/foundation/database"
 )
 
 // ───────────────────────────────────────────────────────────────────────────

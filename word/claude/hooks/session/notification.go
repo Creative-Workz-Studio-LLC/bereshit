@@ -22,8 +22,8 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/logging"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
+	"cws.studio/pkg/orchestration/logging"
+	"cws.studio/pkg/core/statemachine"
 )
 
 // ============================================================================

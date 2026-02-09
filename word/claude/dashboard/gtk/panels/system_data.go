@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/pkg/dashboard"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 )
 

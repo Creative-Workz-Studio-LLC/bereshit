@@ -75,6 +75,15 @@ type Exchange struct {
 	HebrewState        string
 	KAlign             float64
 	Trajectory         string
+
+	// Rich data (v2)
+	HealthScore   *int
+	ContextTokens *int
+
+	// Message text (v3)
+	UserMessageText string
+	ResponseSummary string
+	Valence         string
 }
 
 // Insight represents a moment of understanding transfer
@@ -114,6 +123,7 @@ type Repository interface {
 	// Exchange operations
 	RecordExchange(ctx context.Context, exchange *Exchange) error
 	RecordInsight(ctx context.Context, insight *Insight) error
+	GetRecentExchanges(ctx context.Context, sessionID string, limit int) ([]Exchange, error)
 
 	// Temporal queries
 	GetTemporalWorkPatterns(ctx context.Context) (map[int]map[int]int, error)

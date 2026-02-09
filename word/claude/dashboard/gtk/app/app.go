@@ -19,9 +19,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/creativeworkzstudio/claude-global/dashboard/gtk/panels"
-	"github.com/creativeworkzstudio/claude-global/dashboard/gtk/styles"
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/dashboard/gtk/panels"
+	"cws.studio/dashboard/gtk/styles"
+	"cws.studio/pkg/dashboard"
 	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
 	"github.com/diamondburned/gotk4/pkg/glib/v2"
@@ -239,6 +239,13 @@ func (d *DashboardApp) updatePanels(snap *dashboard.StateSnapshot) {
 	d.stateOverview.UpdateState(snap)
 	d.analytics.UpdateState(snap)
 	d.updateHeaderBar(snap)
+
+	// Load valence distribution for current session
+	if snap.SessionID != "" {
+		if dist, err := d.svc.ValenceDistribution(snap.SessionID); err == nil {
+			d.stateOverview.UpdateValence(dist)
+		}
+	}
 }
 
 // updateHeaderBar refreshes header with current session info.

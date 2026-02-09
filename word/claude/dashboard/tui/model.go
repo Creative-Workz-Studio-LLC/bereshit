@@ -21,8 +21,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/creativeworkzstudio/claude-global/dashboard/tui/panels"
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/dashboard/tui/panels"
+	"cws.studio/pkg/dashboard"
 )
 
 // ============================================================================
@@ -38,6 +38,7 @@ type stateChangeMsg dashboard.StateChange
 type initialStateMsg struct {
 	snapshot *dashboard.StateSnapshot
 	events   []dashboard.LogEvent
+	valence  map[string]int
 }
 
 // --- Focus tracking ---
@@ -138,6 +139,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.statusBar.Update(msg.snapshot)
 			m.stats.Update(msg.snapshot)
 		}
+		if msg.valence != nil {
+			m.stats.UpdateValence(msg.valence)
+		}
 		for _, evt := range msg.events {
 			m.messages.AddEvent(evt)
 		}
@@ -150,6 +154,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if change.Snapshot != nil {
 				m.statusBar.Update(change.Snapshot)
 				m.stats.Update(change.Snapshot)
+				// Refresh valence on state updates
+				if change.Snapshot.SessionID != "" {
+					if valence, err := m.svc.ValenceDistribution(change.Snapshot.SessionID); err == nil {
+						m.stats.UpdateValence(valence)
+					}
+				}
 			}
 		case "log_event":
 			if change.Event != nil {
@@ -234,7 +244,11 @@ func (m Model) loadInitialState() tea.Cmd {
 	return func() tea.Msg {
 		snap, _ := svc.CurrentState()
 		events, _ := svc.RecentEvents(50)
-		return initialStateMsg{snapshot: snap, events: events}
+		var valence map[string]int
+		if snap != nil && snap.SessionID != "" {
+			valence, _ = svc.ValenceDistribution(snap.SessionID)
+		}
+		return initialStateMsg{snapshot: snap, events: events, valence: valence}
 	}
 }
 

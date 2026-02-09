@@ -1,4 +1,4 @@
-module github.com/creativeworkzstudio/claude-global/skills/session-awareness/scripts
+module cws.studio/skills/session-awareness/scripts
 
 go 1.23
 

@@ -17,7 +17,7 @@ package health
 import (
 	"fmt"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
+	"cws.studio/pkg/util/term/display"
 )
 
 // HealthDisplayInfo contains all display information for a health score

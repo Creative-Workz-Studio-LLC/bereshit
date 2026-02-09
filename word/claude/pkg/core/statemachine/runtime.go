@@ -37,8 +37,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
+	"cws.studio/pkg/foundation/types"
+	"cws.studio/pkg/util/fs/paths"
 )
 
 // ───────────────────────────────────────────────────────────────────────────

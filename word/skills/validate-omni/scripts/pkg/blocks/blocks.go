@@ -25,7 +25,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/skills/validate-omni/scripts/pkg/config"
+	"cws.studio/skills/validate-omni/scripts/pkg/config"
 )
 
 // Spec defines the expected block structure for a pragma type

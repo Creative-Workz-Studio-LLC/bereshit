@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/pkg/dashboard"
 )
 
 // Colors matching the web dashboard dark theme

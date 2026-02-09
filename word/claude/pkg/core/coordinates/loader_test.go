@@ -3,7 +3,7 @@ package coordinates_test
 import (
 	"testing"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/core/coordinates"
+	"cws.studio/pkg/core/coordinates"
 )
 
 // ============================================================================

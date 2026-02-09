@@ -4,7 +4,7 @@
 // Purpose: Go module for create-journal-entry skill
 // Biblical: Psalm 119:11 - "Thy word have I hid in mine heart"
 
-module github.com/creativeworkzstudio/claude-global/skills/create-journal-entry/scripts
+module cws.studio/skills/create-journal-entry/scripts
 
 go 1.23
 

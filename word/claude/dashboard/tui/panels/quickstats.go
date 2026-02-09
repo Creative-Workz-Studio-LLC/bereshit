@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/pkg/dashboard"
 )
 
 // ============================================================================
@@ -30,6 +30,7 @@ import (
 // QuickStats is the right sidebar showing key metrics.
 type QuickStats struct {
 	snapshot *dashboard.StateSnapshot
+	valence  map[string]int // positive/neutral/negative counts
 }
 
 // NewQuickStats creates an empty quick stats panel.
@@ -40,6 +41,11 @@ func NewQuickStats() QuickStats {
 // Update refreshes the stats from a snapshot.
 func (q *QuickStats) Update(snap *dashboard.StateSnapshot) {
 	q.snapshot = snap
+}
+
+// UpdateValence refreshes the valence distribution.
+func (q *QuickStats) UpdateValence(dist map[string]int) {
+	q.valence = dist
 }
 
 // View renders the quick stats sidebar.
@@ -87,6 +93,23 @@ func (q QuickStats) View(width, height int, focused bool) string {
 		fmt.Sprintf("→ God:    %s", highlightValue(fmt.Sprintf("%d", s.KTowardGod))),
 		fmt.Sprintf("→ Self:   %s", highlightValue(fmt.Sprintf("%d", s.KTowardSelf))),
 	))
+
+	// --- Valence ---
+	if q.valence != nil {
+		pos := q.valence["positive"]
+		neu := q.valence["neutral"]
+		neg := q.valence["negative"]
+		total := pos + neu + neg
+		if total > 0 {
+			posBar := lipgloss.NewStyle().Foreground(colorGreen).Render("+")
+			neuBar := lipgloss.NewStyle().Foreground(colorBlue).Render("~")
+			negBar := lipgloss.NewStyle().Foreground(colorRed).Render("-")
+			sections = append(sections, q.renderSection("Valence", contentWidth,
+				fmt.Sprintf("%s %d  %s %d  %s %d", posBar, pos, neuBar, neu, negBar, neg),
+				q.renderValenceBar(pos, neu, neg, contentWidth-2),
+			))
+		}
+	}
 
 	// --- Tasks ---
 	if s.Tasks.Total > 0 {
@@ -187,6 +210,24 @@ func (q QuickStats) renderTaskBar(s *dashboard.StateSnapshot) string {
 		lipgloss.NewStyle().Foreground(colorMuted).Render(strings.Repeat("░", remaining))
 
 	return bar
+}
+
+func (q QuickStats) renderValenceBar(pos, neu, neg, barWidth int) string {
+	total := pos + neu + neg
+	if total == 0 || barWidth < 3 {
+		return ""
+	}
+
+	posW := int(float64(pos) / float64(total) * float64(barWidth))
+	negW := int(float64(neg) / float64(total) * float64(barWidth))
+	neuW := barWidth - posW - negW
+	if neuW < 0 {
+		neuW = 0
+	}
+
+	return lipgloss.NewStyle().Foreground(colorGreen).Render(strings.Repeat("█", posW)) +
+		lipgloss.NewStyle().Foreground(colorBlue).Render(strings.Repeat("▓", neuW)) +
+		lipgloss.NewStyle().Foreground(colorRed).Render(strings.Repeat("░", negW))
 }
 
 func highlightValue(s string) string {

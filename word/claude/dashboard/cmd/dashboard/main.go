@@ -31,8 +31,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/creativeworkzstudio/claude-global/dashboard/server"
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/dashboard/server"
+	"cws.studio/pkg/dashboard"
 )
 
 // ============================================================================

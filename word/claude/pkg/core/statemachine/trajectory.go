@@ -28,7 +28,7 @@ package statemachine
 // ═══════════════════════════════════════════════════════════════════════════
 
 import (
-	"github.com/creativeworkzstudio/claude-global/pkg/core/cpisi/compute"
+	"cws.studio/pkg/core/cpisi/compute"
 )
 
 // B domain constants — aliased from compute package for convenience

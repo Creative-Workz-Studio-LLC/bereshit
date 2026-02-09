@@ -24,11 +24,11 @@ package main
 import (
 	"os"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/cli"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/output"
-	"github.com/creativeworkzstudio/claude-global/skills/session-awareness/scripts/pkg/circadian"
-	"github.com/creativeworkzstudio/claude-global/skills/session-awareness/scripts/pkg/config"
-	"github.com/creativeworkzstudio/claude-global/skills/session-awareness/scripts/pkg/duration"
+	"cws.studio/pkg/util/pure/cli"
+	"cws.studio/pkg/util/pure/output"
+	"cws.studio/skills/session-awareness/scripts/pkg/circadian"
+	"cws.studio/skills/session-awareness/scripts/pkg/config"
+	"cws.studio/skills/session-awareness/scripts/pkg/duration"
 )
 
 // ============================================================================

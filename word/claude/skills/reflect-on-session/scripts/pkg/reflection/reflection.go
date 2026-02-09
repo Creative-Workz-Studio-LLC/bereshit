@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/skills/reflect-on-session/scripts/pkg/config"
+	"cws.studio/skills/reflect-on-session/scripts/pkg/config"
 )
 
 // ============================================================================

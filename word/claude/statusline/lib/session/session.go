@@ -14,8 +14,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
+	"cws.studio/pkg/util/term/display"
+	"cws.studio/pkg/foundation/types"
 )
 
 // LinesDisplay holds lines modified info

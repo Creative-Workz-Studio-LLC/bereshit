@@ -20,7 +20,7 @@ package circadian
 import (
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/skills/session-awareness/scripts/pkg/config"
+	"cws.studio/skills/session-awareness/scripts/pkg/config"
 )
 
 // CircadianResult holds the result of a circadian check

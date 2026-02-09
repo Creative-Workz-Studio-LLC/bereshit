@@ -28,8 +28,8 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/creativeworkzstudio/claude-global/dashboard/tui"
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/dashboard/tui"
+	"cws.studio/pkg/dashboard"
 )
 
 // ============================================================================

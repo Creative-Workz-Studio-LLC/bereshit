@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/skills/integrate-learning/scripts/pkg/config"
+	"cws.studio/skills/integrate-learning/scripts/pkg/config"
 )
 
 // ============================================================================

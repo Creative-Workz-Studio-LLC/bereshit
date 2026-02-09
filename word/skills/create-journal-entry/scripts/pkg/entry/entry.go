@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/skills/create-journal-entry/scripts/pkg/config"
+	"cws.studio/skills/create-journal-entry/scripts/pkg/config"
 )
 
 // --- Types ---

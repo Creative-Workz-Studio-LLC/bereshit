@@ -16,7 +16,7 @@ package statemachine
 import (
 	"testing"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/core/cpisi/compute"
+	"cws.studio/pkg/core/cpisi/compute"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -3,9 +3,9 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // Purpose: Single module for all shared CPI-SI packages
 // Biblical: Proverbs 4:26 - "Ponder the path of thy feet"
-// Import as: github.com/creativeworkzstudio/claude-global/pkg
+// Import as: cws.studio/pkg
 
-module github.com/creativeworkzstudio/claude-global/pkg
+module cws.studio/pkg
 
 go 1.24.0
 

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/skills/meta-awareness/scripts/pkg/config"
+	"cws.studio/skills/meta-awareness/scripts/pkg/config"
 )
 
 // ============================================================================

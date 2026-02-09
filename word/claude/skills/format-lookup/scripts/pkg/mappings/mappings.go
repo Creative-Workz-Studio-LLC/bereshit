@@ -22,7 +22,7 @@ package mappings
 import (
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/skills/format-lookup/scripts/pkg/config"
+	"cws.studio/skills/format-lookup/scripts/pkg/config"
 )
 
 // Result holds lookup results

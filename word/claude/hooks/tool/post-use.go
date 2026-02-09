@@ -20,16 +20,19 @@ package tool
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"cws.studio/claude/hooks/internal"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/cognition"
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/logging"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/hookoutput"
+	"cws.studio/pkg/core/cpisi/cpi"
+	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/foundation/database"
+	"cws.studio/pkg/foundation/types"
+	"cws.studio/pkg/orchestration/cognition"
+	"cws.studio/pkg/orchestration/logging"
+	"cws.studio/pkg/util/pure/hookoutput"
 )
 
 // ============================================================================
@@ -143,6 +146,10 @@ func PostUse() {
 
 		// Record choice in database (optional persistence)
 		recordChoiceToDatabase(state, input)
+
+		// Detect tool-level patterns in real-time
+		// "By their fruits ye shall know them" — Matthew 7:20
+		detectToolPatterns(state, input, log)
 
 		_ = statemachine.SaveRuntimeState(state)
 	}
@@ -908,6 +915,90 @@ func isValidationCommand(cmd string) bool {
 		}
 	}
 	return false
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// LIVE TOOL PATTERN DETECTION
+// ───────────────────────────────────────────────────────────────────────────
+// "By their fruits ye shall know them" — Matthew 7:20
+
+// detectToolPatterns detects tool-level behavioral patterns in real-time.
+// Focuses on signals only visible at the tool level:
+//   - Tool failure streaks (same tool failing repeatedly)
+//   - Tool dominance (heavy use of one tool class)
+//   - Destructive command patterns
+func detectToolPatterns(state *statemachine.RuntimeState, input PostUseInput, log *logging.Logger) {
+	if state == nil {
+		return
+	}
+
+	// Only detect after a few tool uses
+	if state.Session.HooksFired < 5 {
+		return
+	}
+
+	bridge, err := internal.GetBridge()
+	if err != nil {
+		return
+	}
+	ctx := context.Background()
+	repo := bridge.GetRepository()
+	now := time.Now()
+	success := !toolFailed(input)
+	valence := cpi.ToolValence(input.ToolName, success)
+
+	// --- Tool failure pattern ---
+	// Query recent choices for this session to see if same tool is failing
+	if !success {
+		rows, qerr := repo.Query(ctx,
+			`SELECT COUNT(*) as fail_count FROM choices
+			 WHERE session_id = ? AND tool_name = ? AND outcome = 'failure'`,
+			input.SessionID, input.ToolName)
+		if qerr == nil && len(rows) > 0 {
+			failCount := 0
+			switch v := rows[0]["fail_count"].(type) {
+			case int64:
+				failCount = int(v)
+			case float64:
+				failCount = int(v)
+			}
+			if failCount >= 3 {
+				_ = repo.RecordPattern(ctx, &database.Pattern{
+					PatternType:     "live_tool_struggle",
+					PatternKey:      fmt.Sprintf("repeated_failure:%s", input.ToolName),
+					Description:     fmt.Sprintf("Tool %s failing repeatedly (%d failures, valence: %s)", input.ToolName, failCount, valence),
+					PatternData:     fmt.Sprintf(`{"tool":"%s","failures":%d,"session_hooks":%d,"valence":"%s"}`, input.ToolName, failCount, state.Session.HooksFired, valence),
+					FirstSeen:       now,
+					LastSeen:        now,
+					OccurrenceCount: 1,
+					Confidence:      0.7,
+					IsActive:        true,
+				})
+				log.Info("Live pattern: tool struggle", map[string]string{
+					"tool":     input.ToolName,
+					"failures": fmt.Sprintf("%d", failCount),
+					"valence":  string(valence),
+				})
+			}
+		}
+	}
+
+	// --- Destructive command pattern ---
+	if input.ToolName == "Bash" {
+		if cmd, ok := input.ToolInput["command"].(string); ok && isDestructiveCommand(cmd) {
+			_ = repo.RecordPattern(ctx, &database.Pattern{
+				PatternType:     "live_tool_signal",
+				PatternKey:      "destructive_command",
+				Description:     fmt.Sprintf("Destructive bash command used (valence: %s)", valence),
+				PatternData:     fmt.Sprintf(`{"tool":"Bash","hooks_fired":%d,"valence":"%s"}`, state.Session.HooksFired, valence),
+				FirstSeen:       now,
+				LastSeen:        now,
+				OccurrenceCount: 1,
+				Confidence:      0.8,
+				IsActive:        true,
+			})
+		}
+	}
 }
 
 // ============================================================================

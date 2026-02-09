@@ -15,8 +15,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/temporal"
+	"cws.studio/pkg/util/term/display"
+	"cws.studio/pkg/util/term/temporal"
 )
 
 // ============================================================================

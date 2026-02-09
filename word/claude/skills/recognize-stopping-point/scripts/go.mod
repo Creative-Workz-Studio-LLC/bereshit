@@ -1,4 +1,4 @@
-module github.com/creativeworkzstudio/claude-global/skills/recognize-stopping-point/scripts
+module cws.studio/skills/recognize-stopping-point/scripts
 
 go 1.23
 

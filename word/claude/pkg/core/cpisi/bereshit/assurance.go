@@ -61,7 +61,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/schema"
+	"cws.studio/pkg/foundation/schema"
 )
 
 // ============================================================================

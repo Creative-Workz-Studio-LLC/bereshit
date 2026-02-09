@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/dashboard"
+	"cws.studio/pkg/dashboard"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 )
 
@@ -72,6 +72,10 @@ type StateOverview struct {
 
 	// Family
 	familyLabel *gtk.Label
+
+	// Valence
+	valenceLabel *gtk.Label
+	valenceBar   *gtk.Box
 }
 
 // NewStateOverview creates the state overview panel.
@@ -220,6 +224,20 @@ func (s *StateOverview) build() {
 	sessionContent.Append(s.insightLabel)
 	sessionSection.Append(sessionContent)
 	content.Append(sessionSection)
+
+	// --- Valence Section ---
+	valSection := s.buildSection("Valence")
+	s.valenceLabel = gtk.NewLabel("—")
+	s.valenceLabel.SetXAlign(0)
+	s.valenceLabel.AddCSSClass("state-label")
+
+	s.valenceBar = gtk.NewBox(gtk.OrientationHorizontal, 4)
+
+	valContent := gtk.NewBox(gtk.OrientationVertical, 4)
+	valContent.Append(s.valenceLabel)
+	valContent.Append(s.valenceBar)
+	valSection.Append(valContent)
+	content.Append(valSection)
 
 	// --- Context Window Section ---
 	ctxSection := s.buildSection("Context Window")
@@ -469,6 +487,54 @@ func healthLevelStr(score float64) string {
 		return "Poor"
 	default:
 		return "Critical"
+	}
+}
+
+// UpdateValence refreshes the valence distribution display.
+func (s *StateOverview) UpdateValence(dist map[string]int) {
+	pos := dist["positive"]
+	neu := dist["neutral"]
+	neg := dist["negative"]
+	total := pos + neu + neg
+
+	if total == 0 {
+		s.valenceLabel.SetText("No valence data")
+		return
+	}
+
+	s.valenceLabel.SetText(fmt.Sprintf("+ %d   ~ %d   - %d   (total: %d)", pos, neu, neg, total))
+
+	// Clear existing bar children
+	for child := s.valenceBar.FirstChild(); child != nil; child = s.valenceBar.FirstChild() {
+		s.valenceBar.Remove(child)
+	}
+
+	// Build colored segments
+	barWidth := 200 // pixels total
+	posW := int(float64(pos) / float64(total) * float64(barWidth))
+	negW := int(float64(neg) / float64(total) * float64(barWidth))
+	neuW := barWidth - posW - negW
+	if neuW < 0 {
+		neuW = 0
+	}
+
+	if posW > 0 {
+		posBox := gtk.NewBox(gtk.OrientationHorizontal, 0)
+		posBox.AddCSSClass("valence-positive")
+		posBox.SetSizeRequest(posW, 8)
+		s.valenceBar.Append(posBox)
+	}
+	if neuW > 0 {
+		neuBox := gtk.NewBox(gtk.OrientationHorizontal, 0)
+		neuBox.AddCSSClass("valence-neutral")
+		neuBox.SetSizeRequest(neuW, 8)
+		s.valenceBar.Append(neuBox)
+	}
+	if negW > 0 {
+		negBox := gtk.NewBox(gtk.OrientationHorizontal, 0)
+		negBox.AddCSSClass("valence-negative")
+		negBox.SetSizeRequest(negW, 8)
+		s.valenceBar.Append(negBox)
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/skills/create-documentation/scripts/pkg/config"
+	"cws.studio/skills/create-documentation/scripts/pkg/config"
 )
 
 // ============================================================================

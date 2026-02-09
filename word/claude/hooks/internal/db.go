@@ -28,8 +28,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
+	"cws.studio/pkg/foundation/database"
+	"cws.studio/pkg/util/fs/paths"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════

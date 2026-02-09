@@ -14,9 +14,9 @@ package sections
 import (
 	"fmt"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
-	"github.com/creativeworkzstudio/claude-global/statusline/lib/features"
+	"cws.studio/pkg/util/term/display"
+	"cws.studio/pkg/core/statemachine"
+	"cws.studio/statusline/lib/features"
 )
 
 // ============================================================================

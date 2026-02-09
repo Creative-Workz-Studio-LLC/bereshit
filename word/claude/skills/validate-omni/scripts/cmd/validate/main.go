@@ -25,12 +25,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/cli"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/output"
-	"github.com/creativeworkzstudio/claude-global/skills/validate-omni/scripts/pkg/blocks"
-	"github.com/creativeworkzstudio/claude-global/skills/validate-omni/scripts/pkg/config"
-	"github.com/creativeworkzstudio/claude-global/skills/validate-omni/scripts/pkg/pragma"
-	"github.com/creativeworkzstudio/claude-global/skills/validate-omni/scripts/pkg/sections"
+	"cws.studio/pkg/util/pure/cli"
+	"cws.studio/pkg/util/pure/output"
+	"cws.studio/skills/validate-omni/scripts/pkg/blocks"
+	"cws.studio/skills/validate-omni/scripts/pkg/config"
+	"cws.studio/skills/validate-omni/scripts/pkg/pragma"
+	"cws.studio/skills/validate-omni/scripts/pkg/sections"
 )
 
 // ValidationResult holds the complete validation state

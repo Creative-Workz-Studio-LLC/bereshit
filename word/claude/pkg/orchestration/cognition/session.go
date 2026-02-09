@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
+	"cws.studio/pkg/foundation/types"
 )
 
 // ============================================================================

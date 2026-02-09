@@ -15,10 +15,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/format"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/vcs/git"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
+	"cws.studio/pkg/util/term/display"
+	"cws.studio/pkg/util/pure/format"
+	"cws.studio/pkg/util/vcs/git"
+	"cws.studio/pkg/foundation/types"
 )
 
 // ============================================================================

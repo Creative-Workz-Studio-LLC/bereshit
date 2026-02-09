@@ -1,4 +1,4 @@
-module github.com/creativeworkzstudio/claude-global/skills/propagate-change/scripts
+module cws.studio/skills/propagate-change/scripts
 
 go 1.23
 

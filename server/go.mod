@@ -3,7 +3,8 @@ module cws.studio/server
 go 1.24.4
 
 require (
-	github.com/creativeworkzstudio/claude-global/pkg v0.0.0
+	cws.studio/dashboard v0.0.0
+	cws.studio/pkg v0.0.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.44.3
 	nhooyr.io/websocket v1.8.17
@@ -23,4 +24,9 @@ require (
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.44.3 // indirect
+)
+
+replace (
+	cws.studio/dashboard => ../word/claude/dashboard
+	cws.studio/pkg => ../word/claude/pkg
 )

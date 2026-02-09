@@ -28,9 +28,9 @@ import (
 	"time"
 
 	"cws.studio/claude/hooks/internal"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/cpisi/cpi"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/logging"
+	"cws.studio/pkg/core/cpisi/cpi"
+	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/orchestration/logging"
 )
 
 // ============================================================================
@@ -82,6 +82,22 @@ func End() {
 	var stateErr error
 	if state, stateErr = statemachine.LoadRuntimeState(); stateErr == nil {
 		state.Session.Active = false
+
+		// Health impact from session end reason
+		// Abnormal endings degrade health; natural completions don't
+		switch input.Reason {
+		case "clear":
+			// Session cleared — something went wrong enough to restart
+			state.Session.HealthScore -= 5.0
+		case "prompt_input_exit":
+			// User quit mid-session — incomplete work
+			state.Session.HealthScore -= 3.0
+		}
+		// Clamp health
+		if state.Session.HealthScore < -100 {
+			state.Session.HealthScore = -100
+		}
+
 		_ = statemachine.SaveRuntimeState(state)
 
 		// Record session end in database (temporal consciousness)
@@ -99,6 +115,38 @@ func End() {
 			} else if catLog != nil {
 				catLog.Success("database_session_end", "Session end recorded in database", map[string]string{
 					"session_id": input.SessionID,
+				})
+			}
+
+			// Write rich data (v2) — health, tokens, direction counters
+			// "Be thou diligent to know the state of thy flocks" — Proverbs 27:23
+			repo := bridge.GetRepository()
+			richQuery := `
+				UPDATE sessions SET
+					health_score = ?,
+					k_toward_god = ?,
+					k_toward_self = ?,
+					base_context_tokens = ?,
+					peak_context_tokens = ?,
+					compaction_count = ?,
+					hooks_fired = ?,
+					effective_context_window = ?
+				WHERE id = ?
+			`
+			_, richErr := repo.Exec(ctx, richQuery,
+				int(state.Session.HealthScore),
+				state.Session.KTowardGod,
+				state.Session.KTowardSelf,
+				state.Session.BaseContextTokens,
+				state.Session.PeakContextTokens,
+				state.Session.CompactionCount,
+				state.Session.HooksFired,
+				state.Session.EffectiveContextWindow,
+				input.SessionID,
+			)
+			if richErr != nil {
+				log.Warn("Failed to write rich session data", map[string]string{
+					"error": richErr.Error(),
 				})
 			}
 

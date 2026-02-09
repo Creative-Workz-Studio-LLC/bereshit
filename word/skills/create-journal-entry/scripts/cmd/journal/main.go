@@ -24,10 +24,10 @@ package main
 import (
 	"os"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/cli"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/output"
-	"github.com/creativeworkzstudio/claude-global/skills/create-journal-entry/scripts/pkg/config"
-	"github.com/creativeworkzstudio/claude-global/skills/create-journal-entry/scripts/pkg/entry"
+	"cws.studio/pkg/util/pure/cli"
+	"cws.studio/pkg/util/pure/output"
+	"cws.studio/skills/create-journal-entry/scripts/pkg/config"
+	"cws.studio/skills/create-journal-entry/scripts/pkg/entry"
 )
 
 // ============================================================================

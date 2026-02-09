@@ -22,7 +22,7 @@ package temporal
 import (
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
+	"cws.studio/pkg/util/term/display"
 )
 
 // TimeOfDay represents time-of-day classification

@@ -25,10 +25,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/cli"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/output"
-	"github.com/creativeworkzstudio/claude-global/skills/recognize-pattern/scripts/pkg/config"
-	"github.com/creativeworkzstudio/claude-global/skills/recognize-pattern/scripts/pkg/recognition"
+	"cws.studio/pkg/util/pure/cli"
+	"cws.studio/pkg/util/pure/output"
+	"cws.studio/skills/recognize-pattern/scripts/pkg/config"
+	"cws.studio/skills/recognize-pattern/scripts/pkg/recognition"
 )
 
 // ============================================================================

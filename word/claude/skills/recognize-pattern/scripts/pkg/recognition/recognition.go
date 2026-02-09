@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/skills/recognize-pattern/scripts/pkg/config"
+	"cws.studio/skills/recognize-pattern/scripts/pkg/config"
 )
 
 // ============================================================================

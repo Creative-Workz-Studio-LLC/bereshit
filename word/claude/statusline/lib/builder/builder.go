@@ -19,12 +19,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/core/health"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/wezterm"
-	"github.com/creativeworkzstudio/claude-global/statusline/lib/sections"
+	"cws.studio/pkg/core/health"
+	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/foundation/types"
+	"cws.studio/pkg/util/term/display"
+	"cws.studio/pkg/util/term/wezterm"
+	"cws.studio/statusline/lib/sections"
 )
 
 // ============================================================================

@@ -36,7 +36,7 @@
 //
 //	Requires: stdlib (1): encoding/json, regexp, strings, os, path/filepath
 //	Used by:  Identity config validation, any JSONC needing schema validation
-//	Import:   import "github.com/creativeworkzstudio/claude-global/pkg/orchestration/config"
+//	Import:   import "cws.studio/pkg/orchestration/config"
 //	Pattern:  NewLoader(schemaDir) → LoadConfig(path, schema) → ValidationResult
 //
 // # M.4 Public API [API]

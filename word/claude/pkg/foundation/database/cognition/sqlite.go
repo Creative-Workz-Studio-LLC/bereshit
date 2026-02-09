@@ -85,6 +85,14 @@ func (r *SQLiteRepository) Migrate(ctx context.Context) error {
 
 // RecordChoice creates a new choice record
 func (r *SQLiteRepository) RecordChoice(ctx context.Context, choice *Choice) error {
+	// Resolve sequence_num: after compaction, ChoiceSequence resets but old
+	// choices still exist. Use DB max+1 if higher to ensure uniqueness.
+	var dbMax int
+	row := r.db.QueryRowContext(ctx, `SELECT COALESCE(MAX(sequence_num), 0) FROM choices WHERE session_id = ?`, choice.SessionID)
+	if err := row.Scan(&dbMax); err == nil && choice.SequenceNum <= dbMax {
+		choice.SequenceNum = dbMax + 1
+	}
+
 	query := `
 		INSERT INTO choices (
 			id, session_id, sequence_num, timestamp,

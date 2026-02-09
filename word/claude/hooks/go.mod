@@ -8,7 +8,7 @@ module cws.studio/claude/hooks
 
 go 1.24.4
 
-require github.com/creativeworkzstudio/claude-global/pkg v0.0.0
+require cws.studio/pkg v0.0.0
 
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
@@ -25,4 +25,4 @@ require (
 	modernc.org/sqlite v1.44.3 // indirect
 )
 
-replace github.com/creativeworkzstudio/claude-global/pkg => ../pkg
+replace cws.studio/pkg => ../pkg

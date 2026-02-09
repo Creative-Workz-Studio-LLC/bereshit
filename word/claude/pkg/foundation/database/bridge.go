@@ -33,8 +33,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/fs/paths"
+	"cws.studio/pkg/foundation/types"
+	"cws.studio/pkg/util/fs/paths"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -132,6 +132,7 @@ func (b *Bridge) RecordChoice(ctx context.Context, record *types.ChoiceRecord, s
 	now := time.Now()
 
 	// Create choice in database
+	healthScore := int(state.Session.HealthScore)
 	choice := &Choice{
 		ID:               record.ID,
 		SessionID:        record.SessionID,
@@ -142,6 +143,7 @@ func (b *Bridge) RecordChoice(ctx context.Context, record *types.ChoiceRecord, s
 		KAtChoice:        float64(record.Context.KAtChoice),
 		ToolName:         record.Context.Tool,
 		ToolCategory:     categoryFromKey(int(record.Context.IntendedKey)),
+		HealthScore:      &healthScore,
 	}
 
 	if err := b.repo.RecordChoice(ctx, choice); err != nil {

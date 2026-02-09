@@ -25,9 +25,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/cognition"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/growth"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/database/sessions"
+	"cws.studio/pkg/foundation/database/cognition"
+	"cws.studio/pkg/foundation/database/growth"
+	"cws.studio/pkg/foundation/database/sessions"
 )
 
 // LegacyAdapter implements the old Repository interface by dispatching to MultiDB
@@ -144,6 +144,7 @@ func (a *LegacyAdapter) RecordChoice(ctx context.Context, choice *Choice) error 
 		CubePosition:     choice.CubePosition,
 		ToolName:         choice.ToolName,
 		ToolCategory:     choice.ToolCategory,
+		HealthScore:      choice.HealthScore,
 	}
 	return a.mdb.Cognition.RecordChoice(ctx, c)
 }

@@ -1,4 +1,4 @@
-module github.com/creativeworkzstudio/claude-global/skills/validate-omni/scripts
+module cws.studio/skills/validate-omni/scripts
 
 go 1.23
 

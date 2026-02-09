@@ -65,6 +65,7 @@ func (r *SQLiteRepository) Migrate(ctx context.Context) error {
 	migrations := []string{
 		"schema/001_initial.sql",
 		"schema/002_rich_data.sql",
+		"schema/003_message_text.sql",
 	}
 
 	for _, file := range migrations {
@@ -415,6 +416,82 @@ func (r *SQLiteRepository) RecordInsight(ctx context.Context, insight *Insight) 
 		insight.TopicArea,
 	)
 	return err
+}
+
+// GetRecentExchanges returns the most recent exchanges, optionally filtered by session.
+func (r *SQLiteRepository) GetRecentExchanges(ctx context.Context, sessionID string, limit int) ([]Exchange, error) {
+	var query string
+	var args []interface{}
+
+	if sessionID != "" {
+		query = `
+			SELECT id, session_id, timestamp, sequence_num, exchange_type,
+				COALESCE(initiative, '') as initiative,
+				COALESCE(prompt_length, 0) as prompt_length,
+				COALESCE(feedback_detected, 0) as feedback_detected,
+				COALESCE(feedback_polarity, '') as feedback_polarity,
+				COALESCE(insight_detected, 0) as insight_detected,
+				COALESCE(insight_type, '') as insight_type,
+				COALESCE(depth_level, '') as depth_level,
+				COALESCE(hebrew_state, '') as hebrew_state,
+				COALESCE(k_align, 0.0) as k_align,
+				COALESCE(trajectory, '') as trajectory,
+				health_score, context_tokens,
+				COALESCE(user_message_text, '') as user_message_text,
+				COALESCE(response_summary, '') as response_summary,
+				COALESCE(valence, '') as valence
+			FROM exchanges
+			WHERE session_id = ?
+			ORDER BY id DESC LIMIT ?`
+		args = []interface{}{sessionID, limit}
+	} else {
+		query = `
+			SELECT id, session_id, timestamp, sequence_num, exchange_type,
+				COALESCE(initiative, '') as initiative,
+				COALESCE(prompt_length, 0) as prompt_length,
+				COALESCE(feedback_detected, 0) as feedback_detected,
+				COALESCE(feedback_polarity, '') as feedback_polarity,
+				COALESCE(insight_detected, 0) as insight_detected,
+				COALESCE(insight_type, '') as insight_type,
+				COALESCE(depth_level, '') as depth_level,
+				COALESCE(hebrew_state, '') as hebrew_state,
+				COALESCE(k_align, 0.0) as k_align,
+				COALESCE(trajectory, '') as trajectory,
+				health_score, context_tokens,
+				COALESCE(user_message_text, '') as user_message_text,
+				COALESCE(response_summary, '') as response_summary,
+				COALESCE(valence, '') as valence
+			FROM exchanges
+			ORDER BY id DESC LIMIT ?`
+		args = []interface{}{limit}
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var exchanges []Exchange
+	for rows.Next() {
+		var e Exchange
+		var healthScore, contextTokens *int
+		if err := rows.Scan(
+			&e.ID, &e.SessionID, &e.Timestamp, &e.SequenceNum, &e.ExchangeType,
+			&e.Initiative, &e.PromptLength,
+			&e.FeedbackDetected, &e.FeedbackPolarity,
+			&e.InsightDetected, &e.InsightType,
+			&e.DepthLevel, &e.HebrewState, &e.KAlign, &e.Trajectory,
+			&healthScore, &contextTokens,
+			&e.UserMessageText, &e.ResponseSummary, &e.Valence,
+		); err != nil {
+			continue
+		}
+		e.HealthScore = healthScore
+		e.ContextTokens = contextTokens
+		exchanges = append(exchanges, e)
+	}
+	return exchanges, nil
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

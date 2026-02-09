@@ -3,8 +3,8 @@ package bereshit_test
 import (
 	"testing"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/core/cpisi/bereshit"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/schema"
+	"cws.studio/pkg/core/cpisi/bereshit"
+	"cws.studio/pkg/foundation/schema"
 )
 
 // ============================================================================

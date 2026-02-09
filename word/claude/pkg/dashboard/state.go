@@ -19,8 +19,8 @@ package dashboard
 import (
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/core/cpisi/cpi"
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
+	"cws.studio/pkg/core/cpisi/cpi"
+	"cws.studio/pkg/core/statemachine"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════

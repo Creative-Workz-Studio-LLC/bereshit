@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/creativeworkzstudio/claude-global/skills/create-code/scripts/pkg/config"
-	"github.com/creativeworkzstudio/claude-global/skills/create-code/scripts/pkg/codegen"
+	"cws.studio/skills/create-code/scripts/pkg/config"
+	"cws.studio/skills/create-code/scripts/pkg/codegen"
 )
 
 // ============================================================================

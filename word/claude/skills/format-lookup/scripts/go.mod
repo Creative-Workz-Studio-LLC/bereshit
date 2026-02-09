@@ -1,4 +1,4 @@
-module github.com/creativeworkzstudio/claude-global/skills/format-lookup/scripts
+module cws.studio/skills/format-lookup/scripts
 
 go 1.23
 

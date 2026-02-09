@@ -17,7 +17,7 @@ package dashboard
 // ═══════════════════════════════════════════════════════════════════════════
 
 import (
-	"github.com/creativeworkzstudio/claude-global/pkg/core/statemachine"
+	"cws.studio/pkg/core/statemachine"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -23,7 +23,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
+	"cws.studio/pkg/util/term/display"
 )
 
 // Status holds git repository status

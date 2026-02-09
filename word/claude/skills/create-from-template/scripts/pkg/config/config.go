@@ -21,7 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
-	pkgtoml "github.com/creativeworkzstudio/claude-global/pkg/util/fs/toml"
+	pkgtoml "cws.studio/pkg/util/fs/toml"
 )
 
 // --- Types ---

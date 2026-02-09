@@ -24,10 +24,10 @@ package main
 import (
 	"os"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/cli"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/pure/output"
-	"github.com/creativeworkzstudio/claude-global/skills/meta-awareness/scripts/pkg/checkpoint"
-	"github.com/creativeworkzstudio/claude-global/skills/meta-awareness/scripts/pkg/config"
+	"cws.studio/pkg/util/pure/cli"
+	"cws.studio/pkg/util/pure/output"
+	"cws.studio/skills/meta-awareness/scripts/pkg/checkpoint"
+	"cws.studio/skills/meta-awareness/scripts/pkg/config"
 )
 
 // ============================================================================

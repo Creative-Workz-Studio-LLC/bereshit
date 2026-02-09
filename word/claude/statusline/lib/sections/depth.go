@@ -15,10 +15,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/display"
-	"github.com/creativeworkzstudio/claude-global/pkg/util/term/system"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
-	"github.com/creativeworkzstudio/claude-global/statusline/lib/features"
+	"cws.studio/pkg/util/term/display"
+	"cws.studio/pkg/util/term/system"
+	"cws.studio/pkg/foundation/types"
+	"cws.studio/statusline/lib/features"
 )
 
 // ============================================================================

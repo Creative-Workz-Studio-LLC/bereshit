@@ -23,7 +23,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/creativeworkzstudio/claude-global/skills/session-awareness/scripts/pkg/config"
+	"cws.studio/skills/session-awareness/scripts/pkg/config"
 )
 
 // CurrentSession represents the current session metadata

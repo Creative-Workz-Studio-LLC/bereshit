@@ -3,8 +3,8 @@ package loader_test
 import (
 	"testing"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/orchestration/loader"
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/schema"
+	"cws.studio/pkg/orchestration/loader"
+	"cws.studio/pkg/foundation/schema"
 )
 
 // ============================================================================

@@ -18,7 +18,7 @@ package cognition
 import (
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/pkg/foundation/types"
+	"cws.studio/pkg/foundation/types"
 )
 
 // PromptType represents categorized prompt intent

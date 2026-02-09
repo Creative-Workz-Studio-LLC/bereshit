@@ -24,7 +24,7 @@ package sections
 import (
 	"strings"
 
-	"github.com/creativeworkzstudio/claude-global/skills/validate-omni/scripts/pkg/config"
+	"cws.studio/skills/validate-omni/scripts/pkg/config"
 )
 
 // Result holds the sections check result
