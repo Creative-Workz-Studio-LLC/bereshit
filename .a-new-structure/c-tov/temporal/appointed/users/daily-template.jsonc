@@ -1,0 +1,310 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-tov-temporal-appointed-user-daily",
+    "_P1_from": "b-word/seed/data/json/3block/data.json",
+    "_P1_at": "template",
+
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "temporal-data",
+    "_P2_role": "scaffold",
+    "_P2_structure": "3-block",
+
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Scaffold — user daily schedule with appointments and hourly breakdown",
+    "_P3_layer": "tov/temporal/appointed/users",
+    "_P3_includes": "none",
+    "_P3_provides": ["USER_DAILY_TEMPLATE"],
+
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "User Daily — Day Schedule Template",
+    "_P5_brief": "Template for user daily schedule views with appointments and 24-hour hourly breakdown. Captures day identity (date, day_name, iso_week), ordered appointments with references to recurring definitions, hour-by-hour status mapping, and day summary statistics. Shows the user's actual committed time from their perspective.",
+    "_P5_usage": "Generated per day to personal/users/{identity_id}/YYYY/WXX/",
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "daily-template.jsonc",
+        "key": "B-tov-temporal-appointed-user-daily",
+        "title": "User Daily — Day Schedule Template",
+        "type": "Data (Template)",
+        "component": "Scaffold — user daily schedule with appointments and hourly breakdown",
+        "role": "Render user's daily schedule with appointments and 24-hour view"
+    },
+
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-09",
+        "updated": "2026-02-10"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "This is the day which the LORD hath made; we will rejoice and be glad in it."
+    "_M4_grounding": {
+        "scripture": "Psalm 118:24 — This is the day which the LORD hath made; we will rejoice and be glad in it.",
+        "principle": "Each day is made by the Lord — a gift to steward. The daily schedule reveals how committed time is distributed across 24 hours. Seeing the whole day at once enables intentional use of each hour, not reactive stumbling through commitments.",
+        "anchor": "Proverbs 27:1 — Boast not thyself of to morrow; for thou knowest not what a day may bring forth."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser, user appointment definitions, coordination files",
+        "consumers": "Weekly overview, instance daily schedule, availability reporting",
+        "integration": "Daily schedules assemble from appointment definitions (work, sacred, rest, collaboration). Each appointment references its recurring definition via appointment_ref. Hourly breakdown maps every hour to its appointment or marks it unscheduled. Summary provides quick statistics.",
+        "if_missing": "No daily visibility — user navigates the day without seeing their full commitment picture",
+        "related_data": {
+            "references": {
+                "appointment-definitions": "Recurring appointment definitions populate daily entries",
+                "coordination-files": "Coordination appointments link to coordination tracking"
+            },
+            "referenced_by": {
+                "weekly-overview": "Weekly views aggregate from daily schedules",
+                "instance-daily": "Instance daily view is the counterpart perspective"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "tov/temporal/appointed/users/daily-template.jsonc",
+        "derives_from": "b-word/seed/data/json/3block/data.json"
+    },
+
+    "_M7_classification": {
+        "tags": "temporal, appointed, user, daily, schedule, appointments, hourly-breakdown, summary, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Render user's daily schedule with appointments and 24-hour view",
+        "core_design": "Day identity (date, day_name, iso_week, identity_type, identity_id, timezone) + appointments array (ordered by start_time, with appointment_ref, category, status) + hourly_breakdown (24 hours 00:00-23:00, each with status/appointment_id/category) + summary (totals, by_category, first/last appointment, conflicts).",
+        "philosophy": "This is the day which the LORD hath made. Each day is a gift to steward — seeing all 24 hours reveals the rhythm. Work, sacred time, rest, collaboration — each has its place.",
+        "key_features": {
+            "appointment_references": "Each entry references its recurring appointment definition",
+            "hourly_breakdown": "Full 24-hour mapping showing what occupies each hour",
+            "day_summary": "Quick statistics — totals, categories, conflicts",
+            "coordination_tracking": "Coordinated appointments link to coordination files"
+        }
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2026-02-09) — Initial template creation",
+            "a-01.00 (2026-02-10) — Converted to flat OmniCode convention"
+        ],
+        "current": "User daily template — scaffold for daily schedule views",
+        "planned": ["Automated generation from appointment definitions", "Conflict detection", "Time utilization analysis"]
+    },
+
+    "_M10_temporal_scope": {
+        "lifecycle": "ephemeral-daily",
+        "description": "Daily schedule view — generated per day, consumed for planning, archived.",
+        "created_by": "Assembled from appointment definitions for the specific day",
+        "persists": "Per day — active during the day, archived after",
+        "consumed_by": "Weekly overview, instance awareness, availability reporting",
+        "scope": "user — one user's schedule for one specific day"
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are tov-data specific. M10 (temporal scope) tracks scheduling lifecycle.",
+        "rule": "M1-M5 are the base contract. M6+ extends for domain-specific metadata."
+    },
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores, YYYY-MM-DD dates, HH:MM times (24-hour), ISO week format",
+    "_Cc_constraint": "Day identity required. Appointments ordered by start_time. 24-hour hourly breakdown. Summary totals must match appointments.",
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "User Daily Schedule",
+    "version": "a-01.00",
+
+    // CORE (REQUIRED) — Must Exist
+    "date": "2025-01-01",
+    "day_name": "Wednesday",
+    "iso_week": "2025-W01",
+    "identity_type": "user",
+    "identity_id": "example-user",
+    "timezone": "America/Chicago",
+
+    // OPTIONAL STANDARD FIELDS — Agency
+    "appointments": [
+        {
+            "id": "example-2025-01-01",
+            "appointment_ref": "work",
+            "category_id": "work",
+            "title": "Work",
+            "start_time": "08:30",
+            "end_time": "17:00",
+            "duration_minutes": 510,
+            "status": "scheduled",
+            "coordination_id": null,
+            "notes": ""
+        }
+    ],
+
+    "hourly_breakdown": {
+        "00:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "01:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "02:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "03:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "04:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "05:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "06:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "07:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "08:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "09:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "10:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "11:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "12:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "13:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "14:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "15:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "16:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "17:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "18:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "19:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "20:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "21:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "22:00": { "status": "unscheduled", "appointment_id": null, "category": null },
+        "23:00": { "status": "unscheduled", "appointment_id": null, "category": null }
+    },
+
+    "summary": {
+        "total_appointments": 0,
+        "total_scheduled_hours": 0.0,
+        "by_category": {
+            "sacred": 0, "work": 0, "rest": 0, "collaboration": 0, "other": 0
+        },
+        "first_appointment": null,
+        "last_appointment": null,
+        "has_conflicts": false,
+        "conflicts": [],
+        "notes": ""
+    },
+
+    "usage": {
+        "purpose": "Render user's daily schedule with appointments and 24-hour view",
+        "naming": "{month}_{DD}_{dayname}.jsonc (e.g., nov_07_friday.jsonc)",
+        "lifecycle": "Ephemeral — generated per day, archived after"
+    },
+
+    "extensions": {
+        "note": "Structured discovery space — fields discovered through living/working",
+        "usage_guidance": "Add daily schedule discoveries here (e.g., time utilization patterns)"
+    },
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": { "commands": ["make", "./bin/tov --validate-temporal"] },
+    "_Cv_schema": {
+        "required": ["name", "version", "date", "day_name", "identity_type", "identity_id"],
+        "optional": ["iso_week", "timezone", "appointments", "hourly_breakdown", "summary", "usage", "extensions"],
+        "value_format": "date: YYYY-MM-DD. identity_type: 'user'. 24-hour hourly_breakdown. Appointments ordered by start_time."
+    },
+    "_Cv_health_scoring": { "total": 100, "complete_day_identity": 20, "accurate_appointments": 35, "correct_hourly_breakdown": 25, "matching_summary_totals": 20 },
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy -> X.2 Extension -> X.3 Troubleshooting -> X.4 Reference -> X.5 Note -> X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": ["Break 3-block structure", "Remove hourly breakdown (24 hours required)"],
+    "_X1_careful": ["Override appointment_ref without checking definition", "Modify summary without recalculating from appointments"],
+    "_X1_safe": ["Update appointment status", "Add appointment notes", "Refine summary"],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": ["Automated generation from appointment definitions", "Conflict detection", "Time utilization analysis"],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "summary_mismatch": "Summary totals don't match appointments. Recalculate from actual appointment data.",
+        "hourly_gaps": "Hourly breakdown doesn't cover all appointment hours. Ensure every scheduled hour maps to an appointment.",
+        "wrong_day_type": "Work variation doesn't match day type. Check if this is a regular day, pantry Tuesday, or pantry Thursday."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "tov/temporal/appointed/users/appointment-template.jsonc — Base appointment definitions",
+        "tov/temporal/appointed/users/work-template.jsonc — Work appointment details",
+        "tov/temporal/appointed/users/weekly-template.jsonc — Weekly overview aggregates dailies",
+        "tov/temporal/appointed/instances/daily-template.jsonc — Instance counterpart view",
+        "b-word/definitions/omni/json-3block-schema.jsonc — Validation schema"
+    ],
+    "_X4_required": ["name", "version", "date", "day_name", "identity_type", "identity_id"],
+    "_X4_validate": "make && ./bin/tov --validate-temporal",
+
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "User daily schedule. Appointment assembly. 24-hour breakdown. Day summary. Stewardship visibility.",
+    "_X5_scripture": "This is the day which the LORD hath made. — Psalm 118:24",
+    "_X5_anchor": "Each day is a gift to steward. Seeing all 24 hours reveals the rhythm — work, sacred time, rest, collaboration, each in its place.",
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

@@ -1,0 +1,661 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L0-bible-translation"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "bible"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "bible"
+layer = "L0-universal/bible"
+includes = "none"
+provides = ["TRANSLATION_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Bible Translation Map"
+brief = "KJV to WEB translation mapping"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "translation.toml"
+key = "B-L0-bible-translation"
+title = "Bible Translation Map"
+type = "Data (Bible Translation)"
+component = "Rung"
+role = "KJV to WEB translation mapping — pronouns, verbs, vocabulary, phrases, theological terms between encoded (KJV) and decoded (WEB) forms"
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-10"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "For precept must be upon precept, precept upon precept; line upon line, line upon line. — Isaiah 28:10"
+principle = "The same truth in different forms. KJV preserves archaic precision. WEB provides modern accessibility. Both carry the same truth."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/scripture/KJV/", "b-word/scripture/WEB/"]
+consumers = ["scripture display", "documentation", "search", "learning systems"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by code generators and lookup tools."
+if_missing = "Bible traceability broken — cannot map between Scripture and code"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Translation MAPPINGS in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines bible data. Generated code (C, Go) implements lookups."
+
+[_metadata.M6_location]
+path = "b-word/L0-universal/bible/translation.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "bible, translation, foundation, L0, scripture"
+
+[_metadata.M8_intent]
+purpose = "KJV to WEB translation mapping — pronouns, verbs, vocabulary, phrases, theological terms between encoded (KJV) and decoded (WEB) forms"
+core_design = "The same truth in different forms. KJV preserves archaic precision. WEB provides modern accessibility. Both carry the same truth."
+philosophy = "For precept must be upon precept, precept upon precept; line upon line, line upon line."
+
+[_metadata.M9_roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Initial creation",
+    "b-01.00 (2026-02-10) — TOML-native 3-block format alignment",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Code generation integration", "Automated validation tooling"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Bible data file — bible translation map for the OmniCode type system"
+
+[pronoun.thou]
+kjv = "thou"
+web = "you"
+grammatical_role = "second person singular nominative"
+example_kjv = "Thou shalt not kill"
+example_web = "You shall not murder"
+note = "Subject of verb (you = doer of action)"
+
+[pronoun.thee]
+kjv = "thee"
+web = "you"
+grammatical_role = "second person singular accusative/dative"
+example_kjv = "The LORD bless thee"
+example_web = "The LORD bless you"
+note = "Object of verb (you = receiver of action)"
+
+[pronoun.thy]
+kjv = "thy"
+web = "your"
+grammatical_role = "second person singular possessive (before consonant)"
+example_kjv = "Thy word is a lamp"
+example_web = "Your word is a lamp"
+note = "Used before consonant sounds"
+
+[pronoun.thine]
+kjv = "thine"
+web = "your/yours"
+grammatical_role = "second person singular possessive (before vowel or standalone)"
+example_kjv = "Thine is the kingdom"
+example_web = "Yours is the kingdom"
+note = "Used before vowel sounds or as 'yours'"
+
+[pronoun.ye]
+kjv = "ye"
+web = "you"
+grammatical_role = "second person plural nominative"
+example_kjv = "Ye are the light of the world"
+example_web = "You are the light of the world"
+note = "Plural 'you' as subject — KJV distinguishes singular/plural"
+
+
+# -----------------------------------------------------------------------------
+# 2. Verb Form Mapping - Archaic → Modern
+# -----------------------------------------------------------------------------
+# KJV uses archaic verb endings (-eth, -est, -st).
+# WEB uses modern forms.
+#
+# Pattern: kjv_form → web_form with verb paradigm
+
+[verb.hath]
+kjv = "hath"
+web = "has"
+verb_base = "have"
+person = "third singular"
+example_kjv = "He that hath ears to hear"
+example_web = "He who has ears to hear"
+
+[verb.hast]
+kjv = "hast"
+web = "have"
+verb_base = "have"
+person = "second singular"
+example_kjv = "Thou hast heard"
+example_web = "You have heard"
+
+[verb.doth]
+kjv = "doth"
+web = "does"
+verb_base = "do"
+person = "third singular"
+example_kjv = "He that doth the will of my Father"
+example_web = "He who does the will of my Father"
+
+[verb.doest]
+kjv = "doest"
+web = "do"
+verb_base = "do"
+person = "second singular"
+example_kjv = "What doest thou here?"
+example_web = "What are you doing here?"
+
+[verb.art]
+kjv = "art"
+web = "are"
+verb_base = "be"
+person = "second singular"
+example_kjv = "Thou art my beloved Son"
+example_web = "You are my beloved Son"
+
+[verb.wilt]
+kjv = "wilt"
+web = "will"
+verb_base = "will"
+person = "second singular"
+example_kjv = "Wilt thou be made whole?"
+example_web = "Do you want to be made well?"
+
+[verb.shalt]
+kjv = "shalt"
+web = "shall/will"
+verb_base = "shall"
+person = "second singular"
+example_kjv = "Thou shalt love the Lord"
+example_web = "You shall love the Lord"
+
+[verb.saith]
+kjv = "saith"
+web = "says"
+verb_base = "say"
+person = "third singular"
+example_kjv = "Thus saith the LORD"
+example_web = "Thus says the LORD"
+
+[verb.cometh]
+kjv = "cometh"
+web = "comes"
+verb_base = "come"
+person = "third singular"
+example_kjv = "Blessed is he that cometh"
+example_web = "Blessed is he who comes"
+
+[verb.goeth]
+kjv = "goeth"
+web = "goes"
+verb_base = "go"
+person = "third singular"
+example_kjv = "The wind goeth toward the south"
+example_web = "The wind goes toward the south"
+
+
+# -----------------------------------------------------------------------------
+# 3. Vocabulary Mapping - Archaic Words → Modern
+# -----------------------------------------------------------------------------
+# Words that changed meaning or fell out of use.
+#
+# Pattern: kjv_word → web_word with context
+
+[vocab.wherefore]
+kjv = "wherefore"
+web = "why / therefore"
+meaning = "for what reason (why) or for which reason (therefore)"
+example_kjv = "Wherefore art thou Romeo?"
+example_web = "Why are you Romeo?"
+note = "Context determines: question = why, statement = therefore"
+
+[vocab.verily]
+kjv = "verily"
+web = "truly / most certainly"
+meaning = "in truth, indeed, certainly"
+example_kjv = "Verily, verily, I say unto you"
+example_web = "Most certainly I tell you"
+
+[vocab.begat]
+kjv = "begat"
+web = "became the father of / fathered"
+meaning = "to father, to sire"
+example_kjv = "Abraham begat Isaac"
+example_web = "Abraham became the father of Isaac"
+note = "WEB sometimes uses 'fathered' for brevity"
+
+[vocab.unto]
+kjv = "unto"
+web = "to"
+meaning = "to, toward"
+example_kjv = "Come unto me"
+example_web = "Come to me"
+
+[vocab.hither]
+kjv = "hither"
+web = "here"
+meaning = "to this place"
+example_kjv = "Come hither"
+example_web = "Come here"
+
+[vocab.thither]
+kjv = "thither"
+web = "there"
+meaning = "to that place"
+example_kjv = "Go thither"
+example_web = "Go there"
+
+[vocab.whither]
+kjv = "whither"
+web = "where"
+meaning = "to what place"
+example_kjv = "Whither goest thou?"
+example_web = "Where are you going?"
+
+[vocab.hence]
+kjv = "hence"
+web = "from here / therefore"
+meaning = "from this place or from this time"
+example_kjv = "Get thee hence"
+example_web = "Go away from here"
+
+[vocab.behold]
+kjv = "behold"
+web = "look / see"
+meaning = "look at, see, observe"
+example_kjv = "Behold, I stand at the door"
+example_web = "Behold, I stand at the door"
+note = "WEB often retains 'behold' for dramatic effect"
+
+[vocab.brethren]
+kjv = "brethren"
+web = "brothers"
+meaning = "brothers, fellow believers"
+example_kjv = "My brethren"
+example_web = "My brothers"
+
+[vocab.peradventure]
+kjv = "peradventure"
+web = "perhaps / if"
+meaning = "perhaps, possibly, by chance"
+example_kjv = "Peradventure there be fifty righteous"
+example_web = "What if there are fifty righteous"
+
+[vocab.lest]
+kjv = "lest"
+web = "so that...not / or else"
+meaning = "for fear that, in order to prevent"
+example_kjv = "Lest ye die"
+example_web = "Or you will die"
+note = "OmniCode uses 'lest' — maps to KJV directly"
+
+
+# -----------------------------------------------------------------------------
+# 4. Phrase Mapping - Common Expressions
+# -----------------------------------------------------------------------------
+# Phrases that appear differently in each translation.
+#
+# Pattern: kjv_phrase → web_phrase with verse reference
+
+[phrase.in_the_beginning]
+kjv = "In the beginning God created the heaven and the earth"
+web = "In the beginning, God created the heavens and the earth"
+reference = "Genesis 1:1"
+difference = "heaven (singular) → heavens (plural)"
+
+[phrase.i_am_that_i_am]
+kjv = "I AM THAT I AM"
+web = "I AM WHO I AM"
+reference = "Exodus 3:14"
+difference = "THAT → WHO (modern relative pronoun)"
+
+[phrase.let_there_be_light]
+kjv = "Let there be light: and there was light"
+web = "Let there be light, and there was light"
+reference = "Genesis 1:3"
+difference = "Colon → comma (punctuation only)"
+
+[phrase.the_lord_is_my_shepherd]
+kjv = "The LORD is my shepherd; I shall not want"
+web = "The LORD is my shepherd; I shall lack nothing"
+reference = "Psalm 23:1"
+difference = "want (lack) → lack nothing (clarified)"
+
+[phrase.for_god_so_loved]
+kjv = "For God so loved the world, that he gave his only begotten Son"
+web = "For God so loved the world, that he gave his only born Son"
+reference = "John 3:16"
+difference = "only begotten → only born (translation choice)"
+
+[phrase.our_father]
+kjv = "Our Father which art in heaven, Hallowed be thy name"
+web = "Our Father in heaven, may your name be kept holy"
+reference = "Matthew 6:9"
+difference = "Complete modernization of pronouns and phrasing"
+
+
+# -----------------------------------------------------------------------------
+# 5. Theological Terms - Preserved or Changed
+# -----------------------------------------------------------------------------
+# Terms with theological weight that stayed same or changed.
+#
+# Pattern: term → status (preserved/changed) with notes
+
+[theo.covenant]
+kjv = "covenant"
+web = "covenant"
+status = "preserved"
+note = "Both translations use 'covenant' — central theological term"
+
+[theo.grace]
+kjv = "grace"
+web = "grace"
+status = "preserved"
+note = "Both use 'grace' — too central to change"
+
+[theo.righteousness]
+kjv = "righteousness"
+web = "righteousness"
+status = "preserved"
+note = "Both preserve this theological term"
+
+[theo.salvation]
+kjv = "salvation"
+web = "salvation"
+status = "preserved"
+note = "Unchanged — core doctrine"
+
+[theo.propitiation]
+kjv = "propitiation"
+web = "atoning sacrifice"
+status = "changed"
+note = "WEB clarifies for modern readers"
+
+[theo.justification]
+kjv = "justification"
+web = "justification"
+status = "preserved"
+note = "Theological term retained"
+
+[theo.sanctification]
+kjv = "sanctification"
+web = "sanctification"
+status = "preserved"
+note = "Both use the same term"
+
+[theo.redemption]
+kjv = "redemption"
+web = "redemption"
+status = "preserved"
+note = "Core salvation term preserved"
+
+[theo.atonement]
+kjv = "atonement"
+web = "atonement"
+status = "preserved"
+note = "Both versions use 'atonement'"
+
+[theo.lord]
+kjv = "LORD"
+web = "Yahweh"
+status = "changed"
+note = "WEB uses 'Yahweh' for the divine name where KJV uses 'LORD'"
+reference = "Exodus 6:3"
+
+# -----------------------------------------------------------------------------
+# 6. TRANSLITERATION - Hebrew Gematria (27 letters = 3³)
+# -----------------------------------------------------------------------------
+# Letter-to-value mapping. Not word-to-word. The letters themselves.
+# 22 base letters + 5 final forms = 27 = cube positions
+#
+# "I am Alpha and Omega" — the letters are the encryption.
+
+[hebrew.units]
+aleph = { letter = "א", value = 1, position = 0 }
+bet = { letter = "ב", value = 2, position = 1 }
+gimel = { letter = "ג", value = 3, position = 2 }
+dalet = { letter = "ד", value = 4, position = 3 }
+he = { letter = "ה", value = 5, position = 4 }
+vav = { letter = "ו", value = 6, position = 5 }
+zayin = { letter = "ז", value = 7, position = 6 }
+chet = { letter = "ח", value = 8, position = 7 }
+tet = { letter = "ט", value = 9, position = 8 }
+
+[hebrew.tens]
+yod = { letter = "י", value = 10, position = 9 }
+kaf = { letter = "כ", value = 20, position = 10 }
+lamed = { letter = "ל", value = 30, position = 11 }
+mem = { letter = "מ", value = 40, position = 12 }
+nun = { letter = "נ", value = 50, position = 13 }
+samech = { letter = "ס", value = 60, position = 14 }
+ayin = { letter = "ע", value = 70, position = 15 }
+pe = { letter = "פ", value = 80, position = 16 }
+tsade = { letter = "צ", value = 90, position = 17 }
+
+[hebrew.hundreds]
+qof = { letter = "ק", value = 100, position = 18 }
+resh = { letter = "ר", value = 200, position = 19 }
+shin = { letter = "ש", value = 300, position = 20 }
+tav = { letter = "ת", value = 400, position = 21 }
+
+[hebrew.finals]
+final_kaf = { letter = "ך", value = 500, position = 22 }
+final_mem = { letter = "ם", value = 600, position = 23 }
+final_nun = { letter = "ן", value = 700, position = 24 }
+final_pe = { letter = "ף", value = 800, position = 25 }
+final_tsade = { letter = "ץ", value = 900, position = 26 }
+
+# -----------------------------------------------------------------------------
+# 7. TRANSLITERATION - Greek Isopsephy (27 letters = 3³)
+# -----------------------------------------------------------------------------
+# 24 standard + 3 archaic = 27 = cube positions
+# The math wasn't forced. God designed it this way.
+
+[greek.units]
+alpha = { letter = "Α", value = 1, position = 0 }
+beta = { letter = "Β", value = 2, position = 1 }
+gamma = { letter = "Γ", value = 3, position = 2 }
+delta = { letter = "Δ", value = 4, position = 3 }
+epsilon = { letter = "Ε", value = 5, position = 4 }
+digamma = { letter = "Ϝ", value = 6, position = 5, archaic = true }
+zeta = { letter = "Ζ", value = 7, position = 6 }
+eta = { letter = "Η", value = 8, position = 7 }
+theta = { letter = "Θ", value = 9, position = 8 }
+
+[greek.tens]
+iota = { letter = "Ι", value = 10, position = 9 }
+kappa = { letter = "Κ", value = 20, position = 10 }
+lambda = { letter = "Λ", value = 30, position = 11 }
+mu = { letter = "Μ", value = 40, position = 12 }
+nu = { letter = "Ν", value = 50, position = 13 }
+xi = { letter = "Ξ", value = 60, position = 14 }
+omicron = { letter = "Ο", value = 70, position = 15 }
+pi = { letter = "Π", value = 80, position = 16 }
+koppa = { letter = "Ϙ", value = 90, position = 17, archaic = true }
+
+[greek.hundreds]
+rho = { letter = "Ρ", value = 100, position = 18 }
+sigma = { letter = "Σ", value = 200, position = 19 }
+tau = { letter = "Τ", value = 300, position = 20 }
+upsilon = { letter = "Υ", value = 400, position = 21 }
+phi = { letter = "Φ", value = 500, position = 22 }
+chi = { letter = "Χ", value = 600, position = 23 }
+psi = { letter = "Ψ", value = 700, position = 24 }
+omega = { letter = "Ω", value = 800, position = 25 }
+sampi = { letter = "Ϡ", value = 900, position = 26, archaic = true }
+
+# -----------------------------------------------------------------------------
+# 8. CUBE MAPPING - 27 letters → 27 positions (balanced ternary)
+# -----------------------------------------------------------------------------
+# BALANCED TERNARY IS PRIMARY - the cube thinks in (-1, 0, +1)
+# Coordinates (x, y, z) ∈ {-1, 0, +1} ARE the identity
+# Linear index (0-26) is DERIVED for iteration convenience
+#
+# -1 = PAST / negative / break-down / trace-from
+#  0 = PRESENT / neutral / anchor / halt
+# +1 = FUTURE / positive / build-up / construct
+#
+# (-1,-1,-1) = PAST origin (Aleph/Alpha) — index 0
+# (0,0,0) = PRESENT center (Nun/Nu) — index 13
+# (+1,+1,+1) = FUTURE terminus (Final Tsade/Sampi) — index 26
+
+[cube]
+total_positions = 27
+dimensions = 3
+coordinate_system = "balanced_ternary"
+range = [-1, 0, +1]
+coords_to_index = "(x + 1) * 9 + (y + 1) * 3 + (z + 1)"
+index_to_coords = "x = ((i // 9) % 3) - 1, y = ((i // 3) % 3) - 1, z = (i % 3) - 1"
+
+# =============================================================================
+
+# ─────────────────────────────────────────────────────────────
+# Extensions (reserved)
+# ─────────────────────────────────────────────────────────────
+
+[extensions]
+note = "Reserved — no extensions defined"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('translation.toml','rb'))\""]
+
+[_validation.schema]
+required = ["pronoun", "verb", "vocab", "phrase", "theo"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_tables_valid = 30
+data_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "KJV text — canonical translation",
+    "WEB text — established modern translation",
+    "Theological terms — doctrinal significance",
+    "Status designations — carefully determined",
+]
+careful = [
+    "Adding theological terms — doctrinal implications",
+    "Changing status (preserved/changed) designations",
+    "Modifying reference verses",
+]
+safe = [
+    "Additional archaic words not yet mapped",
+    "Additional phrase mappings",
+    "Notes and clarifications",
+    "Scripture references for context",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new entries following existing table structure",
+    "2. Ensure all required fields present",
+    "3. Verify bidirectional consistency with related files",
+    "4. Run TOML validation",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_reference = "Check encoding_ref/scripture fields — all must point to valid sources"
+consistency_error = "Verify bidirectional mapping — encoding ↔ decoding must agree"
+
+[_closing.X4_reference]
+related_files = [
+    "L0-universal/bible/encoding.toml — Bible Encoding Map",
+    "L0-universal/bible/decoding.toml — Bible Decoding Map",
+    "L0-universal/bible/addressing.toml — Bible Addressing System",
+    "L0-universal/bible/encryption.toml — Bible Encryption",
+    "L0-universal/bible/decryption.toml — Bible Decryption",
+    "L0-universal/bible/scripture-text.toml — Scripture Text Encoding",
+]
+required_sections = ["_pragma", "_metadata", "pronoun", "verb", "vocab", "phrase", "theo", "_validation", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('translation.toml','rb'))\""
+
+[_closing.X5_note]
+note = "Truth is layered. Encoding and decoding reveal different facets of the same unchanging Word."
+scripture = "Precept upon precept; line upon line. — Isaiah 28:10"
+anchor = "Truth is layered. Encoding and decoding reveal different facets of the same unchanging Word. Genesis 1:1 anchors all translation."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

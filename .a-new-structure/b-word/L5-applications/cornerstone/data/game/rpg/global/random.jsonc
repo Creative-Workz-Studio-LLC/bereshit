@@ -1,0 +1,426 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from universal encounter-defaults, override allowed",
+        "_rpg": "RPG-SPECIFIC — added by this derivation, not in universal"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-rpg-global-random",
+    "_P1_from": "cornerstone/templates/data/game/battle/random.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-encounter-random-rpg",
+    "_P2_role": "baton",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Baton — passes encounter pool data to encounter system",
+    "_P3_layer": "cornerstone/data/game/rpg/global",
+    "_P3_includes": "none",
+    "_P3_provides": ["RPG_RANDOM_ENCOUNTER_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "RPG Random Encounter Pool Template",
+    "_P5_brief": "Zone-based random encounter pools — WHAT enemies appear. Enemy references with spawn weights, formations (single/pair/group/ambush), zone conditions, reward modifiers. Separation of concerns: encounter.jsonc = WHEN, this = WHAT, stats-enemy.jsonc = WHO.",
+    "_P5_usage": "cp random.jsonc [game]/data/encounters/random/darkwood.jsonc -> update pragma -> fill enemy pool",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "random.jsonc",
+        "key": "B-cornerstone-data-game-rpg-global-random",
+        "title": "RPG Random Encounter Pool Template",
+        "type": "Data (Template)",
+        "component": "Baton — passes encounter pool data to encounter system",
+        "role": "Define zone-based random encounter pools — enemy groups, spawn weights, formations, conditions, rewards"
+    },
+
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2025-12-03",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "The race is not to the swift, nor the battle to the strong."
+    "_M4_grounding": {
+        "scripture": "Ecclesiastes 9:11 — The race is not to the swift, nor the battle to the strong, neither yet bread to the wise.",
+        "principle": "Random encounters test readiness — preparation meets opportunity in the moment of challenge.",
+        "anchor": "Proverbs 16:33 — The lot is cast into the lap; but the whole disposing thereof is of the LORD."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "engine/systems/src/combat/encounter.c — encounter_load_pool(), encounter_select_enemies()",
+        "integration": "Parsed when entering zone or loading game. Enemy IDs looked up in stats-enemy.jsonc for stats. encounter.jsonc rates determine WHEN, this determines WHAT.",
+        "if_missing": "Tripwire to engine defaults with LOUD warning — creates empty pool (no random encounters in zone)",
+        "related_data": {
+            "derives_from": {
+                "random_template": "Random encounter template — base structure"
+            },
+            "references": {
+                "stats-enemy": "Enemy IDs reference stats-enemy.jsonc for stat loading (NOT full stats here)",
+                "encounter": "Encounter rates determine WHEN this pool is checked"
+            },
+            "referenced_by": {
+                "combat": "Combat system uses selected enemies from this pool",
+                "encounter": "Encounter system selects from this pool on rate trigger"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/rpg/global/random.jsonc",
+        "derives_from": "cornerstone/templates/data/game/battle/random.jsonc"
+    },
+
+    "_M7_classification": {
+        "tags": "encounter, random, zone, enemy-pool, formations, combat, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Define random encounter pool for a zone — enemy groups and spawn weights, formations, conditions, rewards",
+        "core_design": "Zone-based enemy pools — rates in encounter.jsonc, enemies here. Separation of WHEN from WHAT.",
+        "philosophy": "Separate what-can-appear from when-it-appears. Enemy IDs are references, not full stat blocks.",
+        "key_features": {
+            "enemy_pool": "Enemy references with spawn weights (higher = more common) and level ranges",
+            "formations": "How enemies group together — single, pair, group, ambush (with surprise flag)",
+            "conditions": "Zone-specific modifiers — terrain, weather, rate multiplier",
+            "rewards": "Base reward modifiers — exp, gold, drop rate bonuses"
+        }
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2025-12-03) — Initial random encounter template (old comment-based format)",
+            "a-02.00 (2026-02-09) — Flat convention, structured IDs, game state lifetime"
+        ],
+        "current": "Zone-based enemy pools with weights, formations, conditions, rewards",
+        "planned": [
+            "Rare enemy variants (low weight, special loot)",
+            "Time-of-day encounter modifications",
+            "Story-progress enemy scaling",
+            "Environmental hazard encounters (not just enemy combat)"
+        ]
+    },
+
+    "_M10_game_state": {
+        "lifetime": "global",
+        "description": "Global — zone encounter pools loaded at game start or zone entry, persist for session duration. Reference data, not mutable state.",
+        "loaded_at": "Game initialization or zone entry — pool loaded into encounter system registry",
+        "persists": "Entire game session (reference data for encounter selection)",
+        "consumed_by": "Encounter system — encounter_load_pool() reads pool, encounter_select_enemies() picks from pool on trigger",
+        "load_priority": 1,
+        "cache_policy": "session-bound — loaded per zone, cached for session",
+        "authority_rank": "engine-default < rpg-default (this) < game-zone-specific",
+        "id_format": "encounter_id: RND-NNN-TAG (e.g., RND-001-DARKWOOD, RND-002-CAVE_DEPTHS). zone carries zone_id."
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 (game state) tracks global lifetime — loaded per zone, cached for session.",
+        "derivation": "_P1_from points to random encounter template. RPG adds zone-based pools with weighted enemies, formations, conditions."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // RPG random encounter pool — WHAT enemies appear in a zone.
+    // Global reference data. encounter.jsonc controls WHEN.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every random encounter file must have name, type='random', zone, version, enemy_pool, formations.",
+    "_Cc_id_format": "encounter_id: RND-NNN-TAG. Standard: RND-001+. Dungeon: RND-100+. Secret: RND-500+.",
+    "_Cc_derivation": "Tripwire chain: game-zone -> rpg/random (this) -> engine empty pool",
+    "_Cc_global_role": "Random encounter pools are GLOBAL data — loaded into encounter system registry. NOT scene-scoped. Referenced when encounter rate triggers a random battle.",
+    "_Cc_separation": "encounter.jsonc = WHEN encounters happen | random.jsonc (this) = WHAT enemies appear | stats-enemy.jsonc = WHO the enemies ARE (stats)",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Example: Darkwood Forest — low-level zone with goblins and wolves.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "[Zone Name] Encounters",
+    "version": "a-01.00",
+
+    // Identity — _req: encounter pool identification
+    "identity": {
+        "encounter_id": "RND-001-DARKWOOD",
+        "ref_name": "encounter_random_darkwood",
+        "type": "random",
+        "zone": "darkwood_forest",
+        "description": "Darkwood Forest random encounters — goblins and wolves."
+    },
+
+    // Enemy Pool — _rpg: which enemies can spawn
+    // enemy_id: references stats-enemy.jsonc (NOT full stats here)
+    // weight: spawn probability (higher = more common)
+    // min_level/max_level: player level range for this enemy
+    "enemy_pool": [
+        {
+            "enemy_id": "ENT-002-GOBLIN",
+            "weight": 50,
+            "min_level": 1,
+            "max_level": 10
+        },
+        {
+            "enemy_id": "ENT-004-WOLF",
+            "weight": 30,
+            "min_level": 1,
+            "max_level": 8
+        },
+        {
+            "enemy_id": "ENT-005-GOBLIN_SHAMAN",
+            "weight": 15,
+            "min_level": 5,
+            "max_level": 15
+        },
+        {
+            "enemy_id": "ENT-006-FOREST_SPIDER",
+            "weight": 5,
+            "min_level": 1,
+            "max_level": 99
+        }
+    ],
+
+    // Formations — _rpg: how enemies group together
+    "formations": [
+        {
+            "id": "single",
+            "weight": 40,
+            "enemy_count": 1
+        },
+        {
+            "id": "pair",
+            "weight": 35,
+            "enemy_count": 2
+        },
+        {
+            "id": "group",
+            "weight": 20,
+            "enemy_count": 3
+        },
+        {
+            "id": "ambush",
+            "weight": 5,
+            "enemy_count": 4,
+            "surprise": true
+        }
+    ],
+
+    // Conditions — _rpg: zone-specific modifiers
+    "conditions": {
+        "terrain": "forest",
+        "weather": "clear",
+        "rate_modifier": 1.0
+    },
+
+    // Rewards — _rpg: base reward modifiers for this zone
+    "rewards": {
+        "exp_multiplier": 1.0,
+        "gold_multiplier": 1.0,
+        "drop_rate_bonus": 0
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-encounter-pool"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "identity", "enemy_pool", "formations"],
+        "optional": ["conditions", "rewards"],
+        "identity_required": ["encounter_id", "type", "zone"],
+        "enemy_required": ["enemy_id", "weight", "min_level", "max_level"],
+        "formation_required": ["id", "weight", "enemy_count"]
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Adjust enemy weights (balance tuning)",
+            "Add new enemies to pool",
+            "Change formation weights",
+            "Adjust conditions and rewards"
+        ],
+        "careful": [
+            "Change enemy_id values (must match stats-enemy.jsonc)",
+            "Change zone id (may break zone loading)",
+            "Change encounter_id (breaks references)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required keys (identity, enemy_pool, formations)",
+            "Change type from 'random' (breaks type detection)"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note → X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required keys (identity, enemy_pool, formations)",
+        "Change type from 'random' (breaks type detection)"
+    ],
+    "_X1_careful": [
+        "Change enemy_id values (must match stats-enemy.jsonc)",
+        "Change zone id (may break zone loading)"
+    ],
+    "_X1_safe": [
+        "Adjust enemy weights, formation weights",
+        "Add new enemies to pool",
+        "Adjust conditions and rewards"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Rare enemy variants (low weight, special loot tables)",
+        "Time-of-day encounter modifications (nocturnal enemies)",
+        "Story-progress enemy scaling (new enemies appear after events)",
+        "Environmental hazard encounters (traps, terrain events)"
+    ],
+    "_X2_adding_enemies": "Add entry to enemy_pool: { enemy_id, weight, min_level, max_level }. enemy_id must match stats-enemy.jsonc.",
+    "_X2_adding_zone": "Copy this file to new zone name -> update identity -> replace enemy pool for new area.",
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "enemy_not_spawning": "Verify enemy_id matches stats-enemy.jsonc. Check weight is positive (0 = never spawns). Confirm player level is within min/max range.",
+        "wrong_formation": "Check formation weights are reasonable. Verify enemy_count matches pool availability. Check surprise flag for ambush.",
+        "parse_error": "Check for missing commas in arrays. Verify all required fields present. Check JSON bracket matching.",
+        "no_encounters_in_zone": "Verify zone id matches game zone registration. Check file path. Confirm encounter.jsonc rates are non-zero."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/game/rpg/global/encounter.jsonc — Encounter rates (WHEN encounters happen)",
+        "cornerstone/data/game/rpg/global/stats-enemy.jsonc — Enemy stat definitions (WHO the enemies ARE)",
+        "cornerstone/data/game/rpg/scene/frames/combat.jsonc — Combat configuration (HOW the battle plays)"
+    ],
+    "_X4_required": ["name", "version", "identity", "enemy_pool", "formations"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-encounter-pool",
+    "_X4_usage_c": "encounter_load_pool(\"rpg/data/encounters/random/darkwood.jsonc\"); encounter_select_enemies(&pool, player_level);",
+    "_X4_id_ranges": "Standard: RND-001+, Dungeon: RND-100+, Secret: RND-500+",
+
+    // Random encounters test readiness.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "RPG random encounter pool — WHAT enemies appear in a zone. Global reference data. Encounter rates control WHEN, this controls WHAT, stats-enemy controls WHO. Preparation meets opportunity.",
+    "_X5_scripture": "The race is not to the swift, nor the battle to the strong. — Ecclesiastes 9:11",
+    "_X5_anchor": "Wisdom and preparation matter more than raw power.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "Remove this section when instantiating",
+    "_X6_usage": "cp random.jsonc [game]/data/encounters/random/darkwood.jsonc -> update pragma -> fill enemy pool",
+    "_X6_update": [
+        "_P1_key: unique identifier for this encounter pool",
+        "_M1_identity: file, key, title, role",
+        "_M2_state: created/updated dates",
+        "_M6_location: path",
+        "Co section: identity (RND-NNN-TAG), enemy_pool, formations, conditions, rewards",
+        "Remove _X6 section when instantiating"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

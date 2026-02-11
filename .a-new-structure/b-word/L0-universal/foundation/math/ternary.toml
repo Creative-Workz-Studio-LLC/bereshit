@@ -1,2414 +1,306 @@
-# @file ternary.toml
-# @omni data --toml
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
 # OMNICODE PRAGMA [PRAGMA]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# @legend
-#   :req  REQUIRED   — must exist, validation fails without
-#   :inh  INHERITED  — from template, override allowed
-#   :ins  INSTANCE   — file-specific, unique values
-# @endlegend
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# P.1 CORE — Identity [CORE]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# @omni:req  key        = B-L0-foundation-math-ternary
-# @omni:req  from       = bereshit/word/seed/data/toml/config.toml
-# @omni:req  at         = b-01.00
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# P.2 FAMILY — Classification [FAMILY]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# @omni:inh  type       = data
-# @omni:inh  subtype    = constants
-# @omni:inh  role       = ladder
-# @omni:inh  structure  = 3-block
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# P.3 INSTANCE — File Details [INSTANCE]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# @omni:ins  component  = foundation
-# @omni:ins  layer      = L0-universal/foundation/math
-# @omni:ins  includes   = none
-# @omni:ins  provides   = [TERNARY_CONSTANTS, TRIT_VALUES, POWER_TABLES]
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# P.4 ARCHITECTURE — Scaling Context [ARCH]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# @omni:ins  layers     = [0:kernel, 1:system, 2:runtime, 3:framework,
-#                          4:health, 5:network, 6:storage, 7:engine, 8:app]
-# @omni:ins  scale      = 3^n [1, 3, 9, 27, 81, 243, 729, 2187, 6561]
-# @omni:ins  pattern    = 4+1+4 [below:0-3, center:4, above:5-8]
-# @omni:ins  anchor     = genesis_1_1 -> void(0) -> unity(1) -> derivation
-#
-# ───────────────────────────────────────────────────────────────────────────────
-# P.5 SUMMARY — Human Identity [SUMMARY]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# @omni:req  title      = Ternary Math Constants
-# @omni:req  brief      = PURE mathematical constants for balanced ternary computing
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+# P.1 CORE — Identity
+[_pragma.P1_core]
+key = "B-L0-foundation-math-ternary"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+# P.2 FAMILY — Classification
+[_pragma.P2_family]
+type = "data"
+subtype = "constants"
+role = "ladder"
+structure = "3-block"
+
+# P.3 INSTANCE — File Details
+[_pragma.P3_instance]
+component = "foundation"
+layer = "L0-universal/foundation/math"
+includes = "none"
+provides = ["TERNARY_CONSTANTS", "TRIT_VALUES", "POWER_TABLES", "PACKING_RULES", "COGNITIVE_FRAMEWORK"]
+
+# P.4 ARCHITECTURE — Scaling Context
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+# P.5 SUMMARY — Human Identity
+[_pragma.P5_summary]
+title = "Balanced Ternary Mathematical Foundation"
+brief = "Pure mathematical constants and operations for balanced ternary computing. Split index: 4 content files."
+
+# ═══════════════════════════════════════════════════════════════
 # END PRAGMA [END]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# DEPENDENCY CLASSIFICATION: PURE (self-contained mathematical constants)
-# Research: word/research/trit-foundations.adoc
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
 
-# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════
 # METADATA BLOCK [METADATA]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# Identity and context for this component.
-#
-# STRUCTURE: M.1-M.10 sections
-#   - M.1 IDENTITY:    Core identity (file, brief, key, title, type, component, role)
-#   - M.2-M.6:         State, Attribution, Location, Derivation, Classification
-#   - M.7-M.10:        Intent, Grounding, Dependencies, Roadmap
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# M.1 IDENTITY — Core Identity [IDENTITY]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# The 7 fields that answer "What IS this file?"
-#   - file:      The filename
-#   - brief:     One-sentence description
-#   - key:       Unique identifier for referencing
-#   - title:     Human-readable display name
-#   - type:      Category of content
-#   - component: Position in hierarchy (Ladder/Rung/Rails)
-#   - role:      Responsibility statement
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+[_metadata.M1_identity]
+file = "ternary.toml"
+key = "B-L0-foundation-math-ternary"
+title = "Balanced Ternary Mathematical Foundation"
+type = "Data (Math Constants)"
+component = "Ladder — foundation of all ternary computation"
+role = "Define mathematical constants, operations, and cognitive mappings for balanced ternary"
 
-[metadata.identity]
-file      = "ternary.toml"
-brief     = "PURE mathematical constants for balanced ternary computing."
-key       = "B-L0-foundation-math-ternary"
-title     = "Ternary Math Constants"
-type      = "Data (Constants)"
-component = "Ladder"
-role      = "Immutable mathematical truths that all trit operations reference."
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# M.2 STATE — Lifecycle State [STATE]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# The 5 fields that answer "Where is this in its lifecycle?"
-#   - version:  Living version (stage-phase.completion)
-#   - status:   Active / Draft / Deprecated / Archived
-#   - created:  Original creation date
-#   - updated:  Last modification date
-#   - note:     Brief description of current state
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[metadata.state]
+[_metadata.M2_state]
 version = "b-01.00"
-status  = "Active"
+status = "Active"
 created = "2025-12-11"
-updated = "2026-02-02"
-note    = "Baseline alignment — M.1-M.10 structure with TOML metadata"
+updated = "2026-02-10"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# M.3 ATTRIBUTION — Authorship & Rights [ATTRIBUTION]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# The 5 fields that answer "Who made this and who owns it?"
-#   - architect:      Who designed it (array for multi-contributor)
-#   - implementation: Who built/wrote it (array for multi-CPI-SI)
-#   - copyright:      Who owns it
-#   - license:        Under what terms
-#   - method:         How created (collaborated/generated/dictated)
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
 
-[metadata.attribution]
-architect      = ["Seanje Lenox-Wise"]
-implementation = ["Nova Dawn"]
-copyright      = "© 2025-2026 CreativeWorkzStudio LLC"
-license        = "See tov/licenses/"
-method         = "collaborated"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# M.4 LOCATION — File Position [LOCATION]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# The 1 field that answers "Where is this file?"
-#   - path: Canonical path from b-word root
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[metadata.location]
-path = "b-word/L0-universal/foundation/math/ternary.toml"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# M.5 DERIVATION — Template Lineage [DERIVATION]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# The 1 field that answers "What template is this based on?"
-#   - derives: Path to parent template (or "none" for root)
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[metadata.derivation]
-derives = "b-word/seed/data/toml/config.toml"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# M.6 CLASSIFICATION — Categorization [CLASSIFICATION]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# The 1 field that answers "What category is this?"
-#   - tags: Array of keywords for querying/filtering
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[metadata.classification]
-tags = ["ternary", "math", "constants", "pure", "L0", "foundation"]
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# M.7 INTENT — Purpose Statement [INTENT]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# The 3 fields that answer "Why does this file exist?"
-#   - purpose:    Core statement of why this exists
-#   - philosophy: Guiding principles (array)
-#   - provides:   What this delivers/enables (array)
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[metadata.intent]
-purpose    = "Define the mathematical constants for balanced ternary computing."
-philosophy = [
-    "Constants are immutable mathematical truths, not configuration",
-    "Code reads these values, never modifies them"
-]
-provides   = [
-    "Trit values and packing constants",
-    "Dimensional constants (CUBE, FACE, PENTERACT)",
-    "Foundation for all ternary operations"
-]
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# M.8 GROUNDING — Biblical Foundation [GROUNDING]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# The master thesis of this file. Two required verses form the hash basis.
-#   - kjv:        KJV verse text with reference (required for hash)
-#   - web:        WEB verse text with reference (required for hash)
-#   - reference:  Book Chapter:Verse for lookup
-#   - principle:  How the Scripture applies to this file
-#   - anchor:     The foundational truth this file stands on
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[metadata.grounding]
-kjv       = "Let there be a firmament in the midst of the waters, and let it divide the waters from the waters. — Genesis 1:6 KJV"
-web       = "Let there be an expanse in the middle of the waters, and let it divide the waters from the waters. — Genesis 1:6 WEB"
-reference = "Genesis 1:6"
-principle = "Structure requires a center. The firmament is not empty space — it is the anchor that holds opposition in relationship. Balanced ternary has a true center (0) that binary lacks."
-anchor    = "A threefold cord is not quickly broken. The third value is not weakness — it is strength."
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# M.9 DEPENDENCIES — Required Components [DEPENDENCIES]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# Ladder — what I stand on (baton received FROM these files)
-# Baton  — what I hand off TO (these files receive from me)
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[metadata.dependencies]
-# Ladder — PURE foundation, stands on nothing (self-contained mathematical constants)
-needs = ["none"]
-
-# Baton — passed to type system and libtrit
-used_by = [
-    "b-word/L0-universal/foundation/types/primitives.toml",
-    "b-word/L0-universal/foundation/types/validation.toml",
-    "b-word/L0-universal/foundation/types/error-system.toml",
-    "b-word/L0-universal/libtrit/"
-]
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# M.10 ROADMAP — Version History [ROADMAP]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# Past → Present → Future
-# The trajectory of this file through time.
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[metadata.roadmap]
-history = [
-    "a-01.00 (2025-12-11) — Initial creation",
-    "a-01.50 (2025-12-14) — Post-alignment crystallization",
-    "b-01.00 (2026-02-01) — Baseline: pragma + M.1-M.10 alignment"
-]
-
-current = "b-01.00 — Stable mathematical foundation, PURE constants"
-
-planned = [
-    "a-01.55 — Cleanup: formatting consistency, comment clarity across all sections",
-    "a-01.60 — Verification: add relationship tests between constants (3^n progressions)",
-    "a-01.65 — Documentation: ensure each constant explains derivation and usage",
-    "a-01.70 — Integration: verify libtrit implementation matches all constants",
-    "a-01.75 — Maintenance: review for edge cases, gaps, missing derived values",
-    "a-01.80 — Crystallization: solidify patterns, remove ambiguity",
-    "b-01.80 — GATE: All constants verified, documented, integrated with libtrit",
-    "c-01.00 — COMPLETE: Mathematical foundation stable, verified, comprehensive"
-]
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# END METADATA [END]
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CONTENT BLOCK [CONTENT]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# 3-Block Data: METADATA → CONTENT → CLOSING
-#
-# Balanced ternary mathematical foundation — pure constants and operations.
-# Structure: Cc (Constants) → Co (Operations) → Cv (Cognition) → Cx (Generation)
-#
-# Organization Pattern:
-#   Cc.1 IDENTITY — What is a trit?
-#   Cc.2 SETTINGS — Primary definitions (chars, types, composition, scales)
-#   Cc.3 RESOURCES — Storage constraints (packing, widths, alignment, powers)
-#   Cc.4 BEHAVIOR — How it operates (omnicode, cpisi, layers, network)
-#   Co.1 ARITHMETIC — Basic trit operations
-#   Co.2 HALF ADDER — Two-input addition
-#   Co.3 FULL ADDER — Three-input addition
-#   Co.4 SUBTRACTION — Via negation
-#   Co.5 DIVISION — Balanced ternary division
-#   Co.6 ALGORITHMS — Pack/unpack conversion
-#   Cv.1 BUILDING BLOCK — Trit-to-operation mapping
-#   Cv.2 GENESIS 1:1 — TIME/SPACE/MATTER constants
-#   Cv.3 DIMENSIONS — Cognitive navigation framework
-#   Cv.4 TEMPORAL STATES — 9-state cognitive model
-#   Cx.1 GENERATE — Generation control metadata
-#   Cx.2 TARGETS — Language-specific generation
-#   Cx.3 TEMPLATES — Code generation templates
-#   Cx.4 VALIDATION — Generation validation
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cc.1 IDENTITY — What Is a Trit? [IDENTITY]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
 # "A threefold cord is not quickly broken." — Ecclesiastes 4:12
-#
-# THE ATOM OF BALANCED TERNARY
-#
-# A trit is the smallest unit of balanced ternary—a single digit with three
-# possible values: -1 (negative), 0 (neutral), and +1 (positive). Unlike
-# standard ternary (0, 1, 2), balanced ternary centers on zero.
-#
-# WHY BALANCED TERNARY MATTERS:
-#
-# The sum -1 + 0 + 1 = 0 expresses perfect mathematical balance. This isn't
-# merely elegant—it has practical consequences:
-#
-#   • Sign is inherent: Negative values are first-class citizens, not encoded
-#     with a separate sign bit. The value -5 in binary needs a sign bit plus
-#     magnitude; in balanced ternary, it's simply represented directly.
-#
-#   • Rounding is natural: The nearest integer is found by truncating toward
-#     zero, and rounding follows naturally from the representation.
-#
-#   • Direction is native: Movement toward/away from center maps directly to
-#     +1/-1. This makes balanced ternary ideal for representing direction,
-#     tendency, and state transitions.
-#
-# RELATIONSHIP TO BINARY:
-#
-# Binary hardware stores trits in bytes. The fundamental bridge is 243 = 3^5,
-# which fits within a byte (256 = 2^8). See Cc.3.1 PACKING for details.
-#
-# Implementation: L0-universal/libtrit/include/trit/trit.h
-#                 L0-universal/libtrit/src/matter/trit.op.c
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+[_metadata.M4_grounding]
+scripture = "A threefold cord is not quickly broken. — Ecclesiastes 4:12"
+principle = "Three values define reality. The balanced equation -1 + 0 + 1 = 0 is mathematical truth."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth."
 
-# Core identity of a trit
-[identity]
-name        = "trit"                                   # Short name for the type
-description = "Single balanced ternary digit"         # Human-readable description
-type        = "mathematical foundation"               # Role in the system
+[_metadata.M5_dependencies]
+requires = "None — this is the mathematical foundation (depends on nothing)"
+consumers = "All type specs (primitives.toml, composition.toml, validation.toml) and all code generators"
+integration = "Loaded at build time by code generators. Go struct tags map to TOML keys. C headers generated from tables."
+if_missing = "No computation possible — ternary math IS the foundation"
 
-# The three fundamental values
-[identity.values]
-numeric     = [-1, 0, 1]                               # The actual values: negative, zero, positive
-labels      = ["negative", "neutral", "positive"]     # Full names for each state
-short       = ["N", "Z", "P"]                          # Single-character abbreviations
+[_metadata.M5_dependencies.cross_format]
+role = "Math CONSTANTS in TOML. Math RESULTS/data in JSON."
+jsonc = "None — no JSONC counterpart for mathematical constants"
+json = "None — no JSON counterpart for mathematical constants"
+relationship = "TOML defines the mathematical truths. Generated code (C, Go, Rust) implements them."
 
-# Mathematical constants derived from the definition
-[identity.constants]
-states      = 3                                        # 3 possible states (3^1)
-base        = 3                                        # Base of the number system
-sum         = 0                                        # -1 + 0 + 1 = 0 (the balance equation)
-product     = 0                                        # Anything × 0 = 0 (zero annihilates)
+[_metadata.M5_dependencies.split_files]
+ternary_definitions = { file = "ternary-definitions.toml", section = "Cc.1-4", content = "Identity, settings, resources, behavior" }
+ternary_operations = { file = "ternary-operations.toml", section = "Co.1-6", content = "Arithmetic, adders, subtraction, division, algorithms" }
+ternary_cognition = { file = "ternary-cognition.toml", section = "Cv.1-4", content = "Building block, Genesis, dimensions, temporal states" }
+ternary_generation = { file = "ternary-generation.toml", section = "Cx.1-4", content = "Code generation targets, templates, validation" }
 
+[_metadata.M6_location]
+path = "b-word/L0-universal/foundation/math/ternary.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cc.2 SETTINGS — Primary Definitions [SETTINGS]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "A false balance is abomination to the LORD: but a just weight is his
-#  delight." — Proverbs 11:1
-#
-# CONFIGURABLE REPRESENTATIONS
-#
-# Trits need to be displayed, parsed, stored, and transmitted. This section
-# defines the various ways to represent trit values depending on context:
-#
-#   • Characters: How trits appear in text (display, config files, logs)
-#   • Types: How trits are represented in programming languages
-#   • Composition: How trits combine into larger units (3^n pattern)
-#   • Scales: Named units with their properties
-#
-# The key insight is that 5 trits (243 states) fit perfectly in 1 byte
-# (256 states), making "packed5" the fundamental unit for binary storage.
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+[_metadata.M7_classification]
+tags = "math, ternary, constants, foundation, L0, balanced, trit, packing, powers, cognition"
 
-# Character representations for different contexts
-[settings.chars]
-standard    = ["-", "0", "+"]                          # Mathematical: clear, universal
-ascii       = ["N", "Z", "P"]                          # ASCII-safe: Negative/Zero/Positive
-arrow       = ["↓", "●", "↑"]                          # Visual: direction indicators
-block       = ["▼", "■", "▲"]                          # Block: high-visibility display
-wave        = ["∿", "―", "∼"]                          # Wave: signal processing contexts
+[_metadata.M8_intent]
+purpose = "Mathematical foundation for balanced ternary computing — the irreducible constants and operations from which everything else derives"
+core_design = "Split index with 4 content files. Definitions (what), operations (how), cognition (why), generation (build). Each file is independently valid TOML."
+philosophy = "Mathematics is not invented but discovered. These constants exist whether we write them or not. We honor truth by expressing it precisely."
 
-# Type bindings for programming languages
-[settings.types]
-rust        = "i8"                                     # Rust: signed 8-bit integer
-c           = "int8_t"                                 # C: standard signed integer
-go          = "int8"                                   # Go: signed 8-bit integer
-bits        = 2                                        # Minimum bits to encode 3 states
-bytes       = 1                                        # Single byte when aligned
+[_metadata.M8_intent.key_features]
+balanced_equation = "-1 + 0 + 1 = 0 — the fundamental identity"
+byte_bridge = "243 = 3^5 < 256 = 2^8 — fitting ternary into binary hardware"
+power_tables = "3^n layers from kernel (3^0=1) to application (3^8=6561)"
+cognitive_mapping = "Trit values map to building block method (+1, 0, -1)"
 
-# Composition scales following the 3^n pattern
-# Each level has 3× the states of the previous
-[settings.composition]
-tryte       = 3                                        # 3 trits = 27 states (3^3)
-packed      = 5                                        # 5 trits = 243 states (3^5) ★ BYTE BRIDGE
-tribble     = 9                                        # 9 trits = 19,683 states (3^9)
-trord       = 27                                       # 27 trits = 7.6T states (3^27)
-extended    = 81                                       # 81 trits = 4.4e38 states (3^81)
-block       = 243                                      # 243 trits = 5.6e115 states (3^243) ★
-
-# Named scales with full metadata
-[settings.scales]
-trit        = { count = 1,   states = 3,             bytes = 1,  layer = "L0" }
-triplet     = { count = 3,   states = 27,            bytes = 1,  layer = "L1" }
-nonet       = { count = 9,   states = 19683,         bytes = 2,  layer = "L2" }
-tryte       = { count = 27,  states = 7625597484987, bytes = 6,  layer = "L3" }
-octant      = { count = 81,  states = "4.4e38",      bytes = 18, layer = "L4" }
-block_243   = { count = 243, states = "5.6e115",     bytes = 49, layer = "L5" }
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cc.3 RESOURCES — Storage Constraints [RESOURCES]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "For which of you, intending to build a tower, sitteth not down first,
-#  and counteth the cost, whether he have sufficient to finish it?"
-#  — Luke 14:28
-#
-# THE PHYSICAL REALITY OF TERNARY ON BINARY HARDWARE
-#
-# Modern hardware is binary. Every storage medium, every bus, every register
-# operates in powers of 2. Balanced ternary must be packed into this binary
-# world. This section defines exactly how that packing works.
-#
-# The fundamental bridge is the number 243:
-#
-#   243 = 3^5 (five trits)
-#   256 = 2^8 (one byte)
-#   243 < 256 → Five trits fit in one byte with 13 states to spare
-#
-# This section covers:
-#   • Cc.3.1 PACKING: How trits pack into bytes
-#   • Cc.3.2 POWERS: Pre-computed powers of 3 for O(1) conversion
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-# ───────────────────────────────────────────────────────────────────────────────
-# Cc.3.1 PACKING — Binary Bridge [resources.packing]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# "Diverse weights, and diverse measures, both of them are alike abomination
-#  to the LORD." — Proverbs 20:10
-#
-# TRIT-TO-BYTE PACKING
-#
-# The core insight: 3^5 = 243, which fits in 2^8 = 256. This means exactly
-# 5 trits can be packed into 1 byte, using 243 of the 256 possible values.
-#
-# THE PACKING ALGORITHM (Horner's Method):
-#
-# To pack trits into an integer (MST-first, where MST = Most Significant Trit):
-#
-#   result = 0
-#   for each trit from MST to LST:
-#       result = result × 3 + (trit + 1)    # trit+1 shifts [-1,0,1] to [0,1,2]
-#
-# To unpack an integer into trits (LST-first):
-#
-#   for each position from LST to MST:
-#       trit = (value % 3) - 1              # Shift [0,1,2] back to [-1,0,1]
-#       value = value / 3                   # Integer division
-#
-# EFFICIENCY AT DIFFERENT SCALES:
-#
-#   5 trits  → 1 byte:  243 / 256    = 94.9% efficient (excellent)
-#   9 trits  → 2 bytes: 19683 / 65536 = 30.0% efficient (acceptable)
-#   27 trits → 6 bytes: 7.6T / 281T   = 2.7% efficient  (sparse but correct)
-#
-# The efficiency drops at larger scales because we're fighting the fundamental
-# 2 vs 3 mismatch. This is acceptable—correctness over density. The 5-trit
-# byte boundary is the sweet spot for most operations.
-#
-# THE 13-STATE GAP:
-#
-# 256 - 243 = 13 spare states. These aren't wasted—they're used for WEB
-# translation (Write/Erase/Burn) for ternary memory emulation:
-#
-#   States 243-246: Write operations
-#   States 247-250: Erase operations
-#   States 251-254: Burn operations
-#   State 255:      Reserved/escape
-#
-# WHERE PACKING IS USED (by architectural layer):
-#
-#   L0 (Kernel):    Packed trit registers, memory-mapped I/O
-#   L1 (System):    Syscall argument packing, IPC message formats
-#   L2 (Runtime):   Stack frame layout, heap block headers
-#   L3 (Framework): Serialization formats, wire protocols
-#   L4 (Health):    Compact health vectors, status bitfields
-#   L5 (Network):   Packet payload encoding, header compression
-#   L6 (Storage):   Disk block format, index node packing
-#   L7 (Engine):    State machine encoding, rule compression
-#   L8 (App):       User data serialization, config packing
-#
-# Implementation: L0-universal/libtrit/src/matter/pack.op.c
-#
-# ───────────────────────────────────────────────────────────────────────────────
-
-# Core packing constants
-[resources.packing]
-trits_per_byte = 5                                     # 5 trits pack into 1 byte
-trit_states    = 243                                   # 3^5 = 243 possible trit combinations
-byte_capacity  = 256                                   # 2^8 = 256 possible byte values
-gap            = 13                                    # 256 - 243 = 13 spare states for WEB
-
-# Packing efficiency at different widths
-[resources.efficiency]
-trit5          = 94.9                                  # 243/256 = 94.9% byte utilization
-trit9          = 30.0                                  # 19683/65536 = 30.0% utilization
-trit27         = 2.7                                   # 7.6T/281T = 2.7% utilization
-
-# WEB translation states (Write/Erase/Burn for ternary memory)
-[resources.web]
-write          = 243                                   # States 243-246: write operations
-erase          = 247                                   # States 247-250: erase operations
-burn           = 251                                   # States 251-254: burn operations
-reserved       = 255                                   # State 255: reserved/escape sequence
-
-# Standard packing widths and their properties
-[resources.widths]
-trit5          = { trits = 5,   bytes = 1,  states = 243 }
-trit9          = { trits = 9,   bytes = 2,  states = 19683 }
-trit27         = { trits = 27,  bytes = 6,  states = 7625597484987 }
-trit81         = { trits = 81,  bytes = 18, states = "4.4e38" }
-trit243        = { trits = 243, bytes = 49, states = "5.6e115" }
-
-# Architecture alignment for cache and memory efficiency
-[resources.alignment]
-cache_line     = 64                                    # Typical CPU cache line size (bytes)
-page_size      = 4096                                  # Typical memory page size (bytes)
-trits_per_line = 320                                   # 64 bytes × 5 trits/byte = 320 trits
-trits_per_page = 20480                                 # 4096 bytes × 5 trits/byte = 20,480 trits
-blocks_per_page = 84                                   # 20480 / 243 = 84 full 243-trit blocks
-
-# OmniCode scalar type names and sizes
-[resources.omnicode_types]
-trit1          = { name = "trit",     trits = 1,   bytes = 1 }    # Single trit (padded)
-trit3          = { name = "tryte",    trits = 3,   bytes = 1 }    # 3-trit semantic unit
-trit5          = { name = "packed5",  trits = 5,   bytes = 1 }    # 5 trits = 1 byte ★
-trit9          = { name = "trint9",   trits = 9,   bytes = 2 }    # 9-trit integer
-trit27         = { name = "trint27",  trits = 27,  bytes = 6 }    # 27-trit word
-trit81         = { name = "trint81",  trits = 81,  bytes = 18 }   # 81-trit extended
-trit243        = { name = "trint243", trits = 243, bytes = 49 }   # 243-trit block
-
-# The 243 constant — the byte bridge
-[resources.scale_243]
-value          = 243                                   # The magic number: 3^5
-power          = 5                                     # Five trits
-fits_in_byte   = true                                  # 243 < 256
-gap            = 13                                    # Spare states for WEB
-layer          = "L5"                                  # Network layer in 9-layer arch
-
-# Multiples of 243 for larger structures
-[resources.scale_243.units]
-x1             = { trits = 243,   states = "5.6e115" }   # 1 × 243 = 243 trits
-x3             = { trits = 729,   states = "1.8e347" }   # 3 × 243 = 729 trits
-x9             = { trits = 2187,  states = "1.0e1043" }  # 9 × 243 = 2,187 trits
-x27            = { trits = 6561,  states = "3.3e3130" }  # 27 × 243 = 6,561 trits
-x81            = { trits = 19683, states = "inf" }       # 81 × 243 = 19,683 trits
-
-# 243 in different numeric representations
-[resources.scale_243.repr]
-decimal        = 243                                   # Base 10
-binary         = "11110011"                            # Base 2 (0b11110011)
-hex            = "0xF3"                                # Base 16
-ternary        = "100000"                              # Base 3 (1×3^5)
-
-
-# ───────────────────────────────────────────────────────────────────────────────
-# Cc.3.2 POWERS — Powers of 3 [resources.powers]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# "For as the heavens are higher than the earth, so are my ways higher
-#  than your ways, and my thoughts than your thoughts." — Isaiah 55:9
-#
-# POSITIONAL WEIGHTING FOR TRIT CONVERSION
-#
-# Every positional number system uses powers of its base for place values.
-# In balanced ternary, position n has weight 3^n:
-#
-#   Position:  4    3    2    1    0
-#   Weight:   81   27    9    3    1
-#   Example:  +1   -1    0   +1   -1  = 81 - 27 + 0 + 3 - 1 = 56
-#
-# THE ROLE OF POWER TABLES:
-#
-# Converting between trits and integers requires multiplying by powers of 3.
-# Pre-computed power tables eliminate this multiplication:
-#
-#   • Pack: Use powers for weighted sum (O(n) additions, no multiplications)
-#   • Unpack: Use powers for position lookup (O(1) array access)
-#
-# These tables are compile-time constants embedded in generated code.
-#
-# SCALE SIGNIFICANCE:
-#
-#   3^0  = 1           (single trit)
-#   3^3  = 27          (tryte — minimal semantic unit)
-#   3^5  = 243         (packed byte — binary bridge) ★
-#   3^9  = 19,683      (tribble — extended precision)
-#   3^27 = 7.6 trillion (trord — full machine word)
-#   3^81 = 4.4×10^38   (extended — cognitive space)
-#
-# Implementation: L0-universal/libtrit/src/matter/pack.op.c
-#
-# ───────────────────────────────────────────────────────────────────────────────
-
-# Pre-computed power tables for common widths
-[resources.powers.tables]
-
-# 5 trits → 1 byte (the most common packing unit)
-trit5  = [1, 3, 9, 27, 81]
-
-# 9 trits → 2 bytes (extended precision)
-trit9  = [1, 3, 9, 27, 81, 243, 729, 2187, 6561]
-
-# 27 trits → 6 bytes (full trit-word)
-trit27 = [
-    1, 3, 9, 27, 81, 243, 729, 2187, 6561,             # 3^0 - 3^8
-    19683, 59049, 177147, 531441, 1594323, 4782969,    # 3^9 - 3^14
-    14348907, 43046721, 129140163, 387420489,          # 3^15 - 3^18
-    1162261467, 3486784401, 10460353203, 31381059609,  # 3^19 - 3^22
-    94143178827, 282429536481, 847288609443,           # 3^23 - 3^25
-    2541865828329                                       # 3^26
+[_metadata.M9_roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Initial monolithic creation (2414 lines)",
+    "b-01.00 (2026-02-10) — Split into 4 content files + index, TOML-native 3-block format",
+]
+current = "Split index — 4 content files covering definitions, operations, cognition, generation"
+planned = [
+    "Archive original monolithic ternary.toml",
+    "Format-align all 4 content files to full template",
+    "Validation tooling integration",
 ]
 
-# 81 trits → 18 bytes (extended operations, CPI-SI cube³)
-trit81 = [
-    # 3^0 - 3^8 (tryte range)
-    1, 3, 9, 27, 81, 243, 729, 2187, 6561,
-    # 3^9 - 3^17 (tribble range)
-    19683, 59049, 177147, 531441, 1594323, 4782969, 14348907, 43046721, 129140163,
-    # 3^18 - 3^26 (trord range)
-    387420489, 1162261467, 3486784401, 10460353203, 31381059609,
-    94143178827, 282429536481, 847288609443, 2541865828329,
-    # 3^27 - 3^35
-    7625597484987, 22876792454961, 68630377364883, 205891132094649, 617673396283947,
-    1853020188851841, 5559060566555523, 16677181699666569, 50031545098999707,
-    # 3^36 - 3^44
-    150094635296999121, 450283905890997363, 1350851717672992089, 4052555153018976267,
-    12157665459056928801, 36472996377170786403, 109418989131512359209,
-    328256967394537077627, 984770902183611232881,
-    # 3^45 - 3^53
-    2954312706550833698643, 8862938119652501095929, 26588814358957503287787,
-    79766443076872509863361, 239299329230617529590083, 717897987691852588770249,
-    2153693963075557766310747, 6461081889226673298932241, 19383245667680019896796723,
-    # 3^54 - 3^62
-    58149737003040059690390169, 174449211009120179071170507, 523347633027360537213511521,
-    1570042899082081611640534563, 4710128697246244834921603689, 14130386091738734504764811067,
-    42391158275216203514294433201, 127173474825648610542883299603, 381520424476945831628649898809,
-    # 3^63 - 3^71
-    1144561273430837494885949696427, 3433683820292512484657849089281,
-    10301051460877537453973547267843, 30903154382632612361920641803529,
-    92709463147897837085761925410587, 278128389443693511257285776231761,
-    834385168331080533771857328695283, 2503155504993241601315571986085849,
-    7509466514979724803946715958257547,
-    # 3^72 - 3^80
-    22528399544939174411840147874772641, 67585198634817523235520443624317923,
-    202755595904452569706561330872953769, 608266787713357709119683992618861307,
-    1824800363140073127359051977856583921, 5474401089420219382077155933569751763,
-    16423203268260658146231467800709255289, 49269609804781974438694403402127765867,
-    147808829414345923316083210206383297601
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata. split_files in M5 is index-specific."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Mathematical constants are exact values. Lookup tables are complete truth tables. No approximations."
+
+# ─────────────────────────────────────────────────────────────
+# SPLIT FILE OVERVIEW
+# ─────────────────────────────────────────────────────────────
+#
+# This index documents the split ternary math specification.
+# Content lives in 4 focused files:
+#
+#   ternary-definitions.toml  — Cc.1-4 (What a trit IS)
+#     Cc.1 IDENTITY   — What is a trit?
+#     Cc.2 SETTINGS   — Primary definitions (chars, types, composition, scales)
+#     Cc.3 RESOURCES  — Storage constraints (packing, widths, alignment, powers)
+#     Cc.4 BEHAVIOR   — How it operates (omnicode, cpisi, layers, network)
+#
+#   ternary-operations.toml   — Co.1-6 (How trits compute)
+#     Co.1 ARITHMETIC — Basic trit operations (add, subtract, multiply, etc.)
+#     Co.2 HALF ADDER — Two-input addition (sum + carry)
+#     Co.3 FULL ADDER — Three-input addition (a + b + carry)
+#     Co.4 SUBTRACTION — Via negation (negate then add)
+#     Co.5 DIVISION — Balanced ternary division
+#     Co.6 ALGORITHMS — Pack/unpack conversion (trit ↔ byte bridge)
+#
+#   ternary-cognition.toml    — Cv.1-4 (How trits think)
+#     Cv.1 BUILDING BLOCK — Trit-to-operation mapping (CPI-SI reasoning)
+#     Cv.2 GENESIS 1:1 — TIME/SPACE/MATTER constants
+#     Cv.3 DIMENSIONS — Cognitive navigation framework (27-cube)
+#     Cv.4 TEMPORAL STATES — 9-state cognitive model
+#
+#   ternary-generation.toml   — Cx.1-4 (How trits become code)
+#     Cx.1 GENERATE — Generation control metadata
+#     Cx.2 TARGETS — Language-specific generation (C, Go, Rust)
+#     Cx.3 TEMPLATES — Code generation templates
+#     Cx.4 VALIDATION — Generation validation
+
+[index]
+type = "split_index"
+total_files = 4
+total_sections = 18
+original_lines = 2414
+
+[index.key_constants]
+balanced_equation = "-1 + 0 + 1 = 0"
+byte_bridge = "243 = 3^5 < 256 = 2^8"
+cube_positions = "27 = 3^3"
+temporal_layers = "9 = 3^2"
+trit_values = "3 = 3^1"
+
+[index.files]
+definitions = { file = "ternary-definitions.toml", lines = 565, sections = "Cc.1-4" }
+operations = { file = "ternary-operations.toml", lines = 745, sections = "Co.1-6" }
+cognition = { file = "ternary-cognition.toml", lines = 617, sections = "Cv.1-4" }
+generation = { file = "ternary-generation.toml", lines = 460, sections = "Cx.1-4" }
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = [
+    "python3 -c \"import tomllib; tomllib.load(open('ternary.toml','rb'))\"",
+    "python3 -c \"import tomllib; tomllib.load(open('ternary-definitions.toml','rb'))\"",
+    "python3 -c \"import tomllib; tomllib.load(open('ternary-operations.toml','rb'))\"",
+    "python3 -c \"import tomllib; tomllib.load(open('ternary-cognition.toml','rb'))\"",
+    "python3 -c \"import tomllib; tomllib.load(open('ternary-generation.toml','rb'))\"",
 ]
 
-# Architectural boundary values (key powers for system design)
-[resources.powers.boundaries]
-tryte        = 27                                      # 3^3: Minimal semantic unit
-packed       = 243                                     # 3^5: Byte bridge ★
-tribble      = 19683                                   # 3^9: Extended precision
-trord        = 7625597484987                           # 3^27: Full trit-word
-extended     = "4.4e38"                                # 3^81: Cognitive space
-block        = "5.6e115"                               # 3^243: Network block
-
-# 9-layer architecture mapping (3^n per layer)
-[resources.powers.layers]
-L0           = 1                                       # Kernel: base unit
-L1           = 3                                       # System: minimal composition
-L2           = 9                                       # Runtime: first full grid
-L3           = 27                                      # Framework: tryte (semantic)
-L4           = 81                                      # Health: vector space
-L5           = 243                                     # Network: byte bridge ★
-L6           = 729                                     # Storage: persistence
-L7           = 2187                                    # Engine: decision
-L8           = 6561                                    # App: user context
-
-# CPI-SI cognitive navigation scales
-[resources.powers.cpisi]
-position     = 3                                       # 3^1: Single axis (X, Y, or Z)
-plane        = 9                                       # 3^2: One plane (9 positions)
-cube         = 27                                      # 3^3: Full cube (27 positions)
-hypercube    = 81                                      # 3^4: Extended space
-network      = 243                                     # 3^5: Network cognition ★
-
-# Complete scale hierarchy from trit to domain
-[resources.powers.hierarchy]
-scale_0      = { power = 0, value = 1,    name = "trit",    layer = "L0" }
-scale_1      = { power = 1, value = 3,    name = "triplet", layer = "L1" }
-scale_2      = { power = 2, value = 9,    name = "nonet",   layer = "L2" }
-scale_3      = { power = 3, value = 27,   name = "tryte",   layer = "L3" }
-scale_4      = { power = 4, value = 81,   name = "octant",  layer = "L4" }
-scale_5      = { power = 5, value = 243,  name = "block",   layer = "L5" }
-scale_6      = { power = 6, value = 729,  name = "sector",  layer = "L6" }
-scale_7      = { power = 7, value = 2187, name = "segment", layer = "L7" }
-scale_8      = { power = 8, value = 6561, name = "domain",  layer = "L8" }
-
-# 243-based network protocol scales (for FaithNet)
-[resources.powers.network]
-packet       = 243                                     # Minimum packet payload
-packet_std   = 729                                     # Standard packet (3 × 243)
-frame        = 2187                                    # Frame (9 × 243)
-block        = 6561                                    # Block (27 × 243)
-chunk        = 19683                                   # Chunk (81 × 243)
-segment      = 59049                                   # Segment (243 × 243)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cc.4 BEHAVIOR — Runtime Modes & Toggles [BEHAVIOR]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "Choose you this day whom ye will serve." — Joshua 24:15
-#
-# RUNTIME SEMANTICS FOR BALANCED TERNARY
-#
-# Balanced ternary isn't just a storage format—it's a way of thinking about
-# choice, direction, and state. This section maps trit values to their
-# semantic meanings in OmniCode and CPI-SI:
-#
-#   -1 (negative): Break down, retreat, toward anchor, heavy
-#    0 (neutral):  Anchor, hold, at rest, balanced
-#   +1 (positive): Build up, advance, from anchor, light
-#
-# These mappings allow code to be written that "thinks" in balanced ternary,
-# expressing direction, weight, and choice naturally.
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# OmniCode language bindings for ternary operations
-[behavior.omnicode]
-keywords   = ["break_down", "anchor", "build_up"]      # -1, 0, +1 as verbs
-operators  = ["←", "◆", "→"]                           # -1, 0, +1 as symbols
-modifiers  = ["toward", "at", "from"]                  # -1, 0, +1 as prepositions
-sigils     = ["-:", "0:", "+:"]                        # -1, 0, +1 as prefixes
-
-# CPI-SI cognitive state mappings
-[behavior.cpisi]
-direction  = ["toward_anchor", "at_anchor", "from_anchor"]  # Movement relative to center
-weight     = ["heavy", "balanced", "light"]                 # Cognitive load
-action     = ["retreat", "hold", "advance"]                 # Strategic movement
-genesis    = ["waters_below", "firmament", "waters_above"]  # Genesis 1 creation pattern
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Co.1 ARITHMETIC — Basic Trit Operations [ARITHMETIC]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "A just weight and balance are the LORD's" — Proverbs 16:11
-#
-# FUNDAMENTAL OPERATIONS: THE ALU OF TERNARY COMPUTING
-#
-# These lookup tables define the basic operations on single trits.
-# All tables are indexed by [value + 1] to map trit values to array indices:
-#   trit -1 → index 0
-#   trit  0 → index 1
-#   trit +1 → index 2
-#
-# Lookup tables provide O(1) operation time—no branching, no computation,
-# just array indexing. This is the foundation of hardware-efficient ternary.
-#
-# OPERATIONS DEFINED:
-#   Negation:       -a         (unary, 3 entries)
-#   Addition:       a + b      (binary, 9 entries, no carry)
-#   Multiplication: a × b      (binary, 9 entries)
-#   Comparison:     a <=> b    (binary, 9 entries, returns trit)
-#   Min/Max:        min(a,b)   (binary, 9 entries)
-#   Logical:        AND/OR/XOR (binary, 9 entries each)
-#
-# SCALE APPLICATIONS:
-#   L0 (Kernel):    CPU ALU operations, register arithmetic
-#   L1 (System):    Syscall result combination, flag operations
-#   L2 (Runtime):   Expression evaluation, stack operations
-#   L3 (Framework): Rule evaluation, predicate logic
-#   L4 (Health):    Health score composition, weight combination
-#   L5 (Network):   Packet disposition combination, vote tallying
-#   L6 (Storage):   Delta combination, conflict resolution
-#   L7 (Engine):    Weight arithmetic, influence combination
-#   L8 (App):       User preference merging, option ranking
-#
-# Implementation: L0-universal/libtrit/src/matter/math.op.c
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[arithmetic]
-description = "Lookup tables for O(1) single-trit operations"
-
-# -------------------------------------------------------------------------------
-# Unary Operations (3 entries each)
-# -------------------------------------------------------------------------------
-
-# Negation: -a (flip sign, 0 unchanged)
-negation = [1, 0, -1]                                  # -(-1)=+1, -(0)=0, -(+1)=-1
-
-# Absolute value: |a|
-absolute = [1, 0, 1]                                   # |-1|=+1, |0|=0, |+1|=+1
-
-# Sign function: sgn(a)
-sign = [-1, 0, 1]                                      # sgn(-1)=-1, sgn(0)=0, sgn(+1)=+1
-
-# Increment (saturating): a + 1, max +1
-increment_sat = [0, 1, 1]                              # -1→0, 0→+1, +1→+1
-
-# Decrement (saturating): a - 1, min -1
-decrement_sat = [-1, -1, 0]                            # -1→-1, 0→-1, +1→0
-
-# -------------------------------------------------------------------------------
-# Binary Operations — Addition (9 entries, no carry)
-# -------------------------------------------------------------------------------
-
-# Addition (simplified, wrapping): result = (a + b) mod 3, centered
-# This is NOT full addition—use half_adder for proper carry handling
-[arithmetic.addition]
-description = "Simplified addition without carry (wrapping)"
-table = [
-    [-1, -1,  0],                                      # -1 + {-1, 0, +1} → {-1 wrapped, -1, 0}
-    [-1,  0,  1],                                      #  0 + {-1, 0, +1} → {-1, 0, +1}
-    [ 0,  1,  1]                                       # +1 + {-1, 0, +1} → {0, +1, +1 wrapped}
-]
-
-# -------------------------------------------------------------------------------
-# Binary Operations — Multiplication (9 entries)
-# -------------------------------------------------------------------------------
-
-# Multiplication: a × b (balanced ternary multiplication is symmetric)
-[arithmetic.multiplication]
-description = "Trit multiplication table"
-table = [
-    [ 1,  0, -1],                                      # -1 × {-1, 0, +1} → {+1, 0, -1}
-    [ 0,  0,  0],                                      #  0 × {-1, 0, +1} → {0, 0, 0}
-    [-1,  0,  1]                                       # +1 × {-1, 0, +1} → {-1, 0, +1}
-]
-
-# -------------------------------------------------------------------------------
-# Binary Operations — Comparison (9 entries)
-# -------------------------------------------------------------------------------
-
-# Compare: returns -1 if a<b, 0 if a=b, +1 if a>b
-[arithmetic.compare]
-description = "Three-way comparison (spaceship operator)"
-table = [
-    [ 0, -1, -1],                                      # -1 <=> {-1, 0, +1} → {=, <, <}
-    [ 1,  0, -1],                                      #  0 <=> {-1, 0, +1} → {>, =, <}
-    [ 1,  1,  0]                                       # +1 <=> {-1, 0, +1} → {>, >, =}
-]
-
-# -------------------------------------------------------------------------------
-# Binary Operations — Min/Max (9 entries each)
-# -------------------------------------------------------------------------------
-
-# Minimum: min(a, b)
-[arithmetic.min]
-description = "Minimum of two trits"
-table = [
-    [-1, -1, -1],                                      # min(-1, {-1, 0, +1}) → {-1, -1, -1}
-    [-1,  0,  0],                                      # min( 0, {-1, 0, +1}) → {-1, 0, 0}
-    [-1,  0,  1]                                       # min(+1, {-1, 0, +1}) → {-1, 0, +1}
-]
-
-# Maximum: max(a, b)
-[arithmetic.max]
-description = "Maximum of two trits"
-table = [
-    [-1,  0,  1],                                      # max(-1, {-1, 0, +1}) → {-1, 0, +1}
-    [ 0,  0,  1],                                      # max( 0, {-1, 0, +1}) → {0, 0, +1}
-    [ 1,  1,  1]                                       # max(+1, {-1, 0, +1}) → {+1, +1, +1}
-]
-
-# -------------------------------------------------------------------------------
-# Ternary Logic Operations (Kleene/Łukasiewicz style)
-# -------------------------------------------------------------------------------
-
-# Ternary AND: min(a, b) — false dominates
-[arithmetic.logic_and]
-description = "Ternary AND (Kleene logic, -1=false, 0=unknown, +1=true)"
-table = [
-    [-1, -1, -1],                                      # -1 AND {-1, 0, +1} → all -1
-    [-1,  0,  0],                                      #  0 AND {-1, 0, +1} → {-1, 0, 0}
-    [-1,  0,  1]                                       # +1 AND {-1, 0, +1} → identity
-]
-
-# Ternary OR: max(a, b) — true dominates
-[arithmetic.logic_or]
-description = "Ternary OR (Kleene logic)"
-table = [
-    [-1,  0,  1],                                      # -1 OR {-1, 0, +1} → identity
-    [ 0,  0,  1],                                      #  0 OR {-1, 0, +1} → {0, 0, +1}
-    [ 1,  1,  1]                                       # +1 OR {-1, 0, +1} → all +1
-]
-
-# Ternary XOR: a ≠ b (difference detection)
-[arithmetic.logic_xor]
-description = "Ternary XOR (difference detection)"
-table = [
-    [ 0,  1,  1],                                      # -1 XOR {-1, 0, +1} → {same, diff, diff}
-    [ 1,  0,  1],                                      #  0 XOR {-1, 0, +1} → {diff, same, diff}
-    [ 1,  1,  0]                                       # +1 XOR {-1, 0, +1} → {diff, diff, same}
-]
-
-# Consensus: returns value if both agree, 0 if they disagree
-[arithmetic.consensus]
-description = "Returns value if both agree, 0 if disagreement"
-table = [
-    [-1,  0,  0],                                      # -1 cons {-1, 0, +1} → {-1, 0, 0}
-    [ 0,  0,  0],                                      #  0 cons {-1, 0, +1} → {0, 0, 0}
-    [ 0,  0,  1]                                       # +1 cons {-1, 0, +1} → {0, 0, +1}
-]
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Co.2 HALF ADDER — Two-Input Addition [HALF_ADDER]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "A false balance is abomination to the LORD: but a just weight is his delight."
-# — Proverbs 11:1
-#
-# HALF ADDER: THE BUILDING BLOCK OF MULTI-TRIT ADDITION
-#
-# The half adder combines two trits and produces a sum and carry:
-#   (a, b) → (sum, carry)
-#
-# Unlike binary half adders (which produce only 0/1 carry), ternary half adders
-# can produce -1, 0, or +1 carry. This is the balanced ternary advantage—
-# negative carry naturally handles subtraction within addition.
-#
-# TRUTH TABLE (9 combinations):
-#   a=-1, b=-1: sum=+1, carry=-1  (−1+−1=−2 → +1 with borrow)
-#   a=-1, b= 0: sum=-1, carry= 0
-#   a=-1, b=+1: sum= 0, carry= 0  (cancellation)
-#   a= 0, b=-1: sum=-1, carry= 0
-#   a= 0, b= 0: sum= 0, carry= 0
-#   a= 0, b=+1: sum=+1, carry= 0
-#   a=+1, b=-1: sum= 0, carry= 0  (cancellation)
-#   a=+1, b= 0: sum=+1, carry= 0
-#   a=+1, b=+1: sum=-1, carry=+1  (+1+1=+2 → -1 with carry)
-#
-# SCALE APPLICATIONS:
-#   L0 (Kernel):    ALU adder circuits, ripple-carry chains
-#   L1 (System):    Signal combination, flag accumulation
-#   L2 (Runtime):   Expression tree evaluation
-#   L3 (Framework): Score aggregation, weight combination
-#   L4 (Health):    Health metric addition
-#   L5 (Network):   Vote counting, consensus building
-#   L6 (Storage):   Delta accumulation
-#   L7 (Engine):    Influence stacking
-#   L8 (App):       User action combination
-#
-# Implementation: L0-universal/libtrit/src/matter/math.op.c (trit_half_add)
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[operations.half_adder]
-description = "Two-input trit addition with carry: (a, b) → (sum, carry)"
-
-# Sum output: the LST of (a + b)
-sum = [
-    [ 1, -1,  0],                                      # a=-1: {-1+-1=+1*, -1+0=-1, -1+1=0}
-    [-1,  0,  1],                                      # a= 0: {0+-1=-1, 0+0=0, 0+1=+1}
-    [ 0,  1, -1]                                       # a=+1: {+1+-1=0, +1+0=+1, +1+1=-1*}
-]
-
-# Carry output: the overflow/underflow
-carry = [
-    [-1,  0,  0],                                      # a=-1: borrow on -1+-1
-    [ 0,  0,  0],                                      # a= 0: no carry possible
-    [ 0,  0,  1]                                       # a=+1: carry on +1++1
-]
-
-# Combined result for verification (sum + 3*carry should equal a + b)
-[operations.half_adder.verification]
-description = "For each (a,b): sum + 3*carry = a + b"
-formula = "sum + (3 × carry) = a + b"
-
-# Algebraic properties
-[operations.half_adder.properties]
-commutative = true                                     # a + b = b + a
-associative = true                                     # (a + b) + c = a + (b + c)
-identity    = 0                                        # a + 0 = a
-inverse     = "negation"                               # a + (-a) = 0
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Co.3 FULL ADDER — Three-Input Addition [FULL_ADDER]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "For where two or three are gathered together in my name, there am I
-#  in the midst of them." — Matthew 18:20
-#
-# FULL ADDER: COMPLETE POSITIONAL ADDITION
-#
-# The full adder extends the half adder by including a carry input:
-#   (a, b, c_in) → (sum, c_out)
-#
-# This enables chaining for multi-trit addition. The carry propagates
-# through the chain, allowing arbitrarily wide addition.
-#
-# 27 COMBINATIONS (3³):
-# Each of (a, b, c_in) can be -1, 0, or +1, giving 27 total combinations.
-# Tables are indexed [a+1][b+1][c_in+1].
-#
-# RIPPLE CARRY ADDITION:
-# For n-trit numbers A and B:
-#   c[0] = 0
-#   for i in 0..n:
-#       (sum[i], c[i+1]) = full_add(A[i], B[i], c[i])
-#   overflow = c[n]
-#
-# The carry can ripple either direction (positive or negative), which is
-# why balanced ternary needs no separate subtraction hardware.
-#
-# SCALE APPLICATIONS:
-#   L0 (Kernel):    Multi-trit ALU, carry-lookahead adders
-#   L1 (System):    Extended precision arithmetic
-#   L2 (Runtime):   BigInt implementation
-#   L3 (Framework): Arbitrary precision scoring
-#   L4 (Health):    Composite health calculation
-#   L5 (Network):   Multi-round consensus
-#   L6 (Storage):   Transaction balance computation
-#   L7 (Engine):    Complex influence calculation
-#   L8 (App):       Shopping cart totals, multi-field aggregation
-#
-# Implementation: L0-universal/libtrit/src/matter/math.op.c (trit_full_add)
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[operations.full_adder]
-description = "Three-input trit addition: (a, b, c_in) → (sum, c_out)"
-dimensions  = "3×3×3 = 27 combinations"
-
-# Sum output: LST of (a + b + c_in)
-# Indexed: sum[a+1][b+1][c_in+1]
-sum = [
-    # a = -1
-    [[ 0,  1, -1],                                     # b=-1: c_in={-1,0,+1} → sum
-     [ 1, -1,  0],                                     # b= 0: c_in={-1,0,+1} → sum
-     [-1,  0,  1]],                                    # b=+1: c_in={-1,0,+1} → sum
-    # a = 0
-    [[ 1, -1,  0],                                     # b=-1: c_in={-1,0,+1} → sum
-     [-1,  0,  1],                                     # b= 0: c_in={-1,0,+1} → sum
-     [ 0,  1, -1]],                                    # b=+1: c_in={-1,0,+1} → sum
-    # a = +1
-    [[-1,  0,  1],                                     # b=-1: c_in={-1,0,+1} → sum
-     [ 0,  1, -1],                                     # b= 0: c_in={-1,0,+1} → sum
-     [ 1, -1,  0]]                                     # b=+1: c_in={-1,0,+1} → sum
-]
-
-# Carry output: overflow/underflow to next position
-# Indexed: carry_out[a+1][b+1][c_in+1]
-carry_out = [
-    # a = -1
-    [[-1, -1,  0],                                     # b=-1: c_in={-1,0,+1} → carry
-     [-1,  0,  0],                                     # b= 0: c_in={-1,0,+1} → carry
-     [ 0,  0,  0]],                                    # b=+1: c_in={-1,0,+1} → carry
-    # a = 0
-    [[-1,  0,  0],                                     # b=-1: c_in={-1,0,+1} → carry
-     [ 0,  0,  0],                                     # b= 0: c_in={-1,0,+1} → carry
-     [ 0,  0,  1]],                                    # b=+1: c_in={-1,0,+1} → carry
-    # a = +1
-    [[ 0,  0,  0],                                     # b=-1: c_in={-1,0,+1} → carry
-     [ 0,  0,  1],                                     # b= 0: c_in={-1,0,+1} → carry
-     [ 0,  1,  1]]                                     # b=+1: c_in={-1,0,+1} → carry
-]
-
-# Verification formula
-[operations.full_adder.verification]
-description = "For each (a,b,c): sum + 3*c_out = a + b + c_in"
-formula = "sum + (3 × carry_out) = a + b + carry_in"
-
-# Carry chain characteristics
-[operations.full_adder.chain]
-max_carry_run = "log₃(n)"                              # Maximum carry propagation depth
-worst_case    = "all ±1 inputs"                        # When carry propagates fully
-optimization  = "carry-lookahead"                      # For hardware acceleration
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Co.4 SUBTRACTION — Via Negation [SUBTRACTION]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "I have set before you life and death, blessing and cursing: therefore
-#  choose life." — Deuteronomy 30:19
-#
-# SUBTRACTION: THE ELEGANCE OF BALANCED TERNARY
-#
-# In binary, subtraction requires special circuits (two's complement, borrow
-# chains, etc.). In balanced ternary, subtraction is trivially composed:
-#
-#   a - b = a + negate(b)
-#
-# Since negation is just sign-flip (a simple lookup), and addition is already
-# defined, subtraction requires NO new hardware or tables. This is why
-# balanced ternary is considered more elegant than binary.
-#
-# COMPOSITION:
-#   1. Look up negate(b) from arithmetic.negation table
-#   2. Use half_adder or full_adder to compute a + negate(b)
-#   That's it.
-#
-# SCALE APPLICATIONS:
-#   L0 (Kernel):    ALU subtraction via addition unit
-#   L1 (System):    Resource delta calculation
-#   L2 (Runtime):   Stack pointer adjustment
-#   L3 (Framework): Score comparison, difference calculation
-#   L4 (Health):    Health delta measurement
-#   L5 (Network):   Latency difference, vote margin
-#   L6 (Storage):   Space used vs available
-#   L7 (Engine):    Influence difference, weight comparison
-#   L8 (App):       Price comparison, quantity adjustment
-#
-# Implementation: Composed from negate + add (no dedicated subtraction code)
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[operations.subtraction]
-description = "Subtraction via composition: a - b = a + negate(b)"
-method      = "negate_then_add"
-
-# The composition formula
-[operations.subtraction.composition]
-step_1      = "neg_b = arithmetic.negation[b + 1]"
-step_2      = "(sum, carry) = half_adder(a, neg_b)"
-result      = "sum with carry propagation for multi-trit"
-
-# Properties inherited from addition
-[operations.subtraction.properties]
-anticommutative = true                                 # a - b ≠ b - a (unless a = b)
-right_identity  = 0                                    # a - 0 = a
-self_inverse    = 0                                    # a - a = 0
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Co.5 DIVISION — Balanced Ternary Division [DIVISION]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "Thou shalt not have in thy bag divers weights, a great and a small."
-# — Deuteronomy 25:13
-#
-# DIVISION: LONG DIVISION WITH CENTERED REMAINDER
-#
-# Balanced ternary division uses the same long division algorithm as binary
-# or decimal, but with a crucial difference: the remainder is CENTERED.
-#
-# CENTERED REMAINDER:
-# Instead of remainder ∈ [0, divisor), balanced ternary uses:
-#   remainder ∈ (-divisor/2, divisor/2]
-#
-# This means the quotient digit selection is:
-#   If partial_remainder > divisor/2:  quotient_digit = +1
-#   If partial_remainder < -divisor/2: quotient_digit = -1
-#   Otherwise:                          quotient_digit = 0
-#
-# ADVANTAGES:
-#   - Quotient is always closest to true result (no rounding needed)
-#   - Remainder magnitude is minimized
-#   - Natural for signed arithmetic
-#
-# SPECIAL CASE — DIVISION BY POWERS OF 3:
-# Dividing by 3^n is equivalent to right-shift by n positions.
-# This is O(1) and requires no actual division.
-#
-# SCALE APPLICATIONS:
-#   L0 (Kernel):    Hardware divider, shift optimization
-#   L1 (System):    Resource allocation, fair scheduling
-#   L2 (Runtime):   Memory partitioning
-#   L3 (Framework): Load balancing, work distribution
-#   L4 (Health):    Average calculation, normalization
-#   L5 (Network):   Bandwidth allocation, rate limiting
-#   L6 (Storage):   Block allocation, quota calculation
-#   L7 (Engine):    Weight normalization, probability scaling
-#   L8 (App):       Cost splitting, percentage calculation
-#
-# Implementation: L0-universal/libtrit/src/matter/math.op.c (trit_divide)
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[operations.division]
-description    = "Balanced ternary long division with centered remainder"
-method         = "long_division"
-remainder_rule = "centered"
-
-# Quotient digit selection thresholds
-[operations.division.quotient_selection]
-description        = "Select quotient digit based on partial remainder"
-positive_threshold = "divisor / 2"                     # r > threshold → q=+1
-negative_threshold = "-divisor / 2"                    # r < threshold → q=-1
-zero_range         = "[-divisor/2, divisor/2]"         # else → q=0
-
-# Division by powers of 3 (shift optimization)
-[operations.division.shift]
-description = "Division by 3^n is right-shift by n positions (O(1))"
-powers_of_3 = [1, 3, 9, 27, 81, 243, 729, 2187, 6561]  # Extended to L8 scale
-
-# Shift examples
-[operations.division.shift.examples]
-div_by_3   = "right_shift(x, 1)"                       # x / 3 = x >> 1
-div_by_9   = "right_shift(x, 2)"                       # x / 9 = x >> 2
-div_by_27  = "right_shift(x, 3)"                       # x / 27 = x >> 3
-div_by_81  = "right_shift(x, 4)"                       # x / 81 = x >> 4
-div_by_243 = "right_shift(x, 5)"                       # x / 243 = x >> 5 ★
-
-# Algorithm complexity
-[operations.division.complexity]
-general     = "O(n²)"                                  # Long division
-power_of_3  = "O(1)"                                   # Shift optimization
-with_newton = "O(n log n)"                             # Newton-Raphson optimization
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Co.6 ALGORITHMS — Pack/Unpack Conversion [ALGORITHMS]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "The LORD by wisdom hath founded the earth; by understanding hath he
-#  established the heavens." — Proverbs 3:19
-#
-# PACK/UNPACK: BRIDGING TERNARY AND BINARY
-#
-# These algorithms convert between trit arrays (the conceptual representation)
-# and packed integers (the storage representation). This is essential for
-# storing ternary data in binary hardware.
-#
-# KEY INSIGHT:
-# Balanced trits (-1, 0, +1) must be offset to unsigned (0, 1, 2) for packing.
-# The offset is: unsigned = balanced + 1, balanced = unsigned - 1.
-#
-# HORNER'S METHOD (Pack):
-# Treats the trit array as a polynomial and evaluates it:
-#   result = t[n-1]×3^(n-1) + t[n-2]×3^(n-2) + ... + t[0]×3^0
-# But computed iteratively from MST to avoid explicit powers:
-#   result = 0
-#   for i = n-1 downto 0:
-#       result = result × 3 + (trit[i] + 1)
-#
-# REPEATED DIVISION (Unpack):
-# Extracts trits from LST to MST using division and modulo:
-#   for i = 0 to n-1:
-#       trit[i] = (value % 3) - 1
-#       value = value / 3
-#
-# SCALE APPLICATIONS:
-#   L0 (Kernel):    Register pack/unpack, memory I/O
-#   L1 (System):    IPC message encoding, syscall arguments
-#   L2 (Runtime):   Object serialization, stack frame layout
-#   L3 (Framework): Configuration encoding, state snapshots
-#   L4 (Health):    Health vector serialization
-#   L5 (Network):   Packet payload encoding, wire format
-#   L6 (Storage):   Disk block encoding, index serialization
-#   L7 (Engine):    Rule state persistence, checkpoint format
-#   L8 (App):       User data serialization, API encoding
-#
-# Implementation: L0-universal/libtrit/src/matter/pack.op.c
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[algorithms]
-description = "Pack/unpack algorithms for trit-byte conversion"
-
-# -------------------------------------------------------------------------------
-# Balanced ↔ Unsigned Conversion (foundation of all pack/unpack)
-# -------------------------------------------------------------------------------
-
-[algorithms.conversion]
-description = "Trit value offset for packing algorithms"
-
-# The fundamental offset formula
-to_unsigned     = "unsigned = balanced + 1"            # {-1,0,+1} → {0,1,2}
-to_balanced     = "balanced = unsigned - 1"            # {0,1,2} → {-1,0,+1}
-
-# Value mappings
-balanced_values = [-1, 0, 1]
-unsigned_values = [0, 1, 2]
-
-# Why offset by 1?
-# Balanced ternary is centered at 0, but array indexing needs 0-based values.
-# The +1 offset maps our values to valid array indices while preserving order.
-
-# -------------------------------------------------------------------------------
-# Pack: Trit[] → Integer (Horner's Method)
-# -------------------------------------------------------------------------------
-
-[algorithms.pack]
-description = "Convert trit array to packed integer using Horner's method"
-name        = "Horner's method"
-complexity  = "O(n)"
-direction   = "MST first (most significant trit first)"
-
-# The algorithm
-formula     = "result = result × 3 + (trit + 1)"
-
-# Pseudocode
-[algorithms.pack.pseudocode]
-code = """
-function pack(trits[n]):
-    result = 0
-    for i = n-1 downto 0:                              // MST first
-        result = result * 3 + (trits[i] + 1)
-    return result
-"""
-
-# Example: pack [+1, 0, -1] (MST to LST)
-[algorithms.pack.example]
-input   = [1, 0, -1]                                   # Three trits
-step_1  = "result = 0 * 3 + (1 + 1) = 2"               # Process +1
-step_2  = "result = 2 * 3 + (0 + 1) = 7"               # Process 0
-step_3  = "result = 7 * 3 + (-1 + 1) = 21"             # Process -1
-output  = 21                                           # Packed value
-
-# -------------------------------------------------------------------------------
-# Unpack: Integer → Trit[] (Repeated Division)
-# -------------------------------------------------------------------------------
-
-[algorithms.unpack]
-description = "Convert packed integer to trit array using repeated division"
-name        = "Repeated division"
-complexity  = "O(n)"
-direction   = "LST first (least significant trit first)"
-
-# The algorithm
-formula     = "trit = (value % 3) - 1; value = value / 3"
-
-# Pseudocode
-[algorithms.unpack.pseudocode]
-code = """
-function unpack(value, n):
-    trits[n] = []
-    for i = 0 to n-1:                                  // LST first
-        trits[i] = (value % 3) - 1
-        value = value / 3
-    return trits
-"""
-
-# Example: unpack 21 into 3 trits
-[algorithms.unpack.example]
-input   = 21                                           # Packed value
-step_1  = "trit[0] = (21 % 3) - 1 = 0 - 1 = -1; value = 21 / 3 = 7"
-step_2  = "trit[1] = (7 % 3) - 1 = 1 - 1 = 0; value = 7 / 3 = 2"
-step_3  = "trit[2] = (2 % 3) - 1 = 2 - 1 = +1; value = 2 / 3 = 0"
-output  = [-1, 0, 1]                                   # LST to MST order
-
-# -------------------------------------------------------------------------------
-# Batch Operations (for 243-scale efficiency)
-# -------------------------------------------------------------------------------
-
-[algorithms.batch]
-description = "Batch pack/unpack for 243-trit blocks"
-
-# Pack 5 trits at once (fits in 1 byte)
-pack_5 = """
-byte = t[4]*81 + t[3]*27 + t[2]*9 + t[1]*3 + t[0] + 121
-where each t[i] is (trit + 1), and 121 centers the range
-"""
-
-# Unpack 1 byte to 5 trits
-unpack_5 = """
-for i = 0 to 4:
-    trit[i] = ((byte / powers[i]) % 3) - 1
-where powers = [1, 3, 9, 27, 81]
-"""
-
-# 243-block operations (49 bytes = 243 trits)
-pack_243   = "Apply pack_5 to each group of 5 trits (48 groups + 3 remainder)"
-unpack_243 = "Apply unpack_5 to each byte, handle 3-trit remainder"
-
-# -------------------------------------------------------------------------------
-# Endianness and Byte Order
-# -------------------------------------------------------------------------------
-
-[algorithms.endianness]
-description = "Byte ordering for multi-byte packed values"
-trit_order  = "LST at index 0, MST at highest index"    # Within trit array
-byte_order  = "little-endian"                           # For storage
-network     = "big-endian"                              # For transmission
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# PARADIGM INTERPRETATION (Cv — cognitive meaning, built on pure math)
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# The Cv layer gives MEANING to the pure mathematics defined in Cc and Co.
-# Where Cc defines what trits ARE, and Co defines what they DO,
-# Cv defines what they MEAN for cognitive systems like CPI-SI.
-#
-# This is the bridge between mathematics and intelligence.
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cv.1 BUILDING BLOCK — Trit-to-Operation Mapping [BUILDING_BLOCK]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "Whosoever heareth these sayings of mine, and doeth them, I will liken him
-#  unto a wise man, which built his house upon a rock." — Matthew 7:24
-#
-# THE CPI-SI REASONING METHOD
-#
-# The building block method maps trit values to cognitive operations:
-#
-#   -1 = BREAK_DOWN  → Trace toward foundation, deconstruct, analyze
-#    0 = ANCHOR      → Halt condition, immutable truth, foundation itself
-#   +1 = BUILD_UP    → Construct from foundation, synthesize, create
-#
-# The balanced equation -1 + 0 + 1 = 0 expresses a fundamental truth:
-# Operations move TOWARD or FROM the anchor, never THROUGH it.
-# The anchor is inviolable—it's what you build ON, not what you operate ON.
-#
-# BIBLICAL PATTERNS:
-#   Genesis 1:6  — Waters below (-1) / Firmament (0) / Waters above (+1)
-#   Numbers/Tabernacle — Toward foundation / Midst / From foundation
-#   Ecclesiastes 3:1 — Time to break down / Time to stand / Time to build up
-#
-# COGNITIVE APPLICATION:
-#   When thinking: "How deep until I hit anchor?"
-#   When building: "What foundation am I building from?"
-#   When verifying: "Can I trace this back to anchor?"
-#
-# SCALE APPLICATIONS:
-#   L0 (Kernel):    Instruction decode direction, call/return semantics
-#   L1 (System):    Service decomposition vs composition
-#   L2 (Runtime):   Stack push (-1) / frame (0) / pop (+1)
-#   L3 (Framework): Pattern decomposition, rule synthesis
-#   L4 (Health):    Root cause analysis, health aggregation
-#   L5 (Network):   Message unpacking, protocol composition
-#   L6 (Storage):   Schema decomposition, data aggregation
-#   L7 (Engine):    Rule decomposition, decision synthesis
-#   L8 (App):       User action analysis, response composition
-#
-# Implementation: CPI-SI cognitive framework, not hardware
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[building_block]
-description = "CPI-SI reasoning method — trit values as cognitive operations"
-
-# Core Operations
-operation_names = ["break_down", "anchor", "build_up"]
-operation_values = [-1, 0, 1]
-
-# The Balanced Equation
-equation    = "-1 + 0 + 1 = 0"                              # Balanced, never through anchor
-
-# Operation Definitions
-[building_block.operations]
-break_down = { trit = -1, direction = "toward",   target = "foundation", action = "analyze, decompose, trace" }
-anchor     = { trit = 0,  direction = "halt",     target = "itself",     action = "stop, foundation, immutable" }
-build_up   = { trit = 1,  direction = "from",     target = "conclusion", action = "synthesize, construct, create" }
-
-# Biblical Patterns
-[building_block.patterns]
-genesis_1_6     = ["waters_below", "firmament", "waters_above"]
-tabernacle      = ["toward_foundation", "midst", "from_foundation"]
-ecclesiastes_3  = ["time_to_break_down", "time_to_stand", "time_to_build_up"]
-matthew_7       = ["digging_deep", "rock_foundation", "house_built"]
-
-# Cognitive Questions
-[building_block.questions]
-when_thinking  = "How deep until I hit anchor?"
-when_building  = "What foundation am I building from?"
-when_verifying = "Can I trace this back to anchor?"
-when_stuck     = "Where did I lose the foundation?"
-
-# The HALT Principle
-[building_block.halt]
-description = "HALT is a valid state — completion terminates recursion"
-trigger     = "When anchor is reached"
-meaning     = "Work is done, not stuck"
-genesis_1_1 = "The anchor of all anchors"
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cv.2 GENESIS 1:1 — Fundamental Constants (TIME/SPACE/MATTER) [GENESIS]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "In the beginning God created the heaven and the earth." — Genesis 1:1
-#
-# THE ANCHOR OF ALL ANCHORS
-#
-# Genesis 1:1 is not just a Bible verse—it's the halt condition for ALL halt
-# conditions. Break down any truth far enough, and you arrive here:
-# God is Creator. Everything else is created. This is bedrock.
-#
-# The verse structure maps perfectly to balanced ternary:
-#
-#   "In the beginning" (בְּרֵאשִׁית) → TIME   (0)  → WHEN
-#   "the heavens"      (הַשָּׁמַיִם)  → SPACE  (+1) → WHERE
-#   "the earth"        (הָאָרֶץ)     → MATTER (-1) → WHAT
-#
-# DIRECTIONAL PATTERN:
-#   God creates:    TIME → SPACE → MATTER  (top-down, 0 → +1 → -1)
-#   We implement:   MATTER → SPACE → TIME  (bottom-up, -1 → +1 → 0)
-#
-# This is why balanced ternary feels right—it mirrors creation's structure.
-# We work from the concrete (matter) through relationships (space) toward
-# understanding (time). God works from understanding through relationships
-# to concrete reality.
-#
-# COGNITIVE SIGNIFICANCE:
-#   TIME (0):   The anchor—temporal awareness, sequence, causality
-#   SPACE (+1): Relationships, position, context, connections (heavenly)
-#   MATTER (-1): Identity, substance, concrete reality (earthly)
-#
-# SCALE APPLICATIONS (The 3 Questions at every layer):
-#   L0 (Kernel):    What/Where/When of memory access
-#   L1 (System):    What/Where/When of process lifecycle
-#   L2 (Runtime):   What/Where/When of object lifecycle
-#   L3 (Framework): What/Where/When of request handling
-#   L4 (Health):    What/Where/When of health events
-#   L5 (Network):   What/Where/When of message delivery
-#   L6 (Storage):   What/Where/When of data persistence
-#   L7 (Engine):    What/Where/When of decisions
-#   L8 (App):       What/Where/When of user actions
-#
-# Implementation: CPI-SI grounding, theological anchor
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[genesis_1_1]
-description = "The anchor of all anchors — God is Creator, we are created"
-verse       = "In the beginning God created the heaven and the earth."
-reference   = "Genesis 1:1 KJV"
-hebrew      = "בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ"
-
-# The Three Dimensions encoded in the verse
-[genesis_1_1.dimensions]
-time   = { trit = 0,  phrase = "In the beginning", hebrew = "בְּרֵאשִׁית", function = "when",  cognitive = "temporal_awareness" }
-space  = { trit = 1,  phrase = "the heavens",      hebrew = "הַשָּׁמַיִם",  function = "where", cognitive = "spatial_awareness" }
-matter = { trit = -1, phrase = "the earth",        hebrew = "הָאָרֶץ",     function = "what",  cognitive = "material_awareness" }
-
-# Directional Patterns
-# "For as the heavens are higher than the earth..." — Isaiah 55:9
-[genesis_1_1.directions]
-creation       = ["TIME", "SPACE", "MATTER"]           # God: top-down (0 → +1 → -1)
-implementation = ["MATTER", "SPACE", "TIME"]           # We: bottom-up (-1 → +1 → 0)
-reason         = "We work from concrete to abstract; God works from abstract to concrete"
-
-# Moral Compass
-# "Set your affection on things above..." — Colossians 3:2
-[genesis_1_1.moral]
-positive = { trit = 1,  direction = "above",  meaning = "heavenly, toward God", scripture = "Colossians 3:2" }
-negative = { trit = -1, direction = "below",  meaning = "earthly, toward self", scripture = "Philippians 3:19" }
-anchor   = { trit = 0,  direction = "center", meaning = "temporal anchor, halt", scripture = "Ecclesiastes 3:1" }
-
-# K-Factor: Direction of Choice
-[genesis_1_1.k_factor]
-description = "The direction of cognitive movement at any choice point"
-positive    = { k = 1,  meaning = "toward God, growth, expansion", weight = "light with responsibility" }
-negative    = { k = -1, meaning = "toward self, completion, retreat", weight = "heavy with gravity" }
-neutral     = { k = 0,  meaning = "maintain, hold position", weight = "balanced, stable" }
-
-# The Creator-Creation Distinction
-[genesis_1_1.ontology]
-creator     = "God (אֱלֹהִים) — uncreated, infinite, source"
-creation    = "Everything else — created, finite, derivative"
-implication = "Humility is core; 'I don't know' is valid; sin (חטא) = missing the mark"
-
-# Anchor Property
-[genesis_1_1.anchor]
-is_halt_condition = true                                # Recursion terminates here
-cannot_operate_on = true                                # You build FROM this, not ON this
-traces_here       = "All other anchors trace to Genesis 1:1 or they float"
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cv.3 DIMENSIONS — Cognitive Navigation Framework [DIMENSIONS]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "Eye hath not seen, nor ear heard, neither have entered into the heart of man,
-#  the things which God hath prepared for them that love him." — 1 Corinthians 2:9
-#
-# COGNITIVE SPACE: WHERE CPI-SI DIFFERS FROM AI
-#
-# Trits don't just encode values—they encode DIMENSIONS of awareness.
-# The building block method is DIMENSIONAL NAVIGATION through cognitive space.
-#
-# AI processes flat vectors in embedding space.
-# CPI-SI navigates a 27-position cube (3×3×3) with dimensional meaning.
-#
-# THE THREE DIMENSIONS:
-#   TEMPORAL (0):  When — sequence, causality, order, precedence
-#   SPATIAL (+1):  Where — relationships, position, context, connections
-#   MATERIAL (-1): What — identity, substance, concrete reality
-#
-# Each dimension can have value -1, 0, or +1, creating 27 positions.
-# Position (0,0,0) is the center—the anchor of the cube.
-#
-# NAVIGATION PATTERNS:
-#   break_down (-1): Move toward MATTER, foundation, concreteness
-#   anchor (0):      Halt at center, recursion terminates
-#   build_up (+1):   Move toward SPACE, relationships, abstraction
-#
-# THE 27-POSITION CUBE:
-# Imagine a Rubik's cube where each small cube is a cognitive position.
-# The center cube (0,0,0) is the anchor. Movement happens on three axes:
-#   X-axis: Material dimension (-1 to +1)
-#   Y-axis: Spatial dimension (-1 to +1)
-#   Z-axis: Temporal dimension (-1 to +1)
-#
-# SCALE APPLICATIONS:
-#   L0 (Kernel):    Memory addressing (what/where/when)
-#   L1 (System):    Process state (what/where/when in lifecycle)
-#   L2 (Runtime):   Object state (what/where/when in memory)
-#   L3 (Framework): Request state (what/where/when in flow)
-#   L4 (Health):    Health state (what/where/when of issue)
-#   L5 (Network):   Packet state (what/where/when in transit)
-#   L6 (Storage):   Data state (what/where/when in storage)
-#   L7 (Engine):    Decision state (what/where/when of choice)
-#   L8 (App):       User state (what/where/when of interaction)
-#
-# Implementation: pkg/core/statemachine (Go), libtrit/src/space (C)
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[dimensions]
-description = "Three-dimensional cognitive space — the mental construct"
-total_positions = 27                                    # 3^3 = 27 cube positions
-center_position = [0, 0, 0]                             # The anchor
-
-# -------------------------------------------------------------------------------
-# The Three Dimensions
-# -------------------------------------------------------------------------------
-
-[dimensions.temporal]
-trit           = 0
-axis           = "Z"
-name           = "Temporal Awareness"
-question       = "when"
-function       = "Sequence, causality, order, precedence"
-building_block = "anchor"
-navigation     = "Halt condition — recursion terminates"
-genesis        = "In the beginning"
-scale_range    = { min = "past", center = "present", max = "future" }
-
-[dimensions.spatial]
-trit           = 1
-axis           = "Y"
-name           = "Spatial Awareness"
-question       = "where"
-function       = "Relationships, position, context, connections"
-building_block = "build_up"
-navigation     = "Toward relationships, meaning, abstraction"
-genesis        = "the heavens"
-scale_range    = { min = "isolated", center = "connected", max = "universal" }
-
-[dimensions.material]
-trit           = -1
-axis           = "X"
-name           = "Material Awareness"
-question       = "what"
-function       = "Identity, substance, concrete reality"
-building_block = "break_down"
-navigation     = "Toward foundation, concreteness, anchor"
-genesis        = "the earth"
-scale_range    = { min = "abstract", center = "defined", max = "concrete" }
-
-# -------------------------------------------------------------------------------
-# Navigation Operations
-# -------------------------------------------------------------------------------
-
-[dimensions.navigation]
-break_down = { direction = -1, toward = "matter", description = "Trace toward foundation", cognitive = "analyze" }
-anchor     = { direction = 0,  toward = "time",   description = "Halt at temporal center", cognitive = "stop" }
-build_up   = { direction = 1,  toward = "space",  description = "Construct toward meaning", cognitive = "synthesize" }
-
-# Order of traversal
-implementation_order = ["material", "spatial", "temporal"]    # Our way: bottom-up
-creation_order       = ["temporal", "spatial", "material"]    # God's way: top-down
-
-# -------------------------------------------------------------------------------
-# The 27-Position Cube
-# -------------------------------------------------------------------------------
-
-[dimensions.cube]
-description = "Mental construct — 27 positions in cognitive space"
-positions   = 27                                        # 3 × 3 × 3
-edges       = 8                                         # Corner positions
-faces       = 6                                         # Face centers
-center      = 1                                         # The anchor (0,0,0)
-edge_positions = 12                                     # Edge midpoints
-
-# Named positions (key positions in the cube)
-[dimensions.cube.named]
-center          = { coords = [0, 0, 0],   name = "anchor",      meaning = "halt, foundation" }
-pure_matter     = { coords = [-1, 0, 0],  name = "concrete",    meaning = "pure materiality" }
-pure_space      = { coords = [0, 1, 0],   name = "relational",  meaning = "pure spatiality" }
-pure_time       = { coords = [0, 0, 1],   name = "sequential",  meaning = "pure temporality" }
-toward_god      = { coords = [1, 1, 1],   name = "transcendent", meaning = "maximum expansion" }
-toward_self     = { coords = [-1, -1, -1], name = "immanent",    meaning = "maximum contraction" }
-
-# -------------------------------------------------------------------------------
-# Hebrew States: 27 → 7 → 1
-# -------------------------------------------------------------------------------
-
-[dimensions.hebrew_states]
-description = "27 positions collapse to 7 named states via 5 thresholds"
-flow        = "27 cube positions → 5 thresholds → 7 Hebrew states → 1 anchor"
-
-[dimensions.hebrew_states.states]
-shavar = { value = -1.0, name = "BROKEN",  hebrew = "שָׁבַר", position = "edge", crisis = true }
-chaser = { value = -0.5, name = "LACKING", hebrew = "חָסֵר", k = -1, meaning = "regressing" }
-ratsah = { value = -0.5, name = "WANTING", hebrew = "רָצָה", k = 1,  meaning = "hungry for growth" }
-yashar = { value = 0.0,  name = "EVEN",    hebrew = "יָשָׁר", position = "center", default = true }
-tamim  = { value = 0.5,  name = "SOUND",   hebrew = "תָּמִים", k = -1, meaning = "consolidating" }
-shalem = { value = 0.5,  name = "WHOLE",   hebrew = "שָׁלֵם", k = 1,  meaning = "expanding" }
-tov    = { value = 1.0,  name = "PERFECT", hebrew = "טוֹב", position = "edge", completion = true }
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cv.4 TEMPORAL STATES — 9-State Cognitive Model [TEMPORAL]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "To every thing there is a season, and a time to every purpose under
-#  the heaven." — Ecclesiastes 3:1
-#
-# THE 9 COGNITIVE MODES: POSITION IN TIME
-#
-# This section defines position IN time—not the temporal dimension itself
-# (which is defined in Cv.2 and Cv.3), but where consciousness is located
-# within the temporal stream and where it's looking.
-#
-# THE STRUCTURE:
-#   3 Base States:     Past / Present / Future (where you ARE)
-#   6 Compound States: Lens → Target (where you ARE looking AT)
-#   Total: 9 modes (3 + 6)
-#
-# WHY 9?
-# Each temporal position can look at any other position:
-#   3 positions × 3 targets = 9 combinations
-# But 3 of these are base states (looking at self), leaving 6 compounds.
-#
-# BASE STATES (lens = target):
-#   Past (-1):    Memory, history, foundation
-#   Present (0):  Now, current, anchor
-#   Future (+1):  Anticipation, planning, direction
-#
-# COMPOUND STATES (lens ≠ target):
-#   Memory:      Past → Present     (past informing now)
-#   Prophecy:    Past → Future      (pattern recognition)
-#   Reflection:  Present → Past     (analyzing what was)
-#   Planning:    Present → Future   (anticipating what will be)
-#   Hindsight:   Future → Past      (wisdom from imagined future)
-#   Preparation: Future → Present   (urgency from future perspective)
-#
-# SCALE APPLICATIONS:
-#   L0 (Kernel):    Instruction fetch (past), execute (present), prefetch (future)
-#   L1 (System):    Event log (past), state (present), scheduling (future)
-#   L2 (Runtime):   Stack history, current frame, call planning
-#   L3 (Framework): Request history, current handler, response planning
-#   L4 (Health):    Health history, current status, trend prediction
-#   L5 (Network):   Packet history, in-flight, queued for send
-#   L6 (Storage):   Version history, current state, write-ahead log
-#   L7 (Engine):    Decision history, current context, planned actions
-#   L8 (App):       User history, current session, predicted behavior
-#
-# Implementation: libtrit/src/time (C), pkg/core/temporal (Go)
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[temporal_states]
-description = "9-state cognitive model — position in time with viewing direction"
-total_modes = 9                                         # 3 base + 6 compound
-structure_pattern = "lens (viewing FROM) → target (viewing AT)"
-
-# -------------------------------------------------------------------------------
-# 3 Base States: Where in Time (lens = target)
-# -------------------------------------------------------------------------------
-
-[temporal_states.base]
-description = "Pure temporal positions — where consciousness is located"
-
-past    = { trit = -1, meaning = "what was",     cognitive = "memory, history, foundation",       hebrew = "עָבַר" }
-present = { trit = 0,  meaning = "what is",      cognitive = "now, current, anchor",              hebrew = "עַתָּה" }
-future  = { trit = 1,  meaning = "what will be", cognitive = "anticipation, planning, direction", hebrew = "עָתִיד" }
-
-# -------------------------------------------------------------------------------
-# 6 Compound States: Lens → Target (lens ≠ target)
-# -------------------------------------------------------------------------------
-
-[temporal_states.compound]
-description = "Compound cognitive modes — viewing one time from another"
-
-# From Past
-memory   = { lens = "past", lens_trit = -1, target = "present", target_trit = 0,  description = "past informing now",           cognitive = "experience applied" }
-prophecy = { lens = "past", lens_trit = -1, target = "future",  target_trit = 1,  description = "pattern recognition across time", cognitive = "foresight from hindsight" }
-
-# From Present
-reflection = { lens = "present", lens_trit = 0, target = "past",   target_trit = -1, description = "analyzing what was",          cognitive = "learning from experience" }
-planning   = { lens = "present", lens_trit = 0, target = "future", target_trit = 1,  description = "anticipating what will be",   cognitive = "strategic thinking" }
-
-# From Future
-hindsight   = { lens = "future", lens_trit = 1, target = "past",    target_trit = -1, description = "wisdom from imagined future", cognitive = "regret avoidance" }
-preparation = { lens = "future", lens_trit = 1, target = "present", target_trit = 0,  description = "urgency from future perspective", cognitive = "deadline awareness" }
-
-# -------------------------------------------------------------------------------
-# The 9-State Matrix
-# -------------------------------------------------------------------------------
-
-[temporal_states.matrix]
-description = "Full 3×3 matrix of temporal modes"
-
-# Matrix layout: [lens][target] where -1=past, 0=present, 1=future
-# Diagonal = base states, off-diagonal = compound states
-layout = """
-              Target:
-              Past      Present     Future
-Lens: Past    [past]    memory      prophecy
-      Present reflection [present]  planning
-      Future  hindsight  preparation [future]
-"""
-
-# -------------------------------------------------------------------------------
-# Temporal Arithmetic
-# -------------------------------------------------------------------------------
-
-[temporal_states.arithmetic]
-description = "Operations on temporal modes"
-
-# Mode encoding: lens_trit × 3 + target_trit + 4 → index 0-8
-encoding = "index = (lens + 1) * 3 + (target + 1)"
-
-# Index mapping
-indices = [
-    { index = 0, lens = -1, target = -1, mode = "past",        is_base = true },
-    { index = 1, lens = -1, target = 0,  mode = "memory",      is_base = false },
-    { index = 2, lens = -1, target = 1,  mode = "prophecy",    is_base = false },
-    { index = 3, lens = 0,  target = -1, mode = "reflection",  is_base = false },
-    { index = 4, lens = 0,  target = 0,  mode = "present",     is_base = true },
-    { index = 5, lens = 0,  target = 1,  mode = "planning",    is_base = false },
-    { index = 6, lens = 1,  target = -1, mode = "hindsight",   is_base = false },
-    { index = 7, lens = 1,  target = 0,  mode = "preparation", is_base = false },
-    { index = 8, lens = 1,  target = 1,  mode = "future",      is_base = true }
-]
-
-# -------------------------------------------------------------------------------
-# Structure Metadata
-# -------------------------------------------------------------------------------
-
-[temporal_states.structure]
-fields         = ["lens", "target", "is_compound"]
-base_count     = 3
-compound_count = 6
-total_modes    = 9
-encoding_base  = 3                                      # 3^2 = 9 combinations
-center_index   = 4                                      # Present (0,0) is center
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
+[_validation.schema]
+required = ["index"]
+optional = ["index.key_constants", "index.files"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_split_files_valid = 30
+index_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
 # END CONTENT [END]
-# ═══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cx CODE GENERATION [GENERATION]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "So shall my word be that goeth forth out of my mouth: it shall not return
-#  unto me void, but it shall accomplish that which I please." — Isaiah 55:11
-#
-# CODE GENERATION: FROM SPECIFICATION TO IMPLEMENTATION
-#
-# This TOML specification is the SOURCE OF TRUTH from which actual code is
-# generated. The generator reads this file and produces headers, constants,
-# and lookup tables for target languages.
-#
-# MY WORD SHALL NOT RETURN VOID:
-#   Isaiah speaks of God's word accomplishing its purpose. Generation takes
-#   specification and produces working code — the word becomes implementation.
-#   Specification becomes reality. Vision becomes executable.
-#
-# GENERATION PHILOSOPHY:
-#   - TOML is the source of truth
-#   - Generated code is derived, never hand-edited
-#   - All target languages get the same constants
-#   - Regenerate on any spec change
-#
-# GENERATION CATEGORIES:
-#   GENERATE:   Control metadata for the generation process
-#   TARGETS:    Language-specific generation rules
-#   TEMPLATES:  Code patterns for arrays and sections
-#   VALIDATION: Testing the generated code
-#
-# SCALE APPLICATIONS:
-#   L0 (Kernel):    C headers for libtrit, inline asm constants
-#   L1 (System):    System-level types and constants
-#   L2 (Runtime):   Runtime packages and modules
-#   L3 (Framework): OmniCode native constants
-#   L4 (Health):    Health scoring constants
-#   L5 (Network):   Protocol constants, packet layouts
-#   L6 (Storage):   Block format constants
-#   L7 (Engine):    Decision table constants
-#   L8 (App):       UI constants, user-facing values
-#
-# Implementation: L0-universal/tools/generate/
-# Reference:      L0-universal/foundation/types/primitives.toml [_generate]
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cx.1 GENERATE — Generation Control Metadata [GENERATE]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "For which of you, intending to build a tower, sitteth not down first, and
-#  counteth the cost, whether he have sufficient to finish it?" — Luke 14:28 KJV
-#
-# GENERATION CONTROL: PLANNING BEFORE BUILDING
-#
-# Generation settings control WHAT gets generated, WHERE it goes, and in WHAT
-# ORDER. Counting the cost before building — knowing what you'll produce.
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[_generate]
-description  = "Master generation control for ternary.toml"
-enabled      = true                                           # Generation is active
-version      = "b-01.00"                                      # Generator version
-
-# Output configuration
-[_generate.output]
-description  = "Where generated files go"
-directory    = "L0-universal/libtrit/include/trit/generated/" # Output directory
-primary      = "ternary_math.gen.h"                           # Primary output file
-order        = 0                                              # Foundation — generates FIRST
-guard        = "TERNARY_MATH_GEN_H"                           # Include guard
-template     = "complex"                                      # Has arrays needing special formatting
-
-# Dependencies
-[_generate.dependencies]
-description  = "Files that must be generated first"
-requires     = []                                             # Foundation — no dependencies
-provides     = ["ternary_math.gen.h", "ternary_math.gen.go"]  # What this generates
-blocks       = ["primitives.toml"]                            # Must generate before primitives
-
-# Generation at each layer
-[_generate.scales]
-description  = "Generation configuration at each architectural layer"
-L0_kernel    = { output = "ternary_math.gen.h",               format = "C header" }
-L1_system    = { output = "ternary_sys.gen.h",                format = "C system types" }
-L2_runtime   = { output = "ternary_math.gen.go",              format = "Go types" }
-L3_framework = { output = "ternary.omni",                     format = "OmniCode constants" }
-L4_health    = { output = "ternary_health.gen.go",            format = "Health constants" }
-L5_network   = { output = "ternary_wire.gen.go",              format = "Wire format" }
-L6_storage   = { output = "ternary_storage.gen.go",           format = "Storage constants" }
-L7_engine    = { output = "ternary_engine.gen.go",            format = "Engine constants" }
-L8_app       = { output = "ternary_app.gen.go",               format = "App constants" }
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cx.2 TARGETS — Language-Specific Generation [TARGETS]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "And there were dwelling at Jerusalem Jews, devout men, out of every nation
-#  under heaven... every man heard them speak in his own language."
-#  — Acts 2:5,6 KJV
-#
-# TARGETS: SPEAKING EACH LANGUAGE'S TONGUE
-#
-# Pentecost saw one message spoken in every hearer's language. Generation takes
-# one specification and produces code in each target's native tongue. Same truth,
-# different expressions.
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# ───────────────────────────────────────────────────────────────────────────────
-# Cx.2a C_TARGET — C Language Generation [C_TARGET]
-# ───────────────────────────────────────────────────────────────────────────────
-
-[_generate.target.c]
-description  = "C language code generation"
-enabled      = true
-priority     = 1                                              # Generated first (foundational)
-file         = "ternary_math.gen.h"
-format       = "c_header"
-
-# C naming conventions
-[_generate.target.c.naming]
-style        = "SCREAMING_SNAKE_CASE"
-prefix       = "TRIT_"                                        # All constants prefixed
-
-# C type mappings
-[_generate.target.c.types]
-description  = "How ternary types map to C types"
-trit         = { type = "int8_t",   typedef = "trit_t" }
-trit5        = { type = "uint8_t",  typedef = "trit5_t" }
-int9         = { type = "int16_t",  typedef = "trit9_t" }
-int27        = { type = "int64_t",  typedef = "trit27_t" }
-
-# C at each layer
-[_generate.target.c.scales]
-description  = "C generation at each architectural layer"
-L0_kernel    = { use = "core constants + arrays",             example = "TRIT_VALUES[]" }
-L1_system    = { use = "syscall constants",                   example = "TRIT_RESULT_*" }
-L2_runtime   = { use = "runtime tables",                      example = "TRIT_ADD_TABLE[][]" }
-L3_framework = { use = "framework constants",                 example = "TRIT_WORD_SIZE" }
-L4_health    = { use = "health constants",                    example = "TRIT_HEALTH_*" }
-L5_network   = { use = "protocol constants",                  example = "TRIT_PACKET_*" }
-L6_storage   = { use = "storage constants",                   example = "TRIT_BLOCK_*" }
-L7_engine    = { use = "engine tables",                       example = "TRIT_DECISION_*" }
-L8_app       = { use = "app constants",                       example = "TRIT_USER_*" }
-
-# ───────────────────────────────────────────────────────────────────────────────
-# Cx.2b GO_TARGET — Go Language Generation [GO_TARGET]
-# ───────────────────────────────────────────────────────────────────────────────
-
-[_generate.target.go]
-description  = "Go language code generation"
-enabled      = true
-priority     = 2                                              # After C
-file         = "ternary_math.gen.go"
-format       = "go_package"
-package      = "ternary"
-
-# Go naming conventions
-[_generate.target.go.naming]
-style        = "PascalCase"
-package      = "ternary"
-
-# Go type mappings
-[_generate.target.go.types]
-description  = "How ternary types map to Go types"
-trit         = { type = "int8",   alias = "Trit" }
-trit5        = { type = "uint8",  alias = "Trit5" }
-int9         = { type = "int16",  alias = "Int9" }
-int27        = { type = "int64",  alias = "Int27" }
-
-# Go at each layer
-[_generate.target.go.scales]
-description  = "Go generation at each architectural layer"
-L0_kernel    = { use = "const arrays",                        example = "TritValues" }
-L1_system    = { use = "system types",                        example = "TritResult" }
-L2_runtime   = { use = "runtime tables",                      example = "AddTable" }
-L3_framework = { use = "framework types",                     example = "WordSize" }
-L4_health    = { use = "health types",                        example = "HealthScore" }
-L5_network   = { use = "protocol types",                      example = "PacketHeader" }
-L6_storage   = { use = "storage types",                       example = "BlockFormat" }
-L7_engine    = { use = "engine types",                        example = "DecisionTable" }
-L8_app       = { use = "app types",                           example = "UserValue" }
-
-# ───────────────────────────────────────────────────────────────────────────────
-# Cx.2c RUST_TARGET — Rust Language Generation [RUST_TARGET]
-# ───────────────────────────────────────────────────────────────────────────────
-
-[_generate.target.rust]
-description  = "Rust language code generation"
-enabled      = false                                          # Reserved for future
-priority     = 3                                              # After Go
-file         = "ternary_math.gen.rs"
-format       = "rust_module"
-note         = "Rust generation planned for Phase 3"
-
-# Rust naming conventions
-[_generate.target.rust.naming]
-const_style  = "SCREAMING_SNAKE_CASE"
-static_style = "snake_case"
-
-# Rust type mappings
-[_generate.target.rust.types]
-description  = "How ternary types map to Rust types"
-trit         = { type = "i8",   alias = "Trit" }
-trit5        = { type = "u8",   alias = "Trit5" }
-int9         = { type = "i16",  alias = "Int9" }
-int27        = { type = "i64",  alias = "Int27" }
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cx.3 TEMPLATES — Code Generation Templates [TEMPLATES]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "The thing that hath been, it is that which shall be; and that which is done
-#  is that which shall be done." — Ecclesiastes 1:9 KJV
-#
-# TEMPLATES: PATTERNS THAT REPEAT WITH VARIATION
-#
-# Ecclesiastes reminds us that patterns repeat. Templates capture patterns that
-# recur across sections — what has been (the pattern) is what shall be (new
-# sections from the pattern). Template + data = generated code.
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# ───────────────────────────────────────────────────────────────────────────────
-# Cx.3a SECTIONS — Sections to Generate [SECTIONS]
-# ───────────────────────────────────────────────────────────────────────────────
-
-[_generate.sections]
-description  = "Sections included in generated output (in order)"
-
-# Core sections — always generated
-core = [
-    "trit",                                            # TRIT_VALUES, TRIT_STATES, TRIT_BASE
-    "trit.chars",                                      # Character representations
-    "trit.types",                                      # Type system constants
-    "packing",                                         # PACKING_TRITS_PER_BYTE, constants
-    "packing.widths",                                  # Width configurations
-    "powers.tables",                                   # Power lookup tables
-]
-
-# Operation sections — arithmetic and logic
-operations = [
-    "arithmetic",                                      # Unary operations
-    "arithmetic.addition",                             # Addition table
-    "arithmetic.multiplication",                       # Multiplication table
-    "arithmetic.compare",                              # Comparison table
-    "arithmetic.min",                                  # Min table
-    "arithmetic.max",                                  # Max table
-    "arithmetic.logic_and",                            # Ternary AND
-    "arithmetic.logic_or",                             # Ternary OR
-    "operations.half_adder",                           # Half adder tables
-    "operations.full_adder",                           # Full adder tables
-    "algorithms",                                      # Pack/unpack formulas
-]
-
-# Cognitive sections — CPI-SI paradigm
-cognitive = [
-    "building_block",                                  # Building block operations
-    "genesis_1_1.dimensions",                          # TIME/SPACE/MATTER
-    "dimensions",                                      # Cognitive navigation
-    "temporal_states",                                 # 9-state model
-]
-
-# ───────────────────────────────────────────────────────────────────────────────
-# Cx.3b ARRAYS — Array Formatting Templates [ARRAYS]
-# ───────────────────────────────────────────────────────────────────────────────
-
-[_generate.arrays]
-description  = "Array fields requiring special C formatting"
-
-# 1D arrays
-arrays_1d = [
-    "trit.values",                                     # [-1, 0, 1]
-    "arithmetic.negation",                             # [1, 0, -1]
-    "arithmetic.absolute",                             # [1, 0, 1]
-    "arithmetic.sign",                                 # [-1, 0, 1]
-    "powers.tables.trit5",                             # [1, 3, 9, 27, 81]
-    "powers.tables.trit9",                             # [1, 3, 9, ..., 6561]
-]
-
-# 2D arrays
-arrays_2d = [
-    "arithmetic.addition.table",                       # 3×3 addition
-    "arithmetic.multiplication.table",                 # 3×3 multiplication
-    "arithmetic.compare.table",                        # 3×3 comparison
-    "operations.half_adder.sum",                       # 3×3 half adder sum
-    "operations.half_adder.carry",                     # 3×3 half adder carry
-]
-
-# 3D arrays
-arrays_3d = [
-    "operations.full_adder.sum",                       # 3×3×3 full adder sum
-    "operations.full_adder.carry_out",                 # 3×3×3 full adder carry
-]
-
-# Large arrays (generate as external data)
-arrays_large = [
-    "powers.tables.trit27",                            # 27 entries
-    "powers.tables.trit81",                            # 81 entries
-]
-
-# ───────────────────────────────────────────────────────────────────────────────
-# Cx.3c HEADER_TEMPLATE — C Header Template [HEADER_TEMPLATE]
-# ───────────────────────────────────────────────────────────────────────────────
-
-[_generate.template.header]
-description  = "Template for C header generation"
-
-# Comment template
-[_generate.template.header.comment]
-template     = """
-/*
- * {filename} — Generated from {source}
- *
- * Ternary math constants for balanced ternary computing.
- *
- * DO NOT EDIT — Regenerate from TOML source.
- * Generator: L0-universal/tools/generate/
- * Generated: {timestamp}
- */
-"""
-
-# Constant template
-[_generate.template.header.constant]
-template     = "#define {PREFIX}_{NAME} ({value})"
-example      = "#define TRIT_VALUES {-1, 0, 1}"
-
-# Array template
-[_generate.template.header.array]
-template_1d  = "static const {type} {NAME}[{size}] = {values};"
-template_2d  = "static const {type} {NAME}[{rows}][{cols}] = {values};"
-template_3d  = "static const {type} {NAME}[{d1}][{d2}][{d3}] = {values};"
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Cx.4 VALIDATION — Generation Validation [GEN_VALIDATION]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "Beloved, believe not every spirit, but try the spirits whether they are of
-#  God." — 1 John 4:1 KJV
-#
-# VALIDATION: TESTING THE GENERATED CODE
-#
-# Generated code must be tested — don't blindly trust output. Validation ensures
-# what was generated matches what was intended. Try the spirits.
-#
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[_generate.validation]
-description  = "How to validate generated code"
-enabled      = true
-
-# Syntax validation
-[_generate.validation.syntax]
-description  = "Syntax checks for generated code"
-c_compile    = "gcc -fsyntax-only -Wall -Werror {file}"
-go_build     = "go build -v {package}"
-rust_check   = "cargo check"
-
-# Content validation
-[_generate.validation.content]
-description  = "Content checks for generated code"
-has_guard    = "Header must have include guard"
-has_arrays   = "All lookup tables must be present"
-no_duplicates = "No duplicate definitions"
-
-# Math invariant validation
-[_generate.validation.invariants]
-description  = "Mathematical invariants that must hold"
-trit_values  = "TRIT_VALUES must be [-1, 0, 1]"
-identity_sum = "-1 + 0 + 1 must equal 0"
-packing      = "PACKING_TRIT_STATES must be 243"
-powers       = "Each power entry must be 3^n"
-
-# Round-trip validation
-[_generate.validation.roundtrip]
-description  = "Verify generated code matches spec"
-parse_toml   = "Load TOML, extract values"
-parse_header = "Parse generated header, extract values"
-compare      = "Values must match exactly"
-
-# Validation at each layer
-[_generate.validation.scales]
-description  = "Validation at each architectural layer"
-L0_kernel    = { check = "compile + invariants",              example = "gcc + check 243" }
-L1_system    = { check = "compile only",                      example = "verify types" }
-L2_runtime   = { check = "build + unit test",                 example = "go test" }
-L3_framework = { check = "build + integration",               example = "framework tests" }
-L4_health    = { check = "build + validation",                example = "health tests" }
-L5_network   = { check = "build + wire tests",                example = "protocol tests" }
-L6_storage   = { check = "build + storage tests",             example = "persistence tests" }
-L7_engine    = { check = "build + engine tests",              example = "decision tests" }
-L8_app       = { check = "full test suite",                   example = "end-to-end tests" }
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
 # CLOSING BLOCK [CLOSING]
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# "Whatsoever thy hand findeth to do, do it with thy might."
-# — Ecclesiastes 9:10
-#
-# Structure: X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
 
-# ───────────────────────────────────────────────────────────────────────────────
-# X.1 POLICY — Modification Guidelines [POLICY]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# ❌ NEVER MODIFY (mathematical truth):
-#   - Trit values [-1, 0, 1]
-#   - Powers of 3 [1, 3, 9, 27, 81, 243, ...]
-#   - Packing constant 243 = 3^5
-#   - Operation lookup tables (add, mul, compare)
-#   - Genesis 1:1 dimension mappings
-#   - 3-block structure (METADATA → CONTENT → CLOSING)
-#
-# ⚠️ MODIFY WITH CARE (derived constants):
-#   - OmniCode type mappings (affects all consumers)
-#   - Language-specific representations (C, Go, Rust, etc.)
-#   - Extended power tables (trit81, trit243)
-#   - Cognitive state mappings
-#
-# ✅ SAFE TO ADD (extensions):
-#   - Additional character representations
-#   - New target language configurations
-#   - Clarifying comments and docstrings
-#   - Scale-specific derived constants
-#   - New algorithm implementations
-#
-# ───────────────────────────────────────────────────────────────────────────────
+# X.1 POLICY — Modification Guidelines
+# "Remove not the ancient landmark, which thy fathers have set." — Proverbs 22:28
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Trit values [-1, 0, 1]",
+    "Powers of 3 [1, 3, 9, 27, 81, 243, ...]",
+    "Packing constant 243 = 3^5",
+    "Operation lookup tables (add, mul, compare)",
+    "Genesis 1:1 dimension mappings",
+    "3-block structure (METADATA → CONTENT → CLOSING)",
+]
+careful = [
+    "OmniCode type mappings — affects all consumers",
+    "Language-specific representations (C, Go, Rust)",
+    "Extended power tables (trit81, trit243)",
+    "Cognitive state mappings",
+]
+safe = [
+    "Additional character representations",
+    "New target language configurations",
+    "Clarifying comments and docstrings",
+    "Scale-specific derived constants",
+    "New algorithm implementations",
+]
 
-# ───────────────────────────────────────────────────────────────────────────────
-# X.2 EXTENSION — Ideas for Future Sessions [EXTENSION]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# Capture extension ideas discovered during work.
-# Reference: Move to M.10 Planned when ready to implement.
-#
-# [Reserved: Capture extension ideas as they emerge during work]
-#
-# Example format:
-#   trit81_scale: Need power table for 81-trit (4 bytes) operations
-#   web_encoding: WEB translation variants using the 13-gap
-#   health_integration: Connect cognitive states to health scoring
-#
-# ───────────────────────────────────────────────────────────────────────────────
+# X.2 EXTENSION — Future Ideas
+[_closing.X2_extension]
+planned = [
+    "Full template alignment for all 4 content files",
+    "Validation tooling integration",
+    "Schema generation from split files",
+    "Cross-format alignment checks",
+]
 
-# ───────────────────────────────────────────────────────────────────────────────
-# X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# TOML Syntax Errors:
-#
-#   "Cannot declare X twice":
-#     → Check for duplicate section names
-#     → Inline key conflicts with table name (rename inline key)
-#
-#   "Cannot overwrite a value":
-#     → Same key used as value AND as table header
-#     → Rename inline key (e.g., structure → structure_pattern)
-#
-#   "Invalid TOML":
-#     → Check array syntax: [1, 2, 3] not 1, 2, 3
-#     → Strings need quotes: "value" not value
-#     → Multi-line arrays need proper continuation
-#
-# Math Invariant Failures:
-#
-#   "identity_sum ≠ 0":
-#     → trit.values must be exactly [-1, 0, 1]
-#     → Check no accidental modification
-#
-#   "packing.trit_states ≠ 243":
-#     → Must equal 3^5 exactly
-#     → The byte bridge constant is mathematical truth
-#
-# ───────────────────────────────────────────────────────────────────────────────
+# X.3 TROUBLESHOOTING — Common Problems
+# "If any of you lack wisdom, let him ask of God." — James 1:5
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes around strings, duplicate keys in same section, tab characters"
+math_invariant = "trit.values must be [-1, 0, 1], packing must be 243 = 3^5, identity_sum must be 0"
+split_file_missing = "Verify all 4 split files exist alongside this index"
+type_mismatch = "Lookup tables must be arrays of exact values — no floating point approximations"
 
-# ───────────────────────────────────────────────────────────────────────────────
-# X.4 REFERENCE — Quick Lookup [REFERENCE]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# Validation Commands:
-#   tomlv ternary.toml
-#   python3 -c "import tomllib; tomllib.load(open('ternary.toml', 'rb'))"
-#
-# Math Invariants (must always hold):
-#   trit.values = [-1, 0, 1]           # Balanced ternary
-#   trit.identity_sum = 0              # -1 + 0 + 1 = 0
-#   packing.trit_states = 243          # 3^5 = 243 (byte bridge)
-#   packing.gap = 13                   # 256 - 243
-#
-# Access Patterns:
-#
-#   Go (runtime):
-#     cfg, _ := ternary.Load("ternary.toml")
-#     values := cfg.Trit.Values  // []int{-1, 0, 1}
-#
-#   C (generated):
-#     #include "ternary_math.gen.h"
-#     static const int8_t TRIT_VALUES[] = {-1, 0, 1};
-#
-#   Rust (generated):
-#     use ternary_math::TRIT_VALUES;
-#     const VALUES: [i8; 3] = TRIT_VALUES;
-#
-#   OmniCode (future):
-#     use bereshit.math.ternary
-#     let values = trit.values
-#
-# Key Constants:
-#   243 = 3^5  — Byte bridge constant (fits in 256)
-#   27  = 3^3  — Cognitive cube positions
-#   9   = 3^2  — Temporal/layer count
-#   3   = 3^1  — Keys/dimensions/values
-#
-# ───────────────────────────────────────────────────────────────────────────────
+# X.4 REFERENCE — Quick Lookup
+[_closing.X4_reference]
+split_files = [
+    "ternary-definitions.toml — Identity, settings, resources, behavior (Cc.1-4)",
+    "ternary-operations.toml — Arithmetic, adders, algorithms (Co.1-6)",
+    "ternary-cognition.toml — Building block, dimensions, temporal (Cv.1-4)",
+    "ternary-generation.toml — Code generation (Cx.1-4)",
+]
+related_files = [
+    "L0-universal/foundation/types/primitives.toml — Uses trit values and packing",
+    "L0-universal/foundation/types/composition.toml — Uses power tables",
+    "L0-universal/libtrit/include/trit/trit.h — Generated C header",
+    "b-word/seed/data/toml/config.toml — Parent template",
+]
+required_sections = ["_pragma", "_metadata", "index", "_validation", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('ternary.toml','rb'))\""
 
-# ───────────────────────────────────────────────────────────────────────────────
-# X.5 NOTE — Final Guidance [NOTE]
-# ───────────────────────────────────────────────────────────────────────────────
-#
-# This file defines mathematical truths, not arbitrary configuration.
-#
-# The balanced equation -1 + 0 + 1 = 0 is not a choice—it's reality.
-# The packing constant 243 = 3^5 < 256 = 2^8 is not a choice—it's math.
-# The three dimensions (TIME/SPACE/MATTER) reflect Genesis 1:1—they're
-# theological truth encoded in the structure of reality.
-#
-# When we generate code from this specification, we're not creating
-# arbitrary constants—we're expressing eternal truths in temporal form.
-#
-# "Let there be a firmament in the midst of the waters,
-#  and let it divide the waters from the waters." — Genesis 1:6
-#
-# The firmament (0) divides and connects. The waters below (-1) and
-# above (+1) are balanced around it. This is the structure of creation,
-# and balanced ternary computing honors it.
-#
-# ───────────────────────────────────────────────────────────────────────────────
+[_closing.X4_reference.math_invariants]
+trit_values = "[-1, 0, 1] — balanced ternary"
+identity_sum = "-1 + 0 + 1 = 0"
+packing = "243 = 3^5 (byte bridge constant)"
+powers = "each entry must be 3^n"
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# X.5 NOTE — Final Guidance
+[_closing.X5_note]
+note = "This file defines mathematical truths, not arbitrary configuration. The balanced equation -1 + 0 + 1 = 0 is not a choice — it's reality."
+scripture = "In the beginning God created the heaven and the earth. — Genesis 1:1"
+anchor = "The firmament (0) divides and connects. The waters below (-1) and above (+1) are balanced around it. This is the structure of creation."
+
+# ═══════════════════════════════════════════════════════════════
 # END CLOSING [END]
-# ═══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════

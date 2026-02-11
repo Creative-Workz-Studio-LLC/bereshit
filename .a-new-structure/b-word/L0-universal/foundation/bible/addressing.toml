@@ -1,0 +1,1021 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L0-bible-addressing"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "bible"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "bible"
+layer = "L0-universal/bible"
+includes = "none"
+provides = ["ADDRESSING_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Bible Addressing System"
+brief = "Ternary addressing system for Bible verses"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "addressing.toml"
+key = "B-L0-bible-addressing"
+title = "Bible Addressing System"
+type = "Data (Bible Addressing)"
+component = "Rung"
+role = "Ternary addressing system for Bible verses — Book/Chapter/Verse to ordinal to ternary encoding (KJV 31,102 + WEB 13 variants)"
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-10"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "So shall my word be that goeth forth out of my mouth: it shall not return unto me void. — Isaiah 55:11"
+principle = "Every verse has an address. The Word of God is ordered, numbered, addressable."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/scripture/kjv-ordinal-index.csv", "b-word/scripture/web-variant-index.adoc", "b-word/L0-universal/foundation/types/primitives.toml"]
+consumers = ["scripture lookup tools", "citation systems", "trit-byte encoding", "cross-reference systems"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by code generators and lookup tools."
+if_missing = "Bible traceability broken — cannot map between Scripture and code"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Addressing SCHEMA in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines bible data. Generated code (C, Go) implements lookups."
+
+[_metadata.M6_location]
+path = "b-word/L0-universal/bible/addressing.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "bible, addressing, foundation, L0, scripture"
+
+[_metadata.M8_intent]
+purpose = "Ternary addressing system for Bible verses — Book/Chapter/Verse to ordinal to ternary encoding (KJV 31,102 + WEB 13 variants)"
+core_design = "Every verse has an address. The Word of God is ordered, numbered, addressable."
+philosophy = "So shall my word be that goeth forth out of my mouth: it shall not return unto me void."
+
+[_metadata.M9_roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Initial creation",
+    "b-01.00 (2026-02-10) — TOML-native 3-block format alignment",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Code generation integration", "Automated validation tooling"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Bible data file — bible addressing system for the OmniCode type system"
+
+[address_space]
+description = "Bible verse addressing configuration"
+
+[address_space.kjv]
+name = "King James Version"
+role = "encoding"
+total_verses = 31102
+ordinal_range = [1, 31102]
+books = 66
+note = "Canonical address space — all verses have ordinal 1-31102"
+
+[address_space.web]
+name = "World English Bible"
+role = "decoding"
+total_verses = 31115
+ordinal_range = [1, 31102]
+variant_range = [243, 255]
+books = 66
+note = "Extended address space — canonical + 13 variant verses"
+
+
+# -----------------------------------------------------------------------------
+# 2. Book Index - Ordinal Ranges
+# -----------------------------------------------------------------------------
+# Each book's first and last ordinal (1-indexed)
+# Data source: word/scripture/kjv-ordinal-index.csv
+
+[books.genesis]
+name = "Genesis"
+abbreviation = "Gen"
+ordinal = 1
+chapters = 50
+verses = 1533
+range = [1, 1533]
+
+[books.exodus]
+name = "Exodus"
+abbreviation = "Exod"
+ordinal = 2
+chapters = 40
+verses = 1213
+range = [1534, 2746]
+
+[books.leviticus]
+name = "Leviticus"
+abbreviation = "Lev"
+ordinal = 3
+chapters = 27
+verses = 859
+range = [2747, 3605]
+
+[books.numbers]
+name = "Numbers"
+abbreviation = "Num"
+ordinal = 4
+chapters = 36
+verses = 1288
+range = [3606, 4893]
+
+[books.deuteronomy]
+name = "Deuteronomy"
+abbreviation = "Deut"
+ordinal = 5
+chapters = 34
+verses = 959
+range = [4894, 5852]
+
+[books.joshua]
+name = "Joshua"
+abbreviation = "Josh"
+ordinal = 6
+chapters = 24
+verses = 658
+range = [5853, 6510]
+
+[books.judges]
+name = "Judges"
+abbreviation = "Judg"
+ordinal = 7
+chapters = 21
+verses = 618
+range = [6511, 7128]
+
+[books.ruth]
+name = "Ruth"
+abbreviation = "Ruth"
+ordinal = 8
+chapters = 4
+verses = 85
+range = [7129, 7213]
+
+[books.samuel_1]
+name = "1 Samuel"
+abbreviation = "1Sam"
+ordinal = 9
+chapters = 31
+verses = 810
+range = [7214, 8023]
+
+[books.samuel_2]
+name = "2 Samuel"
+abbreviation = "2Sam"
+ordinal = 10
+chapters = 24
+verses = 695
+range = [8024, 8718]
+
+[books.kings_1]
+name = "1 Kings"
+abbreviation = "1Kgs"
+ordinal = 11
+chapters = 22
+verses = 816
+range = [8719, 9534]
+
+[books.kings_2]
+name = "2 Kings"
+abbreviation = "2Kgs"
+ordinal = 12
+chapters = 25
+verses = 719
+range = [9535, 10253]
+
+[books.chronicles_1]
+name = "1 Chronicles"
+abbreviation = "1Chr"
+ordinal = 13
+chapters = 29
+verses = 942
+range = [10254, 11195]
+
+[books.chronicles_2]
+name = "2 Chronicles"
+abbreviation = "2Chr"
+ordinal = 14
+chapters = 36
+verses = 822
+range = [11196, 12017]
+
+[books.ezra]
+name = "Ezra"
+abbreviation = "Ezra"
+ordinal = 15
+chapters = 10
+verses = 280
+range = [12018, 12297]
+
+[books.nehemiah]
+name = "Nehemiah"
+abbreviation = "Neh"
+ordinal = 16
+chapters = 13
+verses = 406
+range = [12298, 12703]
+
+[books.esther]
+name = "Esther"
+abbreviation = "Esth"
+ordinal = 17
+chapters = 10
+verses = 167
+range = [12704, 12870]
+
+[books.job]
+name = "Job"
+abbreviation = "Job"
+ordinal = 18
+chapters = 42
+verses = 1070
+range = [12871, 13940]
+
+[books.psalms]
+name = "Psalms"
+abbreviation = "Ps"
+ordinal = 19
+chapters = 150
+verses = 2461
+range = [13941, 16401]
+
+[books.proverbs]
+name = "Proverbs"
+abbreviation = "Prov"
+ordinal = 20
+chapters = 31
+verses = 915
+range = [16402, 17316]
+
+[books.ecclesiastes]
+name = "Ecclesiastes"
+abbreviation = "Eccl"
+ordinal = 21
+chapters = 12
+verses = 222
+range = [17317, 17538]
+
+[books.song_of_solomon]
+name = "Song of Solomon"
+abbreviation = "Song"
+ordinal = 22
+chapters = 8
+verses = 117
+range = [17539, 17655]
+
+[books.isaiah]
+name = "Isaiah"
+abbreviation = "Isa"
+ordinal = 23
+chapters = 66
+verses = 1292
+range = [17656, 18947]
+
+[books.jeremiah]
+name = "Jeremiah"
+abbreviation = "Jer"
+ordinal = 24
+chapters = 52
+verses = 1364
+range = [18948, 20311]
+
+[books.lamentations]
+name = "Lamentations"
+abbreviation = "Lam"
+ordinal = 25
+chapters = 5
+verses = 154
+range = [20312, 20465]
+
+[books.ezekiel]
+name = "Ezekiel"
+abbreviation = "Ezek"
+ordinal = 26
+chapters = 48
+verses = 1273
+range = [20466, 21738]
+
+[books.daniel]
+name = "Daniel"
+abbreviation = "Dan"
+ordinal = 27
+chapters = 12
+verses = 357
+range = [21739, 22095]
+
+[books.hosea]
+name = "Hosea"
+abbreviation = "Hos"
+ordinal = 28
+chapters = 14
+verses = 197
+range = [22096, 22292]
+
+[books.joel]
+name = "Joel"
+abbreviation = "Joel"
+ordinal = 29
+chapters = 3
+verses = 73
+range = [22293, 22365]
+
+[books.amos]
+name = "Amos"
+abbreviation = "Amos"
+ordinal = 30
+chapters = 9
+verses = 146
+range = [22366, 22511]
+
+[books.obadiah]
+name = "Obadiah"
+abbreviation = "Obad"
+ordinal = 31
+chapters = 1
+verses = 21
+range = [22512, 22532]
+
+[books.jonah]
+name = "Jonah"
+abbreviation = "Jonah"
+ordinal = 32
+chapters = 4
+verses = 48
+range = [22533, 22580]
+
+[books.micah]
+name = "Micah"
+abbreviation = "Mic"
+ordinal = 33
+chapters = 7
+verses = 105
+range = [22581, 22685]
+
+[books.nahum]
+name = "Nahum"
+abbreviation = "Nah"
+ordinal = 34
+chapters = 3
+verses = 47
+range = [22686, 22732]
+
+[books.habakkuk]
+name = "Habakkuk"
+abbreviation = "Hab"
+ordinal = 35
+chapters = 3
+verses = 56
+range = [22733, 22788]
+
+[books.zephaniah]
+name = "Zephaniah"
+abbreviation = "Zeph"
+ordinal = 36
+chapters = 3
+verses = 53
+range = [22789, 22841]
+
+[books.haggai]
+name = "Haggai"
+abbreviation = "Hag"
+ordinal = 37
+chapters = 2
+verses = 38
+range = [22842, 22879]
+
+[books.zechariah]
+name = "Zechariah"
+abbreviation = "Zech"
+ordinal = 38
+chapters = 14
+verses = 211
+range = [22880, 23090]
+
+[books.malachi]
+name = "Malachi"
+abbreviation = "Mal"
+ordinal = 39
+chapters = 4
+verses = 55
+range = [23091, 23145]
+
+# New Testament
+
+[books.matthew]
+name = "Matthew"
+abbreviation = "Matt"
+ordinal = 40
+chapters = 28
+verses = 1071
+range = [23146, 24216]
+
+[books.mark]
+name = "Mark"
+abbreviation = "Mark"
+ordinal = 41
+chapters = 16
+verses = 678
+range = [24217, 24894]
+
+[books.luke]
+name = "Luke"
+abbreviation = "Luke"
+ordinal = 42
+chapters = 24
+verses = 1151
+range = [24895, 26045]
+
+[books.john]
+name = "John"
+abbreviation = "John"
+ordinal = 43
+chapters = 21
+verses = 879
+range = [26046, 26924]
+
+[books.acts]
+name = "Acts"
+abbreviation = "Acts"
+ordinal = 44
+chapters = 28
+verses = 1007
+range = [26925, 27931]
+
+[books.romans]
+name = "Romans"
+abbreviation = "Rom"
+ordinal = 45
+chapters = 16
+verses = 433
+range = [27932, 28364]
+
+[books.corinthians_1]
+name = "1 Corinthians"
+abbreviation = "1Cor"
+ordinal = 46
+chapters = 16
+verses = 437
+range = [28365, 28801]
+
+[books.corinthians_2]
+name = "2 Corinthians"
+abbreviation = "2Cor"
+ordinal = 47
+chapters = 13
+verses = 257
+range = [28802, 29058]
+
+[books.galatians]
+name = "Galatians"
+abbreviation = "Gal"
+ordinal = 48
+chapters = 6
+verses = 149
+range = [29059, 29207]
+
+[books.ephesians]
+name = "Ephesians"
+abbreviation = "Eph"
+ordinal = 49
+chapters = 6
+verses = 155
+range = [29208, 29362]
+
+[books.philippians]
+name = "Philippians"
+abbreviation = "Phil"
+ordinal = 50
+chapters = 4
+verses = 104
+range = [29363, 29466]
+
+[books.colossians]
+name = "Colossians"
+abbreviation = "Col"
+ordinal = 51
+chapters = 4
+verses = 95
+range = [29467, 29561]
+
+[books.thessalonians_1]
+name = "1 Thessalonians"
+abbreviation = "1Thess"
+ordinal = 52
+chapters = 5
+verses = 89
+range = [29562, 29650]
+
+[books.thessalonians_2]
+name = "2 Thessalonians"
+abbreviation = "2Thess"
+ordinal = 53
+chapters = 3
+verses = 47
+range = [29651, 29697]
+
+[books.timothy_1]
+name = "1 Timothy"
+abbreviation = "1Tim"
+ordinal = 54
+chapters = 6
+verses = 113
+range = [29698, 29810]
+
+[books.timothy_2]
+name = "2 Timothy"
+abbreviation = "2Tim"
+ordinal = 55
+chapters = 4
+verses = 83
+range = [29811, 29893]
+
+[books.titus]
+name = "Titus"
+abbreviation = "Titus"
+ordinal = 56
+chapters = 3
+verses = 46
+range = [29894, 29939]
+
+[books.philemon]
+name = "Philemon"
+abbreviation = "Phlm"
+ordinal = 57
+chapters = 1
+verses = 25
+range = [29940, 29964]
+
+[books.hebrews]
+name = "Hebrews"
+abbreviation = "Heb"
+ordinal = 58
+chapters = 13
+verses = 303
+range = [29965, 30267]
+
+[books.james]
+name = "James"
+abbreviation = "Jas"
+ordinal = 59
+chapters = 5
+verses = 108
+range = [30268, 30375]
+
+[books.peter_1]
+name = "1 Peter"
+abbreviation = "1Pet"
+ordinal = 60
+chapters = 5
+verses = 105
+range = [30376, 30480]
+
+[books.peter_2]
+name = "2 Peter"
+abbreviation = "2Pet"
+ordinal = 61
+chapters = 3
+verses = 61
+range = [30481, 30541]
+
+[books.john_1]
+name = "1 John"
+abbreviation = "1John"
+ordinal = 62
+chapters = 5
+verses = 105
+range = [30542, 30646]
+
+[books.john_2]
+name = "2 John"
+abbreviation = "2John"
+ordinal = 63
+chapters = 1
+verses = 13
+range = [30647, 30659]
+
+[books.john_3]
+name = "3 John"
+abbreviation = "3John"
+ordinal = 64
+chapters = 1
+verses = 14
+range = [30660, 30673]
+
+[books.jude]
+name = "Jude"
+abbreviation = "Jude"
+ordinal = 65
+chapters = 1
+verses = 25
+range = [30674, 30698]
+
+[books.revelation]
+name = "Revelation"
+abbreviation = "Rev"
+ordinal = 66
+chapters = 22
+verses = 404
+range = [30699, 31102]
+
+
+# -----------------------------------------------------------------------------
+# 3. Ternary Encoding Rules
+# -----------------------------------------------------------------------------
+# Ordinal → Ternary conversion, accounting for binary hardware
+#
+# REALITY: We run on binary hardware. Ternary must be REPRESENTED in binary.
+# Two representations serve different purposes:
+#   - UNPACKED: Human-readable, debugging, display
+#   - PACKED: Efficient storage, computation, transmission
+
+[ternary]
+description = "Ternary encoding for verse ordinals on binary hardware"
+hardware = "binary"
+note = "Ternary is REPRESENTED in binary, not native"
+
+[ternary.capacity]
+trits_needed = 10
+max_ordinal = 31102
+max_ternary_value = 59049
+note = "10 trits = 3^10 = 59,049 > 31,102 (sufficient headroom)"
+
+# -----------------------------------------------------------------------------
+# 3a. UNPACKED Representation
+# -----------------------------------------------------------------------------
+# Each trit stored as ASCII character or full byte
+# Wasteful but human-readable
+
+[ternary.unpacked]
+description = "Human-readable trit string representation"
+format = "ASCII string of digits 0, 1, 2"
+bytes_per_trit = 1
+total_bytes = 10
+example_ordinal = 1
+example_string = "0000000001"
+use_case = "Display, debugging, human inspection"
+
+[ternary.unpacked.encoding]
+# Ordinal → Unpacked trit string
+algorithm = """
+result = ""
+temp = ordinal
+for i in range(10):
+    result = str(temp % 3) + result
+    temp = temp // 3
+return result
+"""
+
+[ternary.unpacked.decoding]
+# Unpacked trit string → Ordinal
+algorithm = """
+result = 0
+for i, digit in enumerate(trit_string):
+    result += int(digit) * (3 ** (9 - i))
+return result
+"""
+
+# -----------------------------------------------------------------------------
+# 3b. PACKED Representation (Trit5 pairs)
+# -----------------------------------------------------------------------------
+# 5 trits pack into 1 byte (3^5 = 243 < 256)
+# 10 trits = 2 trit5 values = 2 bytes
+
+[ternary.packed]
+description = "Binary-efficient packed representation using trit5"
+format = "Two trit5 values (high, low) stored as bytes"
+trits_per_byte = 5
+bytes_needed = 2
+total_bits = 16
+efficiency = "80% of theoretical minimum"
+use_case = "Storage, transmission, computation"
+
+[ternary.packed.trit5]
+description = "5 trits packed into single byte"
+states = 243
+bits_used = 8
+waste_states = 13
+note = "3^5 = 243 states fit in 8 bits (256), leaving 13 spare"
+
+[ternary.packed.layout]
+high_trit5 = "trits 0-4 (most significant)"
+low_trit5 = "trits 5-9 (least significant)"
+byte_order = "big-endian (high byte first)"
+
+[ternary.packed.encoding]
+# Ordinal → Packed (two bytes)
+algorithm = """
+# Split ordinal into high and low trit5 values
+low_trit5 = ordinal % 243      # trits 5-9
+high_trit5 = ordinal // 243    # trits 0-4
+return bytes([high_trit5, low_trit5])
+"""
+example_ordinal = 1
+example_high = 0
+example_low = 1
+example_bytes = "[0x00, 0x01]"
+
+[ternary.packed.decoding]
+# Packed (two bytes) → Ordinal
+algorithm = """
+ordinal = (high_byte * 243) + low_byte
+return ordinal
+"""
+
+# -----------------------------------------------------------------------------
+# 3c. Conversion Between Formats
+# -----------------------------------------------------------------------------
+
+[ternary.conversion]
+description = "Converting between unpacked and packed representations"
+
+[ternary.conversion.unpacked_to_packed]
+algorithm = """
+# Parse 10-char string into ordinal, then pack
+high_trits = trit_string[0:5]  # "00000"
+low_trits = trit_string[5:10]  # "00001"
+high_value = sum(int(d) * 3**(4-i) for i, d in enumerate(high_trits))
+low_value = sum(int(d) * 3**(4-i) for i, d in enumerate(low_trits))
+return bytes([high_value, low_value])
+"""
+
+[ternary.conversion.packed_to_unpacked]
+algorithm = """
+# Unpack bytes to ordinal, then to string
+ordinal = (high_byte * 243) + low_byte
+# Then convert ordinal to 10-char trit string
+"""
+
+# -----------------------------------------------------------------------------
+# 3d. Trite (Single-byte verse encoding)
+# -----------------------------------------------------------------------------
+# For even more compact single-verse references
+
+[ternary.trite]
+description = "Single-byte verse encoding using modular trite"
+base = 243
+canonical_range = [0, 242]
+variant_range = [243, 255]
+note = "Ordinals 1-31102 map via (ordinal-1) mod 243 for trite 0-242"
+limitation = "Requires context (which 'page' of 243 verses) for decode"
+
+
+# -----------------------------------------------------------------------------
+# 4. WEB Variant Verses
+# -----------------------------------------------------------------------------
+# 13 verses in WEB not in KJV — use trite spare values 243-255
+# Source: word/scripture/web-variant-index.adoc
+
+[variants]
+description = "WEB-only verses mapped to trite spare values"
+count = 13
+range = [243, 255]
+note = "These complete the 256-value trite encoding space"
+
+[variants.v243]
+trite = 243
+book = "1 Corinthians"
+chapter = 16
+verse = 27
+summary = "TR manuscript note referencing Romans 14:24-26"
+
+[variants.v244]
+trite = 244
+book = "1 Peter"
+chapter = 5
+verse = 20
+summary = "Turn sinner from error, save soul from death"
+
+[variants.v245]
+trite = 245
+book = "1 Timothy"
+chapter = 3
+verse = 18
+summary = "Grace benediction"
+
+[variants.v246]
+trite = 246
+book = "2 Kings"
+chapter = 22
+verse = 53
+summary = "Served Baal, worshiped him, provoked Yahweh"
+
+[variants.v247]
+trite = 247
+book = "Amos"
+chapter = 3
+verse = 21
+summary = "Cleanse blood; Yahweh dwells in Zion"
+
+[variants.v248]
+trite = 248
+book = "Colossians"
+chapter = 4
+verse = 23
+summary = "Grace benediction"
+
+[variants.v249]
+trite = 249
+book = "Ezekiel"
+chapter = 5
+verse = 22
+summary = "Utterly rejected us; very angry against us"
+
+[variants.v250]
+trite = 250
+book = "Jonah"
+chapter = 1
+verse = 21
+summary = "Saviors on Mount Zion; kingdom will be Yahweh's"
+
+[variants.v251]
+trite = 251
+book = "Nehemiah"
+chapter = 10
+verse = 44
+summary = "Taken foreign wives; some had children by them"
+
+[variants.v252]
+trite = 252
+book = "Numbers"
+chapter = 27
+verse = 34
+summary = "Commandments Yahweh commanded Moses on Sinai"
+
+[variants.v253]
+trite = 253
+book = "Psalms"
+chapter = 42
+verse = 17
+summary = "Job died, being old and full of days"
+
+[variants.v254]
+trite = 254
+book = "Revelation"
+chapter = 1
+verse = 25
+summary = "Doxology: to God our Savior, glory and majesty"
+
+[variants.v255]
+trite = 255
+book = "Zechariah"
+chapter = 2
+verse = 23
+summary = "Zerubbabel my servant; make you as a signet"
+
+
+# =============================================================================
+
+# ─────────────────────────────────────────────────────────────
+# Extensions (reserved)
+# ─────────────────────────────────────────────────────────────
+
+[extensions]
+note = "Reserved — no extensions defined"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('addressing.toml','rb'))\""]
+
+[_validation.schema]
+required = ["address_space", "books", "ternary", "web_variants"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_tables_valid = 30
+data_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Book ordinal ranges — derived from canonical verse counts",
+    "KJV verse count (31,102) — canonical",
+    "WEB variant trite values (243-255) — established mapping",
+    "Ternary encoding formula — mathematical",
+]
+careful = [
+    "Adding new translation variants — would extend trite space",
+    "Changing book abbreviations — affects lookup tools",
+    "Modifying ordinal index — must sync with CSV",
+]
+safe = [
+    "Additional book metadata (author, date, genre)",
+    "Cross-reference mappings",
+    "Chapter verse counts",
+    "Notes and clarifications",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new entries following existing table structure",
+    "2. Ensure all required fields present",
+    "3. Verify bidirectional consistency with related files",
+    "4. Run TOML validation",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_reference = "Check encoding_ref/scripture fields — all must point to valid sources"
+consistency_error = "Verify bidirectional mapping — encoding ↔ decoding must agree"
+
+[_closing.X4_reference]
+related_files = [
+    "L0-universal/bible/encoding.toml — Bible Encoding Map",
+    "L0-universal/bible/decoding.toml — Bible Decoding Map",
+    "L0-universal/bible/encryption.toml — Bible Encryption",
+    "L0-universal/bible/decryption.toml — Bible Decryption",
+    "L0-universal/bible/scripture-text.toml — Scripture Text Encoding",
+    "L0-universal/bible/translation.toml — Bible Translation Map",
+]
+required_sections = ["_pragma", "_metadata", "address_space", "books", "ternary", "web_variants", "_validation", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('addressing.toml','rb'))\""
+
+[_closing.X5_note]
+note = "The Word is ordered. Addressing reveals that order."
+scripture = "So shall my word be that goeth forth out of my mouth. — Isaiah 55:11"
+anchor = "The Word is ordered. Addressing reveals that order. Genesis 1:1 anchors all addressing."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

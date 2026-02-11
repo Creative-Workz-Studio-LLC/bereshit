@@ -1,0 +1,536 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-seed-data-json-formats-debug-format",
+    "_P1_from": "b-word/seed/data/json/3block/config.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "format",
+    "_P2_role": "seed",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "templates",
+    "_P3_layer": "b-word/seed/data/json/formats",
+    "_P3_includes": "none",
+    "_P3_provides": ["DEBUG_FORMAT_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "CPI-SI Structured Debug Format",
+    "_P5_brief": "Debug session format — three verbosity levels from snapshot to full analysis",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    // M.1 IDENTITY
+    "_M1_identity": {
+        "file": "debug-format.jsonc",
+        "key": "B-seed-data-json-formats-debug-format",
+        "title": "CPI-SI Structured Debug Format",
+        "type": "Data (Template)",
+        "component": "Seed",
+        "role": "Defines the debug session format — state snapshots, event timelines, automated analysis"
+    },
+
+    // M.2 STATE
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2025-11-09",
+        "updated": "2026-02-09"
+    },
+
+    // M.3 ATTRIBUTION
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)"
+    },
+
+    // M.4 GROUNDING — "Then did he see it, and declare it; he prepared it,
+    //   yea, and searched it out." — Job 28:27
+    "_M4_grounding": {
+        "scripture": "Job 28:27 — Then did he see it, and declare it; he prepared it, yea, and searched it out.",
+        "principle": "Debugging is searching out truth. See the state, declare it, prepare the fix."
+    },
+
+    // M.5 DEPENDENCIES
+    "_M5_dependencies": {
+        "requires": "JSONC parser, debug runtime (Go debug package, custom formatter)",
+        "consumers": "All CPI-SI components producing debug sessions",
+        "cross_format": {
+            "role": "JSONC debug format template — defines structured debug output consumed by Go debug tools.",
+            "toml_counterpart": "none — debug format is JSONC-native (runtime output format, not build configuration)",
+            "relationship": "JSONC defines debug OUTPUT structure. TOML defines debug CONFIGURATION (verbosity, filters). Different concerns, complementary formats."
+        }
+    },
+
+    // M.ext — Extension Contract
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6+ available for domain-specific metadata in derived files",
+        "rule": "M1-M5 are the base contract. Derived debug files inherit all five and may extend with M6+ for runtime behavior."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // Three levels serve different debugging needs:
+    //   BASIC   — Quick state snapshot: "what happened?"
+    //   DETAILED — Event timeline: "how did it happen?"
+    //   VERBOSE  — Full analysis: "why did it happen?"
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_design_goals": [
+        "Clear section boundaries for grep/extraction",
+        "Visual hierarchy for human scanning",
+        "Structured data within sections",
+        "Three verbosity levels serving different needs"
+    ],
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Debug levels, section definitions, parsing rules, health visualization.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "levels": {
+        "BASIC": {
+            "sections": ["header", "context", "initial_state", "final_state", "footer"],
+            "use_case": "Quick diagnostics, production issues, state comparison"
+        },
+        "DETAILED": {
+            "sections": ["header", "context", "initial_state", "events", "final_state", "footer"],
+            "use_case": "Standard debugging, event tracking, timeline analysis"
+        },
+        "VERBOSE": {
+            "sections": ["header", "context", "initial_state", "events", "final_state", "analysis", "footer"],
+            "use_case": "Deep troubleshooting, pattern detection, automated analysis"
+        }
+    },
+
+    "sections": {
+        "header": {
+            "format": "box",
+            "delimiter": "DEBUG_SESSION_START",
+            "template": [
+                "# DEBUG_SESSION_START",
+                "┌────────────────────────────────────────────────────────────────┐",
+                "│ CPI-SI Debug Session                                          │",
+                "├────────────────────────────────────────────────────────────────┤",
+                "│ Component:  {component}",
+                "│ Context ID: {context_id}",
+                "│ PID:        {pid}",
+                "│ Level:      {level}",
+                "│ Started:    {timestamp}",
+                "└────────────────────────────────────────────────────────────────┘"
+            ],
+            "fields": {
+                "component": "Component being debugged",
+                "context_id": "{component}-{pid}-{nanosecond_timestamp}",
+                "pid": "Process ID",
+                "level": "BASIC | DETAILED | VERBOSE",
+                "timestamp": "YYYY-MM-DD HH:MM:SS.mmm"
+            }
+        },
+        "context": {
+            "format": "structured",
+            "delimiter": "CONTEXT",
+            "template": [
+                "",
+                "# CONTEXT",
+                "────────────────────────────────────────────────────────────────",
+                "",
+                "Identity: {user}@{host}:{pid}",
+                "Shell:    {shell}",
+                "CWD:      {cwd}",
+                "",
+                "System:   {distro} ({arch})",
+                "Kernel:   {kernel}",
+                ""
+            ],
+            "description": "Execution context for reproducibility"
+        },
+        "initial_state": {
+            "format": "structured",
+            "delimiter": "INITIAL_STATE",
+            "template": [
+                "# INITIAL_STATE",
+                "────────────────────────────────────────────────────────────────",
+                "",
+                "Health: {health}% {emoji}",
+                "",
+                "Parameters:",
+                "{parameters}",
+                "",
+                "Component State:",
+                "{component_state}",
+                ""
+            ],
+            "description": "State snapshot before execution"
+        },
+        "events": {
+            "format": "timeline",
+            "delimiter": "EVENTS",
+            "header": [
+                "# EVENTS",
+                "────────────────────────────────────────────────────────────────"
+            ],
+            "entry_format": "[{timestamp}] {severity} | {event_type} | {description}",
+            "entry_details": "  {key}: {value}",
+            "entry_health": "  HEALTH: {before}% → {after}% (Δ{delta})",
+            "event_types": [
+                "INIT",
+                "VALIDATE",
+                "OPERATION",
+                "CHECKPOINT",
+                "DECISION",
+                "WARNING",
+                "ERROR"
+            ],
+            "severities": ["DEBUG", "INFO", "WARN", "ERROR"],
+            "description": "Chronological event timeline"
+        },
+        "final_state": {
+            "format": "structured",
+            "delimiter": "FINAL_STATE",
+            "template": [
+                "",
+                "# FINAL_STATE",
+                "────────────────────────────────────────────────────────────────",
+                "",
+                "Result:   {result}",
+                "Exit:     {exit_code}",
+                "Duration: {duration}",
+                "",
+                "Health:   {health}% {emoji}",
+                "          Initial: {initial_health}% → Final: {final_health}%",
+                "          Delta: {delta} ({assessment})",
+                "",
+                "Component State:",
+                "{component_state}",
+                ""
+            ],
+            "results": ["SUCCESS", "PARTIAL", "FAILED", "TIMEOUT"],
+            "description": "State snapshot after execution"
+        },
+        "analysis": {
+            "format": "structured",
+            "delimiter": "ANALYSIS",
+            "optional": true,
+            "template": [
+                "# ANALYSIS",
+                "────────────────────────────────────────────────────────────────",
+                "",
+                "Issues Detected:",
+                "{issues}",
+                "",
+                "Performance:",
+                "{performance}",
+                "",
+                "Recommendations:",
+                "{recommendations}",
+                ""
+            ],
+            "description": "Automated analysis (VERBOSE level only)"
+        },
+        "footer": {
+            "format": "box",
+            "delimiter": "DEBUG_SESSION_END",
+            "template": [
+                "┌────────────────────────────────────────────────────────────────┐",
+                "│ Session Complete                                              │",
+                "├────────────────────────────────────────────────────────────────┤",
+                "│ Context ID: {context_id}",
+                "│ Duration:   {duration}",
+                "│ Health:     {health}% {emoji} ({assessment})",
+                "│ Ended:      {timestamp}",
+                "└────────────────────────────────────────────────────────────────┘",
+                "# DEBUG_SESSION_END"
+            ]
+        }
+    },
+
+    "parsing": {
+        "section_markers": {
+            "start": "# {SECTION_NAME}",
+            "pattern": "^# [A-Z_]+$"
+        },
+        "session_boundaries": {
+            "start": "# DEBUG_SESSION_START",
+            "end": "# DEBUG_SESSION_END"
+        },
+        "event_pattern": "^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\]",
+        "detail_prefix": "  ",
+        "grep_examples": {
+            "all_errors": "grep '| ERROR |' debug-file",
+            "section": "sed -n '/^# EVENTS$/,/^# /p' debug-file",
+            "health_changes": "grep 'HEALTH:' debug-file",
+            "specific_event": "grep '| VALIDATE |' debug-file",
+            "session_result": "grep -A1 'Result:' debug-file"
+        },
+        "awk_examples": {
+            "extract_events": "awk '/^# EVENTS$/,/^# /' debug-file",
+            "health_delta": "awk '/Delta:/ {print $2}' debug-file"
+        }
+    },
+
+    "health": {
+        "emoji_map": {
+            "90-100": "💚",
+            "70-89": "💛",
+            "50-69": "🧡",
+            "30-49": "❤️",
+            "10-29": "🩸",
+            "0-9": "☠️"
+        },
+        "assessment_map": {
+            "90-100": "Excellent",
+            "70-89": "Good",
+            "50-69": "Moderate",
+            "30-49": "Poor",
+            "10-29": "Critical",
+            "0-9": "Failed"
+        }
+    },
+
+    "files": {
+        "naming": "{component}-{unix_timestamp}.debug",
+        "location": "system/dev/debug/{component}/",
+        "rotation": "Keep last 10 per component, or 7 days",
+        "example": "validate-1761710935.debug"
+    },
+
+    "examples": {
+        "basic_session": [
+            "# DEBUG_SESSION_START",
+            "┌────────────────────────────────────────────────────────────────┐",
+            "│ CPI-SI Debug Session                                          │",
+            "├────────────────────────────────────────────────────────────────┤",
+            "│ Component:  validate",
+            "│ Context ID: validate-7821-1761710935456123789",
+            "│ PID:        7821",
+            "│ Level:      BASIC",
+            "│ Started:    2026-02-09 03:30:00.000",
+            "└────────────────────────────────────────────────────────────────┘",
+            "",
+            "# CONTEXT",
+            "────────────────────────────────────────────────────────────────",
+            "",
+            "Identity: seanje@creativeworkz:7821",
+            "Shell:    /bin/bash",
+            "CWD:      /media/seanje-lenox-wise/Project/Bereshit",
+            "",
+            "System:   Ubuntu 25.10 (x86_64)",
+            "Kernel:   6.17.0-12-generic",
+            "",
+            "# INITIAL_STATE",
+            "────────────────────────────────────────────────────────────────",
+            "",
+            "Health: 0% ☠️",
+            "",
+            "Parameters:",
+            "  mode: FULL",
+            "  components: [environment, permissions]",
+            "",
+            "# FINAL_STATE",
+            "────────────────────────────────────────────────────────────────",
+            "",
+            "Result:   SUCCESS",
+            "Exit:     0",
+            "Duration: 0.234s",
+            "",
+            "Health:   85% 💛",
+            "          Initial: 0% → Final: 85%",
+            "          Delta: +85 (Good)",
+            "",
+            "┌────────────────────────────────────────────────────────────────┐",
+            "│ Session Complete                                              │",
+            "├────────────────────────────────────────────────────────────────┤",
+            "│ Context ID: validate-7821-1761710935456123789",
+            "│ Duration:   0.234s",
+            "│ Health:     85% 💛 (Good)",
+            "│ Ended:      2026-02-09 03:30:00.234",
+            "└────────────────────────────────────────────────────────────────┘",
+            "# DEBUG_SESSION_END"
+        ],
+        "event_entry": [
+            "[2026-02-09 03:30:00.100] INFO | VALIDATE | Checking environment variables",
+            "  checked: 5",
+            "  passed: 5",
+            "  HEALTH: 10% → 35% (Δ+25)"
+        ],
+        "error_entry": [
+            "[2026-02-09 03:30:00.200] ERROR | VALIDATE | Config validation failed",
+            "  file: /home/seanje-lenox-wise/.claude/settings.json",
+            "  error: Missing required key: permissions",
+            "  line: 15",
+            "  HEALTH: 35% → 15% (Δ-20)"
+        ]
+    },
+
+    "usage": {
+        "default_level": "DETAILED",
+        "verbose_triggers": ["error conditions", "performance issues", "bug reports"],
+        "basic_triggers": ["quick checks", "production monitoring"],
+        "integration": "Runtime reads this template and formats debug output accordingly"
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+    "_Cv_verify": "npx jsonc-parser validate debug-format.jsonc",
+    "_Cv_expected_state": "Valid JSONC with complete level definitions, section specs, parsing rules, and examples.",
+    "_Cv_required_keys": ["levels", "sections", "parsing", "health", "usage"],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note",
+
+    // X.1 POLICY
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Change section delimiter format (breaks parsers)",
+        "Remove header/footer box format (visual scanning depends on it)",
+        "Change event entry format string (breaks timeline extraction)"
+    ],
+    "_X1_careful": [
+        "Adding new event types (all consumers must handle them)",
+        "Adding new sections (affects level definitions)",
+        "Changing health visualization (affects assessment logic)"
+    ],
+    "_X1_safe": [
+        "Adding grep/awk examples",
+        "Adding fields within existing sections",
+        "Updating file rotation policies"
+    ],
+
+    // X.2 EXTENSION
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Flame graph integration for VERBOSE level performance sections",
+        "Diff-based state comparison between INITIAL_STATE and FINAL_STATE"
+    ],
+    "_X2_considered": [
+        "Interactive debug viewer (TUI) that reads debug session files",
+        "Binary debug format for high-frequency internal debugging"
+    ],
+
+    // X.3 TROUBLESHOOTING
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "missing sections": "Check the level being used. BASIC omits events and analysis. Use DETAILED or VERBOSE.",
+        "box drawing broken": "Terminal must support Unicode box-drawing characters. Verify UTF-8 locale.",
+        "events out of order": "Events use nanosecond timestamps internally. Display rounds to milliseconds.",
+        "analysis empty": "Analysis section is VERBOSE only and requires automated analysis hooks to be configured."
+    },
+
+    // X.4 REFERENCE
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "b-word/seed/data/json/formats/log-format.jsonc — Log entry format (companion)",
+        "b-word/seed/data/json/formats/recovery-format.jsonc — Recovery action format (companion)",
+        "b-word/seed/data/json/3block/config.jsonc — Parent template",
+        "b-word/definitions/omni/json-3block-schema.jsonc — Validation schema"
+    ],
+    "_X4_validate": "npx jsonc-parser validate debug-format.jsonc",
+
+    // X.5 NOTE
+    // Three levels mirror three questions: what, how, why.
+    // BASIC answers "what happened?" — state snapshots.
+    // DETAILED answers "how?" — event timeline.
+    // VERBOSE answers "why?" — full analysis.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "Debug format template. Three levels (BASIC/DETAILED/VERBOSE) answer what/how/why. See the state, declare it, search it out. Debugging is the discipline of truth-finding.",
+    "_X5_scripture": "In the beginning God created the heaven and the earth. — Genesis 1:1",
+    "_X5_anchor": "Before fixing, understand. Before understanding, observe. Debug sessions are structured observation.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

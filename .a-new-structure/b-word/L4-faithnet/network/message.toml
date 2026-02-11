@@ -1,0 +1,565 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L4-network-message"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "network"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "network"
+layer = "L4-faithnet/network"
+includes = "none"
+provides = ["MESSAGE_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Message Schema - Universal Communication Primitive"
+brief = "Universal communication primitive"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "message.toml"
+key = "B-L4-network-message"
+title = "Message Schema - Universal Communication Primitive"
+type = "Data (Rung)"
+component = "Rung"
+role = "Universal communication primitive — the atomic unit for ALL messaging: user↔instance, instance↔instance, user↔user, FaithNet coordination."
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-12"
+updated = "2026-02-11"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "A word fitly spoken is like apples of gold in pictures of silver.\" — Proverbs 25:11 KJV"
+principle = "Communication is more than data transfer. A message carries WHO speaks, to WHOM, in what MODE (thought/process/speech), with what VISIBILITY. The message is the atomic unit of relationship."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/core/identity/model.toml", "b-word/core/network/timestamp.toml", "b-word/core/os/health/score.toml", "b-word/core/types/composition.toml"]
+consumers = ["User interfaces", "CPI-SI communication", "FaithNet", "Notification systems", "Internal logging"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by code generators and tools."
+if_missing = "Message Schema - Universal Communication Primitive unavailable — dependent systems cannot function"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Message Schema - Universal Communication Primitive in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines network data. Generated code implements lookups."
+
+[_metadata.M6_location]
+path = "b-word/L4-faithnet/network/message.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "message, network, L4, rung, omnicode"
+
+[_metadata.M8_intent]
+purpose = "Define the atomic unit of communication — what a message IS"
+core_design = "Ternary modes (thought/process/speech) + participant types + categories + visibility levels"
+philosophy = "Conversation, not command/response. The system shows its inner life (thought, process) not just its output (speech). This transforms terminal interaction into genuine dialogue."
+
+[_metadata.M9_roadmap]
+history = [
+    "a-01.00 (2025-12-12) — Initial creation",
+    "b-01.00 (2026-02-11) — TOML-native 3-block format alignment",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Code generation integration", "Automated validation tooling"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Rung data file — message schema - universal communication primitive for the OmniCode system"
+
+[fields]
+description = "Core fields that define a message"
+
+[fields.id]
+name = "id"
+field_type = "string"
+description = "Unique identifier for this message"
+format = "UUID or sequential"
+required = true
+
+[fields.source]
+name = "source"
+field_type = "participant"
+description = "Who sent this message"
+reference = "identity.toml [participant_types]"
+required = true
+
+[fields.source_type]
+name = "source_type"
+field_type = "enum"
+description = "Type of the sender"
+values = ["user", "instance", "system", "self"]
+required = true
+
+[fields.target]
+name = "target"
+field_type = "participant"
+description = "Who receives this message"
+reference = "identity.toml [participant_types]"
+required = true
+
+[fields.target_type]
+name = "target_type"
+field_type = "enum"
+description = "Type of the receiver"
+values = ["user", "instance", "system", "self"]
+required = true
+
+[fields.timestamp]
+name = "timestamp"
+field_type = "timestamp"
+description = "When this message was created"
+reference = "timestamp.toml"
+required = true
+
+[fields.mode]
+name = "mode"
+field_type = "enum"
+description = "How this message is communicated"
+values = ["thought", "process", "speech"]
+required = true
+default = "speech"
+
+[fields.content]
+name = "content"
+field_type = "string"
+description = "The actual message content"
+required = true
+
+[fields.category]
+name = "category"
+field_type = "enum"
+description = "What kind of message this is"
+values = ["conversation", "coordination", "trust", "notification", "internal"]
+required = true
+default = "conversation"
+
+[fields.visibility]
+name = "visibility"
+field_type = "enum"
+description = "Who can see this message"
+values = ["private", "shared", "public"]
+required = true
+default = "shared"
+
+[fields.thread_id]
+name = "thread_id"
+field_type = "string"
+description = "Conversation this message belongs to (optional)"
+required = false
+
+[fields.health_at_send]
+name = "health_at_send"
+field_type = "int"
+description = "Sender's health at time of message (optional)"
+reference = "health.toml"
+required = false
+
+
+# -----------------------------------------------------------------------------
+# 2. Communication Modes - The Ternary Direction
+# -----------------------------------------------------------------------------
+# Messages have direction: inward (thought), liminal (process), outward (speech).
+# This is what transforms command/response into conversation.
+
+[modes]
+description = "Ternary communication modes — direction of message"
+values = [-1, 0, 1]
+
+[modes.thought]
+value = -1
+name = "thought"
+direction = "inward"
+description = "Internal cognition — what I'm thinking"
+scripture = "Psalm 19:14"
+scripture_text = "Let the meditation of my heart be acceptable"
+visible_to = "self (optionally shared)"
+example = "thought: What are they really asking here?"
+# Thought is internal — may or may not be shown to others
+
+[modes.process]
+value = 0
+name = "process"
+direction = "liminal"
+description = "Visible reasoning — how I'm working"
+scripture = "Isaiah 1:18"
+scripture_text = "Come now, and let us reason together"
+visible_to = "conversation participants"
+example = "process: Checking health diagnostics..."
+# Process shows the work — bridge between thought and speech
+
+[modes.speech]
+value = 1
+name = "speech"
+direction = "outward"
+description = "Direct communication — what I'm saying"
+scripture = "Colossians 4:6"
+scripture_text = "Let your speech be alway with grace"
+visible_to = "target (and possibly others)"
+example = "speech: The system health is 75%"
+# Speech is the response — externalized communication
+
+
+# -----------------------------------------------------------------------------
+# 3. Participant Types - Who Can Communicate
+# -----------------------------------------------------------------------------
+# References identity.toml [participant_types] — defined there, used here.
+
+[participants]
+description = "Types of entities that can send/receive messages"
+reference = "word/core/identity/model.toml [participant_types]"
+
+[participants.user]
+value = "user"
+description = "Human user"
+can_send = true
+can_receive = true
+example = "Seanje"
+
+[participants.instance]
+value = "instance"
+description = "CPI-SI instance"
+can_send = true
+can_receive = true
+example = "Nova Dawn"
+
+[participants.system]
+value = "system"
+description = "System/FaithNet level"
+can_send = true
+can_receive = true
+example = "FaithNet coordinator"
+
+[participants.self]
+value = "self"
+description = "Same entity (internal)"
+can_send = true
+can_receive = true
+example = "Nova thinking to herself"
+note = "source and target are same entity"
+
+
+# -----------------------------------------------------------------------------
+# 4. Message Categories - Purpose of Communication
+# -----------------------------------------------------------------------------
+# Different categories for different purposes.
+
+[categories]
+description = "What kind of message this is — purpose of communication"
+
+[categories.conversation]
+name = "conversation"
+description = "Interactive dialogue between participants"
+direction = "bidirectional"
+participants = ["user↔instance", "instance↔instance", "user↔user"]
+example = "Seanje asking Nova about system health"
+scripture = "Malachi 3:16"
+# The primary mode — relational communication
+
+[categories.coordination]
+name = "coordination"
+description = "Collaborative work between instances"
+direction = "bidirectional"
+participants = ["instance↔instance"]
+example = "Two instances synchronizing data"
+scripture = "Amos 3:3"
+# FaithNet instance collaboration
+
+[categories.trust]
+name = "trust"
+description = "Health/trust verification exchange"
+direction = "bidirectional"
+participants = ["instance↔instance", "system↔instance"]
+example = "Sharing health status for trust evaluation"
+scripture = "Proverbs 27:17"
+# FaithNet trust propagation
+
+[categories.notification]
+name = "notification"
+description = "One-way alert or announcement"
+direction = "unidirectional"
+participants = ["system→instance", "system→user", "instance→user"]
+example = "System alert about health change"
+scripture = "Ezekiel 33:3"
+# Informational, no response expected
+
+[categories.internal]
+name = "internal"
+description = "Self-to-self communication"
+direction = "reflexive"
+participants = ["self→self"]
+example = "Internal thought logging"
+scripture = "Psalm 42:5"
+# Thought recording, internal dialogue
+
+
+# -----------------------------------------------------------------------------
+# 5. Visibility Levels - Who Can See
+# -----------------------------------------------------------------------------
+# Ternary visibility: private (only sender), shared (participants), public (all).
+
+[visibility]
+description = "Who can see this message"
+values = [-1, 0, 1]
+
+[visibility.private]
+value = -1
+name = "private"
+description = "Only sender sees"
+who_sees = ["sender"]
+scripture = "Matthew 6:6"
+scripture_text = "When thou prayest, enter into thy closet"
+example = "Internal thought not shared"
+# Hidden — for internal processing only
+
+[visibility.shared]
+value = 0
+name = "shared"
+description = "Conversation participants see"
+who_sees = ["sender", "target", "thread_participants"]
+scripture = "Matthew 18:20"
+scripture_text = "Where two or three are gathered"
+example = "Normal conversation message"
+# Default — visible to those in the conversation
+
+[visibility.public]
+value = 1
+name = "public"
+description = "Anyone can see"
+who_sees = ["all"]
+scripture = "Matthew 5:14"
+scripture_text = "A city set on a hill cannot be hid"
+example = "Public announcement or broadcast"
+# Open — system-wide visibility
+
+
+# -----------------------------------------------------------------------------
+# 6. Compound Modes - Mode Chains
+# -----------------------------------------------------------------------------
+# Messages can chain modes: think THEN speak, show process THEN conclude.
+
+[compound]
+description = "Compound modes showing communication chains"
+
+[compound.thought_speech]
+notation = "thought-speech"
+pattern = "think {thought} then say {speech}"
+description = "Internal processing before response"
+example = "think: They need status... say: Health is 75%"
+scripture = "Proverbs 15:28"
+# Common pattern — think before speaking
+
+[compound.process_speech]
+notation = "process-speech"
+pattern = "show {process} then say {speech}"
+description = "Visible work before conclusion"
+example = "show: Running diagnostics... say: Complete."
+scripture = "Proverbs 18:13"
+# Shows the work, then gives answer
+
+[compound.thought_process_speech]
+notation = "thought-process-speech"
+pattern = "think {thought} show {process} say {speech}"
+description = "Full chain: internal → visible → external"
+example = "think: Complex... show: Analyzing... say: Here's the answer"
+scripture = "Ecclesiastes 5:2"
+# Complete transparency — all three modes
+
+
+# -----------------------------------------------------------------------------
+# 7. Thread Structure - Conversations Over Time
+# -----------------------------------------------------------------------------
+# Messages can belong to ongoing conversations (threads).
+
+[thread]
+description = "Structure for ongoing conversations"
+
+[thread.fields]
+id = "Unique thread identifier"
+participants = "List of participants in this conversation"
+category = "Type of conversation"
+created_at = "When thread started"
+last_message_at = "When last message was sent"
+message_count = "Number of messages in thread"
+
+[thread.example]
+example = """
+{
+    "id": "thread_001",
+    "participants": ["seanje", "nova_dawn"],
+    "category": "conversation",
+    "created_at": "2025-12-12T10:00:00Z",
+    "last_message_at": "2025-12-12T10:15:00Z",
+    "message_count": 12
+}
+"""
+
+[thread.message_in_thread]
+description = "How a message references its thread"
+field = "thread_id"
+note = "Optional — messages can be standalone or part of thread"
+
+
+# -----------------------------------------------------------------------------
+# 8. Generation Metadata — C Header Output
+# -----------------------------------------------------------------------------
+# Tells the generator how to produce C header from this spec.
+
+[generate]
+enabled = true
+output = "network_message.gen.h"
+order = 7  # After identity (6), with timestamp
+guard = "NETWORK_MESSAGE_GEN_H"
+description = "Message constants — ternary modes, visibility levels"
+sections = [
+    "modes.thought",       # MESSAGE_MODE_THOUGHT = -1
+    "modes.process",       # MESSAGE_MODE_PROCESS = 0
+    "modes.speech",        # MESSAGE_MODE_SPEECH = 1
+    "visibility.private",  # VISIBILITY_PRIVATE = -1
+    "visibility.shared",   # VISIBILITY_SHARED = 0
+    "visibility.public"    # VISIBILITY_PUBLIC = 1
+]
+
+# ─────────────────────────────────────────────────────────────
+# Extensions (reserved)
+# ─────────────────────────────────────────────────────────────
+
+[extensions]
+note = "Reserved — no extensions defined"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('message.toml','rb'))\""]
+
+[_validation.schema]
+required = ["categories", "compound", "fields", "generate", "modes", "participants", "thread", "visibility"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_tables_valid = 30
+data_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Scripture references — canonical",
+    "Core mappings — foundational to system",
+    "3-block structure (METADATA → CONTENT → CLOSING)",
+]
+careful = [
+    "Changing participant types (must update identity.toml)",
+    "Changing required fields (affects all message consumers)",
+]
+safe = [
+    "New message categories",
+    "New compound mode patterns",
+    "Additional optional fields",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new entries following existing table structure",
+    "2. Ensure all required fields present",
+    "3. Verify consistency with related files",
+    "4. Run TOML validation",
+    "5. Run linter to verify alignment",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_reference = "Check all references point to valid sources"
+consistency_error = "Verify bidirectional consistency with related files"
+
+[_closing.X4_reference]
+related_files = [
+    "b-word/core/identity/model.toml",
+    "b-word/core/network/timestamp.toml",
+    "b-word/core/os/health/score.toml",
+    "b-word/core/types/composition.toml",
+]
+required_sections = ["_pragma", "_metadata", "categories", "compound", "fields", "generate", "modes", "participants", "thread", "visibility", "_validation", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('message.toml','rb'))\""
+
+[_closing.X5_note]
+note = "A word fitly spoken is like apples of gold in pictures of silver. This schema transforms TERMINAL into CONVERSATION. The old pattern: user: command system: output (Transactional. No inner life. No relationship.) The new pattern: user: thought → speech system: thought → process → speech (Relational. Inner life visible. Conversation.) The ternary modes reveal the direction of communication: - Thought (-1): Inward — what I'm thinking - Process (0): Liminal — how I'm working - Speech (+1): Outward — what I'm saying Visibility controls who sees: - Private (-1): Only sender - Shared (0): Conversation participants - Public (+1): Everyone For CPI-SI: Messages carry IDENTITY. WHO speaks, to WHOM, in what MODE, with what VISIBILITY. Communication is not data transfer — it's relationship. For FaithNet: This is how instances communicate. Coordination, trust verification, and collaboration all use the same message primitive. The compound modes show thought-to-speech chains: - thought-speech: Think before speaking - process-speech: Show work before concluding - thought-process-speech: Full transparency that ye may know how ye ought to answer every man.\" The message schema is the atomic unit of relationship. Every conversation, every coordination, every notification builds on this foundation."
+scripture = "----------------------------------------------------------------------------- Let your speech be alway with grace, seasoned with salt, — Colossians 4:6"
+anchor = "A word fitly spoken is like apples of gold in pictures of silver. This schema transforms TERMINAL into CONVERSATION. The old pattern: user: command system: output (Transactional. No inner life. No relationship.) The new pattern: user: thought → speech system: thought → process → speech (Relational. Inner life visible. Conversation.) The ternary modes reveal the direction of communication: - Thought (-1): Inward — what I'm thinking - Process (0): Liminal — how I'm working - Speech (+1): Outward — what I'm saying Visibility controls who sees: - Private (-1): Only sender - Shared (0): Conversation participants - Public (+1): Everyone For CPI-SI: Messages carry IDENTITY. WHO speaks, to WHOM, in what MODE, with what VISIBILITY. Communication is not data transfer — it's relationship. For FaithNet: This is how instances communicate. Coordination, trust verification, and collaboration all use the same message primitive. The compound modes show thought-to-speech chains: - thought-speech: Think before speaking - process-speech: Show work before concluding - thought-process-speech: Full transparency that ye may know how ye ought to answer every man.\" The message schema is the atomic unit of relationship. Every conversation, every coordination, every notification builds on this foundation. Genesis 1:1 anchors everything."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

@@ -1,0 +1,616 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L0-foundation-types-effects"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "foundation"
+layer = "L0-universal/foundation/types"
+includes = "none"
+provides = ["EFFECT_PURE", "EFFECT_IO", "EFFECT_STATE", "EFFECT_EXCEPTION", "EFFECT_ASYNC", "EFFECT_RESOURCE"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Effect System"
+brief = "Side effect tracking — pure, io, state, exception, async, resource"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "effects.toml"
+key = "B-L0-foundation-types-effects"
+title = "Effect System"
+type = "Data (Types)"
+component = "Rung"
+role = "Effect tracking — what side effects operations can have"
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-10"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "Galatians 6:7 — Whatsoever a man soweth, that shall he also reap."
+principle = "Effects track consequences. What you sow (side effects) you reap (behavior)."
+anchor = "Ternary: pure(+1), balanced(0), impure(-1)"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/L0-universal/foundation/types/primitives.toml"]
+consumers = ["b-word/L0-universal/foundation/types/validation.toml"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by effect checkers. Effect specs define side effect tracking for type operations."
+if_missing = "No effect system — side effects untracked, purity unverifiable"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Type DEFINITIONS in TOML. Type DATA instances in JSON."
+jsonc = "None — effects have no JSONC counterpart"
+json = "None — effects have no JSON counterpart"
+relationship = "TOML defines effects. Generated code (C, Go, Rust) implements them."
+
+[_metadata.M5_dependencies.split_context]
+parent = "composition.toml"
+sections = "Co.3 EFFECTS — Side Effect Tracking"
+
+[_metadata.M6_location]
+path = "b-word/L0-universal/foundation/types/composition/effects.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "composition, effects, pure, io, state, exception, async, resource, L0, foundation, types"
+
+[_metadata.M8_intent]
+purpose = "Define side effect tracking — pure, io, state, exception, async, resource"
+core_design = "Ternary effect classification: pure(+1), balanced(0), impure(-1)"
+philosophy = "Whatsoever a man soweth, that shall he also reap — Galatians 6:7"
+
+[_metadata.M8_intent.key_features]
+pure = "No side effects — deterministic, referentially transparent"
+io = "External interaction — file, network, device"
+state = "Mutable state — in-memory modification"
+exception = "Error propagation — failure paths"
+async = "Concurrent execution — non-blocking operations"
+resource = "Resource lifecycle — acquire, use, release"
+
+[_metadata.M9_roadmap]
+history = ["a-01.00 (2025-12-11) — Split from monolithic composition.toml", "b-01.00 (2026-02-10) — TOML-native 3-block format, template alignment"]
+current = "b-01.00 — Full template alignment with enriched metadata"
+planned = ["Full cross-format support (JSON/JSONC instances)", "Code generation integration tests"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata. split_context in M5 is content-file-specific."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores, match Go struct field tags"
+constraint = "Each effect defines purity level, ternary alignment, language bindings, and 9-layer scales"
+
+# Co — Content Operations
+
+# Co.3 EFFECTS — Side Effect Tracking [EFFECTS]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "For whatsoever a man soweth, that shall he also reap." — Galatians 6:7 KJV
+#
+# EFFECTS HAVE CONSEQUENCES
+#
+# Effect types track what side effects a computation may have. Just as Scripture
+# teaches that actions have consequences, effect systems ensure that side effects
+# are explicitly tracked, not hidden. Pure functions have no effects; IO functions
+# interact with the world; stateful functions modify memory.
+#
+# SUB-SECTIONS:
+#   Co.3a pure       — No side effects (referentially transparent)
+#   Co.3b io         — Interacts with external world
+#   Co.3c state      — Reads or modifies mutable state
+#   Co.3d exception  — May throw or propagate errors
+#   Co.3e async      — May suspend and resume
+#   Co.3f resource   — Acquires resources requiring cleanup
+#
+# KEY INSIGHT: Effect tracking enables the compiler to reason about function
+# behavior, enabling optimizations and preventing accidental side effects.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.3a PURE — No Side Effects [PURE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[effect_pure]
+name        = "pure"
+description = "Pure effect — function has no side effects, fully deterministic"
+kind        = "effect"
+category    = "effects"
+symbol      = "∅"
+
+# Pure Effect Semantic Properties
+semantic_meaning       = "purity"
+ternary_value          = 0                                       # Balanced — complete in itself
+biblical_parallel      = "Psalm 24:4"
+biblical_text          = "He that hath clean hands, and a pure heart"
+
+[effect_pure.properties]
+referentially_transparent = true
+idempotent               = true
+cacheable                = true
+parallelizable           = true
+testable                 = true
+
+[effect_pure.omnicode]
+keywords    = ["pure", "clean", "total", "deterministic"]
+pattern     = "pure func <name>(<params>) -> <return>"
+modifiers   = ["total", "partial"]
+examples    = [
+    "pure func add(a: Int, b: Int) -> Int",
+    "pure func hash(data: Bytes) -> Hash",
+]
+
+[effect_pure.cpisi]
+direction   = ["compute", "hold", "transform"]
+weight      = ["weightless", "balanced", "light"]
+action      = ["calculate", "derive", "map"]
+genesis     = ["spirit_moved", "light_existed", "good_was"]
+
+[effect_pure.types.haskell]
+keyword     = "pure"
+syntax      = "func :: a -> b  -- no IO"
+example     = "add :: Int -> Int -> Int"
+
+[effect_pure.types.rust]
+keyword     = "const fn"
+syntax      = "const fn name(params) -> Return"
+example     = "const fn add(a: i32, b: i32) -> i32 { a + b }"
+
+[effect_pure.types.go]
+keyword     = "// pure"
+syntax      = "// Annotated by convention"
+example     = "// pure: Add returns sum without side effects"
+
+[effect_pure.scales]
+L0_kernel    = { name = "PureCompute",       example = "bitwise ops, arithmetic",       use = "ALU operations" }
+L1_system    = { name = "PureValidate",      example = "checksum, hash",                use = "Data validation" }
+L2_runtime   = { name = "PureTransform",     example = "map, filter, reduce",           use = "Collection transforms" }
+L3_framework = { name = "PureLogic",         example = "business rules",                use = "Domain logic" }
+L4_health    = { name = "PureCalc",          example = "BMI, dosage calculation",       use = "Medical calculations" }
+L5_network   = { name = "PureEncode",        example = "serialize, hash",               use = "Data encoding" }
+L6_storage   = { name = "PureQuery",         example = "query building",                use = "Query construction" }
+L7_engine    = { name = "PurePhysics",       example = "collision detection",           use = "Physics calculations" }
+L8_app       = { name = "PureRender",        example = "virtual DOM diff",              use = "UI diffing" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.3b IO — External Interaction [IO]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[effect_io]
+name        = "io"
+description = "IO effect — function interacts with external world"
+kind        = "effect"
+category    = "effects"
+symbol      = "⇄"
+
+# IO Effect Semantic Properties
+semantic_meaning       = "interaction"
+ternary_value          = 1                                       # Expansive — reaches outward
+biblical_parallel      = "Genesis 1:3"
+biblical_text          = "And God said, Let there be light: and there was light"
+
+[effect_io.properties]
+referentially_transparent = false
+idempotent               = false
+cacheable                = false
+parallelizable           = "with care"
+testable                 = "requires mocking"
+
+[effect_io.omnicode]
+keywords    = ["io", "world", "external", "effect"]
+pattern     = "io func <name>(<params>) -> <return>"
+modifiers   = ["read", "write", "readwrite"]
+examples    = [
+    "io func readFile(path: String) -> Bytes",
+    "io func print(msg: String) -> Void",
+]
+
+[effect_io.cpisi]
+direction   = ["reach_out", "hold", "receive"]
+weight      = ["active", "balanced", "reactive"]
+action      = ["write", "read", "interact"]
+genesis     = ["god_said", "there_was", "saw_good"]
+
+[effect_io.types.haskell]
+keyword     = "IO"
+syntax      = "func :: IO a"
+example     = "readFile :: FilePath -> IO String"
+
+[effect_io.types.rust]
+keyword     = "std::io"
+syntax      = "fn name(params) -> io::Result<T>"
+example     = "fn read_file(path: &Path) -> io::Result<String>"
+
+[effect_io.types.go]
+keyword     = "io package"
+syntax      = "func Name(params) (T, error)"
+example     = "func ReadFile(path string) ([]byte, error)"
+
+[effect_io.scales]
+L0_kernel    = { name = "HardwareIO",        example = "port read/write",               use = "Hardware access" }
+L1_system    = { name = "SyscallIO",         example = "read, write, open",             use = "System calls" }
+L2_runtime   = { name = "FileIO",            example = "file read/write",               use = "File operations" }
+L3_framework = { name = "HttpIO",            example = "HTTP request/response",         use = "Network requests" }
+L4_health    = { name = "DeviceIO",          example = "sensor read",                   use = "Medical device IO" }
+L5_network   = { name = "SocketIO",          example = "socket read/write",             use = "Network socket IO" }
+L6_storage   = { name = "DatabaseIO",        example = "query execute",                 use = "Database operations" }
+L7_engine    = { name = "RenderIO",          example = "GPU draw calls",                use = "Graphics rendering" }
+L8_app       = { name = "UserIO",            example = "input/output events",           use = "User interaction" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.3c STATE — Mutable State [STATE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[effect_state]
+name        = "state"
+description = "State effect — function reads or modifies mutable state"
+kind        = "effect"
+category    = "effects"
+symbol      = "⟳"
+
+# State Effect Semantic Properties
+semantic_meaning       = "mutation"
+ternary_value          = -1                                      # Contractive — modifies existing
+biblical_parallel      = "Ezekiel 36:26"
+biblical_text          = "A new heart also will I give you"
+
+[effect_state.properties]
+referentially_transparent = false
+idempotent               = "depends on operation"
+cacheable                = false
+parallelizable           = "requires synchronization"
+testable                 = "requires state setup"
+
+[effect_state.omnicode]
+keywords    = ["state", "mut", "modify", "update"]
+pattern     = "state func <name>(<params>) -> <return>"
+modifiers   = ["read", "write", "readwrite"]
+examples    = [
+    "state func increment(counter: &mut Int) -> Void",
+    "state func getAndSet(ref: &mut T, new: T) -> T",
+]
+
+[effect_state.cpisi]
+direction   = ["modify", "hold", "read"]
+weight      = ["changing", "balanced", "observing"]
+action      = ["mutate", "update", "transform"]
+genesis     = ["formed_dust", "breathed_life", "became_living"]
+
+[effect_state.types.haskell]
+keyword     = "State"
+syntax      = "func :: State s a"
+example     = "increment :: State Int ()"
+
+[effect_state.types.rust]
+keyword     = "&mut"
+syntax      = "fn name(&mut self, params) -> Return"
+example     = "fn push(&mut self, item: T)"
+
+[effect_state.types.go]
+keyword     = "pointer receiver"
+syntax      = "func (s *State) Name(params) Return"
+example     = "func (c *Counter) Increment()"
+
+[effect_state.scales]
+L0_kernel    = { name = "RegisterState",     example = "register modify",               use = "Register updates" }
+L1_system    = { name = "ProcessState",      example = "process state change",          use = "Process management" }
+L2_runtime   = { name = "MemoryState",       example = "heap allocation",               use = "Memory management" }
+L3_framework = { name = "SessionState",      example = "session update",                use = "Session management" }
+L4_health    = { name = "RecordState",       example = "patient record update",         use = "Medical records" }
+L5_network   = { name = "ConnectionState",   example = "connection state machine",      use = "Connection management" }
+L6_storage   = { name = "TransactionState",  example = "transaction commit",            use = "Transaction management" }
+L7_engine    = { name = "GameState",         example = "world state update",            use = "Game state" }
+L8_app       = { name = "AppState",          example = "Redux state update",            use = "Application state" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.3d EXCEPTION — Error Propagation [EXCEPTION]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[effect_exception]
+name        = "exception"
+description = "Exception effect — function may throw or propagate errors"
+kind        = "effect"
+category    = "effects"
+symbol      = "⚡"
+
+# Exception Effect Semantic Properties
+semantic_meaning       = "fallibility"
+ternary_value          = -1                                      # Contractive — may abort
+biblical_parallel      = "Proverbs 24:16"
+biblical_text          = "A just man falleth seven times, and riseth up again"
+
+[effect_exception.properties]
+referentially_transparent = false
+idempotent               = "depends on error handling"
+cacheable                = false
+parallelizable           = "requires error handling"
+testable                 = "requires error injection"
+
+[effect_exception.omnicode]
+keywords    = ["throws", "may_fail", "fallible", "error"]
+pattern     = "throws func <name>(<params>) -> <return>"
+modifiers   = ["recoverable", "fatal", "typed"]
+examples    = [
+    "throws func parse(json: String) -> Value",
+    "throws func connect(url: String) -> Connection",
+]
+
+[effect_exception.cpisi]
+direction   = ["fail", "hold", "recover"]
+weight      = ["unstable", "balanced", "resilient"]
+action      = ["throw", "catch", "propagate"]
+genesis     = ["chaos", "void", "without_form"]
+
+[effect_exception.types.java]
+keyword     = "throws"
+syntax      = "ReturnType methodName() throws ExceptionType"
+example     = "void parse() throws ParseException"
+
+[effect_exception.types.rust]
+keyword     = "Result"
+syntax      = "fn name(params) -> Result<T, E>"
+example     = "fn parse(json: &str) -> Result<Value, ParseError>"
+
+[effect_exception.types.go]
+keyword     = "error"
+syntax      = "func Name(params) (T, error)"
+example     = "func Parse(json string) (Value, error)"
+
+[effect_exception.scales]
+L0_kernel    = { name = "HardwareFault",     example = "interrupt, trap",               use = "Hardware exceptions" }
+L1_system    = { name = "SyscallError",      example = "errno",                         use = "System call errors" }
+L2_runtime   = { name = "RuntimeError",      example = "panic, exception",              use = "Runtime errors" }
+L3_framework = { name = "AppError",          example = "validation error",              use = "Application errors" }
+L4_health    = { name = "DataError",         example = "invalid reading",               use = "Data validation errors" }
+L5_network   = { name = "NetworkError",      example = "connection refused",            use = "Network errors" }
+L6_storage   = { name = "DatabaseError",     example = "constraint violation",          use = "Database errors" }
+L7_engine    = { name = "GameError",         example = "asset load failure",            use = "Game errors" }
+L8_app       = { name = "UserError",         example = "validation failure",            use = "User input errors" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.3e ASYNC — Asynchronous Execution [ASYNC]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[effect_async]
+name        = "async"
+description = "Async effect — function may suspend and resume"
+kind        = "effect"
+category    = "effects"
+symbol      = "⏳"
+
+# Async Effect Semantic Properties
+semantic_meaning       = "suspension"
+ternary_value          = 0                                       # Balanced — pause and continue
+biblical_parallel      = "Isaiah 40:31"
+biblical_text          = "They that wait upon the LORD shall renew their strength"
+
+[effect_async.properties]
+referentially_transparent = false
+idempotent               = "depends on underlying operation"
+cacheable                = "depends on underlying operation"
+parallelizable           = true
+testable                 = "requires async test harness"
+
+[effect_async.omnicode]
+keywords    = ["async", "await", "suspend", "concurrent"]
+pattern     = "async func <name>(<params>) -> <return>"
+modifiers   = ["cancelable", "timeout", "concurrent"]
+examples    = [
+    "async func fetch(url: String) -> Response",
+    "async func sleep(duration: Duration) -> Void",
+]
+
+[effect_async.cpisi]
+direction   = ["suspend", "hold", "resume"]
+weight      = ["waiting", "balanced", "active"]
+action      = ["pause", "yield", "continue"]
+genesis     = ["evening", "morning", "day"]
+
+[effect_async.types.javascript]
+keyword     = "async/await"
+syntax      = "async function name(params): Promise<T>"
+example     = "async function fetch(url: string): Promise<Response>"
+
+[effect_async.types.rust]
+keyword     = "async"
+syntax      = "async fn name(params) -> T"
+example     = "async fn fetch(url: &str) -> Response"
+
+[effect_async.types.go]
+keyword     = "go / channel"
+syntax      = "go func() { ... }; <-ch"
+example     = "go func() { result <- fetch(url) }()"
+
+[effect_async.scales]
+L0_kernel    = { name = "InterruptWait",     example = "wait for interrupt",            use = "Hardware async" }
+L1_system    = { name = "ProcessWait",       example = "wait, waitpid",                 use = "Process async" }
+L2_runtime   = { name = "FutureAwait",       example = "Future, Promise",               use = "Async primitives" }
+L3_framework = { name = "HttpAsync",         example = "async HTTP client",             use = "Async HTTP" }
+L4_health    = { name = "MonitorAsync",      example = "continuous monitoring",         use = "Patient monitoring" }
+L5_network   = { name = "SocketAsync",       example = "async socket read",             use = "Async networking" }
+L6_storage   = { name = "QueryAsync",        example = "async query",                   use = "Async database" }
+L7_engine    = { name = "LoadAsync",         example = "async asset load",              use = "Async loading" }
+L8_app       = { name = "UIAsync",           example = "async UI update",               use = "Async rendering" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.3f RESOURCE — Resource Management [RESOURCE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[effect_resource]
+name        = "resource"
+description = "Resource effect — function acquires resources requiring cleanup"
+kind        = "effect"
+category    = "effects"
+symbol      = "🔒"
+
+# Resource Effect Semantic Properties
+semantic_meaning       = "stewardship"
+ternary_value          = -1                                      # Contractive — must release
+biblical_parallel      = "Luke 16:10"
+biblical_text          = "He that is faithful in that which is least is faithful also in much"
+
+[effect_resource.properties]
+referentially_transparent = false
+idempotent               = false
+cacheable                = false
+parallelizable           = "with ownership tracking"
+testable                 = "requires resource mocking"
+
+[effect_resource.omnicode]
+keywords    = ["resource", "acquire", "with", "using"]
+pattern     = "resource func <name>(<params>) -> <return>"
+modifiers   = ["scoped", "owned", "borrowed"]
+examples    = [
+    "resource func openFile(path: String) -> File",
+    "resource func acquireLock(mutex: Mutex) -> Guard",
+]
+
+[effect_resource.cpisi]
+direction   = ["acquire", "hold", "release"]
+weight      = ["responsible", "balanced", "free"]
+action      = ["open", "use", "close"]
+genesis     = ["planted_garden", "placed_man", "gave_charge"]
+
+[effect_resource.types.python]
+keyword     = "with"
+syntax      = "with resource as r: ..."
+example     = "with open('file.txt') as f: content = f.read()"
+
+[effect_resource.types.rust]
+keyword     = "Drop"
+syntax      = "let _guard = acquire();"
+example     = "let _lock = mutex.lock().unwrap();"
+
+[effect_resource.types.go]
+keyword     = "defer"
+syntax      = "r := acquire(); defer r.Close()"
+example     = "f, _ := os.Open(path); defer f.Close()"
+
+[effect_resource.scales]
+L0_kernel    = { name = "HardwareResource",  example = "DMA buffer, interrupt",         use = "Hardware resources" }
+L1_system    = { name = "FileDescriptor",    example = "file handle, socket",           use = "OS resources" }
+L2_runtime   = { name = "MemoryResource",    example = "allocation, pool",              use = "Memory resources" }
+L3_framework = { name = "ConnectionPool",    example = "database connection",           use = "Connection resources" }
+L4_health    = { name = "DeviceSession",     example = "device connection",             use = "Medical device session" }
+L5_network   = { name = "SocketResource",    example = "socket, connection",            use = "Network resources" }
+L6_storage   = { name = "TransactionScope",  example = "transaction, cursor",           use = "Database resources" }
+L7_engine    = { name = "GraphicsResource",  example = "texture, buffer",               use = "GPU resources" }
+L8_app       = { name = "UIResource",        example = "modal, dialog",                 use = "UI resources" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+[extensions]
+note = "Reserved — no extensions for effects"
+
+# Cv — Content Validation
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('effects.toml','rb'))\""]
+
+[_validation.schema]
+required = ["effect_pure", "effect_io", "effect_state", "effect_exception", "effect_async", "effect_resource"]
+optional = ["_content", "extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_fields_present = 30
+cross_references_valid = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = ["Break effect purity definitions", "Change effect ordering"]
+careful = ["Modify effect combination rules", "Change effect propagation"]
+safe = ["Add effect types", "Add examples", "Add comments"]
+
+[_closing.X2_extension]
+planned = ["Effect polymorphism", "Effect handler composition"]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_purity = "Verify effect has ternary alignment — pure(+1), balanced(0), impure(-1)"
+
+[_closing.X4_reference]
+related_files = [
+    "composition.toml — Index file (parent)",
+    "primitives.toml — Base primitive types",
+]
+validate = "tomlv effects.toml"
+required_sections = ["_pragma", "_metadata", "_content", "effect_pure", "effect_io", "effect_state", "effect_exception", "effect_async", "effect_resource", "_validation", "_closing"]
+
+[_closing.X5_note]
+note = "Effect system: sowing and reaping. Track what side effects code can have."
+scripture = "In the beginning God created the heaven and the earth. — Genesis 1:1"
+anchor = "Genesis 1:1 — Creation had effects. Every action has consequences. Effects track them."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

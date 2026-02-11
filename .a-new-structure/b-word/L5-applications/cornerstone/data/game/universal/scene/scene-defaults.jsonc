@@ -1,0 +1,387 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-universal-scene-scene-defaults",
+    "_P1_from": "b-word/seed/data/json/3block/data.json",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-scenes",
+    "_P2_role": "rung",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Rails — defines scene structure for the stack-based scene system",
+    "_P3_layer": "cornerstone/data/game/universal/scene",
+    "_P3_includes": "none",
+    "_P3_provides": ["SCENE_DEFAULTS_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "Scene Defaults Template",
+    "_P5_brief": "Template for defining game scenes — the frame on the scene stack. Declares what data to load, what entities participate, and how the scene behaves in the stack.",
+    "_P5_usage": "cp scene-defaults.jsonc [game]/data/scenes/forest-battle.jsonc -> update pragma -> fill scene data",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "scene-defaults.jsonc",
+        "key": "B-cornerstone-data-game-universal-scene-scene-defaults",
+        "title": "Scene Defaults Template",
+        "type": "Data (Template)",
+        "component": "Rails — defines scene structure for the stack-based scene system",
+        "role": "Define scene structure — what data to load, who participates, stack behavior"
+    },
+
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-09",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "In my Father's house are many mansions."
+    "_M4_grounding": {
+        "scripture": "John 14:2 — In my Father's house are many mansions: if it were not so, I would have told you. I go to prepare a place for you.",
+        "principle": "Scenes are the rooms of the game world. Each scene is a prepared place — structured, purposeful, with everything needed for what happens there.",
+        "anchor": "Ecclesiastes 3:1 — To every thing there is a season, and a time to every purpose under the heaven."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "engine/systems/src/scene.c — scene_push(), scene_pop(), scene_load()",
+        "integration": "Scene system reads scene definitions to know what to load on push and unload on pop. This is the contract between game data and the scene stack.",
+        "if_missing": "Scene system creates empty scene frame — no entities, no data, just a blank stack entry",
+        "related_data": {
+            "references": {
+                "entity-defaults": "participants.party and participants.enemies reference entity_ids",
+                "action-defaults": "data_requirements.actions lists action sets to load for combat scenes",
+                "item-defaults": "data_requirements.items lists item pools to load for shop/loot scenes",
+                "game-types": "identity.scene_type references scene_types enum"
+            },
+            "referenced_by": "nothing — scenes are the top of the data dependency chain. They consume, nothing consumes them."
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/universal/scene/scene-defaults.jsonc",
+        "derives_from": "b-word/seed/data/json/3block/data.json"
+    },
+
+    "_M7_classification": {
+        "tags": "scene, stack, combat, exploration, dialogue, shop, scene-state, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Define scene structure — what happens on scene push/pop and who participates",
+        "core_design": "Data-driven scenes — definition in data, stack management in engine. Scene = identity + data_requirements + participants + stack_behavior.",
+        "philosophy": "Scenes are the verbs of the game — they are WHAT HAPPENS. Entities are the nouns, stats are the adjectives, actions are the predicates. The scene is the sentence.",
+        "key_features": {
+            "identity": "What this scene is — name, type, description",
+            "data_requirements": "What data to load when this scene pushes — actions, items, etc.",
+            "participants": "Who is in this scene — party, enemies, npcs",
+            "stack_behavior": "How this scene interacts with the scene stack — push/pop rules"
+        }
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2026-02-09) — Initial creation — makes M10 game_state lifetime system concrete"
+        ],
+        "current": "Scene template — scene lifetime, flat convention, M10 game state tracking, usable example (Basic Combat Encounter)",
+        "planned": [
+            "Scene transition effects and loading screens",
+            "Nested scene support (pause menu over combat)",
+            "Scene-specific audio/visual environment definitions"
+        ]
+    },
+
+    // Where this data lives in the stack-based scene system
+    "_M10_game_state": {
+        "lifetime": "scene",
+        "description": "Scene-scoped — the scene definition IS the frame. Pushed to create a new context, popped to return to previous.",
+        "loaded_at": "On demand — scene definition loaded when scene_push() is called",
+        "persists": "Duration of this frame on the scene stack",
+        "consumed_by": "Scene system — scene_push() reads definition, scene_pop() uses cleanup rules",
+        "load_priority": 3,
+        "cache_policy": "scene-bound — definition loaded on push, data requirements loaded per definition, all evicted on pop",
+        "authority_rank": "engine-default < universal < game-specific < runtime-modified",
+        "id_format": "scene_id: SCN-NNN-TAG (e.g., SCN-001-FOREST_CMB, SCN-002-VILLAGE_SHOP, SCN-003-ELDER_TALK). ref_name for human-readable."
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 (game state) tracks stack-based scene system lifetime.",
+        "rule": "M1-M5 are the base contract. M6+ extends for domain-specific metadata."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // Data file in JSONC format — structure from data.json, comments from JSONC conventions.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Scene = identity + data_requirements + participants + stack_behavior.
+    // Scenes are the top of the data dependency chain — they reference everything, nothing references them.
+    // The scene definition IS the scene stack contract.
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every scene must have identity and stack_behavior. Data_requirements and participants are type-dependent.",
+    "_Cc_id_format": "scene_id: TYPE-NNN-TAG format. TYPE=SCN (3-letter prefix), NNN=sequence (001+), TAG=descriptive uppercase with underscores (FOREST_CMB, VILLAGE_SHOP, ELDER_TALK). ref_name carries the human-readable snake_case form.",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Example: a basic combat encounter in a forest.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "Basic Combat Encounter",
+    "version": "a-01.00",
+
+    // Identity — what this scene is
+    "identity": {
+        "scene_id": "SCN-001-FOREST_CMB",
+        "ref_name": "combat_forest_basic",
+        "name": "Forest Encounter",
+        "scene_type": "combat",
+        "description": "A random battle encounter in the forest region."
+    },
+
+    // Data Requirements — what to load when this scene pushes
+    // Engine loads these BEFORE the scene activates
+    "data_requirements": {
+        "action_sets": ["ACT-001-BASIC_ATK", "ACT-002-FIREBALL", "ACT-003-HEAL"],
+        "item_pools": [],
+        "additional": []
+    },
+
+    // Participants — who is in this scene
+    "participants": {
+        "party": "current_party",
+        "enemies": [
+            { "entity_id": "ENT-002-GOBLIN", "count": 2 },
+            { "entity_id": "ENT-003-GOBLIN_CHIEF", "count": 1 }
+        ],
+        "npcs": []
+    },
+
+    // Stack Behavior — how this scene interacts with the stack
+    "stack_behavior": {
+        "push_mode": "standard",
+        "allows_pause": true,
+        "on_push": "load data_requirements, instantiate participants, init combat state",
+        "on_pop": "resolve rewards, return to previous scene, evict scene-scoped data",
+        "on_pause": "preserve combat state, allow menu overlay"
+    },
+
+    // Rewards — what happens when this scene resoletes (combat-specific)
+    "rewards": {
+        "exp": 50,
+        "gold": 30,
+        "item_drops": [
+            { "item_id": "ITM-002-HP_POTION", "chance": 50, "quantity": 1 }
+        ]
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-scenes"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "identity", "stack_behavior"],
+        "optional": ["data_requirements", "participants", "rewards"],
+        "identity_required": ["scene_id", "ref_name", "name", "scene_type"],
+        "stack_behavior_required": ["push_mode", "on_push", "on_pop"]
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Adjust reward values (balance tuning)",
+            "Change enemy composition (different entity_ids, counts)",
+            "Modify data_requirements (load different action/item sets)"
+        ],
+        "careful": [
+            "Change scene_id (breaks references from game flow/world map)",
+            "Change scene_type (affects which engine systems activate)",
+            "Modify stack_behavior (affects scene lifecycle)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required keys (identity, stack_behavior)",
+            "Reference entity_ids or item_ids that don't exist in game data"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note → X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required keys (identity, stack_behavior)",
+        "Reference entity/item/action IDs that don't exist"
+    ],
+    "_X1_careful": [
+        "Change scene_id (breaks game flow references)",
+        "Change scene_type (affects engine system activation)",
+        "Modify stack_behavior (affects scene lifecycle)"
+    ],
+    "_X1_safe": [
+        "Adjust reward values (balance tuning)",
+        "Change enemy composition",
+        "Modify data_requirements"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Scene transition effects and loading screens",
+        "Nested scene support (pause menu over combat)",
+        "Scene-specific audio/visual environment definitions",
+        "Conditional scene branching (dialogue choices affecting next scene)"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "scene_not_loading": "Check scene_id matches reference in game flow. Verify data_requirements reference valid IDs.",
+        "entities_missing": "Verify participants entity_ids exist in entity data. Check entity definitions are loaded (load_priority 1).",
+        "stack_corruption": "Check stack_behavior.push_mode is valid. Verify on_pop cleanup runs. Check for scenes that push without popping.",
+        "rewards_not_applying": "Ensure rewards object exists for combat scenes. Verify item_drops reference valid item_ids."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/base/generic-data.json — Parent data template",
+        "b-word/definitions/omni/json-3block-schema.jsonc — Validation schema",
+        "cornerstone/data/game/universal/global/entity-defaults.jsonc — Entity definitions referenced by participants",
+        "cornerstone/data/game/universal/global/stats-defaults.jsonc — Stat system (global, always available)",
+        "cornerstone/data/game/universal/scene/action-defaults.jsonc — Actions loaded per data_requirements",
+        "cornerstone/data/game/universal/shared/item-defaults.jsonc — Items for rewards and shop scenes",
+        "cornerstone/data/game/universal/shared/game-types.jsonc — Valid scene_type values"
+    ],
+    "_X4_required": ["name", "version", "identity", "stack_behavior"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-scenes",
+    "_X4_usage_c": "scene_push(\"SCN-001-FOREST_CMB\"); // loads requirements, creates frame, activates combat",
+
+    // Scenes are the rooms of the game world.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "Scene template. Scene-scoped — the definition IS the stack frame contract. Scenes are the sentence: entities are nouns, stats are adjectives, actions are predicates, and the scene is what happens.",
+    "_X5_scripture": "In my Father's house are many mansions. — John 14:2",
+    "_X5_anchor": "Each scene is a prepared place — structured, purposeful, with everything needed for what happens there.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "Remove this section when instantiating",
+    "_X6_usage": "cp scene-defaults.jsonc [game]/data/scenes/boss-battle.jsonc -> update pragma -> fill scene data",
+    "_X6_update": [
+        "_P1_key: unique identifier",
+        "_M1_identity: file, key, title, role",
+        "_M2_state: created/updated dates",
+        "_M6_location: path",
+        "Co section: identity, data_requirements, participants, stack_behavior, rewards (if combat)",
+        "Remove _X6 section when instantiating"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

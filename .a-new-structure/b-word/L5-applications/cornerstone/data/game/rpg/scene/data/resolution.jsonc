@@ -1,0 +1,448 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from universal scene-defaults, override allowed",
+        "_rpg": "RPG-SPECIFIC — added by this derivation, not in universal"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-rpg-scene-resolution",
+    "_P1_from": "cornerstone/data/game/universal/scene/scene-defaults.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-resolution-rpg",
+    "_P2_role": "rung",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Baton — passes post-battle resolution data to reward/progression systems",
+    "_P3_layer": "cornerstone/data/game/rpg/scene/data",
+    "_P3_includes": "none",
+    "_P3_provides": ["RPG_RESOLUTION_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "RPG Battle Resolution Template",
+    "_P5_brief": "Post-battle handling — WHAT happens AFTER combat ends. Rewards (exp, gold, items), story consequences (flags, karma, affinity), performance bonuses, transitions. Scene-scoped data consumed during combat scene's on_pop phase.",
+    "_P5_usage": "cp resolution.jsonc [game]/data/scenes/boss-dragon-resolution.jsonc -> update pragma -> fill resolution data",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "resolution.jsonc",
+        "key": "B-cornerstone-data-game-rpg-scene-resolution",
+        "title": "RPG Battle Resolution Template",
+        "type": "Data (Template)",
+        "component": "Baton — passes post-battle resolution data to reward/progression systems",
+        "role": "Define post-battle handling — rewards, consequences, performance bonuses, transitions"
+    },
+
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2025-12-03",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "Whatsoever a man soweth, that shall he also reap."
+    "_M4_grounding": {
+        "scripture": "Galatians 6:7 — Be not deceived; God is not mocked: for whatsoever a man soweth, that shall he also reap.",
+        "principle": "Resolution reflects choices — outcomes follow actions. What is sown in combat is reaped in aftermath.",
+        "anchor": "Proverbs 11:18 — To him that soweth righteousness shall be a sure reward."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "engine/systems/src/combat/resolution.c — resolution_apply()",
+        "integration": "Consumed during combat scene's on_pop phase. Combat system signals victory/defeat, resolution determines rewards, consequences, and transition. Loaded with combat scene, consumed on combat end.",
+        "if_missing": "Tripwire — default resolution gives base exp/gold, no consequences, continues to previous scene",
+        "related_data": {
+            "derives_from": {
+                "scene-defaults": "Universal scene template — base structure"
+            },
+            "references": {
+                "combat": "combat_id links this resolution to its combat configuration",
+                "karma": "consequences.karma_change feeds into karma system",
+                "affinity": "consequences.affinity_changes feeds into relationship tracking",
+                "dialogue": "dialogue_id references post-battle dialogue"
+            },
+            "referenced_by": {
+                "combat": "Combat on_pop triggers resolution loading",
+                "boss": "Boss consequences feed into resolution"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/rpg/scene/data/resolution.jsonc",
+        "derives_from": "cornerstone/data/game/universal/scene/scene-defaults.jsonc"
+    },
+
+    "_M7_classification": {
+        "tags": "resolution, post-battle, rpg, rewards, consequences, transitions, scene-state, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Define post-battle resolution — WHAT happens AFTER combat ends, separate from HOW battle plays (combat) and WHAT triggers it (encounters)",
+        "core_design": "Outcome-driven rewards — victory/defeat determine different paths. Resolution completes the combat arc.",
+        "philosophy": "Resolution makes consequences real. Victory and defeat carry weight — the reaping follows the sowing.",
+        "key_features": {
+            "inherited_from_universal": "identity — base identification contract",
+            "rpg_victory_path": "Rewards (exp, gold, items), consequences (story flags, karma, affinity), transition",
+            "rpg_defeat_path": "Game over handling, retry logic, defeat consequences, transition",
+            "rpg_performance": "Bonus rewards for exceptional play (no damage, speed, overkill)",
+            "rpg_scene_lifecycle": "Resolution is NOT a separate scene — it's scene-scoped data consumed during combat on_pop"
+        }
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2025-12-03) — Initial template creation (old comment-based format)",
+            "a-02.00 (2026-02-09) — Flat convention, stack lifecycle clarity, scene organization"
+        ],
+        "current": "RPG resolution template — victory/defeat paths, performance bonuses, scene-scoped lifecycle",
+        "planned": [
+            "Achievement unlocks (battle-based achievements)",
+            "Party member reactions (dialogue based on performance)",
+            "Equipment durability effects (post-battle wear)",
+            "Streak bonuses (consecutive victories without defeat)"
+        ]
+    },
+
+    // Where this data lives in the stack-based scene system
+    "_M10_game_state": {
+        "lifetime": "scene",
+        "description": "Scene-scoped — resolution data is loaded WITH the combat scene and consumed during on_pop. It is NOT a separate scene frame.",
+        "loaded_at": "With combat scene — resolution loaded as part of combat initialization, consumed when combat ends",
+        "persists": "Duration of combat scene on the stack",
+        "consumed_by": "Resolution system — resolution_apply() processes victory/defeat path on combat end",
+        "load_priority": 3,
+        "cache_policy": "scene-bound — loaded with combat, consumed during on_pop, evicted with combat data",
+        "authority_rank": "engine-default < rpg-default (this) < boss-specific < encounter-specific",
+        "id_format": "resolution_id: RES-NNN-TAG (e.g., RES-001-FOREST_BASIC, RES-002-BOSS_GOBLIN, RES-003-AMBUSH_CAVE). Links to combat_id."
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 (game state) tracks stack-based scene system lifetime.",
+        "derivation": "_P1_from points to universal scene-defaults. Resolution adds victory/defeat paths, performance bonuses, transition handling."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // RPG battle resolution — consumed during combat scene on_pop.
+    // Not a scene frame — scene-scoped data loaded with combat.
+    // Key distinction:
+    //   encounter = WHEN battles happen
+    //   combat = HOW battles play
+    //   resolution (this) = WHAT happens AFTER
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every resolution must have identity, combat_id, victory, and defeat. Performance and options are optional.",
+    "_Cc_id_format": "resolution_id: RES-NNN-TAG. Standard: RES-001+. Boss: RES-500+. ref_name carries human-readable snake_case.",
+    "_Cc_derivation": "Tripwire chain: rpg/resolution -> engine default resolution (base exp/gold, no consequences)",
+    "_Cc_scene_role": "Resolution is NOT a scene frame. It is scene-scoped DATA consumed during combat on_pop. It does not push/pop independently.",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Example: Forest encounter resolution — moderate rewards, no story consequences.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "Forest Battle Resolution",
+    "version": "a-01.00",
+
+    // Identity
+    "identity": {
+        "resolution_id": "RES-001-FOREST_BASIC",
+        "ref_name": "resolution_forest_basic",
+        "name": "Forest Encounter Resolution",
+        "scene_type": "resolution",
+        "description": "Standard post-battle resolution for forest encounters. Moderate exp/gold, chance item drops.",
+        "combat_id": "CMB-001-FOREST_BASIC"
+    },
+
+    // Victory — what happens when player wins
+    "victory": {
+        "rewards": {
+            "exp_base": 100,
+            "exp_multiplier": 1.0,
+            "gold_base": 50,
+            "gold_multiplier": 1.0
+        },
+        "items": {
+            "guaranteed": [],
+            "random": [
+                { "item_id": "ITM-002-HP_POTION", "drop_rate": 25, "quantity": 1 }
+            ],
+            "rare": [
+                { "item_id": "ITM-010-GOBLIN_FANG", "drop_rate": 5, "quantity": 1 }
+            ]
+        },
+        "consequences": {
+            "story_flags": [],
+            "karma_change": 0,
+            "affinity_changes": []
+        },
+        "dialogue_id": null,
+        "transition": {
+            "type": "continue",
+            "target": null,
+            "fade": false
+        }
+    },
+
+    // Defeat — what happens when player loses
+    "defeat": {
+        "game_over": false,
+        "retry_allowed": true,
+        "retry_cost": null,
+        "consequences": {
+            "story_flags": [],
+            "karma_change": 0,
+            "gold_loss_percent": 10
+        },
+        "dialogue_id": null,
+        "transition": {
+            "type": "respawn",
+            "target": "last_save_point",
+            "fade": true
+        }
+    },
+
+    // Performance Bonuses — rewards for exceptional play
+    "performance": {
+        "no_damage_bonus": {
+            "exp_multiplier": 1.5,
+            "gold_multiplier": 1.25
+        },
+        "speed_bonus": {
+            "turns_threshold": 5,
+            "exp_multiplier": 1.25
+        },
+        "overkill_bonus": {
+            "damage_threshold": 2.0,
+            "item_drop_bonus": 10
+        }
+    },
+
+    // Options — resolution behavior settings
+    "options": {
+        "show_rewards_screen": true,
+        "auto_save": true,
+        "music_id": "mus_victory_fanfare"
+    },
+
+    // Stack Behavior — resolution is NOT a frame, but documents its lifecycle role
+    "stack_behavior": {
+        "push_mode": "none",
+        "is_scene_frame": false,
+        "lifecycle_role": "Consumed during parent combat scene's on_pop phase",
+        "loaded_with": "combat scene (loaded during combat initialization)",
+        "consumed_at": "combat end (resolution_apply() called during on_pop)",
+        "note": "Resolution does not push/pop independently. It is scene-scoped data tied to its parent combat scene."
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-resolution"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "identity", "victory", "defeat"],
+        "optional": ["performance", "options", "stack_behavior"],
+        "identity_required": ["resolution_id", "ref_name", "name", "combat_id"],
+        "victory_required": ["rewards", "transition"],
+        "defeat_required": ["game_over", "retry_allowed", "transition"]
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Adjust reward values (exp, gold, multipliers)",
+            "Add/remove item drops",
+            "Change consequences (story flags, karma)",
+            "Adjust performance bonuses",
+            "Change dialogue IDs"
+        ],
+        "careful": [
+            "Change combat_id (must match combat.jsonc)",
+            "Change transition targets (may break scene flow)",
+            "Set game_over: true (ends player's run)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required keys (identity, victory, defeat)",
+            "Remove resolution_id (breaks linkage to combat)"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note → X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required keys (identity, victory, defeat)",
+        "Remove resolution_id (breaks combat linkage)"
+    ],
+    "_X1_careful": [
+        "Change combat_id (must match combat.jsonc)",
+        "Change transition targets (may break scene flow)",
+        "Set game_over: true (ends player's run)"
+    ],
+    "_X1_safe": [
+        "Adjust reward values, item drops, performance bonuses",
+        "Change consequences (story flags, karma)",
+        "Change dialogue IDs and music"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Achievement unlocks (battle-based achievements)",
+        "Party member reactions (dialogue based on performance)",
+        "Equipment durability effects (post-battle wear)",
+        "Streak bonuses (consecutive victories)"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "rewards_not_given": "Check exp_base and gold_base are positive numbers. Verify multipliers are not zero. Confirm combat outcome triggered resolution.",
+        "items_not_dropping": "Check item_id exists in item data. Verify drop_rate is 0-100. Check guaranteed vs random array.",
+        "wrong_transition": "Verify transition.target matches valid scene/location. Check transition.type (scene | location | continue | respawn).",
+        "story_flags_not_setting": "Check story_flags array has valid flag names. Verify karma_change is a number.",
+        "resolution_not_loading": "Check combat_id matches parent combat.jsonc. Verify JSON syntax."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/game/universal/scene/scene-defaults.jsonc — Universal parent template",
+        "cornerstone/data/game/rpg/scene/frames/combat.jsonc — Parent combat configuration",
+        "cornerstone/data/game/rpg/scene/frames/boss.jsonc — Boss encounters with guaranteed rewards",
+        "cornerstone/data/game/rpg/shared/karma.jsonc — Karma system for consequence tracking",
+        "cornerstone/data/game/rpg/shared/affinity.jsonc — Affinity system for relationship changes"
+    ],
+    "_X4_required": ["name", "version", "identity", "victory", "defeat"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-resolution",
+    "_X4_usage_c": "resolution_load(\"rpg/data/scenes/forest-resolution.jsonc\"); resolution_apply(&res, outcome);",
+    "_X4_id_ranges": "Standard: RES-001+, Boss: RES-500+",
+
+    // Resolution reflects the choices made in battle.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "RPG battle resolution — post-combat handling. Scene-scoped data (NOT a scene frame). Consumed during combat on_pop. Victory/defeat carry weight — resolution makes consequences real.",
+    "_X5_scripture": "Whatsoever a man soweth, that shall he also reap. — Galatians 6:7",
+    "_X5_anchor": "Resolution completes the combat arc. What is sown in battle is reaped in aftermath.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "Remove this section when instantiating",
+    "_X6_usage": "cp resolution.jsonc [game]/data/scenes/boss-dragon-resolution.jsonc -> update pragma -> fill resolution data",
+    "_X6_update": [
+        "_P1_key: unique identifier for this resolution",
+        "_M1_identity: file, key, title, role",
+        "_M2_state: created/updated dates",
+        "_M6_location: path",
+        "Co section: identity (RES-NNN-TAG + combat_id), victory, defeat, performance, options",
+        "Remove _X6 section when instantiating"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

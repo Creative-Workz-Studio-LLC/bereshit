@@ -1,0 +1,389 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-universal-shared-item-defaults",
+    "_P1_from": "b-word/seed/data/json/3block/data.json",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-items",
+    "_P2_role": "rung",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Rails — defines item fallback configuration for inventory system",
+    "_P3_layer": "cornerstone/data/game/universal/shared",
+    "_P3_includes": "none",
+    "_P3_provides": ["ITEM_DEFAULTS_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "Item Defaults Template",
+    "_P5_brief": "Template for defining game items — equipment, consumables, key items, materials. Shared state, persists across scene transitions.",
+    "_P5_usage": "cp item-defaults.jsonc [game]/data/items/iron-sword.jsonc -> update pragma -> fill item data",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "item-defaults.jsonc",
+        "key": "B-cornerstone-data-game-universal-shared-item-defaults",
+        "title": "Item Defaults Template",
+        "type": "Data (Template)",
+        "component": "Rails — defines item fallback configuration for inventory system",
+        "role": "Define item structure — equipment, consumables, key items, materials"
+    },
+
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2025-12-03",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "A good man leaveth an inheritance to his children's children."
+    "_M4_grounding": {
+        "scripture": "Proverbs 13:22 — A good man leaveth an inheritance to his children's children: and the wealth of the sinner is laid up for the just.",
+        "principle": "Items have value — treasures gathered for the journey. What we collect reveals what we treasure.",
+        "anchor": "Matthew 6:19-20 — Lay not up for yourselves treasures upon earth, where moth and rust doth corrupt."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "engine/systems/src/inventory.c — item_load(), inventory_add()",
+        "integration": "Loaded during game initialization. Inventory system looks up item by item_id. Equipment system applies stat modifiers on equip.",
+        "if_missing": "Inventory system uses engine default item (value: 1, max_stack: 1)",
+        "related_data": {
+            "references": {
+                "stats-defaults": "equipment.stat_bonuses references attribute keys, equipment.element references resistance keys",
+                "game-types": "identity.type, identity.rarity, equipment.slot reference game-types enums"
+            },
+            "referenced_by": {
+                "entity-defaults": "equipment_slots and inventory reference items by item_id",
+                "scene-defaults": "shop/loot scenes declare which item pools to load"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/universal/shared/item-defaults.jsonc",
+        "derives_from": "b-word/seed/data/json/3block/data.json"
+    },
+
+    "_M7_classification": {
+        "tags": "item, equipment, consumable, inventory, loot, key-item, material, shared-state, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Define item structure — equipment, consumables, key items, materials",
+        "core_design": "Data-driven items — properties in data, handling in engine",
+        "philosophy": "Items are tools for the journey — what characters HAVE and USE",
+        "key_features": {
+            "classification": "Item type: weapon, armor, accessory, consumable, key_item, material",
+            "properties": "Inventory behavior: stackable, value, weight, sellable",
+            "equipment": "Stat bonuses: attack, defense, magic, elemental affinity",
+            "consumable": "Use effects: healing, buffs, status cures"
+        }
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2025-12-03) — Initial template creation",
+            "a-02.00 (2026-02-09) — Aligned to flat _P1/_M1 convention, reorganized to shared/, added M10 game state"
+        ],
+        "current": "Item template — shared lifetime, flat convention, M10 game state tracking, usable example (Iron Sword)",
+        "planned": [
+            "Item upgrade/enhancement system",
+            "Set bonuses for equipment",
+            "Crafting material definitions"
+        ]
+    },
+
+    // Where this data lives in the stack-based scene system
+    "_M10_game_state": {
+        "lifetime": "shared",
+        "description": "Shared state — persists independently below the scene stack. Multiple scene frames hold references to same item data.",
+        "loaded_at": "Game initialization — item definitions loaded at startup",
+        "persists": "Entire game session — items survive scene transitions",
+        "consumed_by": "Inventory system — item_load(), equipment_apply(), shop_transaction()",
+        "load_priority": 2,
+        "cache_policy": "lru — definitions cached on first reference, evicted by least-recently-used when memory constrained",
+        "authority_rank": "engine-default < universal < game-specific < unique-instance",
+        "id_format": "item_id: ITM-NNN-TAG (e.g., ITM-001-IRON_SWD, ITM-002-HP_POTION, ITM-003-KEY_DUNGEON). ref_name for human-readable."
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 (game state) tracks stack-based scene system lifetime.",
+        "rule": "M1-M5 are the base contract. M6+ extends for domain-specific metadata."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // Data file in JSONC format — structure from data.json, comments from JSONC conventions.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Categories: identity, properties, equipment, consumable, requirements.
+    // String IDs for cross-referencing. Numeric values for stats and prices.
+    // Missing keys tripwire to engine defaults with warning.
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every item must have identity and properties sections. Equipment and consumable are type-dependent.",
+    "_Cc_id_format": "item_id: TYPE-NNN-TAG format. TYPE=ITM (3-letter prefix), NNN=sequence (001+), TAG=descriptive uppercase with underscores (IRON_SWD, HP_POTION, KEY_DUNGEON). ref_name carries the human-readable snake_case form.",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Example: an Iron Sword weapon item.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "Iron Sword",
+    "version": "a-01.00",
+
+    // Identity — what this item is
+    "identity": {
+        "item_id": "ITM-001-IRON_SWD",
+        "ref_name": "iron_sword",
+        "name": "Iron Sword",
+        "type": "weapon",
+        "description": "A sturdy iron blade. Reliable and well-balanced.",
+        "icon": "iconswordiron",
+        "rarity": "common"
+    },
+
+    // Properties — inventory behavior
+    "properties": {
+        "stackable": false,
+        "max_stack": 1,
+        "value": 100,
+        "weight": 3,
+        "sellable": true,
+        "discardable": true
+    },
+
+    // Equipment — stats when equipped (for equippable items)
+    "equipment": {
+        "slot": "weapon",
+        "attack": 10,
+        "defense": 0,
+        "magic_attack": 0,
+        "magic_defense": 0,
+        "stat_bonuses": { "str": 2 },
+        "element": null,
+        "status_resist": []
+    },
+
+    // Consumable — effect when used (zeroed for non-consumable items)
+    "consumable": {
+        "effect_type": "none",
+        "effect_value": 0,
+        "effect_target": "self",
+        "status_cure": [],
+        "buff_stats": {},
+        "buff_duration": 0,
+        "battle_only": false
+    },
+
+    // Requirements — what's needed to equip/use
+    "requirements": {
+        "level": 1,
+        "class": [],
+        "stats": {}
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-items"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "identity", "properties"],
+        "optional": ["equipment", "consumable", "requirements"],
+        "identity_required": ["item_id", "ref_name", "name", "type", "description", "rarity"],
+        "properties_required": ["stackable", "max_stack", "value"]
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Adjust stat/price values (balance tuning)",
+            "Add comments explaining item purpose",
+            "Add new properties within existing structure"
+        ],
+        "careful": [
+            "Change item_id (breaks references from loot tables)",
+            "Add new equipment slots (engine must support them)",
+            "Change consumable effects (affects game balance)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required keys (identity, properties)",
+            "Change value types without updating engine"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note → X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required keys (identity, properties)",
+        "Change value types without updating engine"
+    ],
+    "_X1_careful": [
+        "Change item_id (breaks references from loot tables)",
+        "Add new equipment slots (engine must support)",
+        "Change consumable effects (affects game balance)"
+    ],
+    "_X1_safe": [
+        "Adjust stat/price values (balance tuning)",
+        "Add new properties within existing structure",
+        "Add comments explaining purpose"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Item upgrade/enhancement system",
+        "Set bonuses for equipment",
+        "Crafting material definitions"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "item_not_found": "Check item_id matches reference in loot table. Verify file path. Confirm JSONC parser strips comments.",
+        "equipment_not_equipping": "Check equipment.slot is valid. Verify identity.type matches slot type. Check requirements are met.",
+        "consumable_not_working": "Ensure consumable object exists with valid effect_type. Check battle_only flag if in field.",
+        "price_wrong": "Ensure properties.value is set. Verify shop markup/discount logic in engine."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/base/generic-data.json — Parent data template",
+        "b-word/definitions/omni/json-3block-schema.jsonc — Validation schema"
+    ],
+    "_X4_required": ["name", "version", "identity", "properties"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-items",
+    "_X4_usage_c": "item_load(\"[game]/data/items/iron-sword.jsonc\"); inventory_add(&inventory, \"ITM-001-IRON_SWD\", 1);",
+
+    // Items have value — treasures gathered for the journey.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "Item template. Shared state — persists independently across scene transitions. Items are tools for the journey — what characters HAVE and USE.",
+    "_X5_scripture": "A good man leaveth an inheritance to his children's children. — Proverbs 13:22",
+    "_X5_anchor": "What we collect reveals what we treasure. Gather wisely.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "Remove this section when instantiating",
+    "_X6_usage": "cp item-defaults.jsonc [game]/data/items/health-potion.jsonc -> update pragma -> fill item data",
+    "_X6_update": [
+        "_P1_key: unique identifier",
+        "_M1_identity: file, key, title, role",
+        "_M2_state: created/updated dates",
+        "_M6_location: path",
+        "Co section: identity, properties, equipment (if equippable), consumable (if usable), requirements",
+        "Remove _X6 section when instantiating"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

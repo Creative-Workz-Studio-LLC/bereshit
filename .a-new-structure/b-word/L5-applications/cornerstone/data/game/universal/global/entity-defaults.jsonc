@@ -1,0 +1,420 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-universal-global-entity-defaults",
+    "_P1_from": "b-word/seed/data/json/3block/data.json",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-entities",
+    "_P2_role": "rung",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Baton — passes entity definitions to character/entity system",
+    "_P3_layer": "cornerstone/data/game/universal/global",
+    "_P3_includes": "none",
+    "_P3_provides": ["ENTITY_DEFAULTS_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "Entity Defaults Template",
+    "_P5_brief": "Template for defining game entities — the character that binds stats, items, and actions into a living being. Global state, always loaded.",
+    "_P5_usage": "cp entity-defaults.jsonc [game]/data/entities/hero.jsonc -> update pragma -> fill entity data",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "entity-defaults.jsonc",
+        "key": "B-cornerstone-data-game-universal-global-entity-defaults",
+        "title": "Entity Defaults Template",
+        "type": "Data (Template)",
+        "component": "Baton — passes entity definitions to character/entity system",
+        "role": "Define entity structure — the character that binds stats, items, and actions"
+    },
+
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-09",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "So God created man in his own image."
+    "_M4_grounding": {
+        "scripture": "Genesis 1:27 — So God created man in his own image, in the image of God created he him; male and female created he them.",
+        "principle": "Entities are the image-bearers of the game world. Stats define potential, items define possession, actions define agency — but the entity is the BEING that unifies all three.",
+        "anchor": "Genesis 2:7 — And the LORD God formed man of the dust of the ground, and breathed into his nostrils the breath of life; and man became a living soul."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "engine/systems/src/entity.c — entity_create(), entity_load()",
+        "integration": "Loaded during game initialization after stats and game-types. Entity system creates instances from definitions. Combat, inventory, and progression systems all operate on entities.",
+        "if_missing": "Entity system uses hardcoded default — single entity with base stats, no equipment, basic attack only",
+        "related_data": {
+            "references": {
+                "stats-defaults": "stat_base references resource/attribute/combat/battle/resistance categories",
+                "action-defaults": "actions.default and actions.learned reference action_ids",
+                "item-defaults": "equipment.starting references item_ids",
+                "game-types": "identity.entity_type, identity.class, equipment.slots reference game-types enums"
+            },
+            "referenced_by": {
+                "scene-defaults": "scenes declare which entities participate (party, enemies, npcs)"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/universal/global/entity-defaults.jsonc",
+        "derives_from": "b-word/seed/data/json/3block/data.json"
+    },
+
+    "_M7_classification": {
+        "tags": "entity, character, hero, enemy, npc, global-state, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Define entity structure — the being that has stats, holds items, and performs actions",
+        "core_design": "Data-driven entities — definition in data, behavior in engine. Entity = stat_base + equipment + actions + progression.",
+        "philosophy": "The entity is the center of the game data triangle. Stats without an entity are abstract numbers. Items without an entity are unclaimed objects. Actions without an entity are verbs without a subject.",
+        "key_features": {
+            "identity": "Who this entity is — name, type, class",
+            "stat_base": "Starting stats — references stat categories from stats-defaults",
+            "equipment": "What slots exist, what starts equipped — references item-defaults",
+            "actions": "Available actions — references action-defaults by action_id",
+            "progression": "Growth rules — level, exp, stat scaling"
+        }
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2026-02-09) — Initial creation from cross-reference analysis — the missing center of the stats/actions/items triangle"
+        ],
+        "current": "Entity template — global lifetime, flat convention, M10 game state tracking, usable example (Default Hero)",
+        "planned": [
+            "Class/job system with stat growth curves",
+            "Skill trees referencing action_ids",
+            "Party formation templates"
+        ]
+    },
+
+    // Where this data lives in the stack-based scene system
+    "_M10_game_state": {
+        "lifetime": "global",
+        "description": "Global state — entity definitions are always loaded. Instances may be scene-specific but definitions persist.",
+        "loaded_at": "Engine initialization — after stats-defaults and game-types",
+        "persists": "Entire application lifecycle — entity definitions never evicted",
+        "consumed_by": "Entity system — entity_create() instantiates from definition, all game systems operate on entities",
+        "load_priority": 1,
+        "cache_policy": "permanent — definitions always in memory. Instances tracked by entity system.",
+        "authority_rank": "engine-default < universal < game-specific < save-data-override",
+        "id_format": "entity_id: ENT-NNN-TAG (e.g., ENT-001-HERO_DEF, ENT-002-GOBLIN, ENT-003-NPC_SHOP). ref_name for human-readable."
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 (game state) tracks stack-based scene system lifetime.",
+        "rule": "M1-M5 are the base contract. M6+ extends for domain-specific metadata."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // Data file in JSONC format — structure from data.json, comments from JSONC conventions.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Entity = stat_base + equipment + actions + progression.
+    // All references use IDs from other game data files.
+    // Missing sections fallback to engine defaults with warning.
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every entity must have identity and stat_base. Equipment, actions, and progression are type-dependent.",
+    "_Cc_id_format": "entity_id: TYPE-NNN-TAG format. TYPE=ENT (3-letter prefix), NNN=sequence (001+), TAG=descriptive uppercase with underscores (HERO_DEF, GOBLIN, GOBLIN_CHIEF). ref_name carries the human-readable snake_case form.",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Example: a default hero entity.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "Default Hero",
+    "version": "a-01.00",
+
+    // Identity — who this entity is
+    "identity": {
+        "entity_id": "ENT-001-HERO_DEF",
+        "ref_name": "hero_default",
+        "name": "Hero",
+        "entity_type": "hero",
+        "class": "warrior",
+        "description": "A brave adventurer setting out on a journey."
+    },
+
+    // Stat Base — starting stats (values override stats-defaults for this entity)
+    // Only include stats that differ from engine defaults
+    "stat_base": {
+        "resources": {
+            "hp_max": 120,
+            "mp_max": 30,
+            "stamina_max": 100
+        },
+        "attributes": {
+            "str": 12,
+            "def": 10,
+            "mag": 8,
+            "spd": 10,
+            "dex": 11,
+            "luck": 10,
+            "vit": 11,
+            "wis": 8
+        },
+        "combat": {
+            "level": 1,
+            "crit_rate": 5,
+            "crit_damage": 150
+        }
+    },
+
+    // Equipment — what this entity can equip and starts with
+    "equipment": {
+        "slots": ["weapon", "head", "body", "hands", "feet", "accessory"],
+        "starting": {
+            "weapon": "ITM-001-IRON_SWD",
+            "body": null,
+            "head": null,
+            "hands": null,
+            "feet": null,
+            "accessory": null
+        }
+    },
+
+    // Actions — what this entity can do
+    "actions": {
+        "max_slots": 4,
+        "default": ["ACT-001-BASIC_ATK"],
+        "learned": []
+    },
+
+    // Inventory — starting inventory
+    "inventory": {
+        "capacity": 20,
+        "starting_items": [
+            { "item_id": "ITM-002-HP_POTION", "quantity": 3 }
+        ]
+    },
+
+    // Progression — how this entity grows
+    "progression": {
+        "exp_to_next": 100,
+        "exp_curve": "linear",
+        "stat_growth": {
+            "hp_max": 10,
+            "mp_max": 5,
+            "str": 2,
+            "def": 2,
+            "mag": 1,
+            "spd": 1
+        }
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-entities"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "identity", "stat_base"],
+        "optional": ["equipment", "actions", "inventory", "progression"],
+        "identity_required": ["entity_id", "ref_name", "name", "entity_type"],
+        "stat_base_note": "Only include stats that override engine defaults — unlisted stats inherit from stats-defaults"
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Adjust stat values (balance tuning)",
+            "Change starting equipment/items",
+            "Add/remove learned actions"
+        ],
+        "careful": [
+            "Change entity_id (breaks references from scenes and save data)",
+            "Change entity_type (affects decision behavior and system routing)",
+            "Modify equipment.slots (affects UI and equip logic)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required keys (identity, stat_base)",
+            "Reference item_ids or action_ids that don't exist in game data"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note → X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required keys (identity, stat_base)",
+        "Reference IDs that don't exist in game data files"
+    ],
+    "_X1_careful": [
+        "Change entity_id (breaks scene references and save data)",
+        "Change entity_type (affects decision behavior and system routing)",
+        "Modify equipment.slots (affects UI layout)"
+    ],
+    "_X1_safe": [
+        "Adjust stat values (balance tuning)",
+        "Change starting equipment and items",
+        "Add/remove learned actions"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Class/job system with stat growth curves",
+        "Skill trees referencing action_ids by level requirements",
+        "Party formation templates (party as entity-of-entities)"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "entity_not_found": "Check entity_id matches reference in scene data. Verify file path. Confirm JSONC parser strips comments.",
+        "stats_wrong": "stat_base only overrides listed values — unlisted inherit from stats-defaults. Check which file provides the stat.",
+        "equipment_not_applying": "Verify equipment.starting item_ids exist in item data. Check equipment.slots includes the slot.",
+        "action_not_available": "Verify actions.default/learned action_ids exist in action data. Check actions.max_slots isn't exceeded."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/base/generic-data.json — Parent data template",
+        "b-word/definitions/omni/json-3block-schema.jsonc — Validation schema",
+        "cornerstone/data/game/universal/global/stats-defaults.jsonc — Base stats inherited by all entities",
+        "cornerstone/data/game/universal/scene/action-defaults.jsonc — Actions referenced by action_id",
+        "cornerstone/data/game/universal/shared/item-defaults.jsonc — Items referenced by item_id",
+        "cornerstone/data/game/universal/shared/game-types.jsonc — Valid enum values for entity_type, class, slots"
+    ],
+    "_X4_required": ["name", "version", "identity", "stat_base"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-entities",
+    "_X4_usage_c": "entity_create(\"ENT-001-HERO_DEF\"); entity_equip(&entity, \"weapon\", \"ITM-001-IRON_SWD\");",
+
+    // The entity is the image-bearer of the game world.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "Entity template. Global state — always loaded. The center of the game data triangle: stats define potential, items define possession, actions define agency. The entity is the being that unifies all three.",
+    "_X5_scripture": "So God created man in his own image. — Genesis 1:27",
+    "_X5_anchor": "Stats without an entity are abstract. Items without an entity are unclaimed. Actions without an entity are verbs without a subject.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "Remove this section when instantiating",
+    "_X6_usage": "cp entity-defaults.jsonc [game]/data/entities/goblin.jsonc -> update pragma -> fill entity data",
+    "_X6_update": [
+        "_P1_key: unique identifier",
+        "_M1_identity: file, key, title, role",
+        "_M2_state: created/updated dates",
+        "_M6_location: path",
+        "Co section: identity, stat_base (override what differs), equipment, actions, inventory, progression",
+        "Remove _X6 section when instantiating"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

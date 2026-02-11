@@ -1,0 +1,440 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from universal entity-defaults, override allowed",
+        "_rpg": "RPG-SPECIFIC — added by this derivation, not in universal",
+        "_rew": "REWARD — enemy gives these to player on defeat"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-rpg-global-stats-enemy",
+    "_P1_from": "cornerstone/templates/data/game/stats/player.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-stats-rpg-enemy",
+    "_P2_role": "rails",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Rails — defines enemy stat configuration for encounter spawning",
+    "_P3_layer": "cornerstone/data/game/rpg/global",
+    "_P3_includes": "none",
+    "_P3_provides": ["RPG_ENEMY_STATS_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "RPG Enemy Stats Template",
+    "_P5_brief": "Enemy encounter stat definitions — encounter-appropriate, no progression. Enemies are CHALLENGES, not characters. They give rewards, they don't earn them. This is WHO the enemy IS when spawned.",
+    "_P5_usage": "cp stats-enemy.jsonc [game]/data/stats/goblin.jsonc -> update pragma -> fill enemy stats",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "stats-enemy.jsonc",
+        "key": "B-cornerstone-data-game-rpg-global-stats-enemy",
+        "title": "RPG Enemy Stats Template",
+        "type": "Data (Template)",
+        "component": "Rails — defines enemy stat configuration for encounter spawning",
+        "role": "Define enemy encounter stats — encounter-appropriate challenge, no progression, gives rewards"
+    },
+
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2026-01-03",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "For we wrestle not against flesh and blood..."
+    "_M4_grounding": {
+        "scripture": "Ephesians 6:12 — For we wrestle not against flesh and blood, but against principalities, against powers, against the rulers of the darkness of this world.",
+        "principle": "Adversaries test the hero — challenge refines character. The struggle itself has meaning. Victory reveals growth.",
+        "anchor": "James 1:2-3 — Count it all joy when ye fall into divers temptations; knowing this, that the trying of your faith worketh patience."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "engine/systems/src/enemy.c — enemy_init(), enemy_spawn()",
+        "integration": "Loaded when spawning enemies in encounters. Enemy system initializes Stats from this config. Area/dungeon modifiers apply on top of base values. Rewards distributed to player on defeat.",
+        "if_missing": "Tripwire to universal entity-defaults with LOUD warning — creates bare enemy with minimum viable stats",
+        "related_data": {
+            "derives_from": {
+                "stats-player": "Player stats template — same stat categories, different lifetime/purpose"
+            },
+            "references": {
+                "random": "Random encounter pools reference enemy entity IDs",
+                "encounter": "Encounter rates determine WHEN enemies appear",
+                "actions": "Enemy abilities reference action definitions for combat execution"
+            },
+            "referenced_by": {
+                "random": "Encounter pool entries reference entity IDs defined here",
+                "combat": "Combat system reads enemy stats for damage calculation",
+                "resolution": "Resolution system reads rewards for XP/gold distribution"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/rpg/global/stats-enemy.jsonc",
+        "derives_from": "cornerstone/templates/data/game/stats/player.jsonc"
+    },
+
+    "_M7_classification": {
+        "tags": "stats, enemy, adversary, encounter, rpg, combat, rewards, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Define enemy encounter stats — resources, attributes, combat, resistance, utility, rewards",
+        "core_design": "Data-driven stats — values in data, logic in engine. Enemy stats are encounter-appropriate, not growth-oriented.",
+        "philosophy": "Enemies are challenges, not characters. They exist to test the hero. Stats define the encounter, victory reveals growth.",
+        "not_a_template": "This IS a template for enemy stat files. Each enemy type gets its own instantiation.",
+        "key_features": {
+            "resources": "HP, MP only — enemies don't have stamina, exp, or gold (they GIVE these)",
+            "attributes": "Base stats scaled to encounter difficulty",
+            "combat": "Encounter level, damage range, accuracy, crits",
+            "battle": "Action points, behavior pattern, boss phases",
+            "resistance": "Elemental strengths and weaknesses",
+            "utility": "AI behavior — perception, aggro range, flee threshold",
+            "rewards": "What player gets for defeating — exp_value, gold_value, drop_rate"
+        }
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2026-01-03) — Initial enemy stats template (old comment-based format)",
+            "a-02.00 (2026-02-09) — Flat convention, separation of concerns, reward clarity"
+        ],
+        "current": "RPG enemy stats template — resources, attributes, combat, battle, resistance, utility, rewards",
+        "planned": [
+            "Area-specific enemy variants",
+            "Boss-specific stat overrides",
+            "Enemy type templates (beast, humanoid, undead, etc.)",
+            "Loot tables with weighted item drops"
+        ]
+    },
+
+    "_M10_game_state": {
+        "lifetime": "global",
+        "description": "Global — enemy stat definitions loaded at game start, cached for encounter spawning. Reference data, not mutable state.",
+        "loaded_at": "Game initialization — all enemy definitions loaded into entity registry",
+        "persists": "Entire game session (reference data — spawned enemies get COPIES of these stats)",
+        "consumed_by": "Enemy system — enemy_init() reads definition, enemy_spawn() creates instance with these base stats. Area modifiers stack on top.",
+        "load_priority": 2,
+        "cache_policy": "session-bound — loaded once at game start, cached for duration",
+        "authority_rank": "engine-default (universal) < rpg-default (this) < game-specific override",
+        "id_format": "entity_id: ENT-NNN-TAG (e.g., ENT-001-GOBLIN, ENT-002-WOLF). name carries display string."
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 tracks global lifetime. Enemy stats define WHO — paired with encounter.jsonc (WHEN) and random.jsonc (WHAT).",
+        "derivation": "_P1_from points to player stats template. Enemy removes progression (exp, gold, stamina) and adds rewards (exp_value, gold_value, drop_rate)."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // RPG enemy stats template — encounter-appropriate, no progression.
+    // Global data — loaded once at game start, referenced during encounters.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Enemy = resources + attributes + combat + battle + resistance + utility + rewards.
+    // Missing keys tripwire to universal entity-defaults, then engine fallback.
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every enemy stat file must have name, version, resources, attributes, combat, utility, rewards. Battle and resistance are expected.",
+    "_Cc_id_format": "entity_id: ENT-NNN-TAG. Standard: ENT-001+. Boss: ENT-100+. Legendary: ENT-500+.",
+    "_Cc_derivation": "Tripwire chain: rpg/stats-enemy -> universal/entity-defaults -> engine hardcoded fallback",
+    "_Cc_global_role": "Enemy stat definitions are GLOBAL data — loaded once at game start into the entity registry. NOT scene-scoped. Spawned enemies get COPIES of base stats. Area/dungeon modifiers apply on top.",
+    "_Cc_separation": "encounter.jsonc = WHEN encounters happen | random.jsonc = WHAT enemies appear | stats-enemy.jsonc = WHO the enemies ARE",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Example: Goblin — weak melee enemy, low stats, basic rewards.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "[Enemy Stats Configuration Name]",
+    "version": "a-01.00",
+
+    // Identity — _req: enemy identification
+    "identity": {
+        "entity_id": "ENT-001-GOBLIN",
+        "ref_name": "enemy_goblin",
+        "name": "Goblin",
+        "type": "humanoid",
+        "tier": "common",
+        "description": "Small, cunning creature — attacks in groups, flees when outnumbered."
+    },
+
+    // Resources — _req: combat resources only (NO exp/gold — enemies GIVE these)
+    "resources": {
+        "hp_max": 50,
+        "mp_max": 20
+    },
+
+    // Attributes — _req: base capabilities scaled to encounter
+    "attributes": {
+        "str": 8,
+        "def": 6,
+        "mag": 5,
+        "spd": 7,
+        "dex": 6,
+        "luck": 3,
+        "vit": 5,
+        "wis": 4
+    },
+
+    // Combat — _req: derived battle stats
+    "combat": {
+        "level": 1,
+        "damage_min": 3,
+        "damage_max": 7,
+        "accuracy": 80,
+        "evasion": 3,
+        "crit_rate": 3,
+        "crit_damage": 125
+    },
+
+    // Battle — _rpg: combat system integration
+    "battle": {
+        "action_points": 2,
+        "turn_priority": 0,
+        "status_slots": 3,
+        "actions": ["ACT-001-ATTACK"],
+        "behavior_pattern": "aggressive",
+        "boss_phases": false
+    },
+
+    // Resistance — _inh: elemental/status defenses (0 = neutral, + resist, - weakness)
+    "resistance": {
+        "fire": 0,
+        "ice": 0,
+        "thunder": 0,
+        "light": 0,
+        "dark": 0,
+        "poison": 0
+    },
+
+    // Utility — _rpg: AI behavior stats
+    "utility": {
+        "movement": 8,
+        "perception": 10,
+        "aggro_range": 5,
+        "flee_threshold": 10
+    },
+
+    // Rewards — _rew: what PLAYER gets for defeating this enemy
+    "rewards": {
+        "exp_value": 15,
+        "gold_value": 10,
+        "drop_rate": 10
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "make test-enemy",
+            "./bin/cornerstone --validate-enemy"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "identity", "resources", "attributes", "combat", "utility", "rewards"],
+        "optional": ["battle", "resistance"],
+        "identity_required": ["entity_id", "ref_name", "name", "type", "tier"],
+        "resources_format": "{ hp_max: int, mp_max: int } — NO exp/gold (see rewards)",
+        "rewards_format": "{ exp_value: int, gold_value: int, drop_rate: int(0-100) }"
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Adjust stat values for encounter balance",
+            "Add new stats within existing categories",
+            "Change reward values (exp_value, gold_value, drop_rate)",
+            "Add comments explaining stat purpose"
+        ],
+        "careful": [
+            "Change entity_id (breaks references from random.jsonc encounter pools)",
+            "Change stat key names (breaks engine lookup)",
+            "Add new categories (engine must support them)",
+            "Change reward values dramatically (affects economy)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required keys (resources, attributes, utility, rewards)",
+            "Change value types (must be integers)",
+            "Add exp/gold to resources (enemies GIVE these via rewards)"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy -> X.2 Extension -> X.3 Troubleshooting -> X.4 Reference -> X.5 Note -> X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Be sober, be vigilant; because your adversary the devil, as a roaring lion, walketh about. — 1 Peter 5:8",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required keys (resources, attributes, utility, rewards)",
+        "Add exp/gold to resources (enemies GIVE these via rewards)",
+        "Change value types (must be integers)"
+    ],
+    "_X1_careful": [
+        "Change entity_id (breaks random.jsonc pool references)",
+        "Change stat key names (breaks engine lookup)",
+        "Change reward values dramatically (affects economy)"
+    ],
+    "_X1_safe": [
+        "Adjust stat values for encounter balance",
+        "Add new stats within categories",
+        "Change rewards, add drop items"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Area-specific enemy variants (forest goblin vs cave goblin)",
+        "Boss-specific stat overrides with phase transitions",
+        "Enemy type templates (beast, humanoid, undead, etc.)",
+        "Loot tables with weighted item drops",
+        "Status effect immunities per enemy type"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "stats_not_loading": "Check resources, attributes, utility, rewards objects exist. Verify file path. Confirm JSONC parser stripping comments.",
+        "wrong_stat_values": "Check all values are positive integers. Verify key names match engine expectations. Check for typos.",
+        "rewards_not_working": "Ensure rewards object exists with exp_value, gold_value. Check drop_rate is 0-100. Verify combat system reads rewards.",
+        "tripwire_to_defaults": "Check logs for LOUD warning about which key failed. Verify JSON syntax. Confirm required categories present.",
+        "enemy_too_easy_hard": "Adjust combat stats relative to player level. Check damage_min/max range. Verify resistance values."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/game/universal/entity/entity-defaults.jsonc — Universal parent template",
+        "cornerstone/data/game/rpg/global/stats-player.jsonc — Player stats (same categories, different lifetime)",
+        "cornerstone/data/game/rpg/global/encounter.jsonc — WHEN encounters happen (rates, difficulty modifiers)",
+        "cornerstone/data/game/rpg/global/random.jsonc — WHAT enemies appear (pools, formations, weights)",
+        "cornerstone/data/game/rpg/scene/data/actions.jsonc — Action definitions for enemy abilities",
+        "cornerstone/data/game/rpg/scene/data/resolution.jsonc — Resolution reads rewards for XP/gold distribution"
+    ],
+    "_X4_separation": "encounter.jsonc = WHEN | random.jsonc = WHAT | stats-enemy.jsonc = WHO",
+    "_X4_required": ["name", "version", "identity", "resources", "attributes", "combat", "utility", "rewards"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-enemy",
+    "_X4_usage_c": "enemy_init(&enemy, stats); enemy_spawn(&world, entity_id, area_modifiers);",
+    "_X4_id_ranges": "Standard: ENT-001+, Boss: ENT-100+, Legendary: ENT-500+",
+
+    // The struggle itself has meaning.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "RPG enemy stats — WHO the enemy IS when spawned. Encounter-appropriate, no progression. Enemies GIVE exp/gold, they don't earn them. Stats define the encounter, victory reveals growth.",
+    "_X5_scripture": "For we wrestle not against flesh and blood, but against principalities. — Ephesians 6:12",
+    "_X5_anchor": "Adversaries test the hero — the struggle itself has meaning. Challenge refines character.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "Remove this section when instantiating",
+    "_X6_usage": "cp stats-enemy.jsonc [game]/data/stats/goblin.jsonc -> update pragma -> fill enemy stats",
+    "_X6_update": [
+        "_P1_key: unique identifier for this enemy type",
+        "_M1_identity: file, key, title, role",
+        "_M2_state: created/updated dates",
+        "_M6_location: path",
+        "Co section: identity (ENT-NNN-TAG), resources, attributes, combat, battle, resistance, utility, rewards",
+        "Remove _X6 section when instantiating"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

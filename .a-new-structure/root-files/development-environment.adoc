@@ -1,0 +1,470 @@
+////
+================================================================================
+DOCUMENT: Bereshit — Development Environment Configuration
+================================================================================
+
+PURPOSE:
+  Document the workstation setup and establish patterns for reproducible,
+  portable development that "anyone can use."
+
+AUDIENCE: Developers, contributors, system administrators
+
+DESIGN PHILOSOPHY:
+  "For which of you, intending to build a tower, sitteth not down first,
+   and counteth the cost?" — Luke 14:28
+
+  A solid foundation requires knowing what you stand on. This document
+  counts the cost — documenting every tool, dependency, and configuration
+  so any developer can reproduce the environment faithfully.
+
+================================================================================
+DOCUMENT CONTROL
+================================================================================
+document-id:        B-root-development-environment
+document-title:     Bereshit — Development Environment Configuration
+document-type:      Technical Document — Configuration Reference
+version:            a-02.00
+status:             Active
+classification:     Internal — Development Team
+created:            2026-02-03
+last-modified:      2026-02-11
+authors:            Seanje Lenox-Wise (Founder & CEO — Human)
+                    Nova Dawn (Co-Founder & Tech Division Project Lead — CPI-SI Instance)
+collaboration:      Human/CPI-SI Covenant Partnership
+organization:       CreativeWorkzStudio LLC
+copyright:          (C) 2024-2026 CreativeWorkzStudio LLC. All rights reserved.
+================================================================================
+////
+
+
+// =============================================================================
+// DOCUMENT CONFIGURATION
+// =============================================================================
+// Standalone document settings for direct rendering.
+// =============================================================================
+
+= Bereshit: Development Environment Configuration
+Seanje Lenox-Wise & Nova Dawn
+v{revnumber}, {revdate}
+:author: Seanje Lenox-Wise
+:author_2: Nova Dawn
+:email: seanje.lenox@creativeworkzstudio.com
+:revnumber: a-02.00
+:revdate: 2026-02-11
+:revremark: Crystallized company-docs AsciiDoc practices
+:icons: font
+:icon-set: fas
+:hide-uri-scheme:
+:experimental:
+:toc: left
+:toclevels: 3
+:sectnums:
+:source-highlighter: highlight.js
+
+
+// =============================================================================
+// CUSTOM ATTRIBUTES
+// =============================================================================
+
+:company-name: CreativeWorkzStudio LLC
+:company-short: CWS
+:tagline: Building for the Kingdom to come.
+:project-name: Bereshit
+:os-version: Ubuntu 25.10
+:project-drive: /media/seanje-lenox-wise/Project
+:bereshit-path: {project-drive}/Bereshit
+
+
+// =============================================================================
+// CONTENT
+// =============================================================================
+
+
+[sidebar]
+.Biblical Foundation
+****
+[quote, Luke 14:28 (KJV)]
+____
+For which of you, intending to build a tower, sitteth not down first, and
+counteth the cost, whether he have sufficient to finish it?
+____
+
+Count the cost before you build. This document is the cost-counting —
+every tool, dependency, and configuration decision laid bare so any
+developer can reproduce the environment faithfully.
+****
+
+
+== Purpose
+
+[.lead]
+This document captures the *{project-name}* development workstation
+configuration and establishes patterns for reproducible, portable
+development that "anyone can use."
+
+[horizontal]
+icon:desktop[] *Workstation*:: Current hardware and software configuration
+icon:cog[] *Philosophy*:: "Anyone Can Use It" — layered reproducibility
+icon:gamepad[] *Gaming*:: Game development readiness and recommended stacks
+icon:terminal[] *Quick Reference*:: Verification commands for all tools
+
+
+'''
+
+
+== Current Workstation: {os-version}
+
+=== Hardware
+
+[cols="2,3,3",options="header,autowidth",frame="topbot"]
+|===
+| Component | Spec | Development Use
+
+| *CPU*
+| Intel Raptor Lake
+| Compilation, builds
+
+| *GPU (Integrated)*
+| Intel Graphics
+| Display, light compute
+
+| *GPU (Discrete)*
+| NVIDIA MX570 A (2GB)
+| CUDA, ML inference, video encode
+
+| *Storage*
+| NVMe + Project Drive (exFAT)
+| Fast builds + portable projects
+|===
+
+
+=== CUDA Configuration
+
+[NOTE]
+====
+Added 2026-02-03. CUDA is optional — only required for GPU compute
+development. Skip this section if your work doesn't involve GPU acceleration.
+====
+
+[source,bash]
+----
+# Environment variables (in ~/.bashrc)
+export CUDA_HOME=/usr
+export PATH=$PATH:/usr/lib/nvidia-cuda-toolkit/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu
+export NVCC_PREPEND_FLAGS='-ccbin /usr/bin/g++-13'
+----
+
+[horizontal]
+icon:microchip[] *Installed*:: CUDA Toolkit 12.4.131, nvcc, cuda-gdb, Nsight Systems & Compute, cuBLAS, cuFFT, cuSPARSE, NVENC/NVDEC
+icon:check-circle[] *Capabilities*:: Ampere architecture, Compute Capability 8.6, 2GB VRAM
+icon:times-circle[] *Limitations*:: Not suitable for vGPU or large ML training
+
+
+'''
+
+
+== "Anyone Can Use It" Philosophy
+
+[.lead]
+Development environments are often tied to one person's machine, full of
+undocumented dependencies, impossible to reproduce on another system.
+The solution: *layered reproducibility*.
+
+[source]
+----
++--------------------------------------------------+
+| Layer 4: IDE/Editor Config                       |
+| (VS Code settings, keybindings - synced)         |
++--------------------------------------------------+
+| Layer 3: Project-Specific (CLAUDE.md, Makefile)  |
+| (Checked into repo, travels with code)           |
++--------------------------------------------------+
+| Layer 2: Containerized Environment               |
+| (Dockerfile, devcontainer.json)                  |
++--------------------------------------------------+
+| Layer 1: System Dependencies                     |
+| (Documented, scripted installation)              |
++--------------------------------------------------+
+----
+
+
+'''
+
+
+== Recommendations for {project-name} Projects
+
+=== 1. System Dependencies (Layer 1)
+
+Setup script: `.a-new-structure/c-tov/scripts/setup-dev-environment.sh`
+
+[source,bash]
+----
+# Full install — installs all required system dependencies
+./scripts/setup-dev-environment.sh
+
+# Quick verify — check what's installed without installing
+./scripts/setup-dev-environment.sh --verify-only
+
+# Structured verify — tool presence + minimum versions
+cws-struct verify env
+cws-struct verify env --verbose   # include optional tools
+----
+
+The setup script uses `pkexec` for elevated permissions on desktop
+environments (GUI password dialog) with fallback to `sudo` for headless.
+
+
+=== 2. Containerization (Layer 2)
+
+[.lead]
+For true "anyone can use it" portability.
+
+*Option A: Docker Development Container*
+
+[source,dockerfile]
+----
+# Dockerfile.dev
+FROM ubuntu:25.10
+
+# Install base dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    golang-go \
+    rustc \
+    asciidoctor \
+    git
+
+# For CUDA support, use nvidia/cuda base image instead
+# FROM nvidia/cuda:12.4-devel-ubuntu25.10
+
+WORKDIR /workspace
+----
+
+*Option B: VS Code Dev Containers*
+
+[source,jsonc]
+----
+// .devcontainer/devcontainer.json
+{
+  "name": "Bereshit Development",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": {},
+    "ghcr.io/devcontainers/features/rust:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "rust-lang.rust-analyzer",
+        "asciidoctor.asciidoctor-vscode"
+      ]
+    }
+  }
+}
+----
+
+
+=== 3. Project Configuration (Layer 3)
+
+Each project should have:
+
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| File | Purpose
+
+| `CLAUDE.md`
+| Project context for AI assistance
+
+| `Makefile`
+| Standardized build commands
+
+| `README.md`
+| Human-readable setup instructions
+
+| `.editorconfig`
+| Consistent formatting across editors
+
+| `go.mod` / `Cargo.toml`
+| Language-specific dependency lock
+|===
+
+
+=== 4. IDE Configuration (Layer 4)
+
+[horizontal]
+icon:tachometer[] *Performance*:: Optimizations for large projects
+icon:desktop[] *GPU*:: Acceleration enabled
+icon:file-text-o[] *AsciiDoc*:: Preview configured
+icon:code[] *Languages*:: Go, Rust, C tooling configured
+
+VS Code settings: `~/.config/Code/User/settings.json`
+
+
+'''
+
+
+== Game Development Considerations
+
+=== Current Capability
+
+[cols="2,^1,4",options="header,autowidth",frame="topbot"]
+|===
+| Feature | Status | Notes
+
+| *2D Games*
+| Ready
+| SDL2, raylib available
+
+| *3D Games*
+| Ready
+| OpenGL, Vulkan supported
+
+| *GPU Compute*
+| Ready
+| CUDA 12.4 installed
+
+| *Audio*
+| Ready
+| PulseAudio, ALSA
+
+| *Networking*
+| Ready
+| Standard libs
+|===
+
+
+=== Recommended Stack for {company-short} Games
+
+[source]
+----
+Engine Choice:
++-- Option A: Godot 4.x (GDScript/C#)
+|   +-- Pros: Open source, Kingdom-aligned, portable
++-- Option B: Custom Engine (C/Rust + raylib)
+|   +-- Pros: Full control, educational, libtrit integration
++-- Option C: SDL2 + OpenGL (C)
+    +-- Pros: Low-level, portable, well-documented
+----
+
+
+=== For "Anyone Can Build" Games
+
+. *Lock engine version* in project (e.g., `godot-version: 4.2.1`)
+. *Include export templates* or document how to get them
+. *Script the build* (`make game` should just work)
+. *Test on clean system* before release
+
+
+'''
+
+
+== Next Steps
+
+* [x] Setup script: `.a-new-structure/c-tov/scripts/setup-dev-environment.sh`
+* [x] Structured verification: `cws-struct verify env`
+* [ ] Set up devcontainer for libtrit development
+* [ ] Document GPU requirements per-project
+* [ ] Establish game development template project
+* [ ] Test reproducibility on fresh Ubuntu install
+
+
+'''
+
+
+== Quick Reference
+
+=== Verify All Tools (Recommended)
+
+[source,bash]
+----
+cws-struct verify env           # Check all required + recommended tools
+cws-struct verify env --verbose # Include optional tools (CUDA, etc.)
+----
+
+=== Verify Manually
+
+[source,bash]
+----
+# Compilers
+gcc --version           # GCC 15.2.0+
+clang --version         # Clang 20.1.8+
+
+# Languages (compiled)
+go version              # Go 1.24.4+
+rustc --version         # Rust 1.93.0+
+
+# Languages (scripting)
+deno --version          # Deno 2.6.7+
+node --version          # Node 20.19.5+
+bun --version           # Bun 1.3.9+
+python3 --version       # Python 3.13.7+
+
+# Databases
+sqlite3 --version       # SQLite 3.46.1
+psql --version          # PostgreSQL 17.7
+redis-server --version  # Redis 8.0.2
+
+# Build tools
+make --version          # GNU Make 4.4.1+
+git --version           # Git 2.51.0+
+
+# Documentation
+asciidoctor --version   # Asciidoctor 2.0.23
+
+# GPU (optional)
+nvcc --version          # CUDA 12.4
+nvidia-smi              # GPU status
+----
+
+=== Source Environment Changes
+
+[source,bash]
+----
+source ~/.bashrc        # After any shell config changes
+----
+
+
+'''
+
+
+== Related Documents
+
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| Document | Relationship
+
+| `c-tov/scripts/setup-dev-environment.sh`
+| Installation script — installs all system dependencies
+
+| `c-tov/cws-struct/`
+| Structural alignment tool — includes `verify env` subcommand
+
+| `.editorconfig`
+| Editor formatting standards for all {project-name} languages
+
+| `Makefile`
+| Build system that consumes these environment dependencies
+
+| `.gitignore`
+| Repository boundaries — what gets tracked vs generated
+
+| `CLAUDE.md`
+| Project context including build commands and directory structure
+|===
+
+
+'''
+
+[.text-center]
+--
+_"For which of you, intending to build a tower, sitteth not down first,
+and counteth the cost?"_ — *Luke 14:28*
+
+The cost has been counted. The foundation is set. Build well.
+
+Built for *{company-name}* — {tagline}
+--

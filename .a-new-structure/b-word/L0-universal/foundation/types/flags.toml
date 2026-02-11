@@ -1,0 +1,197 @@
+# #!omni data --toml
+# ═══════════════════════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+legend = { _req = "REQUIRED", _inh = "INHERITED", _ins = "INSTANCE" }
+
+[_pragma.P1_core]
+key = "B-L0-foundation-types-flags"
+from = "b-word/seed/data/toml/config.toml"
+at = "a-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "flags"
+layer = "L0-universal/foundation/types"
+includes = "L0-universal/foundation/types/primitives.toml"
+provides = ["FLAG_DEFINITIONS", "FLAG_COMPOSITES", "FLAG_OPERATIONS"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L3:Go, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "OmniCode Flag Types"
+brief = "Restore strategy bit flags — 6 flags (bits 0-5), bitmask operations, composable strategies"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "flags.toml"
+key = "B-L0-foundation-types-flags"
+title = "OmniCode Flag Types"
+type = "Data (Specification)"
+component = "Rung"
+role = "Bit-field flags — restore strategy flags and manipulation macros. 6 individual flags (bits 0-5), mask = 0x3F."
+
+[_metadata.M2_state]
+version = "a-01.00"
+status = "Active"
+created = "2026-01-25"
+updated = "2026-02-10"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+
+[_metadata.M4_grounding]
+scripture = "Exodus 19:12 — Thou shalt set bounds unto the people round about"
+principle = "Flags set bounds — each bit is a boundary marker that defines what actions are permitted. Just as God set bounds on Sinai, flags set bounds on restore strategies."
+anchor = "Job 38:11 — Thus far shalt thou come, but no further. Each flag limits or enables specific recovery actions."
+
+[_metadata.M5_dependencies]
+requires = "primitives.toml (uint8_t for bitmask storage)"
+consumers = "Restore system (strategy flags), Health recovery (flag composition), DAR restore phase (flag testing)"
+integration = "Loaded by Go config loader, generates C header via index.toml"
+if_missing = "Restore system falls back to NONE strategy — no recovery actions"
+
+[_metadata.M5_dependencies.cross_format]
+jsonc = "No JSONC counterpart — flags are type specification, not runtime data"
+json = "No JSON counterpart — flags are type specification"
+relationship = "TOML defines flag structure and operations. C header generated from these definitions."
+
+[_metadata.M6_location]
+path = "L0-universal/foundation/types/flags.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "flags, bitmask, restore, strategy, L0, types"
+
+[_metadata.M8_intent]
+purpose = "Define restore strategy flags and manipulation operations"
+core_design = "6 flags (bits 0-5), bitmask operations, composable strategies"
+philosophy = "Flags compose to form strategies. BASIC = FILL + CLAMP. FULL = all 6 flags. Each flag is a specific recovery action."
+
+[_metadata.M9_roadmap]
+current = "6 restore strategy flags with composite strategies and operations"
+planned = ["Flag validation macros", "Strategy composition helpers"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 provide location, classification, intent, roadmap"
+rule = "M1-M5 base contract. M6+ domain-specific."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[_content]
+format = "TOML — native tables, UTF-8, LF line endings"
+key_convention = "UPPER_SNAKE for flag names, lower_snake for properties"
+constraint = "All flags within 6-bit mask (0x3F). Composite strategies combine individual flags."
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc — Content Configurations [CONFIG]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[flags]
+description = "Restore strategy bit flags"
+count = 6
+max_bit = 5
+mask = "0x3F"
+
+# Individual flags
+[flags.restore_strategy]
+description = "6 restore strategy flags (bits 0-5)"
+
+NONE           = { bit = -1, value = "0x00", description = "No recovery" }
+FILL_DEFAULTS  = { bit = 0,  value = "0x01", description = "Fill missing with defaults" }
+LOCATE_FILES   = { bit = 1,  value = "0x02", description = "Search for misplaced files" }
+CREATE_DIRS    = { bit = 2,  value = "0x04", description = "Create missing directories" }
+CLAMP_VALUES   = { bit = 3,  value = "0x08", description = "Clamp out-of-range values" }
+FALLBACK       = { bit = 4,  value = "0x10", description = "Use fallback resources" }
+DEGRADE        = { bit = 5,  value = "0x20", description = "Graceful degradation" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co — Content Operations [OPS]
+# ───────────────────────────────────────────────────────────────────────────────
+
+# Composite strategies
+[flags.composites]
+BASIC = { flags = ["FILL_DEFAULTS", "CLAMP_VALUES"], description = "Minimal safe recovery" }
+FULL  = { flags = ["FILL_DEFAULTS", "LOCATE_FILES", "CREATE_DIRS", "CLAMP_VALUES", "FALLBACK", "DEGRADE"], description = "Maximum recovery effort" }
+
+# Operations
+[flags.operations]
+HAS_FLAG   = { signature = "(flags, flag) -> bool", description = "Test if flag is set" }
+SET_FLAG   = { signature = "(flags, flag) -> flags", description = "Set a flag" }
+CLEAR_FLAG = { signature = "(flags, flag) -> flags", description = "Clear a flag" }
+IS_VALID   = { signature = "(flags) -> bool", description = "Check flags are within mask" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cv — Content Validation [VALIDATE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[extensions]
+
+[_validation]
+commands = "python3 -c \"import tomllib; tomllib.load(open('flags.toml','rb'))\""
+
+[_validation.schema]
+required = ["flags", "flags.restore_strategy", "flags.composites", "flags.operations"]
+
+[_validation.health_scoring]
+base = 100
+deductions = { missing_table = -25, invalid_toml = -100 }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark — Proverbs 22:28"
+never = ["Remove flag definitions without updating consuming code", "Change bit positions (breaks binary compatibility)", "Remove operations (breaks API contract)"]
+careful = ["Adding new flags (must fit in mask)", "Changing composite strategies", "Adding new operations"]
+safe = ["Updating descriptions", "Adding new composite strategies", "Adding metadata"]
+
+[_closing.X2_extension]
+planned = ["Flag validation macros", "Strategy composition helpers"]
+
+[_closing.X3_troubleshooting]
+problems = { flag_not_recognized = "Verify bit position matches header definition. Check mask bounds.", strategy_incomplete = "Review composite strategy — all referenced flags must exist." }
+
+[_closing.X4_reference]
+related_files = ["L0-universal/foundation/types/primitives.toml — Base types", "L0-universal/foundation/types/error-system/foundation.toml — Error system using flags"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('flags.toml','rb'))\""
+required_sections = ["flags", "flags.restore_strategy", "flags.composites", "flags.operations"]
+
+[_closing.X5_note]
+note = "Flags set bounds — each bit is a boundary marker. Compose flags into strategies. BASIC for safe recovery, FULL for maximum effort."
+scripture = "Psalm 119:105 — Thy word is a lamp unto my feet, and a light unto my path."
+anchor = "In the beginning God created — Genesis 1:1. Boundaries before content. Flags define the boundaries of recovery."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════════════════════

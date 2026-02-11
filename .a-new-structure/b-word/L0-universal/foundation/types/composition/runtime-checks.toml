@@ -1,0 +1,470 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L0-foundation-types-runtime-checks"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "foundation"
+layer = "L0-universal/foundation/types"
+includes = "none"
+provides = ["ASSERT", "GUARD", "VALIDATE", "COERCE_OP"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Runtime Type Checks"
+brief = "Runtime type verification — assert, guard, validate, coerce"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "runtime-checks.toml"
+key = "B-L0-foundation-types-runtime-checks"
+title = "Runtime Type Checks"
+type = "Data (Types)"
+component = "Rung"
+role = "Runtime type verification — enforcing type correctness at runtime"
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-10"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "Proverbs 4:23 — Keep thy heart with all diligence; for out of it are the issues of life."
+principle = "Guard the boundaries. Runtime checks enforce what compile-time cannot."
+anchor = "Assert is invariant, guard is narrowing, validate is schema, coerce is conversion"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/L0-universal/foundation/types/primitives.toml"]
+consumers = ["b-word/L0-universal/foundation/types/validation.toml"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by code generators. Runtime check specs define type verification at execution time."
+if_missing = "No runtime checks — type violations undetectable at runtime"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Type DEFINITIONS in TOML. Type DATA instances in JSON."
+jsonc = "None — runtime checks have no JSONC counterpart"
+json = "None — runtime checks have no JSON counterpart"
+relationship = "TOML defines runtime checks. Generated code (C, Go, Rust) implements them."
+
+[_metadata.M5_dependencies.split_context]
+parent = "composition.toml"
+sections = "Co.4 VALIDATION — Runtime Type Verification"
+
+[_metadata.M6_location]
+path = "b-word/L0-universal/foundation/types/composition/runtime-checks.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "composition, runtime, assert, guard, validate, coerce, verification, L0, foundation, types"
+
+[_metadata.M8_intent]
+purpose = "Define runtime type verification — assert (invariant), guard (narrowing), validate (schema), coerce (conversion)"
+core_design = "Four runtime check modes from strict assertion to flexible coercion"
+philosophy = "Keep thy heart with all diligence — Proverbs 4:23"
+
+[_metadata.M8_intent.key_features]
+assert = "Invariant enforcement — panic on violation"
+guard = "Type narrowing — conditional type refinement"
+validate = "Schema checking — structural verification"
+coerce = "Safe conversion — type transformation with validation"
+
+[_metadata.M9_roadmap]
+history = ["a-01.00 (2025-12-11) — Split from monolithic composition.toml", "b-01.00 (2026-02-10) — TOML-native 3-block format, template alignment"]
+current = "b-01.00 — Full template alignment with enriched metadata"
+planned = ["Full cross-format support (JSON/JSONC instances)", "Code generation integration tests"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata. split_context in M5 is content-file-specific."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores, match Go struct field tags"
+constraint = "Each check defines assertion/guard/validation semantics, language bindings, and 9-layer scales"
+
+# Co — Content Operations
+
+# Co.4 VALIDATION — Runtime Type Verification [VALIDATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "Prove all things; hold fast that which is good." — 1 Thessalonians 5:21 KJV
+#
+# VERIFY BEFORE TRUSTING
+#
+# Validation operations verify types at runtime boundaries — where external data
+# enters the system, where assumptions must be verified. Assert enforces
+# invariants; guard narrows types; validate checks structures.
+#
+# SUB-SECTIONS:
+#   Co.4a assert    — Enforce invariants (panic if violated)
+#   Co.4b guard     — Narrow types conditionally
+#   Co.4c validate  — Check structures against schemas
+#   Co.4d coerce    — Convert with validation
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.4a ASSERT — Enforce Invariants [ASSERT]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[assert]
+name        = "assert"
+description = "Assert operation — enforce invariants, panic if violated"
+kind        = "operation"
+category    = "validation"
+symbol      = "!"
+
+# Assert Semantic Properties
+semantic_meaning       = "enforcement"
+ternary_value          = -1                                      # Contractive — demands truth
+biblical_parallel      = "James 5:12"
+biblical_text          = "Let your yea be yea; and your nay, nay"
+
+[assert.omnicode]
+keywords    = ["assert", "require", "must", "invariant"]
+pattern     = "assert <condition>"
+modifiers   = ["debug_only", "always", "message"]
+examples    = [
+    "assert index < length",
+    "assert user.isValid()",
+]
+
+[assert.cpisi]
+direction   = ["demand", "hold", "accept"]
+weight      = ["strict", "balanced", "lenient"]
+action      = ["verify", "enforce", "require"]
+genesis     = ["commanded", "was_so", "saw_good"]
+
+[assert.types.c]
+keyword     = "assert"
+syntax      = "assert(condition)"
+example     = "assert(ptr != NULL)"
+
+[assert.types.rust]
+keyword     = "assert!"
+syntax      = "assert!(condition, \"message\")"
+example     = "assert!(index < len, \"index out of bounds\")"
+
+[assert.types.go]
+keyword     = "if + panic"
+syntax      = "if !cond { panic(\"message\") }"
+example     = "if ptr == nil { panic(\"nil pointer\") }"
+
+[assert.scales]
+L0_kernel    = { name = "HardwareAssert",    example = "assert(valid_addr)",            use = "Memory safety" }
+L1_system    = { name = "SyscallAssert",     example = "assert(valid_fd)",              use = "Handle validation" }
+L2_runtime   = { name = "BoundsAssert",      example = "assert(i < len)",               use = "Bounds checking" }
+L3_framework = { name = "ContractAssert",    example = "assert(precondition)",          use = "Design by contract" }
+L4_health    = { name = "RangeAssert",       example = "assert(valid_range)",           use = "Value validation" }
+L5_network   = { name = "ProtocolAssert",    example = "assert(valid_header)",          use = "Protocol validation" }
+L6_storage   = { name = "SchemaAssert",      example = "assert(valid_schema)",          use = "Schema validation" }
+L7_engine    = { name = "StateAssert",       example = "assert(valid_state)",           use = "State invariants" }
+L8_app       = { name = "InputAssert",       example = "assert(valid_input)",           use = "Input validation" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.4b GUARD — Type Narrowing [GUARD]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[guard]
+name        = "guard"
+description = "Guard operation — narrow types conditionally"
+kind        = "operation"
+category    = "validation"
+symbol      = "?"
+
+# Guard Semantic Properties
+semantic_meaning       = "discernment"
+ternary_value          = 0                                       # Balanced — check and proceed
+biblical_parallel      = "Matthew 7:6"
+biblical_text          = "Give not that which is holy unto the dogs"
+
+[guard.omnicode]
+keywords    = ["guard", "if_is", "when", "narrow"]
+pattern     = "guard <value> is <Type> then <block>"
+modifiers   = ["let", "assert"]
+examples    = [
+    "guard response is Success then process(response.data)",
+    "guard user is Admin then showAdminPanel()",
+]
+
+[guard.cpisi]
+direction   = ["narrow", "hold", "widen"]
+weight      = ["specific", "balanced", "general"]
+action      = ["check", "narrow", "specialize"]
+genesis     = ["divided_light", "named_day", "named_night"]
+
+[guard.types.typescript]
+keyword     = "is / if"
+syntax      = "if (isType(x)) { /* x is narrowed */ }"
+example     = "if (isSuccess(response)) { return response.data }"
+
+[guard.types.rust]
+keyword     = "if let"
+syntax      = "if let Pattern = value { /* narrowed */ }"
+example     = "if let Some(data) = option { process(data) }"
+
+[guard.types.go]
+keyword     = "type assertion"
+syntax      = "if v, ok := x.(Type); ok { /* v is Type */ }"
+example     = "if user, ok := actor.(Admin); ok { showAdmin(user) }"
+
+[guard.scales]
+L0_kernel    = { name = "TypeGuard",         example = "if (type == INT)",              use = "Tagged union dispatch" }
+L1_system    = { name = "PermGuard",         example = "if (has_perm)",                 use = "Permission check" }
+L2_runtime   = { name = "NullGuard",         example = "if (ptr != null)",              use = "Null check" }
+L3_framework = { name = "RoleGuard",         example = "if (user.isAdmin)",             use = "Role-based access" }
+L4_health    = { name = "RangeGuard",        example = "if (inRange)",                  use = "Range validation" }
+L5_network   = { name = "AuthGuard",         example = "if (authenticated)",            use = "Auth middleware" }
+L6_storage   = { name = "ExistsGuard",       example = "if (exists)",                   use = "Record existence" }
+L7_engine    = { name = "StateGuard",        example = "if (isActive)",                 use = "State check" }
+L8_app       = { name = "FeatureGuard",      example = "if (featureEnabled)",           use = "Feature flags" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.4c VALIDATE — Schema Checking [VALIDATE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[validate]
+name        = "validate"
+description = "Validate operation — check structures against schemas"
+kind        = "operation"
+category    = "validation"
+symbol      = "✓"
+
+# Validate Semantic Properties
+semantic_meaning       = "verification"
+ternary_value          = -1                                      # Contractive — rejects invalid
+biblical_parallel      = "1 John 4:1"
+biblical_text          = "Try the spirits whether they are of God"
+
+[validate.omnicode]
+keywords    = ["validate", "check", "verify", "conform"]
+pattern     = "validate <value> against <Schema>"
+modifiers   = ["strict", "lenient", "coerce"]
+examples    = [
+    "validate input against UserSchema",
+    "validate config against ConfigSpec",
+]
+
+[validate.cpisi]
+direction   = ["verify", "hold", "accept"]
+weight      = ["strict", "balanced", "lenient"]
+action      = ["check", "validate", "confirm"]
+genesis     = ["saw_light", "saw_good", "called_good"]
+
+[validate.types.typescript]
+keyword     = "schema.parse"
+syntax      = "const result = schema.parse(input)"
+example     = "const user = UserSchema.parse(rawInput)"
+
+[validate.types.rust]
+keyword     = "serde + validate"
+syntax      = "let parsed: T = serde_json::from_str(input)?; parsed.validate()?"
+example     = "let user: User = serde_json::from_str(json)?; user.validate()?"
+
+[validate.types.go]
+keyword     = "validator"
+syntax      = "err := validate.Struct(s)"
+example     = "if err := validate.Struct(user); err != nil { return err }"
+
+[validate.scales]
+L0_kernel    = { name = "FormatValidate",    example = "validate instruction",          use = "Instruction validation" }
+L1_system    = { name = "SyscallValidate",   example = "validate args",                 use = "Syscall arg validation" }
+L2_runtime   = { name = "TypeValidate",      example = "validate type",                 use = "Runtime type check" }
+L3_framework = { name = "RequestValidate",   example = "validate request body",         use = "Request validation" }
+L4_health    = { name = "DataValidate",      example = "validate patient data",         use = "Clinical data validation" }
+L5_network   = { name = "MessageValidate",   example = "validate protocol message",     use = "Protocol validation" }
+L6_storage   = { name = "SchemaValidate",    example = "validate against schema",       use = "Database schema check" }
+L7_engine    = { name = "AssetValidate",     example = "validate asset format",         use = "Asset validation" }
+L8_app       = { name = "FormValidate",      example = "validate form input",           use = "Form validation" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.4d COERCE — Convert with Validation [COERCE_OP]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[coerce_op]
+name        = "coerce_op"
+description = "Coerce operation — convert types with validation"
+kind        = "operation"
+category    = "validation"
+symbol      = "→"
+
+# Coerce Operation Semantic Properties
+semantic_meaning       = "transformation"
+ternary_value          = 0                                       # Balanced — transform safely
+biblical_parallel      = "Romans 12:2"
+biblical_text          = "Be ye transformed by the renewing of your mind"
+
+[coerce_op.omnicode]
+keywords    = ["coerce", "cast", "convert", "as"]
+pattern     = "coerce <value> to <Type>"
+modifiers   = ["safe", "unsafe", "checked"]
+examples    = [
+    "coerce stringValue to Int",
+    "coerce jsonInput to User",
+]
+
+[coerce_op.cpisi]
+direction   = ["transform", "hold", "preserve"]
+weight      = ["changed", "balanced", "unchanged"]
+action      = ["convert", "cast", "coerce"]
+genesis     = ["formed", "breathed", "became"]
+
+[coerce_op.types.typescript]
+keyword     = "as / satisfies"
+syntax      = "const typed = value as Type"
+example     = "const num = parseInt(str) as number"
+
+[coerce_op.types.rust]
+keyword     = "as / try_into"
+syntax      = "let typed: Type = value.try_into()?"
+example     = "let num: i32 = str.parse()?"
+
+[coerce_op.types.go]
+keyword     = "type conversion"
+syntax      = "typed := Type(value)"
+example     = "num, err := strconv.Atoi(str)"
+
+[coerce_op.scales]
+L0_kernel    = { name = "RegisterCoerce",    example = "int to float",                  use = "Register type coercion" }
+L1_system    = { name = "DataCoerce",        example = "bytes to struct",               use = "Data coercion" }
+L2_runtime   = { name = "TypeCoerce",        example = "string to int",                 use = "Runtime coercion" }
+L3_framework = { name = "DtoCoerce",         example = "JSON to DTO",                   use = "DTO coercion" }
+L4_health    = { name = "UnitCoerce",        example = "mg to g",                       use = "Unit conversion" }
+L5_network   = { name = "ProtocolCoerce",    example = "binary to message",             use = "Protocol coercion" }
+L6_storage   = { name = "RecordCoerce",      example = "row to entity",                 use = "ORM coercion" }
+L7_engine    = { name = "DataCoerce",        example = "asset to component",            use = "Asset coercion" }
+L8_app       = { name = "InputCoerce",       example = "form to model",                 use = "Input coercion" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COGNITION (Cv — Paradigm Interpretation)
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "For as the body is one, and hath many members, and all the members of that
+#  one body, being many, are one body: so also is Christ." — 1 Corinthians 12:12
+#
+# TYPES AS THEOLOGICAL PATTERNS
+#
+# The CPI-SI paradigm sees type composition not merely as technical necessity
+# but as reflection of divine order. Structs mirror the body of Christ — many
+# members, one body. Unions mirror free will — choose this day whom you serve.
+# Constraints mirror divine boundaries — thou shalt not remove thy neighbor's
+# landmark. Every type concept has theological depth.
+#
+# STRUCTURE:
+#   Cv.1 BIBLICAL    — How composition reflects biblical patterns
+#   Cv.2 COGNITIVE   — How composition maps to mental construct
+#   Cv.3 TERNARY     — How composition aligns with ternary values
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+
+
+[extensions]
+note = "Reserved — no extensions for runtime checks"
+
+# Cv — Content Validation
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('runtime-checks.toml','rb'))\""]
+
+[_validation.schema]
+required = ["assert", "guard", "validate", "coerce_op"]
+optional = ["_content", "extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_fields_present = 30
+cross_references_valid = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = ["Break assert semantics", "Change guard narrowing rules"]
+careful = ["Modify validation strictness", "Change coercion safety level"]
+safe = ["Add runtime checks", "Add examples", "Add comments"]
+
+[_closing.X2_extension]
+planned = ["Custom assertion messages", "Guard narrowing chains"]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_check_type = "Verify check has type field — assert, guard, validate, or coerce"
+
+[_closing.X4_reference]
+related_files = [
+    "composition.toml — Index file (parent)",
+    "primitives.toml — Base primitive types",
+]
+validate = "tomlv runtime-checks.toml"
+required_sections = ["_pragma", "_metadata", "_content", "assert", "guard", "validate", "coerce_op", "_validation", "_closing"]
+
+[_closing.X5_note]
+note = "Runtime checks: keep thy heart with diligence. Guard boundaries at runtime."
+scripture = "In the beginning God created the heaven and the earth. — Genesis 1:1"
+anchor = "Genesis 1:1 — God guards His creation. Runtime checks guard type correctness."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

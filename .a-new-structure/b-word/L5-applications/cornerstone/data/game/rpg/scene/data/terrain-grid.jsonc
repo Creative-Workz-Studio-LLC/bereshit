@@ -1,0 +1,491 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from universal scene-defaults, override allowed",
+        "_rpg": "RPG-SPECIFIC — added by this derivation, not in universal"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-rpg-scene-terrain-grid",
+    "_P1_from": "cornerstone/data/game/universal/scene/scene-defaults.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-terrain-rpg",
+    "_P2_role": "rung",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Rails — governs WHERE tactical combat takes place (grid layout, tile properties, spawn positions)",
+    "_P3_layer": "cornerstone/data/game/rpg/scene/data",
+    "_P3_includes": "none",
+    "_P3_provides": ["RPG_TERRAIN_GRID_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "RPG Terrain Grid Template",
+    "_P5_brief": "Tactical grid layouts — WHERE combat takes place. Grid dimensions, tile types (movement cost, cover, effects), 2D layout array, spawn positions, hazards, environment settings. Scene-scoped data loaded by tactical combat mode.",
+    "_P5_usage": "cp terrain-grid.jsonc [game]/data/terrain/dark-forest-grid.jsonc -> update pragma -> fill terrain data",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "terrain-grid.jsonc",
+        "key": "B-cornerstone-data-game-rpg-scene-terrain-grid",
+        "title": "RPG Terrain Grid Template",
+        "type": "Data (Template)",
+        "component": "Rails — governs WHERE tactical combat takes place",
+        "role": "Define battlefield layouts — grid dimensions, tile properties, spawn positions, hazards"
+    },
+
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2025-12-03",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "Set an ambush for the city behind it."
+    "_M4_grounding": {
+        "scripture": "Joshua 8:2 — Set an ambush for the city behind it.",
+        "principle": "Terrain shapes strategy — positioning determines advantage. WHERE you fight matters as much as HOW you fight.",
+        "anchor": "Proverbs 21:31 — The horse is prepared against the day of battle: but safety is of the LORD."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "engine/systems/src/combat/terrain.c — terrain_load_grid(), terrain_render()",
+        "integration": "Loaded when tactical combat begins. Grid data defines the battlefield — tile properties govern movement, cover provides defense bonuses, spawn positions set initial placement. Referenced by combat.jsonc tactical_settings.grid_ref.",
+        "if_missing": "Tripwire to flat featureless grid with LOUD warning — tactical combat degrades to open-field",
+        "related_data": {
+            "derives_from": {
+                "scene-defaults": "Universal scene template — base structure (identity, stack_behavior, data_requirements)"
+            },
+            "references": {
+                "game-types": "terrain_type, tile effect types reference game-types enums"
+            },
+            "referenced_by": {
+                "combat": "combat.jsonc tactical_settings.grid_ref points to terrain grids",
+                "entity-system": "Spawn positions used for initial unit placement"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/rpg/scene/data/terrain-grid.jsonc",
+        "derives_from": "cornerstone/data/game/universal/scene/scene-defaults.jsonc"
+    },
+
+    "_M7_classification": {
+        "tags": "terrain, grid, tactical, tiles, spawn, battlefield, positioning, rpg, scene-data, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Define battlefield layouts — WHERE tactical combat happens. Separate from HOW combat plays (combat.jsonc) and WHAT combatants do (actions.jsonc).",
+        "core_design": "Grid-based terrain — tiles with properties (movement cost, cover, effects), 2D layout, spawn zones, hazards. Positioning and movement matter.",
+        "philosophy": "Terrain shapes tactics. Good terrain design makes positioning meaningful — cover, chokepoints, elevation, hazards create strategic depth.",
+        "key_features": {
+            "inherited_from_universal": "identity, stack_behavior — base scene contract (as scene data, not frame)",
+            "rpg_grid_dimensions": "Width x height grid defining battlefield size",
+            "rpg_tile_types": "Tile definitions — id (char), name, movement_cost, cover bonus, effects (elemental, damage, slow)",
+            "rpg_layout": "2D array of tile IDs — visual map of the battlefield",
+            "rpg_spawn_positions": "Player and enemy starting positions on the grid",
+            "rpg_hazards": "Special tiles with ongoing effects (fire, poison, trap)",
+            "rpg_environment": "Global modifiers — visibility, weather, ambient effects"
+        }
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2025-12-03) — Initial template creation (old comment-based format)",
+            "a-02.00 (2026-02-09) — Flat convention, scene data classification, structured IDs"
+        ],
+        "current": "RPG terrain grid template — tile types, layouts, spawn positions, hazards, environment settings",
+        "planned": [
+            "Destructible terrain (tiles that change during combat)",
+            "Elevation system (high ground advantage, multi-level grids)",
+            "Weather effects that modify terrain properties dynamically",
+            "Terrain generation rules (procedural grid layouts for random encounters)",
+            "Interactive terrain objects (levers, bridges, traps)"
+        ]
+    },
+
+    // Where this data lives in the stack-based scene system
+    "_M10_game_state": {
+        "lifetime": "scene",
+        "description": "Scene-scoped DATA — terrain grid is NOT a scene frame. It is loaded BY the combat scene when tactical mode is active.",
+        "loaded_at": "On demand — loaded when combat scene pushes AND combat_mode is tactical with a grid_ref",
+        "persists": "Duration of the combat scene that loaded it",
+        "consumed_by": "Terrain system — terrain_load_grid() reads layout, terrain_render() draws grid, movement_calc() uses tile costs",
+        "load_priority": 4,
+        "cache_policy": "scene-bound — loaded with combat scene, evicted when combat pops",
+        "authority_rank": "engine-default (flat grid) < rpg-default (this) < encounter-specific terrain",
+        "id_format": "terrain_id: TRN-NNN-TAG (e.g., TRN-001-FOREST_CLEARING, TRN-002-CAVE_NARROW, TRN-003-ARENA_OPEN). ref_name for human-readable."
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 (game state) tracks stack-based scene system lifetime.",
+        "derivation": "_P1_from points to universal scene-defaults. RPG adds grid dimensions, tile types, layout array, spawn positions, hazards, environment."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // RPG terrain grid — extends universal scene structure (as scene data).
+    // Inherits: identity, stack_behavior (from scene-defaults)
+    // Adds: dimensions, tile_types, layout, spawns, hazards, environment
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Terrain grid = WHERE tactical combat happens.
+    // Key distinction:
+    //   combat.jsonc = HOW battles play out (mechanics, mode)
+    //   terrain-grid.jsonc (this) = WHERE battles happen (layout, tiles)
+    //   actions.jsonc = WHAT combatants can DO
+    //   Tile IDs in layout reference tile_types definitions
+    //   Spawn positions are (x, y) coordinates within the grid
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every terrain grid must have identity, dimensions, tile_types, layout, spawns, and stack_behavior. Layout dimensions must match dimensions.width x dimensions.height.",
+    "_Cc_id_format": "terrain_id: TRN-NNN-TAG. Standard: TRN-001+. Dungeon: TRN-100+. Special/boss: TRN-500+. ref_name carries human-readable snake_case.",
+    "_Cc_derivation": "Tripwire chain: rpg/terrain-grid -> engine flat grid fallback",
+    "_Cc_scene_role": "Terrain grid is NOT a scene frame — it is scene-scoped DATA loaded by tactical combat. Referenced via combat.jsonc tactical_settings.grid_ref.",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Example: Forest clearing — 8x8 grid with trees, rocks, water.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "Forest Clearing Grid",
+    "version": "a-01.00",
+
+    // Identity — terrain grid identification
+    "identity": {
+        "terrain_id": "TRN-001-FOREST_CLEARING",
+        "ref_name": "terrain_forest_clearing",
+        "name": "Forest Clearing",
+        "terrain_type": "forest",
+        "description": "Open clearing in the forest — trees provide cover at edges, central rocks create chokepoints, water hazard on east side."
+    },
+
+    // Dimensions — _rpg: grid size
+    "dimensions": {
+        "width": 8,
+        "height": 8
+    },
+
+    // Tile Types — _rpg: what each tile character means
+    // id: single character used in layout array
+    // movement_cost: 1 = normal, 2 = difficult, 3 = very difficult, 0 = impassable
+    // cover: defense bonus when standing on tile (0-50%)
+    // effects: special properties (null for standard tiles)
+    "tile_types": [
+        {
+            "id": ".",
+            "name": "ground",
+            "movement_cost": 1,
+            "cover": 0,
+            "effects": null
+        },
+        {
+            "id": "T",
+            "name": "tree",
+            "movement_cost": 2,
+            "cover": 25,
+            "effects": null
+        },
+        {
+            "id": "R",
+            "name": "rock",
+            "movement_cost": 0,
+            "cover": 0,
+            "effects": null
+        },
+        {
+            "id": "W",
+            "name": "water",
+            "movement_cost": 3,
+            "cover": 0,
+            "effects": { "type": "slow", "value": 1 }
+        },
+        {
+            "id": "H",
+            "name": "hazard",
+            "movement_cost": 1,
+            "cover": 0,
+            "effects": { "type": "damage", "value": 5, "element": "fire" }
+        }
+    ],
+
+    // Layout — _rpg: 2D tile array
+    // Each row is a string of tile IDs matching dimensions.width
+    // Number of rows must match dimensions.height
+    // Read top-to-bottom, left-to-right (north is top row)
+    "layout": [
+        "T.T..T.T",
+        "..T..T..",
+        "........",
+        "...RR.WW",
+        "...RR.WW",
+        "........",
+        "..T..T..",
+        "T.T..T.T"
+    ],
+
+    // Spawn Positions — _rpg: where units start
+    // Player spawns: (x, y) positions for party members
+    // Enemy spawns: (x, y, enemy_id) for enemy placement
+    // Positions must be on passable tiles (movement_cost > 0)
+    "spawns": {
+        "player": [
+            { "x": 1, "y": 6, "slot": 1 },
+            { "x": 2, "y": 6, "slot": 2 },
+            { "x": 1, "y": 7, "slot": 3 },
+            { "x": 2, "y": 7, "slot": 4 }
+        ],
+        "enemy": [
+            { "x": 5, "y": 0, "slot": 1 },
+            { "x": 6, "y": 0, "slot": 2 },
+            { "x": 5, "y": 1, "slot": 3 },
+            { "x": 6, "y": 1, "slot": 4 }
+        ]
+    },
+
+    // Hazards — _rpg: special tiles with ongoing effects
+    // Defined separately from layout for dynamic hazards (added mid-battle)
+    // Static hazards use the H tile in layout; dynamic hazards go here
+    "hazards": [],
+
+    // Environment — _rpg: global terrain modifiers
+    "environment": {
+        "visibility": 100,
+        "weather": "clear",
+        "ambient_effects": null,
+        "time_of_day": "day"
+    },
+
+    // Stack Behavior — terrain is scene DATA, not a scene frame
+    "stack_behavior": {
+        "push_mode": "none",
+        "is_scene_frame": false,
+        "lifecycle_role": "Loaded during combat scene initialization when tactical mode is active",
+        "loaded_with": "combat scene (loaded via combat.jsonc tactical_settings.grid_ref)",
+        "consumed_at": "combat duration (terrain_render() and movement_calc() use grid throughout)",
+        "evicted_at": "combat on_pop (grid data freed with combat scene)",
+        "note": "Terrain grid does not push/pop independently. It is scene-scoped data tied to its parent combat scene."
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-terrain"
+        ],
+        "grid_checks": [
+            "layout row count == dimensions.height",
+            "each layout row length == dimensions.width",
+            "all tile IDs in layout exist in tile_types",
+            "all spawn positions within grid bounds",
+            "all spawn positions on passable tiles (movement_cost > 0)",
+            "path exists between player spawns and enemy spawns"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "identity", "dimensions", "tile_types", "layout", "spawns", "stack_behavior"],
+        "optional": ["hazards", "environment"],
+        "identity_required": ["terrain_id", "ref_name", "name", "terrain_type"],
+        "dimensions_required": ["width", "height"],
+        "tile_type_required": ["id", "name", "movement_cost", "cover", "effects"],
+        "spawn_required": ["player", "enemy"]
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Adjust tile positions in layout (rearrange the map)",
+            "Add/remove hazards",
+            "Change spawn positions (keep on passable tiles)",
+            "Modify environment settings (visibility, weather)",
+            "Add new tile types"
+        ],
+        "careful": [
+            "Change dimensions (must update ALL layout rows to match)",
+            "Change tile_type IDs (affects all layout strings using that character)",
+            "Change terrain_id (may break references from combat configs)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required keys (dimensions, tile_types, layout, spawns)",
+            "Create mismatched dimensions and layout size",
+            "Place spawns on impassable tiles"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy -> X.2 Extension -> X.3 Troubleshooting -> X.4 Reference -> X.5 Note -> X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required keys (dimensions, tile_types, layout, spawns)",
+        "Create mismatched dimensions and layout size",
+        "Place spawns on impassable tiles"
+    ],
+    "_X1_careful": [
+        "Change dimensions (must update ALL layout rows to match)",
+        "Change tile_type IDs (affects all layout strings)",
+        "Change terrain_id (breaks combat config references)"
+    ],
+    "_X1_safe": [
+        "Rearrange layout tiles, add/remove hazards",
+        "Change spawn positions (on passable tiles)",
+        "Modify environment settings, add new tile types"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Destructible terrain (tiles change mid-combat)",
+        "Elevation system (high ground advantage, multi-level grids)",
+        "Weather effects modifying terrain dynamically",
+        "Procedural terrain generation (for random encounters)",
+        "Interactive terrain objects (levers, bridges, traps)",
+        "Line-of-sight calculations (visibility per tile)"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "grid_not_loading": "Check dimensions.width matches layout row lengths. Verify dimensions.height matches number of layout rows. Confirm all tile IDs in layout exist in tile_types.",
+        "units_cant_spawn": "Check spawn coordinates are within grid bounds (0 to width-1, 0 to height-1). Verify spawn positions are on passable tiles (movement_cost > 0). Confirm enemy spawn entity_ids match existing enemies.",
+        "movement_broken": "Check tile movement_cost values (0 = impassable, 1+ = passable). Verify path exists between spawn zones. Confirm no isolated areas on the grid.",
+        "hazards_not_working": "Check hazard positions are valid grid coordinates. Verify hazard effects format. Confirm hazard duration (null = permanent).",
+        "terrain_not_rendering": "Check tile_types all have valid id (single char). Verify layout uses only defined tile IDs. Confirm environment settings are valid.",
+        "tripwire_to_flat_grid": "RPG terrain file missing or malformed. Check logs for LOUD warning. Verify JSON syntax."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/game/universal/scene/scene-defaults.jsonc — Universal parent template",
+        "cornerstone/data/game/rpg/scene/frames/combat.jsonc — Combat config (tactical_settings.grid_ref points here)",
+        "cornerstone/data/game/rpg/global/game-types.jsonc — Terrain type and effect type enums"
+    ],
+    "_X4_required": ["name", "version", "identity", "dimensions", "tile_types", "layout", "spawns", "stack_behavior"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-terrain",
+    "_X4_usage_c": "terrain_load_grid(\"rpg/data/terrain/forest-clearing.jsonc\"); terrain_render(&grid);",
+    "_X4_id_ranges": "Standard: TRN-001+, Dungeon: TRN-100+, Special/Boss: TRN-500+",
+    "_X4_tile_costs": "0 = impassable, 1 = normal, 2 = difficult, 3 = very difficult",
+
+    // Terrain shapes strategy.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "RPG terrain grid — WHERE tactical combat takes place. Scene-scoped data loaded by combat. Grid dimensions, tile properties, spawn positions, hazards create the battlefield. No CPI-SI needed — terrain is spatial data, not decision-making.",
+    "_X5_scripture": "Set an ambush for the city behind it. — Joshua 8:2",
+    "_X5_anchor": "Good terrain design makes positioning meaningful. WHERE you fight matters as much as HOW you fight.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "Remove this section when instantiating",
+    "_X6_usage": "cp terrain-grid.jsonc [game]/data/terrain/dark-forest-grid.jsonc -> update pragma -> fill terrain data",
+    "_X6_update": [
+        "_P1_key: unique identifier for this terrain",
+        "_M1_identity: file, key, title, role",
+        "_M2_state: created/updated dates",
+        "_M6_location: path",
+        "Co section: identity (TRN-NNN-TAG), dimensions, tile_types, layout, spawns, hazards, environment, stack_behavior",
+        "Remove _X6 section when instantiating"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

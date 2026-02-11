@@ -1,0 +1,391 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_eng": "ENGINE-LEVEL — fallback rates when game-specific rates fail",
+        "_tripwire": "TRIPWIRE — if this loads, something went wrong upstream"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-rpg-global-encounter",
+    "_P1_from": "cornerstone/templates/data/game/battle/encounter.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-encounter-rpg",
+    "_P2_role": "rails",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Rails — engine-level tripwire for encounter rate system",
+    "_P3_layer": "cornerstone/data/game/rpg/global",
+    "_P3_includes": "none",
+    "_P3_provides": ["RPG_ENCOUNTER_RATE_DEFAULTS"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "RPG Encounter Rate Defaults (Engine Fallback)",
+    "_P5_brief": "Engine-level tripwire for encounter rates. Base probability per step for random/story/boss encounter types, zone modifiers, difficulty scaling. If this file loads, the game-specific rate file failed — LOUD warning, game keeps running.",
+    "_P5_usage": "DO NOT copy this for game rates. Use game-specific encounter templates instead. This IS the fallback.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "encounter.jsonc",
+        "key": "B-cornerstone-data-game-rpg-global-encounter",
+        "title": "RPG Encounter Rate Defaults (Engine Fallback)",
+        "type": "Data (Fallback)",
+        "component": "Rails — engine-level tripwire for encounter rate system",
+        "role": "Engine fallback encounter rates — minimum viable rates when game-specific rates fail"
+    },
+
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2025-12-03",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "To every thing there is a season."
+    "_M4_grounding": {
+        "scripture": "Ecclesiastes 3:1 — To every thing there is a season, and a time to every purpose under the heaven.",
+        "principle": "Encounters happen in their time — rates govern the rhythm. Even fallback rates maintain the timing.",
+        "anchor": "Proverbs 16:33 — The lot is cast into the lap; but the whole disposing thereof is of the LORD."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "engine/systems/src/combat/encounter.c — encounter_load_rates()",
+        "integration": "Engine loads this as LAST-RESORT fallback for encounter rates. LOUD warning emitted when this path is taken. Game should provide its own rates; this exists so the game never crashes from missing rate data.",
+        "if_missing": "Engine hardcoded defaults (5% base rate, every 10 steps) — absolute bottom floor",
+        "related_data": {
+            "derives_from": {
+                "encounter_template": "Encounter rate template — base structure"
+            },
+            "references": {
+                "random": "Random encounter pools — WHAT enemies appear (this file controls WHEN)",
+                "stats-enemy": "Enemy definitions referenced by encounter pools"
+            },
+            "referenced_by": {
+                "random": "Random encounter system uses these rates for step-based checks",
+                "combat": "Combat system spawns encounters based on rate triggers"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/rpg/global/encounter.jsonc",
+        "derives_from": "cornerstone/templates/data/game/battle/encounter.jsonc"
+    },
+
+    "_M7_classification": {
+        "tags": "encounter, rates, engine, fallback, tripwire, random, story, boss, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Engine fallback encounter rates — minimum viable rates when game-specific rates fail to load",
+        "core_design": "Tripwire pattern — try game rates, LOUD warning on failure, fall back here. Game keeps running.",
+        "philosophy": "The game never crashes from missing rate data. Degraded but functional beats broken.",
+        "key_features": {
+            "base_rates": "Per-type probability (random: 5% per check, story: 100% when scripted, boss: 100% when scripted)",
+            "zone_modifiers": "Multipliers for different locations (fallback: 1.0 — no modification)",
+            "difficulty_modifiers": "Rate adjustments by difficulty (easy: 0.5x, normal: 1.0x, hard: 1.5x)",
+            "tripwire_pattern": "If this loads, game-specific rates failed — LOUD warning in logs"
+        },
+        "not_a_template": "This is NOT a template for game encounter rates. This IS the engine fallback. For game rates, use game-specific encounter templates."
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2025-12-03) — Initial engine fallback rates (old comment-based format)",
+            "a-02.00 (2026-02-09) — Flat convention, tripwire documentation, game state lifetime"
+        ],
+        "current": "Engine-level tripwire defaults — base rates only",
+        "planned": [
+            "Diagnostic logging for when tripwire is hit",
+            "Rate validation at engine startup",
+            "Health check: warn if game hasn't provided its own rates by first zone load"
+        ]
+    },
+
+    "_M10_game_state": {
+        "lifetime": "global",
+        "description": "Global — engine fallback loaded at startup, persists entire session. Only active if game-specific rates fail.",
+        "loaded_at": "Engine initialization (as fallback reserve) — actually USED only when game rates fail to load",
+        "persists": "Entire game session (engine-level fallback)",
+        "consumed_by": "Encounter system — encounter_load_rates() reads rate config, encounter_check() uses rates per step",
+        "load_priority": 0,
+        "cache_policy": "session-bound — loaded once at engine init, cached permanently",
+        "authority_rank": "engine-hardcoded < engine-default (this) < rpg-default < game-specific",
+        "id_format": "N/A — this is a singleton fallback, not an instanced template"
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 (game state) tracks global lifetime — engine fallback.",
+        "derivation": "This is engine-level fallback. Game-specific features (zone tables, story triggers, boss conditions) belong in game encounter files, not here."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // Engine fallback encounter rates. NOT a template for game rates.
+    // Tripwire pattern: try game -> LOUD warning -> fall back here.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every rate file must have name, version, types, zone_modifiers, difficulty_modifiers.",
+    "_Cc_derivation": "Tripwire chain: game-specific rates -> rpg/encounter (this) -> engine hardcoded",
+    "_Cc_global_role": "Engine fallback rates — GLOBAL data loaded at engine init. If game provides its own rates, this is never used. If game rates fail, this catches the fall.",
+    "_Cc_tripwire": "If this file is being read during gameplay, something went wrong upstream. Check game-specific rate files first.",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Engine fallback rates — minimum viable encounter rates.
+    // Three encounter TYPES: random, story, boss.
+    // Base rates define probability per step/action.
+    // Zone modifiers multiply base rates.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "Engine Encounter Rate Fallback",
+    "version": "a-01.00",
+
+    // Encounter Types — _eng: base probability per step
+    // random: checked every N steps
+    // story: triggered by script, rate is "weight" for selection
+    // boss: unique encounters, rate is unused (script-triggered)
+    "types": {
+        "random": {
+            "base_rate": 5,
+            "step_interval": 10,
+            "min_steps": 20,
+            "max_steps": 100
+        },
+        "story": {
+            "base_rate": 100,
+            "step_interval": 0,
+            "min_steps": 0,
+            "max_steps": 0
+        },
+        "boss": {
+            "base_rate": 100,
+            "step_interval": 0,
+            "min_steps": 0,
+            "max_steps": 0
+        }
+    },
+
+    // Zone Modifiers — _eng: multipliers for different locations
+    // Engine defaults to 1.0 (no modification)
+    // Games define zones in their rate files
+    "zone_modifiers": {
+        "default": 1.0
+    },
+
+    // Difficulty Modifiers — _eng: rate adjustments by difficulty
+    // Multiplies base_rate for random encounters
+    "difficulty_modifiers": {
+        "easy": 0.5,
+        "normal": 1.0,
+        "hard": 1.5
+    },
+
+    // NOTE: No encounter tables here — this is RATES only.
+    // Encounter tables (which enemies appear) are in type-specific files:
+    //   random.jsonc: enemy pools for random encounters
+    //   scene/frames/story-encounter.jsonc: scripted encounter definitions
+    //   scene/frames/boss.jsonc: unique boss encounters
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-encounter-rates"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "types", "zone_modifiers", "difficulty_modifiers"],
+        "types_required": ["random", "story", "boss"],
+        "each_type_required": ["base_rate", "step_interval", "min_steps", "max_steps"]
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Adjust fallback rate values (should rarely change)",
+            "Add comments explaining purpose"
+        ],
+        "careful": [
+            "Change type key names (engine must match)",
+            "Change values dramatically (affects all tripwire cases)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required keys (types, zone_modifiers, difficulty_modifiers)",
+            "Add encounter tables (those belong in type-specific files)",
+            "Change value types (must be numeric)"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note → X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required keys (types, zone_modifiers, difficulty_modifiers)",
+        "Add encounter tables (those belong in type-specific files)"
+    ],
+    "_X1_careful": [
+        "Change type key names (engine must match)",
+        "Change values dramatically (affects all tripwire cases)"
+    ],
+    "_X1_safe": [
+        "Adjust fallback rate values (should rarely change)",
+        "Add comments explaining purpose"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_note": "This file is ENGINE FALLBACK — don't extend it. Extensions go in game-specific encounter files.",
+    "_X2_planned": [
+        "Diagnostic logging for when tripwire is hit",
+        "Rate validation at engine startup",
+        "Health check: warn if game hasn't provided its own rates by first zone load"
+    ],
+    "_X2_game_templates": {
+        "random_encounters": "cornerstone/templates/data/game/battle/random.jsonc",
+        "story_encounters": "cornerstone/templates/data/game/battle/story.jsonc",
+        "boss_encounters": "cornerstone/templates/data/game/battle/boss.jsonc"
+    },
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "tripwire_hit": "Working as designed — LOUD warning, game continues. Fix the game rate file, not this fallback.",
+        "rates_not_loading": "Verify this file exists at expected path. Check JSONC parser is working. Engine needs at least THIS fallback.",
+        "wrong_fallback_values": "Check all values are positive numbers. Verify key names match engine expectations.",
+        "parse_error": "Check for missing commas, mismatched brackets. Validate JSONC syntax."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/game/rpg/global/random.jsonc — Random encounter pools (WHAT appears)",
+        "cornerstone/data/game/rpg/global/stats-enemy.jsonc — Enemy stat definitions",
+        "cornerstone/data/game/rpg/scene/frames/combat.jsonc — Combat configuration",
+        "cornerstone/data/game/rpg/scene/frames/story-encounter.jsonc — Scripted encounter definitions",
+        "cornerstone/data/game/rpg/scene/frames/boss.jsonc — Boss encounter definitions"
+    ],
+    "_X4_required": ["name", "version", "types", "zone_modifiers", "difficulty_modifiers"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-encounter-rates",
+    "_X4_usage_c": "encounter_load_rates(\"cornerstone/data/encounters/defaults.jsonc\"); // engine internal — tripwire",
+    "_X4_separation": "encounter.jsonc = WHEN encounters happen | random.jsonc = WHAT enemies appear | stats-enemy.jsonc = WHO the enemies ARE",
+
+    // Even with fallback rates, encounters still serve their purpose.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "Engine fallback encounter rates — the safety net. If this file loads during gameplay, game-specific rates failed. LOUD warning, game keeps running. Better degraded than broken.",
+    "_X5_scripture": "To every thing there is a season, and a time to every purpose under the heaven. — Ecclesiastes 3:1",
+    "_X5_anchor": "Even with fallback rates, encounters still serve their purpose. The rhythm continues.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "DO NOT copy this file for game encounter rates! This IS the engine fallback, not a template.",
+    "_X6_use_instead": {
+        "random": "cornerstone/templates/data/game/battle/random.jsonc",
+        "story": "cornerstone/templates/data/game/battle/story.jsonc",
+        "boss": "cornerstone/templates/data/game/battle/boss.jsonc"
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

@@ -1,0 +1,639 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_org": "ORGANIZATIONAL — structural metadata about scene relationships"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-rpg-scene-stack",
+    "_P1_from": "cornerstone/data/game/universal/scene/scene-defaults.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-scene-organization-rpg",
+    "_P2_role": "rails",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Rails — governs how RPG scenes relate, stack, overlap, and lifecycle",
+    "_P3_layer": "cornerstone/data/game/rpg/scene",
+    "_P3_includes": "none",
+    "_P3_provides": ["RPG_SCENE_STACK_REGISTRY"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "RPG Scene Stack Registry",
+    "_P5_brief": "Organizational file defining how RPG scenes relate — which are FRAMES (push/pop), which are DATA (loaded with frames), how they stack, overlap, and lifecycle. The scene stack is LIFO — scenes push on top and pop back.",
+    "_P5_usage": "Reference for engine scene manager — scene_push(), scene_pop(), scene_overlay(), scene_pause()",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "scene-stack.jsonc",
+        "key": "B-cornerstone-data-game-rpg-scene-stack",
+        "title": "RPG Scene Stack Registry",
+        "type": "Data (Organizational)",
+        "component": "Rails — governs scene relationships and stack behavior",
+        "role": "Define how RPG scenes push, pop, overlay, and carry data — the organizational layer above individual scene files"
+    },
+
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-09",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "To every thing there is a season, and a time to every purpose under the heaven."
+    "_M4_grounding": {
+        "scripture": "Genesis 1:4-10 — And God divided the light from the darkness... And God called the dry land Earth; and the gathering together of the waters called he Seas.",
+        "principle": "Separation creates order. Each scene has its proper place in the stack — boundaries before content. Scenes that overlap respect each other's boundaries.",
+        "anchor": "1 Corinthians 14:40 — Let all things be done decently and in order."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser",
+        "consumers": "engine/systems/src/scene/scene_manager.c — scene_push(), scene_pop(), scene_overlay()",
+        "integration": "Read at engine initialization. Defines the rules for scene stacking — which scenes can push, what they can overlay, how data flows between frames. Individual scene files reference this registry via their stack_behavior.",
+        "if_missing": "Engine uses hardcoded fallback rules — all scenes push standard, no overlay validation",
+        "related_data": {
+            "governs": {
+                "combat": "scene/frames/combat.jsonc — frame, pushes on encounter",
+                "boss": "scene/frames/boss.jsonc — frame, pushes specialized combat",
+                "story-encounter": "scene/frames/story-encounter.jsonc — frame, wraps combat with narrative",
+                "dialogue": "scene/frames/dialogue.jsonc — frame, overlays or standalone",
+                "actions": "scene/data/actions.jsonc — data, loaded by combat",
+                "resolution": "scene/data/resolution.jsonc — data, consumed by combat on_pop",
+                "terrain-grid": "scene/data/terrain-grid.jsonc — data, loaded by tactical combat"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/rpg/scene/scene-stack.jsonc",
+        "derives_from": "cornerstone/data/game/universal/scene/scene-defaults.jsonc"
+    },
+
+    "_M7_classification": {
+        "tags": "scene, stack, organization, registry, push, pop, overlay, lifecycle, rpg, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Organize scene relationships — which files are frames vs data, how they stack and overlap, lifecycle rules. This is the meta-organizational layer above individual scene files.",
+        "core_design": "LIFO scene stack — scenes push on top, pop back. Overlays share the stack position. Data travels with its parent frame.",
+        "philosophy": "Separation creates order (Genesis 1 — badal). Each scene type has clear boundaries: what it pushes, what it carries, what it overlays. No ambiguity in the stack."
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2026-02-09) — Initial scene stack registry"
+        ],
+        "current": "RPG scene stack registry — frames, data, overlay rules, lifecycle",
+        "planned": [
+            "Scene transition effects (fade, slide, dissolve)",
+            "Scene preloading hints (load next scene while current plays)",
+            "Scene priority system (which scenes can interrupt which)",
+            "Scene group definitions (combat group = combat + actions + terrain + resolution)"
+        ]
+    },
+
+    "_M10_game_state": {
+        "lifetime": "global",
+        "description": "Global — scene stack rules are loaded once at engine init and persist for the entire game session.",
+        "loaded_at": "Engine initialization — scene_manager_init() reads registry",
+        "persists": "Entire game session",
+        "consumed_by": "Scene manager — validates push/pop/overlay operations against registry rules",
+        "load_priority": 1,
+        "cache_policy": "permanent — loaded once, never evicted"
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. This is an organizational file — no M10 game_state lifetime conflict because registry rules ARE global.",
+        "derivation": "Organizational meta-layer. Not derived from a single template but governs all scene/ files."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // Scene stack organization — frames, data, relationships, lifecycle.
+    // This is the organizational layer Seanje requested:
+    //   "scenes need to also know how to properly overlap and stack,
+    //    spawning and popping, pushing and pulling"
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+
+    "_Cc_concepts": {
+        "scene_frame": "A scene that pushes/pops on the stack independently. Has its own lifecycle (on_push, on_pop, on_pause, on_resume). Examples: combat, dialogue, boss encounter, story encounter.",
+        "scene_data": "Data loaded WITH a scene frame. Does not push/pop independently. Tied to parent frame's lifecycle. Examples: actions, resolution, terrain grid.",
+        "push": "Add a new scene frame to the top of the stack. Previous frame pauses (if it allows pause) or blocks.",
+        "pop": "Remove the top scene frame from the stack. Previous frame resumes. Data tied to this frame is evicted.",
+        "overlay": "A scene frame that shares the stack position with its parent — renders on top without pausing the parent. Example: dialogue over combat, menu over exploration.",
+        "pause": "When a new frame pushes, the current frame's state is preserved. Not all frames allow pause.",
+        "resume": "When the top frame pops, the frame below it continues from where it paused.",
+        "spawn": "Create and push a new scene frame (push with initialization). Example: encounter triggers combat spawn.",
+        "evict": "Remove scene-scoped data when its parent frame pops. All data tied to a frame is evicted together."
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    // ═══════════════════════════════════════════════════════════
+    // SCENE CLASSIFICATION
+    // ═══════════════════════════════════════════════════════════
+    //
+    // Every file in scene/ is classified as either FRAME or DATA.
+
+    "scene_frames": {
+        "description": "Scene FRAMES push/pop on the stack independently. Each has its own lifecycle.",
+        "frames": [
+            {
+                "file": "combat.jsonc",
+                "id_prefix": "CMB",
+                "push_mode": "standard",
+                "can_be_overlaid_by": ["dialogue", "menu", "cutscene"],
+                "can_overlay": [],
+                "allows_pause": true,
+                "spawned_by": ["story-encounter", "boss", "exploration", "random-encounter"],
+                "data_loaded": ["actions.jsonc", "resolution.jsonc", "terrain-grid.jsonc (tactical only)"],
+                "lifecycle": "push -> init combat state -> combat loop -> victory/defeat -> pop (triggers resolution)"
+            },
+            {
+                "file": "boss.jsonc",
+                "id_prefix": "BSS",
+                "push_mode": "standard",
+                "can_be_overlaid_by": ["dialogue", "menu", "cutscene"],
+                "can_overlay": [],
+                "allows_pause": true,
+                "spawned_by": ["story-encounter", "exploration", "script"],
+                "data_loaded": ["actions.jsonc", "resolution.jsonc", "terrain-grid.jsonc (tactical only)"],
+                "lifecycle": "push -> init boss phases -> combat loop with phase transitions -> victory/defeat -> pop",
+                "note": "Boss is a specialized combat frame — overrides generic combat config with boss-specific phases, behavior, and dialogue"
+            },
+            {
+                "file": "story-encounter.jsonc",
+                "id_prefix": "ENC",
+                "push_mode": "standard",
+                "can_be_overlaid_by": ["dialogue", "cutscene"],
+                "can_overlay": [],
+                "allows_pause": false,
+                "spawned_by": ["script", "dialogue-choice", "scene-event", "item-use"],
+                "data_loaded": [],
+                "pushes": ["dialogue (pre-battle)", "combat (with overrides)", "dialogue (post-battle)"],
+                "lifecycle": "push -> check triggers -> pre-dialogue -> spawn combat -> post-dialogue -> apply consequences -> pop",
+                "note": "Story encounter is a WRAPPER frame — it sequences: pre-dialogue, combat, post-dialogue, consequences"
+            },
+            {
+                "file": "dialogue.jsonc",
+                "id_prefix": "DLG",
+                "push_mode": "overlay",
+                "can_be_overlaid_by": [],
+                "can_overlay": ["combat", "exploration", "boss", "story-encounter"],
+                "allows_pause": false,
+                "spawned_by": ["combat (scripted event)", "story-encounter (hooks)", "exploration (NPC interaction)", "script"],
+                "data_loaded": [],
+                "lifecycle": "push (overlay) -> display lines -> handle choices -> apply consequences -> pop",
+                "note": "Dialogue is typically an OVERLAY — it pushes on top of another scene without pausing it. Can also be standalone (push_mode: standard)."
+            }
+        ]
+    },
+
+    "scene_data": {
+        "description": "Scene DATA is loaded WITH a frame. Does not push/pop independently. Evicted when parent frame pops.",
+        "data_files": [
+            {
+                "file": "actions.jsonc",
+                "id_prefix": "ACT",
+                "loaded_by": "combat.jsonc (via data_requirements.action_sets)",
+                "lifecycle": "loaded on combat push -> available throughout combat -> evicted on combat pop",
+                "note": "Action sets for both player and NPCs. Multiple action files may be loaded per combat."
+            },
+            {
+                "file": "resolution.jsonc",
+                "id_prefix": "RES",
+                "loaded_by": "combat.jsonc (loaded during init, consumed during on_pop)",
+                "lifecycle": "loaded on combat push -> consumed at combat end (resolution_apply()) -> evicted on combat pop",
+                "note": "Post-battle reward and consequence handling. Consumed during combat's on_pop phase, not independently."
+            },
+            {
+                "file": "terrain-grid.jsonc",
+                "id_prefix": "TRN",
+                "loaded_by": "combat.jsonc (via tactical_settings.grid_ref, tactical mode only)",
+                "lifecycle": "loaded on combat push (tactical mode) -> used throughout combat -> evicted on combat pop",
+                "note": "Only loaded when combat_mode is tactical. Realtime combat uses terrain effects without a grid."
+            }
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════
+    // STACK RULES
+    // ═══════════════════════════════════════════════════════════
+    //
+    // The scene stack is LIFO (Last In, First Out).
+    // Frames push on top, pop back to previous.
+    // Data rides with its parent frame.
+
+    "stack_rules": {
+        "description": "Rules governing how scenes push, pop, and interact on the stack.",
+
+        "push_modes": {
+            "standard": "New frame pushes on top. Previous frame pauses (if allows_pause) or blocks. Only one standard frame active at a time.",
+            "overlay": "New frame pushes on top WITHOUT pausing the frame below. Both frames render — overlay draws on top. Multiple overlays can stack.",
+            "none": "This is data, not a frame. Cannot be pushed. Loaded with a parent frame."
+        },
+
+        "stack_depth": {
+            "typical_max": 4,
+            "example_deep_stack": [
+                "exploration (base)",
+                "  -> story-encounter (trigger)",
+                "    -> combat (battle)",
+                "      -> dialogue (mid-battle cutscene, overlay)"
+            ],
+            "note": "Stack depth rarely exceeds 4. If it does, something is likely wrong — check for unpoped frames."
+        },
+
+        "overlay_rules": {
+            "max_overlays": 2,
+            "overlay_order": "Last overlay pushed renders on top",
+            "overlay_input": "Only topmost overlay/frame receives input",
+            "overlay_render": "All visible frames render, bottom to top",
+            "overlay_examples": [
+                "combat + dialogue overlay (mid-battle conversation)",
+                "combat + menu overlay (pause menu)",
+                "exploration + dialogue overlay (NPC conversation)"
+            ]
+        },
+
+        "data_rules": {
+            "ownership": "Data is owned by the frame that loaded it",
+            "eviction": "When a frame pops, ALL its data is evicted",
+            "sharing": "Data cannot be shared between frames — each frame loads its own copy",
+            "preloading": "Data can be preloaded before frame push (optimization), but ownership starts at push"
+        }
+    },
+
+    // ═══════════════════════════════════════════════════════════
+    // COMMON STACKING PATTERNS
+    // ═══════════════════════════════════════════════════════════
+    //
+    // Named patterns for how scenes typically combine.
+
+    "stacking_patterns": {
+        "description": "Named patterns for common scene stacking sequences.",
+
+        "random_battle": {
+            "trigger": "Random encounter check succeeds while exploring",
+            "sequence": [
+                "exploration (running)",
+                "  PUSH combat (standard) — exploration pauses",
+                "    combat loads: actions, resolution, terrain-grid (if tactical)",
+                "    combat runs: combat loop",
+                "    OVERLAY dialogue (if scripted event triggers)",
+                "    POP dialogue (overlay removed)",
+                "    combat ends: victory or defeat",
+                "  POP combat — resolution consumed, data evicted",
+                "exploration (resumes)"
+            ]
+        },
+
+        "story_battle": {
+            "trigger": "Script/dialogue/scene triggers story encounter",
+            "sequence": [
+                "exploration (running)",
+                "  PUSH story-encounter (standard) — exploration pauses",
+                "    PUSH dialogue (pre-battle, overlay on encounter)",
+                "    POP dialogue (pre-battle done)",
+                "    PUSH combat (standard, with encounter overrides) — encounter pauses",
+                "      combat loads: actions, resolution, terrain-grid (if tactical)",
+                "      combat runs: combat loop with possible dialogue overlays",
+                "    POP combat — resolution consumed, data evicted, encounter resumes",
+                "    PUSH dialogue (post-battle, overlay on encounter)",
+                "    POP dialogue (post-battle done)",
+                "    encounter applies: consequences (flags, karma, affinity), rewards",
+                "  POP story-encounter — encounter data evicted",
+                "exploration (resumes)"
+            ]
+        },
+
+        "boss_battle": {
+            "trigger": "Boss encounter triggers (script, story encounter, exploration)",
+            "sequence": [
+                "exploration (running)",
+                "  PUSH boss (standard) — exploration pauses",
+                "    boss loads: actions, resolution, terrain-grid (if tactical)",
+                "    PUSH dialogue (boss intro, overlay)",
+                "    POP dialogue (intro done)",
+                "    boss runs: phase 1 combat loop",
+                "      OVERLAY dialogue (phase transition taunt)",
+                "      POP dialogue",
+                "    boss runs: phase 2 combat loop",
+                "      OVERLAY dialogue (phase transition desperation)",
+                "      POP dialogue",
+                "    boss runs: phase 3 combat loop",
+                "    boss ends: victory or defeat",
+                "    PUSH dialogue (boss defeat/victory, overlay)",
+                "    POP dialogue",
+                "  POP boss — resolution consumed, data evicted",
+                "exploration (resumes)"
+            ]
+        },
+
+        "npc_conversation": {
+            "trigger": "Player interacts with NPC in exploration",
+            "sequence": [
+                "exploration (running)",
+                "  OVERLAY dialogue — exploration continues to render",
+                "    dialogue runs: lines, choices, consequences",
+                "  POP dialogue (overlay removed)",
+                "exploration (continues, never paused)"
+            ]
+        },
+
+        "pause_menu": {
+            "trigger": "Player presses pause during any frame",
+            "sequence": [
+                "any_scene (running)",
+                "  OVERLAY menu — scene continues to render (frozen)",
+                "    menu runs: inventory, equipment, save, options",
+                "  POP menu (overlay removed)",
+                "any_scene (resumes)"
+            ]
+        }
+    },
+
+    // ═══════════════════════════════════════════════════════════
+    // FILE REGISTRY
+    // ═══════════════════════════════════════════════════════════
+    //
+    // Quick reference for all files in this directory.
+
+    "file_registry": {
+        "description": "Complete registry of scene/ directory — organized by persistence (frames/ vs data/).",
+        "structure": {
+            "scene-stack.jsonc": "Root — THIS FILE, organizational registry",
+            "frames/": "Scene FRAMES — push/pop on stack independently",
+            "data/": "Scene DATA — loaded by frames, evicted when frame pops"
+        },
+        "frames": {
+            "frames/combat.jsonc": {
+                "type": "frame",
+                "purpose": "HOW battles play out — combat mechanics, events, behavior, conditions",
+                "id_prefix": "CMB",
+                "id_ranges": { "standard": "001+", "story": "100+", "boss": "500+" }
+            },
+            "frames/boss.jsonc": {
+                "type": "frame",
+                "purpose": "Boss encounters — phased combat with adaptation and narrative",
+                "id_prefix": "BSS",
+                "id_ranges": { "story": "001+", "optional": "500+" }
+            },
+            "frames/story-encounter.jsonc": {
+                "type": "frame",
+                "purpose": "WHAT enemies and WHY — script-triggered narrative encounters",
+                "id_prefix": "ENC",
+                "id_ranges": { "standard": "001+", "chapter": "100+", "secret": "500+" }
+            },
+            "frames/dialogue.jsonc": {
+                "type": "frame",
+                "purpose": "Conversation — 4 flow types (linear, branching, conditional, interruptible)",
+                "id_prefix": "DLG",
+                "id_ranges": { "npc": "001+", "story": "100+", "combat": "500+" }
+            }
+        },
+        "data": {
+            "data/actions.jsonc": {
+                "type": "data",
+                "purpose": "WHAT combatants can DO — skills, spells, items, with CPI-SI decision framework",
+                "id_prefix": "ACT",
+                "id_ranges": { "shared": "001-009", "player": "010+", "enemy": "500+" },
+                "loaded_by": "combat"
+            },
+            "data/resolution.jsonc": {
+                "type": "data",
+                "purpose": "WHAT happens after — rewards, consequences, transitions",
+                "id_prefix": "RES",
+                "id_ranges": { "standard": "001+", "boss": "500+" },
+                "loaded_by": "combat"
+            },
+            "data/terrain-grid.jsonc": {
+                "type": "data",
+                "purpose": "WHERE battles happen — grid layout, tile properties, spawn positions",
+                "id_prefix": "TRN",
+                "id_ranges": { "standard": "001+", "dungeon": "100+", "special": "500+" },
+                "loaded_by": "combat (tactical mode)"
+            }
+        }
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-scene-stack"
+        ],
+        "checks": [
+            "All scene files in scene/ directory are listed in file_registry",
+            "All frames have valid push_mode (standard | overlay)",
+            "All data files have push_mode: none",
+            "Overlay targets exist in scene_frames",
+            "No circular push dependencies",
+            "Stack depth never exceeds typical_max in stacking_patterns"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["scene_frames", "scene_data", "stack_rules", "file_registry"],
+        "optional": ["stacking_patterns"],
+        "frame_required": ["file", "id_prefix", "push_mode", "allows_pause", "lifecycle"],
+        "data_required": ["file", "id_prefix", "loaded_by", "lifecycle"]
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Add new stacking patterns (document new use cases)",
+            "Update lifecycle descriptions (clarify existing behavior)",
+            "Add overlay examples"
+        ],
+        "careful": [
+            "Change push_modes (affects how scenes interact)",
+            "Change overlay rules (affects rendering and input)",
+            "Add/remove frames from registry (must match actual files)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required sections (scene_frames, scene_data, stack_rules)",
+            "Allow circular push dependencies",
+            "Remove file_registry (organizational integrity)"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy -> X.2 Extension -> X.3 Troubleshooting -> X.4 Reference -> X.5 Note -> X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Let all things be done decently and in order. — 1 Corinthians 14:40",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove file_registry (organizational integrity)",
+        "Allow circular push dependencies",
+        "Classify a data file as a frame or vice versa without updating stack_behavior in the file"
+    ],
+    "_X1_careful": [
+        "Change push_modes (affects scene interactions)",
+        "Change overlay rules (affects rendering/input)",
+        "Add new frame types (must create corresponding scene file)"
+    ],
+    "_X1_safe": [
+        "Add stacking patterns, update descriptions, add examples",
+        "Update file_registry when new scene files are added"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Scene transition effects (fade, slide, dissolve between frames)",
+        "Scene preloading hints (predictive loading based on stacking patterns)",
+        "Scene priority/interrupt system (urgent scenes can interrupt lower-priority ones)",
+        "Scene groups (named bundles: 'combat_group' = combat + actions + terrain + resolution)",
+        "Scene history (stack trace for debugging — what pushed what and when)"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "scene_not_pushing": "Check push_mode is valid. Verify spawned_by includes the triggering source. Confirm file exists and is valid JSONC.",
+        "overlay_not_rendering": "Check can_overlay includes the target scene type. Verify max_overlays not exceeded. Confirm overlay frame has push_mode: overlay.",
+        "data_not_loading": "Check loaded_by reference in scene_data matches the parent frame. Verify data file exists. Confirm parent frame lists the data in data_requirements.",
+        "scene_stuck_after_pop": "Check previous frame has on_resume handler. Verify frame allows_pause was true when paused. Confirm no leftover data blocking resume.",
+        "stack_overflow": "Check for circular push patterns (frame A pushes B which pushes A). Verify stack depth is reasonable (typical max: 4). Check for unpoped frames.",
+        "data_leaking_between_scenes": "Check data_rules.sharing is enforced. Verify eviction happens on parent pop. Confirm no global references to scene-scoped data."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_frame_summary": {
+        "combat": "CMB — standard push, overlayable, spawns from encounters",
+        "boss": "BSS — standard push, overlayable, specialized combat with phases",
+        "story-encounter": "ENC — standard push, wrapper (pre-dialogue -> combat -> post-dialogue)",
+        "dialogue": "DLG — overlay push (or standard), leaf scene"
+    },
+    "_X4_data_summary": {
+        "actions": "ACT — loaded by combat, player/NPC skills",
+        "resolution": "RES — loaded by combat, consumed on pop",
+        "terrain-grid": "TRN — loaded by combat (tactical mode only)"
+    },
+    "_X4_stack_operations": "scene_push(frame), scene_pop(), scene_overlay(frame), scene_pause(), scene_resume()",
+    "_X4_validate": "make && ./bin/cornerstone --validate-scene-stack",
+
+    // Separation creates order.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "Scene stack registry — the organizational layer above individual scene files. Frames push/pop, data rides with frames, overlays share positions. Every scene has its proper place. Separation creates order — badal.",
+    "_X5_scripture": "Let all things be done decently and in order. — 1 Corinthians 14:40",
+    "_X5_anchor": "Boundaries before content. Each scene knows its role — frame or data, push or overlay, spawn or evict.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "This is an organizational file — not typically copied as a template. Update this file when adding new scene types to the scene/ directory.",
+    "_X6_when_adding_scene": [
+        "1. Create the new scene file (frame or data)",
+        "2. Add entry to file_registry in this file",
+        "3. If frame: add to scene_frames with push_mode, overlay rules, lifecycle",
+        "4. If data: add to scene_data with loaded_by, lifecycle",
+        "5. Update stacking_patterns if new combinations are possible",
+        "6. Verify stack_rules still hold"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

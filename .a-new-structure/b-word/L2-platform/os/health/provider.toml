@@ -1,0 +1,462 @@
+# #!omni contract --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni contract --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L2-os-provider"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "contract"
+subtype = "os"
+role = "contract"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "os"
+layer = "L2-platform/os"
+includes = "none"
+provides = ["PROVIDER_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "HealthProvider Contract"
+brief = "Interface contract for health providers"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "provider.toml"
+key = "B-L2-os-provider"
+title = "HealthProvider Contract"
+type = "Contract (Contract)"
+component = "Contract"
+role = "Interface contract for health providers — any tool or component that reads, writes, or calculates health values must implement this contract."
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-11"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "A faithful witness will not lie: but a false witness will utter lies.\" — Proverbs 14:5 KJV"
+principle = "Contracts define what is promised. Like a covenant, a contract specifies what a component will faithfully provide. Implementations that fulfill the contract keep the promise."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/core/os/health/score.toml", "b-word/core/types/composition.toml", "b-word/core/types/primitives.toml"]
+consumers = ["bhealth", "CPI-SI hooks", "statusline", "Future tools"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by code generators and tools."
+if_missing = "HealthProvider Contract unavailable — dependent systems cannot function"
+
+[_metadata.M5_dependencies.cross_format]
+role = "HealthProvider Contract in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines os data. Generated code implements lookups."
+
+[_metadata.M6_location]
+path = "b-word/L2-platform/os/provider.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "provider, os, L2, contract, omnicode"
+
+[_metadata.M8_intent]
+purpose = "Define the interface contract for health-providing components"
+core_design = "Method signatures and behaviors that implementations must provide"
+philosophy = "A contract is a promise. Any component claiming to be a HealthProvider must fulfill all methods defined here."
+
+[_metadata.M9_roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Initial creation",
+    "b-01.00 (2026-02-11) — TOML-native 3-block format alignment",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Code generation integration", "Automated validation tooling"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Contract file — healthprovider contract for the OmniCode system"
+
+[contract]
+name = "HealthProvider"
+version = "1.0.0"
+description = "Interface for components that provide health tracking"
+package = "bereshit/word/core/os/health"
+# Biblical syntax: "let HealthProvider be covenant for health tracking"
+# Contract = Covenant — promises that implementations must keep
+# See: syntax.toml [covenant.promises], [covenant.enters_covenant_with]
+
+
+# -----------------------------------------------------------------------------
+# 2. Read Operations
+# -----------------------------------------------------------------------------
+# Biblical syntax for read promises:
+#   HealthProvider promises to ReadHealth given path returning Health
+#   HealthProvider promises to HealthExists given path returning truth
+# See: syntax.toml [covenant.promises_given_returning]
+
+[methods.read_health]
+name = "ReadHealth"
+description = "Read health value from a directory"
+signature = "func(path: text) -> (Health, error)"
+# Covenant: "HealthProvider promises to ReadHealth given path returning Health"
+parameters = [
+    { name = "path", type = "text", description = "Directory path to read health from" }
+]
+returns = [
+    { name = "health", type = "Health", description = "Health struct with value, level, emoji" },
+    { name = "error", type = "error", description = "Error if health file not found or invalid" }
+]
+errors = ["not_found", "invalid_format", "permission_denied"]
+
+[methods.read_health_raw]
+name = "ReadHealthRaw"
+description = "Read raw binary string from .health file"
+signature = "func(path: text) -> (text, error)"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" }
+]
+returns = [
+    { name = "binary", type = "text", description = "8-character binary string" },
+    { name = "error", type = "error", description = "Error if file not found" }
+]
+errors = ["not_found", "permission_denied"]
+
+[methods.health_exists]
+name = "HealthExists"
+description = "Check if a .health file exists at path"
+signature = "func(path: text) -> bool3"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" }
+]
+returns = [
+    { name = "exists", type = "bool3", description = "true if exists, false if not, unknown on error" }
+]
+errors = []
+
+
+# -----------------------------------------------------------------------------
+# 3. Write Operations
+# -----------------------------------------------------------------------------
+# Biblical syntax for write promises:
+#   HealthProvider promises to WriteHealth given path and value
+#   HealthProvider promises to InitHealth given path
+# Scripture: "Write the vision, and make it plain" — Habakkuk 2:2
+# See: syntax.toml [covenant.promises_given]
+
+[methods.write_health]
+name = "WriteHealth"
+description = "Write health value to a directory"
+signature = "func(path: text, value: uint9) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path to write health to" },
+    { name = "value", type = "uint9", description = "Health value 0-255" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if write failed" }
+]
+errors = ["permission_denied", "invalid_path", "value_out_of_range"]
+
+[methods.init_health]
+name = "InitHealth"
+description = "Initialize health file with default value"
+signature = "func(path: text) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path to initialize" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if initialization failed" }
+]
+errors = ["already_exists", "permission_denied", "invalid_path"]
+
+[methods.delete_health]
+name = "DeleteHealth"
+description = "Remove health file from directory"
+signature = "func(path: text) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if deletion failed" }
+]
+errors = ["not_found", "permission_denied"]
+
+
+# -----------------------------------------------------------------------------
+# 4. Calculation Operations
+# -----------------------------------------------------------------------------
+# Biblical syntax for calculation promises:
+#   HealthProvider promises to IncreaseHealth given path and amount
+#   HealthProvider promises to ApplyEvent given path and event
+# Scripture: "I will bless thee, and multiply thy seed" — Genesis 22:17
+# See: syntax.toml [covenant.promises_given]
+
+[methods.increase_health]
+name = "IncreaseHealth"
+description = "Increase health by amount (capped at 255)"
+signature = "func(path: text, amount: uint9) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" },
+    { name = "amount", type = "uint9", description = "Amount to increase by" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+errors = ["not_found", "permission_denied"]
+
+[methods.decrease_health]
+name = "DecreaseHealth"
+description = "Decrease health by amount (floored at 0)"
+signature = "func(path: text, amount: uint9) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" },
+    { name = "amount", type = "uint9", description = "Amount to decrease by" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if operation failed" }
+]
+errors = ["not_found", "permission_denied"]
+
+[methods.apply_event]
+name = "ApplyEvent"
+description = "Apply a health-affecting event"
+signature = "func(path: text, event: text) -> error"
+parameters = [
+    { name = "path", type = "text", description = "Directory path" },
+    { name = "event", type = "text", description = "Event name (e.g., 'file_created', 'tests_passing')" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if event unknown or failed" }
+]
+errors = ["not_found", "unknown_event", "permission_denied"]
+
+
+# -----------------------------------------------------------------------------
+# 5. Display Operations
+# -----------------------------------------------------------------------------
+# Biblical syntax for display promises:
+#   HealthProvider promises to FormatHealth given value returning text
+#   HealthProvider promises to GetLevel given value returning text
+# Scripture: "Let your light so shine before men" — Matthew 5:16
+# See: syntax.toml [covenant.promises_given_returning]
+
+[methods.format_health]
+name = "FormatHealth"
+description = "Format health value for display"
+signature = "func(value: uint9) -> text"
+parameters = [
+    { name = "value", type = "uint9", description = "Health value 0-255" }
+]
+returns = [
+    { name = "formatted", type = "text", description = "Formatted string (e.g., '65% 💚')" }
+]
+errors = []
+
+[methods.get_level]
+name = "GetLevel"
+description = "Get health level name from value"
+signature = "func(value: uint9) -> text"
+parameters = [
+    { name = "value", type = "uint9", description = "Health value 0-255" }
+]
+returns = [
+    { name = "level", type = "text", description = "Level name (critical, poor, fair, good, excellent, perfect)" }
+]
+errors = []
+
+[methods.get_emoji]
+name = "GetEmoji"
+description = "Get emoji for health level"
+signature = "func(value: uint9) -> text"
+parameters = [
+    { name = "value", type = "uint9", description = "Health value 0-255" }
+]
+returns = [
+    { name = "emoji", type = "text", description = "Emoji character" }
+]
+errors = []
+
+
+# -----------------------------------------------------------------------------
+# 6. Hierarchy Operations
+# -----------------------------------------------------------------------------
+# Biblical syntax for hierarchy promises:
+#   HealthProvider promises to AggregateChildren given path returning health
+#   HealthProvider promises to PropagateUp given child_path
+# Scripture: "Train up a child in the way he should go" — Proverbs 22:6
+# (Parent-child relationships, generational inheritance)
+# See: syntax.toml [covenant.promises_given_returning]
+
+[methods.aggregate_children]
+name = "AggregateChildren"
+description = "Calculate parent health from children"
+signature = "func(path: text) -> (uint9, error)"
+parameters = [
+    { name = "path", type = "text", description = "Parent directory path" }
+]
+returns = [
+    { name = "health", type = "uint9", description = "Aggregated health value" },
+    { name = "error", type = "error", description = "Error if aggregation failed" }
+]
+errors = ["not_found", "no_children"]
+
+[methods.propagate_up]
+name = "PropagateUp"
+description = "Update parent health after child change"
+signature = "func(child_path: text) -> error"
+parameters = [
+    { name = "child_path", type = "text", description = "Path of changed child" }
+]
+returns = [
+    { name = "error", type = "error", description = "Error if propagation failed" }
+]
+errors = ["no_parent", "permission_denied"]
+
+[methods.list_children_health]
+name = "ListChildrenHealth"
+description = "List health of all immediate children"
+signature = "func(path: text) -> (list<Health>, error)"
+parameters = [
+    { name = "path", type = "text", description = "Parent directory path" }
+]
+returns = [
+    { name = "children", type = "list<Health>", description = "Health of each child directory" },
+    { name = "error", type = "error", description = "Error if listing failed" }
+]
+errors = ["not_found", "permission_denied"]
+
+# ─────────────────────────────────────────────────────────────
+# Extensions (reserved)
+# ─────────────────────────────────────────────────────────────
+
+[extensions]
+note = "Reserved — no extensions defined"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('provider.toml','rb'))\""]
+
+[_validation.schema]
+required = ["contract", "methods"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_tables_valid = 30
+data_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Existing method signatures (would break implementations)",
+    "Return types (type compatibility)",
+    "Required parameters (implementations depend on these)",
+    "Error type names (error handling depends on these)",
+]
+careful = [
+    "Deprecating methods (notify all implementations)",
+    "Changing method behavior (semantic versioning)",
+    "Adding required methods (major version bump)",
+]
+safe = [
+    "New methods (implementations can add them incrementally)",
+    "Optional parameters with defaults",
+    "Additional error types",
+    "Documentation and examples",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new entries following existing table structure",
+    "2. Ensure all required fields present",
+    "3. Verify consistency with related files",
+    "4. Run TOML validation",
+    "5. Run linter to verify alignment",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_reference = "Check all references point to valid sources"
+consistency_error = "Verify bidirectional consistency with related files"
+
+[_closing.X4_reference]
+related_files = [
+    "b-word/core/os/health/score.toml",
+    "b-word/core/types/composition.toml",
+    "b-word/core/types/primitives.toml",
+]
+required_sections = ["_pragma", "_metadata", "contract", "methods", "_validation", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('provider.toml','rb'))\""
+
+[_closing.X5_note]
+note = "HealthProvider Contract — foundation for the OmniCode system."
+scripture = "A faithful witness will not lie: but a false witness will utter lies.\" — Proverbs 14:5 KJV"
+anchor = "HealthProvider Contract — foundation for the OmniCode system. Genesis 1:1 anchors everything."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

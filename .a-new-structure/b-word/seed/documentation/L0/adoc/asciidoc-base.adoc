@@ -1,0 +1,1169 @@
+////
+/// @file asciidoc-base.adoc
+/// @omni template --adoc
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// OMNICODE PRAGMA [PRAGMA]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// @legend
+///   :req  REQUIRED   — must exist, validation fails without
+///   :inh  INHERITED  — from template, override allowed
+///   :ins  INSTANCE   — file-specific, unique values
+/// @endlegend
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.1 CORE — Identity [CORE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  key        = B-word-seed-doc-asciidoc-base
+/// @omni:req  from       = bereshit/word/omni/seed/B-word-omni-seed-documentation.omni
+/// @omni:req  at         = template
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.2 FAMILY — Classification [FAMILY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:inh  type       = documentation
+/// @omni:inh  subtype    = template
+/// @omni:inh  role       = seed
+/// @omni:inh  structure  = 5-block
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.3 INSTANCE — File Details [INSTANCE]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  component  = seed
+/// @omni:ins  layer      = documentation/adoc
+/// @omni:ins  includes   = none
+/// @omni:ins  provides   = [ASCIIDOC_BASE_TEMPLATE]
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.4 ARCHITECTURE — Scaling Context [ARCH]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:ins  layers     = [0:kernel, 1:system, 2:runtime, 3:framework,
+///                          4:health, 5:network, 6:storage, 7:engine, 8:app]
+/// @omni:ins  scale      = 3^n [1, 3, 9, 27, 81, 243, 729, 2187, 6561]
+/// @omni:ins  pattern    = 4+1+4 [below:0-3, center:4, above:5-8]
+/// @omni:ins  anchor     = genesis_1_1 -> void(0) -> unity(1) -> derivation
+///
+/// ───────────────────────────────────────────────────────────────────────────────
+/// P.5 SUMMARY — Human Identity [SUMMARY]
+/// ───────────────────────────────────────────────────────────────────────────────
+///
+/// @omni:req  title      = AsciiDoc Base Template
+/// @omni:req  brief      = 5-block structure template for AsciiDoc documentation
+///
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// END PRAGMA [END]
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// TEMPLATE: AsciiDoc Documentation (5-Block Structure)
+/// STRUCTURE: METADATA → HEADER → CONTEXT → CONTENT → FOOTER
+/// USAGE: cp asciidoc-base.adoc dest → update pragma → fill brackets
+////
+
+// # M.1 Core Identity [IDENTITY]
+//
+//	Key:       [B-path-to-file] — Unique identifier (bereshit keying format)
+//	Title:     [TITLE] — Document title (also sets HTML <title>)
+//	Subtitle:  [SUBTITLE] — Optional longer description
+//	Type:      Standard | Guide | Template | Reference | Index | Policy | Specification | Report
+//	Doctype:   article | book | manpage | inline
+//	Lang:      en | es | etc.
+//
+:key: B-word-seed-doc-asciidoc-base
+:title: [TITLE]
+:subtitle: [SUBTITLE]
+:type: [TYPE]
+:doctype: article
+:lang: en
+
+// # M.2 Lifecycle State [STATE]
+//
+//	Status:    Draft | Active | Deprecated | Archived
+//	Version:   a-XX.XX — Living versioning (STAGE-PHASE.COMPLETION)
+//	Created:   YYYY-MM-DD
+//	Revdate:   YYYY-MM-DD
+//	Revremark: [Brief description of latest revision]
+//
+:status: [STATUS]
+:version: a-01.00
+:revnumber: {version}
+:created: [DATE]
+:revdate: [DATE]
+:revremark: [REVISION NOTES]
+
+// # M.3 Attribution [ATTRIBUTION]
+//
+//	Authors:      [Name (Role), Name (Role)]
+//	Organization: [Company name]
+//	Copyright:    [© YYYY Company. All rights reserved.]
+//
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Author)
+:author: Seanje Lenox-Wise
+:author_2: Nova Dawn
+:email: seanje.lenox@creativeworkzstudio.com
+:email_2: nova@creativeworkzstudio.com
+:organization: CreativeWorkzStudio LLC
+:copyright: © 2025 CreativeWorkzStudio LLC. All rights reserved.
+
+// # M.4 Location [LOCATION]
+//
+//	Path:  [/bereshit/path/to/file]
+//
+:path: [PATH]
+
+// # M.5 Derivation [DERIVATION]
+//
+//	Derives_from:  [path/to/parent/template] — enables cascade updates
+//
+:derives_from: bereshit/word/omni/seed/B-word-omni-seed-documentation.omni
+
+// # M.6 Classification [CLASSIFICATION]
+//
+//	Tags:      [template, documentation, standard] — discovery
+//	Keywords:  [keywords] — HTML meta
+//
+:tags: [TAGS]
+:keywords: [KEYWORDS]
+
+// # M.7 Intent [INTENT]
+//
+//	Purpose:      [Enables X for Y] — one-line purpose statement
+//	Description:  [Description] — HTML meta
+//
+:purpose: [PURPOSE]
+:description: [DESCRIPTION]
+
+// # M.8 Grounding [GROUNDING]
+//
+//	Verse-ref:           [Book Chapter:Verse]
+//	Verse-kjv-text:      [KJV verse text]
+//	Verse-web-text:      [WEB verse text]
+//	Biblical_foundation: {verse-kjv-text} — primary display text
+//
+:verse-ref: [BOOK CHAPTER:VERSE]
+:verse-kjv-text: [KJV VERSE TEXT]
+:verse-kjv-path: {kjv}[Book]/Chapter_[N]/Verse_[N].txt
+:verse-web-text: [WEB VERSE TEXT]
+:verse-web-path: {scripture}WEB/[Book]/Chapter_[N]/Verse_[N].txt
+:biblical_foundation: {verse-kjv-text}
+
+// # M.9 Strictness [STRICTNESS]
+//
+//	Strictness:  T (Tight) | G (Guided) | F (Free)
+//
+:strictness: G
+
+// # M.10 AsciiDoc Settings [SETTINGS]
+//
+//	Toc:         left | right | auto | preamble
+//	Toclevels:   1-5
+//	Icons:       font | image
+//	Highlighter: highlight.js | rouge | coderay
+//
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+:pdf-theme: default
+:media: prepress
+:linkcss:
+:stylesdir: styles
+:stylesheet: cws-asciidoctor.css
+
+// # M.11 Navigation [NAVIGATION]
+//
+//	Root:   [../../../] — relative path to bereshit root
+//	Word:   {root}word/
+//	Void:   {root}void/
+//	Tov:    {root}tov/
+//
+:root: [RELATIVE PATH TO ROOT]
+:word: {root}word/
+:void: {root}void/
+:tov: {root}tov/
+:core: {word}core/
+:work: {word}work/
+:scripture: {word}scripture/
+:kjv: {scripture}KJV/
+
+// # M.12 Content Attributes [CONTENT-ATTRS]
+//
+//	Example-count:  [N] — data values (verify against actual code)
+//	The-purpose:    [One sentence] — narrative snippets (use with {name} syntax)
+//
+:example-count: [N]
+:the-purpose: [One sentence describing what this enables]
+
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// HEADER
+// ============================================================================
+//
+// H.1-H.6: Title → Epigraph → Lead → Abstract → Status → Navigation
+//
+
+// # H.1 Title [TITLE]
+//
+//	Document title with attribution for AsciiDoc recognition
+//	Format: = {title}: {subtitle}
+//
+[[_top]]
+= {title}: {subtitle}
+{authors}
+v{version}, {revdate}
+
+// # H.2 Epigraph [EPIGRAPH]
+//
+//	Scripture grounding — establishes biblical foundation
+//	Shows KJV and WEB translations with paths
+//
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+
+_{verse-web-text}_ — link:{verse-web-path}[WEB]
+____
+
+// # H.3 Lead [LEAD]
+//
+//	The hook — centered purpose statement from M.12
+//	Reader decides in 5 seconds: Is this for me?
+//
+[.lead.text-center]
+*{the-purpose}*
+
+// # H.4 Abstract [ABSTRACT]
+//
+//	Key facts at a glance — visual scanning in 5 seconds
+//	Choose 3-4 relevant icons and facts for this document type
+//	Icons: icon:cube[] icon:cog[] icon:check-circle[] icon:flask[] icon:code[]
+//
+[abstract]
+--
+icon:cube[] *[Category 1]:* [Description or count]
+
+icon:cog[] *[Category 2]:* [Description or count]
+
+icon:check-circle[] *[Category 3]:* [Description or count]
+--
+
+// # H.5 Status [STATUS]
+//
+//	Document data table — adapt columns for document type
+//	Common columns: Status | Version | Type | [Specialized]
+//	Examples: Research adds Phase, Findings; Index adds Items
+//
+.Document Status
+[cols="^1,^1,^1,^1,^1",options="header,autowidth",frame="topbot"]
+|===
+| Status | Version | Type | [Column 4] | [Column 5]
+
+| {status}
+| {version}
+| {type}
+| [value]
+| [value]
+|===
+
+'''
+
+// # H.6 Navigation [NAVIGATION]
+//
+//	Quick links to major document sections
+//	Pattern: *<<anchor,Label>>* • *<<anchor2,Label2>>*
+//	Adapt anchors to match actual section structure
+//
+*<<overview,Overview>>* • *<<definition,Definition>>* • *<<operations,Operations>>* • *<<application,Application>>* • *<<reference,Reference>>* • *<<references,References>>*
+
+'''
+
+// ============================================================================
+// END HEADER
+// ============================================================================
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+//
+// C.1-C.8: Overview → Audience → Scope → Prerequisites → Key Terms → Quick Start → Contents → Return
+// [Reserved: reason] for intentional omissions
+//
+
+// # C.1 Overview [OVERVIEW]
+[[overview]]
+== Overview
+
+[.lead]
+[Brief description of what this document covers and why it matters to the reader]
+
+[IMPORTANT]
+====
+*[Critical concept or distinction readers MUST understand before proceeding]*
+====
+
+// # C.2 Audience [AUDIENCE]
+//
+//	[Reserved: implicit from context] — OR fill in below
+//
+=== Audience
+
+****
+[.lead]
+*Who is this document for?*
+
+[horizontal]
+icon:briefcase[] *[Role 1]*:: [What they get from this document]
+icon:cog[] *[Role 2]*:: [What they get from this document]
+icon:graduation-cap[] *[Role 3]*:: [What they get from this document]
+****
+
+// # C.3 Scope [SCOPE]
+=== Scope
+
+****
+[.lead]
+*What does this document cover?*
+
+[horizontal]
+icon:check-circle[] *In Scope*:: [What IS covered]
+icon:times-circle[] *Out of Scope*:: [What ISN'T covered]
+****
+
+// # C.4 Prerequisites [PREREQUISITES]
+=== Prerequisites
+
+****
+[.lead]
+*What do you need before proceeding?*
+
+[horizontal]
+icon:folder-open[] *[Requirement 1]*:: [Description]
+icon:terminal[] *[Requirement 2]*:: [Description]
+****
+
+// # C.5 Key Terms [KEY_TERMS]
+=== Key Terms
+
+.icon:book[] Click to expand terminology reference
+[%collapsible]
+======
+****
+[.lead]
+*What terms will you encounter?*
+
+[horizontal]
+icon:tag[] *[Term 1]*:: [Definition]
+icon:tag[] *[Term 2]*:: [Definition]
+****
+======
+
+'''
+
+// # C.6 Quick Start [QUICK_START]
+[[quick-start]]
+=== Quick Start
+
+****
+[.lead]
+*Get started quickly:*
+
+[source,bash]
+----
+# 1️⃣ First step description
+command-here arg1 arg2
+
+# 2️⃣ Second step description
+another-command --flag
+----
+****
+
+'''
+
+// # C.7 Contents [CONTENTS]
+[[what-this-provides]]
+=== What This Document Provides
+
+****
+[.lead]
+*What will you find here?*
+
+.Document Contents
+[cols="^1,3,4,3",options="header,autowidth",frame="topbot"]
+|===
+| | Category | What You'll Find | Who It Serves
+
+| icon:book[]
+| *[Category Name]*
+| [Description of content]
+| [Target audience]
+
+| icon:cog[]
+| *[Category Name]*
+| [Description of content]
+| [Target audience]
+|===
+****
+
+// # C.8 Return [RETURN]
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+// ============================================================================
+// END CONTEXT
+// ============================================================================
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+//
+// BLOCK: Content — "The Chapters"
+// PURPOSE: The actual value — what readers came for
+// STRUCTURE: 4 sections (T.1-T.4) — use or [Reserved: reason] each
+//
+// T.1 DEFINITION — What this is (Types, Systems, Structure, About)
+// T.2 OPERATIONS — What it does (Functions, Files, Behaviors)
+// T.3 APPLICATION — How to use it (Patterns, Examples, Running)
+// T.4 REFERENCE — Quick lookup (Tables, Summaries, Next Steps)
+//
+// LAYERS: Scan (headings+tables) → Read (explanations) → Study (collapsibles)
+// TOOLKIT: ==Sections, ===Subsections, tables, code, collapsibles, admonitions
+//
+
+// # T.1 Definition [DEFINITION]
+//
+//	Purpose:   What this is — concepts, types, structure
+//	Headings:  Types | Systems | Structure | About | The Journey
+//	Elements:  tables, collapsibles, TIP admonition
+//
+
+[[definition]]
+== AsciiDoc Elements
+
+[.lead]
+AsciiDoc organizes content into three fundamental element types: *block*, *inline*, and *structural*. Understanding these categories is the foundation for creating well-structured documents.
+
+[cols="2,3,2",options="header"]
+|===
+| Element Type | Description | Examples
+
+| *Block*
+| Self-contained content units that stand alone, separated by blank lines
+| Paragraphs, tables, code blocks, admonitions, collapsibles
+
+| *Inline*
+| Formatting applied within text flow, no blank line separation
+| Bold, italic, links, footnotes, keyboard shortcuts
+
+| *Structural*
+| Document organization elements that define hierarchy and metadata
+| Sections, attributes, anchors, includes
+|===
+
+[%collapsible%open]
+.Block Elements: The Building Blocks
+====
+Block elements are the primary containers for content. Each block type serves a specific purpose:
+
+[cols="2,3,2",options="header"]
+|===
+| Block | Purpose | Syntax Marker
+
+| *Paragraph*
+| Default text container
+| (none - just text)
+
+| *Table*
+| Structured data in rows/columns
+| `\|===`
+
+| *Source/Code*
+| Syntax-highlighted code
+| `[source,lang]` + `----`
+
+| *Admonition*
+| Callout boxes (NOTE, TIP, WARNING, CAUTION, IMPORTANT)
+| `[NOTE]` + `====`
+
+| *Collapsible*
+| Expandable/collapsible sections
+| `[%collapsible]` + `====`
+
+| *Quote*
+| Block quotations
+| `[quote, attribution]` + `____`
+
+| *Sidebar*
+| Supplementary content
+| `****`
+
+| *Literal*
+| Preformatted text (no processing)
+| `....`
+|===
+
+[TIP]
+=====
+*Block delimiter matching:* Each block type uses specific delimiters (`====`, `----`, `****`, `....`). The opening and closing delimiters must match exactly.
+=====
+====
+
+[%collapsible%open]
+.Inline Elements: Text-Level Formatting
+====
+Inline elements modify text without breaking flow. They're applied within paragraphs and other blocks:
+
+[cols="2,2,2",options="header"]
+|===
+| Format | Syntax | Result
+
+| Bold | `+*text*+` | *text*
+| Italic | `+_text_+` | _text_
+| Monospace | `++`code`+++` | `code`
+| Highlight | `+#text#+` | #text#
+| Superscript | `+^text^+` | x^2^
+| Subscript | `+~text~+` | H~2~O
+|===
+
+*Semantic inline elements* (require `:experimental:` attribute):
+
+[cols="2,2,2",options="header"]
+|===
+| Element | Syntax | Result
+
+| Keyboard | `+kbd:[Ctrl+C]+` | kbd:[Ctrl+C]
+| Button | `+btn:[Save]+` | btn:[Save]
+| Menu | `+menu:File[Save As]+` | menu:File[Save As]
+|===
+====
+
+[%collapsible]
+.Structural Elements: Document Architecture
+====
+Structural elements define how the document is organized and connected:
+
+[cols="2,4",options="header"]
+|===
+| Element | Purpose
+
+| *Sections*
+| Hierarchical organization using `=` headers (= Title, == Section, === Subsection)
+
+| *Attributes*
+| Document metadata and reusable values (`:attribute: value`)
+
+| *Anchors*
+| Named locations for cross-referencing (`[[anchor-id]]`)
+
+| *Cross-references*
+| Links to anchors (`<<anchor-id,Display Text>>`)
+
+| *Includes*
+| Insert content from other files (`include::path/to/file[]`)
+|===
+
+[IMPORTANT]
+=====
+*Anchors enable navigation.* Every major section should have an anchor (`[[section-name]]`) so readers can link directly to it and you can cross-reference it elsewhere.
+=====
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.2 Operations [OPERATIONS]
+//
+//	Purpose:   What it does — functions, behaviors, processes
+//	Headings:  Functions | Files | What We Proved | Get Involved
+//	Elements:  comparison matrix, workflow steps, mermaid diagrams
+//	Symbols:   ✓ (yes) | ✗ (no) | ○ (optional)
+//
+
+[[operations]]
+== How AsciiDoc Works
+
+[.lead]
+Understanding *how* AsciiDoc elements behave enables you to choose the right tool for each documentation need. This section covers the operational characteristics of key elements.
+
+=== Table Behaviors
+
+Tables transform data into scannable, structured information. Key behavioral options:
+
+[cols="3,^1,^1,^2",options="header"]
+|===
+| Feature | Basic | Advanced | When to Use
+
+| *Column alignment*
+| ✓
+| ✓
+| Always - guides eye movement
+
+| *Header row*
+| ✓
+| ✓
+| Most tables - identifies columns
+
+| *Auto-width*
+| ✗
+| ✓
+| When content length varies
+
+| *Frame options*
+| ✗
+| ✓
+| `topbot` for clean look, `none` for seamless
+|===
+
+[%collapsible%open]
+.Table Column Specification
+====
+The `cols` attribute controls column behavior:
+
+[cols="2,4",options="header"]
+|===
+| Syntax | Effect
+
+| `cols="1,2,3"` | Proportional widths (1:2:3 ratio)
+| `cols="^1,<2,>3"` | Alignment: center, left, right
+| `cols="2*"` | Two equal columns
+| `cols="3,^1,^1,2"` | Mixed: first wide, middle centered, last medium
+|===
+
+[source,asciidoc]
+----
+[cols="2,3,^1",options="header,autowidth",frame="topbot"]
+|===
+| Name | Description | Status
+| Item | Details here | ✓
+|===
+----
+====
+
+=== Collapsible Behaviors
+
+Collapsibles create layered reading experiences - scanners see headings, readers expand for depth:
+
+[cols="2,3,2",options="header"]
+|===
+| Variant | Behavior | Use For
+
+| `[%collapsible%open]`
+| Expanded by default, can collapse
+| Primary content most readers need
+
+| `[%collapsible]`
+| Collapsed by default, can expand
+| Deep dives, optional detail, advanced topics
+|===
+
+[%collapsible]
+.Nesting Collapsibles
+====
+Collapsibles can nest for progressive disclosure. Use 5 `=` for inner blocks:
+
+....
+[%collapsible%open]
+.Outer Section
+\====
+Content here...
+
+[%collapsible]
+.Inner Detail
+\=====
+Deeper content...
+\=====
+\====
+....
+
+[WARNING]
+=====
+*Delimiter count matters.* Outer blocks use 4 `====`, inner blocks use 5 `=====`. Mismatched delimiters break rendering.
+=====
+====
+
+=== Admonition Behaviors
+
+Admonitions create visual callouts that interrupt scanning to convey importance:
+
+[mermaid]
+----
+flowchart LR
+    N[NOTE] -->|Context| R[Reader considers]
+    T[TIP] -->|Recommendation| R
+    I[IMPORTANT] -->|Must know| R
+    W[WARNING] -->|Caution| R
+    C[CAUTION] -->|Danger| R
+----
+
+[cols="2,3,2",options="header"]
+|===
+| Admonition | Conveys | Reader Response
+
+| *NOTE*
+| Additional context, scope clarification
+| "Good to know"
+
+| *TIP*
+| Best practice, recommendation
+| "I should do this"
+
+| *IMPORTANT*
+| Critical concept, must understand
+| "I need to remember this"
+
+| *WARNING*
+| Potential issue, thing to avoid
+| "Be careful here"
+
+| *CAUTION*
+| Serious warning, could cause problems
+| "Stop and think"
+|===
+
+[NOTE]
+====
+*Admonition economy:* If everything is important, nothing is. Reserve IMPORTANT and CAUTION for genuinely critical information.
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.3 Application [APPLICATION]
+//
+//	Purpose:   How to use it — patterns, examples, running
+//	Headings:  Usage Patterns | Examples | Running the Demo | Community
+//	Elements:  code blocks, collapsible examples, source links
+//
+
+[[application]]
+== Documentation Patterns
+
+[.lead]
+Effective documentation combines AsciiDoc elements into patterns that serve specific purposes. These patterns create the *PhD rigor + Bible accessibility* standard—comprehensive enough for scholars, scannable for shepherds.
+
+=== Pattern: Layered Reading
+
+Create documents readable at multiple depths. Scanners get value from headings and tables; readers get full explanations; scholars expand collapsibles for deep dives.
+
+[source,asciidoc]
+----
+== Section Title                    // 1️⃣ Scanner sees heading
+
+[.lead]
+Brief purpose statement.            // 2️⃣ Scanner gets context
+
+[cols="2,3",options="header"]       // 3️⃣ Scanner scans table
+|===
+| Term | Definition
+| *Key* | Value
+|===
+
+[%collapsible%open]                 // 4️⃣ Reader sees main content
+.Detailed Explanation
+====
+Full explanation here...
+====
+
+[%collapsible]                      // 5️⃣ Scholar expands for depth
+.Deep Dive: Advanced Topic
+====
+Technical details, edge cases...
+====
+----
+
+[%collapsible%open]
+.Example: This Document
+====
+*Source:* You're reading it.
+
+This template demonstrates layered reading:
+
+[cols="2,4",options="header"]
+|===
+| Layer | What They See
+
+| *Scanner*
+| Section headings, overview tables, lead paragraphs
+
+| *Reader*
+| `[%collapsible%open]` sections with full explanations
+
+| *Scholar*
+| `[%collapsible]` deep dives with technical details
+|===
+
+*Key insight:* Every section serves all three audiences simultaneously.
+====
+
+=== Pattern: Navigation & Cross-Reference
+
+Connect document sections so readers can jump to what they need:
+
+[source,asciidoc]
+----
+// At top of document
+*<<overview,Overview>>* • *<<types,Types>>* • *<<functions,Functions>>*
+
+// In content
+See <<types,Types section>> for definitions.
+
+// At section end
+<<_top,↑ Back to Top>>
+----
+
+[%collapsible%open]
+.Link Types Reference
+====
+[cols="2,3,2",options="header"]
+|===
+| Link Type | Syntax | Use For
+
+| *Internal anchor*
+| `+<<anchor,Text>>+`
+| Same-document navigation
+
+| *File link*
+| `+link:path/file.adoc[Text]+`
+| Other documents
+
+| *External URL*
+| `+https://example.com[Text]+`
+| Web resources
+
+| *Back to top*
+| `+<<_top,↑ Back to Top>>+`
+| Section endings
+|===
+====
+
+=== Pattern: Code Documentation
+
+Document code with syntax highlighting and numbered explanations:
+
+[source,go]
+----
+// LoadConfig demonstrates the chain loading pattern
+func LoadConfig(root string) (*Config, error) {
+    // 1️⃣ Establish base path
+    basePath := filepath.Join(root, "word", "core")
+
+    // 2️⃣ Load in dependency order
+    primitives, err := loadPrimitives(basePath)
+    if err != nil {
+        return nil, fmt.Errorf("primitives: %w", err)
+    }
+
+    // 3️⃣ Return assembled configuration
+    return &Config{Primitives: primitives}, nil
+}
+----
+
+[WARNING]
+====
+*Code block language matters.* Use `[source,go]`, `[source,bash]`, `[source,asciidoc]` etc. for proper syntax highlighting. Generic `[source]` produces no highlighting.
+====
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # T.4 Reference [REFERENCE]
+//
+//	Purpose:   Quick lookup — tables, summaries, next steps
+//	Headings:  Quick Reference | What's Next | Document Map | Recognition
+//	Elements:  checklists, lookup tables, CAUTION admonition
+//
+
+[[reference]]
+== Quick Reference
+
+[.lead]
+Quick lookup tables for returning users. Find syntax fast, verify patterns, check symbols.
+
+=== Document Checklist
+
+Before finalizing any AsciiDoc document:
+
+* [ ] All blocks have matching delimiters (`====`, `----`, etc.)
+* [ ] Every major section has an anchor (`[[section-name]]`)
+* [ ] Navigation links point to valid anchors
+* [ ] Code blocks specify language (`[source,go]` not just `[source]`)
+* [ ] Tables have appropriate `cols`, `options`, and `frame` attributes
+* [ ] Collapsibles use correct nesting depth (4 `=` outer, 5 `=` inner)
+
+=== Syntax Quick Lookup
+
+[cols="2,3,2",options="header"]
+|===
+| Element | Syntax | Notes
+
+| *Section*
+| `== Title`
+| More `=` = deeper nesting
+
+| *Anchor*
+| `[[anchor-id]]`
+| Place before section
+
+| *Cross-ref*
+| `+<<anchor,Text>>+`
+| Links within document
+
+| *File link*
+| `+link:path[Text]+`
+| Links to other files
+
+| *Table*
+| `\|===` ... `\|===`
+| Use `cols`, `options` attributes
+
+| *Code block*
+| `[source,lang]` + `----`
+| Always specify language
+
+| *Collapsible*
+| `[%collapsible]` + `====`
+| Add `%open` for default open
+
+| *Admonition*
+| `[NOTE]` + `====`
+| NOTE, TIP, IMPORTANT, WARNING, CAUTION
+|===
+
+=== Unicode Symbols
+
+[cols="2,3,3",options="header"]
+|===
+| Category | Symbols | Use For
+
+| *Status*
+| ✓ ✗ ✔ ✘ ☑ ☐
+| Completion, yes/no
+
+| *Arrows*
+| → ← ↑ ↓ ⇒ ⟶
+| Flow, navigation
+
+| *Bullets*
+| • ◦ ▸ ► ‣
+| Lists, separators
+
+| *Indicators*
+| 🟢 🟡 🔴 ○
+| Status levels
+
+| *Numbers*
+| 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣
+| Numbered steps in code
+|===
+
+[CAUTION]
+====
+*Attribute prerequisites:* `kbd:[]`, `btn:[]`, and `menu:[]` require `:experimental:` attribute in document header. Footnotes require nothing special.
+====
+
+<<_top,↑ Back to Top>>
+
+
+'''
+
+// ============================================================================
+// END CONTENT
+// ============================================================================
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+//
+// BLOCK: Footer — "The Appendix"
+// PURPOSE: Where readers go next — resources, references, connections
+// STRUCTURE: 4 sections (F.1-F.4) — use or [Reserved: reason] each
+//
+// F.1 BIBLICAL — Grounding in truth (the WHY beneath)
+// F.2 REFERENCES — Links to related docs, standards, resources
+// F.3 SEE-ALSO — Cross-references to ecosystem
+// F.4 CLOSING — Key summary, version, grounding verse
+//
+// SEND OUT WITH: Truth grounding → Next steps → Ecosystem connection
+//
+
+// # F.1 Biblical Foundation [BIBLICAL]
+//
+//	Purpose:   Connect to eternal truth — WHY beneath the what
+//	Content:   Scripture verse + context + practical application
+//	Test:      If you can't articulate Scripture's role, reflect on purpose
+//
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+[NOTE]
+====
+*[Context for why this biblical principle applies to this document's topic]*
+====
+
+_"[Scripture verse that grounds this work]"_ — *[Book Chapter:Verse]*
+
+*Applied:* [How this scriptural truth specifically informs this document's approach, structure, or content. Make the connection clear and practical.]
+
+<<_top,↑ Back to Top>>
+
+'''
+
+// # F.2 References [REFERENCES]
+//
+//	Purpose:   Organized links for discovery
+//	Sections:  Related Documents | Standards & Specs | External Resources
+//	Principle: Link generously — knowledge grows through connection
+//
+
+[[references]]
+== References
+
+[[related-documents]]
+=== Related Documents
+
+[cols="^1,3,4",options="header"]
+|===
+| | Document | Purpose
+
+| 📐
+| *link:../path/to/document.adoc[Document Title]*
+| [What it covers and why it's related]
+
+| 📖
+| *link:../path/to/document.adoc[Document Title]*
+| [What it covers and why it's related]
+|===
+
+[[standards-specs]]
+=== Standards & Specifications
+
+[cols="2,5",options="header"]
+|===
+| Standard | Purpose
+
+| *link:../standards/CWS-STD-001-DOC-4-block.adoc[CWS-STD-001]*
+| 4-Block Structure Standard
+
+| *link:../standards/CWS-STD-002-DOC-document-keying.adoc[CWS-STD-002]*
+| Document Keying Standard
+|===
+
+[[external-resources]]
+=== External Resources
+
+[cols="2,5",options="header"]
+|===
+| Resource | Purpose
+
+| *https://docs.asciidoctor.org/[Asciidoctor Docs]*
+| Official AsciiDoc documentation
+
+| *https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[AsciiDoc Syntax]*
+| Quick reference guide
+|===
+
+'''
+
+// # F.3 See Also [SEE-ALSO]
+//
+//	Purpose:   Cross-references to ecosystem — helps discover connected knowledge
+//	Format:    link:path[text] for files | <<anchor,text>> for internal refs
+//
+
+[[see-also]]
+== See Also
+
+* link:../path/to/document.adoc[Related Document 1] — [Brief description]
+* link:../path/to/document.adoc[Related Document 2] — [Brief description]
+* link:../path/to/document.adoc[Related Document 3] — [Brief description]
+
+'''
+
+// # F.4 Centered Closing [CLOSING]
+//
+//	Purpose:   Closure + key info at a glance
+//	Content:   Navigation | Identity | Grounding verse | Kingdom purpose
+//	Optional:  Company standards navigation
+//
+
+[.text-center]
+--
+*<<_top,↑ Back to Top>>*
+
+'''
+
+*Key:* {key} • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {updated}
+
+'''
+
+_"{biblical_foundation}"_ — *[Reference]*
+
+*[One line connecting this work to Kingdom purpose]*
+
+// Optional: Company standards navigation
+// '''
+// *Company Standards:*
+// link:../standards/CWS-STD-001.adoc[4-Block Structure] • link:../standards/CWS-STD-002.adoc[Document Keying]
+--
+
+// ============================================================================
+// END FOOTER
+// ============================================================================
+
+////
+// ============================================================================
+// TEMPLATE NOTES — DELETE WHEN USING
+// ============================================================================
+//
+// PRINCIPLE: PhD rigor + Bible accessibility
+// STRUCTURE: METADATA → HEADER → CONTEXT → CONTENT → FOOTER
+// WORKFLOW: cp template dest → update pragma → fill brackets block-by-block
+//
+// 5-BLOCK PATTERN:
+//   METADATA — catalog card (parseable identity)
+//   HEADER — cover (visible identity in 5 sec)
+//   CONTEXT — introduction (prepares understanding)
+//   CONTENT — chapters (value organized)
+//   FOOTER — appendix (resources + grounding)
+//
+// OMNICODE MAPPING:
+//   METADATA ←→ METADATA (identity)
+//   HEADER ← (doc-specific)
+//   CONTEXT ←→ SETUP/CONTEXT (preparation)
+//   CONTENT ←→ BODY/CONTENT (value)
+//   FOOTER ←→ CLOSING/FOOTER (completion)
+//
+// LAYERED READING:
+//   Scan (5s) → Skim (1m) → Read → Study → Reference
+//
+// TOOLKIT ELEMENTS:
+//   footnote:[] first terms | #mark# emphasis | kbd:[] shortcuts
+//   <<anchor,text>> xrefs | ✓✗○ status | → flow
+//   [%collapsible%open] major | [%collapsible] optional
+//   [NOTE] [TIP] [IMPORTANT] [WARNING] [CAUTION]
+//
+// WORKFLOW:
+//   1. METADATA → identity
+//   2. HEADER → hook
+//   3. CONTEXT → preparation
+//   4. CONTENT → value (use toolkit naturally)
+//   5. FOOTER → ground + connect
+//   6. Delete numbered section comments or keep for reference
+//   7. Delete this TEMPLATE NOTES block
+//
+////

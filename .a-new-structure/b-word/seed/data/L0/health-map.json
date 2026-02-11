@@ -1,0 +1,221 @@
+{
+    "$schema": "../../../b-word/definitions/omni/json-3block-schema.jsonc",
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --json",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-seed-data-json-3block-health-map",
+    "_P1_from": "b-word/seed/data/json/3block/data.json",
+    "_P1_at": "template",
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "health-scoring",
+    "_P2_role": "seed",
+    "_P2_structure": "3-block",
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "templates",
+    "_P3_layer": "b-word/seed/data/json/3block",
+    "_P3_includes": "none",
+    "_P3_provides": ["HEALTH_MAP_TEMPLATE"],
+    "_P3_becomes": ["lexer-operations.json", "parser-operations.json", "codegen-operations.json"],
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "JSON Health Map (3-Block Structure)",
+    "_P5_brief": "Template for CRUD-based health scoring maps — transforms operations into health impact scores",
+    "_P5_usage": "cp health-map.json /path/to/new.json -> update _P1_key -> fill brackets",
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+    "_M1_identity": {
+        "file": "health-map.json",
+        "key": "B-seed-data-json-3block-health-map",
+        "title": "JSON Health Map (3-Block Structure)",
+        "type": "Baton (Template) — transforms operations into health scores",
+        "component": "Seed",
+        "role": "[Specific responsibility — lexer health, parser health, etc.]",
+        "dependency": "[PURE: self-contained | DEPENDED: extends crud-base.json]"
+    },
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2025-12-03",
+        "updated": "2026-02-09"
+    },
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)"
+    },
+    "_M4_grounding": {
+        "scripture": "Proverbs 16:11 — A just weight and balance are the LORD's: all the weights of the bag are his work.",
+        "principle": "Health scoring must be just and accurate measurement.",
+        "anchor": "Proverbs 21:2 — The LORD pondereth the hearts."
+    },
+    "_M5_dependencies": {
+        "requires": "JSON parser (json.Unmarshal, JSON.parse, json.loads)",
+        "consumers": "pkg/health (Tracker, Scorer)",
+        "loader": "embed.FS at package init, json.Unmarshal",
+        "depends": "pkg/health/maps.go, crud-base.json",
+        "pattern": "health.RegisterMap(component, mapData) -> tracker.TrackOperation(op, success)",
+        "if_missing": "Compile error (embedded)",
+        "cross_format": {
+            "role": "JSON health map — embedded data consumed by Go health scoring system.",
+            "toml_counterpart": "none — health maps are JSON-native (embedded via Go embed.FS, parsed at init)",
+            "relationship": "JSON defines health scoring DATA (operation weights, multipliers). TOML would define health CONFIGURATION if needed. This is data, not config."
+        }
+    },
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6+ available for domain-specific metadata in derived files",
+        "rule": "M1-M5 are the base contract. Health map files extend with M6_operational for runtime behavior."
+    },
+    "_M6_operational": {
+        "blocking": "no (-1) — health maps are declarative",
+        "health": "Base100 | granted (1): all ops mapped | deferred (0): some missing | denied (-1): parse error",
+        "on_error": {
+            "missing_operation": "Use default cascade multiplier",
+            "invalid_score": "Fall back to CRUD base score",
+            "type_mismatch": "Parse error at load time"
+        }
+    },
+    "_M7_paradigm": {
+        "philosophy": "Measurement for restoration, not condemnation",
+        "crud_meaning": {
+            "C": "Create — bringing new existence (+1 success, cascade on fail)",
+            "R": "Read — understanding what exists (+1 success, minimal cascade)",
+            "U": "Update — transforming toward new state (+1 success, medium cascade)",
+            "D": "Delete — removing existence, irreversible (+1 success, severe cascade)"
+        },
+        "cascade_severity": {
+            "hardware": "10 — most severe, physical damage risk",
+            "filesystem": "5 — persistent state corruption",
+            "memory": "3 — recoverable on restart",
+            "readonly": "2 — minimal impact",
+            "default": "1 — baseline"
+        },
+        "scoring_flow": "operation -> CRUD type -> base score -> cascade multiplier -> health impact"
+    },
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format_note": "JSON strict — no comments, no trailing commas, UTF-8, LF line endings.",
+    "_Cc_encoding": "utf-8",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every operation must have crud field (C, R, U, or D)",
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "crud_base": {
+        "create": { "upper": 1, "lower": -5, "cascade": "filesystem" },
+        "read": { "upper": 1, "lower": -2, "cascade": "readonly" },
+        "update": { "upper": 1, "lower": -3, "cascade": "memory" },
+        "delete": { "upper": 1, "lower": -10, "cascade": "hardware" }
+    },
+
+    "operations": {
+        "[operation_name]": {
+            "crud": "[C/R/U/D]",
+            "description": "[What this operation does]",
+            "cascade_override": "[optional — override base cascade]"
+        }
+    },
+
+    "cascade_multipliers": {
+        "hardware": 10,
+        "filesystem": 5,
+        "memory": 3,
+        "readonly": 2,
+        "default": 1
+    },
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+    "_Cv_verify": "python -m json.tool health-map.json",
+    "_Cv_expected_state": "Valid JSON with crud_base, operations, and cascade_multipliers present.",
+    "_Cv_required_keys": ["crud_base", "operations", "cascade_multipliers"],
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure (pragma → metadata → content → closing)",
+        "Modify crud_base without understanding downstream impact",
+        "Remove required _ fields without updating the schema"
+    ],
+    "_X1_careful": [
+        "Change CRUD mappings (affects all health scores)",
+        "Change cascade multipliers (affects severity calculations)",
+        "Adding new M sections (requires schema version bump)"
+    ],
+    "_X1_safe": [
+        "Add operations in Co section",
+        "Update operation descriptions",
+        "Adjust health notes and _ documentation fields"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "[operations to add]"
+    ],
+    "_X2_considered": [
+        "[cascade adjustments being evaluated]"
+    ],
+    "_X2_rejected": [
+        "[scoring decisions that won't change]"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "missing_crud": "Every operation must have crud field with C, R, U, or D",
+        "invalid_cascade": "cascade_override must be: hardware, filesystem, memory, readonly, default",
+        "duplicate_op": "Each operation name must be unique within map",
+        "type_mismatch": "Verify consumer struct tags match JSON keys. Go uses json.Unmarshal tags."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "b-word/seed/data/json/3block/data.json — Parent template",
+        "b-word/definitions/omni/json-3block-schema.jsonc — Validation schema"
+    ],
+    "_X4_validate": "python -m json.tool health-map.json",
+    "_X4_test": "go test ./pkg/health/... -run TestMapLoad",
+
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "Health map template. Copy and instantiate for each component (lexer, parser, codegen). CRUD scoring provides just measurement — restoration, not condemnation.",
+    "_X5_scripture": "In the beginning God created the heaven and the earth. — Genesis 1:1",
+    "_X5_anchor": "A just weight and balance are the LORD's. Health maps measure justly.",
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

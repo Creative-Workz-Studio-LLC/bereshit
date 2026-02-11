@@ -1,0 +1,348 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-seed-data-json-formats-log-format",
+    "_P1_from": "b-word/seed/data/json/3block/config.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "format",
+    "_P2_role": "seed",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "templates",
+    "_P3_layer": "b-word/seed/data/json/formats",
+    "_P3_includes": "none",
+    "_P3_provides": ["LOG_FORMAT_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "CPI-SI Structured Log Format",
+    "_P5_brief": "Structured logging format — parsable for machines, readable for humans",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    // M.1 IDENTITY
+    "_M1_identity": {
+        "file": "log-format.jsonc",
+        "key": "B-seed-data-json-formats-log-format",
+        "title": "CPI-SI Structured Log Format",
+        "type": "Data (Template)",
+        "component": "Seed",
+        "role": "Defines the log entry format — single-line for grep, multi-line for debugging"
+    },
+
+    // M.2 STATE
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2025-11-09",
+        "updated": "2026-02-09"
+    },
+
+    // M.3 ATTRIBUTION
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)"
+    },
+
+    // M.4 GROUNDING — "Ponder the path of thy feet, and let all thy
+    //   ways be established." — Proverbs 4:26
+    "_M4_grounding": {
+        "scripture": "Proverbs 4:26 — Ponder the path of thy feet, and let all thy ways be established.",
+        "principle": "Logs ponder the system's path. Structured entries establish traceability."
+    },
+
+    // M.5 DEPENDENCIES
+    "_M5_dependencies": {
+        "requires": "JSONC parser, logging runtime (Go slog, custom formatter)",
+        "consumers": "All CPI-SI components producing log output",
+        "cross_format": {
+            "role": "JSONC log format template — defines structured log output consumed by Go slog and custom formatters.",
+            "toml_counterpart": "none — log format is JSONC-native (runtime output format, not build configuration)",
+            "relationship": "JSONC defines log OUTPUT structure. TOML defines log CONFIGURATION (levels, destinations). Different concerns, complementary formats."
+        }
+    },
+
+    // M.ext — Extension Contract
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6+ available for domain-specific metadata in derived files",
+        "rule": "M1-M5 are the base contract. Derived log files inherit all five and may extend with M6+ for runtime behavior."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // Two modes: COMPACT for grep/scanning, VERBOSE for full context.
+    // Design: single-line entries with visual indicators for humans,
+    // structured delimiters for machines.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_design_goals": [
+        "Single-line entries for grep/awk processing",
+        "Visual indicators for human scanning",
+        "Structured details that can be parsed",
+        "Clear entry boundaries"
+    ],
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Format modes, field definitions, parsing rules, and examples.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "modes": {
+        "compact": {
+            "description": "Single-line entries for quick scanning and grep",
+            "format": "[{timestamp}] {level} | {component} | {message} ({health}%{emoji})",
+            "example": "[2026-02-09 03:30:00] INFO | session | Started workspace /project (85%💛)"
+        },
+        "verbose": {
+            "description": "Multi-line entries with full context",
+            "format": "[{timestamp}] {level} | {component} | {identity}\n  EVENT: {event}\n  HEALTH: {health}% ({raw}, Δ{delta}) {emoji}\n  {details}\n---",
+            "example": "[2026-02-09 03:30:00.123] INFO | session | user@host:1234\n  EVENT: workspace_loaded\n  HEALTH: 85% (raw: 85, Δ+5) 💛\n  DETAILS:\n    workspace: /project\n    branch: main\n---"
+        }
+    },
+
+    "fields": {
+        "timestamp": {
+            "compact": "YYYY-MM-DD HH:MM:SS",
+            "verbose": "YYYY-MM-DD HH:MM:SS.mmm",
+            "description": "ISO-style timestamp, milliseconds in verbose mode"
+        },
+        "level": {
+            "values": ["DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
+            "width": 5,
+            "description": "Log severity, fixed width for alignment"
+        },
+        "component": {
+            "max_width": 12,
+            "description": "Source component name, truncated if needed"
+        },
+        "identity": {
+            "format": "{user}@{host}:{pid}",
+            "description": "Execution context — only in verbose mode"
+        },
+        "health": {
+            "range": "0-100",
+            "emoji_map": {
+                "90-100": "💚",
+                "70-89": "💛",
+                "50-69": "🧡",
+                "30-49": "❤️",
+                "10-29": "🩸",
+                "0-9": "☠️"
+            },
+            "description": "Health percentage with visual indicator"
+        },
+        "message": {
+            "max_length": 80,
+            "description": "Brief description in compact mode"
+        },
+        "event": {
+            "format": "snake_case",
+            "description": "Machine-readable event name in verbose mode"
+        },
+        "details": {
+            "format": "key: value",
+            "indent": 4,
+            "description": "Structured key-value pairs, one per line"
+        }
+    },
+
+    "parsing": {
+        "entry_delimiter": "---",
+        "field_delimiter": " | ",
+        "detail_prefix": "    ",
+        "timestamp_regex": "\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}",
+        "health_regex": "\\((\\d+)%([💚💛🧡❤️🩸☠️])\\)",
+        "grep_examples": {
+            "all_errors": "grep '\\] ERROR' logfile",
+            "component": "grep '| session |' logfile",
+            "health_critical": "grep -E '\\([0-9]%|[12][0-9]%\\)' logfile",
+            "time_range": "grep '\\[2026-02-09 0[3-4]:' logfile"
+        }
+    },
+
+    "examples": {
+        "compact_info": "[2026-02-09 03:30:00] INFO  | session      | Workspace loaded successfully (85%💛)",
+        "compact_error": "[2026-02-09 03:30:05] ERROR | validation   | Config file not found (45%❤️)",
+        "compact_debug": "[2026-02-09 03:30:10] DEBUG | hooks        | Pre-use hook triggered (90%💚)",
+        "verbose_full": [
+            "[2026-02-09 03:30:00.123] INFO | session | seanje@creativeworkz:1234",
+            "  EVENT: workspace_loaded",
+            "  HEALTH: 85% (raw: 85, Δ+5) 💛",
+            "  DETAILS:",
+            "    workspace: /media/seanje-lenox-wise/Project/Bereshit",
+            "    branch: main",
+            "    uncommitted: 153",
+            "---"
+        ]
+    },
+
+    "usage": {
+        "default_mode": "compact",
+        "verbose_triggers": ["DEBUG level", "error conditions", "audit requirements"],
+        "rotation": "Daily or 10MB, whichever first",
+        "retention": "7 days compact, 30 days verbose"
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+    "_Cv_verify": "npx jsonc-parser validate log-format.jsonc",
+    "_Cv_expected_state": "Valid JSONC with complete mode definitions, field specs, and parsing rules.",
+    "_Cv_required_keys": ["modes", "fields", "parsing", "usage"],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note",
+
+    // X.1 POLICY
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Change the compact format string (breaks all log parsers)",
+        "Remove health emoji mapping (visual scanning depends on it)",
+        "Change field delimiter from ' | ' (breaks grep patterns)"
+    ],
+    "_X1_careful": [
+        "Adding new log levels (all consumers must handle them)",
+        "Changing timestamp format (breaks time-range queries)",
+        "Modifying health ranges (affects alerting thresholds)"
+    ],
+    "_X1_safe": [
+        "Adding new grep examples",
+        "Adding verbose-only fields",
+        "Updating retention policies"
+    ],
+
+    // X.2 EXTENSION
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Structured JSON output mode for log aggregation (ELK, Loki)",
+        "Correlation IDs linking log entries across components"
+    ],
+    "_X2_considered": [
+        "Binary log format (CBOR) for high-throughput components",
+        "Log level filtering at format level vs runtime level"
+    ],
+
+    // X.3 TROUBLESHOOTING
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "emoji not rendering": "Terminal must support Unicode. Use a Nerd Font or fallback to text indicators.",
+        "grep misses entries": "Check delimiter spacing. Format uses ' | ' (space-pipe-space), not '|'.",
+        "health always 0": "Health system may not be initialized. Check health loader runs before first log.",
+        "timestamps misaligned": "Compact uses seconds, verbose uses milliseconds. Don't mix in same grep."
+    },
+
+    // X.4 REFERENCE
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "b-word/seed/data/json/formats/debug-format.jsonc — Debug session format (companion)",
+        "b-word/seed/data/json/formats/recovery-format.jsonc — Recovery action format (companion)",
+        "b-word/seed/data/json/3block/config.jsonc — Parent template",
+        "b-word/definitions/omni/json-3block-schema.jsonc — Validation schema"
+    ],
+    "_X4_validate": "npx jsonc-parser validate log-format.jsonc",
+
+    // X.5 NOTE
+    // Two modes serve one purpose: traceability.
+    // Compact for the daily stream, verbose when you need to dig.
+    // Logs are the system pondering its own path.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "Log format template. Two modes (compact/verbose) serve one purpose: traceability. Parsable for machines, readable for humans. The system ponders its own path.",
+    "_X5_scripture": "In the beginning God created the heaven and the earth. — Genesis 1:1",
+    "_X5_anchor": "Every log entry is a witness. Structure makes the witness reliable.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

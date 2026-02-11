@@ -1,0 +1,496 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from universal scene-defaults, override allowed",
+        "_rpg": "RPG-SPECIFIC — added by this derivation, not in universal",
+        "_cpisi": "CPI-SI DECISION — assessment-based logic for encounter flow"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-rpg-scene-story-encounter",
+    "_P1_from": "cornerstone/data/game/universal/scene/scene-defaults.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-encounter-rpg",
+    "_P2_role": "rung",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Baton — passes encounter context to combat system (triggers combat scene with specific parameters)",
+    "_P3_layer": "cornerstone/data/game/rpg/scene/frames",
+    "_P3_includes": "none",
+    "_P3_provides": ["RPG_STORY_ENCOUNTER_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "RPG Story Encounter Template",
+    "_P5_brief": "Script-triggered narrative encounters — WHAT specific enemies to fight and WHY (narrative context). Pushes a combat scene with specific parameters. Trigger conditions, enemy references, dialogue hooks, consequences. Story encounters are purposeful, not random.",
+    "_P5_usage": "cp story-encounter.jsonc [game]/data/scenes/chapter1-ambush.jsonc -> update pragma -> fill encounter data",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "story-encounter.jsonc",
+        "key": "B-cornerstone-data-game-rpg-scene-story-encounter",
+        "title": "RPG Story Encounter Template",
+        "type": "Data (Template)",
+        "component": "Baton — passes narrative encounter context to combat system",
+        "role": "Define script-triggered encounters — specific enemies, trigger conditions, narrative hooks, consequences"
+    },
+
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2025-12-03",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "To every thing there is a season, and a time to every purpose under the heaven."
+    "_M4_grounding": {
+        "scripture": "Ecclesiastes 3:1 — To every thing there is a season, and a time to every purpose under the heaven.",
+        "principle": "Story encounters happen at their appointed time — scripted, not random. Each battle serves the narrative, not just mechanics.",
+        "anchor": "1 Samuel 17:45 — David came in the name of the LORD of hosts — purpose defines the battle."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "engine/systems/src/combat/encounter.c — encounter_load_story(), encounter_trigger()",
+        "integration": "Loaded when script/dialogue/scene triggers a story encounter. The encounter template passes context to the combat system — which enemies, what mode, what dialogue hooks, what consequences. Pushes a combat scene with these specific parameters.",
+        "if_missing": "Tripwire to generic combat with LOUD warning — story context lost, enemies become random pool",
+        "related_data": {
+            "derives_from": {
+                "scene-defaults": "Universal scene template — base structure (identity, stack_behavior, data_requirements)"
+            },
+            "references": {
+                "combat": "Story encounter pushes a combat scene — combat.jsonc governs HOW the battle plays",
+                "entity-defaults": "Enemy references (entity_ids) load stats from entity-defaults",
+                "dialogue": "Pre/post battle dialogue hooks reference dialogue system",
+                "resolution": "Post-combat resolution loaded alongside combat scene"
+            },
+            "referenced_by": {
+                "script-system": "Game scripts trigger encounters by encounter_id",
+                "dialogue-system": "Dialogue choices can trigger encounters",
+                "scene-system": "Scene events (entering area, interacting with object) can trigger encounters"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/rpg/scene/frames/story-encounter.jsonc",
+        "derives_from": "cornerstone/data/game/universal/scene/scene-defaults.jsonc"
+    },
+
+    "_M7_classification": {
+        "tags": "encounter, story, rpg, narrative, script-triggered, combat-trigger, scene-frame, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Define story encounters — WHAT specific enemies and WHY (narrative). Separate from HOW the battle plays (combat.jsonc) and WHAT happens after (resolution.jsonc).",
+        "core_design": "Script-triggered encounters — specific enemies, not pools. Trigger conditions map to script/dialogue/scene/item events. Each encounter is purposeful.",
+        "philosophy": "Story battles serve narrative — each encounter has meaning. Random encounters test skill; story encounters test character. The narrative determines the fight.",
+        "key_features": {
+            "inherited_from_universal": "identity, stack_behavior, data_requirements — base scene contract",
+            "rpg_trigger_conditions": "Script ID, dialogue choice, scene event, item use — what causes this encounter to fire",
+            "rpg_specific_enemies": "Enemy references (entity_ids), not random pools — each enemy is placed intentionally",
+            "rpg_dialogue_hooks": "Pre-battle, post-victory, post-defeat dialogue integration",
+            "rpg_consequences": "Victory/defeat affect story state — flags, karma, affinity, game flow",
+            "rpg_repeatability": "One-time or repeatable flag — some encounters happen once, some can be re-triggered"
+        }
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2025-12-03) — Initial template creation (old comment-based format)",
+            "a-02.00 (2026-02-09) — Flat convention, scene stack integration, structured IDs"
+        ],
+        "current": "RPG story encounter template — trigger conditions, specific enemies, dialogue hooks, consequences, scene-scoped",
+        "planned": [
+            "Multi-phase story encounters (encounters that evolve mid-battle)",
+            "Conditional enemy reinforcements based on story state",
+            "Cutscene integration (mid-battle narrative events)",
+            "Environmental storytelling during combat (terrain changes reflecting narrative)"
+        ]
+    },
+
+    // Where this data lives in the stack-based scene system
+    "_M10_game_state": {
+        "lifetime": "scene",
+        "description": "Scene-scoped — story encounter IS a scene frame. It pushes a combat scene with narrative parameters. The encounter itself is the trigger and context wrapper.",
+        "loaded_at": "On demand — loaded when script/dialogue/scene/item triggers this encounter",
+        "persists": "Duration of the encounter sequence (pre-dialogue -> combat -> post-dialogue -> consequences)",
+        "consumed_by": "Encounter system — encounter_trigger() reads config, pushes combat with parameters, handles pre/post dialogue, applies consequences",
+        "load_priority": 2,
+        "cache_policy": "scene-bound — loaded on trigger, encounter context evicted after consequences applied",
+        "authority_rank": "engine-default (universal) < rpg-default (this) < chapter-specific < event-override",
+        "id_format": "encounter_id: ENC-NNN-TAG (e.g., ENC-001-FOREST_AMBUSH, ENC-100-CHAPTER1_BOSS, ENC-500-SECRET_GUARDIAN). ref_name for human-readable."
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 (game state) tracks stack-based scene system lifetime.",
+        "derivation": "_P1_from points to universal scene-defaults. RPG adds trigger conditions, specific enemies, dialogue hooks, consequences."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // RPG story encounter — extends universal scene structure.
+    // Inherits: identity, stack_behavior, data_requirements (from scene-defaults)
+    // Adds: trigger, enemies (specific), combat_ref, dialogue_hooks, consequences, rewards
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Story encounters = WHAT triggers a specific narrative battle.
+    // Separate from:
+    //   combat.jsonc = HOW the battle plays out
+    //   resolution.jsonc = WHAT happens after
+    //   actions.jsonc = WHAT combatants can DO
+    //
+    // Key distinction from random encounters:
+    //   Random = enemy pool + rate table + location conditions
+    //   Story = specific enemies + script trigger + narrative hooks
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every story encounter must have identity, trigger, enemies, and stack_behavior. Dialogue hooks and consequences are optional but expected for narrative encounters.",
+    "_Cc_id_format": "encounter_id: ENC-NNN-TAG. Standard: ENC-001+. Chapter encounters: ENC-100+. Secret/optional: ENC-500+. ref_name carries human-readable snake_case.",
+    "_Cc_derivation": "Tripwire chain: rpg/story-encounter -> universal/scene-defaults -> engine hardcoded fallback",
+    "_Cc_scene_role": "Story encounter is a SCENE FRAME — it pushes a combat scene with narrative context. The encounter wraps the combat: pre-dialogue -> push combat -> post-dialogue -> consequences.",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Example: Forest ambush — script-triggered encounter with goblin scouts.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "Forest Ambush",
+    "version": "a-01.00",
+
+    // Identity — _inh from universal scene-defaults, values RPG-specific
+    "identity": {
+        "encounter_id": "ENC-001-FOREST_AMBUSH",
+        "ref_name": "encounter_forest_ambush",
+        "name": "Forest Ambush Encounter",
+        "scene_type": "story_encounter",
+        "description": "Goblin scouts ambush the party in the forest — triggered by story script when party enters the Darkwood path."
+    },
+
+    // Trigger — _rpg: what causes this encounter to fire
+    // type: script | dialogue | scene | item
+    // id: the specific script/dialogue/scene/item event that triggers this
+    // repeatable: can this encounter fire more than once?
+    "trigger": {
+        "type": "scene",
+        "id": "SCN-DARKWOOD_PATH_ENTER",
+        "conditions": {
+            "story_flag_required": "chapter1_started",
+            "story_flag_excludes": "forest_ambush_complete",
+            "party_level_minimum": null,
+            "time_of_day": null
+        },
+        "repeatable": false
+    },
+
+    // Enemies — _rpg: SPECIFIC enemies for this encounter (NOT pools)
+    // Each enemy is a reference to entity-defaults — stats loaded by entity_id
+    // Unlike random encounters, every enemy is intentionally placed
+    "enemies": [
+        {
+            "entity_id": "ENT-004-GOBLIN_SCOUT",
+            "count": 3,
+            "position_hint": "flanking",
+            "level_override": null
+        },
+        {
+            "entity_id": "ENT-005-GOBLIN_ARCHER",
+            "count": 1,
+            "position_hint": "rear",
+            "level_override": null
+        }
+    ],
+
+    // Combat Reference — _rpg: what combat configuration to use
+    // The encounter pushes a combat scene using this configuration as a base
+    // combat_ref points to a combat template; overrides customize it
+    "combat_ref": {
+        "base": "CMB-001-FOREST_BASIC",
+        "overrides": {
+            "combat_mode": "realtime",
+            "escape_allowed": false,
+            "ambush": true,
+            "terrain_type": "forest",
+            "music_id": "mus_battle_ambush"
+        }
+    },
+
+    // Data Requirements — _inh from universal scene-defaults
+    // Additional data loaded alongside the combat scene
+    "data_requirements": {
+        "action_sets": [],
+        "terrain_ref": null,
+        "item_pools": [],
+        "additional": ["dialogue_hooks"]
+    },
+
+    // Dialogue Hooks — _rpg: narrative integration
+    // Pre-battle: plays before combat starts
+    // Post-victory: plays after player wins
+    // Post-defeat: plays after player loses (if applicable)
+    // Mid-battle: triggered by scripted_events in the combat config
+    "dialogue_hooks": {
+        "pre_battle": "DLG-100-AMBUSH_REVEAL",
+        "post_victory": "DLG-101-SCOUTS_DEFEATED",
+        "post_defeat": "DLG-102-CAPTURED_BY_SCOUTS",
+        "mid_battle": []
+    },
+
+    // Consequences — _rpg: what happens based on outcome
+    // Story encounters have meaningful consequences — this isn't just XP
+    "consequences": {
+        "victory": {
+            "story_flags_set": ["forest_ambush_complete", "goblin_scouts_defeated"],
+            "story_flags_clear": [],
+            "karma_change": 0,
+            "affinity_changes": [],
+            "unlock": null,
+            "transition": "continue_darkwood_path"
+        },
+        "defeat": {
+            "game_over": false,
+            "retry_allowed": true,
+            "story_flags_set": ["forest_ambush_failed"],
+            "story_flags_clear": [],
+            "karma_change": 0,
+            "transition": "captured_by_goblins_scene"
+        }
+    },
+
+    // Rewards — _rpg: what player gets from winning
+    // Separate from resolution.jsonc (which handles the detailed reward logic)
+    // This is the encounter's contribution — resolution handles the full calculation
+    "rewards": {
+        "exp_base": 120,
+        "gold_base": 45,
+        "items_guaranteed": [
+            { "item_id": "ITM-050-GOBLIN_MAP", "count": 1 }
+        ],
+        "items_random": [],
+        "items_rare": []
+    },
+
+    // Stack Behavior — _inh from universal scene-defaults, RPG-specific values
+    // Story encounter IS a scene frame — it wraps the combat scene with narrative
+    "stack_behavior": {
+        "push_mode": "standard",
+        "allows_pause": false,
+        "allows_overlay": ["dialogue", "cutscene"],
+        "on_push": "check trigger conditions, play pre_battle dialogue, load enemies, push combat scene with combat_ref + overrides",
+        "on_pop": "play post_victory/post_defeat dialogue, apply consequences (story flags, karma, affinity), apply rewards, return to previous scene",
+        "on_pause": "preserve encounter state (which dialogue phase, consequence pending)",
+        "on_resume": "continue encounter sequence from paused point"
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-encounters"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "identity", "trigger", "enemies", "stack_behavior"],
+        "rpg_required": ["combat_ref", "consequences"],
+        "optional": ["dialogue_hooks", "rewards", "data_requirements"],
+        "identity_required": ["encounter_id", "ref_name", "name", "scene_type"],
+        "trigger_required": ["type", "id", "repeatable"],
+        "enemy_required": ["entity_id", "count"]
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Adjust dialogue hook IDs (change which dialogue plays)",
+            "Add/remove enemies (change encounter composition)",
+            "Adjust rewards (exp, gold, items)",
+            "Modify consequences (story flags, karma, affinity)",
+            "Change combat_ref overrides (mode, terrain, music)"
+        ],
+        "careful": [
+            "Change encounter_id (breaks script/dialogue/scene references)",
+            "Change trigger conditions (may break story flow)",
+            "Change combat_ref base (points to different combat configuration)",
+            "Modify stack_behavior (affects encounter lifecycle)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required keys (identity, trigger, enemies, stack_behavior)",
+            "Change scene_type from story_encounter"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy -> X.2 Extension -> X.3 Troubleshooting -> X.4 Reference -> X.5 Note -> X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required keys (identity, trigger, enemies, stack_behavior)",
+        "Change scene_type from story_encounter"
+    ],
+    "_X1_careful": [
+        "Change encounter_id (breaks script/dialogue/scene references)",
+        "Change trigger conditions (may break story flow)",
+        "Change combat_ref base (different combat configuration)"
+    ],
+    "_X1_safe": [
+        "Adjust dialogue hooks, enemies, rewards, consequences",
+        "Change combat_ref overrides (mode, terrain, music)",
+        "Modify story flags (set/clear)"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Multi-phase story encounters (encounters that evolve mid-battle)",
+        "Conditional enemy reinforcements based on story state",
+        "Cutscene integration (mid-battle narrative events)",
+        "Environmental storytelling (terrain changes reflecting narrative)",
+        "Choice-during-combat (dialogue options that affect the battle in progress)"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "encounter_not_triggering": "Check trigger type matches event system. Verify trigger id exists. Confirm conditions (required flags set, excluded flags not set). Check repeatable flag if retrying.",
+        "enemy_not_appearing": "Verify entity_id matches entity-defaults. Check count > 0. Confirm level_override is null or valid number.",
+        "dialogue_not_playing": "Verify dialogue hook IDs exist in dialogue system. Check for null vs empty string. Confirm dialogue system is loaded.",
+        "consequences_not_applying": "Check story flag naming matches game state system. Verify karma_change is a number. Confirm transition scene exists.",
+        "combat_not_starting": "Check combat_ref.base points to valid combat configuration. Verify overrides don't conflict with base combat settings.",
+        "tripwire_to_universal": "RPG story encounter file missing or malformed. Check logs for LOUD warning. Verify JSON syntax."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/game/universal/scene/scene-defaults.jsonc — Universal parent template",
+        "cornerstone/data/game/rpg/scene/frames/combat.jsonc — Combat configuration (HOW the battle plays)",
+        "cornerstone/data/game/rpg/scene/data/resolution.jsonc — Post-battle handling (rewards, consequences)",
+        "cornerstone/data/game/rpg/scene/frames/dialogue.jsonc — Dialogue templates for hooks",
+        "cornerstone/data/game/rpg/global/entity-defaults.jsonc — Enemy stat definitions"
+    ],
+    "_X4_required": ["name", "version", "identity", "trigger", "enemies", "stack_behavior"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-encounters",
+    "_X4_usage_c": "encounter_load_story(\"rpg/data/scenes/forest-ambush.jsonc\"); encounter_trigger(&story_encounter);",
+    "_X4_id_ranges": "Standard: ENC-001+, Chapter: ENC-100+, Secret/Optional: ENC-500+",
+    "_X4_trigger_types": "script | dialogue | scene | item",
+
+    // Story encounters happen at their appointed time.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "RPG story encounter — WHAT specific enemies to fight and WHY. Scene frame that wraps combat with narrative context: pre-dialogue, combat, post-dialogue, consequences. Every story battle has purpose.",
+    "_X5_scripture": "To every thing there is a season, and a time to every purpose under the heaven. — Ecclesiastes 3:1",
+    "_X5_anchor": "Story battles serve narrative. Each encounter has meaning. Purpose defines the fight.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "Remove this section when instantiating",
+    "_X6_usage": "cp story-encounter.jsonc [game]/data/scenes/chapter1-ambush.jsonc -> update pragma -> fill encounter data",
+    "_X6_update": [
+        "_P1_key: unique identifier for this encounter",
+        "_M1_identity: file, key, title, role",
+        "_M2_state: created/updated dates",
+        "_M6_location: path",
+        "Co section: identity (ENC-NNN-TAG), trigger, enemies, combat_ref, dialogue_hooks, consequences, rewards, stack_behavior",
+        "Remove _X6 section when instantiating"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

@@ -1,0 +1,377 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-universal-shared-game-types",
+    "_P1_from": "b-word/seed/data/json/3block/data.json",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-enums",
+    "_P2_role": "ladder",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Ladder — foundational vocabulary that all game data references",
+    "_P3_layer": "cornerstone/data/game/universal/shared",
+    "_P3_includes": "none",
+    "_P3_provides": ["GAME_TYPES_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "Game Types — Centralized Enum Definitions",
+    "_P5_brief": "Single source of truth for all valid enum values across game data — item types, elements, slots, rarities, status effects. Loaded first, referenced by all.",
+    "_P5_usage": "cp game-types.jsonc [game]/data/types.jsonc -> update pragma -> add/remove enums for your game",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "game-types.jsonc",
+        "key": "B-cornerstone-data-game-universal-shared-game-types",
+        "title": "Game Types — Centralized Enum Definitions",
+        "type": "Data (Template)",
+        "component": "Ladder — foundational vocabulary that all game data references",
+        "role": "Define valid enum values for the entire game data system"
+    },
+
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-09",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "God called the light Day, and the darkness he called Night."
+    "_M4_grounding": {
+        "scripture": "Genesis 1:5 — And God called the light Day, and the darkness he called Night. And the evening and the morning were the first day.",
+        "principle": "Naming is the first act of ordering creation. Before content, names. Before behavior, vocabulary. The types define the language the game speaks.",
+        "anchor": "Genesis 2:19 — And whatsoever Adam called every living creature, that was the name thereof."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "ALL game data files — stats, actions, items, entities, scenes",
+        "integration": "Loaded at engine initialization before all other game data. Enum validation checks values against these arrays.",
+        "if_missing": "Engine uses hardcoded fallback enums with LOUD warning — data files may reference invalid types",
+        "related_data": {
+            "references": "none — game-types is the vocabulary foundation, references nothing",
+            "referenced_by": {
+                "stats-defaults": "resistance keys must match elements array",
+                "action-defaults": "effects.damage_type, effects.element, targeting.target_type reference enums here",
+                "item-defaults": "identity.type, identity.rarity, equipment.slot reference enums here",
+                "entity-defaults": "class, equipment_slots reference enums here",
+                "scene-defaults": "scene_type references enums here"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/universal/shared/game-types.jsonc",
+        "derives_from": "b-word/seed/data/json/3block/data.json"
+    },
+
+    "_M7_classification": {
+        "tags": "enum, types, constants, vocabulary, foundation, shared-state, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Centralize all valid enum values — one file, one source of truth",
+        "core_design": "Arrays of valid strings — engine validates data against these at load time",
+        "philosophy": "Naming precedes creation. The vocabulary defines what the game can express.",
+        "key_features": {
+            "item_types": "What items CAN be — weapon, armor, consumable, etc.",
+            "elements": "Elemental vocabulary — fire, ice, thunder, etc.",
+            "status_effects": "Status vocabulary — poison, blind, silence, etc.",
+            "target_types": "How actions reach targets — self, single, area, all"
+        }
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2026-02-09) — Initial creation from cross-reference analysis of stats/actions/items templates"
+        ],
+        "current": "Game types enum file — centralized vocabulary, shared lifetime, load priority 0",
+        "planned": [
+            "Damage formula type enums (flat, scaling, percentage)",
+            "CPI-SI decision behavior enums for NPC/entity targeting",
+            "Crafting recipe category enums"
+        ]
+    },
+
+    // Where this data lives in the stack-based scene system
+    "_M10_game_state": {
+        "lifetime": "shared",
+        "description": "Shared state — loaded once at startup, referenced by every data file in the system.",
+        "loaded_at": "Engine initialization — loaded FIRST before all other game data",
+        "persists": "Entire application lifecycle — never evicted",
+        "consumed_by": "Enum validation system — type_is_valid() checks all data loads",
+        "load_priority": 0,
+        "cache_policy": "permanent — always in memory, tiny footprint, never evicted",
+        "authority_rank": "engine-hardcoded < universal < game-specific",
+        "id_format": "No individual IDs — this file IS the ID vocabulary. Values are the IDs other files use."
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 (game state) tracks stack-based scene system lifetime.",
+        "rule": "M1-M5 are the base contract. M6+ extends for domain-specific metadata."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // Data file in JSONC format — structure from data.json, comments from JSONC conventions.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Each enum is an array of valid string values.
+    // Engine validates data files by checking: is this value in the corresponding array?
+    // Adding a value here is SAFE. Removing one is CAREFUL (breaks existing data).
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for enum category names, lowercase for enum values",
+    "_Cc_constraint": "All enum values are lowercase strings. Arrays only — no objects in enums.",
+    "_Cc_id_format": "No instance IDs — this file defines the vocabulary. Enum values use lowercase snake_case (key_item, item_use). Instance data files use TYPE-NNN-TAG structured IDs (ITM-001-IRON_SWD, ACT-001-BASIC_ATK).",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // The universal game vocabulary. Every value here is a word the game can speak.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "Universal Game Types",
+    "version": "a-01.00",
+
+    // Item classification — what items CAN be
+    // Used by: item-defaults identity.type
+    "item_types": ["weapon", "armor", "accessory", "consumable", "key_item", "material"],
+
+    // Equipment slots — where items equip
+    // Used by: item-defaults equipment.slot, entity-defaults equipment_slots
+    "equipment_slots": ["weapon", "head", "body", "hands", "feet", "accessory"],
+
+    // Damage types — how damage is calculated
+    // Used by: action-defaults effects.damage_type
+    "damage_types": ["physical", "magical", "true"],
+
+    // Elements — elemental affinities and resistances
+    // Used by: action-defaults effects.element, item-defaults equipment.element, stats-defaults resistance keys
+    "elements": ["fire", "ice", "thunder", "light", "dark"],
+
+    // Target types — how actions reach targets
+    // Used by: action-defaults targeting.target_type
+    "target_types": ["self", "single", "area", "all"],
+
+    // Target sides — which side of battle
+    // Used by: action-defaults targeting.target_side
+    "target_sides": ["ally", "enemy", "any"],
+
+    // Rarities — item quality tiers
+    // Used by: item-defaults identity.rarity
+    "rarities": ["common", "uncommon", "rare", "epic", "legendary"],
+
+    // Status effects — conditions applied/resisted
+    // Used by: action-defaults effects.status_apply, item-defaults equipment.status_resist, stats-defaults resistance keys
+    "status_effects": ["poison", "blind", "silence", "paralyze", "sleep", "burn", "freeze"],
+
+    // Action categories — what actions ARE
+    // Used by: action-defaults identity.type
+    "action_types": ["attack", "skill", "ability", "item_use"],
+
+    // Scene types — what scenes ARE in the stack system
+    // Used by: scene-defaults identity.scene_type
+    "scene_types": ["exploration", "combat", "dialogue", "shop", "menu", "cutscene"],
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-types"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "item_types", "equipment_slots", "damage_types", "elements", "target_types", "rarities", "status_effects", "action_types"],
+        "optional": ["target_sides", "scene_types"],
+        "value_format": "All values are arrays of lowercase strings"
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Add new values to existing arrays (new item type, new element)",
+            "Add comments explaining enum purpose",
+            "Add new enum categories"
+        ],
+        "careful": [
+            "Remove values (breaks existing data referencing them)",
+            "Rename values (breaks all references)",
+            "Change array to object (breaks validation)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required enum categories",
+            "Use non-string values in enum arrays"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note → X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required enum categories",
+        "Use non-string values in enum arrays"
+    ],
+    "_X1_careful": [
+        "Remove values (breaks existing data references)",
+        "Rename values (breaks all references)",
+        "Change array to object (breaks validation)"
+    ],
+    "_X1_safe": [
+        "Add new values to existing arrays",
+        "Add new enum categories",
+        "Add comments explaining purpose"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Damage formula type enums (flat, scaling, percentage)",
+        "CPI-SI decision behavior enums for NPC/entity targeting",
+        "Crafting recipe category enums"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "invalid_type_error": "Value not in game-types array. Check spelling, check this file has the value. Add if legitimately new.",
+        "validation_mismatch": "Data file references a type not in game-types. Either add the type here or fix the data file.",
+        "game_types_not_loaded": "Engine loading order wrong. game-types must load at priority 0, before all other game data."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/base/generic-data.json — Parent data template",
+        "b-word/definitions/omni/json-3block-schema.jsonc — Validation schema",
+        "cornerstone/data/game/universal/global/stats-defaults.jsonc — Resistance keys must match elements",
+        "cornerstone/data/game/universal/scene/action-defaults.jsonc — damage_type, element, target_type reference enums",
+        "cornerstone/data/game/universal/shared/item-defaults.jsonc — identity.type, rarity, equipment.slot reference enums"
+    ],
+    "_X4_required": ["name", "version", "item_types", "equipment_slots", "damage_types", "elements", "target_types", "rarities", "status_effects", "action_types"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-types",
+
+    // Naming is the first act of ordering creation.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "Game types enum file. The vocabulary the game speaks. Loaded first, referenced by all. Add values freely — remove with care.",
+    "_X5_scripture": "And God called the light Day, and the darkness he called Night. — Genesis 1:5",
+    "_X5_anchor": "Naming precedes creation. The vocabulary defines what the game can express.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "Remove this section when instantiating",
+    "_X6_usage": "cp game-types.jsonc [game]/data/types.jsonc -> update pragma -> add/remove enums for your game",
+    "_X6_update": [
+        "_P1_key: unique identifier",
+        "_M1_identity: file, key, title, role",
+        "_M2_state: created/updated dates",
+        "_M6_location: path",
+        "Co section: add/remove enum values for your game's vocabulary",
+        "Remove _X6 section when instantiating"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

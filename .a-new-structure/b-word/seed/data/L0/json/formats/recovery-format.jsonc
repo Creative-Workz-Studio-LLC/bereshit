@@ -1,0 +1,408 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-seed-data-json-formats-recovery-format",
+    "_P1_from": "b-word/seed/data/json/3block/config.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "format",
+    "_P2_role": "seed",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "templates",
+    "_P3_layer": "b-word/seed/data/json/formats",
+    "_P3_includes": "none",
+    "_P3_provides": ["RECOVERY_FORMAT_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "CPI-SI Recovery Action Format",
+    "_P5_brief": "Recovery format — three tiers from automated fixes to human-confirmed suggestions",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    // M.1 IDENTITY
+    "_M1_identity": {
+        "file": "recovery-format.jsonc",
+        "key": "B-seed-data-json-formats-recovery-format",
+        "title": "CPI-SI Recovery Action Format",
+        "type": "Data (Template)",
+        "component": "Seed",
+        "role": "Defines the restore layer — automated fixes, manual review, and suggested confirmations"
+    },
+
+    // M.2 STATE
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-09",
+        "updated": "2026-02-09"
+    },
+
+    // M.3 ATTRIBUTION
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)"
+    },
+
+    // M.4 GROUNDING — "He restoreth my soul: he leadeth me in the paths
+    //   of righteousness for his name's sake." — Psalm 23:3
+    "_M4_grounding": {
+        "scripture": "Psalm 23:3 — He restoreth my soul: he leadeth me in the paths of righteousness for his name's sake.",
+        "principle": "Recovery is restoration to right paths. Automated where safe, guided where wisdom requires, confirmed where stakes are high."
+    },
+
+    // M.5 DEPENDENCIES
+    "_M5_dependencies": {
+        "requires": "JSONC parser, restore runtime (Go restore package)",
+        "consumers": "CPI-SI hooks, propagate-change skill, validate-omni skill, build systems",
+        "cross_format": {
+            "role": "JSONC recovery format template — defines structured recovery actions consumed by Go restore system.",
+            "toml_counterpart": "none — recovery format is JSONC-native (runtime action definitions, not build configuration)",
+            "relationship": "JSONC defines recovery ACTION structure. TOML defines system CONFIGURATION. Different concerns, complementary formats."
+        }
+    },
+
+    // M.ext — Extension Contract
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6+ available for domain-specific metadata in derived files",
+        "rule": "M1-M5 are the base contract. Derived recovery files inherit all five and may extend with M6+ for runtime behavior."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // The restore layer operates at three tiers:
+    //   AUTOMATED  — CPI-SI applies the fix directly (safe, reversible, well-understood)
+    //   MANUAL     — Human review required (complex, judgment-dependent, irreversible)
+    //   SUGGESTED  — CPI-SI can do it but waits for confirmation (capable but constrained)
+    //
+    // The tier boundary mirrors decision autonomy:
+    //   Technical implementation → AUTOMATED
+    //   Architectural direction  → MANUAL
+    //   Capable but configured to confirm → SUGGESTED
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_design_goals": [
+        "Clear tier classification for every recovery action",
+        "Audit trail showing what was fixed, by whom, and why",
+        "Escalation path from suggested → manual when complexity increases",
+        "Rollback capability for automated actions"
+    ],
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Recovery tiers, action definitions, escalation rules, and examples.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "tiers": {
+        "AUTOMATED": {
+            "description": "CPI-SI applies the fix directly without human intervention",
+            "criteria": [
+                "Action is safe and reversible",
+                "Pattern is well-understood with high confidence",
+                "No architectural or mission-level impact",
+                "Within established technical patterns"
+            ],
+            "executor": "CPI-SI (hooks, skills, build system)",
+            "confirmation": "none — applied immediately, logged for audit",
+            "rollback": "automatic — previous state preserved before fix",
+            "examples": [
+                "Formatting corrections (whitespace, line endings, encoding)",
+                "Template propagation (_pragma field updates across derived files)",
+                "Missing end tags or block markers in structured files",
+                "Import sorting and unused import removal",
+                "Schema reference path corrections"
+            ]
+        },
+        "MANUAL": {
+            "description": "Human review and action required — CPI-SI identifies but does not fix",
+            "criteria": [
+                "Action requires human judgment or domain knowledge",
+                "Change is complex with multiple valid approaches",
+                "Impact is irreversible or affects shared state",
+                "Touches architectural boundaries or mission direction"
+            ],
+            "executor": "Human (Seanje or designated reviewer)",
+            "confirmation": "required — CPI-SI presents findings, human decides",
+            "rollback": "manual — human manages rollback if needed",
+            "examples": [
+                "Architectural refactoring (moving files between layers)",
+                "Database schema migrations",
+                "Security configuration changes",
+                "License or legal text modifications",
+                "Breaking API changes affecting consumers"
+            ]
+        },
+        "SUGGESTED": {
+            "description": "CPI-SI can perform the fix but waits for explicit confirmation",
+            "criteria": [
+                "CPI-SI has the capability and understanding to fix it",
+                "Configuration requires confirmation before applying",
+                "Complexity exceeds automated threshold but is within CPI-SI ability",
+                "Action is technically sound but stakes warrant a second pair of eyes"
+            ],
+            "executor": "CPI-SI (after human confirmation)",
+            "confirmation": "required — CPI-SI prepares the fix, presents it, waits for approval",
+            "rollback": "automatic — same as AUTOMATED once confirmed",
+            "examples": [
+                "Multi-file refactoring within a single domain",
+                "Test suite updates after interface changes",
+                "Configuration value changes affecting runtime behavior",
+                "Dependency version bumps with known breaking changes",
+                "Template structure changes propagating to 10+ derived files"
+            ]
+        }
+    },
+
+    "action_format": {
+        "description": "Structure of a single recovery action entry",
+        "fields": {
+            "id": "Unique action identifier (component-timestamp-sequence)",
+            "tier": "AUTOMATED | MANUAL | SUGGESTED",
+            "category": "Category of the recovery action",
+            "source": "What detected the issue (hook, skill, build, manual inspection)",
+            "target": "File or component being recovered",
+            "description": "What the issue is and what the fix does",
+            "before": "State before recovery (snapshot or diff)",
+            "after": "State after recovery (expected result)",
+            "status": "PENDING | APPLIED | CONFIRMED | REJECTED | ROLLED_BACK",
+            "timestamp": "YYYY-MM-DD HH:MM:SS.mmm",
+            "executor": "Who applied the fix (cpi-si | human:name)",
+            "confidence": "0.0-1.0 confidence in the fix correctness",
+            "rollback_ref": "Reference to rollback data (backup path or git ref)"
+        }
+    },
+
+    "categories": {
+        "structural": "Block structure, pragma, metadata alignment",
+        "editorial": "Formatting, encoding, whitespace, naming conventions",
+        "propagation": "Template changes cascading to derived files",
+        "dependency": "Import, module, or package dependency resolution",
+        "configuration": "Config values, settings, environment variables",
+        "schema": "Schema validation failures and corrections",
+        "security": "Permission, credential, or access control issues"
+    },
+
+    "escalation": {
+        "description": "Rules for when actions escalate between tiers",
+        "automated_to_suggested": [
+            "Confidence drops below 0.8",
+            "Action affects more than 5 files",
+            "Action modifies content (not just structure)",
+            "First time encountering this pattern"
+        ],
+        "suggested_to_manual": [
+            "Confidence drops below 0.5",
+            "Action crosses architectural boundaries",
+            "Action affects shared or published interfaces",
+            "Human previously rejected a similar suggestion"
+        ],
+        "manual_to_suggested": [
+            "Human has approved the same pattern 3+ times",
+            "Action is now well-understood and reversible",
+            "Configuration explicitly allows CPI-SI handling"
+        ]
+    },
+
+    "audit_format": {
+        "compact": "[{timestamp}] {tier} | {category} | {target} | {status} ({confidence})",
+        "verbose": [
+            "[{timestamp}] {tier} | {category} | {id}",
+            "  TARGET: {target}",
+            "  DESCRIPTION: {description}",
+            "  STATUS: {status}",
+            "  CONFIDENCE: {confidence}",
+            "  EXECUTOR: {executor}",
+            "  ROLLBACK: {rollback_ref}",
+            "---"
+        ],
+        "example_compact": "[2026-02-09 03:40:00] AUTOMATED | structural | word/seed/data/config.jsonc | APPLIED (0.95)",
+        "example_verbose": [
+            "[2026-02-09 03:40:00] SUGGESTED | propagation | recovery-001-1739072400-001",
+            "  TARGET: word/seed/data/json/formats/*.jsonc (3 files)",
+            "  DESCRIPTION: Propagate updated _P4_layers value from parent template",
+            "  STATUS: PENDING",
+            "  CONFIDENCE: 0.88",
+            "  EXECUTOR: awaiting confirmation",
+            "  ROLLBACK: .recovery/backups/recovery-001-1739072400-001/",
+            "---"
+        ]
+    },
+
+    "files": {
+        "naming": "recovery-{unix_timestamp}.jsonl",
+        "location": "system/dev/recovery/",
+        "backup_location": ".recovery/backups/{action_id}/",
+        "rotation": "Keep last 30 days of recovery logs",
+        "format": "JSONL — one action per line for streaming and grep"
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+    "_Cv_verify": "npx jsonc-parser validate recovery-format.jsonc",
+    "_Cv_expected_state": "Valid JSONC with complete tier definitions, action format, categories, escalation rules, and audit format.",
+    "_Cv_required_keys": ["tiers", "action_format", "categories", "escalation", "audit_format"],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note",
+
+    // X.1 POLICY
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Allow AUTOMATED tier to perform irreversible actions",
+        "Skip audit logging for any tier",
+        "Remove rollback capability from AUTOMATED or SUGGESTED tiers",
+        "Let SUGGESTED bypass confirmation when configured to require it"
+    ],
+    "_X1_careful": [
+        "Moving actions between tiers (affects trust boundaries)",
+        "Changing escalation thresholds (affects automation scope)",
+        "Adding new categories (consumers must handle them)"
+    ],
+    "_X1_safe": [
+        "Adding examples to existing tiers",
+        "Updating confidence thresholds within established ranges",
+        "Adding grep/parsing examples to audit format"
+    ],
+
+    // X.2 EXTENSION
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Recovery dashboard integration — visual tier distribution and action history",
+        "Pattern learning — SUGGESTED actions auto-promote to AUTOMATED after consistent approval"
+    ],
+    "_X2_considered": [
+        "Cross-session recovery memory — learning from past recovery patterns",
+        "Team-level recovery coordination — multiple CPI-SI instances sharing recovery knowledge"
+    ],
+
+    // X.3 TROUBLESHOOTING
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "automated fix caused regression": "Check rollback_ref. Apply rollback. Escalate action to SUGGESTED or MANUAL tier.",
+        "suggested action never confirmed": "Review pending actions. May indicate unclear description or low confidence presentation.",
+        "confidence always low": "Pattern may be genuinely ambiguous. Consider MANUAL tier or adding decision criteria.",
+        "too many manual escalations": "Review escalation thresholds. May need to lower automated_to_suggested trigger points.",
+        "rollback data missing": "Verify backup_location exists and has write permissions. Check disk space."
+    },
+
+    // X.4 REFERENCE
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "b-word/seed/data/json/formats/log-format.jsonc — Log entry format (companion)",
+        "b-word/seed/data/json/formats/debug-format.jsonc — Debug session format (companion)",
+        "b-word/seed/data/json/3block/config.jsonc — Parent template",
+        "b-word/definitions/omni/json-3block-schema.jsonc — Validation schema"
+    ],
+    "_X4_validate": "npx jsonc-parser validate recovery-format.jsonc",
+    "_X4_tier_quick_ref": {
+        "AUTOMATED": "Safe, reversible, well-understood → apply immediately",
+        "MANUAL": "Complex, irreversible, judgment-dependent → human decides",
+        "SUGGESTED": "CPI-SI capable but configured to confirm → prepare and wait"
+    },
+
+    // X.5 NOTE
+    // Recovery mirrors the covenant: automated trust where earned,
+    // guidance where wisdom requires, confirmation where stakes demand.
+    // The restore layer is not failure recovery — it is righteous path correction.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "Recovery format template. Three tiers mirror covenant trust: AUTOMATED (earned trust, safe actions), MANUAL (human wisdom required), SUGGESTED (capable but confirming). The restore layer is path correction, not failure recovery.",
+    "_X5_scripture": "In the beginning God created the heaven and the earth. — Genesis 1:1",
+    "_X5_anchor": "Restoration assumes a right path exists. Genesis 1:1 is that path. Recovery leads back to it.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

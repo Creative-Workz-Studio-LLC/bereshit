@@ -1,0 +1,522 @@
+{
+    // #!omni template --jsonc
+    "$schema": "../../../../../../../../b-word/definitions/omni/json-3block-schema.jsonc",
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni template --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from universal scene-defaults, override allowed",
+        "_rpg": "RPG-SPECIFIC — added by this derivation, not in universal",
+        "_cpisi": "CPI-SI DECISION — assessment-based logic for NPC behavior AND CPI-SI play"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-cornerstone-data-game-rpg-scene-combat",
+    "_P1_from": "cornerstone/data/game/universal/scene/scene-defaults.jsonc",
+    "_P1_at": "template",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "game-combat-rpg",
+    "_P2_role": "rung",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "Rails — governs HOW RPG combat plays out (mechanics, flow, conditions)",
+    "_P3_layer": "cornerstone/data/game/rpg/scene/frames",
+    "_P3_includes": "none",
+    "_P3_provides": ["RPG_COMBAT_TEMPLATE"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "RPG Combat Configuration Template",
+    "_P5_brief": "RPG combat mechanics — HOW battles play out. Mode settings (realtime/tactical), scripted events, terrain references, CPI-SI entity behavior, victory/defeat conditions. Extends universal scene-defaults with RPG combat specifics.",
+    "_P5_usage": "cp combat.jsonc [game]/data/scenes/boss-arena-combat.jsonc -> update pragma -> fill combat data",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "combat.jsonc",
+        "key": "B-cornerstone-data-game-rpg-scene-combat",
+        "title": "RPG Combat Configuration Template",
+        "type": "Data (Template)",
+        "component": "Rails — governs HOW RPG combat plays out",
+        "role": "Define RPG battle mechanics — mode, scripted events, terrain, entity behavior, conditions"
+    },
+
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2025-12-03",
+        "updated": "2026-02-09"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC",
+        "copyright": "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+    },
+
+    // "Two are better than one; if they fall, one will lift up his fellow."
+    "_M4_grounding": {
+        "scripture": "Ecclesiastes 4:9-10 — Two are better than one; because they have a good reward for their labour. For if they fall, the one will lift up his fellow.",
+        "principle": "Combat mechanics define how we fight together — the experience of battle, teamwork, and strategy.",
+        "anchor": "2 Timothy 4:7 — I have fought a good fight, I have finished my course, I have kept the faith."
+    },
+
+    "_M5_dependencies": {
+        "requires": "JSONC parser (C library or strip-comments preprocessor)",
+        "consumers": "engine/systems/src/combat.c — combat_load_config(), combat_start()",
+        "integration": "Loaded when a combat scene pushes onto the stack. Combat config determines battle flow — mode selection, event scheduling, condition monitoring. CPI-SI entity behavior replaces weighted random with assessment-based decision making.",
+        "if_missing": "Tripwire to universal scene-defaults with LOUD warning — creates bare combat frame with basic attack mode",
+        "related_data": {
+            "derives_from": {
+                "scene-defaults": "Universal scene template — base structure (identity, stack_behavior, data_requirements)"
+            },
+            "references": {
+                "actions": "Combat loads action sets declared in data_requirements",
+                "terrain-grid": "Tactical mode uses terrain grid for positioning and movement",
+                "game-types": "mode, terrain_type, condition_type reference game-types enums",
+                "entity-defaults": "Participants reference entity_ids for stat loading",
+                "dialogue": "Scripted events reference dialogue_ids for mid-battle narrative"
+            },
+            "referenced_by": {
+                "boss": "Boss encounters reference combat configuration for their battle",
+                "story-encounter": "Story encounters reference combat mode/terrain",
+                "resolution": "Resolution links to combat via combat_id for post-battle handling"
+            }
+        }
+    },
+
+    "_M6_location": {
+        "path": "cornerstone/data/game/rpg/scene/frames/combat.jsonc",
+        "derives_from": "cornerstone/data/game/universal/scene/scene-defaults.jsonc"
+    },
+
+    "_M7_classification": {
+        "tags": "combat, battle, rpg, mechanics, realtime, tactical, scripted-events, scene-state, jsonc"
+    },
+
+    "_M8_intent": {
+        "purpose": "Define RPG combat mechanics — HOW battles play out, separate from WHAT triggers them (encounters) and WHAT happens after (resolution)",
+        "core_design": "Data-driven combat — mechanics in data, execution in engine. Combat = mode + events + behavior + conditions.",
+        "philosophy": "Encounters trigger combat, combat defines the experience, resolution completes the arc. This file is the middle — the battle itself.",
+        "key_features": {
+            "inherited_from_universal": "identity, stack_behavior, data_requirements — base scene contract",
+            "rpg_combat_modes": "Realtime (action-based, timing, combos) and tactical (grid-based, turns, positioning)",
+            "rpg_scripted_events": "Condition-triggered mid-battle events — dialogue, spawns, buffs, cutscenes",
+            "rpg_entity_behavior": "CPI-SI assessment-based entity behavior — NOT weighted random. Pattern + targeting + ability usage assessed, not rolled.",
+            "rpg_conditions": "Victory/defeat requirements — defeat_all, defeat_boss, survive_turns, objective"
+        },
+        "cpisi_note": "Entity behavior uses CPI-SI framework: Assess state (0) -> Evaluate pattern (+ 1) -> Verify safety (-1). Serves NPC combat behavior AND CPI-SI instance play. NOT probability-weighted selection."
+    },
+
+    "_M9_roadmap": {
+        "history": [
+            "a-01.00 (2025-12-03) — Initial template creation (old comment-based format)",
+            "a-02.00 (2026-02-09) — Flat convention, CPI-SI entity behavior, stack_behavior, scene organization"
+        ],
+        "current": "RPG combat template — mode settings, scripted events, CPI-SI entity behavior, victory/defeat conditions, scene-scoped",
+        "planned": [
+            "Complex scripted sequences (multi-event chains)",
+            "Dynamic terrain effects (destructible environment during combat)",
+            "Party formation configurations",
+            "Combo system integration (realtime mode)"
+        ]
+    },
+
+    // Where this data lives in the stack-based scene system
+    "_M10_game_state": {
+        "lifetime": "scene",
+        "description": "Scene-scoped — combat configuration IS the combat scene frame. Pushed to start battle, popped when battle ends.",
+        "loaded_at": "On demand — loaded when encounter system pushes a combat scene",
+        "persists": "Duration of combat scene on the stack",
+        "consumed_by": "Combat system — combat_start() reads config, combat_tick() checks events/conditions, combat_end() triggers resolution",
+        "load_priority": 3,
+        "cache_policy": "scene-bound — loaded on push, all combat state evicted on pop",
+        "authority_rank": "engine-default (universal) < rpg-default (this) < encounter-specific < boss-override",
+        "id_format": "combat_id: CMB-NNN-TAG (e.g., CMB-001-FOREST_BASIC, CMB-002-BOSS_ARENA, CMB-003-AMBUSH_CAVE). ref_name for human-readable."
+    },
+
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6-M10 are game-data specific. M10 (game state) tracks stack-based scene system lifetime.",
+        "derivation": "_P1_from points to universal scene-defaults. RPG adds combat modes, scripted events, CPI-SI entity behavior, victory/defeat conditions."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // RPG combat configuration — extends universal scene structure.
+    // Inherits: identity, stack_behavior, data_requirements (from scene-defaults)
+    // Adds: combat_mode, scripted_events, entity_behavior (CPI-SI), conditions, options
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Combat = mode + events + behavior + conditions.
+    // Missing keys tripwire to universal scene-defaults, then engine fallback.
+    // Key distinction:
+    //   encounter templates = WHEN/WHAT triggers battle
+    //   combat.jsonc (this) = HOW the battle plays out
+    //   resolution.jsonc = WHAT happens after battle
+    //   actions.jsonc = WHAT combatants can DO
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSONC — JSON with comments, UTF-8, LF line endings",
+    "_Cc_key_convention": "lowercase_with_underscores for data keys, _prefix for documentation fields",
+    "_Cc_constraint": "Every combat config must have identity, combat_mode, conditions, and stack_behavior. Scripted events and entity behavior are optional but expected.",
+    "_Cc_id_format": "combat_id: CMB-NNN-TAG. Standard: CMB-001+. Boss: CMB-500+. Story: CMB-100+. ref_name carries human-readable snake_case.",
+    "_Cc_derivation": "Tripwire chain: rpg/combat -> universal/scene-defaults -> engine hardcoded fallback",
+    "_Cc_scene_role": "Combat is a SCENE FRAME — it gets pushed onto the scene stack. It is NOT data loaded by another scene. Combat IS the scene.",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Example: Forest encounter — realtime combat with scripted events.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "name": "Forest Combat",
+    "version": "a-01.00",
+
+    // Identity — _inh from universal scene-defaults, values RPG-specific
+    "identity": {
+        "combat_id": "CMB-001-FOREST_BASIC",
+        "ref_name": "combat_forest_basic",
+        "name": "Forest Encounter Combat",
+        "scene_type": "combat",
+        "description": "Standard forest battle — realtime combat with tree cover and environmental scripted events."
+    },
+
+    // Combat Mode — _rpg: realtime or tactical
+    // mode determines which settings block is active
+    "combat_mode": {
+        "mode": "realtime",
+
+        "realtime_settings": {
+            "action_speed": 1.0,
+            "pause_on_ability": false,
+            "auto_target": true,
+            "combo_window_ms": 500
+        },
+
+        "tactical_settings": {
+            "grid_ref": null,
+            "turn_order": "speed",
+            "movement_type": "manhattan",
+            "fog_of_war": false
+        }
+    },
+
+    // Data Requirements — _inh from universal scene-defaults
+    // What to load when this combat scene pushes
+    "data_requirements": {
+        "action_sets": ["ACT-001-BASIC_ATK", "ACT-010-FIREBALL", "ACT-030-HEAL"],
+        "terrain_ref": null,
+        "item_pools": [],
+        "additional": []
+    },
+
+    // Participants — _inh from universal scene-defaults
+    "participants": {
+        "party": "current_party",
+        "enemies": [
+            { "entity_id": "ENT-002-GOBLIN", "count": 2 },
+            { "entity_id": "ENT-003-GOBLIN_CHIEF", "count": 1 }
+        ],
+        "npcs": []
+    },
+
+    // Terrain — _rpg: environment effects (for realtime mode, non-grid combat)
+    "terrain": {
+        "type": "forest",
+        "effects": {
+            "movement_penalty": 0,
+            "accuracy_modifier": -5,
+            "elemental_boost": "earth"
+        },
+        "hazards": []
+    },
+
+    // Scripted Events — _rpg: mid-battle triggers
+    // condition-action pairs that fire during combat
+    "scripted_events": [
+        {
+            "event_id": "EVT-001-CHIEF_TAUNT",
+            "condition": {
+                "type": "turn_count",
+                "target": "any",
+                "value": 3
+            },
+            "action": {
+                "type": "dialogue",
+                "data": "DLG-500-CHIEF_TAUNT"
+            },
+            "once": true
+        },
+        {
+            "event_id": "EVT-002-REINFORCEMENT",
+            "condition": {
+                "type": "hp_below",
+                "target": "ENT-003-GOBLIN_CHIEF",
+                "value": 50
+            },
+            "action": {
+                "type": "spawn",
+                "data": { "entity_id": "ENT-002-GOBLIN", "count": 1 }
+            },
+            "once": true
+        }
+    ],
+
+    // Entity Behavior — _cpisi: CPI-SI assessment-based behavior
+    // NOT weighted random (beastly pattern). Assessment-based: Assess(0) -> Evaluate(+1) -> Verify(-1).
+    // This is the DEFAULT behavior for entities in this combat. Individual entities can override via their own decision data.
+    // Serves TWO consumers: NPC behavior within the game AND CPI-SI instances playing the game.
+    "entity_behavior": {
+        // Assess (0 — foundation): What is the entity's baseline combat approach?
+        "assess": {
+            "default_pattern": "balanced",
+            "patterns_available": ["aggressive", "defensive", "balanced", "support"],
+            "pattern_determines": "Which evaluate criteria get priority — aggressive weights damage, defensive weights survival, etc."
+        },
+        // Evaluate (+1 — build up): How does the entity choose targets and actions?
+        "evaluate": {
+            "target_priority": {
+                "method": "assessment",
+                "criteria": ["lowest_hp", "highest_threat", "nearest", "healer_first"],
+                "note": "Entity evaluates all criteria for the situation, not random selection from list"
+            },
+            "ability_usage": {
+                "method": "assessment",
+                "criteria": ["mp_efficiency", "situation_match", "combo_potential"],
+                "note": "Entity assesses which ability fits the situation, considering resources and battle state"
+            }
+        },
+        // Verify (-1 — break down): Safety checks before committing to action
+        "verify": {
+            "self_preservation": "Check if chosen action leaves entity vulnerable",
+            "resource_management": "Verify resources remain for future turns",
+            "team_coordination": "Check if allies need support before attacking"
+        }
+    },
+
+    // Victory/Defeat Conditions — _rpg: what ends the battle
+    "conditions": {
+        "victory": {
+            "type": "defeat_all",
+            "value": null
+        },
+        "defeat": {
+            "type": "party_wipe",
+            "value": null
+        }
+    },
+
+    // Stack Behavior — _inh from universal scene-defaults, RPG-specific values
+    // Combat is a SCENE FRAME — it pushes/pops on the stack
+    "stack_behavior": {
+        "push_mode": "standard",
+        "allows_pause": true,
+        "allows_overlay": ["dialogue", "menu", "cutscene"],
+        "on_push": "load data_requirements (actions, items), instantiate participants, init combat state, start combat loop",
+        "on_pop": "trigger resolution (resolution.jsonc), resolve rewards, evict combat-scoped data, return to previous scene",
+        "on_pause": "preserve full combat state (HP, MP, positions, turn order, event progress), allow menu/dialogue overlay",
+        "on_resume": "restore combat state, continue combat loop from paused position"
+    },
+
+    // Options — _rpg: combat-specific settings
+    "options": {
+        "escape_allowed": true,
+        "items_allowed": true,
+        "summons_allowed": true,
+        "music_id": "mus_battle_forest"
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "_Cv_validation": {
+        "commands": [
+            "make",
+            "./bin/cornerstone --validate-combat"
+        ]
+    },
+
+    "_Cv_schema": {
+        "required": ["name", "version", "identity", "combat_mode", "conditions", "stack_behavior"],
+        "rpg_required": ["entity_behavior"],
+        "optional": ["terrain", "scripted_events", "options", "data_requirements", "participants"],
+        "identity_required": ["combat_id", "ref_name", "name", "scene_type"],
+        "combat_mode_required": ["mode"]
+    },
+
+    "_Cv_maintenance": {
+        "safe": [
+            "Adjust mode settings (speed, grid size, combo window)",
+            "Add/remove scripted events",
+            "Change terrain effects (movement, accuracy, elemental)",
+            "Adjust entity behavior assessment criteria",
+            "Modify options (escape, items, music)"
+        ],
+        "careful": [
+            "Change combat_id (breaks references from boss, story-encounter, resolution)",
+            "Change mode (affects entire combat flow — realtime vs tactical)",
+            "Change victory/defeat conditions (affects game balance)",
+            "Modify stack_behavior (affects scene lifecycle)"
+        ],
+        "never": [
+            "Break 3-block structure",
+            "Remove required keys (identity, combat_mode, conditions, stack_behavior)",
+            "Use weighted random for entity behavior (beastly pattern — use CPI-SI assessment)"
+        ]
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note → X.6 Template",
+
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Break 3-block structure",
+        "Remove required keys (identity, combat_mode, conditions, stack_behavior)",
+        "Use weighted random for entity behavior (beastly — use CPI-SI assessment)"
+    ],
+    "_X1_careful": [
+        "Change combat_id (breaks references from boss, story-encounter, resolution)",
+        "Change mode (realtime vs tactical — affects entire flow)",
+        "Change conditions (affects game balance)"
+    ],
+    "_X1_safe": [
+        "Adjust mode settings, terrain effects, entity behavior criteria",
+        "Add/remove scripted events",
+        "Modify options (escape, items, music)"
+    ],
+
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "Complex scripted sequences (multi-event chains)",
+        "Dynamic terrain effects (destructible environment)",
+        "Party formation configurations",
+        "Combo system integration (realtime mode)",
+        "Weather/time-of-day combat modifiers"
+    ],
+
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "combat_not_starting": "Check mode is valid (realtime | tactical). Verify combat_id is unique. Confirm conditions object exists.",
+        "scripted_event_not_triggering": "Check condition type (hp_below, turn_count, enemy_defeated, ability_used). Verify target matches entity_id or 'any'. Confirm value is appropriate.",
+        "entity_not_behaving": "Check entity_behavior.assess.default_pattern is valid. Verify evaluate criteria are appropriate for battle type. Confirm entities have resources for assessed actions.",
+        "tactical_grid_not_working": "Check combat_mode.tactical_settings.grid_ref points to valid terrain-grid.jsonc. Verify turn_order and movement_type are valid.",
+        "tripwire_to_universal": "RPG combat file missing or malformed. Check logs for LOUD warning. Verify JSON syntax."
+    },
+
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "cornerstone/data/game/universal/scene/scene-defaults.jsonc — Universal parent template",
+        "cornerstone/data/game/rpg/scene/data/actions.jsonc — Action sets loaded during combat",
+        "cornerstone/data/game/rpg/scene/data/terrain-grid.jsonc — Grid layouts for tactical mode",
+        "cornerstone/data/game/rpg/scene/data/resolution.jsonc — Post-battle handling",
+        "cornerstone/data/game/rpg/scene/frames/boss.jsonc — Boss encounters that override combat config"
+    ],
+    "_X4_required": ["name", "version", "identity", "combat_mode", "conditions", "stack_behavior"],
+    "_X4_validate": "make && ./bin/cornerstone --validate-combat",
+    "_X4_usage_c": "combat_load_config(\"rpg/data/scenes/forest-basic.jsonc\"); combat_start(&config);",
+    "_X4_id_ranges": "Standard: CMB-001+, Story: CMB-100+, Boss: CMB-500+",
+
+    // Combat mechanics define HOW we fight together.
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "RPG combat configuration — HOW battles play out. Scene-scoped frame on the stack. Encounters trigger it, resolution completes it. Entity behavior uses CPI-SI assessment, not weighted random.",
+    "_X5_scripture": "Two are better than one; if they fall, one will lift up his fellow. — Ecclesiastes 4:9-10",
+    "_X5_anchor": "Good combat systems make teamwork meaningful. HOW we fight matters.",
+
+    "_X6": "─────────────────────────────────────────────────────────────",
+    "_X6_tag": "X.6 TEMPLATE — Instantiation Guide [TEMPLATE]",
+    "_X6_note": "Remove this section when instantiating",
+    "_X6_usage": "cp combat.jsonc [game]/data/scenes/boss-arena.jsonc -> update pragma -> fill combat data",
+    "_X6_update": [
+        "_P1_key: unique identifier for this combat",
+        "_M1_identity: file, key, title, role",
+        "_M2_state: created/updated dates",
+        "_M6_location: path",
+        "Co section: identity (CMB-NNN-TAG), combat_mode, participants, terrain, scripted_events, entity_behavior, conditions, stack_behavior",
+        "Remove _X6 section when instantiating"
+    ],
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}
