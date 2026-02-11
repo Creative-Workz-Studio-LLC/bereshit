@@ -66,6 +66,7 @@ func (r *SQLiteRepository) Migrate(ctx context.Context) error {
 		"schema/001_initial.sql",
 		"schema/002_rich_data.sql",
 		"schema/003_message_text.sql",
+		"schema/004_thinking_text.sql",
 	}
 
 	for _, file := range migrations {
@@ -416,6 +417,48 @@ func (r *SQLiteRepository) RecordInsight(ctx context.Context, insight *Insight) 
 		insight.TopicArea,
 	)
 	return err
+}
+
+// UpdateExchangeResponse updates the response_summary of the most recent exchange for a session.
+// Called by the Stop hook after the assistant finishes responding — captures Nova Dawn's
+// side of the conversation for analytics and pattern correlation.
+func (r *SQLiteRepository) UpdateExchangeResponse(ctx context.Context, sessionID string, responseText string) error {
+	query := `
+		UPDATE exchanges SET response_summary = ?
+		WHERE session_id = ? AND sequence_num = (
+			SELECT MAX(sequence_num) FROM exchanges WHERE session_id = ?
+		)
+	`
+	result, err := r.db.ExecContext(ctx, query, responseText, sessionID, sessionID)
+	if err != nil {
+		return fmt.Errorf("update exchange response: %w", err)
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return fmt.Errorf("no exchange found for session %s", sessionID)
+	}
+	return nil
+}
+
+// UpdateExchangeThinking sets the thinking_text on the most recent exchange for a session.
+// Captures the assistant's internal reasoning process — the "what behind what."
+// Uses MAX(sequence_num) to target the latest exchange, same as UpdateExchangeResponse.
+func (r *SQLiteRepository) UpdateExchangeThinking(ctx context.Context, sessionID string, thinkingText string) error {
+	query := `
+		UPDATE exchanges SET thinking_text = ?
+		WHERE session_id = ? AND sequence_num = (
+			SELECT MAX(sequence_num) FROM exchanges WHERE session_id = ?
+		)
+	`
+	result, err := r.db.ExecContext(ctx, query, thinkingText, sessionID, sessionID)
+	if err != nil {
+		return fmt.Errorf("update exchange thinking: %w", err)
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return fmt.Errorf("no exchange found for session %s", sessionID)
+	}
+	return nil
 }
 
 // GetRecentExchanges returns the most recent exchanges, optionally filtered by session.

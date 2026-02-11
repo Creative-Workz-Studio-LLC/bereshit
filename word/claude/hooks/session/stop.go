@@ -20,13 +20,16 @@
 package session
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 
-	"cws.studio/pkg/util/pure/hookoutput"
-	"cws.studio/pkg/orchestration/logging"
+	"cws.studio/claude/hooks/internal"
 	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/orchestration/logging"
+	"cws.studio/pkg/util/pure/hookoutput"
+	"cws.studio/pkg/util/transcript"
 )
 
 // ============================================================================
@@ -89,6 +92,11 @@ func Stop() {
 		state.Session.LastHaltTrigger = "agent_stop"
 
 		_ = statemachine.SaveRuntimeState(state)
+	}
+
+	// Capture assistant response text in database
+	if input.TranscriptPath != "" {
+		captureResponse(input.SessionID, input.TranscriptPath, log, catLog)
 	}
 
 	// Record stop event in path
@@ -198,6 +206,68 @@ func evaluateStop(log *logging.Logger, state *statemachine.RuntimeState, input S
 
 	// Default: allow stop
 	return false, ""
+}
+
+// captureResponse extracts the assistant's response text AND thinking from the
+// transcript and updates the most recent exchange in the database.
+// Three layers captured: Thought (thinking blocks) + Word (text blocks).
+// Errors are logged but not fatal — capture is best-effort.
+func captureResponse(sessionID, transcriptPath string, log *logging.Logger, catLog *logging.CategoryLogger) {
+	content, err := transcript.ExtractLastExchange(transcriptPath)
+	if err != nil {
+		log.Warn("Failed to extract content from transcript", map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if content == nil {
+		return // No assistant content found — nothing to record
+	}
+
+	mb, err := internal.GetMultiBridge()
+	if err != nil {
+		log.Warn("Failed to get MultiBridge for response capture", map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx := context.Background()
+
+	// Capture response text (Word layer)
+	if content.ResponseText != "" {
+		if err := mb.UpdateExchangeResponse(ctx, sessionID, content.ResponseText); err != nil {
+			log.Warn("Failed to update exchange response", map[string]string{
+				"error":      err.Error(),
+				"session_id": sessionID,
+			})
+		}
+	}
+
+	// Capture thinking text (Thought layer)
+	if content.ThinkingText != "" {
+		if err := mb.UpdateExchangeThinking(ctx, sessionID, content.ThinkingText); err != nil {
+			log.Warn("Failed to update exchange thinking", map[string]string{
+				"error":      err.Error(),
+				"session_id": sessionID,
+			})
+		}
+	}
+
+	responseLen := fmt.Sprintf("%d", len(content.ResponseText))
+	thinkingLen := fmt.Sprintf("%d", len(content.ThinkingText))
+	log.Debug("Exchange content captured", map[string]string{
+		"session_id":      sessionID,
+		"response_length": responseLen,
+		"thinking_length": thinkingLen,
+	})
+	if catLog != nil {
+		catLog.Info("exchange_captured", "Assistant response + thinking recorded", map[string]string{
+			"response_length": responseLen,
+			"thinking_length": thinkingLen,
+		})
+	}
 }
 
 // ============================================================================

@@ -35,7 +35,7 @@
         dashboard dashboard-frontend dashboard-tui dashboard-gtk \
         install install-bin install-bin-only install-symlinks install-desktop \
         uninstall uninstall-bin uninstall-symlinks \
-        fresh verify clean-stale \
+        fresh update verify clean-stale \
         fmt vet tidy \
         db db-init db-migrate db-status \
         db-init-all db-split \
@@ -133,8 +133,10 @@ all: build
 # Build everything: compile all modules + build binaries
 build: pkg hooks statusline system skills cpisi-cli dashboard dashboard-tui dashboard-gtk bin
 	@echo ""
-	@echo "=== All modules built ==="
-	@echo "    Run 'make install-bin' to deploy to $(INSTALL_DIR)"
+	@echo "  ================================================================"
+	@echo "    Build complete."
+	@echo "    Run 'make install-bin' to deploy to ext4"
+	@echo "  ================================================================"
 
 # --- Module compile checks (cached) ---
 
@@ -232,7 +234,8 @@ bin: bin-statusline bin-cpisi bin-hooks bin-system-cmds \
 bin-statusline:
 	@mkdir -p bin
 	@if [ -n "$(call bin_stale,bin/statusline,statusline pkg)" ]; then \
-		cd statusline && $(GO) build $(BINFLAGS) -o ../bin/statusline ./cmd/statusline; \
+		cd statusline && $(MAKE) BINFLAGS="$(BINFLAGS)" build --no-print-directory && \
+		cp bin/statusline ../bin/statusline; \
 		echo "    bin/statusline"; \
 	else echo "    bin/statusline (cached)"; fi
 
@@ -266,7 +269,7 @@ bin-dashboard-gtk:
 
 bin-hooks:
 	@if [ -n "$(call stale,hooks-bin,hooks pkg)" ]; then \
-		cd hooks && $(MAKE) build; \
+		cd hooks && $(MAKE) BINFLAGS="$(BINFLAGS)" build --no-print-directory; \
 		touch $(BUILD_CACHE)/hooks-bin.stamp; \
 		echo "    hooks/bin/*"; \
 	else echo "    hooks/bin/* (cached)"; fi
@@ -389,58 +392,84 @@ cache-warm:
 # Full install: build + symlinks + binaries + desktop
 install:
 	@echo ""
-	@echo "  CPI-SI Installation"
+	@echo "  ================================================================"
+	@echo "    CPI-SI Production Build System"
+	@echo "    CreativeWorkzStudio LLC"
+	@echo "  ================================================================"
+	@echo ""
 	@echo "  Source:   $(SRC_DIR)"
 	@echo "  Symlinks: $(DEPLOY_DIR)"
 	@echo "  Binaries: $(INSTALL_DIR)"
 	@echo ""
 	@echo "  [1/5] Building packages..."
 	@$(MAKE) pkg --no-print-directory
+	@echo ""
 	@echo "  [2/5] Building binaries..."
 	@$(MAKE) bin --no-print-directory
+	@echo ""
 	@echo "  [3/5] Creating symlinks..."
 	@$(MAKE) install-symlinks --no-print-directory
-	@echo "  [4/5] Installing binaries..."
+	@echo ""
+	@echo "  [4/5] Deploying binaries to ext4..."
 	@$(MAKE) install-bin-only --no-print-directory
-	@echo "  [5/5] Installing desktop entry..."
+	@echo ""
+	@echo "  [5/5] Desktop integration..."
 	@$(MAKE) install-desktop --no-print-directory
 	@echo ""
 	@$(MAKE) verify --no-print-directory
 	@echo ""
-	@echo "  Installation complete."
+	@echo "  ================================================================"
+	@echo "    Installation complete."
+	@echo ""
+	@echo "    Quick start:"
+	@echo "      cpisi help       Full CLI reference"
+	@echo "      cpisi build      Incremental build"
+	@echo "      cpisi verify     Check integrity"
+	@echo "  ================================================================"
+	@echo ""
 
 # Build binaries then install
 install-bin: bin install-bin-only
 
-# Copy binaries to ext4 with +x
+# Copy binaries to ext4 with +x permissions
 install-bin-only:
 	@mkdir -p $(INSTALL_DIR)/bin $(INSTALL_DIR)/hooks/bin $(INSTALL_DIR)/system/bin
-	@echo "  Main binaries:"
-	@for name in $(MAIN_BINS); do \
+	@main=0; hook=0; sys=0; \
+	echo "  Main binaries:"; \
+	for name in $(MAIN_BINS); do \
 		if [ -f "bin/$$name" ]; then \
+			rm -f "$(INSTALL_DIR)/bin/$$name"; \
 			cp "bin/$$name" "$(INSTALL_DIR)/bin/$$name"; \
 			chmod +x "$(INSTALL_DIR)/bin/$$name"; \
 			echo "    + $$name"; \
+			main=$$((main+1)); \
 		fi; \
-	done
-	@echo "  Hook binaries:"
-	@for hook in hooks/bin/*; do \
-		if [ -f "$$hook" ]; then \
-			name=$$(basename $$hook); \
-			cp "$$hook" "$(INSTALL_DIR)/hooks/bin/$$name"; \
+	done; \
+	echo "  Hook binaries:"; \
+	for hook_bin in hooks/bin/*; do \
+		if [ -f "$$hook_bin" ]; then \
+			name=$$(basename $$hook_bin); \
+			rm -f "$(INSTALL_DIR)/hooks/bin/$$name"; \
+			cp "$$hook_bin" "$(INSTALL_DIR)/hooks/bin/$$name"; \
 			chmod +x "$(INSTALL_DIR)/hooks/bin/$$name"; \
 			echo "    + $$name"; \
+			hook=$$((hook+1)); \
 		fi; \
-	done
-	@echo "  System binaries:"
-	@for cmd in system/runtime/bin/*; do \
+	done; \
+	echo "  System commands:"; \
+	for cmd in system/runtime/bin/*; do \
 		if [ -f "$$cmd" ]; then \
 			name=$$(basename $$cmd); \
+			rm -f "$(INSTALL_DIR)/system/bin/$$name"; \
 			cp "$$cmd" "$(INSTALL_DIR)/system/bin/$$name"; \
 			chmod +x "$(INSTALL_DIR)/system/bin/$$name"; \
+			echo "    + $$name"; \
+			sys=$$((sys+1)); \
 		fi; \
-	done 2>/dev/null || true
-	@echo "    + system commands"
+	done 2>/dev/null || true; \
+	total=$$((main + hook + sys)); \
+	echo ""; \
+	echo "  Deployed: $$main main + $$hook hooks + $$sys system = $$total executables"
 
 # Create symlinks from source to ~/.claude/
 install-symlinks:
@@ -507,6 +536,52 @@ uninstall-bin:
 
 fresh: clean clean-stale install
 
+# Incremental update: rebuild only changed modules, deploy to ext4
+# This is the daily driver — skip unchanged, rebuild changed, install.
+update:
+	@echo ""
+	@echo "  CPI-SI Incremental Update"
+	@echo "  ────────────────────────────────────────"
+	@echo ""
+	@changed=0; \
+	for mod in pkg hooks statusline system cpisi-cli dashboard dashboard-tui dashboard-gtk; do \
+		case $$mod in \
+			pkg)            stamp="pkg"; dirs="pkg" ;; \
+			hooks)          stamp="hooks-bin"; dirs="hooks pkg" ;; \
+			statusline)     stamp="statusline"; dirs="statusline pkg" ;; \
+			system)         stamp="system-cmds"; dirs="system/runtime/cmd system/runtime/lib" ;; \
+			cpisi-cli)      stamp="cpisi-cli"; dirs="cmd/cpisi" ;; \
+			dashboard)      stamp="dashboard"; dirs="dashboard pkg" ;; \
+			dashboard-tui)  stamp="dashboard-tui"; dirs="dashboard/tui pkg" ;; \
+			dashboard-gtk)  stamp="dashboard-gtk"; dirs="dashboard/gtk pkg" ;; \
+		esac; \
+		stale=$$(s="$(BUILD_CACHE)/$$stamp.stamp"; \
+			if [ ! -f "$$s" ]; then echo "y"; \
+			else for d in $$dirs; do \
+				if [ -d "$(SRC_DIR)/$$d" ] && find "$(SRC_DIR)/$$d" -name '*.go' -newer "$$s" -print -quit 2>/dev/null | grep -q .; then \
+					echo "y"; break; fi; done; fi); \
+		if [ -n "$$stale" ]; then \
+			echo "  * $$mod (changed)"; \
+			changed=$$((changed+1)); \
+		fi; \
+	done; \
+	if [ $$changed -eq 0 ]; then \
+		echo "  Everything up to date. Nothing to rebuild."; \
+		echo ""; \
+	else \
+		echo ""; \
+		echo "  Rebuilding $$changed module(s)..."; \
+		echo ""; \
+	fi
+	@$(MAKE) build --no-print-directory
+	@echo ""
+	@echo "  Deploying to ext4..."
+	@$(MAKE) install-bin-only --no-print-directory
+	@echo ""
+	@echo "  ────────────────────────────────────────"
+	@echo "  Update complete."
+	@echo ""
+
 clean-stale:
 	@for dir in $(STALE_DIRS); do \
 		if [ -d "$(DEPLOY_DIR)/$$dir" ] || [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
@@ -522,59 +597,78 @@ clean-stale:
 verify:
 	@echo "  Verifying CPI-SI installation..."
 	@echo ""
-	@errors=0; \
+	@errors=0; src_ok=0; src_total=0; sym_ok=0; sym_total=0; \
+	bin_ok=0; bin_total=0; hook_ok=0; hook_total=0; \
 	echo "  Source:"; \
 	for dir in $(SYMLINK_DIRS); do \
-		[ -d "$(SRC_DIR)/$$dir" ] && echo "    + $$dir" || { echo "    x $$dir MISSING"; errors=$$((errors+1)); }; \
+		src_total=$$((src_total+1)); \
+		if [ -d "$(SRC_DIR)/$$dir" ]; then echo "    + $$dir"; src_ok=$$((src_ok+1)); \
+		else echo "    x $$dir MISSING"; errors=$$((errors+1)); fi; \
 	done; \
 	for file in $(SYMLINK_FILES); do \
-		[ -f "$(SRC_DIR)/$$file" ] && echo "    + $$file" || { echo "    x $$file MISSING"; errors=$$((errors+1)); }; \
+		src_total=$$((src_total+1)); \
+		if [ -f "$(SRC_DIR)/$$file" ]; then echo "    + $$file"; src_ok=$$((src_ok+1)); \
+		else echo "    x $$file MISSING"; errors=$$((errors+1)); fi; \
 	done; \
+	echo "    ($$src_ok/$$src_total)"; \
 	echo ""; \
 	echo "  Symlinks:"; \
 	for dir in $(SYMLINK_DIRS); do \
+		sym_total=$$((sym_total+1)); \
 		if [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
 			target=$$(readlink -f "$(DEPLOY_DIR)/$$dir"); \
-			[ "$$target" = "$(SRC_DIR)/$$dir" ] && echo "    + $$dir" || { echo "    ! $$dir wrong target"; errors=$$((errors+1)); }; \
+			if [ "$$target" = "$(SRC_DIR)/$$dir" ]; then echo "    + $$dir"; sym_ok=$$((sym_ok+1)); \
+			else echo "    ! $$dir wrong target"; errors=$$((errors+1)); fi; \
 		elif [ -d "$(DEPLOY_DIR)/$$dir" ]; then echo "    x $$dir not symlink"; errors=$$((errors+1)); \
 		else echo "    - $$dir"; fi; \
 	done; \
 	for file in $(SYMLINK_FILES); do \
+		sym_total=$$((sym_total+1)); \
 		if [ -L "$(DEPLOY_DIR)/$$file" ]; then \
 			target=$$(readlink -f "$(DEPLOY_DIR)/$$file"); \
-			[ "$$target" = "$(SRC_DIR)/$$file" ] && echo "    + $$file" || { echo "    ! $$file wrong target"; errors=$$((errors+1)); }; \
+			if [ "$$target" = "$(SRC_DIR)/$$file" ]; then echo "    + $$file"; sym_ok=$$((sym_ok+1)); \
+			else echo "    ! $$file wrong target"; errors=$$((errors+1)); fi; \
 		elif [ -f "$(DEPLOY_DIR)/$$file" ]; then echo "    x $$file not symlink"; errors=$$((errors+1)); \
 		else echo "    - $$file"; fi; \
 	done; \
+	echo "    ($$sym_ok/$$sym_total)"; \
 	echo ""; \
 	echo "  Binaries:"; \
 	for name in $(MAIN_BINS); do \
-		if [ -x "$(INSTALL_DIR)/bin/$$name" ]; then echo "    + $$name"; \
+		bin_total=$$((bin_total+1)); \
+		if [ -x "$(INSTALL_DIR)/bin/$$name" ]; then echo "    + $$name"; bin_ok=$$((bin_ok+1)); \
 		elif [ -f "$(INSTALL_DIR)/bin/$$name" ]; then echo "    x $$name not executable"; errors=$$((errors+1)); \
 		else echo "    - $$name"; fi; \
 	done; \
+	echo "    ($$bin_ok/$$bin_total)"; \
 	echo ""; \
 	echo "  Hooks:"; \
-	for hook in start end stop submit pre-use post-use pre-compact setup request notification permission-request hooks subagent-start subagent-stop task-completed teammate-idle; do \
-		if [ -x "$(INSTALL_DIR)/hooks/bin/$$hook" ]; then echo "    + $$hook"; \
+	for hook in start end stop submit pre-use post-use pre-compact setup notification permission-request hooks subagent-start subagent-stop task-completed teammate-idle; do \
+		hook_total=$$((hook_total+1)); \
+		if [ -x "$(INSTALL_DIR)/hooks/bin/$$hook" ]; then echo "    + $$hook"; hook_ok=$$((hook_ok+1)); \
 		elif [ -f "$(INSTALL_DIR)/hooks/bin/$$hook" ]; then echo "    x $$hook not executable"; errors=$$((errors+1)); \
 		else echo "    - $$hook"; fi; \
 	done; \
+	echo "    ($$hook_ok/$$hook_total)"; \
 	echo ""; \
-	echo "  Stale:"; \
-	for dir in $(STALE_DIRS); do \
-		if [ -d "$(DEPLOY_DIR)/$$dir" ] || [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
-			echo "    ! $$dir is stale"; errors=$$((errors+1)); \
-		else echo "    + $$dir absent (good)"; fi; \
-	done; \
-	echo ""; \
+	if [ -n "$(STALE_DIRS)" ]; then \
+		echo "  Stale:"; \
+		for dir in $(STALE_DIRS); do \
+			if [ -d "$(DEPLOY_DIR)/$$dir" ] || [ -L "$(DEPLOY_DIR)/$$dir" ]; then \
+				echo "    ! $$dir is stale"; errors=$$((errors+1)); \
+			fi; \
+		done; \
+		echo ""; \
+	fi; \
 	echo "  Workspace:"; \
 	if [ -f "$(SRC_DIR)/go.work" ]; then \
 		echo "    + go.work exists"; \
 		cd $(SRC_DIR) && $(GO) work sync 2>/dev/null && echo "    + go.work syncs" || { echo "    x go.work sync failed"; errors=$$((errors+1)); }; \
 	else echo "    x go.work missing"; errors=$$((errors+1)); fi; \
 	echo ""; \
-	if [ $$errors -eq 0 ]; then echo "  === Verification PASSED ==="; \
+	if [ $$errors -eq 0 ]; then \
+		echo "  === Verification PASSED ==="; \
+		echo "  Source $$src_ok/$$src_total | Symlinks $$sym_ok/$$sym_total | Binaries $$bin_ok/$$bin_total | Hooks $$hook_ok/$$hook_total"; \
 	else echo "  === FAILED: $$errors error(s) ==="; echo "  Run 'make fresh' to fix"; fi
 
 # ============================================================================
@@ -880,7 +974,11 @@ server-setup:
 # ============================================================================
 
 help:
-	@echo "CPI-SI Build System"
+	@echo ""
+	@echo "  ================================================================"
+	@echo "    CPI-SI Production Build System"
+	@echo "    CreativeWorkzStudio LLC"
+	@echo "  ================================================================"
 	@echo ""
 	@echo "  Source:   $(SRC_DIR)"
 	@echo "  Symlinks: $(DEPLOY_DIR)"
@@ -908,6 +1006,7 @@ help:
 	@echo ""
 	@echo "Install:"
 	@echo "  install            Full (build + symlinks + binaries + desktop)"
+	@echo "  update             Rebuild changed modules + deploy (daily driver)"
 	@echo "  install-bin        Build + deploy binaries to ext4"
 	@echo "  install-bin-only   Deploy existing binaries (no rebuild)"
 	@echo "  install-symlinks   Create symlinks in ~/.claude/"
@@ -958,19 +1057,29 @@ help:
 	@echo "Use 'make fast-build' for cold builds (persistent ext4 mirror)."
 	@echo "Use 'make remote-build' to offload builds to CWS server."
 	@echo ""
-	@echo "Quick start:  make fresh"
-	@echo "CLI:          cpisi help  (after first install)"
+	@echo "Quick start:  make fresh       (first time)"
+	@echo "Daily:        make update      (rebuild changed + deploy)"
+	@echo "CLI:          cpisi help       (after first install)"
 
 setup:
 	@echo ""
-	@echo "  CPI-SI Setup Guide"
+	@echo "  ================================================================"
+	@echo "    CPI-SI First-Time Setup"
+	@echo "  ================================================================"
 	@echo ""
-	@echo "  1. make build          Compile all modules"
-	@echo "  2. make install-symlinks  Link config to ~/.claude/"
-	@echo "  3. make install-bin    Deploy binaries to ext4"
-	@echo "  4. make verify         Check everything"
+	@echo "  Step-by-step:"
+	@echo "    1. make deps-check      Verify dependencies"
+	@echo "    2. make build            Compile all modules"
+	@echo "    3. make install-symlinks Link config to ~/.claude/"
+	@echo "    4. make install-bin      Deploy binaries to ext4"
+	@echo "    5. make verify           Check everything"
 	@echo ""
-	@echo "  Or: make fresh         Do it all at once"
+	@echo "  Or all at once:"
+	@echo "    make fresh               Clean + full install"
 	@echo ""
-	@echo "  After install, use: cpisi <command>"
-	@echo "  Run: cpisi help"
+	@echo "  Daily workflow:"
+	@echo "    make update              Rebuild changed + deploy"
+	@echo ""
+	@echo "  After install:"
+	@echo "    cpisi help               Full CLI reference"
+	@echo ""

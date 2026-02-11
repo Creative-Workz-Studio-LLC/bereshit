@@ -84,6 +84,9 @@ type Exchange struct {
 	UserMessageText string
 	ResponseSummary string
 	Valence         string
+
+	// Cognition (v4) — the reasoning behind the response
+	ThinkingText string
 }
 
 // Insight represents a moment of understanding transfer
@@ -124,6 +127,8 @@ type Repository interface {
 	RecordExchange(ctx context.Context, exchange *Exchange) error
 	RecordInsight(ctx context.Context, insight *Insight) error
 	GetRecentExchanges(ctx context.Context, sessionID string, limit int) ([]Exchange, error)
+	UpdateExchangeResponse(ctx context.Context, sessionID string, responseText string) error
+	UpdateExchangeThinking(ctx context.Context, sessionID string, thinkingText string) error
 
 	// Temporal queries
 	GetTemporalWorkPatterns(ctx context.Context) (map[int]map[int]int, error)

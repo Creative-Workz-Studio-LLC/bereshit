@@ -111,6 +111,16 @@ func (b *MultiBridge) EndSession(ctx context.Context, sessionID string, state *t
 	return b.saveLiveState(state)
 }
 
+// UpdateExchangeResponse updates the most recent exchange's response_summary.
+// Called by the Stop hook to capture the assistant's response text.
+func (b *MultiBridge) UpdateExchangeResponse(ctx context.Context, sessionID, responseText string) error {
+	return b.mdb.Sessions.UpdateExchangeResponse(ctx, sessionID, responseText)
+}
+
+func (b *MultiBridge) UpdateExchangeThinking(ctx context.Context, sessionID, thinkingText string) error {
+	return b.mdb.Sessions.UpdateExchangeThinking(ctx, sessionID, thinkingText)
+}
+
 // ───────────────────────────────────────────────────────────────────────────
 // Choice Recording → cognition.db
 // ───────────────────────────────────────────────────────────────────────────

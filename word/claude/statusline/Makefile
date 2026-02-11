@@ -1,31 +1,51 @@
 # ============================================================================
 # METADATA - Statusline Build
 # ============================================================================
-# Purpose: Build the statusline executable (CPI-SI state machine visualization)
-# Biblical: 1 Corinthians 14:40 - "Let all things be done decently and in order"
 #
-# Components:
-#   cmd/statusline/main.go  — Entry point, JSON parsing, state machine display
-#   pkg/statemachine/       — 27-position cube, trajectory navigation
-#   pkg/types/session.go    — Claude Code JSON schema types
+# Purpose: Build the statusline executable (CPI-SI state machine visualization)
+# Biblical: 1 Corinthians 14:40 — "Let all things be done decently and in order"
+#
+# Architecture:
+#   Source (exFAT):   statusline/cmd/statusline/   Entry point
+#                     statusline/lib/              Sections, builders, session
+#   Build (exFAT):    statusline/bin/              Compiled binary (intermediate)
+#   Install (ext4):   ~/.local/share/claude/bin/   Executable binary
 #
 # WezTerm Integration:
-#   - OSC 1337 SetUserVar for state machine variables
-#   - OSC 1/2 for window/tab titles
-#   - OSC 10/11/12 for dynamic colors based on state
+#   OSC 1337 SetUserVar — state machine variables
+#   OSC 1/2             — window/tab titles
+#   OSC 10/11/12        — dynamic colors based on state
+#
+# Quick start:
+#   make build         Build statusline executable
+#   make test          Test with full Claude Code JSON
+#   make help          Show all targets
+#
+# Integration with root Makefile:
+#   Root calls: cd statusline && $(MAKE) BINFLAGS="$(BINFLAGS)" build
+#   Variables use ?= so root can override, standalone builds use defaults.
 #
 # ============================================================================
 
-.PHONY: build clean test test-minimal test-full install help
-
 # ============================================================================
-# SETUP
+# SETUP — Variables
 # ============================================================================
 
-BINARY = statusline
-CMD_DIR = cmd/statusline
-BIN_DIR = bin
-TEST_DIR = testdata
+# Match root Makefile conventions. ?= allows override if ever called from root.
+GO       ?= go
+SHELL    := /bin/bash
+
+# Binary build flags (strip debug, disable VCS stamping)
+# -buildvcs=false: prevents git status on 22GB exFAT (causes timeouts)
+# -ldflags="-s -w": strip debug symbols, reduce binary size
+BINFLAGS ?= -buildvcs=false -ldflags="-s -w"
+
+# Compile-check only flags
+NOVCS    ?= -buildvcs=false
+
+BINARY   := statusline
+CMD_DIR  := cmd/statusline
+BIN_DIR  := bin
 
 # Full Claude Code JSON schema for testing
 define FULL_TEST_JSON
@@ -74,64 +94,130 @@ define MINIMAL_TEST_JSON
 endef
 export MINIMAL_TEST_JSON
 
+.PHONY: all build clean test test-minimal test-full test-states install update fmt vet help
+
+# Default
+all: build
+
 # ============================================================================
-# BODY
+# BODY — Build Targets
 # ============================================================================
 
 build:
 	@mkdir -p $(BIN_DIR)
-	go build -o $(BIN_DIR)/$(BINARY) ./$(CMD_DIR)
-	@echo "Built $(BIN_DIR)/$(BINARY)"
+	@$(GO) build $(BINFLAGS) -o $(BIN_DIR)/$(BINARY) ./$(CMD_DIR)
+	@echo "  Built: $(BIN_DIR)/$(BINARY)"
 
-clean:
-	rm -rf $(BIN_DIR)
+# ============================================================================
+# BODY — Incremental Update
+# ============================================================================
+
+# Rebuild only if sources changed (checks timestamps)
+update:
+	@echo ""
+	@echo "  Statusline Incremental Update"
+	@echo "  ────────────────────────────────────────"
+	@echo ""
+	@if [ ! -f "$(BIN_DIR)/$(BINARY)" ] || \
+	   find $(CMD_DIR) lib -name '*.go' -newer "$(BIN_DIR)/$(BINARY)" -print -quit 2>/dev/null | grep -q .; then \
+		mkdir -p $(BIN_DIR); \
+		$(GO) build $(BINFLAGS) -o $(BIN_DIR)/$(BINARY) ./$(CMD_DIR); \
+		echo "  * $(BINARY) (rebuilt)"; \
+	else \
+		echo "  $(BINARY) up to date (cached)"; \
+	fi
+	@echo ""
+	@echo "  ────────────────────────────────────────"
+	@echo "  Update complete."
+	@echo ""
+
+# ============================================================================
+# BODY — Install
+# ============================================================================
+
+# Install to parent bin/ (root Makefile handles ext4 deployment)
+install: build
+	@mkdir -p ../bin
+	@cp $(BIN_DIR)/$(BINARY) ../bin/$(BINARY)
+	@echo "  Installed to ../bin/$(BINARY)"
+
+# ============================================================================
+# BODY — Verification
+# ============================================================================
 
 # Default test uses full JSON schema
 test: test-full
 
 # Quick test with minimal JSON
 test-minimal: build
-	@echo "Testing with minimal JSON..."
+	@echo "  Testing with minimal JSON..."
 	@echo "$$MINIMAL_TEST_JSON" | ./$(BIN_DIR)/$(BINARY)
 
 # Full test with complete Claude Code JSON schema
 test-full: build
-	@echo "Testing with full Claude Code JSON schema..."
+	@echo "  Testing with full Claude Code JSON schema..."
 	@echo "$$FULL_TEST_JSON" | ./$(BIN_DIR)/$(BINARY)
 
 # Test state machine positions
 test-states: build
-	@echo "Testing state machine visualization..."
+	@echo "  Testing state machine visualization..."
 	@echo "$$FULL_TEST_JSON" | ./$(BIN_DIR)/$(BINARY) 2>&1 | head -1
 	@echo ""
-	@echo "WezTerm variables set:"
+	@echo "  WezTerm variables set:"
 	@echo "$$FULL_TEST_JSON" | ./$(BIN_DIR)/$(BINARY) 2>&1 | grep -o 'SM_[A-Z_]*' | sort -u || true
 
-# Install to the correct location (parent bin/ is symlinked to ~/.claude/bin/)
-# NOTE: Prefer using parent Makefile: cd .. && make bin
-install: build
-	@mkdir -p ../bin
-	@cp $(BIN_DIR)/$(BINARY) ../bin/$(BINARY)
-	@echo "Installed to ../bin/$(BINARY) (symlinked to ~/.claude/bin/)"
+# ============================================================================
+# BODY — Utilities
+# ============================================================================
+
+clean:
+	@rm -rf $(BIN_DIR)
+	@echo "  Cleaned $(BIN_DIR)/"
+
+fmt:
+	@echo "  Formatting statusline..."
+	@$(GO) fmt ./...
+
+vet:
+	@echo "  Vetting statusline..."
+	@$(GO) vet $(NOVCS) ./...
 
 # ============================================================================
-# CLOSING
+# CLOSING — Help
 # ============================================================================
 
 help:
-	@echo "Statusline Build System (CPI-SI State Machine Visualization)"
 	@echo ""
-	@echo "Targets:"
-	@echo "  build        - Build statusline executable"
-	@echo "  clean        - Remove build artifacts"
-	@echo "  test         - Test with full JSON schema (default)"
-	@echo "  test-minimal - Test with minimal JSON"
-	@echo "  test-full    - Test with complete Claude Code JSON"
-	@echo "  test-states  - Test state machine variable output"
-	@echo "  install      - Install to ../bin/ (symlinked to ~/.claude/bin/)"
+	@echo "  ================================================================"
+	@echo "    Statusline Build System"
+	@echo "    CPI-SI State Machine Visualization"
+	@echo "  ================================================================"
+	@echo ""
+	@echo "  Output: $(BIN_DIR)/$(BINARY)"
+	@echo ""
+	@echo "Build:"
+	@echo "  build          Build statusline executable (default)"
+	@echo "  update         Rebuild only if sources changed (incremental)"
+	@echo ""
+	@echo "Verification:"
+	@echo "  test           Test with full JSON schema"
+	@echo "  test-minimal   Test with minimal JSON"
+	@echo "  test-full      Test with complete Claude Code JSON"
+	@echo "  test-states    Test state machine variable output"
+	@echo ""
+	@echo "Utilities:"
+	@echo "  clean          Remove build artifacts"
+	@echo "  fmt            Format Go code"
+	@echo "  vet            Run go vet"
+	@echo "  install        Install to ../bin/"
+	@echo "  help           Show this help"
+	@echo ""
+	@echo "Variables (overridable by root Makefile):"
+	@echo "  GO=$(GO)  BINFLAGS=$(BINFLAGS)  NOVCS=$(NOVCS)"
 	@echo ""
 	@echo "WezTerm Integration:"
-	@echo "  SM_POSITION  - Current state machine position"
-	@echo "  SM_COMMAND   - Current command (HALT/AWAIT/PROCEED)"
-	@echo "  SM_ANCHOR    - Current anchor point"
-	@echo "  SM_X/Y/Z     - Cube coordinates"
+	@echo "  SM_POSITION    Current state machine position"
+	@echo "  SM_COMMAND     Current command (HALT/AWAIT/PROCEED)"
+	@echo "  SM_ANCHOR      Current anchor point"
+	@echo "  SM_X/Y/Z       Cube coordinates"
+	@echo ""
