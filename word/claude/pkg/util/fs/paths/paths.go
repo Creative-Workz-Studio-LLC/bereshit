@@ -246,9 +246,22 @@ func DatabaseDir() string {
 	return filepath.Join(ClaudeGlobalRoot(), "data")
 }
 
-// DatabaseBasePath returns the ext4 directory where all SQLite databases live.
-// All domain databases (.db files) must be on ext4 for WAL mode file locking.
+// DatabaseBasePath returns the directory where all SQLite databases live.
+//
+// Resolution order:
+//  1. CWS_DATA_DIR env var — production servers set this to consolidate all
+//     data under the service directory (e.g., /home/cws/data/databases).
+//     No hardcoded user paths, works on any CWS server.
+//  2. ~/.local/share/claude/data — workstation default. On the dev workstation
+//     the project drive is exFAT (no WAL file locking), so SQLite databases
+//     must live on the native ext4 filesystem.
+//
+// The env var pattern mirrors CLAUDE_GLOBAL_ROOT: production configures via
+// environment, workstation uses sensible defaults.
 func DatabaseBasePath() string {
+	if dir := os.Getenv("CWS_DATA_DIR"); dir != "" {
+		return dir
+	}
 	home, _ := os.UserHomeDir()
 	return filepath.Join(home, ".local", "share", "claude", "data")
 }
@@ -296,14 +309,18 @@ func DatabaseMigrationsDir() string {
 	return filepath.Join(DatabaseDir(), "migrations")
 }
 
-// EnsureDatabaseDir creates both the data directory (exFAT, for JSONC/logs)
-// and the database directory (ext4, for domain .db files) if they don't exist
+// EnsureDatabaseDir creates both the data directory (JSONC/logs) and the
+// database directory (SQLite .db files) if they don't exist.
+//
+// On workstation: these are two different paths (exFAT project drive vs ext4 home).
+// On production: CWS_DATA_DIR + CLAUDE_GLOBAL_ROOT both point under the service
+// directory, so these may overlap — MkdirAll handles that gracefully.
 func EnsureDatabaseDir() error {
-	// Data dir on project drive (JSONC, logs, output)
+	// Data dir (JSONC, logs, output — project drive on workstation)
 	if err := os.MkdirAll(DatabaseDir(), 0755); err != nil {
 		return err
 	}
-	// DB dir on ext4 (SQLite needs proper file locking)
+	// DB dir (SQLite — ext4 on workstation, service dir on production)
 	return os.MkdirAll(DatabaseBasePath(), 0755)
 }
 

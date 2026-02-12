@@ -1,0 +1,377 @@
+---
+# CreativeWorkzStudio LLC — CWS Production Server Setup
+# Ansible Playbook for provisioning and maintaining CWS production servers
+#
+# Usage:
+#   ansible-playbook -i inventory.ini cws-production.yaml --limit cws-oracle
+#   ansible-playbook -i inventory.ini cws-production.yaml --limit cws-dell
+#   ansible-playbook -i inventory.ini cws-production.yaml --limit servers
+#   ansible-playbook -i inventory.ini cws-production.yaml --limit cws-oracle --tags "node,cloudflared"
+#
+# Tested on: Ubuntu 24.04 LTS (Oracle Cloud ARM64), Ubuntu 24.04 LTS (Dell x86_64)
+#
+# "Except the LORD build the house, they labour in vain that build it:
+#  except the LORD keep the city, the watchman waketh but in vain." — Psalm 127:1
+
+- name: CWS Production Server
+  hosts: servers
+  become: true
+
+  vars:
+    # === Service Config ===
+    cws_user: seanje
+    cws_group: seanje
+    cws_dir: /home/{{ cws_user }}/cws
+    cws_port: 3847
+    cws_bin: /usr/local/bin/cws-server
+
+    # === Node.js ===
+    node_major: "20"
+
+    # === Cloudflare ===
+    cloudflared_repo: "https://pkg.cloudflare.com/cloudflared"
+
+    # === SSH Hardening ===
+    ssh_allowed_users: "seanje ubuntu"
+    ssh_max_auth_tries: 3
+
+    # === UFW Ports ===
+    ufw_allowed_ports:
+      - { port: "22", proto: "tcp", comment: "SSH" }
+      - { port: "80", proto: "tcp", comment: "HTTP" }
+      - { port: "443", proto: "tcp", comment: "HTTPS" }
+
+    # === System Tuning ===
+    vm_swappiness: 10
+    inotify_max_watches: 524288
+    inotify_max_instances: 512
+
+  tasks:
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 1: System Packages
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Update apt cache
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+      tags: [system, always]
+
+    - name: Install core system packages
+      apt:
+        name:
+          - curl
+          - wget
+          - git
+          - jq
+          - unzip
+          - ca-certificates
+          - gnupg
+          - apt-transport-https
+          - software-properties-common
+          - htop
+          - ncdu
+          - tree
+          - tmux
+          - rsync
+        state: present
+      tags: [system]
+
+    - name: Install build essentials (for native npm modules)
+      apt:
+        name:
+          - build-essential
+          - python3
+        state: present
+      tags: [system, node]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 2: SSH Hardening
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Deploy SSH hardening config
+      copy:
+        content: |
+          # CWS Server SSH Hardening
+          PermitRootLogin no
+          PasswordAuthentication no
+          PubkeyAuthentication yes
+          AuthenticationMethods publickey
+          MaxAuthTries {{ ssh_max_auth_tries }}
+          X11Forwarding no
+          AllowUsers {{ ssh_allowed_users }}
+        dest: /etc/ssh/sshd_config.d/cws-hardening.conf
+        mode: "0644"
+      notify: restart sshd
+      tags: [ssh, security]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 3: Firewall (UFW)
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Install UFW
+      apt:
+        name: ufw
+        state: present
+      tags: [firewall, security]
+
+    - name: Set UFW default deny incoming
+      community.general.ufw:
+        direction: incoming
+        default: deny
+      tags: [firewall, security]
+
+    - name: Set UFW default allow outgoing
+      community.general.ufw:
+        direction: outgoing
+        default: allow
+      tags: [firewall, security]
+
+    - name: Allow UFW ports
+      community.general.ufw:
+        rule: allow
+        port: "{{ item.port }}"
+        proto: "{{ item.proto }}"
+        comment: "{{ item.comment }}"
+      loop: "{{ ufw_allowed_ports }}"
+      tags: [firewall, security]
+
+    - name: Enable UFW
+      community.general.ufw:
+        state: enabled
+      tags: [firewall, security]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 4: Node.js (for Builder CLI)
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Add NodeSource repository (official setup)
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_{{ node_major }}.x | bash -
+      args:
+        creates: /etc/apt/sources.list.d/nodesource.list
+      tags: [node]
+
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+        update_cache: true
+      tags: [node]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 5: Cloudflared
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Add Cloudflare GPG key
+      shell: |
+        mkdir -p --mode=0755 /usr/share/keyrings
+        curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg \
+          -o /usr/share/keyrings/cloudflare-main.gpg
+      args:
+        creates: /usr/share/keyrings/cloudflare-main.gpg
+      tags: [cloudflared]
+
+    - name: Add Cloudflare repository
+      copy:
+        content: |
+          deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] {{ cloudflared_repo }} noble main
+        dest: /etc/apt/sources.list.d/cloudflared.list
+        mode: "0644"
+      tags: [cloudflared]
+
+    - name: Install cloudflared
+      apt:
+        name: cloudflared
+        state: present
+        update_cache: true
+      tags: [cloudflared]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 6: CWS Directory Structure
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Create CWS directory structure
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ cws_user }}"
+        group: "{{ cws_group }}"
+        mode: "0755"
+      loop:
+        - "{{ cws_dir }}"
+        - "{{ cws_dir }}/data"
+        - "{{ cws_dir }}/logs"
+        - "{{ cws_dir }}/scripts"
+        - "{{ cws_dir }}/website"
+        - "{{ cws_dir }}/build"
+        - "{{ cws_dir }}/build/builder"
+        - "{{ cws_dir }}/build/builder/dist"
+        - "{{ cws_dir }}/build/dashboard"
+        - "{{ cws_dir }}/build/dashboard/src-web"
+        - "{{ cws_dir }}/build/themes"
+      tags: [structure]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 7: Healthcheck Script
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Deploy healthcheck script
+      copy:
+        src: files/healthcheck.sh
+        dest: "{{ cws_dir }}/scripts/healthcheck.sh"
+        owner: "{{ cws_user }}"
+        group: "{{ cws_group }}"
+        mode: "0755"
+      tags: [healthcheck, monitoring]
+
+    - name: Configure healthcheck cron
+      cron:
+        name: "CWS server health check"
+        minute: "*/5"
+        user: "{{ cws_user }}"
+        job: "{{ cws_dir }}/scripts/healthcheck.sh"
+      tags: [healthcheck, monitoring]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 8: systemd Service
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Deploy CWS server systemd service
+      copy:
+        content: |
+          [Unit]
+          Description=CWS Server — CreativeWorkzStudio
+          After=network.target
+          StartLimitIntervalSec=60
+          StartLimitBurst=3
+
+          [Service]
+          Type=simple
+          User={{ cws_user }}
+          Group={{ cws_group }}
+          WorkingDirectory={{ cws_dir }}
+          Environment=CLAUDE_GLOBAL_ROOT={{ cws_dir }}/data/claude-global
+          ExecStart={{ cws_bin }} --port {{ cws_port }} --website-dir {{ cws_dir }}/website --data-dir {{ cws_dir }}/data --builder-dir {{ cws_dir }}
+          Restart=on-failure
+          RestartSec=5
+          StandardOutput=journal
+          StandardError=journal
+          SyslogIdentifier=cws-server
+
+          # Security hardening
+          NoNewPrivileges=yes
+          ProtectSystem=strict
+          ProtectHome=read-only
+          ReadWritePaths={{ cws_dir }}/data {{ cws_dir }}/logs /home/{{ cws_user }}/.local/share/claude
+          PrivateTmp=yes
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/cws-server.service
+        mode: "0644"
+      notify:
+        - reload systemd
+        - restart cws-server
+      tags: [service]
+
+    - name: Enable CWS server service
+      systemd:
+        name: cws-server
+        enabled: true
+        daemon_reload: true
+      tags: [service]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 9: System Tuning
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Configure sysctl tuning
+      copy:
+        content: |
+          # CreativeWorkzStudio LLC — Production Server Tuning
+          #
+          # Reduce swap pressure (default 60)
+          vm.swappiness = {{ vm_swappiness }}
+          #
+          # inotify: fsnotify (Go file watchers), Node.js HMR
+          fs.inotify.max_user_watches = {{ inotify_max_watches }}
+          fs.inotify.max_user_instances = {{ inotify_max_instances }}
+          #
+          # Network tuning for web server
+          net.core.somaxconn = 1024
+          net.ipv4.tcp_max_syn_backlog = 1024
+          net.ipv4.tcp_tw_reuse = 1
+        dest: /etc/sysctl.d/99-cws-production.conf
+        mode: "0644"
+      notify: reload sysctl
+      tags: [tuning, system]
+
+    - name: Set timezone to UTC
+      timezone:
+        name: UTC
+      tags: [system]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 10: Automatic Updates
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Install unattended-upgrades
+      apt:
+        name:
+          - unattended-upgrades
+          - apt-listchanges
+        state: present
+      tags: [security, updates]
+
+    - name: Enable automatic security updates
+      copy:
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+          APT::Periodic::AutocleanInterval "7";
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        mode: "0644"
+      tags: [security, updates]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 11: Log Rotation
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Configure CWS log rotation
+      copy:
+        content: |
+          {{ cws_dir }}/logs/*.log {
+              weekly
+              rotate 4
+              compress
+              delaycompress
+              missingok
+              notifempty
+              create 0644 {{ cws_user }} {{ cws_group }}
+          }
+        dest: /etc/logrotate.d/cws-server
+        mode: "0644"
+      tags: [logging]
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Handlers
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  handlers:
+    - name: restart sshd
+      systemd:
+        name: sshd
+        state: restarted
+
+    - name: reload systemd
+      systemd:
+        daemon_reload: true
+
+    - name: restart cws-server
+      systemd:
+        name: cws-server
+        state: restarted
+
+    - name: reload sysctl
+      command: sysctl --system

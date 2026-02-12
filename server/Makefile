@@ -42,9 +42,25 @@ THEMES         := $(BUILDER_DIR)/build/themes
 COMPANY_MK     := $(BUILDER_DIR)/Makefile
 WEBSITE_SRC    := $(ROOT)/website
 
-# ── Production (Dell Inspiron) ──────────────────────────────────────
+# ── Production Targets ────────────────────────────────────────────────
+#
+# PROD_TARGET controls which server receives deployments.
+#   make deploy                    → deploys to current PROD_TARGET (oracle)
+#   make deploy PROD_TARGET=dell   → deploys to Dell (LAN fallback)
 
-PROD_HOST := seanje@192.168.1.99
+PROD_TARGET ?= oracle
+
+# Oracle Cloud (primary — ARM64)
+ORACLE_HOST := seanje@163.192.118.124
+# Dell Inspiron (fallback — x86_64, LAN only)
+DELL_HOST   := seanje@192.168.1.99
+
+ifeq ($(PROD_TARGET),dell)
+  PROD_HOST := $(DELL_HOST)
+else
+  PROD_HOST := $(ORACLE_HOST)
+endif
+
 PROD_BIN  := /usr/local/bin/cws-server
 PROD_DIR  := /home/seanje/cws
 
@@ -59,6 +75,11 @@ build: ## Build server binary
 build-release: ## Build optimized release binary
 	cd $(CMD) && go build -ldflags="-s -w" -o $(BIN) .
 	@echo "Built (release): $(BIN)"
+
+.PHONY: build-arm64
+build-arm64: ## Cross-compile for linux/arm64 (Oracle Cloud)
+	cd $(CMD) && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o $(BIN)-arm64 .
+	@echo "Built (arm64): $(BIN)-arm64"
 
 .PHONY: frontend
 frontend: ## Compile dashboard TypeScript
@@ -101,15 +122,24 @@ tidy: ## Run go mod tidy
 #   7. Makefile          → $(PROD_DIR)/Makefile
 # ────────────────────────────────────────────────────────────────────
 
+# Choose the right binary for the target architecture.
+ifeq ($(PROD_TARGET),dell)
+  DEPLOY_BIN := $(BIN)
+  BUILD_DEP  := build-release
+else
+  DEPLOY_BIN := $(BIN)-arm64
+  BUILD_DEP  := build-arm64
+endif
+
 .PHONY: deploy
-deploy: build-release frontend ## Full production deploy
+deploy: $(BUILD_DEP) frontend ## Full production deploy
 	@echo "═══════════════════════════════════════════════"
-	@echo "  CWS Server — Full Production Deploy"
+	@echo "  CWS Server — Full Production Deploy ($(PROD_TARGET))"
 	@echo "═══════════════════════════════════════════════"
 	@echo ""
 	@# ── Binary ──
 	@echo "▸ Deploying binary..."
-	scp -q $(BIN) $(PROD_HOST):/tmp/cws-server
+	scp -q $(DEPLOY_BIN) $(PROD_HOST):/tmp/cws-server
 	ssh $(PROD_HOST) "sudo install -m 755 /tmp/cws-server $(PROD_BIN) && rm /tmp/cws-server"
 	@echo "  ✓ Binary installed"
 	@echo ""
@@ -165,8 +195,8 @@ deploy: build-release frontend ## Full production deploy
 # ── Partial Deploy Targets ──────────────────────────────────────────
 
 .PHONY: deploy-binary
-deploy-binary: build-release ## Deploy only the Go binary + restart
-	scp -q $(BIN) $(PROD_HOST):/tmp/cws-server
+deploy-binary: $(BUILD_DEP) ## Deploy only the Go binary + restart
+	scp -q $(DEPLOY_BIN) $(PROD_HOST):/tmp/cws-server
 	ssh $(PROD_HOST) "sudo install -m 755 /tmp/cws-server $(PROD_BIN) && rm /tmp/cws-server && sudo systemctl restart cws-server"
 	@echo "Binary deployed and service restarted"
 
@@ -200,6 +230,27 @@ deploy-builder: ## Deploy builder CLI dist + deps
 	fi
 	scp -q $(COMPANY_MK) $(PROD_HOST):$(PROD_DIR)/Makefile
 	@echo "Builder CLI and Makefile deployed"
+
+.PHONY: deploy-fly
+deploy-fly: ## Deploy to Fly.io (standby/failover)
+	@echo "═══════════════════════════════════════════════"
+	@echo "  CWS Server — Fly.io Standby Deploy"
+	@echo "═══════════════════════════════════════════════"
+	cd $(ROOT)/.. && $(HOME)/.fly/bin/flyctl deploy \
+		--app cws-server \
+		--config server/fly.toml \
+		--dockerfile server/Dockerfile \
+		--remote-only
+	@echo ""
+	@curl -sf https://cws-server.fly.dev/healthz > /dev/null && \
+		echo "Fly.io deploy complete — https://cws-server.fly.dev" || \
+		echo "⚠  Warning: Fly.io health check failed"
+
+.PHONY: fly-status
+fly-status: ## Check Fly.io standby status
+	@$(HOME)/.fly/bin/flyctl status --app cws-server 2>/dev/null || echo "flyctl not found"
+	@echo ""
+	@curl -sf https://cws-server.fly.dev/api/version | python3 -m json.tool 2>/dev/null || echo "Fly.io standby unreachable (may be auto-stopped)"
 
 .PHONY: deploy-scripts
 deploy-scripts: ## Deploy monitoring scripts to production
@@ -252,15 +303,17 @@ help: ## Show available targets
 		awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "Variables:"
-	@echo "  PORT=3847         Server port (dev)"
-	@echo "  BUILDER_DIR=...   Path to company-docs/"
+	@echo "  PORT=3847              Server port (dev)"
+	@echo "  BUILDER_DIR=...        Path to company-docs/"
+	@echo "  PROD_TARGET=oracle     Deploy target: oracle (default) or dell"
 	@echo ""
 	@echo "Deploy workflow:"
-	@echo "  make deploy         Full deploy (binary + frontend + website + builder)"
-	@echo "  make deploy-binary  Go binary only (restarts service)"
-	@echo "  make deploy-dash    Dashboard + config + themes (no restart)"
-	@echo "  make deploy-site    Website only (no restart)"
-	@echo "  make deploy-builder Builder CLI + deps + Makefile"
+	@echo "  make deploy                  Full deploy to Oracle (ARM64)"
+	@echo "  make deploy PROD_TARGET=dell Full deploy to Dell (x86_64)"
+	@echo "  make deploy-binary           Go binary only (restarts service)"
+	@echo "  make deploy-dash             Dashboard + config + themes (no restart)"
+	@echo "  make deploy-site             Website only (no restart)"
+	@echo "  make deploy-builder          Builder CLI + deps + Makefile"
 	@echo ""
 	@echo "Production:"
 	@echo "  make prod-status    Health check"
