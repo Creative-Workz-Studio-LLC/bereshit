@@ -1,0 +1,27 @@
+# ── CWS Failover Worker ──────────────────────────────────────────────
+# Cloudflare Worker that health-checks Oracle and triggers DNS failover.
+#
+# Deploy:
+#   cd word/claude/infrastructure/monitoring
+#   npx wrangler deploy
+#
+# Secrets (set once):
+#   npx wrangler secret put CF_API_TOKEN
+#   (paste the apiToken from cloudflared cert.pem)
+#
+# Manual test:
+#   curl https://cws-failover.creativeworkz.workers.dev/check
+# ────────────────────────────────────────────────────────────────────
+
+name = "cws-failover"
+main = "failover-worker.js"
+compatibility_date = "2026-02-12"
+
+# Run every 2 minutes
+[triggers]
+crons = ["*/2 * * * *"]
+
+# KV namespace for state persistence
+[[kv_namespaces]]
+binding = "FAILOVER_KV"
+id = "1f3d9f23ccc740eea5e9bcd056a70fdd"

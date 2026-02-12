@@ -212,9 +212,11 @@ deploy-dash: frontend ## Deploy dashboard frontend + config + themes
 	@echo "Dashboard, config, and themes deployed (no restart needed)"
 
 .PHONY: deploy-site
-deploy-site: ## Deploy website static files
+deploy-site: ## Deploy website to Oracle + Cloudflare Pages
 	rsync -az --delete $(WEBSITE_SRC)/ $(PROD_HOST):$(PROD_DIR)/website/
-	@echo "Website deployed (no restart needed)"
+	@echo "  ✓ Website synced to Oracle"
+	npx wrangler pages deploy $(WEBSITE_SRC) --project-name cws-website
+	@echo "  ✓ Website deployed to Cloudflare Pages"
 
 .PHONY: deploy-builder
 deploy-builder: ## Deploy builder CLI dist + deps
@@ -312,7 +314,7 @@ help: ## Show available targets
 	@echo "  make deploy PROD_TARGET=dell Full deploy to Dell (x86_64)"
 	@echo "  make deploy-binary           Go binary only (restarts service)"
 	@echo "  make deploy-dash             Dashboard + config + themes (no restart)"
-	@echo "  make deploy-site             Website only (no restart)"
+	@echo "  make deploy-site             Website → Oracle + Cloudflare Pages"
 	@echo "  make deploy-builder          Builder CLI + deps + Makefile"
 	@echo ""
 	@echo "Production:"

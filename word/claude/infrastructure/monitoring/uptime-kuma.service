@@ -1,0 +1,30 @@
+# ── Uptime Kuma systemd service ──────────────────────────────────────
+# Monitoring dashboard for CWS infrastructure.
+# Runs on Oracle VM alongside cws-server.
+#
+# Install: sudo cp uptime-kuma.service /etc/systemd/system/
+#          sudo systemctl daemon-reload
+#          sudo systemctl enable --now uptime-kuma
+#
+# Access: https://status.creativeworkzstudio.com (via Cloudflare tunnel)
+# ────────────────────────────────────────────────────────────────────
+
+[Unit]
+Description=Uptime Kuma — Monitoring Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=seanje
+Group=seanje
+WorkingDirectory=/home/seanje/monitoring/uptime-kuma
+Environment=NODE_ENV=production
+Environment=UPTIME_KUMA_PORT=3001
+Environment=DATA_DIR=/home/seanje/monitoring/data
+ExecStart=/usr/bin/node server/server.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target
