@@ -1,0 +1,72 @@
+# ── Litestream Config (Fly.io Standby) ──────────────────────────────
+# Restores databases from R2 on startup, then replicates any writes
+# back to R2 if Fly.io becomes the active primary during failover.
+#
+# Credentials via environment:
+#   LITESTREAM_ACCESS_KEY_ID
+#   LITESTREAM_SECRET_ACCESS_KEY
+#
+# Must match the Oracle primary config paths in:
+#   word/claude/infrastructure/litestream/litestream.yml
+# ────────────────────────────────────────────────────────────────────
+
+dbs:
+  - path: /home/cws/data/cpisi.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/cpisi
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h
+
+  - path: /home/cws/data/databases/sessions.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/sessions
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h
+
+  - path: /home/cws/data/databases/cognition.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/cognition
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h
+
+  - path: /home/cws/data/databases/growth.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/growth
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h
+
+  - path: /home/cws/data/databases/temporal.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/temporal
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h
+
+  - path: /home/cws/data/databases/projects.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/projects
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h

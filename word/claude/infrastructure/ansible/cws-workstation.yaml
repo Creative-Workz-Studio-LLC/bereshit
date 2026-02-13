@@ -1,0 +1,615 @@
+---
+# CreativeWorkzStudio LLC — CPI-SI Development Workstation Setup
+# Ansible Playbook for reproducing the full CWS/CPI-SI environment on Ubuntu
+#
+# Usage:
+#   ansible-playbook cws-workstation.yaml --ask-become-pass
+#   ansible-playbook cws-workstation.yaml --ask-become-pass --tags "go,rust"
+#   ansible-playbook cws-workstation.yaml --ask-become-pass -e "go_version=1.26.0"
+#
+# Tested on: Ubuntu 25.10 (Questing Quetzal)
+# Compatible: Ubuntu 24.04+, Debian 13+
+#
+# "Whatsoever thy hand findeth to do, do it with thy might." — Ecclesiastes 9:10
+
+- name: CWS/CPI-SI Development Workstation
+  hosts: localhost
+  connection: local
+  become: false
+
+  vars:
+    # === Version Pins ===
+    go_version: "1.26.0"
+    go_prev_version: "1.24.4"
+    node_lts_version: "24"
+    node_current_version: "25"
+    rust_channel: "nightly"
+
+    # === Paths ===
+    home_dir: "{{ ansible_env.HOME }}"
+    local_share: "{{ home_dir }}/.local/share"
+    claude_dir: "{{ home_dir }}/.claude"
+    claude_bin: "{{ local_share }}/claude/bin"
+    claude_system_bin: "{{ local_share }}/claude/system/bin"
+    cargo_bin: "{{ home_dir }}/.cargo/bin"
+    go_bin: "{{ home_dir }}/go/bin"
+    nvm_dir: "{{ home_dir }}/.nvm"
+    cache_dir: "{{ home_dir }}/.cache/cpisi"
+
+    # === Docker Registry ===
+    registry_port: 5000
+    registry_ui_port: 5080
+
+    # === System Tuning ===
+    vm_swappiness: 10
+    inotify_max_watches: 524288
+    inotify_max_instances: 512
+
+  tasks:
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 1: System Packages
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Update apt cache
+      become: true
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+      tags: [system, always]
+
+    - name: Install C/C++ toolchain
+      become: true
+      apt:
+        name:
+          - build-essential
+          - gcc
+          - g++
+          - clang
+          - clangd
+          - clang-format
+          - clang-tidy
+          - llvm
+          - lldb
+          - lld
+          - libc++-dev
+          - libc++abi-dev
+          - libstdc++-dev
+        state: present
+      tags: [c, cpp, system]
+
+    - name: Install C/C++ build tools
+      become: true
+      apt:
+        name:
+          - cmake
+          - ninja-build
+          - meson
+          - ccache
+          - autoconf
+          - automake
+          - libtool
+          - pkg-config
+        state: present
+      tags: [c, cpp, build]
+
+    - name: Install debug and analysis tools
+      become: true
+      apt:
+        name:
+          - gdb
+          - valgrind
+          - strace
+          - ltrace
+          - cppcheck
+          - lcov
+          - gcovr
+        state: present
+      tags: [c, cpp, debug]
+
+    - name: Install cross-compilation support
+      become: true
+      apt:
+        name:
+          - gcc-aarch64-linux-gnu
+          - g++-aarch64-linux-gnu
+          - musl-tools
+          - qemu-user-static
+          - binfmt-support
+        state: present
+      tags: [cross, system]
+
+    - name: Install .NET SDK and tools
+      become: true
+      apt:
+        name:
+          - dotnet-sdk-10.0
+          - aspnetcore-runtime-10.0
+          - dotnet-sdk-aot-10.0
+        state: present
+      tags: [dotnet, csharp]
+
+    - name: Install Mono
+      become: true
+      apt:
+        name:
+          - mono-complete
+        state: present
+      tags: [dotnet, mono]
+
+    - name: Install protobuf compiler
+      become: true
+      apt:
+        name:
+          - protobuf-compiler
+          - libprotobuf-dev
+        state: present
+      tags: [proto, grpc]
+
+    - name: Install CUDA toolkit
+      become: true
+      apt:
+        name:
+          - nvidia-cuda-toolkit
+        state: present
+      tags: [cuda, gpu]
+      ignore_errors: true
+
+    - name: Install database servers
+      become: true
+      apt:
+        name:
+          - postgresql
+          - redis-server
+          - sqlite3
+          - libsqlite3-dev
+        state: present
+      tags: [databases]
+
+    - name: Install documentation tools
+      become: true
+      apt:
+        name:
+          - pandoc
+          - doxygen
+        state: present
+      tags: [docs]
+
+    - name: Install config and linting tools
+      become: true
+      apt:
+        name:
+          - jq
+          - yq
+          - shellcheck
+          - yamllint
+          - jsonlint
+        state: present
+      tags: [config, lint]
+
+    - name: Install system monitoring tools
+      become: true
+      apt:
+        name:
+          - htop
+          - btop
+          - iotop-c
+          - ncdu
+          - powertop
+          - hyperfine
+          - fastfetch
+        state: present
+      tags: [monitoring, system]
+
+    - name: Install power management (TLP)
+      become: true
+      apt:
+        name:
+          - tlp
+          - tlp-rdw
+        state: present
+      tags: [power, system]
+
+    - name: Install Docker
+      become: true
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - docker-compose-plugin
+          - docker-buildx-plugin
+        state: present
+      tags: [docker]
+      ignore_errors: true
+
+    - name: Install Python tools
+      become: true
+      apt:
+        name:
+          - python3-full
+          - python3-pip
+          - python3-venv
+          - pipx
+        state: present
+      tags: [python]
+
+    - name: Install GTK4 development (for CPI-SI dashboard)
+      become: true
+      apt:
+        name:
+          - libgtk-4-dev
+          - libgirepository1.0-dev
+        state: present
+      tags: [gtk, dashboard]
+      ignore_errors: true
+
+    - name: Install SSH server
+      become: true
+      apt:
+        name:
+          - openssh-server
+        state: present
+      tags: [ssh, system]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 2: Language Runtimes
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    # --- Go ---
+
+    - name: Download Go {{ go_version }}
+      get_url:
+        url: "https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz"
+        dest: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+        mode: "0644"
+      tags: [go]
+
+    - name: Install Go {{ go_version }}
+      become: true
+      unarchive:
+        src: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+        dest: "/usr/local/go-{{ go_version | regex_replace('\\.\\d+$', '') }}"
+        remote_src: true
+        creates: "/usr/local/go-{{ go_version | regex_replace('\\.\\d+$', '') }}/bin/go"
+        extra_opts: ["--strip-components=1"]
+      tags: [go]
+
+    - name: Create Go install directory
+      become: true
+      file:
+        path: "/usr/local/go-{{ go_version | regex_replace('\\.\\d+$', '') }}"
+        state: directory
+        mode: "0755"
+      tags: [go]
+
+    - name: Set Go {{ go_version }} as default via alternatives
+      become: true
+      shell: |
+        update-alternatives --install /usr/bin/go go /usr/local/go-{{ go_version | regex_replace('\\.\\d+$', '') }}/bin/go 200
+        update-alternatives --install /usr/bin/gofmt gofmt /usr/local/go-{{ go_version | regex_replace('\\.\\d+$', '') }}/bin/gofmt 200
+        update-alternatives --set go /usr/local/go-{{ go_version | regex_replace('\\.\\d+$', '') }}/bin/go
+        update-alternatives --set gofmt /usr/local/go-{{ go_version | regex_replace('\\.\\d+$', '') }}/bin/gofmt
+      tags: [go]
+
+    - name: Install Go development tools
+      shell: |
+        export PATH="{{ go_bin }}:$PATH"
+        go install golang.org/x/tools/gopls@latest
+        go install github.com/go-delve/delve/cmd/dlv@latest
+        go install golang.org/x/tools/cmd/goimports@latest
+        go install honnef.co/go/tools/cmd/staticcheck@latest
+        go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+        go install github.com/segmentio/golines@latest
+        go install github.com/cweill/gotests/gotests@latest
+        go install go.uber.org/mock/mockgen@latest
+        go install github.com/air-verse/air@latest
+        go install mvdan.cc/sh/v3/cmd/shfmt@latest
+        go install mvdan.cc/gofumpt@latest
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+        go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
+        go install github.com/bufbuild/buf/cmd/buf@latest
+        go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+        go install github.com/nektos/act@latest
+      args:
+        creates: "{{ go_bin }}/gopls"
+      tags: [go, tools]
+
+    # --- Rust ---
+
+    - name: Check if rustup is installed
+      stat:
+        path: "{{ home_dir }}/.rustup/toolchains"
+      register: rustup_check
+      tags: [rust]
+
+    - name: Install rustup
+      shell: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain {{ rust_channel }}
+      args:
+        creates: "{{ home_dir }}/.cargo/bin/rustup"
+      when: not rustup_check.stat.exists
+      tags: [rust]
+
+    - name: Update Rust toolchain
+      shell: "{{ home_dir }}/.cargo/bin/rustup update {{ rust_channel }}"
+      tags: [rust]
+
+    - name: Install Rust components
+      shell: "{{ home_dir }}/.cargo/bin/rustup component add rust-analyzer clippy rustfmt rust-src"
+      tags: [rust]
+
+    - name: Add Rust cross-compilation targets
+      shell: |
+        {{ home_dir }}/.cargo/bin/rustup target add \
+          wasm32-unknown-unknown \
+          wasm32-wasip1 \
+          x86_64-unknown-linux-musl \
+          aarch64-unknown-linux-gnu \
+          aarch64-unknown-linux-musl
+      tags: [rust, cross]
+
+    - name: Install Rust WASM and proto tools
+      shell: |
+        {{ cargo_bin }}/cargo install wasm-pack wasm-bindgen-cli protobuf-codegen
+      args:
+        creates: "{{ cargo_bin }}/wasm-pack"
+      tags: [rust, wasm]
+
+    # --- Node.js (via nvm) ---
+
+    - name: Check if nvm is installed
+      stat:
+        path: "{{ nvm_dir }}/nvm.sh"
+      register: nvm_check
+      tags: [node, typescript]
+
+    - name: Install nvm
+      shell: >
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+      args:
+        creates: "{{ nvm_dir }}/nvm.sh"
+      when: not nvm_check.stat.exists
+      tags: [node, typescript]
+
+    - name: Install Node.js LTS and Current
+      shell: |
+        source {{ nvm_dir }}/nvm.sh
+        nvm install {{ node_lts_version }}
+        nvm install {{ node_current_version }}
+        nvm alias default {{ node_lts_version }}
+        nvm use {{ node_lts_version }}
+      args:
+        executable: /bin/bash
+      tags: [node, typescript]
+
+    - name: Install global npm packages (on LTS)
+      shell: |
+        source {{ nvm_dir }}/nvm.sh
+        nvm use {{ node_lts_version }}
+        npm install -g \
+          typescript@latest \
+          ts-node@latest \
+          typescript-language-server@latest \
+          @types/node@latest \
+          eslint@latest \
+          prettier@latest \
+          npm-check-updates@latest \
+          markdownlint-cli@latest \
+          @tailwindcss/language-server@latest \
+          yaml-language-server@latest \
+          vscode-json-languageserver@latest \
+          @mermaid-js/mermaid-cli@latest \
+          doctoc@latest \
+          ajv-cli@latest
+      args:
+        executable: /bin/bash
+      tags: [node, typescript, tools]
+
+    # --- Deno ---
+
+    - name: Install/update Deno
+      shell: curl -fsSL https://deno.land/install.sh | sh
+      args:
+        creates: "{{ home_dir }}/.deno/bin/deno"
+      tags: [deno, typescript]
+
+    # --- Bun ---
+
+    - name: Install/update Bun
+      shell: curl -fsSL https://bun.sh/install | bash
+      args:
+        creates: "{{ home_dir }}/.bun/bin/bun"
+      tags: [bun, typescript]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 3: .NET Global Tools
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Install .NET global tools
+      shell: |
+        dotnet tool install -g dotnet-ef || dotnet tool update -g dotnet-ef
+        dotnet tool install -g dotnet-format || dotnet tool update -g dotnet-format
+        dotnet tool install -g dotnet-outdated-tool || dotnet tool update -g dotnet-outdated-tool
+        dotnet tool install -g dotnet-script || dotnet tool update -g dotnet-script
+      tags: [dotnet, tools]
+      ignore_errors: true
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 4: Ruby/AsciiDoc Tools
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Install AsciiDoc toolchain
+      shell: |
+        gem install \
+          asciidoctor \
+          asciidoctor-pdf \
+          asciidoctor-diagram \
+          asciidoctor-epub3 \
+          asciidoctor-bibtex \
+          asciidoctor-kroki \
+          asciidoctor-revealjs \
+          bundler
+      tags: [asciidoc, docs]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 5: Python Tools (via pipx)
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Install Python tools via pipx
+      shell: |
+        pipx install ansible-core || pipx upgrade ansible-core
+        pipx install toml-sort || pipx upgrade toml-sort
+        pipx install pre-commit || pipx upgrade pre-commit
+      tags: [python, tools]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 6: System Tuning
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Configure sysctl performance tuning
+      become: true
+      copy:
+        content: |
+          # CreativeWorkzStudio LLC — CPI-SI Development Workstation Tuning
+          #
+          # vm.swappiness: Reduce swap pressure (default 60 → {{ vm_swappiness }})
+          vm.swappiness = {{ vm_swappiness }}
+          #
+          # inotify: fsnotify (dashboards), Node/Vite HMR, IDE tooling
+          fs.inotify.max_user_watches = {{ inotify_max_watches }}
+          fs.inotify.max_user_instances = {{ inotify_max_instances }}
+        dest: /etc/sysctl.d/99-cws-performance.conf
+        mode: "0644"
+      notify: reload sysctl
+      tags: [tuning, system]
+
+    - name: Configure TLP battery and performance
+      become: true
+      copy:
+        content: |
+          # CreativeWorkzStudio LLC — Battery and CPU Configuration
+          START_CHARGE_THRESH_BAT0=75
+          STOP_CHARGE_THRESH_BAT0=85
+          CPU_SCALING_GOVERNOR_ON_AC=performance
+          CPU_SCALING_GOVERNOR_ON_BAT=powersave
+          CPU_BOOST_ON_AC=1
+          CPU_BOOST_ON_BAT=0
+        dest: /etc/tlp.d/01-cws-battery.conf
+        mode: "0644"
+      notify: restart tlp
+      tags: [power, tuning]
+
+    - name: Configure Docker daemon
+      become: true
+      copy:
+        content: |
+          {
+            "insecure-registries": ["localhost:{{ registry_port }}"],
+            "log-driver": "json-file",
+            "log-opts": {
+              "max-size": "10m",
+              "max-file": "3"
+            }
+          }
+        dest: /etc/docker/daemon.json
+        mode: "0644"
+      notify: restart docker
+      tags: [docker]
+      ignore_errors: true
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 7: GitHub CLI (from official repo)
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Add GitHub CLI apt repository
+      become: true
+      shell: |
+        mkdir -p -m 755 /etc/apt/keyrings
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+          -o /etc/apt/keyrings/githubcli-archive-keyring.gpg
+        chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+          > /etc/apt/sources.list.d/github-cli.list
+      args:
+        creates: /etc/apt/sources.list.d/github-cli.list
+      tags: [gh, github]
+
+    - name: Install GitHub CLI from official repo
+      become: true
+      apt:
+        name: gh
+        state: latest
+        update_cache: true
+      tags: [gh, github]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 8: CPI-SI Directory Structure
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Create CPI-SI directory structure
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ claude_bin }}"
+        - "{{ claude_system_bin }}"
+        - "{{ cache_dir }}/stamps"
+        - "{{ cache_dir }}/source"
+        - "{{ local_share }}/docker/registry"
+      tags: [cpisi, structure]
+
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # PHASE 9: Enable Services
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    - name: Enable and start services
+      become: true
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - postgresql
+        - redis-server
+        - ssh
+        - tlp
+      tags: [services, system]
+
+    - name: Enable Docker service
+      become: true
+      systemd:
+        name: docker
+        state: started
+        enabled: true
+      tags: [docker, services]
+      ignore_errors: true
+
+    - name: Add user to docker group
+      become: true
+      user:
+        name: "{{ ansible_user_id }}"
+        groups: docker
+        append: true
+      tags: [docker]
+      ignore_errors: true
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Handlers
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  handlers:
+    - name: reload sysctl
+      become: true
+      command: sysctl --system
+
+    - name: restart tlp
+      become: true
+      systemd:
+        name: tlp
+        state: restarted
+
+    - name: restart docker
+      become: true
+      systemd:
+        name: docker
+        state: restarted

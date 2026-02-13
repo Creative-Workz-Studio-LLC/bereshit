@@ -1,0 +1,81 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# METADATA
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Key: cws-server-fly-config
+# Purpose: Fly.io deployment config for CWS Server (standby/failover)
+# Biblical: Proverbs 27:12 — "A prudent man foreseeth the evil, and hideth himself"
+# Authors: Nova Dawn
+# Version: 1.0.0
+# Created: 2026-02-11
+#
+# This runs as a STANDBY — auto-stop when idle, auto-start on request.
+# Primary is Oracle Cloud (Phoenix). This is geographic failover (Chicago).
+#
+# Deploy:
+#   cd server && fly deploy --config fly.toml --dockerfile Dockerfile \
+#     --build-arg BUILD_CONTEXT=.. --remote-only
+#
+# Or from repo root:
+#   fly deploy -a cws-server --config server/fly.toml --dockerfile server/Dockerfile
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+app = "cws-server"
+primary_region = "ord"
+
+# ── Build ─────────────────────────────────────────────────────────────────
+# Dockerfile lives in server/, build context is repo root (for Go module paths).
+# Deploy from repo root:
+#   fly deploy --config server/fly.toml --dockerfile server/Dockerfile
+
+[build]
+
+# ── HTTP Service ──────────────────────────────────────────────────────────
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 3847
+
+  # Auto-stop when no traffic (standby mode — saves cost).
+  # Auto-start when request arrives.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+
+  # Minimum 0 machines when idle (true standby).
+  min_machines_running = 0
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  # Health checks — same endpoint as production.
+  [[services.http_checks]]
+    interval = 30000
+    timeout = 5000
+    grace_period = "10s"
+    method = "GET"
+    path = "/healthz"
+
+# ── Machine Config ────────────────────────────────────────────────────────
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+# ── Persistent Storage ───────────────────────────────────────────────────
+# Data dir for builder output, SQLite, etc.
+
+[[mounts]]
+  source = "cws_data"
+  destination = "/home/cws/data"
+
+# ── Environment ──────────────────────────────────────────────────────────
+
+[env]
+  CWS_MODE = "standby"

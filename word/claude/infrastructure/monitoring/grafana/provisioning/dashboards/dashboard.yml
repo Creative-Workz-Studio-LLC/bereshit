@@ -1,0 +1,23 @@
+# ── Grafana — Dashboard Provisioning ──────────────────────────────────
+# Auto-provisions dashboards from JSON files on Grafana start.
+# Dashboards are created in Grafana UI, exported as JSON, then saved
+# to /var/lib/grafana/dashboards/ for provisioning.
+#
+# Deploy: ansible-playbook cws-production.yaml --tags monitoring
+#   OR:  sudo cp dashboard.yml /etc/grafana/provisioning/dashboards/
+#         sudo systemctl restart grafana-server
+# ──────────────────────────────────────────────────────────────────────
+
+apiVersion: 1
+
+providers:
+  - name: CWS Dashboards
+    orgId: 1
+    folder: CWS
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

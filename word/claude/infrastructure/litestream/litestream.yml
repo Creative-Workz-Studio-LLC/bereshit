@@ -1,0 +1,87 @@
+# ── CWS Litestream Configuration ────────────────────────────────────
+# Continuous SQLite replication to Cloudflare R2
+#
+# Databases:
+#   - cpisi.db       — CPI-SI journal store (FTS5, WAL mode)
+#   - sessions.db    — Session & exchange lifecycle
+#   - cognition.db   — Mental construct & cognitive state
+#   - growth.db      — Learning & pattern recognition
+#   - temporal.db    — Time & calendar awareness
+#   - projects.db    — Work tracking
+#
+# All databases replicate to the cws-backups R2 bucket under
+# the litestream/ prefix. Restic snapshots use the same bucket
+# under the restic/ prefix (managed separately).
+#
+# Installed on: Oracle Cloud ARM64 (primary)
+# "Except the LORD keep the city, the watchman waketh but in vain."
+#   — Psalm 127:1
+# ────────────────────────────────────────────────────────────────────
+
+# R2 endpoint (shared across all replicas)
+# Credentials loaded via environment variables:
+#   LITESTREAM_ACCESS_KEY_ID
+#   LITESTREAM_SECRET_ACCESS_KEY
+
+dbs:
+  # ── Legacy Journal Database ──────────────────────────────────────
+  - path: /home/seanje/cws/data/cpisi.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/cpisi
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h
+
+  # ── Domain Databases ─────────────────────────────────────────────
+  - path: /home/seanje/cws/data/databases/sessions.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/sessions
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h
+
+  - path: /home/seanje/cws/data/databases/cognition.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/cognition
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h
+
+  - path: /home/seanje/cws/data/databases/growth.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/growth
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h
+
+  - path: /home/seanje/cws/data/databases/temporal.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/temporal
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h
+
+  - path: /home/seanje/cws/data/databases/projects.db
+    replicas:
+      - type: s3
+        bucket: cws-backups
+        path: litestream/projects
+        endpoint: https://6ba03da44b4bce57dcaaa3d3dcccc7e1.r2.cloudflarestorage.com
+        force-path-style: true
+        sync-interval: 10s
+        snapshot-interval: 1h

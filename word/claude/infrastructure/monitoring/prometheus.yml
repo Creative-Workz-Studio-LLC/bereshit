@@ -1,0 +1,52 @@
+# ── CWS Server — Prometheus Configuration ────────────────────────────
+# Scrapes cws-server, node_exporter, and Prometheus itself.
+#
+# Deploy: ansible-playbook cws-production.yaml --tags monitoring
+#   OR:  scp prometheus.yml cws-oracle:/etc/prometheus/prometheus.yml
+#         ssh cws-oracle 'sudo systemctl reload prometheus'
+#
+# All targets are localhost — no network exposure required.
+# ──────────────────────────────────────────────────────────────────────
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+  external_labels:
+    cluster: "cws-production"
+    environment: "production"
+
+# ── Scrape Targets ────────────────────────────────────────────────────
+
+scrape_configs:
+  # CWS Go Server — application metrics
+  # Endpoint: GET /metrics (Prometheus text format)
+  # Metrics: cws_http_requests_total, cws_http_errors_total,
+  #          cws_http_request_duration_seconds, cws_http_active_requests,
+  #          cws_server_uptime_seconds, cws_server_goroutines,
+  #          cws_ws_clients, plus Go runtime/process collectors
+  - job_name: "cws-server"
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["localhost:3847"]
+        labels:
+          service: "cws-server"
+
+  # Node Exporter — system metrics (CPU, RAM, disk, network)
+  - job_name: "node"
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["localhost:9100"]
+        labels:
+          instance: "oracle"
+
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["localhost:9090"]
+
+# ── Storage ───────────────────────────────────────────────────────────
+# Retention configured via CLI flags in systemd unit:
+#   --storage.tsdb.retention.time=30d
+#   --storage.tsdb.retention.size=5GB

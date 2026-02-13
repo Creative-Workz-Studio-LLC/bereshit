@@ -52,11 +52,20 @@ func NewFileWatcher(eventBus *EventBus) (*FileWatcher, error) {
 // WatchRuntimeFiles starts watching CPI-SI runtime files.
 // Watches the runtime directory for state.jsonc, path.jsonc, history.jsonc changes,
 // and the session log directory for new log entries.
+//
+// On production servers, runtime state files don't exist (no Claude Code hooks
+// writing state). The watcher gracefully skips missing directories — the
+// DashboardService still provides full CRUD and search without real-time updates.
 func (fw *FileWatcher) WatchRuntimeFiles(ctx context.Context) error {
-	// Watch the runtime state directory
+	watching := 0
+
+	// Watch the runtime state directory (may not exist on production)
 	runtimeDir := filepath.Dir(paths.StateMachineRuntimeState())
 	if err := fw.watcher.Add(runtimeDir); err != nil {
-		return err
+		// Non-fatal — runtime dir doesn't exist on production servers
+		_ = err
+	} else {
+		watching++
 	}
 
 	// Watch session log directory
@@ -64,9 +73,12 @@ func (fw *FileWatcher) WatchRuntimeFiles(ctx context.Context) error {
 	if err := fw.watcher.Add(logsDir); err != nil {
 		// Non-fatal — logs dir might not exist yet
 		_ = err
+	} else {
+		watching++
 	}
 
-	// Start the watch loop
+	// Start the watch loop even with zero watchers — it handles the
+	// context cancellation cleanup. New directories can be added later.
 	go fw.watchLoop(ctx)
 
 	return nil

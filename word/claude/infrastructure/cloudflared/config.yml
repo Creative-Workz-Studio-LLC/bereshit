@@ -1,0 +1,39 @@
+# ── CWS Server — Cloudflare Tunnel Configuration ────────────────────
+# Tunnel: cws-server (a441a8db-0905-4e12-ad47-02c68ce607fe)
+#
+# Deploy: scp config.yml cws-oracle:~/.cloudflared/config.yml
+#         ssh cws-oracle 'sudo cp ~/.cloudflared/config.yml /etc/cloudflared/config.yml'
+#         ssh cws-oracle 'sudo systemctl restart cloudflared'
+#
+# Routes:
+#   dashboard.creativeworkzstudio.com → Go server (builder dashboard)
+#   cpisi.creativeworkzstudio.com     → Go server (CPI-SI console)
+#   grafana.creativeworkzstudio.com   → Grafana (metrics dashboards)
+#   status.creativeworkzstudio.com    → Uptime Kuma (monitoring)
+#
+# NOTE: creativeworkzstudio.com + www served by Cloudflare Pages (edge),
+# NOT the tunnel. See: wrangler pages project cws-website
+# ────────────────────────────────────────────────────────────────────
+
+tunnel: a441a8db-0905-4e12-ad47-02c68ce607fe
+credentials-file: /home/seanje/.cloudflared/a441a8db-0905-4e12-ad47-02c68ce607fe.json
+
+ingress:
+  # Dashboard — dashboard.creativeworkzstudio.com
+  - hostname: dashboard.creativeworkzstudio.com
+    service: http://localhost:3847
+
+  # CPI-SI Console — cpisi.creativeworkzstudio.com
+  - hostname: cpisi.creativeworkzstudio.com
+    service: http://localhost:3847
+
+  # Grafana — grafana.creativeworkzstudio.com
+  - hostname: grafana.creativeworkzstudio.com
+    service: http://localhost:3000
+
+  # Uptime Kuma — status.creativeworkzstudio.com
+  - hostname: status.creativeworkzstudio.com
+    service: http://localhost:3001
+
+  # Catch-all (required by cloudflared)
+  - service: http_status:404

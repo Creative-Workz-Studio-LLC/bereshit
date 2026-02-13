@@ -23,7 +23,9 @@ SHELL     := /bin/bash
 ROOT      := $(shell pwd)
 # Build to native filesystem (exfat can't set execute permissions)
 BIN       := /home/seanje-lenox-wise/.local/bin/cws-server
+OPS_BIN   := /home/seanje-lenox-wise/.local/bin/cws-ops
 CMD       := $(ROOT)/cmd/cws-server
+OPS_CMD   := $(ROOT)/cmd/cws-ops
 
 # Default project directory (auto-detected if not set)
 BUILDER_DIR ?= $(realpath $(ROOT)/../company-docs)
@@ -42,9 +44,25 @@ THEMES         := $(BUILDER_DIR)/build/themes
 COMPANY_MK     := $(BUILDER_DIR)/Makefile
 WEBSITE_SRC    := $(ROOT)/website
 
-# ── Production (Dell Inspiron) ──────────────────────────────────────
+# ── Production Targets ────────────────────────────────────────────────
+#
+# PROD_TARGET controls which server receives deployments.
+#   make deploy                    → deploys to current PROD_TARGET (oracle)
+#   make deploy PROD_TARGET=dell   → deploys to Dell (LAN fallback)
 
-PROD_HOST := seanje@192.168.1.99
+PROD_TARGET ?= oracle
+
+# Oracle Cloud (primary — ARM64)
+ORACLE_HOST := seanje@163.192.118.124
+# Dell Inspiron (fallback — x86_64, LAN only)
+DELL_HOST   := seanje@192.168.1.99
+
+ifeq ($(PROD_TARGET),dell)
+  PROD_HOST := $(DELL_HOST)
+else
+  PROD_HOST := $(ORACLE_HOST)
+endif
+
 PROD_BIN  := /usr/local/bin/cws-server
 PROD_DIR  := /home/seanje/cws
 
@@ -59,6 +77,11 @@ build: ## Build server binary
 build-release: ## Build optimized release binary
 	cd $(CMD) && go build -ldflags="-s -w" -o $(BIN) .
 	@echo "Built (release): $(BIN)"
+
+.PHONY: build-arm64
+build-arm64: ## Cross-compile for linux/arm64 (Oracle Cloud)
+	cd $(CMD) && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o $(BIN)-arm64 .
+	@echo "Built (arm64): $(BIN)-arm64"
 
 .PHONY: frontend
 frontend: ## Compile dashboard TypeScript
@@ -81,6 +104,7 @@ run-quick: ## Run without rebuilding (must build first)
 check: ## Run go vet and build check
 	cd $(ROOT) && go vet ./...
 	cd $(CMD) && go build -o /dev/null .
+	cd $(OPS_CMD) && go build -o /dev/null .
 	@echo "All checks passed"
 
 .PHONY: tidy
@@ -101,15 +125,24 @@ tidy: ## Run go mod tidy
 #   7. Makefile          → $(PROD_DIR)/Makefile
 # ────────────────────────────────────────────────────────────────────
 
+# Choose the right binary for the target architecture.
+ifeq ($(PROD_TARGET),dell)
+  DEPLOY_BIN := $(BIN)
+  BUILD_DEP  := build-release
+else
+  DEPLOY_BIN := $(BIN)-arm64
+  BUILD_DEP  := build-arm64
+endif
+
 .PHONY: deploy
-deploy: build-release frontend ## Full production deploy
+deploy: $(BUILD_DEP) frontend ## Full production deploy
 	@echo "═══════════════════════════════════════════════"
-	@echo "  CWS Server — Full Production Deploy"
+	@echo "  CWS Server — Full Production Deploy ($(PROD_TARGET))"
 	@echo "═══════════════════════════════════════════════"
 	@echo ""
 	@# ── Binary ──
 	@echo "▸ Deploying binary..."
-	scp -q $(BIN) $(PROD_HOST):/tmp/cws-server
+	scp -q $(DEPLOY_BIN) $(PROD_HOST):/tmp/cws-server
 	ssh $(PROD_HOST) "sudo install -m 755 /tmp/cws-server $(PROD_BIN) && rm /tmp/cws-server"
 	@echo "  ✓ Binary installed"
 	@echo ""
@@ -165,8 +198,8 @@ deploy: build-release frontend ## Full production deploy
 # ── Partial Deploy Targets ──────────────────────────────────────────
 
 .PHONY: deploy-binary
-deploy-binary: build-release ## Deploy only the Go binary + restart
-	scp -q $(BIN) $(PROD_HOST):/tmp/cws-server
+deploy-binary: $(BUILD_DEP) ## Deploy only the Go binary + restart
+	scp -q $(DEPLOY_BIN) $(PROD_HOST):/tmp/cws-server
 	ssh $(PROD_HOST) "sudo install -m 755 /tmp/cws-server $(PROD_BIN) && rm /tmp/cws-server && sudo systemctl restart cws-server"
 	@echo "Binary deployed and service restarted"
 
@@ -182,9 +215,11 @@ deploy-dash: frontend ## Deploy dashboard frontend + config + themes
 	@echo "Dashboard, config, and themes deployed (no restart needed)"
 
 .PHONY: deploy-site
-deploy-site: ## Deploy website static files
+deploy-site: ## Deploy website to Oracle + Cloudflare Pages
 	rsync -az --delete $(WEBSITE_SRC)/ $(PROD_HOST):$(PROD_DIR)/website/
-	@echo "Website deployed (no restart needed)"
+	@echo "  ✓ Website synced to Oracle"
+	npx wrangler pages deploy $(WEBSITE_SRC) --project-name cws-website
+	@echo "  ✓ Website deployed to Cloudflare Pages"
 
 .PHONY: deploy-builder
 deploy-builder: ## Deploy builder CLI dist + deps
@@ -200,6 +235,27 @@ deploy-builder: ## Deploy builder CLI dist + deps
 	fi
 	scp -q $(COMPANY_MK) $(PROD_HOST):$(PROD_DIR)/Makefile
 	@echo "Builder CLI and Makefile deployed"
+
+.PHONY: deploy-fly
+deploy-fly: ## Deploy to Fly.io (standby/failover)
+	@echo "═══════════════════════════════════════════════"
+	@echo "  CWS Server — Fly.io Standby Deploy"
+	@echo "═══════════════════════════════════════════════"
+	cd $(ROOT)/.. && $(HOME)/.fly/bin/flyctl deploy \
+		--app cws-server \
+		--config server/fly.toml \
+		--dockerfile server/Dockerfile \
+		--remote-only
+	@echo ""
+	@curl -sf https://cws-server.fly.dev/healthz > /dev/null && \
+		echo "Fly.io deploy complete — https://cws-server.fly.dev" || \
+		echo "⚠  Warning: Fly.io health check failed"
+
+.PHONY: fly-status
+fly-status: ## Check Fly.io standby status
+	@$(HOME)/.fly/bin/flyctl status --app cws-server 2>/dev/null || echo "flyctl not found"
+	@echo ""
+	@curl -sf https://cws-server.fly.dev/api/version | python3 -m json.tool 2>/dev/null || echo "Fly.io standby unreachable (may be auto-stopped)"
 
 .PHONY: deploy-scripts
 deploy-scripts: ## Deploy monitoring scripts to production
@@ -236,6 +292,85 @@ prod-health: ## View watchdog health log
 prod-ssh: ## SSH into production server
 	ssh $(PROD_HOST)
 
+# ── Monitoring ────────────────────────────────────────────────────────
+
+.PHONY: deploy-monitoring
+deploy-monitoring: ## Deploy monitoring stack (Prometheus + Grafana configs)
+	@echo "═══════════════════════════════════════════════"
+	@echo "  CWS Server — Monitoring Stack Deploy"
+	@echo "═══════════════════════════════════════════════"
+	@echo ""
+	@echo "▸ Deploying Prometheus config..."
+	scp -q $(ROOT)/../word/claude/infrastructure/monitoring/prometheus.yml $(PROD_HOST):/tmp/prometheus.yml
+	ssh $(PROD_HOST) "sudo cp /tmp/prometheus.yml /etc/prometheus/prometheus.yml && sudo chown prometheus:prometheus /etc/prometheus/prometheus.yml && rm /tmp/prometheus.yml"
+	ssh $(PROD_HOST) "sudo systemctl reload prometheus 2>/dev/null || sudo systemctl restart prometheus"
+	@echo "  ✓ Prometheus config deployed"
+	@echo ""
+	@echo "▸ Deploying Grafana config..."
+	scp -q $(ROOT)/../word/claude/infrastructure/monitoring/grafana/grafana.ini $(PROD_HOST):/tmp/grafana.ini
+	ssh $(PROD_HOST) "sudo cp /tmp/grafana.ini /etc/grafana/grafana.ini && sudo chown root:grafana /etc/grafana/grafana.ini && rm /tmp/grafana.ini"
+	scp -q $(ROOT)/../word/claude/infrastructure/monitoring/grafana/provisioning/datasources/prometheus.yml $(PROD_HOST):/tmp/prom-ds.yml
+	ssh $(PROD_HOST) "sudo cp /tmp/prom-ds.yml /etc/grafana/provisioning/datasources/prometheus.yml && rm /tmp/prom-ds.yml"
+	scp -q $(ROOT)/../word/claude/infrastructure/monitoring/grafana/provisioning/dashboards/dashboard.yml $(PROD_HOST):/tmp/dash-prov.yml
+	ssh $(PROD_HOST) "sudo cp /tmp/dash-prov.yml /etc/grafana/provisioning/dashboards/dashboard.yml && rm /tmp/dash-prov.yml"
+	ssh $(PROD_HOST) "sudo systemctl restart grafana-server"
+	@echo "  ✓ Grafana config deployed"
+	@echo ""
+	@echo "▸ Deploying tunnel config..."
+	scp -q $(ROOT)/../word/claude/infrastructure/cloudflared/config.yml $(PROD_HOST):/tmp/cloudflared.yml
+	ssh $(PROD_HOST) "sudo cp /tmp/cloudflared.yml /etc/cloudflared/config.yml && rm /tmp/cloudflared.yml && sudo systemctl restart cloudflared"
+	@echo "  ✓ Tunnel config deployed"
+	@echo ""
+	@echo "═══════════════════════════════════════════════"
+	@echo "  Monitoring configs deployed"
+	@echo "═══════════════════════════════════════════════"
+
+.PHONY: monitoring-status
+monitoring-status: ## Check monitoring stack status
+	@echo "── Prometheus ──"
+	@ssh $(PROD_HOST) "sudo systemctl status prometheus --no-pager | head -5" 2>/dev/null || echo "  Not installed"
+	@echo ""
+	@echo "── Node Exporter ──"
+	@ssh $(PROD_HOST) "sudo systemctl status node-exporter --no-pager | head -5" 2>/dev/null || echo "  Not installed"
+	@echo ""
+	@echo "── Grafana ──"
+	@ssh $(PROD_HOST) "sudo systemctl status grafana-server --no-pager | head -5" 2>/dev/null || echo "  Not installed"
+	@echo ""
+	@echo "── Prometheus Targets ──"
+	@ssh $(PROD_HOST) 'curl -sf http://localhost:9090/api/v1/targets | python3 -c "import sys,json;d=json.load(sys.stdin);[print(\"  %s: %s\"%(t[\"labels\"][\"job\"],t[\"health\"]))for t in d[\"data\"][\"activeTargets\"]]"' 2>/dev/null || echo "  Prometheus not reachable"
+
+.PHONY: monitoring-logs
+monitoring-logs: ## Tail monitoring service logs
+	ssh $(PROD_HOST) "sudo journalctl -u prometheus -u node-exporter -u grafana-server -f"
+
+# ── Ops Tool ──────────────────────────────────────────────────────────
+
+.PHONY: ops
+ops: ## Build cws-ops binary
+	cd $(OPS_CMD) && go build -o $(OPS_BIN) .
+	@echo "Built: $(OPS_BIN)"
+
+.PHONY: ops-status
+ops-status: ops ## Build and run 'cws-ops status'
+	$(OPS_BIN) status
+
+.PHONY: ops-frontend
+ops-frontend: ## Build ops frontend (Vite → static/)
+	cd $(ROOT)/ops-frontend && ESBUILD_BINARY_PATH=$$(which esbuild) npm run build
+	@echo "Frontend built → cmd/cws-ops/static/"
+
+.PHONY: ops-serve
+ops-serve: ops-frontend ops ## Build frontend + binary, start web GUI
+	$(OPS_BIN) serve --open
+
+.PHONY: ops-dev
+ops-dev: ## Dev mode: Vite HMR + Go server (run in separate terminals)
+	@echo "Terminal 1:  cd $(ROOT)/ops-frontend && npm run dev"
+	@echo "Terminal 2:  $(OPS_BIN) serve"
+	@echo ""
+	@echo "Or just run the Vite dev server (proxies API to :4847):"
+	@echo "  cd $(ROOT)/ops-frontend && npm run dev"
+
 # ── Clean ───────────────────────────────────────────────────────────
 
 .PHONY: clean
@@ -252,18 +387,32 @@ help: ## Show available targets
 		awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "Variables:"
-	@echo "  PORT=3847         Server port (dev)"
-	@echo "  BUILDER_DIR=...   Path to company-docs/"
+	@echo "  PORT=3847              Server port (dev)"
+	@echo "  BUILDER_DIR=...        Path to company-docs/"
+	@echo "  PROD_TARGET=oracle     Deploy target: oracle (default) or dell"
 	@echo ""
 	@echo "Deploy workflow:"
-	@echo "  make deploy         Full deploy (binary + frontend + website + builder)"
-	@echo "  make deploy-binary  Go binary only (restarts service)"
-	@echo "  make deploy-dash    Dashboard + config + themes (no restart)"
-	@echo "  make deploy-site    Website only (no restart)"
-	@echo "  make deploy-builder Builder CLI + deps + Makefile"
+	@echo "  make deploy                  Full deploy to Oracle (ARM64)"
+	@echo "  make deploy PROD_TARGET=dell Full deploy to Dell (x86_64)"
+	@echo "  make deploy-binary           Go binary only (restarts service)"
+	@echo "  make deploy-dash             Dashboard + config + themes (no restart)"
+	@echo "  make deploy-site             Website → Oracle + Cloudflare Pages"
+	@echo "  make deploy-builder          Builder CLI + deps + Makefile"
 	@echo ""
 	@echo "Production:"
 	@echo "  make prod-status    Health check"
 	@echo "  make prod-logs      Tail journalctl"
 	@echo "  make prod-restart   Restart service"
 	@echo "  make prod-ssh       SSH into server"
+	@echo ""
+	@echo "Ops Tool:"
+	@echo "  make ops                 Build cws-ops binary"
+	@echo "  make ops-status          Build and check infrastructure status"
+	@echo "  make ops-frontend        Build ops frontend (Vite)"
+	@echo "  make ops-serve           Build all + start web GUI"
+	@echo "  make ops-dev             Dev mode instructions"
+	@echo ""
+	@echo "Monitoring:"
+	@echo "  make deploy-monitoring   Deploy Prometheus + Grafana configs"
+	@echo "  make monitoring-status   Check monitoring stack health"
+	@echo "  make monitoring-logs     Tail monitoring service logs"

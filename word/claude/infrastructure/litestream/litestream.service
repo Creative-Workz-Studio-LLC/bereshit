@@ -1,0 +1,35 @@
+# ── Litestream systemd Service ──────────────────────────────────────
+# Continuous SQLite replication to Cloudflare R2
+# Install: sudo cp litestream.service /etc/systemd/system/
+# Enable:  sudo systemctl enable --now litestream
+# ────────────────────────────────────────────────────────────────────
+
+[Unit]
+Description=Litestream — SQLite Replication to R2
+After=cws-server.service
+Requires=cws-server.service
+
+[Service]
+Type=simple
+User=seanje
+Group=seanje
+
+EnvironmentFile=/home/seanje/.config/litestream/env
+
+ExecStart=/usr/bin/litestream replicate -config /etc/litestream/litestream.yml
+
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=litestream
+
+# Security hardening (match cws-server)
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/seanje/cws/data
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
