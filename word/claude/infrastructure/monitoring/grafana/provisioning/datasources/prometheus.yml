@@ -1,0 +1,21 @@
+# ── Grafana — Prometheus Datasource Provisioning ──────────────────────
+# Auto-provisions Prometheus as the default datasource on Grafana start.
+# No manual configuration needed after deploy.
+#
+# Deploy: ansible-playbook cws-production.yaml --tags monitoring
+#   OR:  sudo cp prometheus.yml /etc/grafana/provisioning/datasources/
+#         sudo systemctl restart grafana-server
+# ──────────────────────────────────────────────────────────────────────
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://127.0.0.1:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      httpMethod: POST
+      timeInterval: "10s"

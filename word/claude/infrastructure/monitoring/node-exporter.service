@@ -1,0 +1,40 @@
+# ── CWS Server — Node Exporter systemd Unit ───────────────────────────
+# Exposes system metrics (CPU, memory, disk, network) on port 9100.
+# Bound to localhost only — Prometheus scrapes it, no external access.
+#
+# Deploy: ansible-playbook cws-production.yaml --tags monitoring
+#   OR:  sudo cp node-exporter.service /etc/systemd/system/
+#         sudo systemctl daemon-reload && sudo systemctl restart node-exporter
+# ──────────────────────────────────────────────────────────────────────
+
+[Unit]
+Description=Prometheus Node Exporter
+Documentation=https://github.com/prometheus/node_exporter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=node_exporter
+Group=node_exporter
+
+ExecStart=/usr/local/bin/node_exporter \
+  --web.listen-address=127.0.0.1:9100 \
+  --collector.systemd \
+  --collector.processes \
+  --no-collector.wifi \
+  --no-collector.infiniband
+
+Restart=on-failure
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

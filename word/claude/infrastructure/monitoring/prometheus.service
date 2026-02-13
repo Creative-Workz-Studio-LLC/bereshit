@@ -1,0 +1,47 @@
+# ── CWS Server — Prometheus systemd Unit ──────────────────────────────
+# Runs Prometheus with 30-day / 5GB retention, localhost-only binding.
+#
+# Deploy: ansible-playbook cws-production.yaml --tags monitoring
+#   OR:  sudo cp prometheus.service /etc/systemd/system/
+#         sudo systemctl daemon-reload && sudo systemctl restart prometheus
+#
+# Reload config without restart: sudo systemctl reload prometheus
+# ──────────────────────────────────────────────────────────────────────
+
+[Unit]
+Description=Prometheus Monitoring System
+Documentation=https://prometheus.io/docs/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=prometheus
+Group=prometheus
+
+ExecStart=/usr/local/bin/prometheus \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/var/lib/prometheus/data \
+  --storage.tsdb.retention.time=30d \
+  --storage.tsdb.retention.size=5GB \
+  --web.listen-address=127.0.0.1:9090 \
+  --web.console.templates=/etc/prometheus/consoles \
+  --web.console.libraries=/etc/prometheus/console_libraries \
+  --web.enable-lifecycle
+
+ExecReload=/bin/kill -HUP $MAINPID
+
+Restart=on-failure
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/prometheus/data
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

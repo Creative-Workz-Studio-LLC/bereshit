@@ -111,6 +111,8 @@ func main() {
 	registry := server.NewRegistry()
 	metrics := server.NewMetrics()
 
+	// Prometheus bridge is initialized after WebSocket hub (needs client count)
+
 	// ── Resolve Builder Paths ─────────────────────────────────────────
 	var builderPaths *config.BuilderPaths
 	if cfg.BuilderDir != "" {
@@ -139,6 +141,10 @@ func main() {
 	// ── WebSocket Hub ─────────────────────────────────────────────────
 	hub := ws.NewHub(ctx)
 	go hub.Run()
+
+	// ── Prometheus ────────────────────────────────────────────────────
+	promMetrics := server.NewPrometheusMetrics(metrics, hub.ClientCount)
+	metrics.SetPrometheusBridge(promMetrics)
 
 	// ── Services ──────────────────────────────────────────────────────
 	mux := http.NewServeMux()
@@ -220,8 +226,11 @@ func main() {
 	// Service registry
 	mux.HandleFunc("GET /api/services", registry.HandleServices())
 
-	// Metrics
+	// Metrics (JSON — backward compat)
 	mux.HandleFunc("GET /api/metrics", metrics.HandleMetrics())
+
+	// Prometheus metrics (text format — scraped by Prometheus)
+	mux.Handle("GET /metrics", promMetrics.Handler())
 
 	// Version
 	startTime := time.Now()

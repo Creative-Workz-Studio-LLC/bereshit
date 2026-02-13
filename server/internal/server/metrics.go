@@ -41,6 +41,20 @@ type Metrics struct {
 
 	mu          sync.Mutex
 	routeCounts map[string]*atomic.Int64 // path → request count
+
+	promBridge *PrometheusMetrics // nil if Prometheus not enabled
+}
+
+// SetPrometheusBridge attaches a Prometheus metrics bridge.
+// When set, the middleware will also observe request durations in the
+// Prometheus histogram (one nil check + histogram observe on hot path).
+func (m *Metrics) SetPrometheusBridge(pm *PrometheusMetrics) {
+	m.promBridge = pm
+}
+
+// StartedAt returns when the metrics tracker was created.
+func (m *Metrics) StartedAt() time.Time {
+	return m.startTime
 }
 
 // NewMetrics creates a new metrics tracker.
@@ -64,11 +78,18 @@ func (m *Metrics) Middleware(next http.Handler) http.Handler {
 		sw := &statusWriter{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(sw, r)
 
+		duration := time.Since(start)
 		m.activeRequests.Add(-1)
-		m.totalLatencyMs.Add(time.Since(start).Milliseconds())
+		m.totalLatencyMs.Add(duration.Milliseconds())
 
 		if sw.status >= 400 {
 			m.totalErrors.Add(1)
+		}
+
+		// Prometheus histogram observation (one nil check on hot path)
+		if m.promBridge != nil {
+			route := normalizeRoutePath(r.URL.Path)
+			m.promBridge.ObserveRequest(r.Method, route, sw.status, duration)
 		}
 	})
 }

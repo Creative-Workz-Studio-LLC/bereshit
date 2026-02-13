@@ -1,0 +1,129 @@
+{
+  "dashboard": {
+    "title": "CWS Server Health",
+    "tags": ["cws", "server"],
+    "timezone": "utc",
+    "refresh": "10s",
+    "time": { "from": "now-1h", "to": "now" },
+    "panels": [
+      {
+        "title": "Request Rate",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+        "targets": [{
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "expr": "rate(cws_http_requests_total[1m])",
+          "legendFormat": "req/s"
+        }],
+        "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "fixed", "fixedColor": "green" } } }
+      },
+      {
+        "title": "Error Rate",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+        "targets": [{
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "expr": "rate(cws_http_errors_total[1m])",
+          "legendFormat": "errors/s"
+        }],
+        "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "fixed", "fixedColor": "red" } } }
+      },
+      {
+        "title": "Active Requests",
+        "type": "stat",
+        "gridPos": { "h": 8, "w": 4, "x": 16, "y": 0 },
+        "targets": [{
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "expr": "cws_http_active_requests"
+        }],
+        "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":10},{"color":"red","value":50}] } } }
+      },
+      {
+        "title": "WebSocket Clients",
+        "type": "stat",
+        "gridPos": { "h": 8, "w": 4, "x": 20, "y": 0 },
+        "targets": [{
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "expr": "cws_ws_clients"
+        }],
+        "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{"color":"blue","value":null}] } } }
+      },
+      {
+        "title": "Request Duration (P50 / P95 / P99)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+        "targets": [
+          {
+            "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+            "expr": "histogram_quantile(0.50, rate(cws_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "P50"
+          },
+          {
+            "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+            "expr": "histogram_quantile(0.95, rate(cws_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95"
+          },
+          {
+            "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+            "expr": "histogram_quantile(0.99, rate(cws_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "P99"
+          }
+        ],
+        "fieldConfig": { "defaults": { "unit": "s" } }
+      },
+      {
+        "title": "Goroutines",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 6, "x": 12, "y": 8 },
+        "targets": [{
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "expr": "cws_server_goroutines",
+          "legendFormat": "goroutines"
+        }],
+        "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "purple" } } }
+      },
+      {
+        "title": "Uptime",
+        "type": "stat",
+        "gridPos": { "h": 8, "w": 6, "x": 18, "y": 8 },
+        "targets": [{
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "expr": "cws_server_uptime_seconds",
+          "legendFormat": "uptime"
+        }],
+        "fieldConfig": { "defaults": { "unit": "s" } }
+      },
+      {
+        "title": "Go Heap Memory",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+        "targets": [
+          {
+            "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+            "expr": "go_memstats_heap_alloc_bytes{job=\"cws-server\"}",
+            "legendFormat": "heap alloc"
+          },
+          {
+            "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+            "expr": "go_memstats_heap_sys_bytes{job=\"cws-server\"}",
+            "legendFormat": "heap sys"
+          }
+        ],
+        "fieldConfig": { "defaults": { "unit": "bytes" } }
+      },
+      {
+        "title": "Request Duration by Route",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+        "targets": [{
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "expr": "histogram_quantile(0.95, sum(rate(cws_http_request_duration_seconds_bucket[5m])) by (le, route))",
+          "legendFormat": "{{route}}"
+        }],
+        "fieldConfig": { "defaults": { "unit": "s" } }
+      }
+    ]
+  },
+  "folderUid": "",
+  "overwrite": true
+}

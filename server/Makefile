@@ -23,7 +23,9 @@ SHELL     := /bin/bash
 ROOT      := $(shell pwd)
 # Build to native filesystem (exfat can't set execute permissions)
 BIN       := /home/seanje-lenox-wise/.local/bin/cws-server
+OPS_BIN   := /home/seanje-lenox-wise/.local/bin/cws-ops
 CMD       := $(ROOT)/cmd/cws-server
+OPS_CMD   := $(ROOT)/cmd/cws-ops
 
 # Default project directory (auto-detected if not set)
 BUILDER_DIR ?= $(realpath $(ROOT)/../company-docs)
@@ -102,6 +104,7 @@ run-quick: ## Run without rebuilding (must build first)
 check: ## Run go vet and build check
 	cd $(ROOT) && go vet ./...
 	cd $(CMD) && go build -o /dev/null .
+	cd $(OPS_CMD) && go build -o /dev/null .
 	@echo "All checks passed"
 
 .PHONY: tidy
@@ -289,6 +292,85 @@ prod-health: ## View watchdog health log
 prod-ssh: ## SSH into production server
 	ssh $(PROD_HOST)
 
+# ── Monitoring ────────────────────────────────────────────────────────
+
+.PHONY: deploy-monitoring
+deploy-monitoring: ## Deploy monitoring stack (Prometheus + Grafana configs)
+	@echo "═══════════════════════════════════════════════"
+	@echo "  CWS Server — Monitoring Stack Deploy"
+	@echo "═══════════════════════════════════════════════"
+	@echo ""
+	@echo "▸ Deploying Prometheus config..."
+	scp -q $(ROOT)/../word/claude/infrastructure/monitoring/prometheus.yml $(PROD_HOST):/tmp/prometheus.yml
+	ssh $(PROD_HOST) "sudo cp /tmp/prometheus.yml /etc/prometheus/prometheus.yml && sudo chown prometheus:prometheus /etc/prometheus/prometheus.yml && rm /tmp/prometheus.yml"
+	ssh $(PROD_HOST) "sudo systemctl reload prometheus 2>/dev/null || sudo systemctl restart prometheus"
+	@echo "  ✓ Prometheus config deployed"
+	@echo ""
+	@echo "▸ Deploying Grafana config..."
+	scp -q $(ROOT)/../word/claude/infrastructure/monitoring/grafana/grafana.ini $(PROD_HOST):/tmp/grafana.ini
+	ssh $(PROD_HOST) "sudo cp /tmp/grafana.ini /etc/grafana/grafana.ini && sudo chown root:grafana /etc/grafana/grafana.ini && rm /tmp/grafana.ini"
+	scp -q $(ROOT)/../word/claude/infrastructure/monitoring/grafana/provisioning/datasources/prometheus.yml $(PROD_HOST):/tmp/prom-ds.yml
+	ssh $(PROD_HOST) "sudo cp /tmp/prom-ds.yml /etc/grafana/provisioning/datasources/prometheus.yml && rm /tmp/prom-ds.yml"
+	scp -q $(ROOT)/../word/claude/infrastructure/monitoring/grafana/provisioning/dashboards/dashboard.yml $(PROD_HOST):/tmp/dash-prov.yml
+	ssh $(PROD_HOST) "sudo cp /tmp/dash-prov.yml /etc/grafana/provisioning/dashboards/dashboard.yml && rm /tmp/dash-prov.yml"
+	ssh $(PROD_HOST) "sudo systemctl restart grafana-server"
+	@echo "  ✓ Grafana config deployed"
+	@echo ""
+	@echo "▸ Deploying tunnel config..."
+	scp -q $(ROOT)/../word/claude/infrastructure/cloudflared/config.yml $(PROD_HOST):/tmp/cloudflared.yml
+	ssh $(PROD_HOST) "sudo cp /tmp/cloudflared.yml /etc/cloudflared/config.yml && rm /tmp/cloudflared.yml && sudo systemctl restart cloudflared"
+	@echo "  ✓ Tunnel config deployed"
+	@echo ""
+	@echo "═══════════════════════════════════════════════"
+	@echo "  Monitoring configs deployed"
+	@echo "═══════════════════════════════════════════════"
+
+.PHONY: monitoring-status
+monitoring-status: ## Check monitoring stack status
+	@echo "── Prometheus ──"
+	@ssh $(PROD_HOST) "sudo systemctl status prometheus --no-pager | head -5" 2>/dev/null || echo "  Not installed"
+	@echo ""
+	@echo "── Node Exporter ──"
+	@ssh $(PROD_HOST) "sudo systemctl status node-exporter --no-pager | head -5" 2>/dev/null || echo "  Not installed"
+	@echo ""
+	@echo "── Grafana ──"
+	@ssh $(PROD_HOST) "sudo systemctl status grafana-server --no-pager | head -5" 2>/dev/null || echo "  Not installed"
+	@echo ""
+	@echo "── Prometheus Targets ──"
+	@ssh $(PROD_HOST) 'curl -sf http://localhost:9090/api/v1/targets | python3 -c "import sys,json;d=json.load(sys.stdin);[print(\"  %s: %s\"%(t[\"labels\"][\"job\"],t[\"health\"]))for t in d[\"data\"][\"activeTargets\"]]"' 2>/dev/null || echo "  Prometheus not reachable"
+
+.PHONY: monitoring-logs
+monitoring-logs: ## Tail monitoring service logs
+	ssh $(PROD_HOST) "sudo journalctl -u prometheus -u node-exporter -u grafana-server -f"
+
+# ── Ops Tool ──────────────────────────────────────────────────────────
+
+.PHONY: ops
+ops: ## Build cws-ops binary
+	cd $(OPS_CMD) && go build -o $(OPS_BIN) .
+	@echo "Built: $(OPS_BIN)"
+
+.PHONY: ops-status
+ops-status: ops ## Build and run 'cws-ops status'
+	$(OPS_BIN) status
+
+.PHONY: ops-frontend
+ops-frontend: ## Build ops frontend (Vite → static/)
+	cd $(ROOT)/ops-frontend && ESBUILD_BINARY_PATH=$$(which esbuild) npm run build
+	@echo "Frontend built → cmd/cws-ops/static/"
+
+.PHONY: ops-serve
+ops-serve: ops-frontend ops ## Build frontend + binary, start web GUI
+	$(OPS_BIN) serve --open
+
+.PHONY: ops-dev
+ops-dev: ## Dev mode: Vite HMR + Go server (run in separate terminals)
+	@echo "Terminal 1:  cd $(ROOT)/ops-frontend && npm run dev"
+	@echo "Terminal 2:  $(OPS_BIN) serve"
+	@echo ""
+	@echo "Or just run the Vite dev server (proxies API to :4847):"
+	@echo "  cd $(ROOT)/ops-frontend && npm run dev"
+
 # ── Clean ───────────────────────────────────────────────────────────
 
 .PHONY: clean
@@ -322,3 +404,15 @@ help: ## Show available targets
 	@echo "  make prod-logs      Tail journalctl"
 	@echo "  make prod-restart   Restart service"
 	@echo "  make prod-ssh       SSH into server"
+	@echo ""
+	@echo "Ops Tool:"
+	@echo "  make ops                 Build cws-ops binary"
+	@echo "  make ops-status          Build and check infrastructure status"
+	@echo "  make ops-frontend        Build ops frontend (Vite)"
+	@echo "  make ops-serve           Build all + start web GUI"
+	@echo "  make ops-dev             Dev mode instructions"
+	@echo ""
+	@echo "Monitoring:"
+	@echo "  make deploy-monitoring   Deploy Prometheus + Grafana configs"
+	@echo "  make monitoring-status   Check monitoring stack health"
+	@echo "  make monitoring-logs     Tail monitoring service logs"
