@@ -3,7 +3,7 @@ package coordinates_test
 import (
 	"testing"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/core/coordinates"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/coordinates"
 )
 
 // ============================================================================

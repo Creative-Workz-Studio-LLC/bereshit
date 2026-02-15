@@ -32,7 +32,7 @@ import (
 	"sync"
 	"time"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/util/fs/paths"
+	"creativeworkzstudio.com/bereshit/L0-universal/hybrid/paths"
 )
 
 // --- Category Constants ---

@@ -68,7 +68,7 @@ import (
 	"fmt"
 	"time"
 
-	"cws.studio/pkg/foundation/schema"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/schema"
 )
 
 // ============================================================================

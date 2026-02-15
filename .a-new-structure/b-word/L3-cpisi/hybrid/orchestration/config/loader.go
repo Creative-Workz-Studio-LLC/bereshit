@@ -35,7 +35,7 @@
 //
 //	Requires: stdlib (1): fmt, os, path/filepath | external (-1): github.com/BurntSushi/toml
 //	Used by:  hooks, skills, statusline — all via pkg import
-//	Import:   import "creativeworkzstudio.com/bereshit/word/work/pkg/orchestration/config"
+//	Import:   import "creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/orchestration/config"
 //	Pattern:  SetRoot(path) → Load() → cfg.Paths.Agents
 //
 // # M.4 Public API [API]

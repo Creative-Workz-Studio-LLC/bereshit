@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"strings"
 
-	"cws.studio/pkg/core/statemachine"
-	"cws.studio/pkg/foundation/types"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/statemachine"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/types"
 )
 
 // ============================================================================

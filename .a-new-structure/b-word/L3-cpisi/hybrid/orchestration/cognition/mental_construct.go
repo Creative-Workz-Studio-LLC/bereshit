@@ -21,8 +21,8 @@ package cognition
 import (
 	"math"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/foundation/schema"
-	"creativeworkzstudio.com/bereshit/word/work/pkg/foundation/types"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/schema"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/types"
 )
 
 // ───────────────────────────────────────────────────────────────────────────

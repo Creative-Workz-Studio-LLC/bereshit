@@ -3,8 +3,8 @@ package statemachine_test
 import (
 	"testing"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/foundation/schema"
-	"creativeworkzstudio.com/bereshit/word/work/pkg/core/statemachine"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/schema"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/statemachine"
 )
 
 // ============================================================================

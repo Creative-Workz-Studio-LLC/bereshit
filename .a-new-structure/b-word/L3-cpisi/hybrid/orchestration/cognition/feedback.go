@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/foundation/types"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/types"
 )
 
 // ToolOutcome represents what happened with a tool execution

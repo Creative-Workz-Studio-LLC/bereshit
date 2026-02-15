@@ -38,7 +38,7 @@ import (
 	"sync"
 	"time"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/core/health"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/health"
 )
 
 // --- Constants ---

@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"strings"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/core/health"
-	"creativeworkzstudio.com/bereshit/word/work/pkg/core/statemachine"
-	"creativeworkzstudio.com/bereshit/word/work/pkg/foundation/types"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/health"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/statemachine"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/types"
 )
 
 // ContextBuilder assembles cognition context from multiple sources

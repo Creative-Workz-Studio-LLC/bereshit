@@ -26,7 +26,7 @@ import (
 	"context"
 	"time"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/foundation/database"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/database"
 )
 
 // ───────────────────────────────────────────────────────────────────────────

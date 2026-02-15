@@ -65,8 +65,8 @@ package coordinates
 import (
 	"math"
 
-	"cws.studio/pkg/core/cpisi/compute"
-	"cws.studio/pkg/foundation/schema"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/compute"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/schema"
 )
 
 // ───────────────────────────────────────────────────────────────────────────

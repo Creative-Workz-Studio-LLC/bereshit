@@ -3,8 +3,8 @@ package coordinates_test
 import (
 	"testing"
 
-	"cws.studio/pkg/core/coordinates"
-	"cws.studio/pkg/foundation/schema"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/coordinates"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/schema"
 )
 
 // ============================================================================

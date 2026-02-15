@@ -25,9 +25,9 @@ import (
 	"context"
 	"time"
 
-	"cws.studio/pkg/foundation/database/cognition"
-	"cws.studio/pkg/foundation/database/growth"
-	"cws.studio/pkg/foundation/database/sessions"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/database/cognition"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/database/growth"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/database/sessions"
 )
 
 // LegacyAdapter implements the old Repository interface by dispatching to MultiDB

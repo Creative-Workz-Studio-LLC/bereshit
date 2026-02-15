@@ -17,7 +17,7 @@ package statemachine
 // ============================================================================
 
 import (
-	"creativeworkzstudio.com/bereshit/word/work/pkg/util/term/display"
+	"creativeworkzstudio.com/bereshit/L2-platform/hybrid/terminal/display"
 )
 
 // CommandInfo contains display information for a command state

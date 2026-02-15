@@ -18,7 +18,7 @@ package cognition
 import (
 	"strings"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/foundation/types"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/types"
 )
 
 // PromptType represents categorized prompt intent

@@ -31,12 +31,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"cws.studio/pkg/foundation/database/cognition"
-	"cws.studio/pkg/foundation/database/growth"
-	"cws.studio/pkg/foundation/database/projects"
-	"cws.studio/pkg/foundation/database/sessions"
-	"cws.studio/pkg/foundation/database/temporal"
-	"cws.studio/pkg/util/fs/paths"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/database/cognition"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/database/growth"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/database/projects"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/database/sessions"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/database/temporal"
+	"creativeworkzstudio.com/bereshit/L0-universal/hybrid/paths"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════

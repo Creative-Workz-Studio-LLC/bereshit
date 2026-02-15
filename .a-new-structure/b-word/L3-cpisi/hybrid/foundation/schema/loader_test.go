@@ -3,7 +3,7 @@ package schema_test
 import (
 	"testing"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/foundation/schema"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/schema"
 )
 
 // ============================================================================

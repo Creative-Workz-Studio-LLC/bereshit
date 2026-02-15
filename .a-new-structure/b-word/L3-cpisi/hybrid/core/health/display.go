@@ -17,7 +17,7 @@ package health
 import (
 	"fmt"
 
-	"cws.studio/pkg/util/term/display"
+	"creativeworkzstudio.com/bereshit/L2-platform/hybrid/terminal/display"
 )
 
 // HealthDisplayInfo contains all display information for a health score

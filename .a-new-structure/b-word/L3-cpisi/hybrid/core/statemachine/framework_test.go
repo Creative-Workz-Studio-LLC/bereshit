@@ -16,7 +16,7 @@ package statemachine
 import (
 	"testing"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/core/cpisi/compute"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/compute"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════

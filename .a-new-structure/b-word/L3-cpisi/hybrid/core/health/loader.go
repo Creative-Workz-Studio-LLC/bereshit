@@ -29,7 +29,7 @@ import (
 	"sync"
 
 	"github.com/BurntSushi/toml"
-	"creativeworkzstudio.com/bereshit/word/work/pkg/util/fs/paths"
+	"creativeworkzstudio.com/bereshit/L0-universal/hybrid/paths"
 
 	// L0 shared config utilities — throughline consolidation
 	// TODO(module): Update import path when go.mod is established

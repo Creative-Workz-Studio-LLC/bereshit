@@ -121,8 +121,8 @@ package compute
 import (
 	"math"
 
-	"cws.studio/pkg/core/cpisi/bereshit"
-	"cws.studio/pkg/foundation/schema"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/bereshit"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/schema"
 )
 
 // ────────────────────────────────────────────────────────────────

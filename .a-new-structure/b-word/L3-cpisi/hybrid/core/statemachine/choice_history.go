@@ -33,8 +33,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/util/fs/paths"
-	"creativeworkzstudio.com/bereshit/word/work/pkg/foundation/types"
+	"creativeworkzstudio.com/bereshit/L0-universal/hybrid/paths"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/types"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════

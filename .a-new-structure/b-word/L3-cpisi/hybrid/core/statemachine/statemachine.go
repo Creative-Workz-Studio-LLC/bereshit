@@ -53,9 +53,9 @@ package statemachine
 import (
 	"math"
 
-	"creativeworkzstudio.com/bereshit/word/work/pkg/core/cpisi/bereshit"
-	"creativeworkzstudio.com/bereshit/word/work/pkg/core/cpisi/compute"
-	"creativeworkzstudio.com/bereshit/word/work/pkg/foundation/schema"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/bereshit"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/compute"
+	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/schema"
 )
 
 // ───────────────────────────────────────────────────────────────────────────
