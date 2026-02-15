@@ -1,0 +1,566 @@
+{
+    // #!omni data --jsonc
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni data --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_rec": "RECOMMENDED — warn if missing",
+        "_opt": "OPTIONAL — info if missing"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-definitions-omni-folder-schema",
+    "_P1_from": "b-word/seed/data/json/config.jsonc",
+    "_P1_at": "a-01.00",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "schema",
+    "_P2_role": "ladder",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "definitions",
+    "_P3_layer": "b-word/definitions/omni",
+    "_P3_includes": "none",
+    "_P3_provides": ["OFD_SCHEMA", "OMNIFOLD_CONTRACT"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "OmniFold (.ofd) Schema",
+    "_P5_brief": "Defines the compiled output format for root.omni → root.ofd compilation. Clean JSON, fixed schema, no _ key ceremony. The ofd.ts linter validates against this contract.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    // M.1 IDENTITY
+    "_M1_identity": {
+        "file": "omni-folder-schema.jsonc",
+        "key": "B-definitions-omni-folder-schema",
+        "title": "OmniFold (.ofd) Schema",
+        "type": "Data (Schema Definition)",
+        "component": "Ladder",
+        "role": "Define the compiled output format for root.omni → root.ofd"
+    },
+
+    // M.2 STATE
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-13",
+        "updated": "2026-02-13"
+    },
+
+    // M.3 ATTRIBUTION
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)"
+    },
+
+    // M.4 GROUNDING — "In the mouth of two or three witnesses shall every word
+    //   be established." — 2 Corinthians 13:1
+    "_M4_grounding": {
+        "scripture": "2 Corinthians 13:1 — In the mouth of two or three witnesses shall every word be established.",
+        "principle": "The linter (ofd.ts) defines the contract. The transform (omni.ts) implements it. Two witnesses establishing one truth. If they disagree, the system lies about itself."
+    },
+
+    // M.5 DEPENDENCIES
+    "_M5_dependencies": {
+        "requires": "omni-source-schema.jsonc — defines the .omni language that compiles to .ofd",
+        "consumers": "c-tov/cws-struct/lib/formats/ofd.ts — runtime linter implements these rules",
+        "cross_format": {
+            "source": "b-word/definitions/omni/omni-source-schema.jsonc — .omni language spec",
+            "compiler": "c-tov/cws-struct/lib/formats/omni.ts — transform() compiles .omni → .ofd",
+            "relationship": ".omni is human-authored source. .ofd is machine-compiled output. Same truth, different form."
+        }
+    },
+
+    // M.ext — Extension Contract
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6+ available for domain-specific metadata in derived files",
+        "rule": "M1-M5 are the base contract."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // .ofd is CLEAN JSON — no _ keys, no // comments. Compiled output.
+    // Every .ofd file has the same fixed shape. The schema below defines
+    // every field, its type, and whether it's required/recommended/optional.
+    //
+    // KEY DISTINCTION:
+    //   .omni = human-authored source (directives, operators, natural language)
+    //   .ofd  = machine-compiled output (clean JSON, fixed schema, no ceremony)
+    //
+    // _ keys are for human-authored files mixing structure with content.
+    // .ofd is ALL structure — no ambiguity, so no _ ceremony needed.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+    "_Cc_format": "JSON — UTF-8, LF line endings, 4-space indent, trailing newline",
+    "_Cc_key_convention": "lowercase camelCase for leaf fields, lowercase for section objects",
+
+    "format_identity": {
+        "extension": ".ofd",
+        "full_name": "OmniFold",
+        "purpose": "Compiled folder metadata — machine-generated from root.omni",
+        "format": "Clean JSON (no comments, no _ key ceremony)",
+        "version": 1,
+        "source_extension": ".omni",
+        "compilation_direction": "root.omni → root.ofd (one-way, recompile to update)"
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Complete .ofd JSON structure definition.
+    // Each entry defines a field, its type, requirement level,
+    // and the .omni directive it maps FROM.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "ofd_structure": {
+
+        // ═══════════════════════════════════════════════════════
+        // TOP-LEVEL FIELDS
+        // ═══════════════════════════════════════════════════════
+
+        "ofd": {
+            "type": "number",
+            "required": true,
+            "description": "Schema version number. Currently 1.",
+            "maps_from": "implicit — always 1 for this schema version"
+        },
+
+        "source": {
+            "type": "string",
+            "required": true,
+            "description": "Filename of the .omni source that was compiled",
+            "maps_from": "filename of the input file (e.g., 'root.omni')",
+            "example": "root.omni"
+        },
+
+        "compiled": {
+            "type": "string (ISO 8601 timestamp)",
+            "required": true,
+            "description": "When this .ofd was generated",
+            "maps_from": "compilation timestamp — set by the compiler"
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // IDENTITY SECTION
+        // ═══════════════════════════════════════════════════════
+
+        "identity": {
+            "type": "object",
+            "required": true,
+            "description": "Core identity of the folder",
+            "fields": {
+                "key": {
+                    "type": "string",
+                    "required": true,
+                    "maps_from": "@key",
+                    "example": "B-word-seed-code-go"
+                },
+                "type": {
+                    "type": "string",
+                    "required": true,
+                    "maps_from": "@type (left side of ::)",
+                    "example": "seed"
+                },
+                "subtype": {
+                    "type": "string",
+                    "recommended": true,
+                    "maps_from": "@type (right side of :: binding)",
+                    "example": "folder"
+                },
+                "title": {
+                    "type": "string",
+                    "required": true,
+                    "maps_from": "@title (unquoted)",
+                    "example": "Go Templates"
+                },
+                "structure": {
+                    "type": "string",
+                    "recommended": true,
+                    "maps_from": "@struct",
+                    "example": "3-block"
+                }
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // STATE SECTION
+        // ═══════════════════════════════════════════════════════
+
+        "state": {
+            "type": "object",
+            "required": true,
+            "description": "Version and lifecycle state",
+            "fields": {
+                "version": {
+                    "type": "string",
+                    "required": true,
+                    "maps_from": "@version",
+                    "example": "a-01.00"
+                },
+                "status": {
+                    "type": "string",
+                    "recommended": true,
+                    "maps_from": "@status",
+                    "example": "Active"
+                },
+                "created": {
+                    "type": "string (YYYY-MM-DD)",
+                    "required": true,
+                    "maps_from": "@created",
+                    "example": "2025-12-03"
+                },
+                "updated": {
+                    "type": "string (YYYY-MM-DD)",
+                    "recommended": true,
+                    "maps_from": "@updated",
+                    "example": "2026-02-13"
+                }
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // ATTRIBUTION SECTION
+        // ═══════════════════════════════════════════════════════
+
+        "attribution": {
+            "type": "object",
+            "required": true,
+            "description": "Authorship and ownership",
+            "fields": {
+                "architect": {
+                    "type": "string",
+                    "required": true,
+                    "maps_from": "@architect (unquoted)",
+                    "example": "Seanje Lenox-Wise"
+                },
+                "implementation": {
+                    "type": "string",
+                    "required": true,
+                    "maps_from": "@implementation (unquoted)",
+                    "example": "Nova Dawn (CPI-SI)"
+                },
+                "organization": {
+                    "type": "string",
+                    "optional": true,
+                    "maps_from": "@organization (unquoted)",
+                    "example": "CreativeWorkzStudio LLC"
+                }
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // GROUNDING SECTION
+        // ═══════════════════════════════════════════════════════
+
+        "grounding": {
+            "type": "object",
+            "recommended": true,
+            "description": "Biblical foundation — scriptures and principle",
+            "fields": {
+                "scriptures": {
+                    "type": "array of scripture objects",
+                    "recommended": true,
+                    "maps_from": "@scripture \"text\" from Reference in Translation",
+                    "item_fields": {
+                        "text": { "type": "string", "required": true, "description": "The quoted scripture text" },
+                        "reference": { "type": "string", "required": true, "description": "Book chapter:verse" },
+                        "translation": { "type": "string", "optional": true, "description": "KJV, WEB, etc." }
+                    }
+                },
+                "principle": {
+                    "type": "string",
+                    "recommended": true,
+                    "maps_from": "@principle (unquoted)"
+                }
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // DEPENDENCIES SECTION
+        // ═══════════════════════════════════════════════════════
+
+        "dependencies": {
+            "type": "object",
+            "recommended": true,
+            "description": "Where this folder derives from and what it provides",
+            "fields": {
+                "from": {
+                    "type": "string",
+                    "recommended": true,
+                    "maps_from": "@from",
+                    "example": "b-word/seed/code/"
+                },
+                "provides": {
+                    "type": "array of strings",
+                    "recommended": true,
+                    "maps_from": "=> [TAG1, TAG2, ...]",
+                    "example": ["GO_CODE_TEMPLATES"]
+                },
+                "derives": {
+                    "type": "array of derive objects",
+                    "optional": true,
+                    "maps_from": "<- path :: \"description\"",
+                    "item_fields": {
+                        "path": { "type": "string", "required": true },
+                        "description": { "type": "string", "optional": true }
+                    }
+                }
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // METADATA SECTION
+        // ═══════════════════════════════════════════════════════
+
+        "metadata": {
+            "type": "object",
+            "recommended": true,
+            "description": "Role and design intent",
+            "fields": {
+                "role": {
+                    "type": "string",
+                    "recommended": true,
+                    "maps_from": "@role (unquoted)"
+                },
+                "design": {
+                    "type": "string",
+                    "optional": true,
+                    "maps_from": "@design (unquoted)"
+                }
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // CHILDREN ARRAY
+        // ═══════════════════════════════════════════════════════
+
+        "children": {
+            "type": "array of child objects",
+            "required": true,
+            "description": "Files and directories contained in this folder",
+            "maps_from": ">> path :: \"description\"",
+            "item_fields": {
+                "path": {
+                    "type": "string",
+                    "required": true,
+                    "description": "Relative path (trailing / for directories)"
+                },
+                "type": {
+                    "type": "string (file|dir)",
+                    "optional": true,
+                    "description": "Inferred from trailing / in path"
+                },
+                "description": {
+                    "type": "string",
+                    "optional": true,
+                    "description": "The :: bound description"
+                }
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // DECLARATIONS OBJECT
+        // ═══════════════════════════════════════════════════════
+
+        "declarations": {
+            "type": "object (string keys → number|string values)",
+            "optional": true,
+            "description": "Named constants declared in the folder",
+            "maps_from": "let <name> be <value>",
+            "example": { "kjv_verses": 31102, "web_variants": 13 }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // OBSERVATIONS ARRAY
+        // ═══════════════════════════════════════════════════════
+
+        "observations": {
+            "type": "array of strings",
+            "optional": true,
+            "description": "Human observations about this folder",
+            "maps_from": "@observe (unquoted, one per directive)"
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // NAVIGATION STRING
+        // ═══════════════════════════════════════════════════════
+
+        "navigation": {
+            "type": "string",
+            "recommended": true,
+            "description": "Quick reference command to navigate to this folder",
+            "maps_from": "@navigate (unquoted)",
+            "example": "cd b-word/seed/code/L0/go/"
+        }
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+    //
+    // .ofd validation is done by ofd.ts handler, not JSON Schema.
+    // This section documents the validation contract.
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+    "_Cv_verify": "deno run --allow-read mod.ts lint ofd <file>",
+    "_Cv_expected_state": "Valid JSON, ofd version number, all required sections present with required fields.",
+
+    "validation_contract": {
+        "top_level": {
+            "required": ["ofd", "source", "compiled", "identity", "state", "attribution", "children"],
+            "recommended": ["grounding", "dependencies", "metadata", "navigation"],
+            "optional": ["declarations", "observations"]
+        },
+        "identity": {
+            "required": ["key", "type", "title"],
+            "recommended": ["subtype", "structure"]
+        },
+        "state": {
+            "required": ["version", "created"],
+            "recommended": ["status", "updated"]
+        },
+        "attribution": {
+            "required": ["architect", "implementation"],
+            "optional": ["organization"]
+        },
+        "children_items": {
+            "required": ["path"],
+            "optional": ["type", "description"]
+        },
+        "grounding_if_present": {
+            "recommended": ["scriptures", "principle"],
+            "scripture_items": ["text", "reference"]
+        },
+        "dependencies_if_present": {
+            "recommended": ["from", "provides"],
+            "optional": ["derives"]
+        }
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.4 Reference → X.5 Note",
+
+    // X.1 POLICY
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "In the mouth of two or three witnesses shall every word be established. — 2 Corinthians 13:1",
+    "_X1_never": [
+        "Remove required fields from the schema",
+        "Change the .ofd format to use _ key ceremony (it's compiled output, not human-authored)",
+        "Add comments to .ofd files (clean JSON only)",
+        "Break linter-transform alignment — if the schema changes, both ofd.ts and omni.ts must update"
+    ],
+    "_X1_careful": [
+        "Adding new required fields (cascades to all .ofd files and the transform)",
+        "Changing field types",
+        "Restructuring sections (moves require both linter and transform updates)"
+    ],
+    "_X1_safe": [
+        "Adding optional fields",
+        "Adding recommended fields",
+        "Updating descriptions and examples",
+        "Adding new optional sections"
+    ],
+
+    // X.2 EXTENSION
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        ".ofd version 2 — add 'layout' section for filesystem structure hints",
+        "Nested children — tree structure instead of flat array",
+        "Validation of cross-references between .ofd files",
+        "MillenniumOS integration — .ofd as native folder metadata"
+    ],
+
+    // X.4 REFERENCE
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "b-word/definitions/omni/omni-source-schema.jsonc — .omni source language spec",
+        "b-word/definitions/omni/omnicode-extensions.jsonc — Extension registry (.ofd entry)",
+        "c-tov/cws-struct/lib/formats/ofd.ts — .ofd linter (validates this contract)",
+        "c-tov/cws-struct/lib/formats/omni.ts — .omni linter + transform (compiles to .ofd)"
+    ],
+
+    // X.5 NOTE
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": ".omni is human language. .ofd is machine language. Same truth, different form. The human writes root.omni with directives and operators — natural, expressive, grounded in Scripture. The compiler produces root.ofd with clean JSON — structured, verifiable, ready for MillenniumOS. Two witnesses of one truth. The linter holds the standard. The transform serves it.",
+    "_X5_scripture": "In the mouth of two or three witnesses shall every word be established. — 2 Corinthians 13:1",
+    "_X5_anchor": "Source and compiled. Human and machine. Both witness the same truth.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

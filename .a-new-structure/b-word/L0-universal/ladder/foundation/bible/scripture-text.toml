@@ -1,0 +1,698 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L0-bible-scripture-text"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "bible"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "bible"
+layer = "L0-universal/bible"
+includes = "none"
+provides = ["SCRIPTURE-TEXT_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Scripture Text Encoding"
+brief = "Character-to-trit5 encoding for Scripture text storage"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "scripture-text.toml"
+key = "B-L0-bible-scripture-text"
+title = "Scripture Text Encoding"
+type = "Data (Scripture Text)"
+component = "Rung"
+role = "Character-to-trit5 encoding for Scripture text storage — 243 characters to trit5 values, indexed binary format for 62,204 verses"
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-14"
+updated = "2026-02-10"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "Thy word is a lamp unto my feet, and a light unto my path. — Psalm 119:105"
+principle = "Scripture text encodes to trit5 values for efficient storage. Every letter of the Word preserved."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/L0-universal/bible/addressing.toml", "b-word/L0-universal/foundation/types/primitives.toml"]
+consumers = ["scripture encoder", "scripture decoder", "verse lookup", "demo programs"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by code generators and lookup tools."
+if_missing = "Bible traceability broken — cannot map between Scripture and code"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Text encoding SCHEMA in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines bible data. Generated code (C, Go) implements lookups."
+
+[_metadata.M6_location]
+path = "b-word/L0-universal/bible/scripture-text.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "bible, scripture-text, foundation, L0, scripture"
+
+[_metadata.M8_intent]
+purpose = "Character-to-trit5 encoding for Scripture text storage — 243 characters to trit5 values, indexed binary format for 62,204 verses"
+core_design = "Scripture text encodes to trit5 values for efficient storage. Every letter of the Word preserved."
+philosophy = "Thy word is a lamp unto my feet, and a light unto my path."
+
+[_metadata.M9_roadmap]
+history = [
+    "a-01.00 (2025-12-14) — Initial creation",
+    "b-01.00 (2026-02-10) — TOML-native 3-block format alignment",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Code generation integration", "Automated validation tooling"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Bible data file — scripture text encoding for the OmniCode type system"
+Cc = "Content Configurations — character table (243 chars), extended characters (128-242), file format (binary scripture storage), encoding algorithms"
+Co = "Content Operations — (data file: encoding-spec-based, no operations defined here)"
+Cv = "Content Validation — schema requirements, health scoring"
+
+# ─────────────────────────────────────────────────────────────
+# Cc — Content Configurations
+# ─────────────────────────────────────────────────────────────
+
+# Cc.1 CHARACTER TABLE — ASCII Character to Trit5 Value Mapping
+[character_table]
+description = "ASCII character to trit5 value mapping"
+total_values = 243
+ascii_range = [0, 127]
+spare_range = [128, 242]
+note = "Each character maps to unique trit5 value for reversible encoding"
+
+# Control characters and basic punctuation (0-31)
+[character_table.control]
+description = "Control characters and whitespace"
+NUL = 0    # Null terminator
+SOH = 1    # Start of heading (unused)
+STX = 2    # Start of text (unused)
+ETX = 3    # End of text (unused)
+EOT = 4    # End of transmission (unused)
+ENQ = 5    # Enquiry (unused)
+ACK = 6    # Acknowledge (unused)
+BEL = 7    # Bell (unused)
+BS = 8     # Backspace (unused)
+TAB = 9    # Horizontal tab
+LF = 10    # Line feed (newline)
+VT = 11    # Vertical tab (unused)
+FF = 12    # Form feed (unused)
+CR = 13    # Carriage return
+SO = 14    # Shift out (unused)
+SI = 15    # Shift in (unused)
+DLE = 16   # Data link escape (unused)
+DC1 = 17   # Device control 1 (unused)
+DC2 = 18   # Device control 2 (unused)
+DC3 = 19   # Device control 3 (unused)
+DC4 = 20   # Device control 4 (unused)
+NAK = 21   # Negative acknowledge (unused)
+SYN = 22   # Synchronous idle (unused)
+ETB = 23   # End of transmission block (unused)
+CAN = 24   # Cancel (unused)
+EM = 25    # End of medium (unused)
+SUB = 26   # Substitute (unused)
+ESC = 27   # Escape (unused)
+FS = 28    # File separator (unused)
+GS = 29    # Group separator (unused)
+RS = 30    # Record separator (unused)
+US = 31    # Unit separator (unused)
+
+# Printable ASCII (32-126)
+[character_table.printable]
+description = "Printable ASCII characters"
+SPACE = 32        # ' '
+EXCLAIM = 33      # '!'
+DQUOTE = 34       # '"'
+HASH = 35         # '#'
+DOLLAR = 36       # '$'
+PERCENT = 37      # '%'
+AMPERSAND = 38    # '&'
+SQUOTE = 39       # "'"
+LPAREN = 40       # '('
+RPAREN = 41       # ')'
+ASTERISK = 42     # '*'
+PLUS = 43         # '+'
+COMMA = 44        # ','
+MINUS = 45        # '-'
+PERIOD = 46       # '.'
+SLASH = 47        # '/'
+
+# Digits (48-57)
+DIGIT_0 = 48      # '0'
+DIGIT_1 = 49      # '1'
+DIGIT_2 = 50      # '2'
+DIGIT_3 = 51      # '3'
+DIGIT_4 = 52      # '4'
+DIGIT_5 = 53      # '5'
+DIGIT_6 = 54      # '6'
+DIGIT_7 = 55      # '7'
+DIGIT_8 = 56      # '8'
+DIGIT_9 = 57      # '9'
+
+# Punctuation (58-64)
+COLON = 58        # ':'
+SEMICOLON = 59    # ';'
+LESSTHAN = 60     # '<'
+EQUALS = 61       # '='
+GREATERTHAN = 62  # '>'
+QUESTION = 63     # '?'
+AT = 64           # '@'
+
+# Uppercase letters (65-90)
+UPPER_A = 65
+UPPER_B = 66
+UPPER_C = 67
+UPPER_D = 68
+UPPER_E = 69
+UPPER_F = 70
+UPPER_G = 71
+UPPER_H = 72
+UPPER_I = 73
+UPPER_J = 74
+UPPER_K = 75
+UPPER_L = 76
+UPPER_M = 77
+UPPER_N = 78
+UPPER_O = 79
+UPPER_P = 80
+UPPER_Q = 81
+UPPER_R = 82
+UPPER_S = 83
+UPPER_T = 84
+UPPER_U = 85
+UPPER_V = 86
+UPPER_W = 87
+UPPER_X = 88
+UPPER_Y = 89
+UPPER_Z = 90
+
+# Punctuation (91-96)
+LBRACKET = 91     # '['
+BACKSLASH = 92    # '\'
+RBRACKET = 93     # ']'
+CARET = 94        # '^'
+UNDERSCORE = 95   # '_'
+BACKTICK = 96     # '`'
+
+# Lowercase letters (97-122)
+LOWER_A = 97
+LOWER_B = 98
+LOWER_C = 99
+LOWER_D = 100
+LOWER_E = 101
+LOWER_F = 102
+LOWER_G = 103
+LOWER_H = 104
+LOWER_I = 105
+LOWER_J = 106
+LOWER_K = 107
+LOWER_L = 108
+LOWER_M = 109
+LOWER_N = 110
+LOWER_O = 111
+LOWER_P = 112
+LOWER_Q = 113
+LOWER_R = 114
+LOWER_S = 115
+LOWER_T = 116
+LOWER_U = 117
+LOWER_V = 118
+LOWER_W = 119
+LOWER_X = 120
+LOWER_Y = 121
+LOWER_Z = 122
+
+# Final punctuation (123-126)
+LBRACE = 123      # '{'
+PIPE = 124        # '|'
+RBRACE = 125      # '}'
+TILDE = 126       # '~'
+
+# DEL (127)
+DEL = 127         # Delete character
+
+
+# Cc.2 EXTENDED CHARACTERS (128-242)
+[extended_characters]
+description = "Extended character mappings beyond ASCII"
+range = [128, 242]
+total_spare = 115
+note = "Reserved for future use - Hebrew, Greek, typographic marks"
+
+# Typographic marks (128-139)
+[extended_characters.typography]
+description = "Common typographic characters"
+EM_DASH = 128          # '—' (em dash)
+EN_DASH = 129          # '–' (en dash)
+LEFT_SINGLE_QUOTE = 130   # '''
+RIGHT_SINGLE_QUOTE = 131  # '''
+LEFT_DOUBLE_QUOTE = 132   # '"'
+RIGHT_DOUBLE_QUOTE = 133  # '"'
+ELLIPSIS = 134         # '…'
+BULLET = 135           # '•'
+DAGGER = 136           # '†'
+DOUBLE_DAGGER = 137    # '‡'
+SECTION = 138          # '§'
+PILCROW = 139          # '¶'
+
+# Hebrew letters (140-161) - for Strong's references
+[extended_characters.hebrew]
+description = "Hebrew alphabet for Strong's concordance"
+ALEPH = 140    # א
+BET = 141      # ב
+GIMEL = 142    # ג
+DALET = 143    # ד
+HE = 144       # ה
+VAV = 145      # ו
+ZAYIN = 146    # ז
+CHET = 147     # ח
+TET = 148      # ט
+YOD = 149      # י
+KAF = 150      # כ
+LAMED = 151    # ל
+MEM = 152      # מ
+NUN = 153      # נ
+SAMECH = 154   # ס
+AYIN = 155     # ע
+PE = 156       # פ
+TSADE = 157    # צ
+QOF = 158      # ק
+RESH = 159     # ר
+SHIN = 160     # ש
+TAV = 161      # ת
+
+# Greek letters (162-185) - for New Testament references
+[extended_characters.greek]
+description = "Greek alphabet for NT Strong's concordance"
+ALPHA = 162    # Α/α
+BETA = 163     # Β/β
+GAMMA = 164    # Γ/γ
+DELTA = 165    # Δ/δ
+EPSILON = 166  # Ε/ε
+ZETA = 167     # Ζ/ζ
+ETA = 168      # Η/η
+THETA = 169    # Θ/θ
+IOTA = 170     # Ι/ι
+KAPPA = 171    # Κ/κ
+LAMBDA = 172   # Λ/λ
+MU = 173       # Μ/μ
+NU = 174       # Ν/ν
+XI = 175       # Ξ/ξ
+OMICRON = 176  # Ο/ο
+PI = 177       # Π/π
+RHO = 178      # Ρ/ρ
+SIGMA = 179    # Σ/σ
+TAU = 180      # Τ/τ
+UPSILON = 181  # Υ/υ
+PHI = 182      # Φ/φ
+CHI = 183      # Χ/χ
+PSI = 184      # Ψ/ψ
+OMEGA = 185    # Ω/ω
+
+# Reserved for future use (186-242)
+[extended_characters.reserved]
+description = "Reserved for future extensions"
+range = [186, 242]
+count = 57
+note = "Available for: accented characters, additional symbols, markup"
+
+
+# Cc.3 FILE FORMAT — Binary Scripture Storage
+[file_format]
+description = "Binary Scripture file format"
+filename = "scripture.bin"
+location = "word/scripture/scripture.bin"
+total_verses = 62204
+kjv_verses = 31102
+web_verses = 31102
+note = "Combined storage for both KJV and WEB translations"
+
+# Cc.3a HEADER Section
+[file_format.header]
+description = "File header with metadata and offsets"
+size_bytes = 64
+note = "Fixed size allows direct offset calculation"
+
+[file_format.header.fields]
+magic = { offset = 0, size = 4, value = "SCRP", note = "Magic number for identification" }
+version = { offset = 4, size = 2, value = 1, note = "File format version" }
+flags = { offset = 6, size = 2, value = 0, note = "Reserved for future flags" }
+kjv_count = { offset = 8, size = 4, value = 31102, note = "Number of KJV verses" }
+web_count = { offset = 12, size = 4, value = 31102, note = "Number of WEB verses" }
+index_offset = { offset = 16, size = 8, note = "Byte offset to verse index" }
+data_offset = { offset = 24, size = 8, note = "Byte offset to text data" }
+kjv_data_size = { offset = 32, size = 8, note = "Total bytes of KJV text" }
+web_data_size = { offset = 40, size = 8, note = "Total bytes of WEB text" }
+reserved = { offset = 48, size = 16, note = "Reserved for future use" }
+
+# Cc.3b VERSE INDEX Section
+[file_format.index]
+description = "Verse index for random access"
+entry_size = 8
+total_entries = 62204
+note = "Index immediately follows header"
+
+[file_format.index.entry]
+description = "Single index entry"
+text_offset = { offset = 0, size = 4, note = "Byte offset into text data section" }
+text_length = { offset = 4, size = 2, note = "Length of verse text in bytes" }
+flags = { offset = 6, size = 1, note = "Verse flags (variant marker, etc.)" }
+reserved = { offset = 7, size = 1, note = "Reserved" }
+
+[file_format.index.layout]
+kjv_range = { start = 0, end = 31101, note = "Indices 0-31101 = KJV verses 1-31102" }
+web_range = { start = 31102, end = 62203, note = "Indices 31102-62203 = WEB verses 1-31102" }
+note = "KJV index i → verse (i+1). WEB index i → verse (i-31101)."
+
+# Cc.3c TEXT DATA Section
+[file_format.data]
+description = "Verse text encoded as trit5 bytes"
+format = "trit5"
+note = "Each character → trit5 value (0-242) → stored as byte"
+
+[file_format.data.layout]
+kjv_section = { note = "All KJV verses, contiguous, order 1-31102" }
+web_section = { note = "All WEB verses, contiguous, order 1-31102" }
+separator = { note = "NUL (0x00) terminates each verse" }
+
+[file_format.data.char_encoding]
+character_to_trit5 = "Direct ASCII value for 0-127, extended table for 128-242"
+verse_terminator = 0
+note = "Each verse is NUL-terminated sequence of trit5 bytes"
+
+# Cc.3d ACCESS PATTERNS
+[file_format.access]
+description = "How to access verses in the binary file"
+
+[file_format.access.by_ordinal]
+description = "Access verse by KJV ordinal (1-31102)"
+algorithm = """
+# KJV verse by ordinal
+kjv_index = ordinal - 1
+entry_offset = header.index_offset + (kjv_index * 8)
+# Read 8-byte entry at entry_offset
+# Jump to header.data_offset + entry.text_offset
+# Read entry.text_length bytes
+"""
+
+[file_format.access.by_version]
+description = "Access verse by version and ordinal"
+algorithm = """
+# Version-aware access
+if version == KJV:
+    index = ordinal - 1
+else:  # WEB
+    index = 31102 + (ordinal - 1)
+entry_offset = header.index_offset + (index * 8)
+# Same entry read and data jump as above
+"""
+
+[file_format.access.size_estimate]
+header = 64
+index_per_verse = 8
+index_total = 497632  # 62204 * 8
+kjv_text_estimate = 4400000  # ~4.4MB plain text
+web_text_estimate = 4400000  # ~4.4MB plain text (similar to KJV)
+total_estimate = 9297696  # ~9.3MB total
+note = "Actual size depends on text compression and encoding efficiency"
+
+
+# Cc.4 ENCODING ALGORITHMS — Text → Trit5 → Binary and Reverse
+[encoding]
+description = "Character encoding and decoding algorithms"
+
+# Cc.4a TEXT TO TRIT5
+[encoding.char_to_trit5]
+description = "Convert single character to trit5 value"
+algorithm = """
+def char_to_trit5(char):
+    code = ord(char)
+    if code <= 127:
+        # ASCII range: direct mapping
+        return code
+    elif code in extended_table:
+        # Extended range: lookup mapping
+        return extended_table[code]
+    else:
+        # Unknown character: use replacement
+        return 63  # '?' character
+"""
+
+[encoding.text_to_bytes]
+description = "Convert text string to trit5 byte sequence"
+algorithm = """
+def text_to_bytes(text):
+    result = []
+    for char in text:
+        result.append(char_to_trit5(char))
+    result.append(0)  # NUL terminator
+    return bytes(result)
+"""
+
+# Cc.4b TRIT5 TO TEXT
+[encoding.trit5_to_char]
+description = "Convert trit5 value to character"
+algorithm = """
+def trit5_to_char(value):
+    if value <= 127:
+        # ASCII range: direct mapping
+        return chr(value)
+    elif value in reverse_extended_table:
+        # Extended range: reverse lookup
+        return reverse_extended_table[value]
+    else:
+        # Unknown value: use replacement
+        return '?'
+"""
+
+[encoding.bytes_to_text]
+description = "Convert trit5 byte sequence to text string"
+algorithm = """
+def bytes_to_text(data):
+    result = []
+    for byte in data:
+        if byte == 0:
+            break  # NUL terminator
+        result.append(trit5_to_char(byte))
+    return ''.join(result)
+"""
+
+# Cc.4c VERSE ENCODING
+[encoding.verse]
+description = "Encode complete verse for storage"
+algorithm = """
+def encode_verse(text, ordinal, version):
+    # Convert text to trit5 bytes
+    encoded = text_to_bytes(text)
+
+    # Create index entry
+    entry = IndexEntry(
+        text_offset=current_data_offset,
+        text_length=len(encoded),
+        flags=0 if version == KJV else 1
+    )
+
+    return entry, encoded
+"""
+
+[encoding.decode_verse]
+description = "Decode verse from storage"
+algorithm = """
+def decode_verse(data, entry):
+    # Extract verse bytes using index entry
+    verse_bytes = data[entry.text_offset:entry.text_offset + entry.text_length]
+
+    # Convert back to text
+    return bytes_to_text(verse_bytes)
+"""
+
+# Cc.4d FULL FILE ENCODING
+[encoding.build_file]
+description = "Build complete scripture.bin file"
+algorithm = """
+def build_scripture_file(kjv_verses, web_verses):
+    # 1. Build header
+    header = Header(
+        magic=b'SCRP',
+        version=1,
+        kjv_count=len(kjv_verses),
+        web_count=len(web_verses)
+    )
+
+    # 2. Build index and data sections
+    index_entries = []
+    text_data = bytearray()
+
+    # KJV verses first
+    for ordinal, text in kjv_verses:
+        entry, encoded = encode_verse(text, ordinal, KJV)
+        index_entries.append(entry)
+        text_data.extend(encoded)
+
+    # WEB verses second
+    for ordinal, text in web_verses:
+        entry, encoded = encode_verse(text, ordinal, WEB)
+        index_entries.append(entry)
+        text_data.extend(encoded)
+
+    # 3. Calculate offsets
+    header.index_offset = 64  # After header
+    header.data_offset = 64 + (len(index_entries) * 8)
+
+    # 4. Write file
+    write_header(header)
+    write_index(index_entries)
+    write_data(text_data)
+"""
+
+[encoding.notes]
+reversibility = "encode(decode(x)) == x for all valid inputs"
+efficiency = "ASCII-compatible - most Scripture text is 1 byte per character"
+extensibility = "115 spare values available for future character additions"
+
+
+[extensions]
+note = "Reserved — no extensions defined"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# (Data file: encoding-spec-based. No operations defined here.)
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('scripture-text.toml','rb'))\""]
+
+[_validation.schema]
+required = ["character_table", "extended_characters", "file_format", "encoding"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_tables_valid = 30
+data_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "ASCII mapping (0-127) — must be direct for compatibility",
+    "File format header size — fixed at 64 bytes",
+    "Index entry size — fixed at 8 bytes",
+    "NUL terminator convention — required for verse boundaries",
+]
+careful = [
+    "Adding new extended characters — update both tables",
+    "Changing file format — requires encoder/decoder updates",
+    "Modifying index layout — affects all verse lookups",
+]
+safe = [
+    "Extended character mappings (128-242)",
+    "New header flags (if reserved space available)",
+    "Additional metadata in reserved fields",
+    "Notes and clarifications",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new entries following existing table structure",
+    "2. Ensure all required fields present",
+    "3. Verify bidirectional consistency with related files",
+    "4. Run TOML validation",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_reference = "Check encoding_ref/scripture fields — all must point to valid sources"
+consistency_error = "Verify bidirectional mapping — encoding ↔ decoding must agree"
+
+[_closing.X4_reference]
+related_files = [
+    "L0-universal/bible/encoding.toml — Bible Encoding Map",
+    "L0-universal/bible/decoding.toml — Bible Decoding Map",
+    "L0-universal/bible/addressing.toml — Bible Addressing System",
+    "L0-universal/bible/encryption.toml — Bible Encryption",
+    "L0-universal/bible/decryption.toml — Bible Decryption",
+    "L0-universal/bible/translation.toml — Bible Translation Map",
+]
+required_sections = ["_pragma", "_metadata", "character_table", "extended_characters", "file_format", "encoding", "_validation", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('scripture-text.toml','rb'))\""
+
+[_closing.X5_note]
+note = "Every letter matters. Encoding preserves them all."
+scripture = "Thy word is a lamp unto my feet. — Psalm 119:105"
+anchor = "Every letter matters. Encoding preserves them all. Genesis 1:1 anchors the text."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

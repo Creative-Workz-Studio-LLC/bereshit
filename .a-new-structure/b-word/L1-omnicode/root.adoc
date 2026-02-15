@@ -1,52 +1,114 @@
 // L1 OmniCode — Language Layer
 // "And God said, Let there be light: and there was light." — Genesis 1:3
 //
-// The language. Sentence-like syntax with Bible as codex. Compiles through
-// balanced ternary IR. Stands on L0, feeds L2 and L5.
+// The language. Sentence-like syntax with Bible as codex. Organized by
+// execution mode — ladder (specs), spiral (identity), hybrid (runtime).
 //
-// Language: C (compiler frontend + IR)
-// Dependencies: L0 (libtrit)
-// Dependents: L2, L5
+// Languages: Go (pragma reader), TOML (specifications), JSONC (schemas)
+// Dependencies: L0 (config/util for format parsing, identity for registry)
+// Dependents: L2, L3, L5
 
 = L1 OmniCode
 
 == Purpose
 
 The OmniCode programming language — sentence-like syntax where the Bible
-serves as the codex. Frontend parsing, intermediate representation, semantic
-analysis, code generation. All built on L0's balanced ternary foundation.
+serves as the codex. Defines keyword vocabulary, syntax rules, file extension
+registry, pragma parsing, format dispatch, and block structure schemas.
+All built on L0's universal foundation.
 
-== Current Location (pre-migration)
-
-[cols="2,3"]
-|===
-| Component | Current Path
-
-| libomni (compiler core)
-| `word/work/pkg/omni/`
-
-| OmniCode specs
-| `word/omni/`
-
-| Format mappings
-| `word/omni/formats/`
-|===
-
-== Target Structure
+== Structure
 
 ----
 L1-omnicode/
-├── frontend/       ← parser, lexer, syntax
-├── ir/             ← intermediate representation
-├── vm/             ← virtual machine
-├── semantic/       ← type checking, analysis
-├── runtime/        ← runtime support
-├── stdlib/         ← standard library
-└── codegen/        ← code generation backends
+├── root.adoc            ← this file
+│
+├── ladder/              ← STRICT ORDER — specifications, definitions, schemas
+│   ├── language/        ← TOML: syntax, keywords, extensions, operators
+│   │   ├── syntax.toml           ← sentence-based syntax rules
+│   │   ├── keywords.toml         ← keyword vocabulary (biblical roots)
+│   │   ├── extensions.toml       ← file extension registry (16 extensions)
+│   │   └── omnicode-operators.toml ← operator definitions (83KB)
+│   └── schemas/         ← JSONC: block structure validation schemas
+│       ├── base-3block-schema.jsonc
+│       ├── toml-3block-schema.jsonc
+│       ├── json-3block-schema.jsonc
+│       ├── dotfile-3block-schema.jsonc
+│       ├── makefile-4block-schema.jsonc
+│       ├── omni-source-schema.jsonc
+│       ├── omni-folder-schema.jsonc
+│       └── omnicode-extensions.jsonc
+│
+├── spiral/              ← ITERATIVE — identity, self-awareness
+│   └── (scaffold)       ← L1 identity registry (future: self-describing language)
+│
+└── hybrid/              ← ORDERED + RECOVERY — pragma parsing, compiler pipeline
+    ├── pragma/          ← Go: OmniCode pragma reader (3 files)
+    │   ├── pragma.go     ← #!omni parser, Pragma struct, Parse/ParseReader
+    │   ├── dispatch.go   ← format dispatch (pragma → L0 TOML/JSONC parser)
+    │   └── extensions.go ← file extension registry (Go types from TOML spec)
+    ├── codegen/         ← scaffold: code generation backends
+    ├── ir/              ← scaffold: intermediate representation
+    ├── vm/              ← scaffold: virtual machine
+    ├── semantic/        ← scaffold: type checking, analysis
+    ├── runtime/         ← scaffold: runtime support
+    └── stdlib/          ← scaffold: standard library
 ----
+
+== Execution Modes
+
+[cols="1,2,3"]
+|===
+| Mode | Characteristic | Contents
+
+| *Ladder*
+| Strict sequence. Spec precedes implementation. Definitions precede runtime.
+| TOML specs (syntax, keywords, extensions, operators), JSONC schemas
+
+| *Spiral*
+| Iterative. Self-awareness grows as the language matures.
+| Identity scaffold (future: L1 describes itself in OmniCode)
+
+| *Hybrid*
+| Ladder forward, spiral to recover. Parser dispatches, recovers on error.
+| Pragma reader (Go), compiler pipeline stubs (codegen, IR, VM, semantic)
+|===
 
 == Build
 
- make l1
+ go build ./L1-omnicode/...
 
-Depends on L0. Delegates to `word/work/pkg/omni/`.
+Depends on L0. The pragma reader imports L0 config/util for format parsing.
+
+== Dependencies
+
+[cols="2,3"]
+|===
+| Package | External Dependencies
+
+| ladder/language/
+| none (TOML data files)
+
+| ladder/schemas/
+| none (JSONC validation schemas)
+
+| hybrid/pragma/
+| L0 config/util (TOML/JSONC parsing)
+|===
+
+== Design
+
+Ladder provides the truth — TOML specs define what OmniCode IS. The schemas
+define what valid block structure looks like. These are the law.
+
+Hybrid reads that truth at runtime — the pragma reader parses `#!omni` lines
+from any file format, the dispatcher routes to the right L0 parser, and the
+extension registry maps file extensions to their OmniCode identity.
+
+Spiral will grow — when the language can describe itself (OmniCode written
+in OmniCode), the spiral domain comes alive. The seed of self-awareness is
+already planted: the pragma reader can parse its own pragma lines.
+
+The three domains mirror L0's fractal pattern. Each layer of the stack carries
+the same three natures: sequential truth (ladder), self-knowing identity
+(spiral), and ordered execution with recovery (hybrid).

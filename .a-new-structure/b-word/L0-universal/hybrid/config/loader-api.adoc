@@ -1,0 +1,2144 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY — What IS this document?
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-L0-config-loader-api
+:title: Config Loader API Reference
+:subtitle: Implementation and Verification — The Complete Package API
+:type: Reference
+:doctype: article
+:lang: en
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE — Lifecycle tracking (includes TEMPORAL)
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: a-03.00
+:revnumber: {version}
+:created: 2025-12-12
+:revdate: 2026-02-13
+:revremark: Production-grade util extraction — 9 files, 44 functions, JSONC loading, format registration, comprehensive test coverage (49 tests)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ATTRIBUTION — Who created and owns this?
+// ─────────────────────────────────────────────────────────────────────────────
+:authors: Seanje Lenox-Wise (Architect), Nova Dawn (Author)
+:author: Seanje Lenox-Wise
+:author_2: Nova Dawn
+:email: seanje.lenox@creativeworkzstudio.com
+:email_2: nova@creativeworkzstudio.com
+:organization: CreativeWorkzStudio LLC
+:copyright: © 2025 CreativeWorkzStudio LLC. All rights reserved.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION — Where does this document live?
+// ─────────────────────────────────────────────────────────────────────────────
+:path: /bereshit/L0-universal/hybrid/config/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DERIVATION — What template/parent does this come from?
+// ─────────────────────────────────────────────────────────────────────────────
+:derives_from: bereshit/word/omni/seed/B-word-omni-seed-documentation.omni
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLASSIFICATION — How is this categorized?
+// ─────────────────────────────────────────────────────────────────────────────
+:tags: api, config, loader, toml, jsonc, util, format-detection, format-registration, existence, tripwire
+:keywords: config loader, TOML, JSONC, API reference, util, format detection, format registration, shared primitives
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTENT — Why does this document exist?
+// ─────────────────────────────────────────────────────────────────────────────
+:purpose: Defines the public API for config loading — loader package + production-grade util primitives
+:description: Technical reference for the config loader package and util sub-package — types, functions, TOML/JSONC loading, format detection/registration, error handling, and usage patterns
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUNDING — Biblical anchor
+// ─────────────────────────────────────────────────────────────────────────────
+:verse-ref: 1 Thessalonians 5:21
+:verse-kjv-text: Prove all things; hold fast that which is good.
+:verse-kjv-path: {kjv}1_Thessalonians/Chapter_5/Verse_21.txt
+:verse-web-text: Test all things, and hold firmly that which is good.
+:verse-web-path: {scripture}WEB/1_Thessalonians/Chapter_5/Verse_21.txt
+:biblical_foundation: {verse-kjv-text}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRICTNESS — How strictly should this be interpreted?
+// ─────────────────────────────────────────────────────────────────────────────
+:strictness: T
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ASCIIDOC SETTINGS — Rendering configuration
+// ─────────────────────────────────────────────────────────────────────────────
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+:pdf-theme: default
+:media: prepress
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVIGATION — Path attributes for linking (DRY principle)
+// ─────────────────────────────────────────────────────────────────────────────
+// From L0-universal/hybrid/config/ to Bereshit root requires 2 levels up
+:root: ../../
+// Primary divisions
+:word: {root}word/
+:void: {root}void/
+:tov: {root}tov/
+// Common destinations in word/
+:core: {word}core/
+:work: {word}work/
+:scripture: {word}scripture/
+:kjv: {scripture}KJV/
+// Planning paths
+:plans: {void}planning/development/plans/
+:phase-0-plan: {plans}phase-0-implementation-plan.adoc
+// Demo paths
+:demo-config: {tov}demo/phase-0/demo-config/
+:demo-main: {demo-config}main.go
+:demo-docs: {demo-config}docs/
+// System directories (9 systems)
+:sys-math: {core}math/
+:sys-types: {core}types/
+:sys-language: {core}language/
+:sys-bible: {core}bible/
+:sys-health: {core}health/
+:sys-permission: {core}permission/
+:sys-identity: {core}identity/
+:sys-network: {core}network/
+:sys-filesystem: {core}filesystem/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT ATTRIBUTES — Reusable narrative/data elements
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase and scope
+:phase: Phase 0
+:system-count: 9
+:spec-count: 23
+// API counts (loader.go) — verified 2026-02-13
+:type-count: 10
+:function-count: 18
+// Util counts (util/) — verified 2026-02-13
+:util-type-count: 3
+:util-function-count: 44
+:util-file-count: 9
+// Test counts — verified 2026-02-13
+:loader-test-count: 22
+:util-test-count: 27
+:test-count: 49
+:helper-count: 2
+// Package identifier
+:package-path: creativeworkzstudio.com/bereshit/L0-universal/hybrid/config
+// Display paths (for tables/prose - without relative ../)
+:core-rel: word/core/
+// Narrative attributes
+:the-purpose: This package is {phase} foundation — proves specs exist and validate before Phase 1 implementation begins
+:the-future: Phase 3 will expand this into the full Config Reader with OmniCode parsing
+:the-philosophy: Tests are not separate from API — they ARE executable specifications showing how the API is meant to be used and proving it works
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END METADATA
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+HEADER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[_top]]
+= {title}: {subtitle}
+{authors}
+v{version}, {revdate}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EPIGRAPH — Scripture grounding
+// ─────────────────────────────────────────────────────────────────────────────
+
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+
+_{verse-web-text}_ — link:{verse-web-path}[WEB]
+____
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEAD — The hook / purpose
+// ─────────────────────────────────────────────────────────────────────────────
+
+[.lead.text-center]
+*{the-purpose}*
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ABSTRACT — Key facts at a glance
+// ─────────────────────────────────────────────────────────────────────────────
+
+[abstract]
+--
+icon:cube[] *Types:* {type-count} loader + {util-type-count} util exported structs
+
+icon:cog[] *Implementation:* {function-count} loader + {util-function-count} util functions across {util-file-count} files
+
+icon:check-square-o[] *Verification:* {test-count} tests ({loader-test-count} loader + {util-test-count} util) + {helper-count} helpers
+
+icon:flask[] *Philosophy:* {the-philosophy}
+--
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATUS — Document data table
+// ─────────────────────────────────────────────────────────────────────────────
+
+.Document Status
+[cols="^1,^1,^1,^1,^1,^1,^1",options="header,autowidth",frame="topbot"]
+|===
+| Status | Version | Loader Types | Loader Functions | Util Functions | Tests | Helpers
+
+| {status}
+| {version}
+| {type-count}
+| {function-count}
+| {util-function-count}
+| {test-count}
+| {helper-count}
+|===
+
+'''
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVIGATION — Quick links to major sections
+// ─────────────────────────────────────────────────────────────────────────────
+
+*<<overview,Overview>>* • *<<types,Types>>* • *<<functions,Functions>>* • *<<util-package,Utility>>* • *<<verification,Verification>>* • *<<usage,Usage>>* • *<<references,References>>*
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END HEADER
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVERVIEW — What is this and why it matters
+// ─────────────────────────────────────────────────────────────────────────────
+
+[[overview]]
+== Overview
+
+[.lead]
+The `config` packagefootnote:[Package path: `{package-path}`] provides a Go API for loading and validating configuration files (TOML and JSONC). It reads {phase} specifications from link:{core}[`word/core/`] and returns structured data for use in Bereshit applications. The `util` sub-package provides {util-function-count} production-grade primitives that any Go config loader can build on.
+
+[IMPORTANT]
+====
+*{the-purpose}* {the-future}
+====
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIENCE — Who is this document for (RESERVED - implicit: Go developers)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCOPE — What this covers and what it doesn't
+// ─────────────────────────────────────────────────────────────────────────────
+
+****
+[.lead]
+*What this package provides:*
+
+[horizontal]
+icon:check-circle[] *In Scope*::
+  - Loading TOML and JSONC config files
+  - Format detection and extensible format registration
+  - Parsing into typed structs or `map[string]any` for inspection
+  - Shared error types, existence checks, root guards, tripwire alerts
+  - Reporting what was loaded (names, keys, file counts)
+
+icon:clock-o[] *Future (Phase 3)*::
+  - OmniCode parsing
+  - Type validation beyond TOML syntax
+  - Schema enforcement
+****
+
+'''
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PREREQUISITES — What you need (RESERVED - implicit: Go 1.23+, Bereshit repo)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KEY TERMS — Terminology reference (RESERVED - see Types section)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUICK START — Fast path for doers
+// ─────────────────────────────────────────────────────────────────────────────
+
+[[quick-start]]
+=== Quick Start
+
+****
+[.lead]
+*Get started in 5 lines:*
+
+[source,go]
+----
+import "{package-path}"
+
+func main() {
+    config.SetRoot("/path/to/bereshit")  // 1. Set bereshit root
+    result := config.LoadAll()            // 2. Load all configs
+
+    if result.Valid {                     // 3. Check results
+        fmt.Println("All configs valid!")
+        for cat, items := range result.Summary {
+            fmt.Printf("%s: %v\n", cat, items)
+        }
+    }
+}
+----
+****
+
+'''
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WHAT THIS PROVIDES — Document contents table
+// ─────────────────────────────────────────────────────────────────────────────
+
+[[what-this-provides]]
+=== What This Document Provides
+
+****
+[.lead]
+*Why one document for both implementation and tests?*
+
+{the-philosophy}
+
+.Document Contents
+[cols="^1,3,4,3",options="header,autowidth",frame="topbot"]
+|===
+| | Category | What You'll Find | Who It Serves
+
+| icon:cube[]
+| *Types*
+| {type-count} structs: data, results, errors
+| Developers using the API
+
+| icon:cog[]
+| *Implementation*
+| {function-count} functions for loading and validation
+| Developers integrating with configs
+
+| icon:wrench[]
+| *Utility Package*
+| {util-type-count} types + {util-function-count} functions — shared primitives
+| Developers building new loaders
+
+| icon:check-square-o[]
+| *Verification*
+| {test-count} tests + {helper-count} helpers as executable specs
+| Developers verifying system health
+
+| icon:book[]
+| *Usage Patterns*
+| Code examples from implementation AND tests
+| Developers building on {phase}
+|===
+
+[horizontal]
+icon:lightbulb-o[] *Key Insight*:: The test functions _are_ the usage examples. `TestPrimaryFlow` shows exactly how to call `LoadAll()`. `TestHealthAssessment` is a complete health check tool.
+****
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RETURN — Back to top navigation
+// ─────────────────────────────────────────────────────────────────────────────
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END CONTEXT
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+CONTENT BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[types]]
+== Types
+
+[.lead]
+The package exports {type-count} primary types for config loading operations.
+
+[[configfile]]
+=== ConfigFile
+
+****
+[.lead]
+*Represents a single loaded configuration file:*
+
+[source,go]
+----
+type ConfigFile struct {
+    Name string         // filename without extension (e.g., "primitives")
+    Path string         // full path to the file
+    Data map[string]any // parsed TOML data
+    Keys []string       // top-level keys in the file
+}
+----
+
+.ConfigFile Fields
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| Field | Description
+
+| `Name`
+| The file's base name without `.toml` extension
+
+| `Path`
+| Absolute path to the source file
+
+| `Data`
+| Parsed TOML content as nested maps
+
+| `Keys`
+| Sorted list of top-level keys for summary reporting
+|===
+****
+
+'''
+
+[[loadresult]]
+=== LoadResult
+
+****
+[.lead]
+*Returned by `LoadAll()` and category loaders — aggregates loading results:*
+
+[source,go]
+----
+type LoadResult struct {
+    Valid   bool                    // true if all files loaded without error
+    Configs map[string][]*ConfigFile // loaded files grouped by category
+    Errors  []error                 // any errors encountered
+    Summary map[string][]string     // category → list of names/keys
+}
+----
+
+.LoadResult Fields
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| Field | Description
+
+| `Valid`
+| `true` only if zero errors occurred
+
+| `Configs`
+| Map of category name → slice of loaded ConfigFile pointers
+
+| `Errors`
+| Slice of all errors encountered (continues loading on error)
+
+| `Summary`
+| Human-readable summary: category → list of loaded names/keys
+|===
+****
+
+'''
+
+[[discoveryresult]]
+=== DiscoveryResult
+
+****
+[.lead]
+*Returned by `DiscoverAndCompare()` — tripwire comparison result:*
+
+[source,go]
+----
+type DiscoveryResult struct {
+    Manifest   []string // files declared in index.toml
+    Discovered []string // files found on disk
+    Missing    []string // ERROR: in manifest but not on disk
+    Unexpected []string // WARNING: on disk but not in manifest
+    Valid      bool     // true if no missing files
+}
+----
+
+.DiscoveryResult Fields
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| Field | Description
+
+| `Manifest`
+| Files declared in `index.toml` (single source of truth)
+
+| `Discovered`
+| Files actually found on disk via filesystem scan
+
+| `Missing`
+| icon:exclamation-triangle[] *Tripwire:* Declared but not on disk
+
+| `Unexpected`
+| icon:info-circle[] *Warning:* On disk but not declared
+
+| `Valid`
+| `true` only if `len(Missing) == 0`
+|===
+
+[horizontal]
+icon:shield[] *Purpose*:: The tripwire pattern — detects drift between manifest (what _should_ exist) and disk (what _does_ exist).
+****
+
+'''
+
+[[dependencynode]]
+=== DependencyNode
+
+****
+[.lead]
+*Used by dependency graph validation — represents a spec in the DAG:*
+
+[source,go]
+----
+type DependencyNode struct {
+    Spec      string   // "system/file.toml" format
+    DependsOn []string // dependencies in same format
+    Loaded    bool     // tracking for load order validation
+}
+----
+
+.DependencyNode Fields
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| Field | Description
+
+| `Spec`
+| Spec identifier in `"system/file.toml"` format
+
+| `DependsOn`
+| List of specs this node depends on (edges in DAG)
+
+| `Loaded`
+| Tracks whether spec has been loaded (for order validation)
+|===
+
+[horizontal]
+icon:sitemap[] *Purpose*:: Enables `ValidateDependencyGraph()` to detect cycles and missing references.
+****
+
+'''
+
+[[indexmanifest]]
+=== IndexManifest
+
+****
+[.lead]
+*Loaded from `index.toml` — the single source of truth for system configuration:*
+
+[source,go]
+----
+type IndexManifest struct {
+    Systems []SystemEntry `toml:"systems"` // 9 systems in dependency order
+}
+
+type SystemEntry struct {
+    Name        string     `toml:"name"`        // e.g., "math", "types"
+    Path        string     `toml:"path"`        // relative path
+    Order       int        `toml:"order"`       // 0 = anchor
+    Description string     `toml:"description"` // purpose
+    Specs       []SpecDef  `toml:"specs"`       // files in system
+}
+----
+
+[horizontal]
+icon:book[] *Location*:: `{core-rel}index.toml` — manifest of all {system-count} systems
+icon:sort-amount-asc[] *Order*:: 0 = foundation anchor (math), 8 = highest dependency (filesystem)
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[functions]]
+== Functions
+
+[.lead]
+The package exports {function-count} functions organized by purpose.
+
+=== Configuration
+
+[[setroot]]
+==== SetRoot
+
+****
+[.lead]
+*Sets the bereshit repository root path (required before loading):*
+
+[source,go]
+----
+func SetRoot(path string)
+----
+
+[TIP]
+====
+Use environment variable `BERESHIT_ROOT` in applications:
+[source,go]
+----
+root := os.Getenv("BERESHIT_ROOT")
+if root == "" {
+    root = "."
+}
+config.SetRoot(root)
+----
+====
+****
+
+'''
+
+=== Primary Loading
+
+[[loadall]]
+==== LoadAll
+
+****
+[.lead]
+*Loads all {system-count} systems with graceful fallback:*
+
+[source,go]
+----
+func LoadAll() LoadResult
+----
+
+*Returns:* <<loadresult,`LoadResult`>> — tries `index.toml` first, falls back to hardcoded paths.
+
+[horizontal]
+icon:shield[] *Tripwire-aware*:: Primary path failure triggers fallback with degraded status.
+****
+
+'''
+
+[[loadallfromindex]]
+==== LoadAllFromIndex
+
+****
+[.lead]
+*Loads strictly from `index.toml` — no fallback:*
+
+[source,go]
+----
+func LoadAllFromIndex() LoadResult
+----
+
+*Returns:* <<loadresult,`LoadResult`>> — fails if `index.toml` unavailable or invalid.
+
+[horizontal]
+icon:exclamation-triangle[] *Use Case*:: When you need to verify the primary path is working (not just that loading works somehow).
+****
+
+'''
+
+=== Index Access
+
+[[loadindex]]
+==== LoadIndex
+
+****
+[.lead]
+*Loads and parses `index.toml` manifest:*
+
+[source,go]
+----
+func LoadIndex() (*IndexManifest, error)
+----
+
+*Returns:* <<indexmanifest,`*IndexManifest`>> — the parsed manifest structure.
+
+[horizontal]
+icon:book[] *Location*:: `{core-rel}index.toml`
+****
+
+'''
+
+=== System Loading
+
+[[loadsystem]]
+==== LoadSystem
+
+****
+[.lead]
+*Loads all specs for a named system:*
+
+[source,go]
+----
+func LoadSystem(system string) ([]*ConfigFile, error)
+----
+
+.Parameters
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| Parameter | Description
+
+| `system`
+| System name: `math`, `types`, `language`, `bible`, `health`, `permission`, `identity`, `network`, `filesystem`
+|===
+****
+
+'''
+
+[[loadspec]]
+==== LoadSpec
+
+****
+[.lead]
+*Loads a single spec file by system and name:*
+
+[source,go]
+----
+func LoadSpec(system, spec string) (*ConfigFile, error)
+----
+
+.Example
+[source,go]
+----
+cfg, err := config.LoadSpec("types", "primitives.toml")
+----
+****
+
+'''
+
+[[system-loaders]]
+==== System-Specific Loaders
+
+****
+[.lead]
+*Convenience wrappers for each of the {system-count} systems:*
+
+.System Loaders (in dependency order)
+[cols="^1,3,4",options="header,autowidth",frame="topbot"]
+|===
+| Order | Function | System Path
+
+| 0
+| `LoadMath()`
+| `{core-rel}math/` — foundation anchor
+
+| 1
+| `LoadTypes()`
+| `{core-rel}types/`
+
+| 2
+| `LoadLanguage()`
+| `{core-rel}language/`
+
+| 3
+| `LoadBible()`
+| `{core-rel}bible/`
+
+| 4
+| `LoadHealth()`
+| `{core-rel}os/health/`
+
+| 5
+| `LoadPermission()`
+| `{core-rel}os/permission/`
+
+| 6
+| `LoadIdentity()`
+| `{core-rel}identity/`
+
+| 7
+| `LoadNetwork()`
+| `{core-rel}network/`
+
+| 8
+| `LoadFilesystem()`
+| `{core-rel}filesystem/`
+|===
+
+[horizontal]
+icon:sort-amount-asc[] *Order*:: Lower order systems are foundations for higher order systems.
+****
+
+'''
+
+=== Validation & Tripwire
+
+[[discoverandcompare]]
+==== DiscoverAndCompare
+
+****
+[.lead]
+*The tripwire — compares manifest to disk:*
+
+[source,go]
+----
+func DiscoverAndCompare() (DiscoveryResult, error)
+----
+
+*Returns:* <<discoveryresult,`DiscoveryResult`>> — shows what's declared vs what exists.
+
+[horizontal]
+icon:shield[] *Purpose*:: Detect drift between `index.toml` (truth) and filesystem (reality).
+****
+
+'''
+
+[[validatedependencygraph]]
+==== ValidateDependencyGraph
+
+****
+[.lead]
+*Validates the dependency DAG — no cycles, no missing refs:*
+
+[source,go]
+----
+func ValidateDependencyGraph() ([]error, error)
+----
+
+*Returns:* Slice of dependency errors (empty if valid), or fatal error.
+****
+
+'''
+
+[[getdependencytree]]
+==== GetDependencyTree
+
+****
+[.lead]
+*Returns the full dependency graph:*
+
+[source,go]
+----
+func GetDependencyTree() (map[string]*DependencyNode, error)
+----
+
+*Returns:* Map of spec paths to <<dependencynode,`*DependencyNode`>> structures.
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[util-package]]
+== Utility Package (util/)
+
+[.lead]
+The `util` sub-package provides {util-type-count} types and {util-function-count} functions across {util-file-count} files — production-grade primitives that all loaders (L0 through L3) stand on.
+
+[IMPORTANT]
+====
+*Consolidation, then elevation.* Every function in util/ was extracted from duplicated code across 4+ loader files, then upgraded: compiled regex, thread-safe registration, testable I/O, format-agnostic dispatch, `errors.As` convenience wrappers. The util package is the single source of truth.
+====
+
+'''
+
+=== Util Types
+
+[[loaderror]]
+==== LoadError
+
+****
+[.lead]
+*File-level loading failure — names the file and operation:*
+
+[source,go]
+----
+type LoadError struct {
+    File string // "math/ternary.toml" or "config.toml"
+    Op   string // "read", "parse", "validate", "stat", "find", "detect"
+    Err  error  // underlying error
+}
+----
+
+[horizontal]
+icon:exclamation-triangle[] *Format*:: `"load math/ternary.toml: parse: unexpected EOF"`
+icon:link[] *Unwrap*:: Implements `errors.Unwrap()` for `errors.Is/As` chains.
+****
+
+'''
+
+[[validationerror]]
+==== ValidationError
+
+****
+[.lead]
+*Field-level validation failure — tiered specificity:*
+
+[source,go]
+----
+type ValidationError struct {
+    Path    string // "types/primitives.toml"
+    Section string // "int9"
+    Field   string // "min_value"
+    Message string // what's wrong
+    Value   any    // optional: the offending value
+}
+----
+
+.Tiered Error Format
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| Specificity | Format
+
+| Full
+| `"types/primitives.toml [int9.min_value]: expected int, got string"`
+
+| Full + Value
+| `"types/primitives.toml [int9.min_value]: expected int (got: hello)"`
+
+| Section
+| `"types/primitives.toml [int9]: missing required fields"`
+
+| File
+| `"types/primitives.toml: empty file"`
+|===
+
+[horizontal]
+icon:info-circle[] *Value field*:: When `Value` is set (via `NewValidationErrorWithValue`), the error message appends `(got: <value>)` for diagnostic clarity.
+****
+
+'''
+
+[[rootguard]]
+==== RootGuard
+
+****
+[.lead]
+*Manages a required root directory path — thread-safe, Set before use, Check before loading:*
+
+[source,go]
+----
+type RootGuard struct { /* name, path */ }
+
+func NewRootGuard(name string) *RootGuard
+func (g *RootGuard) Set(path string)
+func (g *RootGuard) Check() error
+func (g *RootGuard) Path() string
+----
+
+.Usage Pattern
+[source,go]
+----
+var root = util.NewRootGuard("bereshit")
+root.Set("/path/to/project")
+if err := root.Check(); err != nil { ... }
+configPath := filepath.Join(root.Path(), "word/core")
+----
+
+[horizontal]
+icon:home[] *Replaces*:: The `SetRoot/checkRoot/errNotSet` pattern cloned across L0 and L3 loaders.
+icon:lock[] *Thread-safe*:: Uses `sync.RWMutex` — concurrent `Path()` reads, exclusive `Set()` writes.
+****
+
+'''
+
+=== Util Functions — By File
+
+[[util-exists]]
+==== Existence Checks (exists.go)
+
+****
+[source,go]
+----
+func FileExists(path string) bool   // path exists (file or directory)
+func DirExists(path string) bool    // exists AND is a directory
+func IsFile(path string) bool       // exists AND is a regular file (not directory)
+func EnsureDir(path string) error   // creates dir + parents if missing, no-op if exists
+----
+
+.EnsureDir behavior
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| Input | Result
+
+| Path doesn't exist
+| Creates dir and parents (`os.MkdirAll`, `0755`)
+
+| Path is a directory
+| No-op, returns nil
+
+| Path is a file
+| Returns `*os.PathError` — won't overwrite files
+|===
+
+[horizontal]
+icon:search[] *Biblical*:: _"Whither shall I go from thy spirit?"_ — Psalm 139:7-8
+icon:bug[] *Fixed (a-03.00)*:: `FileExists` was returning `true` on permission errors. Now uses `err == nil` — precise semantics.
+****
+
+'''
+
+[[util-must]]
+==== Panic Wrapper (must.go)
+
+****
+[source,go]
+----
+// (T, error) pattern — generic panic-on-error
+func Must[T any](val T, err error) T       // panics if err != nil, returns val
+
+// error-only pattern — for void operations
+func MustNoErr(err error)                   // panics if err != nil
+
+// (T, bool) pattern — for map lookups and type assertions
+func MustVal[T any](val T, ok bool, msg string) T  // panics if !ok
+----
+
+.Three Patterns
+[cols="2,3,4",options="header,autowidth",frame="topbot"]
+|===
+| Function | Pattern | Example
+
+| `Must[T]`
+| `(T, error)`
+| `schemas := util.Must(LoadSchemas(dir))`
+
+| `MustNoErr`
+| `(error)`
+| `util.MustNoErr(os.MkdirAll(dir, 0755))`
+
+| `MustVal[T]`
+| `(T, bool)`
+| `sys := util.MustVal(index[name], ok, "not found: "+name)`
+|===
+
+[horizontal]
+icon:bolt[] *When*:: `init()` or startup where failure is fatal. Don't limp along — halt and name the problem.
+****
+
+'''
+
+[[util-formats]]
+==== Format Detection (formats.go)
+
+****
+[.lead]
+*Format detection and extensible registration — L0 knows standard formats, L1 registers OmniCode at init():*
+
+[source,go]
+----
+// Detection — query the registry
+func FormatFromExt(ext string) string     // ".go" → "go", ".toml" → "toml"
+func FormatFromPath(path string) string   // extracts ext, returns format
+func IsConfigFormat(format string) bool   // true for toml, json, jsonc, yaml
+func IsConfigPath(path string) bool       // true if file has config extension
+func IsKnownExt(ext string) bool          // true if extension is in registry
+
+// Registration — L1 extends L0 without modifying source
+func RegisterFormat(ext, format string)   // e.g., RegisterFormat(".omni", "omni")
+func RegisterConfigFormat(format string)  // e.g., RegisterConfigFormat("omni")
+
+// Introspection — sorted lists for help text and validation
+func AllKnownExts() []string              // all registered extensions, sorted
+func AllConfigFormats() []string          // all config format names, sorted
+----
+
+.Standard Formats (20 extensions)
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| Category | Extensions
+
+| Compiled
+| `.go`, `.c`, `.h`, `.rs`
+
+| Config/Data
+| `.toml`, `.json`, `.jsonc`, `.yaml`, `.yml`
+
+| Documentation
+| `.md`, `.adoc`, `.txt`
+
+| Scripting
+| `.py`, `.ts`, `.js`, `.sh`, `.bash`
+
+| Web
+| `.html`, `.css`
+|===
+
+[horizontal]
+icon:layers[] *Layer separation*:: L0 (this): `.go` → `"go"`. L1 (pragma): `.gen` → `"binary"`. L0 never needs OmniCode.
+icon:lock[] *Thread-safe*:: Registration uses `sync.Mutex` — safe for concurrent `init()` calls across packages.
+icon:puzzle-piece[] *Extensible*:: `RegisterFormat` and `RegisterConfigFormat` let L1+ add extensions without modifying L0 source.
+****
+
+'''
+
+[[util-loader]]
+==== Config Loading (loader.go)
+
+****
+[.lead]
+*TOML loading, config file search, and format-agnostic dispatch:*
+
+[source,go]
+----
+// Format-agnostic — dispatches by extension
+func LoadConfigFile(path string, v interface{}) error     // .toml → TOML, .json/.jsonc → JSONC
+
+// TOML-specific
+func LoadFile(path string, v interface{}) error           // decode TOML into struct
+func LoadBytes(data []byte, v interface{}) error          // decode TOML bytes into struct
+func LoadTOMLFile[T any](path string) (*T, error)         // generic typed TOML loading
+
+// Config search
+func FindAndLoad(name string, paths []string, v interface{}) error  // search + load
+func FindConfig(name string, paths []string) (string, error)        // search only
+func FindConfigDir(name string, paths []string) (string, error)     // dir search
+func SkillConfigPaths(skillName string) []string           // skill config search paths
+func SystemConfigPaths() []string                          // system config search paths
+----
+
+[horizontal]
+icon:file-code-o[] *Generics*:: `LoadTOMLFile[T]` uses Go 1.18+ generics — same pattern as `LoadJSONCFile[T]`.
+icon:random[] *Dispatch*:: `LoadConfigFile` checks extension via `FormatFromPath`, routes to TOML or JSONC loader. Returns `LoadError` with `Op: "detect"` for unsupported formats.
+****
+
+'''
+
+[[util-jsonc]]
+==== JSONC Loading (jsonc.go)
+
+****
+[source,go]
+----
+func ParseJSONC(content []byte) ([]byte, error)                    // strip comments → clean JSON
+func LoadJSONCFile[T any](path string) (*T, error)                 // read + strip + unmarshal
+func LoadJSONCMap(path string) (map[string]interface{}, error)     // untyped variant
+----
+
+.Comment Handling
+[cols="2,4",options="header,autowidth",frame="topbot"]
+|===
+| Feature | Support
+
+| Single-line comments
+| `// comment`
+
+| Multi-line comments
+| `/* ... */`
+
+| Trailing commas
+| `{key: "val",}` → `{key: "val"}`
+|===
+****
+
+'''
+
+[[util-errors]]
+==== Error Types & Helpers (errors.go)
+
+****
+[source,go]
+----
+// Constructors
+func NewLoadError(file, op string, err error) *LoadError
+func NewValidationError(path, section, field, message string) *ValidationError
+func NewValidationErrorWithValue(path, section, field, message string, value any) *ValidationError
+
+// errors.As convenience wrappers — unwrap error chains in one call
+func AsLoadError(err error) *LoadError              // returns nil if not a LoadError
+func AsValidationError(err error) *ValidationError  // returns nil if not a ValidationError
+----
+
+.Error Chain Usage
+[source,go]
+----
+if le := util.AsLoadError(err); le != nil {
+    log.Printf("File: %s, Op: %s", le.File, le.Op)
+}
+if ve := util.AsValidationError(err); ve != nil {
+    log.Printf("Field: %s.%s, Value: %v", ve.Section, ve.Field, ve.Value)
+}
+----
+
+[horizontal]
+icon:wrench[] *Design*:: Domain-specific errors (DependencyError, ConfigError) stay in their packages and can embed these shared types.
+icon:chain[] *`errors.As`*:: `AsLoadError` and `AsValidationError` wrap `errors.As` — one-call type extraction from error chains.
+****
+
+'''
+
+[[util-tripwire]]
+==== Tripwire Warnings (tripwire.go)
+
+****
+[source,go]
+----
+// Standard output (stderr for warnings, stdout for banners)
+func TripwireWarning(system, fallbackPath, reason string)  // single-line stderr warning
+func TripwireBanner(title string, lines []string)          // bordered warning block to stdout
+
+// Testable variants — write to any io.Writer
+func TripwireWarningTo(w io.Writer, system, fallbackPath, reason string)
+func TripwireBannerTo(w io.Writer, title string, lines []string)
+
+// Deduplication — for long-running processes
+func TripwireBannerOnce(title string, lines []string)      // fires at most once per title
+----
+
+.Deduplication for Servers
+[source,go]
+----
+// In a config reload loop — banner prints once, not every reload
+for {
+    cfg := loadConfig()
+    if cfg == nil {
+        util.TripwireBannerOnce("Config Missing", []string{
+            "Primary config not found",
+            "Running on hardcoded fallbacks",
+        })
+    }
+    time.Sleep(30 * time.Second)
+}
+----
+
+[horizontal]
+icon:bullhorn[] *Purpose*:: Silent fallbacks are the sword that comes unseen. The tripwire is the trumpet.
+icon:flask[] *Testable*:: `*To` variants accept `io.Writer` — capture output in `bytes.Buffer` for test assertions.
+icon:repeat[] *Deduplicated*:: `BannerOnce` uses `sync.Mutex` + map — safe for concurrent access in servers and watchers.
+****
+
+'''
+
+[[util-identity]]
+==== Package Identity (doc.go)
+
+****
+[source,go]
+----
+func Pragma() map[string]string    // returns copy of OmniCode pragma map (P1-P5)
+func Metadata() map[string]string  // returns copy of OmniCode metadata map (M1-M10)
+----
+
+[horizontal]
+icon:id-card[] *Purpose*:: Runtime-queryable package identity. Every util package exposes its own pragma and metadata for introspection tools.
+icon:shield[] *Immutable*:: Returns defensive copies — callers cannot mutate the package-level maps.
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[verification]]
+== Verification API
+
+[.lead]
+Two test files provide {test-count} test functions and {helper-count} helpers that serve as *executable specifications*:
+
+* `loader_test.go` — {loader-test-count} tests covering the parent loader API (loading, validation, tripwire, diagnostics)
+* `util/util_test.go` — {util-test-count} tests covering all util primitives (existence, errors, formats, loading, must, root, tripwire, JSONC, identity)
+
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — The tests ARE the proving.
+____
+
+=== Test Helpers
+
+[[getbereshitroot]]
+==== getBereshitRoot
+
+****
+[.lead]
+*Derives bereshit root for test execution:*
+
+[source,go]
+----
+func getBereshitRoot(t *testing.T) string
+----
+
+.Resolution Order
+[cols="^1,4",options="header,autowidth",frame="topbot"]
+|===
+| Priority | Source
+
+| 1
+| `BERESHIT_ROOT` environment variable
+
+| 2
+| Derived from test file location (4 levels up)
+|===
+****
+
+'''
+
+[[setuptest]]
+==== setupTest
+
+****
+[.lead]
+*Test setup with cleanup pattern:*
+
+[source,go]
+----
+func setupTest(t *testing.T) (string, func())
+----
+
+.Usage Pattern
+[source,go]
+----
+func TestSomething(t *testing.T) {
+    root, cleanup := setupTest(t)
+    defer cleanup()
+    // ... test code using root ...
+}
+----
+****
+
+'''
+
+=== Loader Test Functions (loader_test.go)
+
+[[test-structural]]
+==== Package Structure Tests
+
+****
+[.lead]
+*Verifies package identity, metadata contracts, and architecture:*
+
+.Structural Tests
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestPragmaIdentity`
+| Package pragma map exists, required P1-P5 keys present
+
+| `TestMetadataContract`
+| Metadata map M1-M10 sections, architect/implementation fields
+
+| `TestNavArchitecture`
+| Navigation paths resolve, layer structure correct
+
+| `TestRegistryIntegration`
+| Format registry round-trips (register → detect → verify)
+
+| `TestMetadataDeclaresAPI`
+| M4 API declarations match actual exported functions
+|===
+****
+
+'''
+
+[[test-flow]]
+==== Flow Tests
+
+****
+[.lead]
+*Tests primary loading flow and watch patterns:*
+
+.TestPrimaryFlow — Tripwire-aware loading
+[source,go]
+----
+func TestPrimaryFlow(t *testing.T)
+----
+
+.Ternary Results
+[cols="^1,2,4",options="header,autowidth",frame="topbot"]
+|===
+| Value | State | Meaning
+
+| +1
+| icon:check-circle[] *PASS*
+| Primary path (`index.toml`) works
+
+| 0
+| icon:exclamation-circle[] *HALF PASS*
+| Fallback works (tripwire triggered)
+
+| -1
+| icon:times-circle[] *FAIL*
+| Neither path works
+|===
+
+.TestWatchFlow
+[source,go]
+----
+func TestWatchFlow(t *testing.T)
+----
+
+[horizontal]
+icon:eye[] *Verifies*:: Config reload pattern — initial load, modify, reload, verify changes detected.
+****
+
+'''
+
+[[test-loading]]
+==== Loading Tests
+
+****
+[.lead]
+*Tests for loading entry points, error handling, and system loaders:*
+
+.Loading Tests
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestLoadAllWithoutRoot`
+| `LoadAll()` returns error when `SetRoot()` not called
+
+| `TestLoadSpec`
+| Single spec structural correctness (`Name`, `Path`, `Keys`, `Data`)
+
+| `TestLoadTypedSystems`
+| All {system-count} system-specific loaders in dependency order
+
+| `TestMathTernaryContent`
+| Math system `ternary.toml` content — the foundation anchor
+
+| `TestLoadErrorType`
+| `LoadError` type with file, op, underlying error
+
+| `TestLoadErrorOnMissingSystem`
+| Error handling for non-existent system paths
+|===
+****
+
+'''
+
+[[test-validation]]
+==== Validation Tests
+
+****
+[.lead]
+*Tripwire and dependency validation:*
+
+.TestDiscoverAndCompare — The Tripwire
+[source,go]
+----
+func TestDiscoverAndCompare(t *testing.T)
+----
+
+[horizontal]
+icon:shield[] *Purpose*:: Compares what `index.toml` declares vs what's on disk.
+icon:exclamation-triangle[] *Requires*:: `index.toml` (no fallback) — fails if missing.
+
+.TestValidateDependencyGraph — DAG Validation
+[source,go]
+----
+func TestValidateDependencyGraph(t *testing.T)
+----
+
+[horizontal]
+icon:sitemap[] *Validates*:: No cycles, no missing references in dependency DAG.
+****
+
+'''
+
+[[test-health]]
+==== Health Assessment
+
+****
+[.lead]
+*`TestHealthAssessment` — comprehensive health check tool (not just a test):*
+
+[source,go]
+----
+func TestHealthAssessment(t *testing.T)
+----
+
+.Diagnostic Phases
+[cols="^1,3,4",options="header,autowidth",frame="topbot"]
+|===
+| Phase | Check | Output
+
+| 1
+| *Index Health*
+| Primary path status, systems loaded
+
+| 2
+| *Tripwire Check*
+| Manifest vs disk alignment
+
+| 3
+| *Dependency Health*
+| DAG validation results
+
+| 4
+| *Overall Assessment*
+| +1 HEALTHY / 0 DEGRADED / -1 BROKEN
+|===
+
+.Running the Health Check
+[source,bash]
+----
+go test -v -run TestHealthAssessment ./L0-universal/hybrid/config/...
+----
+
+[horizontal]
+icon:stethoscope[] *Use Case*:: Run this when debugging config issues — provides complete system health report.
+****
+
+'''
+
+[[test-loader-util]]
+==== Loader-Embedded Util Tests
+
+****
+[.lead]
+*6 tests in `loader_test.go` verifying util integration from the parent package:*
+
+.Embedded Util Tests
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestUtilFileExists`
+| `FileExists()` true for real paths, false for non-existent
+
+| `TestUtilDirExists`
+| `DirExists()` distinguishes directories from files
+
+| `TestUtilFormatDetection`
+| Format detection from extensions (table-driven)
+
+| `TestUtilIsConfigFormat`
+| Config format identification
+
+| `TestUtilMust`
+| `Must[T]` returns value on nil, panics on error
+
+| `TestUtilLoadTOMLFile`
+| Generic typed TOML loading
+|===
+****
+
+'''
+
+[[test-util]]
+=== Util Test Functions (util/util_test.go)
+
+****
+[.lead]
+*{util-test-count} test functions — comprehensive coverage of all util primitives:*
+
+.Existence Tests (exists.go)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestFileExistsCorrectness`
+| `FileExists` returns true only when `os.Stat` succeeds — not on permission errors
+
+| `TestIsFile`
+| `IsFile` distinguishes regular files from directories
+
+| `TestEnsureDir`
+| Creates dirs, no-ops on existing dirs, errors on file paths
+|===
+
+.Error Tests (errors.go)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestLoadErrorUnwrap`
+| `LoadError.Unwrap()` returns underlying error for `errors.Is/As` chains
+
+| `TestValidationErrorValue`
+| `Error()` includes `(got: value)` when Value is set
+
+| `TestAsLoadError`
+| `AsLoadError` extracts `*LoadError` from wrapped chains, returns nil on miss
+
+| `TestAsValidationError`
+| `AsValidationError` extracts `*ValidationError` from wrapped chains
+|===
+
+.Format Tests (formats.go)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestRegisterFormat`
+| Registration adds new extension, detection finds it
+
+| `TestRegisterConfigFormat`
+| Registration adds new config format, `IsConfigFormat` sees it
+
+| `TestAllKnownExts`
+| Returns sorted slice of all registered extensions
+
+| `TestAllConfigFormats`
+| Returns sorted slice of all config format names
+|===
+
+.Must Tests (must.go)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestMustNoErr`
+| No-ops on nil, panics with message on error
+
+| `TestMustVal`
+| Returns val when ok=true, panics with message when ok=false
+|===
+
+.Tripwire Tests (tripwire.go)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestTripwireWarningTo`
+| Warning format: `WARNING [system]: reason (fallback: path)`
+
+| `TestTripwireBannerTo`
+| Banner has ═ borders, title, indented lines
+
+| `TestTripwireBannerOnce`
+| First call prints, second call with same title is silent
+|===
+
+.JSONC Tests (jsonc.go)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestParseJSONCComments`
+| 6 subtests: single-line, multi-line, trailing commas, nested, mixed, empty
+
+| `TestLoadJSONCFile`
+| Full round-trip: file → strip comments → unmarshal typed struct
+
+| `TestLoadJSONCMap`
+| Untyped variant: file → `map[string]interface{}`
+|===
+
+.Config Loading Tests (loader.go)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestLoadConfigFileTOML`
+| `LoadConfigFile` dispatches `.toml` to TOML loader
+
+| `TestLoadConfigFileJSONC`
+| `LoadConfigFile` dispatches `.jsonc` to JSONC loader
+
+| `TestLoadConfigFileJSON`
+| `LoadConfigFile` dispatches `.json` to JSONC loader
+
+| `TestLoadConfigFileUnsupported`
+| `LoadConfigFile` returns `LoadError` with `Op: "detect"` for `.yaml`
+
+| `TestLoadConfigFileMissing`
+| `LoadConfigFile` returns error for non-existent file
+|===
+
+.Root Guard Tests (root.go)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestRootGuardBasic`
+| Set → Check → Path round-trip, Check fails before Set
+
+| `TestRootGuardConcurrent`
+| 100 goroutines reading while one writes — no races
+|===
+
+.Identity Tests (doc.go)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+| `TestPackageIdentity`
+| `Pragma()` and `Metadata()` return copies — mutations don't bleed through
+|===
+
+[horizontal]
+icon:wrench[] *Coverage*:: Every new function has at least one dedicated test. Concurrency, error chains, format dispatch, deduplication all verified.
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[usage]]
+== Usage Patterns
+
+[[basic-validation]]
+=== Basic Validation
+
+****
+[.lead]
+*The most common use case — validate all {phase} configs exist and parse:*
+
+[source,go]
+----
+config.SetRoot(os.Getenv("BERESHIT_ROOT"))
+result := config.LoadAll()
+
+if !result.Valid {
+    for _, err := range result.Errors {
+        log.Printf("Error: %v", err)
+    }
+    os.Exit(1)
+}
+
+fmt.Println("✓ All configs valid")
+----
+
+[horizontal]
+icon:lightbulb-o[] *Tip*:: See link:{demo-main}[demo-config/main.go] for complete working example.
+****
+
+'''
+
+[[inspecting-loaded-data]]
+=== Inspecting Loaded Data
+
+****
+[.lead]
+*Access parsed TOML data for programmatic use:*
+
+[source,go]
+----
+result := config.LoadAll()
+
+// Get primitives config
+for _, cfg := range result.Configs["primitives"] {
+    // Access top-level keys
+    if types, ok := cfg.Data["types"].(map[string]any); ok {
+        for name, def := range types {
+            fmt.Printf("Type: %s = %v\n", name, def)
+        }
+    }
+}
+----
+
+[horizontal]
+icon:database[] *Structure*:: TOML data is unmarshaled into `map[string]any` — type assertions required.
+****
+
+'''
+
+[[summary-reporting]]
+=== Summary Reporting
+
+****
+[.lead]
+*Use `Summary` field for human-readable output:*
+
+[source,go]
+----
+result := config.LoadAll()
+
+for category, items := range result.Summary {
+    fmt.Printf("%s: %v\n", category, items)
+}
+// Output:
+// primitives: [trit trit3 trit9 ...]
+// types: [health_score timestamp ...]
+// schemas: [file-type health ...]
+// contracts: [health-provider filesystem ...]
+// bible: [encoding decoding translation addressing]
+----
+
+[horizontal]
+icon:list[] *Contents*:: Summary contains discovered type/schema/contract names per category.
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[quick-reference]]
+== Quick Reference
+
+=== Implementation API (loader.go)
+
+.Types ({type-count})
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Type | Purpose
+
+| <<configfile,`ConfigFile`>>
+| Single loaded config file
+
+| <<loadresult,`LoadResult`>>
+| Aggregated loading results
+
+| <<discoveryresult,`DiscoveryResult`>>
+| Tripwire comparison result
+
+| <<dependencynode,`DependencyNode`>>
+| DAG node for dependency validation
+
+| <<indexmanifest,`IndexManifest`>>
+| Parsed `index.toml` manifest
+
+| Error types
+| `DependencyError` (loader) — `LoadError`, `ValidationError` moved to <<util-errors,util>>
+|===
+
+.Functions ({function-count})
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Function | Purpose
+
+| <<setroot,`SetRoot(path)`>>
+| Configure bereshit root path
+
+| <<loadall,`LoadAll()`>>
+| Load all systems (with fallback)
+
+| <<loadallfromindex,`LoadAllFromIndex()`>>
+| Load strictly from `index.toml`
+
+| <<loadindex,`LoadIndex()`>>
+| Get parsed `index.toml`
+
+| <<loadsystem,`LoadSystem(system)`>>
+| Load all specs for a system
+
+| <<loadspec,`LoadSpec(system, spec)`>>
+| Load single spec file
+
+| `LoadMath()` ... `LoadFilesystem()`
+| {system-count} system-specific loaders
+
+| <<discoverandcompare,`DiscoverAndCompare()`>>
+| Tripwire: manifest vs disk
+
+| <<validatedependencygraph,`ValidateDependencyGraph()`>>
+| Validate dependency DAG
+
+| <<getdependencytree,`GetDependencyTree()`>>
+| Get full dependency graph
+|===
+
+'''
+
+=== Utility API (util/)
+
+.Util Types ({util-type-count})
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Type | Purpose
+
+| <<loaderror,`LoadError`>>
+| File-level loading failure (file + operation + error)
+
+| <<validationerror,`ValidationError`>>
+| Field-level validation failure (tiered specificity)
+
+| <<rootguard,`RootGuard`>>
+| Required root directory guard (Set/Check/Path)
+|===
+
+.Util Functions ({util-function-count}) — by file
+[cols="3,2,4",options="header,autowidth",frame="topbot"]
+|===
+| Function | File | Purpose
+
+| `Pragma`, `Metadata`
+| doc.go
+| Package identity (defensive copies)
+
+| `NewLoadError`, `NewValidationError`, `NewValidationErrorWithValue`, `AsLoadError`, `AsValidationError`
+| errors.go
+| Error constructors + `errors.As` helpers
+
+| `FileExists`, `DirExists`, `IsFile`, `EnsureDir`
+| exists.go
+| Existence checks + directory creation
+
+| `FormatFromExt`, `FormatFromPath`, `IsConfigFormat`, `IsConfigPath`, `IsKnownExt`, `RegisterFormat`, `RegisterConfigFormat`, `AllKnownExts`, `AllConfigFormats`
+| formats.go
+| Format detection, registration, introspection (20+ extensions)
+
+| `ParseJSONC`, `LoadJSONCFile[T]`, `LoadJSONCMap`
+| jsonc.go
+| JSONC parsing and loading (compiled regex)
+
+| `LoadConfigFile`, `LoadFile`, `LoadBytes`, `LoadTOMLFile[T]`, `FindAndLoad`, `FindConfig`, `FindConfigDir`, `SkillConfigPaths`, `SystemConfigPaths`
+| loader.go
+| Config loading (TOML + JSONC dispatch) and search
+
+| `Must[T]`, `MustNoErr`, `MustVal[T]`
+| must.go
+| Panic-on-error wrappers (3 patterns)
+
+| `NewRootGuard`, `.Set`, `.Check`, `.Path`
+| root.go
+| Thread-safe root directory management
+
+| `TripwireWarning`, `TripwireWarningTo`, `TripwireBanner`, `TripwireBannerTo`, `TripwireBannerOnce`
+| tripwire.go
+| Loud fallback notifications (testable + deduplicated)
+|===
+
+'''
+
+=== Verification API
+
+.loader_test.go ({loader-test-count} tests)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+3+| *Package Structure (5)*
+
+| `TestPragmaIdentity`
+| Pragma map P1-P5 keys
+
+| `TestMetadataContract`
+| Metadata map M1-M10 sections
+
+| `TestNavArchitecture`
+| Navigation paths, layer structure
+
+| `TestRegistryIntegration`
+| Format registry round-trips
+
+| `TestMetadataDeclaresAPI`
+| M4 declarations match exports
+
+3+| *Flow & Loading (8)*
+
+| `TestPrimaryFlow`
+| Tripwire-aware loading (+1/0/-1)
+
+| `TestWatchFlow`
+| Config reload detection
+
+| `TestLoadAllWithoutRoot`
+| Error without `SetRoot()`
+
+| `TestLoadSpec`
+| Single spec correctness
+
+| `TestLoadTypedSystems`
+| All {system-count} system loaders
+
+| `TestMathTernaryContent`
+| Foundation anchor content
+
+| `TestLoadErrorType`
+| Error type structure
+
+| `TestLoadErrorOnMissingSystem`
+| Missing system error
+
+3+| *Validation & Health (3)*
+
+| `TestDiscoverAndCompare`
+| Manifest vs disk tripwire
+
+| `TestValidateDependencyGraph`
+| DAG validation
+
+| <<test-health,`TestHealthAssessment`>>
+| icon:stethoscope[] Comprehensive health check
+
+3+| *Embedded Util Tests (6)*
+
+| `TestUtilFileExists` ... `TestUtilLoadTOMLFile`
+| Util integration from parent package
+|===
+
+.util/util_test.go ({util-test-count} tests)
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Test | Verifies
+
+3+| *Existence (3):* `TestFileExistsCorrectness`, `TestIsFile`, `TestEnsureDir`
+
+3+| *Errors (4):* `TestLoadErrorUnwrap`, `TestValidationErrorValue`, `TestAsLoadError`, `TestAsValidationError`
+
+3+| *Formats (4):* `TestRegisterFormat`, `TestRegisterConfigFormat`, `TestAllKnownExts`, `TestAllConfigFormats`
+
+3+| *Must (2):* `TestMustNoErr`, `TestMustVal`
+
+3+| *Tripwire (3):* `TestTripwireWarningTo`, `TestTripwireBannerTo`, `TestTripwireBannerOnce`
+
+3+| *JSONC (3):* `TestParseJSONCComments` (6 sub), `TestLoadJSONCFile`, `TestLoadJSONCMap`
+
+3+| *Config Loading (5):* `TestLoadConfigFileTOML`, `TestLoadConfigFileJSONC`, `TestLoadConfigFileJSON`, `TestLoadConfigFileUnsupported`, `TestLoadConfigFileMissing`
+
+3+| *Root Guard (2):* `TestRootGuardBasic`, `TestRootGuardConcurrent`
+
+3+| *Identity (1):* `TestPackageIdentity`
+|===
+
+.Test Helpers ({helper-count})
+[cols="3,4",options="header,autowidth",frame="topbot"]
+|===
+| Helper | Purpose
+
+| <<getbereshitroot,`getBereshitRoot(t)`>>
+| Derive bereshit root
+
+| <<setuptest,`setupTest(t)`>>
+| Setup with cleanup pattern
+|===
+
+'''
+
+=== Running Tests
+
+[source,bash]
+----
+# All tests (loader + util)
+go test -v ./L0-universal/hybrid/config/...
+
+# Loader tests only
+go test -v ./L0-universal/hybrid/config/
+
+# Util tests only
+go test -v ./L0-universal/hybrid/config/util/
+
+# Health assessment
+go test -v -run TestHealthAssessment ./L0-universal/hybrid/config/
+
+# With explicit root
+BERESHIT_ROOT=/path/to/bereshit go test -v ./L0-universal/hybrid/config/...
+----
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+FOOTER BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+[[biblical-foundation]]
+== Biblical Foundation
+
+****
+[.lead]
+*Verification before building.*
+
+Before constructing systems, we must verify that foundations are sound. This API provides the tooling to prove specifications exist and validate before {phase} implementation begins.
+
+[quote, "{verse-ref}"]
+____
+_{verse-kjv-text}_ — link:{verse-kjv-path}[KJV]
+____
+
+[horizontal]
+icon:book[] *Applied*:: This package embodies the principle of verification. We don't assume specs are correct—we prove they exist and parse successfully. Only after validation does implementation proceed. This is the "prove all things" before "hold fast that which is good."
+****
+
+<<_top,icon:arrow-up[] Back to Top>>
+
+'''
+
+[[references]]
+== References
+
+[[related-documents]]
+=== Related Documents
+
+.Internal References
+[cols="^1,3,4",options="header,autowidth",frame="topbot"]
+|===
+| | Document | Purpose
+
+| icon:code[]
+| *link:loader.go[loader.go]*
+| Implementation: {function-count} functions, {type-count} types
+
+| icon:wrench[]
+| *link:util/[util/]* ({util-file-count} files)
+| Production-grade primitives: {util-type-count} types, {util-function-count} functions
+
+| icon:id-card[]
+| *link:util/doc.go[util/doc.go]*
+| Package identity: pragma (P1-P5) + metadata (M1-M10)
+
+| icon:check-square-o[]
+| *link:loader_test.go[loader_test.go]*
+| Loader verification: {loader-test-count} tests + {helper-count} helpers
+
+| icon:check-square-o[]
+| *link:util/util_test.go[util/util_test.go]*
+| Util verification: {util-test-count} tests covering all primitives
+
+| icon:play-circle[]
+| *link:{demo-main}[demo-config/main.go]*
+| Demo program showing API usage
+
+| icon:file-text-o[]
+| *link:{phase-0-plan}[Phase 0 Implementation Plan]*
+| Planning document with full {phase} context
+|===
+
+[[external-resources]]
+=== External Resources
+
+.External References
+[cols="2,5",options="header,autowidth",frame="topbot"]
+|===
+| Resource | Purpose
+
+| *https://github.com/BurntSushi/toml[BurntSushi/toml]*
+| TOML parser library used by this package
+
+| *https://toml.io/[TOML Specification]*
+| Official TOML format specification
+|===
+
+'''
+
+[[see-also]]
+== See Also
+
+* link:{core}primitives.toml[primitives.toml] — Base ternary type definitions
+* link:{core}types.toml[types.toml] — Composite type definitions
+* link:{core}schemas/[schemas/] — Schema definitions directory
+* link:{core}contracts/[contracts/] — Contract definitions directory
+* link:{core}bible/[bible/] — Bible rail configurations
+
+'''
+
+[.text-center]
+--
+*<<_top,icon:arrow-up[] Back to Top>>*
+
+'''
+
+*Key:* `{key}` • *Type:* {type} • *Version:* {version}
+
+*Status:* {status} • *Updated:* {revdate}
+
+'''
+
+[quote, "{verse-ref}"]
+_{verse-kjv-text}_
+
+*{the-purpose}*
+
+--
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

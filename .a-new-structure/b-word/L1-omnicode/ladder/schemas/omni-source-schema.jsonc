@@ -1,0 +1,522 @@
+{
+    // #!omni data --jsonc
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni data --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-definitions-omni-source-schema",
+    "_P1_from": "b-word/seed/data/json/config.jsonc",
+    "_P1_at": "a-01.00",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "schema",
+    "_P2_role": "ladder",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "definitions",
+    "_P3_layer": "b-word/definitions/omni",
+    "_P3_includes": "none",
+    "_P3_provides": ["OMNI_SOURCE_SCHEMA"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "OmniCode Source Format Schema",
+    "_P5_brief": "Defines the .omni source language — shebang, blocks, directives, operators. .omni is OmniCode source code that compiles to format-specific output (TOML, JSONC, OmniFold) via pragma.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    // M.1 IDENTITY
+    "_M1_identity": {
+        "file": "omni-source-schema.jsonc",
+        "key": "B-definitions-omni-source-schema",
+        "title": "OmniCode Source Format Schema",
+        "type": "Data (Language Specification)",
+        "component": "Ladder",
+        "role": "Define the .omni source language — the abstract form that compiles to concrete formats"
+    },
+
+    // M.2 STATE
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-13",
+        "updated": "2026-02-13"
+    },
+
+    // M.3 ATTRIBUTION
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)"
+    },
+
+    // M.4 GROUNDING — "In the beginning was the Word, and the Word was
+    //   with God, and the Word was God." — John 1:1
+    "_M4_grounding": {
+        "scripture": "John 1:1 — In the beginning was the Word, and the Word was with God, and the Word was God.",
+        "principle": "The Word precedes expression. .omni is the source — the intent before the form. Formats are how the Word is spoken into each medium."
+    },
+
+    // M.5 DEPENDENCIES
+    "_M5_dependencies": {
+        "requires": "none — .omni is the source format, depends on nothing",
+        "consumers": "OmniCode compiler (future), c-tov/cws-struct/lib/formats/omni.ts (current linter)",
+        "outputs_to": "TOML (.toml), JSONC (.jsonc), JSON (.json), OmniFold (.ofd) — via pragma"
+    },
+
+    // M.ext — Extension Contract
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6+ available for domain-specific metadata",
+        "rule": "M1-M5 are the base contract."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // The .omni format is SOURCE CODE.
+    //
+    // It describes structure abstractly. The pragma declares what
+    // the source compiles to. You can also write the output format
+    // directly (TOML, JSONC) without going through .omni.
+    //
+    //   .omni (source)  →  .toml, .jsonc, .json (compiled output)
+    //                   →  .ofd (OmniFold — compiled folder metadata)
+    //
+    // .omni is to OmniCode what .ts is to TypeScript:
+    //   You CAN write .js directly. But .ts gives you the full language.
+    //   You CAN write .toml directly. But .omni gives you OmniCode.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+
+    "language": {
+        "name": "OmniCode Source",
+        "extension": ".omni",
+        "encoding": "UTF-8",
+        "line_endings": "LF",
+        "comment_style": "// (C-style line comments)",
+        "paradigm": "Line-based declarative with operator syntax",
+        "compilation": "Pragma-directed — #!omni <type> [--<format>] determines output"
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // The .omni language specification.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "shebang": {
+        "syntax": "#!omni <type> [--<format>]",
+        "required": true,
+        "position": "Line 1, always",
+        "types": {
+            "folder": "Folder description — compiles to .ofd (OmniFold)",
+            "data": "Data file — compiles to format specified by --<format>",
+            "template": "Template file — seed for derived files",
+            "document": "Documentation file — compiles to format specified by --<format>"
+        },
+        "format_flags": {
+            "--toml": "Output as TOML (3-block nested tables)",
+            "--jsonc": "Output as JSONC (3-block flat _ keys + comments)",
+            "--json": "Output as JSON (3-block flat _ keys, no comments)",
+            "--ofd": "Output as OmniFold (folder metadata for MillenniumOS)"
+        },
+        "examples": [
+            "#!omni folder",
+            "#!omni data --toml",
+            "#!omni data --jsonc",
+            "#!omni template --toml"
+        ],
+        "note": "When no --format flag, type determines default: folder → .ofd, data → context-dependent"
+    },
+
+    "blocks": {
+        "description": "Structural blocks — same 3-block concept as all OmniCode formats",
+        "syntax": "// TAG_NAME [TAG]",
+        "required": ["METADATA [METADATA]", "CONTENT [CONTENT]", "CLOSING [CLOSING]", "END [END]"],
+        "order": "METADATA → CONTENT → CLOSING → END (fixed order)",
+        "separators": {
+            "block_boundary": "// ═══════════════════════════════════════════════════════════════════════════",
+            "section_boundary": "// ───────────────────────────────────────────────────────────────────────────"
+        },
+        "note": "Block tags use [BRACKET] notation for grep/sed navigation"
+    },
+
+    "directives": {
+        "description": "@ prefixed declarations — the primary metadata mechanism",
+        "syntax": "@name <value>",
+
+        "identity": {
+            "@key": {
+                "required": true,
+                "value": "Bereshit key (B- prefix)",
+                "section": "M.1 IDENTITY",
+                "example": "@key B-word-seed-code-c"
+            },
+            "@type": {
+                "required": true,
+                "value": "<subtype> :: <type> (type binding)",
+                "section": "M.1 IDENTITY",
+                "example": "@type seed :: folder"
+            },
+            "@title": {
+                "required": true,
+                "value": "Quoted string — human-readable title",
+                "section": "M.1 IDENTITY",
+                "example": "@title \"C Templates\""
+            },
+            "@struct": {
+                "required": true,
+                "value": "Block structure pattern",
+                "section": "M.1 IDENTITY",
+                "example": "@struct 3-block"
+            }
+        },
+
+        "state": {
+            "@version": {
+                "required": true,
+                "value": "Living version (stage-phase.completion)",
+                "section": "M.2 STATE",
+                "example": "@version a-01.00"
+            },
+            "@status": {
+                "recommended": true,
+                "value": "Lifecycle state (Active, Draft, Deprecated, Archived)",
+                "section": "M.2 STATE",
+                "example": "@status Active"
+            },
+            "@created": {
+                "required": true,
+                "value": "ISO date (YYYY-MM-DD)",
+                "section": "M.2 STATE",
+                "example": "@created 2025-12-03"
+            },
+            "@updated": {
+                "recommended": true,
+                "value": "ISO date (YYYY-MM-DD)",
+                "section": "M.2 STATE",
+                "example": "@updated 2026-02-13"
+            }
+        },
+
+        "attribution": {
+            "@architect": {
+                "required": true,
+                "value": "Quoted string — system architect",
+                "section": "M.3 ATTRIBUTION",
+                "example": "@architect \"Seanje Lenox-Wise\""
+            },
+            "@implementation": {
+                "required": true,
+                "value": "Quoted string — implementer",
+                "section": "M.3 ATTRIBUTION",
+                "example": "@implementation \"Nova Dawn (CPI-SI)\""
+            },
+            "@organization": {
+                "optional": true,
+                "value": "Quoted string — organization",
+                "section": "M.3 ATTRIBUTION"
+            }
+        },
+
+        "grounding": {
+            "@scripture": {
+                "recommended": true,
+                "value": "Quoted string — scripture text",
+                "continuation": "from <book> <chapter>:<verse> in <translation>",
+                "section": "M.4 GROUNDING",
+                "example": "@scripture \"In the beginning was the Word\"\n    from John 1:1 in KJV"
+            },
+            "@principle": {
+                "recommended": true,
+                "value": "Quoted string — derived principle",
+                "section": "M.4 GROUNDING",
+                "example": "@principle \"Templates carry the pattern into implementation\""
+            }
+        },
+
+        "dependencies": {
+            "@from": {
+                "recommended": true,
+                "value": "Derivation path (b-word/ relative)",
+                "section": "M.5 DEPENDENCIES",
+                "example": "@from b-word/data/"
+            },
+            "@role": {
+                "recommended": true,
+                "value": "Quoted string — architectural role description",
+                "section": "Extended metadata",
+                "example": "@role \"The heart of the filesystem\""
+            },
+            "@design": {
+                "optional": true,
+                "value": "Quoted string — design philosophy",
+                "section": "Extended metadata"
+            }
+        },
+
+        "closing": {
+            "@navigate": {
+                "recommended": true,
+                "value": "Quoted string — cd command for quick access",
+                "section": "CLOSING",
+                "example": "@navigate \"cd b-word/seed/code/L0/c/\""
+            },
+            "@observe": {
+                "optional": true,
+                "value": "Quoted string — observation about this folder/file",
+                "section": "CLOSING (X.1)",
+                "multiple": true,
+                "example": "@observe \"Scripture at the heart of Word\""
+            },
+            "@lookup_verse": {
+                "optional": true,
+                "value": "Quoted string — verse lookup command",
+                "section": "CLOSING (X.2)"
+            },
+            "@spec_source": {
+                "optional": true,
+                "value": "Quoted string — specification source reference",
+                "section": "CLOSING (X.2)"
+            }
+        }
+    },
+
+    "operators": {
+        "description": "Symbolic operators for structural relationships",
+
+        ">>": {
+            "name": "containment",
+            "syntax": ">> <path> :: \"<description>\"",
+            "purpose": "Declares folder contents — what this folder contains",
+            "nesting": "Indentation indicates nesting (>> item inside >> parent/)",
+            "section": "CONTENT",
+            "examples": [
+                ">> KJV/ :: \"King James Version — 66 books\"",
+                ">> source.c :: \"C source file template\"",
+                ">> indexes/ :: \"Precomputed index files\"\n    >> kjv/ :: \"KJV indexes\""
+            ]
+        },
+
+        "=>": {
+            "name": "provides",
+            "syntax": "=> [CAPABILITY_CONSTANT, ...]",
+            "purpose": "Declares what this folder/file exports as capabilities",
+            "section": "METADATA (M.5)",
+            "examples": [
+                "=> [C_CODE_TEMPLATES]",
+                "=> [SCRIPTURE_DATA, VERSE_INDEXES, TRANSLATION_DATA]"
+            ]
+        },
+
+        "<-": {
+            "name": "derives",
+            "syntax": "<- <path> :: \"<description>\"",
+            "purpose": "Declares dependencies — what this folder/file requires",
+            "section": "METADATA (M.5)",
+            "examples": [
+                "<- L0-universal/foundation/bible/ :: \"Bible system spec TOMLs\""
+            ]
+        },
+
+        "::": {
+            "name": "type_binding",
+            "syntax": "<value> :: <type>",
+            "purpose": "Binds a value to a type — semantic annotation",
+            "context": "Used with @type, >>, <-, and inline declarations",
+            "examples": [
+                "seed :: folder (in @type)",
+                "source.c :: \"C source file template\" (in >>)",
+                "L0-universal/ :: \"spec source\" (in <-)"
+            ]
+        },
+
+        "let_be": {
+            "name": "declaration",
+            "syntax": "let <name> be <value>",
+            "purpose": "Declares a named value — constants, counts, parameters",
+            "section": "CONTENT",
+            "examples": [
+                "let kjv_verses be 31102",
+                "let web_variants be 13",
+                "let total_addressable be 31115"
+            ]
+        }
+    },
+
+    "compilation_targets": {
+        "description": "What .omni compiles to based on pragma",
+        "targets": {
+            ".toml": {
+                "pragma": "#!omni data --toml",
+                "schema": "toml-3block-schema.jsonc",
+                "mapping": "Directives → TOML tables, operators → TOML arrays/values"
+            },
+            ".jsonc": {
+                "pragma": "#!omni data --jsonc",
+                "schema": "json-3block-schema.jsonc",
+                "mapping": "Directives → flat _ keys, operators → JSON arrays/objects"
+            },
+            ".json": {
+                "pragma": "#!omni data --json",
+                "schema": "json-3block-schema.jsonc",
+                "mapping": "Same as .jsonc but without comments"
+            },
+            ".ofd": {
+                "pragma": "#!omni folder",
+                "schema": "omni-folder-schema.jsonc (future)",
+                "mapping": "Folder-specific: containment → directory tree, provides → exports",
+                "note": "OmniFold — compiled folder metadata for MillenniumOS"
+            }
+        }
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+    "_Cv_verify": "deno run --allow-read mod.ts lint omni <file>",
+    "_Cv_expected_state": "Valid .omni file with shebang, all required blocks, required directives, and at least one operator usage.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note",
+
+    // X.1 POLICY
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "In the beginning was the Word. — John 1:1",
+    "_X1_never": [
+        "Remove required directives (@key, @type, @title, @struct)",
+        "Change the shebang format (#!omni <type>)",
+        "Remove block structure requirement (METADATA → CONTENT → CLOSING → END)"
+    ],
+    "_X1_careful": [
+        "Adding new required directives (affects all .omni files)",
+        "Changing operator syntax (>>, =>, <-, ::)",
+        "Modifying the shebang type list (folder, data, template, document)"
+    ],
+    "_X1_safe": [
+        "Adding new optional directives",
+        "Adding new operator types",
+        "Adding new compilation targets (new --<format> flags)",
+        "Adding documentation and examples"
+    ],
+
+    // X.2 EXTENSION
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "OmniFold (.ofd) schema — compiled folder metadata format",
+        "OmniCode compiler — .omni → target format",
+        "Conditional compilation (#!omni data --toml --if <condition>)",
+        "Import/include system (@include <path>)"
+    ],
+
+    // X.3 TROUBLESHOOTING
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "shebang_missing": "First line must be #!omni <type>. No blank lines before it.",
+        "block_order_wrong": "Blocks must appear in order: METADATA → CONTENT → CLOSING → END",
+        "directive_not_found": "Check @ spelling. Directives are case-sensitive: @key not @Key",
+        "type_binding_missing": "@type should use :: binding: @type seed :: folder, not just @type seed"
+    },
+
+    // X.4 REFERENCE
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "b-word/definitions/omni/base-3block-schema.jsonc — Base concepts (shared)",
+        "b-word/definitions/omni/json-3block-schema.jsonc — JSON output schema",
+        "b-word/definitions/omni/toml-3block-schema.jsonc — TOML output schema",
+        "c-tov/cws-struct/lib/formats/omni.ts — Runtime linter",
+        "b-word/seed/code/L0/c/root.omni — Example: simple folder description",
+        "b-word/data/scripture/root.omni — Example: rich folder description"
+    ],
+
+    // X.5 NOTE
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": ".omni is the Word before the expression. The source before the format. You can write TOML directly — that's valid. You can write JSONC directly — that's valid. But .omni gives you the full language, and the compiler speaks it into whatever format the pragma declares. In the beginning was the Word.",
+    "_X5_scripture": "In the beginning was the Word, and the Word was with God, and the Word was God. — John 1:1",
+    "_X5_anchor": "The source language. Every format traces back to .omni, and .omni traces back to Genesis 1:1.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

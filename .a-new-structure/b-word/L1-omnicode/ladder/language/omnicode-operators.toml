@@ -1,0 +1,2186 @@
+# #!omni spec --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni spec --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-spec-omnicode-operators"
+from = "b-word/seed/data/toml/config.toml"
+at = "a-02.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "spec"
+role = "seed"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "definitions"
+layer = "b-word/definitions/omni"
+includes = "none"
+provides = ["OPERATOR_SPEC", "TOKEN_TYPES", "KEYWORD_CATALOG"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "OmniCode Operators & Keywords — Complete Instruction Set"
+brief = "Formal operator catalog with implementation-oriented token types and precedence. Discovered from real usage, organized for lexer/parser consumption."
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "omnicode-operators.toml"
+key = "B-spec-omnicode-operators"
+title = "OmniCode Operators & Keywords — Complete Instruction Set"
+type = "Data (Spec)"
+component = "Definitions"
+role = "Catalog of all recognized operators, keywords, and symbols — the lexer specification for OmniCode. Defines what tokens the lexer emits and how the parser should interpret them."
+
+[_metadata.M2_state]
+version = "a-02.00"
+status = "Active"
+created = "2026-02-02"
+updated = "2026-02-10"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "In the beginning was the Word, and the Word was with God, and the Word was God. — John 1:1 KJV"
+principle = "Natural language already IS code. OmniCode formalizes what humans already do when communicating. We're not inventing operators — we're recognizing them."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["TOML parser"]
+consumers = ["OmniCode lexer", "OmniCode parser", ".omni file processors", "Language tooling", "IDE extensions"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded by lexer/parser at initialization. Token types drive tokenization; precedence drives parsing."
+if_missing = "OmniCode lexer cannot tokenize — no operator definitions available"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Operator catalog in TOML. Cross-referenced by L1 language specs."
+jsonc = "None"
+json = "None"
+relationship = "This file defines WHAT operators exist. L1/language/syntax.toml defines HOW they combine into grammar. L1/language/keywords.toml defines the full keyword lexicon."
+
+[_metadata.M6_location]
+path = "b-word/definitions/omni/omnicode-operators.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "operators, keywords, tokens, lexer, parser, omnicode, spec, definitions"
+
+[_metadata.M8_intent]
+purpose = "Lexer-level specification for OmniCode — every symbol and keyword the language recognizes"
+core_design = "Two-layer approach: operators (symbols) for structure, keywords (words) for semantics. Token types bridge both to implementation."
+philosophy = "Language existed before the specification. OmniCode recognizes what's already there."
+
+[_metadata.M9_roadmap]
+history = [
+    "a-01.00 (2026-02-02) — Initial creation — operator catalog from real usage",
+    "a-02.00 (2026-02-10) — 3-block alignment, token types, precedence, expanded keywords",
+]
+current = "Implementation-ready operator catalog with token type classification"
+planned = [
+    "Precedence table with binding strength values",
+    "Composition rules (which operators combine)",
+    "Format-specific expression table (how operators render in JSON, TOML, MD, Go, C)",
+    "High-level ↔ low-level OmniCode bidirectional mapping",
+]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Spec data file — OmniCode operator catalog for lexer and parser implementation"
+Cc = "Content Configurations — Formal operator catalog with implementation-oriented token types and precedence. Discovered from real usage, organized for lexer/parser consumption."
+Co = "Content Operations — operator spec, token types, keyword catalog"
+Cv = "Content Validation — schema requirements, type constraints"
+
+
+# ─────────────────────────────────────────────────────────────
+# TOKEN TYPES — What the Lexer Emits
+# ─────────────────────────────────────────────────────────────
+#
+# Every operator and keyword maps to exactly one token type.
+# The lexer produces a stream of these tokens; the parser consumes them.
+# Types grouped by what they DO, not what they LOOK LIKE.
+#
+# This is the bridge between raw characters and parsed meaning.
+#
+
+[token_types]
+
+[token_types.pragma]
+id = "PRAGMA"
+meaning = "file identity and invocation tokens"
+members = ["#!", "@omni", "--", "_"]
+emitted_by = "pragma category operators"
+
+[token_types.flow]
+id = "FLOW"
+meaning = "directional movement — proceed, await, halt, branch"
+members = ["-->", "\\->", "->|", "<--", "->", "|"]
+emitted_by = "control and direction category operators"
+
+[token_types.binding]
+id = "BINDING"
+meaning = "assignment, definition, typing"
+members = [":", "::", "="]
+emitted_by = "binding category operators"
+
+[token_types.delimiter]
+id = "DELIMITER"
+meaning = "block and section boundaries"
+members = ["═══", "───", "[TAG]", "P.1/M.1/X.1/Cc/Co/Cv"]
+emitted_by = "structure category operators"
+
+[token_types.scope]
+id = "SCOPE"
+meaning = "block-level open/close/reference"
+members = [">...>", "<...<", "<...>"]
+emitted_by = "scope category operators"
+
+[token_types.bracket]
+id = "BRACKET"
+meaning = "inline containment — grouping, parameters, maps"
+members = ["()", "[]", "{}"]
+emitted_by = "nesting category operators"
+
+[token_types.relationship]
+id = "RELATIONSHIP"
+meaning = "parent-child, provides, derives"
+members = [">>", "=>", "<-"]
+emitted_by = "containment category operators"
+
+[token_types.reference]
+id = "REFERENCE"
+meaning = "addressing, anchoring, directives"
+members = ["#", "@", ">!!>"]
+emitted_by = "reference category operators"
+
+[token_types.punctuation]
+id = "PUNCTUATION"
+meaning = "natural language flow control"
+members = [",", ".", "?", "!", ":", ";", "—", "..."]
+emitted_by = "punctuation category operators"
+
+[token_types.modifier]
+id = "MODIFIER"
+meaning = "emphasis, priority, severity"
+members = ["!", "!!", "!!!", "CAPS"]
+emitted_by = "emphasis category operators"
+
+[token_types.access]
+id = "ACCESS"
+meaning = "field, method, index — reaching into structures"
+members = [".", "..", "[]", "?.", ".()"]
+emitted_by = "access category operators"
+
+[token_types.comparison]
+id = "COMPARISON"
+meaning = "relational tests — returns ternary (+1, 0, -1)"
+members = ["==", "!=", "<", ">", "<=", ">=", "<=>"]
+emitted_by = "comparison category operators"
+
+[token_types.arithmetic]
+id = "ARITHMETIC"
+meaning = "mathematical operations — ternary-aware"
+members = ["+", "-", "*", "/", "%", "**"]
+emitted_by = "arithmetic category operators"
+
+[token_types.type_modifier]
+id = "TYPE"
+meaning = "type modifiers, constructors, and literals"
+members = ["?", "!", "??", "+1/0/-1", "⊗", "..", "..."]
+emitted_by = "type category operators"
+
+[token_types.composition]
+id = "COMPOSITION"
+meaning = "chaining and piping — data flow through operations"
+members = ["|>", "<|", ">>", "~>"]
+emitted_by = "composition category operators"
+
+[token_types.ternary]
+id = "TERNARY"
+meaning = "three-way branching, direction, gating, covenant binding"
+members = ["+>/0>/->", "?=", "↑/↔/↓", "⊕", "⟨⟩"]
+emitted_by = "ternary category operators"
+
+[token_types.comment]
+id = "COMMENT"
+meaning = "documentation in source — non-executable text"
+members = ["#", "//", "/*", "*/"]
+emitted_by = "comment category operators"
+
+[token_types.keyword]
+id = "KEYWORD"
+meaning = "reserved words that function as operators"
+subtypes = ["KEYWORD_COMMAND", "KEYWORD_LANGUAGE"]
+emitted_by = "keywords category"
+note = "COMMAND keywords are imperative (CAPS). LANGUAGE keywords are declarative (lowercase, reserved). Phrasal operators are sequences of KEYWORD tokens resolved by parser grammar rules."
+
+
+# ─────────────────────────────────────────────────────────────
+# PRECEDENCE GROUPS — Binding Strength (Tightest → Loosest)
+# ─────────────────────────────────────────────────────────────
+#
+# When two operators compete, higher precedence binds first.
+# "Assumption of implementation": a parser needs this to resolve ambiguity.
+# Values are relative, not absolute — ordering matters, gaps allow insertion.
+#
+
+[precedence]
+note = "Groups ordered tightest (100) to loosest (5). Values are nominal — spacing allows insertion between levels."
+
+[[precedence.groups]]
+level = 100
+name = "grouping"
+operators = ["()", "[]", "{}"]
+note = "Parentheses/brackets/braces — always evaluated first"
+
+[[precedence.groups]]
+level = 95
+name = "access"
+operators = [".", "..", "?.", ".()", "[]"]
+note = "Field, deep field, safe, method, index — reaching into structures"
+
+[[precedence.groups]]
+level = 90
+name = "type_binding"
+operators = ["::"]
+note = "Type binding — declares what something IS (stronger than assignment)"
+
+[[precedence.groups]]
+level = 85
+name = "exponentiation"
+operators = ["**"]
+note = "Power — evaluates right to left"
+
+[[precedence.groups]]
+level = 80
+name = "directive"
+operators = ["@", "#", "#!"]
+note = "Prefix directives — file identity and addressing"
+
+[[precedence.groups]]
+level = 75
+name = "multiplicative"
+operators = ["*", "/", "%"]
+note = "Multiplication, division, modulo — standard math precedence"
+
+[[precedence.groups]]
+level = 72
+name = "additive"
+operators = ["+", "-"]
+note = "Addition, subtraction — also unary positive/negative as prefix"
+
+[[precedence.groups]]
+level = 70
+name = "containment"
+operators = [">>", "=>", "<-"]
+note = "Parent-child, provides, derives relationships"
+
+[[precedence.groups]]
+level = 65
+name = "comparison"
+operators = ["==", "!=", "<", ">", "<=", ">=", "<=>"]
+note = "Relational tests — returns ternary (+1, 0, -1)"
+
+[[precedence.groups]]
+level = 60
+name = "flow"
+operators = ["-->", "<--", "->", "\\->", "->|"]
+note = "Directional flow — movement through context"
+
+[[precedence.groups]]
+level = 55
+name = "type_modifier"
+operators = ["?", "!", "??", "⊗", "..", "..."]
+note = "Type modifiers — optional, required, void coalesce, tensor, range"
+
+[[precedence.groups]]
+level = 50
+name = "binding"
+operators = [":", "="]
+note = "Assignment and definition"
+
+[[precedence.groups]]
+level = 45
+name = "composition"
+operators = ["|>", "<|", ">>", "~>"]
+note = "Pipe, compose, chain — data flow through operations"
+
+[[precedence.groups]]
+level = 40
+name = "scope"
+operators = [">...>", "<...<", "<...>"]
+note = "Block-level scope operations"
+
+[[precedence.groups]]
+level = 35
+name = "ternary_branch"
+operators = ["+>", "0>", "->", "?=", "↑", "↔", "↓", "⊕", "⟨⟩"]
+note = "Three-way branching, direction, health-gating, covenant binding"
+
+[[precedence.groups]]
+level = 30
+name = "emphasis"
+operators = ["!", "!!", "!!!"]
+note = "Severity modifiers"
+
+[[precedence.groups]]
+level = 20
+name = "branch"
+operators = ["|"]
+note = "Alternation and branching"
+
+[[precedence.groups]]
+level = 10
+name = "separator"
+operators = [",", ";", "—", "..."]
+note = "Natural language separators — loosest binding"
+
+[[precedence.groups]]
+level = 5
+name = "comment"
+operators = ["#", "//", "/*", "*/"]
+note = "Comments — non-binding, documentation only"
+
+
+# ─────────────────────────────────────────────────────────────
+# 1. PRAGMA — File Identity & Invocation
+# ─────────────────────────────────────────────────────────────
+#
+# Operators that declare what a file IS and how to process it.
+# The first line of every OmniCode file.
+# Discovered from: #!omni shebang, @omni pragma format, --flag modifiers.
+#
+
+[pragma.shebang]
+symbol = "#!"
+token_type = "PRAGMA"
+fixity = "prefix"
+meaning = "program declaration — identifies file type and processor"
+discovered = "every .omni file: #!omni folder, #!omni spec"
+examples = [
+    "#!omni folder",
+    "#!omni spec --toml",
+    "#!omni template --jsonc",
+    "#!omni document --md",
+]
+
+[pragma.directive_invoke]
+symbol = "@omni"
+token_type = "PRAGMA"
+fixity = "prefix"
+meaning = "invoke OmniCode directive — @ prefix with command"
+discovered = "_pragma_format field in JSON templates"
+examples = [
+    "@omni template --jsonc",
+    "@omni template --json",
+    "@omni document --md",
+]
+
+[pragma.flag]
+symbol = "--"
+token_type = "PRAGMA"
+fixity = "prefix"
+meaning = "modifier flag — specifies format or option"
+discovered = "pragma format strings: --jsonc, --json, --md, --toml"
+examples = [
+    "--jsonc  (JSON with comments)",
+    "--json   (pure JSON)",
+    "--md     (Markdown)",
+    "--toml   (TOML)",
+]
+
+[pragma.meta_prefix]
+symbol = "_"
+token_type = "PRAGMA"
+fixity = "prefix"
+meaning = "meta/documentation field — structure visible to parsers, ignored by consumers"
+discovered = "JSON _ field convention: _pragma, _P1_key, _Cc_tag"
+note = "In JSON, _ fields ARE the structure (no comments). In OmniCode, @ directives serve same role."
+examples = [
+    "_pragma_tag",
+    "_P1_key",
+    "_M1_identity",
+    "_Cc_tag",
+    "_X1_never",
+]
+
+
+# ─────────────────────────────────────────────────────────────
+# 2. CONTROL FLOW — Ternary States
+# ─────────────────────────────────────────────────────────────
+#
+# The three fundamental states, mapped to ternary values.
+# Dash count = flow strength. Modifiers alter behavior.
+# All control reduces to: proceed (+1), await (0), halt (-1).
+#
+
+[control.proceed]
+symbol = "-->"
+token_type = "FLOW"
+fixity = "infix"
+ternary = "+1"
+meaning = "full forward flow, continue execution"
+visual = "2 dashes = longer line = full momentum"
+stack = "push"
+discovered = "ternary foundation — positive direction"
+
+[control.await]
+symbol = "\\->"
+token_type = "FLOW"
+fixity = "infix"
+ternary = "0"
+meaning = "pause, hold position, wait for signal"
+visual = "backslash interrupts before flow"
+stack = "hold"
+discovered = "ternary foundation — neutral hold"
+
+[control.halt]
+symbol = "->|"
+token_type = "FLOW"
+fixity = "infix"
+ternary = "-1"
+meaning = "terminate, stop, return to anchor"
+visual = "pipe is wall, flow stops"
+stack = "terminate"
+discovered = "ternary foundation — negative/completion"
+
+
+# ─────────────────────────────────────────────────────────────
+# 3. DIRECTION — Stack Movement
+# ─────────────────────────────────────────────────────────────
+#
+# Push and pull through the context stack.
+# Conversation IS a stack machine.
+#
+
+[direction.forward]
+symbol = "-->"
+token_type = "FLOW"
+fixity = "infix"
+meaning = "push forward, send, proceed to"
+action = "push"
+discovered = "ternary flow — forward direction"
+example = "statement --> next statement"
+
+[direction.backward]
+symbol = "<--"
+token_type = "FLOW"
+fixity = "infix"
+meaning = "pull backward, reference, retrieve"
+action = "pull"
+discovered = "ternary flow — backward reference"
+example = "<-- [earlier context]"
+
+[direction.single_forward]
+symbol = "->"
+token_type = "FLOW"
+fixity = "infix"
+meaning = "light flow, derivation, maps to"
+action = "connect"
+discovered = "_P4_anchor: genesis_1_1 -> void(0) -> unity(1) -> derivation"
+example = "genesis_1_1 -> void(0) -> unity(1)"
+
+[direction.branch]
+symbol = "|"
+token_type = "FLOW"
+fixity = "infix"
+meaning = "branch, alternative, OR"
+action = "branch"
+note = "also used as wall in ->| (halt)"
+discovered = "control flow — branching, also in @legend separators"
+example = "_req :: required | _inh :: inherited"
+
+
+# ─────────────────────────────────────────────────────────────
+# 4. BINDING — Assignment, Definition, Typing
+# ─────────────────────────────────────────────────────────────
+#
+# Operators that connect names to values or types.
+# : for assignment, :: for type binding, = for equality.
+#
+
+[binding.assign]
+symbol = ":"
+token_type = "BINDING"
+fixity = "infix"
+meaning = "defines, introduces, assigns value"
+discovered = "punctuation — natural language assignment"
+examples = [
+    "topic: definition",
+    "@key: B-seed-data-json-base",
+    "#anchor: Genesis:1:1",
+]
+
+[binding.type]
+symbol = "::"
+token_type = "BINDING"
+fixity = "infix"
+meaning = "type binding — declares what something IS"
+discovered = "root.omni low-level syntax: data :: folder, @type data :: folder"
+note = "Emerged from low-level OmniCode usage — stronger than : (assignment), declares identity."
+examples = [
+    "@type   data :: folder",
+    "@legend _req :: required | _inh :: inherited",
+    "\"directive not recognized\" :: \"Verify @ prefix...\"",
+]
+
+[binding.equals]
+symbol = "="
+token_type = "BINDING"
+fixity = "infix"
+meaning = "equality, assignment in config context"
+discovered = "TOML native assignment"
+note = "format-specific — TOML uses =, JSON uses :, OmniCode uses : or ::"
+example = "symbol = \"-->\""
+
+
+# ─────────────────────────────────────────────────────────────
+# 5. STRUCTURE — Block & Section Boundaries
+# ─────────────────────────────────────────────────────────────
+#
+# Visual and parseable boundaries between blocks and sections.
+# Genesis 1 principle: separation (badal) before content.
+# Block = thick line (═). Section = thin line (─).
+#
+
+[structure.block_boundary]
+symbol = "═══...═══"
+token_type = "DELIMITER"
+fixity = "standalone"
+meaning = "block-level boundary (pragma, metadata, content, closing)"
+discovered = "every structured file — block separators"
+note = "double-line = major division. In JSON: _pragma, _metadata_start, etc."
+examples = [
+    "// ═══════════════════════════════════════════════════════════════",
+    "\"_pragma\": \"═══════════════════════════════════════════════════════════════\"",
+    "# ═══════════════════════════════════════════════════════════════",
+]
+
+[structure.section_boundary]
+symbol = "───...───"
+token_type = "DELIMITER"
+fixity = "standalone"
+meaning = "section-level boundary (P.1, M.1, Cc, X.1, etc.)"
+discovered = "every structured file — section separators within blocks"
+note = "single-line = minor division within a block"
+examples = [
+    "// ───────────────────────────────────────────────────────────",
+    "\"_Cc\": \"─────────────────────────────────────────────────────────────\"",
+    "# ───────────────────────────────────────────────────────────",
+]
+
+[structure.block_tag]
+symbol = "[TAG]"
+token_type = "DELIMITER"
+fixity = "suffix"
+meaning = "block identifier — parseable label in comment or _ field"
+discovered = "all block markers: [PRAGMA], [METADATA], [CONTENT], [CLOSING], [END]"
+examples = [
+    "// OMNICODE PRAGMA [PRAGMA]",
+    "// END METADATA [END]",
+    "\"_pragma_tag\": \"OMNICODE PRAGMA [PRAGMA]\"",
+]
+
+[structure.section_tag]
+symbol = "[SECTION]"
+token_type = "DELIMITER"
+fixity = "suffix"
+meaning = "section identifier within a block"
+discovered = "content sections: [CONFIG], [OPS], [VALIDATE], [POLICY], etc."
+examples = [
+    "// Cc — Content Configurations [CONFIG]",
+    "\"_Cv_tag\": \"Cv — Content Validation [VALIDATE]\"",
+    "// X.1 POLICY — Modification Guidelines [POLICY]",
+]
+
+[structure.section_address]
+symbol = "P.1, M.1, X.1, Cc, Co, Cv"
+token_type = "DELIMITER"
+fixity = "prefix"
+meaning = "section addressing — block.number or block-abbreviation"
+discovered = "pragma (P.1-P.5), metadata (M.1-M.5), content (Cc/Co/Cv), closing (X.1-X.5)"
+note = "dot notation for numbered sections, concatenation for content sub-blocks"
+examples = [
+    "P.1 CORE — Identity",
+    "M.4 GROUNDING",
+    "Cc — Content Configurations",
+    "X.3 TROUBLESHOOTING",
+]
+
+
+# ─────────────────────────────────────────────────────────────
+# 6. SCOPE — Block-Level Open/Close/Reference
+# ─────────────────────────────────────────────────────────────
+#
+# Opening and closing named scopes.
+# Chevron direction shows entry (>) or exit (<).
+#
+
+[scope.block_open]
+symbol = ">...>"
+token_type = "SCOPE"
+fixity = "circumfix"
+meaning = "opens a named scope/block"
+discovered = "scope containment — entering a block"
+example = ">METADATA>"
+
+[scope.block_close]
+symbol = "<...<"
+token_type = "SCOPE"
+fixity = "circumfix"
+meaning = "closes a named scope/block"
+discovered = "scope containment — exiting a block"
+example = "<METADATA<"
+
+[scope.reference]
+symbol = "<...>"
+token_type = "SCOPE"
+fixity = "circumfix"
+meaning = "reference, dereference — point to something by name"
+discovered = "scope addressing — referencing without entering"
+example = "<M.4.grounding>"
+
+
+# ─────────────────────────────────────────────────────────────
+# 7. NESTING — Inline Containment
+# ─────────────────────────────────────────────────────────────
+#
+# Three nesting types for three purposes.
+# Each can nest within itself or the others.
+#
+
+[nesting.sidebar]
+symbol = "(...)"
+token_type = "BRACKET"
+fixity = "circumfix"
+meaning = "aside, comment, thinking, tangential note"
+discovered = "natural writing — parenthetical remarks"
+note = "parentheses = sidebar, like natural writing"
+examples = [
+    "(this is a note)",
+    "do this (by the way)",
+    "((deeper aside within aside))",
+]
+
+[nesting.operational]
+symbol = "[...]"
+token_type = "BRACKET"
+fixity = "circumfix"
+meaning = "operational, parameters, lists, actual content"
+discovered = "programming convention — structured content"
+note = "brackets = doing, structure, the real content"
+examples = [
+    "[param1, param2]",
+    "[condition: valid]",
+    "[[nested scope]]",
+    "@required [@key, @type, @struct, @title]",
+]
+
+[nesting.map]
+symbol = "{...}"
+token_type = "BRACKET"
+fixity = "circumfix"
+meaning = "map, dictionary, key-value pairs"
+discovered = "root.omni low-level syntax: @problems { key :: value }"
+note = "Braces for structured key-value data."
+examples = [
+    "@problems { \"key\" :: \"value\" }",
+    "{ \"parse error\" :: \"Check JSON syntax\" }",
+]
+
+[nesting.mixed]
+token_type = "BRACKET"
+meaning = "nesting creates implicit context — types can mix"
+discovered = "natural combination of nesting types"
+patterns = [
+    "[operation (note inside)] — comment embedded in operation",
+    "(thinking [action inside]) — operation embedded in thought",
+    "[outer [inner]] — nested operational scope",
+    "((deeper)) — nested tangential thought",
+    "{key :: [list, of, values]} — map containing list",
+]
+
+
+# ─────────────────────────────────────────────────────────────
+# 8. CONTAINMENT — Parent-Child Relationships
+# ─────────────────────────────────────────────────────────────
+#
+# Declaring what a thing contains.
+# Tree structure for folders, inheritance chains, compositions.
+#
+
+[containment.child]
+symbol = ">>"
+token_type = "RELATIONSHIP"
+fixity = "prefix"
+meaning = "contains, child entry — declares what this thing holds"
+discovered = "root.omni low-level syntax: >> 3block/ :: \"description\""
+examples = [
+    ">> 3block/ :: \"3-block templates\"",
+    "    >> config.jsonc :: \"JSONC configuration template\"",
+    "    >> data.json    :: \"Pure JSON data template\"",
+]
+
+[containment.provides]
+symbol = "=>"
+token_type = "RELATIONSHIP"
+fixity = "infix"
+meaning = "provides, produces, exports"
+discovered = "implied by _P3_provides pattern — what this file exports"
+confirmed = "root.omni: =>  [JSON_BASE_TEMPLATES]"
+example = "=> [JSON_BASE_TEMPLATES]"
+
+[containment.derives]
+symbol = "<-"
+token_type = "RELATIONSHIP"
+fixity = "infix"
+meaning = "derives from, inherits from, based on"
+discovered = "implied by _P1_from pattern — template lineage"
+confirmed = "root.omni: <-  b-word/seed/data/toml/config.toml"
+example = "<- b-word/seed/data/toml/config.toml"
+
+
+# ─────────────────────────────────────────────────────────────
+# 9. REFERENCE — Pointing to Other Things
+# ─────────────────────────────────────────────────────────────
+#
+# Operators that address, anchor, or point to named entities.
+#
+
+[reference.anchor]
+symbol = "#"
+token_type = "REFERENCE"
+fixity = "prefix"
+meaning = "anchor, grounding, foundation reference"
+discovered = "markdown headers, also anchor concept from building block method"
+examples = [
+    "#anchor: Genesis:1:1",
+    "#!omni (shebang is # + !)",
+]
+
+[reference.directive]
+symbol = "@"
+token_type = "REFERENCE"
+fixity = "prefix"
+meaning = "directive — named instruction or property declaration"
+discovered = "pragma format (@omni template), extended in low-level OmniCode (@key, @type, @from)"
+note = "Originally 'choice point' — evolved to general directive prefix in low-level OmniCode."
+examples = [
+    "@omni template --jsonc",
+    "@key     B-seed-data-json-base",
+    "@type    data :: folder",
+    "@version a-02.00",
+    "@from    b-word/seed/data/toml/config.toml",
+]
+
+[reference.attention]
+symbol = ">! !>"
+token_type = "REFERENCE"
+fixity = "circumfix"
+meaning = "attention marker, priority callout"
+note = "exclamation count = severity level"
+discovered = "emphasis system — escalating priority"
+levels = [
+    ">! !>    — notice",
+    ">!! !!>  — warning",
+    ">!!! !!!> — BAM (critical)",
+]
+
+
+# ─────────────────────────────────────────────────────────────
+# 10. PUNCTUATION — Natural Language Flow
+# ─────────────────────────────────────────────────────────────
+#
+# Natural punctuation already controls flow.
+# OmniCode formalizes what's already there.
+#
+
+[punctuation.comma]
+symbol = ","
+token_type = "PUNCTUATION"
+fixity = "infix"
+meaning = "pause, sequence, soft flow"
+flow_equivalent = "-->"
+discovered = "natural language — list separation, continuation"
+example = "first, second, third"
+
+[punctuation.period]
+symbol = "."
+token_type = "PUNCTUATION"
+fixity = "infix"
+meaning = "full stop, end statement"
+flow_equivalent = "->|"
+discovered = "natural language — sentence termination"
+note = "also used in section addressing: P.1, M.4, X.3"
+example = "Statement ends."
+
+[punctuation.question]
+symbol = "?"
+token_type = "PUNCTUATION"
+fixity = "postfix"
+meaning = "query, await response"
+flow_equivalent = "\\->"
+discovered = "natural language — requesting input"
+example = "What do you think?"
+
+[punctuation.exclamation]
+symbol = "!"
+token_type = "PUNCTUATION"
+fixity = "postfix"
+meaning = "emphasis, priority"
+discovered = "natural language — urgency/emphasis"
+note = "count increases severity: ! < !! < !!!"
+levels = ["word!", "word!!", "word!!!"]
+
+[punctuation.colon]
+symbol = ":"
+token_type = "PUNCTUATION"
+fixity = "infix"
+meaning = "defines, introduces, assigns"
+discovered = "natural language — definition, also JSON key-value separator"
+example = "topic: definition"
+
+[punctuation.semicolon]
+symbol = ";"
+token_type = "PUNCTUATION"
+fixity = "infix"
+meaning = "connects but separates, compound flow"
+discovered = "natural language — related but distinct statements"
+example = "statement; related statement"
+
+[punctuation.dash_em]
+symbol = "—"
+token_type = "PUNCTUATION"
+fixity = "infix"
+meaning = "interruption, aside, annotation"
+discovered = "natural writing — em dash for parenthetical or annotation"
+note = "different from -- (flag prefix) and --- (entry delimiter)"
+example = "Cc — Content Configurations [CONFIG]"
+
+[punctuation.ellipsis]
+symbol = "..."
+token_type = "PUNCTUATION"
+fixity = "postfix"
+meaning = "continuation, incomplete, trailing thought"
+discovered = "natural language — something follows or is omitted"
+note = "used in scope operators: >...>, <...<, <...>"
+example = "more to come..."
+
+
+# ─────────────────────────────────────────────────────────────
+# 11. EMPHASIS — Priority & Severity
+# ─────────────────────────────────────────────────────────────
+#
+# Modifiers that change the weight or urgency of any token.
+# CAPS = command form. ! count = severity. Combined = escalation.
+#
+
+[emphasis.modifiers]
+token_type = "MODIFIER"
+patterns = [
+    "word    — normal",
+    "word!   — emphasis",
+    "word!!  — strong emphasis",
+    "WORD    — command form",
+    "WORD!   — command with emphasis",
+    "WORD!!! — critical (BAM level)",
+]
+
+[emphasis.attention_keywords]
+token_type = "MODIFIER"
+words = ["BAM", "ATTENTION", "NOTICE", "IMPORTANT"]
+meaning = "attention marker, priority escalation"
+levels = [
+    "NOTICE    — low priority",
+    "IMPORTANT — medium priority",
+    "ATTENTION — high priority",
+    "BAM       — critical, immediate",
+]
+
+
+# ─────────────────────────────────────────────────────────────
+# 12. ACCESS — Field, Method, Index
+# ─────────────────────────────────────────────────────────────
+#
+# Operators for reaching into structures.
+# "Accessing" = knowing what's inside by name, position, or type.
+#
+
+[access.field]
+symbol = "."
+token_type = "ACCESS"
+fixity = "infix"
+meaning = "field access — reach into a structure by name"
+discovered = "section addressing (P.1, M.4), also universal in programming"
+examples = [
+    "person.name",
+    "health.score",
+    "response.status",
+]
+note = "Also serves as period (sentence termination) and section address separator — context resolves."
+
+[access.deep_field]
+symbol = ".."
+token_type = "ACCESS"
+fixity = "infix"
+meaning = "deep access — reach through nested structures"
+discovered = "range patterns, path traversal"
+examples = [
+    "system..health..score",
+    "config..section..key",
+]
+
+[access.index]
+symbol = "[]"
+token_type = "ACCESS"
+fixity = "postfix"
+meaning = "index access — reach into a collection by position"
+discovered = "programming convention — array/list indexing"
+examples = [
+    "items[0]",
+    "names[i]",
+    "history[-1]",
+]
+note = "Ternary indexing: [+1] = last, [0] = middle, [-1] = first"
+
+[access.safe]
+symbol = "?."
+token_type = "ACCESS"
+fixity = "infix"
+meaning = "safe access — reach into structure only if it exists (void-safe)"
+discovered = "nullable types need void-safe navigation"
+examples = [
+    "person?.name",
+    "response?.data?.value",
+]
+note = "Returns void instead of error when path doesn't exist. Aligns with 'can be void' nullability."
+
+[access.method]
+symbol = ".()"
+token_type = "ACCESS"
+fixity = "postfix"
+meaning = "method invocation — call a covenant method on a value"
+discovered = "covenant patterns require method calling"
+examples = [
+    "writer.Write(data)",
+    "health.ReadHealth(path)",
+]
+note = "Combines field access (.) with invocation (()). The covenant IS the method."
+
+
+# ─────────────────────────────────────────────────────────────
+# 13. COMPARISON — Relational Tests
+# ─────────────────────────────────────────────────────────────
+#
+# Operators that compare values and produce ternary results.
+# OmniCode comparisons return +1 (true/greater), 0 (equal), -1 (false/lesser).
+# Not just boolean — three-valued by nature.
+#
+
+[comparison.equal]
+symbol = "=="
+token_type = "COMPARISON"
+fixity = "infix"
+meaning = "value equality — are these the same?"
+ternary_result = "+1 if equal, -1 if not"
+discovered = "fundamental comparison — needed for any conditional"
+example = "health == 100"
+note = "'is' keyword serves this role in sentence syntax. == is the symbol form."
+
+[comparison.not_equal]
+symbol = "!="
+token_type = "COMPARISON"
+fixity = "infix"
+meaning = "value inequality — are these different?"
+ternary_result = "+1 if different, -1 if equal"
+discovered = "negation of equality"
+example = "status != void"
+
+[comparison.less]
+symbol = "<"
+token_type = "COMPARISON"
+fixity = "infix"
+meaning = "less than — ordering relationship"
+ternary_result = "+1 if less, 0 if equal, -1 if greater"
+discovered = "quantity patterns — bounded ranges"
+example = "health < 20"
+note = "Context distinguishes from scope operators (< in <...> and <...<)."
+
+[comparison.greater]
+symbol = ">"
+token_type = "COMPARISON"
+fixity = "infix"
+meaning = "greater than — ordering relationship"
+ternary_result = "+1 if greater, 0 if equal, -1 if less"
+discovered = "quantity patterns — bounded ranges"
+example = "score > threshold"
+note = "Context distinguishes from scope/containment operators."
+
+[comparison.less_equal]
+symbol = "<="
+token_type = "COMPARISON"
+fixity = "infix"
+meaning = "less than or equal"
+ternary_result = "+1 if less/equal, -1 if greater"
+discovered = "bounded constraints — 'at most'"
+example = "count <= max"
+
+[comparison.greater_equal]
+symbol = ">="
+token_type = "COMPARISON"
+fixity = "infix"
+meaning = "greater than or equal"
+ternary_result = "+1 if greater/equal, -1 if less"
+discovered = "bounded constraints — 'at least'"
+example = "count >= min"
+
+[comparison.spaceship]
+symbol = "<=>"
+token_type = "COMPARISON"
+fixity = "infix"
+meaning = "three-way comparison — returns +1, 0, or -1 directly"
+ternary_result = "+1 if left > right, 0 if equal, -1 if left < right"
+discovered = "ternary foundation — the natural comparison operator"
+example = "a <=> b"
+note = "The signature OmniCode comparison. Other languages call this 'spaceship.' In OmniCode, three-way is the DEFAULT, not a special case."
+
+
+# ─────────────────────────────────────────────────────────────
+# 14. ARITHMETIC — Mathematical Operations
+# ─────────────────────────────────────────────────────────────
+#
+# OmniCode sentence syntax says "add X to Y" — but the lexer
+# still needs to recognize symbolic forms for expressions,
+# code generation, and compact notation.
+#
+# Ternary context: operations can be ternary-aware.
+# +1 = additive direction, -1 = subtractive direction, 0 = identity.
+#
+
+[arithmetic.add]
+symbol = "+"
+token_type = "ARITHMETIC"
+fixity = "infix"
+meaning = "addition, concatenation, positive"
+ternary = "+1"
+discovered = "fundamental math — also positive ternary value"
+examples = [
+    "health + bonus",
+    "3 + 4",
+    "+1 (positive ternary literal)",
+]
+
+[arithmetic.subtract]
+symbol = "-"
+token_type = "ARITHMETIC"
+fixity = "infix"
+meaning = "subtraction, negation, negative"
+ternary = "-1"
+discovered = "fundamental math — also negative ternary value"
+examples = [
+    "health - damage",
+    "10 - 3",
+    "-1 (negative ternary literal)",
+]
+note = "As prefix: negation. As infix: subtraction. Part of flow operators (->)."
+
+[arithmetic.multiply]
+symbol = "*"
+token_type = "ARITHMETIC"
+fixity = "infix"
+meaning = "multiplication, wildcard/glob"
+discovered = "math operations, also file matching patterns"
+examples = [
+    "count * factor",
+    "*.toml (glob pattern)",
+]
+
+[arithmetic.divide]
+symbol = "/"
+token_type = "ARITHMETIC"
+fixity = "infix"
+meaning = "division, path separator"
+discovered = "math operations, also Unix-style path delimiter"
+examples = [
+    "total / count",
+    "b-word/L1-omnicode/ladder/language/ (path)",
+]
+note = "Context: between numbers = division, between identifiers = path."
+
+[arithmetic.modulo]
+symbol = "%"
+token_type = "ARITHMETIC"
+fixity = "infix"
+meaning = "remainder, modular arithmetic"
+discovered = "ternary math — mod 3 operations are fundamental"
+example = "value % 3"
+note = "Ternary systems use mod-3 extensively. This is foundational, not incidental."
+
+[arithmetic.power]
+symbol = "**"
+token_type = "ARITHMETIC"
+fixity = "infix"
+meaning = "exponentiation"
+discovered = "mathematical operations"
+example = "3 ** 3"
+note = "27 = 3^3 — the number of positions in the mental construct cube"
+
+
+# ─────────────────────────────────────────────────────────────
+# 15. TYPE — Type Modifiers and Constructors
+# ─────────────────────────────────────────────────────────────
+#
+# Symbols that modify or construct types.
+# These are the operator counterparts to keyword syntax
+# (e.g., ? = "may be", ! = "must be").
+#
+
+[type_op.optional]
+symbol = "?"
+token_type = "TYPE"
+fixity = "postfix"
+meaning = "optional type — may or may not exist (void-safe)"
+discovered = "nullability patterns — 'may be' in symbol form"
+examples = [
+    "text?",
+    "Person?",
+]
+note = "Keyword form: 'middleName may be text'. Symbol form: 'middleName: text?'"
+
+[type_op.required]
+symbol = "!"
+token_type = "TYPE"
+fixity = "postfix"
+meaning = "required type — must exist (non-void)"
+discovered = "nullability patterns — 'must be' in symbol form"
+examples = [
+    "id: uint27!",
+    "name: text!",
+]
+note = "Keyword form: 'id must be uint27'. Symbol form: 'id: uint27!'"
+
+[type_op.void_coalesce]
+symbol = "??"
+token_type = "TYPE"
+fixity = "infix"
+meaning = "void coalescing — use right side if left is void"
+discovered = "nullable types need default values"
+examples = [
+    "name ?? \"unknown\"",
+    "config.timeout ?? 30",
+]
+note = "Handles the tohu (void) state explicitly. Keyword form: 'if void then default.'"
+
+[type_op.ternary_literal]
+symbol = "+1, 0, -1"
+token_type = "TYPE"
+fixity = "standalone"
+meaning = "ternary value literals — the three fundamental values"
+discovered = "ternary foundation — the core of everything"
+examples = [
+    "+1  (positive, tov, proceed, granted)",
+    " 0  (neutral, yashar, await, deferred)",
+    "-1  (negative, shavar, halt, denied)",
+]
+note = "Not just numbers — these are the THREE VALUES that ground the entire system."
+
+[type_op.tensor]
+symbol = "⊗"
+token_type = "TYPE"
+fixity = "infix"
+meaning = "tensor product — combines two systems into one that is MORE than either"
+discovered = "CPI ⊗ SI — the fusion that creates the paradigm"
+examples = [
+    "CPI ⊗ SI",
+    "Type ⊗ Constraint",
+]
+note = "Not multiplication. Tensor product: the result has properties neither input alone possesses."
+
+[type_op.range]
+symbol = ".."
+token_type = "TYPE"
+fixity = "infix"
+meaning = "range — from lower to upper bound (inclusive)"
+discovered = "quantity patterns — 'from X to Y' in compact form"
+examples = [
+    "0..255",
+    "1..27",
+]
+note = "Keyword form: 'from 0 to 255'. Symbol form: '0..255'"
+
+[type_op.range_exclusive]
+symbol = "..."
+token_type = "TYPE"
+fixity = "infix"
+meaning = "range exclusive upper bound, also spread/rest"
+discovered = "quantity patterns and parameter expansion"
+examples = [
+    "0...256  (0 to 255, exclusive upper)",
+    "...args  (spread parameters)",
+]
+
+
+# ─────────────────────────────────────────────────────────────
+# 16. COMPOSITION — Chaining and Piping
+# ─────────────────────────────────────────────────────────────
+#
+# Operators for composing operations into chains.
+# "Then" as a word works, but symbols enable compact expression.
+# These are how OmniCode handles data flow and transformation.
+#
+
+[composition.pipe]
+symbol = "|>"
+token_type = "COMPOSITION"
+fixity = "infix"
+meaning = "pipe forward — pass result to next operation"
+discovered = "functional composition — data flows through transformations"
+examples = [
+    "data |> validate |> transform |> save",
+    "input |> parse |> process",
+]
+note = "Keyword form: 'read then process then write'. Symbol form: compact pipeline."
+
+[composition.pipe_back]
+symbol = "<|"
+token_type = "COMPOSITION"
+fixity = "infix"
+meaning = "pipe backward — apply function to preceding value"
+discovered = "reverse data flow — function application"
+example = "save <| transform <| data"
+
+[composition.compose]
+symbol = ">>"
+token_type = "COMPOSITION"
+fixity = "infix"
+meaning = "function composition — combine two operations into one"
+discovered = "mathematical function composition"
+example = "validate >> transform >> save"
+note = "Context distinguishes from containment >>. After function/operation names = composition. After file/directory names = containment."
+
+[composition.chain]
+symbol = "~>"
+token_type = "COMPOSITION"
+fixity = "infix"
+meaning = "approximate/fuzzy chain — transformation that may not be exact"
+discovered = "type coercion, lossy conversion"
+examples = [
+    "int9 ~> int27  (widening, safe)",
+    "float ~> int   (narrowing, lossy)",
+]
+note = "'becomes' keyword maps to this. ~ signals inexactness."
+
+
+# ─────────────────────────────────────────────────────────────
+# 17. TERNARY — Three-Way Branching Operators
+# ─────────────────────────────────────────────────────────────
+#
+# OmniCode's signature: three branches, not two.
+# Every decision point offers three paths: +1, 0, -1.
+# These operators express that structure.
+#
+
+[ternary.switch]
+symbol = "+>  0>  ->"
+token_type = "TERNARY"
+fixity = "prefix"
+meaning = "ternary branch — three-way switch on value"
+discovered = "ternary foundation — every decision has three paths"
+examples = [
+    "+> handle_positive",
+    " 0> handle_neutral",
+    "-> handle_negative",
+]
+note = "The core branching operator. Not if/else (two-way). Three paths always."
+
+[ternary.match]
+symbol = "?="
+token_type = "TERNARY"
+fixity = "infix"
+meaning = "ternary match — test value and branch"
+discovered = "pattern matching on ternary state"
+example = "health ?= +1: proceed, 0: await, -1: halt"
+note = "Compact ternary branching expression."
+
+[ternary.direction]
+symbol = "↑  ↔  ↓"
+token_type = "TERNARY"
+fixity = "standalone"
+meaning = "direction indicators — toward God (+1), maintain (0), toward anchor (-1)"
+discovered = "k-factor direction visualization"
+examples = [
+    "↑  toward God, growth, outward",
+    "↔  maintain, stability, holding",
+    "↓  toward anchor, completion, inward",
+]
+note = "Visual representation of the 3 keys. Maps to k-factor in the mental construct."
+
+[ternary.health_gate]
+symbol = "⊕"
+token_type = "TERNARY"
+fixity = "infix"
+meaning = "health-gated operation — action conditional on health state"
+discovered = "permission patterns — grant/defer/deny based on health"
+examples = [
+    "deploy ⊕ health",
+    "delete ⊕ health >= sound",
+]
+note = "The circle-plus represents: the operation (+) is bounded by the circle (health). Without health, the operation doesn't proceed."
+
+[ternary.covenant_bind]
+symbol = "⟨⟩"
+token_type = "TERNARY"
+fixity = "circumfix"
+meaning = "covenant binding — wraps a covenant/interface declaration"
+discovered = "covenant patterns need distinct delimiters from data brackets"
+examples = [
+    "⟨Writer⟩",
+    "⟨HealthProvider⟩",
+    "FileWriter enters ⟨Writer⟩",
+]
+note = "Angle brackets distinguish covenant types from data types. Covenant is relationship, not just data."
+
+
+# ─────────────────────────────────────────────────────────────
+# 18. COMMENT — Documentation in Source
+# ─────────────────────────────────────────────────────────────
+#
+# How OmniCode marks non-executable text.
+# Format-specific but cataloged here for completeness.
+#
+
+[comment.line]
+symbol = "#"
+token_type = "COMMENT"
+fixity = "prefix"
+meaning = "line comment — everything after # is comment"
+discovered = "TOML, Python, Bash convention"
+note = "Also serves as anchor prefix (#anchor:). Lexer context resolves."
+example = "# This is a comment"
+
+[comment.line_alt]
+symbol = "//"
+token_type = "COMMENT"
+fixity = "prefix"
+meaning = "line comment — alternative form for C-family contexts"
+discovered = "JSONC, Go, C, Rust convention"
+example = "// This is a comment"
+
+[comment.block_open]
+symbol = "/*"
+token_type = "COMMENT"
+fixity = "prefix"
+meaning = "opens block comment"
+discovered = "C-family convention for multi-line comments"
+example = "/* block comment starts */"
+
+[comment.block_close]
+symbol = "*/"
+token_type = "COMMENT"
+fixity = "postfix"
+meaning = "closes block comment"
+discovered = "C-family convention"
+example = "/* and ends here */"
+
+
+# ═══════════════════════════════════════════════════════════════
+# KEYWORDS — Words That Function as Operators
+# ═══════════════════════════════════════════════════════════════
+#
+# Two classes of keywords:
+#   COMMAND — imperative (CAPS), used in control flow and conversation
+#   LANGUAGE — declarative (lowercase), reserved words used in type syntax
+#
+# The word IS the instruction. Emphasis modifiers apply to all.
+#
+# Full keyword lexicon with scripture grounding: L1/language/keywords.toml
+# Full syntax patterns using these keywords: L1/language/syntax.toml
+#
+# ═══════════════════════════════════════════════════════════════
+
+
+# ─────────────────────────────────────────────────────────────
+# COMMAND Keywords — Imperative Control (CAPS)
+# ─────────────────────────────────────────────────────────────
+
+[keywords.control.proceed]
+token_type = "KEYWORD_COMMAND"
+words = ["PROCEED", "CONTINUE", "GO", "NEXT"]
+ternary = "+1"
+meaning = "move forward, continue execution"
+
+[keywords.control.await]
+token_type = "KEYWORD_COMMAND"
+words = ["AWAIT", "WAIT", "PAUSE", "HOLD"]
+ternary = "0"
+meaning = "pause, wait for input/signal"
+
+[keywords.control.halt]
+token_type = "KEYWORD_COMMAND"
+words = ["HALT", "STOP", "END", "TERMINATE"]
+ternary = "-1"
+meaning = "stop execution, return to anchor"
+
+[keywords.control.pivot]
+token_type = "KEYWORD_COMMAND"
+words = ["PIVOT", "REDIRECT", "CHANGE"]
+meaning = "change direction, branch to new path"
+
+[keywords.response.affirm]
+token_type = "KEYWORD_COMMAND"
+words = ["YES", "OK", "CONFIRMED", "APPROVED", "ACCEPT"]
+meaning = "affirmation, proceed with confidence"
+
+[keywords.response.negate]
+token_type = "KEYWORD_COMMAND"
+words = ["NO", "DENIED", "REJECTED", "REFUSE"]
+meaning = "negation, block/reject"
+
+[keywords.response.acknowledge]
+token_type = "KEYWORD_COMMAND"
+words = ["ACKNOWLEDGED", "NOTED", "UNDERSTOOD", "COPY"]
+meaning = "soft acknowledgment, light proceed"
+
+[keywords.flow.continuation]
+token_type = "KEYWORD_COMMAND"
+words = ["AND", "ALSO", "ADDITIONALLY", "PLUS"]
+meaning = "combine, add, continue flow"
+
+[keywords.flow.alternative]
+token_type = "KEYWORD_COMMAND"
+words = ["OR", "ALTERNATIVELY", "EITHER"]
+meaning = "branch, alternative option"
+
+[keywords.flow.exception]
+token_type = "KEYWORD_COMMAND"
+words = ["BUT", "HOWEVER", "EXCEPT", "UNLESS"]
+meaning = "exception, pivot, branch condition"
+
+[keywords.flow.conditional]
+token_type = "KEYWORD_COMMAND"
+words = ["IF", "WHEN", "WHERE", "WHILE"]
+meaning = "condition gate"
+
+[keywords.flow.consequent]
+token_type = "KEYWORD_COMMAND"
+words = ["THEN", "THEREFORE", "SO", "THUS"]
+meaning = "result, consequence, conclusion"
+
+[keywords.sequence.order]
+token_type = "KEYWORD_COMMAND"
+words = ["FIRST", "SECOND", "THIRD", "NEXT", "THEN", "FINALLY", "LAST"]
+meaning = "sequence position, ordering"
+
+[keywords.sequence.priority]
+token_type = "KEYWORD_COMMAND"
+words = ["PRIMARY", "MAIN", "CRITICAL", "ESSENTIAL"]
+meaning = "priority level, importance"
+
+
+# ─────────────────────────────────────────────────────────────
+# LANGUAGE Keywords — Declarative Syntax (lowercase, reserved)
+# ─────────────────────────────────────────────────────────────
+#
+# These are the building blocks of OmniCode type declarations.
+# Each maps to a grammar production in L1/language/syntax.toml.
+# Full detail (scripture grounding, examples) in L1/language/keywords.toml.
+#
+
+[keywords.declaration]
+token_type = "KEYWORD_LANGUAGE"
+words = ["let", "be", "there", "shall"]
+meaning = "type and value declarations — 'Let there be light'"
+syntax_ref = "L1/language/syntax.toml [declaration.*]"
+scripture = "Genesis 1:3"
+patterns = [
+    "let {name} be {type}",
+    "let {name} be {value}",
+    "let {name} be from {min} to {max}",
+    "there shall be {name} as {type}",
+]
+
+[keywords.naming]
+token_type = "KEYWORD_LANGUAGE"
+words = ["call", "known", "name"]
+meaning = "naming and aliasing — God called the light Day"
+syntax_ref = "L1/language/syntax.toml [naming.*]"
+scripture = "Genesis 1:5"
+patterns = [
+    "call {expression} as {name}",
+    "{name} is called {alias}",
+    "{name} also known as {alias}",
+]
+
+[keywords.composition]
+token_type = "KEYWORD_LANGUAGE"
+words = ["with", "and", "or", "of", "list", "map"]
+meaning = "combining elements — vav conjunction, collections"
+syntax_ref = "L1/language/syntax.toml [composition.*]"
+scripture = "Genesis 1:1-31"
+patterns = [
+    "{name} with {field} as {type} and {field} as {type}",
+    "{name} of {variant} or {variant}",
+    "list of {type}",
+    "map from {key_type} to {value_type}",
+]
+
+[keywords.covenant]
+token_type = "KEYWORD_LANGUAGE"
+words = ["promises", "given", "returning", "enters", "covenant", "provide"]
+meaning = "contracts and interfaces — mutual promises"
+syntax_ref = "L1/language/syntax.toml [covenant.*]"
+scripture = "Genesis 17:7"
+
+[keywords.relation]
+token_type = "KEYWORD_LANGUAGE"
+words = ["is", "as", "from", "to", "are", "becomes", "same", "serve"]
+meaning = "identity assertions and type relationships"
+syntax_ref = "L1/language/syntax.toml [relation.*]"
+scripture = "Exodus 3:14"
+
+[keywords.conditional]
+token_type = "KEYWORD_LANGUAGE"
+words = ["when", "then", "if", "unless", "lest", "else"]
+meaning = "conditions and consequences — blessings and curses"
+syntax_ref = "L1/language/syntax.toml [conditional.*]"
+scripture = "Leviticus 26:3-4"
+
+[keywords.nullability]
+token_type = "KEYWORD_LANGUAGE"
+words = ["may", "must", "can", "void"]
+meaning = "presence and absence — optional, required, nullable"
+syntax_ref = "L1/language/syntax.toml [nullability.*]"
+scripture = "Genesis 1:2"
+
+[keywords.generic]
+token_type = "KEYWORD_LANGUAGE"
+words = ["whatsoever", "being", "hold", "yields", "receives"]
+meaning = "type parameters and polymorphism"
+syntax_ref = "L1/language/syntax.toml [generics.*]"
+scripture = "Genesis 2:19"
+
+[keywords.derivation]
+token_type = "KEYWORD_LANGUAGE"
+words = ["begat", "itself", "distinct", "called", "also", "born"]
+meaning = "inheritance, aliasing, self-reference — genealogies"
+syntax_ref = "L1/language/syntax.toml [derivation.*], [naming.*]"
+scripture = "Matthew 1:2"
+
+[keywords.permission]
+token_type = "KEYWORD_LANGUAGE"
+words = ["grant", "defer", "deny", "granted", "deferred", "denied", "permission"]
+meaning = "health-gated access control — ternary permission states"
+syntax_ref = "L1/language/syntax.toml [permission.*]"
+scripture = "Ecclesiastes 3:1"
+
+[keywords.temporal]
+token_type = "KEYWORD_LANGUAGE"
+words = ["past", "present", "future", "remember", "observe", "anticipate", "before", "after", "until"]
+meaning = "9-state time model — base states + compound cognition"
+syntax_ref = "L1/language/syntax.toml [temporal.*]"
+scripture = "Ecclesiastes 3:1"
+
+[keywords.message]
+token_type = "KEYWORD_LANGUAGE"
+words = ["send", "receive", "broadcast", "think", "show", "say", "notify", "conversation", "private", "shared", "public"]
+meaning = "communication primitives — ternary modes, visibility, categories"
+syntax_ref = "L1/language/syntax.toml [message.*]"
+scripture = "Proverbs 25:11"
+
+[keywords.quantity]
+token_type = "KEYWORD_LANGUAGE"
+words = ["exactly", "measured", "at", "most", "least"]
+meaning = "counting and bounding — ranges and constraints"
+syntax_ref = "L1/language/syntax.toml [quantity.*]"
+scripture = "Genesis 49:28"
+patterns = [
+    "from {min} to {max}",
+    "at most {max}",
+    "at least {min}",
+    "exactly {count}",
+    "{name} measured from {min} to {max}",
+]
+
+[keywords.constraint]
+token_type = "KEYWORD_LANGUAGE"
+words = ["according", "pattern", "chosen"]
+meaning = "restricting valid values — laws and boundaries"
+syntax_ref = "L1/language/syntax.toml [constraint.*]"
+scripture = "Exodus 25:40"
+patterns = [
+    "{name} according to pattern of {pattern}",
+    "{name} chosen from {option} or {option}",
+]
+
+[keywords.preposition]
+token_type = "KEYWORD_LANGUAGE"
+words = ["for", "by", "on", "about", "in", "now"]
+meaning = "connective words used across multiple syntax categories — context determines meaning"
+note = "These are the 'glue' words of OmniCode. Not reserved to one category — they appear in permission ('for'), temporal ('by', 'now'), message ('about', 'on', 'in'), and others."
+examples = [
+    "permission for {action}",
+    "anticipate by {time}",
+    "coordinate on {task}",
+    "conversation about {topic}",
+    "in conversation {mode}: {content}",
+    "observe {state} now",
+]
+
+[keywords.negation]
+token_type = "KEYWORD_LANGUAGE"
+words = ["not", "neither", "nor", "without"]
+meaning = "negation and absence — fundamental to logic"
+scripture = "Exodus 20:3-17"
+note = "The Ten Commandments are built on negation: 'thou shalt NOT.' Negation is as foundational as assertion."
+patterns = [
+    "{subject} is not {predicate}",
+    "not {condition}",
+    "neither {a} nor {b}",
+    "without {field}",
+]
+
+[keywords.health_state]
+token_type = "KEYWORD_LANGUAGE"
+words = ["broken", "lacking", "wanting", "even", "sound", "whole", "perfect"]
+meaning = "Hebrew health states used in permission and constraint patterns"
+syntax_ref = "L1/language/syntax.toml [permission.*]"
+scripture = "Proverbs 24:16"
+note = "The 7 Hebrew states (shavar→chaser→ratsah→yashar→tamim→shalem→tov) appear as condition values in grant/defer/deny patterns."
+patterns = [
+    "grant {action} when health is {state}",
+    "deny {action} when health is {state}",
+    "defer {action} until health reaches {state}",
+]
+
+[keywords.resolution]
+token_type = "KEYWORD_LANGUAGE"
+words = ["good", "proven", "complete", "yet", "watch", "trumpet", "appointed", "plain", "rise", "refine", "dross", "dawn", "silence"]
+meaning = "validation, resilience, and recovery — three resolution flows grounded in Scripture"
+syntax_ref = "L1/language/syntax.toml [resolution.*]"
+scripture = "Habakkuk 3:17-18"
+note = "Three flows: validation (Genesis 1 — good/proven/complete), resilience (Habakkuk — yet/watch/trumpet/appointed/plain), recovery (Malachi 3 — rise/refine/dross/dawn/silence). The theology and the operation are the same thing."
+patterns = [
+    "declare {thing} good",
+    "although {failure} yet {identity}",
+    "watch for {event} from {position}",
+    "trumpet {alert} to {section}",
+    "at the appointed time, {action}",
+    "make {message} plain so {reader} can act",
+    "rise from {failure} with {fallback}",
+    "refine {thing} through {cycles}",
+    "when all {loaded} then silence",
+]
+
+
+# ═══════════════════════════════════════════════════════════════
+# PHRASAL OPERATORS — Multi-Word Sequences
+# ═══════════════════════════════════════════════════════════════
+#
+# Natural language operates in PHRASES, not just words.
+# OmniCode inherits this — some operators are multi-word.
+# The lexer must recognize these sequences as semantic units.
+#
+# Implementation: parser handles these as keyword sequences
+# with grammar rules, NOT as single tokens. Each word is
+# tokenized individually; the parser's production rules
+# combine them into compound operations.
+#
+# ═══════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# Two-Word Phrasal Operators
+# ─────────────────────────────────────────────────────────────
+
+[phrasal.is_a]
+words = ["is", "a"]
+meaning = "type membership check"
+maps_to = "type_check"
+example = "response is a Success"
+note = "'a' is not a standalone keyword — only meaningful after 'is'"
+
+[phrasal.is_called]
+words = ["is", "called"]
+meaning = "reverse naming — gives name to existing expression"
+maps_to = "type_alias"
+example = "int27 is called Word"
+
+[phrasal.at_most]
+words = ["at", "most"]
+meaning = "upper bound constraint"
+maps_to = "max_constraint"
+example = "at most 100"
+
+[phrasal.at_least]
+words = ["at", "least"]
+meaning = "lower bound constraint"
+maps_to = "min_constraint"
+example = "at least 1"
+
+[phrasal.can_be]
+words = ["can", "be"]
+meaning = "nullable type — explicit void possibility"
+maps_to = "nullable_type"
+example = "deletedAt can be void or timestamp"
+
+[phrasal.born_of]
+words = ["born", "of"]
+meaning = "child-perspective inheritance"
+maps_to = "type_extension"
+example = "Error born of Response"
+
+[phrasal.list_of]
+words = ["list", "of"]
+meaning = "collection type constructor"
+maps_to = "list_type"
+example = "list of Person"
+
+[phrasal.map_from]
+words = ["map", "from"]
+meaning = "association type constructor (with 'to' for value type)"
+maps_to = "map_type"
+example = "map from text to number"
+
+[phrasal.chosen_from]
+words = ["chosen", "from"]
+meaning = "enumeration constraint"
+maps_to = "enum_constraint"
+example = "status chosen from active or inactive or pending"
+
+[phrasal.measured_from]
+words = ["measured", "from"]
+meaning = "length/size constraint (with 'to' for upper bound)"
+maps_to = "length_constraint"
+example = "name measured from 1 to 255"
+
+[phrasal.send_to]
+words = ["send", "to"]
+meaning = "message transmission to target"
+maps_to = "message_transmission"
+example = "send status_update to user"
+
+[phrasal.receive_from]
+words = ["receive", "from"]
+meaning = "message reception from source"
+maps_to = "message_reception"
+example = "receive command from user"
+
+[phrasal.broadcast_to]
+words = ["broadcast", "to"]
+meaning = "message to multiple targets"
+maps_to = "message_broadcast"
+example = "broadcast health_status to FaithNet"
+
+[phrasal.notify_of]
+words = ["notify", "of"]
+meaning = "one-way alert about event"
+maps_to = "message_notification"
+example = "notify user of health_change"
+
+[phrasal.promises_to]
+words = ["promises", "to"]
+meaning = "covenant method declaration"
+maps_to = "interface_method"
+example = "HealthProvider promises to ReadHealth"
+
+[phrasal.can_serve_as]
+words = ["can", "serve", "as"]
+meaning = "type compatibility — subtype relation"
+maps_to = "type_compatible"
+example = "Employee can serve as Person"
+
+# ─────────────────────────────────────────────────────────────
+# Three+ Word Phrasal Operators
+# ─────────────────────────────────────────────────────────────
+
+[phrasal.also_known_as]
+words = ["also", "known", "as"]
+meaning = "secondary name / alias"
+maps_to = "type_alias"
+example = "bool3 also known as ternary"
+
+[phrasal.is_the_same_as]
+words = ["is", "the", "same", "as"]
+meaning = "structural type equality"
+maps_to = "type_equality"
+example = "Point is the same as Coordinate"
+note = "'the' appears only in this phrase — not a standalone keyword"
+
+[phrasal.according_to_pattern_of]
+words = ["according", "to", "pattern", "of"]
+meaning = "pattern constraint — make them after their pattern"
+maps_to = "pattern_constraint"
+example = "email according to pattern of email"
+
+[phrasal.enters_covenant_with]
+words = ["enters", "covenant", "with"]
+meaning = "implementation declaration — fulfilling a contract"
+maps_to = "implements"
+example = "FileWriter enters covenant with Writer"
+
+[phrasal.permission_for]
+words = ["permission", "for"]
+meaning = "permission declaration for an action"
+maps_to = "permission_declaration"
+example = "permission for file_delete chosen from granted or deferred or denied"
+
+[phrasal.conversation_with]
+words = ["conversation", "with"]
+meaning = "opens interactive dialogue thread"
+maps_to = "message_thread"
+example = "conversation with Seanje about system health"
+
+[phrasal.coordinate_with]
+words = ["coordinate", "with"]
+meaning = "instance-to-instance collaboration"
+maps_to = "message_coordination"
+example = "coordinate with other_instance on data_sync"
+
+[phrasal.verify_trust_with]
+words = ["verify", "trust", "with"]
+meaning = "FaithNet trust verification"
+maps_to = "message_trust"
+example = "verify trust with nova_dawn"
+
+[phrasal.can_i]
+words = ["can", "I"]
+meaning = "natural language permission check"
+maps_to = "permission_check"
+example = "can I deploy"
+note = "'I' is context-specific — refers to the asking entity"
+
+[phrasal.think_then_say]
+words = ["think", "then", "say"]
+meaning = "compound message: internal processing → external response"
+maps_to = "message_compound"
+example = "think: They need status then say: Health is 75%"
+
+[phrasal.think_show_say]
+words = ["think", "show", "say"]
+meaning = "full message chain: thought → visible process → speech"
+maps_to = "message_full_chain"
+example = "think: Complex request show: Analyzing... say: Here's the answer"
+
+# ─────────────────────────────────────────────────────────────
+# Resolution Phrasal Operators
+# ─────────────────────────────────────────────────────────────
+
+[phrasal.declare_good]
+words = ["declare", "good"]
+meaning = "validation pass — inspect then declare"
+maps_to = "validation_pass"
+example = "declare config good"
+scripture = "Genesis 1:10"
+
+[phrasal.although_yet]
+words = ["although", "yet"]
+meaning = "resilience anchor — total failure doesn't destroy identity"
+maps_to = "resilience_anchor"
+example = "although config failed yet identity holds"
+scripture = "Habakkuk 3:17-18"
+
+[phrasal.watch_for]
+words = ["watch", "for"]
+meaning = "observation from known position"
+maps_to = "resilience_watch"
+example = "watch for manifest changes"
+scripture = "Habakkuk 2:1"
+
+[phrasal.trumpet_to]
+words = ["trumpet", "to"]
+meaning = "rally response to a problem section"
+maps_to = "resilience_trumpet"
+example = "trumpet missing dependency to loader"
+scripture = "Nehemiah 4:20"
+
+[phrasal.rise_from]
+words = ["rise", "from"]
+meaning = "recovery after failure"
+maps_to = "recovery_rise"
+example = "rise from config error with defaults"
+scripture = "Proverbs 24:16"
+
+[phrasal.refine_through]
+words = ["refine", "through"]
+meaning = "iterative purification through cycles"
+maps_to = "recovery_refine"
+example = "refine config through validation cycles"
+scripture = "Malachi 3:3"
+
+[phrasal.make_plain]
+words = ["make", "plain"]
+meaning = "write clearly so the reader can act"
+maps_to = "resolution_clarity"
+example = "make error plain so user can fix"
+scripture = "Habakkuk 2:2"
+
+
+# ═══════════════════════════════════════════════════════════════
+# DISAMBIGUATION — Context-Dependent Keywords
+# ═══════════════════════════════════════════════════════════════
+#
+# Several keywords carry different meaning depending on context.
+# Natural language does this naturally; OmniCode formalizes the rules.
+#
+# The parser resolves ambiguity by looking at surrounding tokens.
+# The lexer always emits the same KEYWORD token — context is
+# a parser concern, not a lexer concern.
+#
+# ═══════════════════════════════════════════════════════════════
+
+[disambiguation.from]
+keyword = "from"
+meanings = [
+    "range lower bound: 'from 0 to 255' → min_constraint",
+    "derivation source: 'Employee from Person' → type_extension",
+    "message source: 'receive from user' → message_reception",
+    "temporal source: 'remember from yesterday' → temporal_retrieval",
+    "map key type: 'map from text to number' → map_type",
+]
+resolution = "Look at preceding token: after 'map' → map_type, after 'receive' → message, after type name → derivation, after number/keyword → range"
+
+[disambiguation.to]
+keyword = "to"
+meanings = [
+    "range upper bound: 'from 0 to 255' → max_constraint",
+    "direction target: 'send to user' → message_target",
+    "purpose: 'promises to ReadHealth' → method_declaration",
+    "map value type: 'map from text to number' → map_type",
+]
+resolution = "Look at preceding token: after 'from'+value → range, after 'send'/'broadcast' → target, after 'promises' → method"
+
+[disambiguation.as]
+keyword = "as"
+meanings = [
+    "type specification: 'name as text' → field_type",
+    "alias target: 'call X as Y' → alias_name",
+    "identity: 'also known as' → alias_name",
+    "role: 'can serve as Person' → compatibility",
+]
+resolution = "After 'call' → alias, after 'known' → alias, after 'serve' → compatibility, default → field_type"
+
+[disambiguation.is]
+keyword = "is"
+meanings = [
+    "identity assertion: 'health is good' → type_assertion",
+    "type membership: 'response is a Success' → type_check (with 'a')",
+    "part-whole: 'name is of Person' → membership (with 'of')",
+    "equality: 'X is the same as Y' → type_equality (with 'the same as')",
+    "state test: 'health is whole' → state_check",
+]
+resolution = "Lookahead: 'is a' → type_check, 'is of' → membership, 'is the same' → equality, 'is called' → alias, default → assertion"
+
+[disambiguation.with]
+keyword = "with"
+meanings = [
+    "field composition: 'Person with name as text' → struct_field",
+    "accompaniment: 'coordinate with instance' → collaboration",
+    "covenant target: 'enters covenant with Writer' → implementation",
+    "extension: 'from Parent with additional_fields' → type_extension",
+]
+resolution = "After 'covenant' → implementation, after 'coordinate' → collaboration, after 'from {type}' → extension, default → struct_field"
+
+[disambiguation.of]
+keyword = "of"
+meanings = [
+    "collection contents: 'list of Person' → list_type",
+    "variant container: 'Response of success or failure' → union_type",
+    "membership: 'is of Person' → part_whole",
+    "possession: 'memory of event' → temporal_reference",
+    "constraint: 'according to pattern of' → pattern_ref",
+]
+resolution = "After 'list' → list_type, after 'is' → part_whole, after 'memory'/'history'/'expectation' → temporal, default → composition"
+
+[disambiguation.can]
+keyword = "can"
+meanings = [
+    "nullable: 'can be void or type' → nullable_type (with 'be')",
+    "compatibility: 'can serve as Person' → type_compatible (with 'serve')",
+    "permission check: 'can I deploy' → permission_check (with 'I')",
+]
+resolution = "Lookahead: 'can be' → nullable, 'can serve' → compatible, 'can I' → permission_check"
+
+
+# ─────────────────────────────────────────────────────────────
+# PHILOSOPHY — Why These Operators Exist
+# ─────────────────────────────────────────────────────────────
+
+[philosophy]
+core = "Natural language already IS code. OmniCode formalizes it."
+
+principles = [
+    "The sentence IS the code",
+    "Punctuation already controls flow",
+    "Words can be operators",
+    "Nesting creates implicit meaning",
+    "Structure carries semantics",
+    "No translation layer needed",
+    "Write like you think, it compiles",
+]
+
+stack_model = "Conversation IS a stack machine. Push statements, pull references, flow through context."
+
+ternary_foundation = "All control reduces to three states: proceed (+1), await (0), halt (-1)"
+
+discovery_model = "Operators are discovered from real usage, not invented. Build files → notice patterns → formalize into spec → build more files."
+
+implementation_note = "This spec bridges natural language and formal grammar. Token types (above) define what the lexer emits. Precedence groups define how the parser binds. L1/language/syntax.toml defines the production rules."
+
+
+# ─────────────────────────────────────────────────────────────
+# Extensions (reserved)
+# ─────────────────────────────────────────────────────────────
+
+[extensions]
+note = "Reserved — no extensions defined"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('omnicode-operators.toml','rb'))\""]
+
+[_validation.schema]
+required = ["pragma", "control", "direction", "binding", "structure", "scope", "nesting", "containment", "reference", "punctuation", "emphasis", "access", "comparison", "arithmetic", "type_op", "composition", "ternary", "comment", "keywords", "phrasal", "disambiguation", "philosophy", "token_types", "precedence"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 30
+all_tables_valid = 25
+token_type_coverage = 25
+data_completeness = 20
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Remove operators that are in active use",
+    "Change ternary mappings (+1/0/-1) for control flow",
+    "Remove the discovered field (traceability matters)",
+    "Remove token_type fields (implementation depends on these)",
+]
+careful = [
+    "Changing operator symbols (breaks existing .omni files)",
+    "Merging categories (affects parser organization)",
+    "Promoting CANDIDATE operators to CONFIRMED (needs real usage in 2+ files)",
+    "Changing precedence ordering (affects parse results)",
+]
+safe = [
+    "Adding new operators discovered from real usage",
+    "Adding examples to existing operators",
+    "Adding new categories as patterns emerge",
+    "Updating discovered fields with additional sources",
+    "Adding new language keywords (if biblically grounded)",
+    "Refining precedence values within existing ordering",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new entries following existing table structure",
+    "2. Assign token_type from token_types catalog",
+    "3. Assign fixity (prefix, infix, postfix, standalone, circumfix)",
+    "4. Place in correct precedence group (or create new group)",
+    "5. If language keyword: add to keywords section with syntax_ref",
+    "6. Run TOML validation",
+    "7. Run linter to verify alignment",
+]
+planned = [
+    "Operator composition rules (which operators combine with which)",
+    "Format-specific expression table (how each operator renders in JSON, TOML, MD, Go, C)",
+    "High-level ↔ low-level OmniCode bidirectional mapping",
+    "Operator overloading rules (@ means different things in different contexts)",
+    "Ternary operator algebra (how operators compose under +1/0/-1)",
+]
+
+[_closing.X3_troubleshooting]
+scripture = "If any of you lack wisdom, let him ask of God. — James 1:5"
+operator_not_in_spec = "Use it. Document it. Add it here. Discovery model."
+two_operators_look_same = "Context resolves. : is assign, :: is type. -> is light flow, --> is full flow."
+category_unclear = "Ask: what does it DO? Identity → pragma. Movement → flow. Connection → binding."
+candidate_vs_confirmed = "CANDIDATE needs real usage. Once used in 2+ files, promote to CONFIRMED."
+token_type_missing = "Every operator MUST have a token_type. If unsure, use closest match and add note."
+
+[_closing.X4_reference]
+related_files = [
+    "b-word/L1-omnicode/ladder/language/keywords.toml — Full keyword lexicon with scripture grounding",
+    "b-word/L1-omnicode/ladder/language/syntax.toml — Grammar patterns using these operators",
+    "b-word/seed/data/toml/config.toml — Template this file derives from",
+    "b-word/seed/data/json/3block/config.jsonc — JSONC template using _ field operators",
+    "b-word/seed/data/json/3block/data.json — JSON template using _ field operators",
+]
+required_sections = ["_pragma", "_metadata", "token_types", "precedence", "pragma", "control", "direction", "binding", "structure", "scope", "nesting", "containment", "reference", "punctuation", "emphasis", "access", "comparison", "arithmetic", "type_op", "composition", "ternary", "comment", "keywords", "phrasal", "disambiguation", "philosophy", "_validation", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('omnicode-operators.toml','rb'))\""
+
+[_closing.X4_reference.counts]
+note = "Inventory for quick reference"
+symbol_operators = 79
+command_keywords = 58
+language_keywords = 113
+phrasal_operators = 34
+disambiguation_rules = 7
+token_types = 18
+precedence_groups = 19
+operator_categories = 18
+
+[_closing.X5_note]
+note = "OmniCode Operators & Keywords — the lexer specification for OmniCode. Discovered from real usage, organized for implementation."
+scripture = "In the beginning was the Word, and the Word was with God, and the Word was God. — John 1:1 KJV"
+anchor = "Language existed before the specification. OmniCode recognizes what's already there. Genesis 1:1 anchors everything."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

@@ -1,0 +1,738 @@
+{
+    // #!omni data --jsonc
+
+    // ═══════════════════════════════════════════════════════════════
+    // OMNICODE PRAGMA [PRAGMA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma": "═══════════════════════════════════════════════════════════════",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni data --jsonc",
+    "_pragma_legend": {
+        "_req": "REQUIRED — must exist, validation fails without",
+        "_inh": "INHERITED — from template, override allowed",
+        "_ins": "INSTANCE — file-specific, unique values"
+    },
+
+    // P.1 CORE — Identity
+    "_P1_CORE": "─────────────────────────────────────────────────────────────",
+    "_P1_tag": "P.1 CORE — Identity [CORE]",
+    "_P1_key": "B-definitions-omni-json-3block-schema",
+    "_P1_from": "b-word/seed/data/json/config.jsonc",
+    "_P1_at": "a-02.00",
+
+    // P.2 FAMILY — Classification
+    "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
+    "_P2_tag": "P.2 FAMILY — Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "schema",
+    "_P2_role": "ladder",
+    "_P2_structure": "3-block",
+
+    // P.3 INSTANCE — File Details
+    "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
+    "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
+    "_P3_component": "definitions",
+    "_P3_layer": "b-word/definitions/omni",
+    "_P3_includes": "none",
+    "_P3_provides": ["JSON_3BLOCK_SCHEMA"],
+
+    // P.4 ARCHITECTURE — Scaling Context
+    "_P4_ARCH": "─────────────────────────────────────────────────────────────",
+    "_P4_tag": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+    "_P4_layers": "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#",
+    "_P4_anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation",
+
+    // P.5 SUMMARY — Human Identity
+    "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
+    "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
+    "_P5_title": "JSON 3-Block Schema",
+    "_P5_brief": "Validation schema for OmniCode 3-block structure in JSON/JSONC files. Defines every _ field, its type, whether required, and which block it belongs to.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END PRAGMA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_pragma_end": "═══════════════════════════════════════════════════════════════",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // METADATA BLOCK [METADATA]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_start": "═══════════════════════════════════════════════════════════════",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    // M.1 IDENTITY
+    "_M1_identity": {
+        "file": "json-3block-schema.jsonc",
+        "key": "B-definitions-omni-json-3block-schema",
+        "title": "JSON 3-Block Schema",
+        "type": "Data (Schema Definition)",
+        "component": "Ladder",
+        "role": "Define required fields and tags for JSON files using OmniCode 3-block structure"
+    },
+
+    // M.2 STATE
+    "_M2_state": {
+        "version": "a-02.00",
+        "status": "Active",
+        "created": "2026-02-09",
+        "updated": "2026-02-13"
+    },
+
+    // M.3 ATTRIBUTION
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)"
+    },
+
+    // M.4 GROUNDING — "A just weight and balance are the LORD'S: all the
+    //   weights of the bag are his work." — Proverbs 16:11
+    "_M4_grounding": {
+        "scripture": "Proverbs 16:11 — A just weight and balance are the LORD'S: all the weights of the bag are his work.",
+        "principle": "Schemas are just weights — they ensure what claims to follow the standard actually does."
+    },
+
+    // M.5 DEPENDENCIES
+    "_M5_dependencies": {
+        "requires": "JSON Schema draft 2020-12 compliant validator (ajv, etc.)",
+        "consumers": "All JSON/JSONC files following OmniCode 3-block structure",
+        "validates": "b-word/seed/data/json/ templates, all derived JSONC config files",
+        "cross_format": {
+            "toml_source": "b-word/seed/data/toml/config.toml — TOML root template (original pattern)",
+            "json_template": "b-word/seed/data/json/config.jsonc — JSONC template (this schema validates it)",
+            "relationship": "This schema defines the validation contract for the JSON expression of 3-block structure."
+        }
+    },
+
+    // M.ext — Extension Contract
+    "_M_extension_note": {
+        "required": ["_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies"],
+        "extension": "M6+ available for domain-specific metadata in derived files",
+        "rule": "M1-M5 are the base contract. Derived files inherit all five and may extend with M6+ for content their domain requires."
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // END METADATA [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_metadata_end": "═══════════════════════════════════════════════════════════════",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CONTENT BLOCK [CONTENT]
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // Since JSON cannot have comments, OmniCode uses underscore-prefixed
+    // fields (_field) as documentation. These fields are ignored by
+    // consumers but carry the structural metadata that comments provide
+    // in TOML, Go, and C.
+    //
+    // The schema below defines every _ field, its type, whether it is
+    // required, and which block it belongs to.
+
+    "_content_start": "═══════════════════════════════════════════════════════════════",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    // ───────────────────────────────────────────────────────────
+    // Cc — Content Configurations [CONFIG]
+    // ───────────────────────────────────────────────────────────
+    //
+    // JSON Schema identity — defines what this schema is.
+
+    "_Cc": "─────────────────────────────────────────────────────────────",
+    "_Cc_tag": "Cc — Content Configurations [CONFIG]",
+
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://creativeworkzstudio.com/schemas/omnicode/json-3block.schema.json",
+    "title": "OmniCode JSON 3-Block Structure",
+    "description": "Validates JSON/JSONC files following OmniCode 3-block structure (PRAGMA → METADATA → CONTENT → CLOSING) using underscore-prefixed documentation fields.",
+    "type": "object",
+
+    // ───────────────────────────────────────────────────────────
+    // Co — Content Operations [OPS]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Property definitions — the actual schema body. Each _ field
+    // is defined with its JSON Schema type, constraints, and
+    // which OmniCode block it belongs to.
+
+    "_Co": "─────────────────────────────────────────────────────────────",
+    "_Co_tag": "Co — Content Operations [OPS]",
+
+    "properties": {
+
+        // ═══════════════════════════════════════════════════════
+        // PRAGMA — OmniCode Identity (P.1–P.5)
+        // ═══════════════════════════════════════════════════════
+
+        "_pragma": {
+            "type": "string",
+            "const": "═══════════════════════════════════════════════════════════════",
+            "description": "Pragma block opening separator"
+        },
+        "_pragma_tag": {
+            "type": "string",
+            "const": "OMNICODE PRAGMA [PRAGMA]",
+            "description": "Pragma block identifier tag"
+        },
+        "_pragma_format": {
+            "type": "string",
+            "pattern": "^@omni (data|template|document) --(json|jsonc|toml)$",
+            "description": "OmniCode format declaration: @omni <type> --<format>"
+        },
+        "_pragma_legend": {
+            "type": "object",
+            "description": "Field classification legend",
+            "properties": {
+                "_req": { "type": "string", "const": "REQUIRED — must exist, validation fails without" },
+                "_inh": { "type": "string", "const": "INHERITED — from template, override allowed" },
+                "_ins": { "type": "string", "const": "INSTANCE — file-specific, unique values" }
+            },
+            "required": ["_req", "_inh", "_ins"]
+        },
+
+        // P.1 CORE — Identity
+        "_P1_CORE": {
+            "type": "string",
+            "description": "P.1 section separator"
+        },
+        "_P1_tag": {
+            "type": "string",
+            "const": "P.1 CORE — Identity [CORE]",
+            "description": "P.1 section identifier"
+        },
+        "_P1_key": {
+            "type": "string",
+            "pattern": "^B-",
+            "description": "req: Unique Bereshit key (B- prefix)"
+        },
+        "_P1_from": {
+            "type": "string",
+            "description": "req: Template derivation path (b-word/ relative)"
+        },
+        "_P1_at": {
+            "type": "string",
+            "pattern": "^[abc]-[0-9]{2}\\.[0-9]{2}$|^template$",
+            "description": "req: Living version (stage-phase.completion) or 'template'"
+        },
+
+        // P.2 FAMILY — Classification
+        "_P2_FAMILY": {
+            "type": "string",
+            "description": "P.2 section separator"
+        },
+        "_P2_tag": {
+            "type": "string",
+            "const": "P.2 FAMILY — Classification [FAMILY]",
+            "description": "P.2 section identifier"
+        },
+        "_P2_type": {
+            "type": "string",
+            "enum": ["data", "code", "documentation"],
+            "description": "inh: Content type classification"
+        },
+        "_P2_subtype": {
+            "type": "string",
+            "description": "inh: Subtype within classification (config, schema, types, constants)"
+        },
+        "_P2_role": {
+            "type": "string",
+            "enum": ["ladder", "rung", "rails", "seed", "scaffold"],
+            "description": "inh: Architectural role (ladder=foundation, rung=builds-on, rails=infrastructure, seed=template)"
+        },
+        "_P2_structure": {
+            "type": "string",
+            "enum": ["3-block", "4-block", "5-block"],
+            "description": "inh: Block structure pattern"
+        },
+
+        // P.3 INSTANCE — File Details
+        "_P3_INSTANCE": {
+            "type": "string",
+            "description": "P.3 section separator"
+        },
+        "_P3_tag": {
+            "type": "string",
+            "const": "P.3 INSTANCE — File Details [INSTANCE]",
+            "description": "P.3 section identifier"
+        },
+        "_P3_component": {
+            "type": "string",
+            "description": "ins: Component position in hierarchy"
+        },
+        "_P3_layer": {
+            "type": "string",
+            "description": "ins: Layer path within b-word/"
+        },
+        "_P3_includes": {
+            "oneOf": [
+                { "type": "string", "const": "none" },
+                { "type": "array", "items": { "type": "string" } }
+            ],
+            "description": "ins: Files this depends on ('none' or array of paths)"
+        },
+        "_P3_provides": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "ins: Capabilities this file provides (UPPER_SNAKE constants)"
+        },
+
+        // P.4 ARCHITECTURE — Scaling Context
+        "_P4_ARCH": {
+            "type": "string",
+            "description": "P.4 section separator"
+        },
+        "_P4_tag": {
+            "type": "string",
+            "const": "P.4 ARCHITECTURE — Scaling Context [ARCH]",
+            "description": "P.4 section identifier"
+        },
+        "_P4_layers": {
+            "type": "string",
+            "description": "ins: Layer-to-language mapping"
+        },
+        "_P4_streams": {
+            "type": "string",
+            "description": "ins: Build stream definitions"
+        },
+        "_P4_anchor": {
+            "type": "string",
+            "description": "ins: Anchor chain (genesis_1_1 -> ...)"
+        },
+
+        // P.5 SUMMARY — Human Identity
+        "_P5_SUMMARY": {
+            "type": "string",
+            "description": "P.5 section separator"
+        },
+        "_P5_tag": {
+            "type": "string",
+            "const": "P.5 SUMMARY — Human Identity [SUMMARY]",
+            "description": "P.5 section identifier"
+        },
+        "_P5_title": {
+            "type": "string",
+            "description": "req: Human-readable display title"
+        },
+        "_P5_brief": {
+            "type": "string",
+            "description": "req: One-sentence description"
+        },
+        "_P5_usage": {
+            "type": "string",
+            "description": "ins: Usage instructions (copy path, instantiation guidance)"
+        },
+
+        // Pragma end markers
+        "_pragma_end": {
+            "type": "string",
+            "const": "═══════════════════════════════════════════════════════════════",
+            "description": "Pragma block closing separator"
+        },
+        "_pragma_end_tag": {
+            "type": "string",
+            "const": "END PRAGMA [END]",
+            "description": "Pragma block end identifier"
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // METADATA BLOCK — M.1–M.5 (required) + M.6–M.10 (optional)
+        // ═══════════════════════════════════════════════════════
+
+        "_metadata_start": {
+            "type": "string",
+            "const": "═══════════════════════════════════════════════════════════════",
+            "description": "Metadata block opening separator"
+        },
+        "_metadata_tag": {
+            "type": "string",
+            "const": "METADATA BLOCK [METADATA]",
+            "description": "Metadata block identifier tag"
+        },
+
+        // M.1 IDENTITY — Required
+        "_M1_identity": {
+            "type": "object",
+            "description": "req: File identity — file, key, title, type, component, role",
+            "properties": {
+                "file": { "type": "string" },
+                "key": { "type": "string", "pattern": "^B-" },
+                "title": { "type": "string" },
+                "type": { "type": "string" },
+                "component": { "type": "string" },
+                "role": { "type": "string" }
+            },
+            "required": ["file", "key", "title", "type", "component", "role"]
+        },
+
+        // M.2 STATE — Required
+        "_M2_state": {
+            "type": "object",
+            "description": "req: Version and lifecycle state",
+            "properties": {
+                "version": { "type": "string", "pattern": "^[abc]-[0-9]{2}\\.[0-9]{2}$" },
+                "status": { "type": "string", "enum": ["Draft", "Active", "Deprecated", "Archived"] },
+                "created": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+                "updated": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+            },
+            "required": ["version", "status", "created", "updated"]
+        },
+
+        // M.3 ATTRIBUTION — Required
+        "_M3_attribution": {
+            "type": "object",
+            "description": "req: Authorship and ownership",
+            "properties": {
+                "architect": { "type": "string" },
+                "implementation": { "type": "string" },
+                "organization": { "type": "string" },
+                "copyright": { "type": "string" }
+            },
+            "required": ["architect", "implementation"]
+        },
+
+        // M.4 GROUNDING — Required
+        "_M4_grounding": {
+            "type": "object",
+            "description": "req: Biblical foundation for this file's purpose",
+            "properties": {
+                "scripture": { "type": "string" },
+                "principle": { "type": "string" },
+                "anchor": { "type": "string" }
+            },
+            "required": ["scripture", "principle"]
+        },
+
+        // M.5 DEPENDENCIES — Required
+        "_M5_dependencies": {
+            "type": "object",
+            "description": "req: What this file requires and what consumes it",
+            "properties": {
+                "requires": { "type": "string" },
+                "consumers": { "type": "string" },
+                "integration": { "type": "string" },
+                "if_missing": { "type": "string" },
+                "related_data": { "type": "object" }
+            },
+            "required": ["requires", "consumers"]
+        },
+
+        // M.6–M.10 — Optional domain extensions
+        "_M6_location": {
+            "type": "object",
+            "description": "opt: File location and derivation path"
+        },
+        "_M7_classification": {
+            "type": "object",
+            "description": "opt: Tags and categorization"
+        },
+        "_M8_intent": {
+            "type": "object",
+            "description": "opt: Purpose, design philosophy, key features"
+        },
+        "_M9_roadmap": {
+            "type": "object",
+            "description": "opt: History, current state, planned work"
+        },
+        "_M10_temporal_scope": {
+            "type": "object",
+            "description": "opt: Lifecycle and temporal scope (tov-data specific)"
+        },
+
+        // M Extension Contract
+        "_M_extension_note": {
+            "type": "object",
+            "description": "Extension contract — documents M1-M5 base + M6+ domain rules",
+            "properties": {
+                "required": { "type": "array", "items": { "type": "string" } },
+                "extension": { "type": "string" },
+                "rule": { "type": "string" }
+            }
+        },
+
+        // Metadata end markers
+        "_metadata_end": {
+            "type": "string",
+            "const": "═══════════════════════════════════════════════════════════════",
+            "description": "Metadata block closing separator"
+        },
+        "_metadata_end_tag": {
+            "type": "string",
+            "const": "END METADATA [END]",
+            "description": "Metadata block end identifier"
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // CONTENT BLOCK — Cc (config) + Co (operations) + Cv (validation)
+        // ═══════════════════════════════════════════════════════
+
+        "_content_start": {
+            "type": "string",
+            "const": "═══════════════════════════════════════════════════════════════",
+            "description": "Content block opening separator"
+        },
+        "_content_tag": {
+            "type": "string",
+            "const": "CONTENT BLOCK [CONTENT]",
+            "description": "Content block identifier tag"
+        },
+
+        // Cc — Content Configurations
+        "_Cc": {
+            "type": "string",
+            "description": "Cc section separator"
+        },
+        "_Cc_tag": {
+            "type": "string",
+            "const": "Cc — Content Configurations [CONFIG]",
+            "description": "Cc section identifier"
+        },
+        "_Cc_format": {
+            "type": "string",
+            "description": "Format specification for content data"
+        },
+        "_Cc_key_convention": {
+            "type": "string",
+            "description": "Key naming conventions"
+        },
+        "_Cc_constraint": {
+            "type": "string",
+            "description": "Content constraints and validation rules"
+        },
+
+        // Co — Content Operations
+        "_Co": {
+            "type": "string",
+            "description": "Co section separator"
+        },
+        "_Co_tag": {
+            "type": "string",
+            "const": "Co — Content Operations [OPS]",
+            "description": "Co section identifier"
+        },
+
+        // Cv — Content Validation
+        "_Cv": {
+            "type": "string",
+            "description": "Cv section separator"
+        },
+        "_Cv_tag": {
+            "type": "string",
+            "const": "Cv — Content Validation [VALIDATE]",
+            "description": "Cv section identifier"
+        },
+        "_Cv_validation": {
+            "type": "object",
+            "description": "Validation commands"
+        },
+        "_Cv_schema": {
+            "type": "object",
+            "description": "Required/optional field definitions and value formats"
+        },
+        "_Cv_health_scoring": {
+            "type": "object",
+            "description": "Health scoring criteria with weights summing to 100"
+        },
+
+        // Content end markers
+        "_content_end": {
+            "type": "string",
+            "const": "═══════════════════════════════════════════════════════════════",
+            "description": "Content block closing separator"
+        },
+        "_content_end_tag": {
+            "type": "string",
+            "const": "END CONTENT [END]",
+            "description": "Content block end identifier"
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // CLOSING BLOCK — X.1–X.5
+        // ═══════════════════════════════════════════════════════
+
+        "_closing_start": {
+            "type": "string",
+            "const": "═══════════════════════════════════════════════════════════════",
+            "description": "Closing block opening separator"
+        },
+        "_closing_tag": {
+            "type": "string",
+            "const": "CLOSING BLOCK [CLOSING]",
+            "description": "Closing block identifier tag"
+        },
+        "_closing_structure": {
+            "type": "string",
+            "description": "Section order within closing block"
+        },
+
+        // X.1 POLICY
+        "_X1": { "type": "string", "description": "X.1 section separator" },
+        "_X1_tag": { "type": "string", "const": "X.1 POLICY — Modification Guidelines [POLICY]" },
+        "_X1_scripture": { "type": "string" },
+        "_X1_never": { "type": "array", "items": { "type": "string" } },
+        "_X1_careful": { "type": "array", "items": { "type": "string" } },
+        "_X1_safe": { "type": "array", "items": { "type": "string" } },
+
+        // X.2 EXTENSION
+        "_X2": { "type": "string", "description": "X.2 section separator" },
+        "_X2_tag": { "type": "string", "const": "X.2 EXTENSION — Future Ideas [EXTENSION]" },
+        "_X2_planned": { "type": "array", "items": { "type": "string" } },
+
+        // X.3 TROUBLESHOOTING
+        "_X3": { "type": "string", "description": "X.3 section separator" },
+        "_X3_tag": { "type": "string", "const": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]" },
+        "_X3_scripture": { "type": "string" },
+        "_X3_problems": { "type": "object" },
+
+        // X.4 REFERENCE
+        "_X4": { "type": "string", "description": "X.4 section separator" },
+        "_X4_tag": { "type": "string", "const": "X.4 REFERENCE — Quick Lookup [REFERENCE]" },
+        "_X4_related_files": { "type": "array", "items": { "type": "string" } },
+        "_X4_required": { "type": "array", "items": { "type": "string" } },
+        "_X4_validate": { "type": "string" },
+
+        // X.5 NOTE
+        "_X5": { "type": "string", "description": "X.5 section separator" },
+        "_X5_tag": { "type": "string", "const": "X.5 NOTE — Final Guidance [NOTE]" },
+        "_X5_note": { "type": "string" },
+        "_X5_scripture": { "type": "string" },
+        "_X5_anchor": { "type": "string" },
+
+        // Closing end markers
+        "_closing_end": {
+            "type": "string",
+            "const": "═══════════════════════════════════════════════════════════════",
+            "description": "Closing block closing separator"
+        },
+        "_closing_end_tag": {
+            "type": "string",
+            "const": "END CLOSING [END]",
+            "description": "Closing block end identifier"
+        }
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Cv — Content Validation [VALIDATE]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Required fields and additional properties rules for
+    // files validated against this schema.
+
+    "_Cv": "─────────────────────────────────────────────────────────────",
+    "_Cv_tag": "Cv — Content Validation [VALIDATE]",
+
+    "required": [
+        // PRAGMA — Identity
+        "_pragma",
+        "_pragma_tag",
+        "_pragma_format",
+        "_pragma_legend",
+        "_P1_CORE", "_P1_tag", "_P1_key", "_P1_from", "_P1_at",
+        "_P2_FAMILY", "_P2_tag", "_P2_type", "_P2_subtype", "_P2_role", "_P2_structure",
+        "_P3_INSTANCE", "_P3_tag", "_P3_component", "_P3_layer", "_P3_includes", "_P3_provides",
+        "_P4_ARCH", "_P4_tag", "_P4_anchor",
+        "_P5_SUMMARY", "_P5_tag", "_P5_title", "_P5_brief",
+        "_pragma_end", "_pragma_end_tag",
+
+        // METADATA — M.1–M.5 base contract
+        "_metadata_start", "_metadata_tag",
+        "_M1_identity", "_M2_state", "_M3_attribution", "_M4_grounding", "_M5_dependencies",
+        "_metadata_end", "_metadata_end_tag",
+
+        // CONTENT — Block boundaries + section markers
+        "_content_start", "_content_tag",
+        "_Cc", "_Cc_tag",
+        "_Co", "_Co_tag",
+        "_Cv", "_Cv_tag",
+        "_content_end", "_content_end_tag",
+
+        // CLOSING — Block boundaries
+        "_closing_start", "_closing_tag",
+        "_X1", "_X1_tag",
+        "_closing_end", "_closing_end_tag"
+    ],
+
+    // Allow additional properties (metadata, content, closing fields + real config)
+    "additionalProperties": true,
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CONTENT [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_content_end": "═══════════════════════════════════════════════════════════════",
+    "_content_end_tag": "END CONTENT [END]",
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLOSING BLOCK [CLOSING]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_start": "═══════════════════════════════════════════════════════════════",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note",
+
+    // X.1 POLICY
+    "_X1": "─────────────────────────────────────────────────────────────",
+    "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
+    "_X1_scripture": "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28",
+    "_X1_never": [
+        "Remove required pragma fields — breaks validation chain",
+        "Change const values for tags — these are the standard",
+        "Remove property definitions without schema version bump"
+    ],
+    "_X1_careful": [
+        "Adding new P sections (requires schema version bump)",
+        "Changing enum values for type/role/structure",
+        "Modifying required array (affects all validated files)"
+    ],
+    "_X1_safe": [
+        "Adding optional fields to any section",
+        "Adding descriptions and documentation",
+        "Relaxing patterns (making constraints more permissive)"
+    ],
+
+    // X.2 EXTENSION
+    "_X2": "─────────────────────────────────────────────────────────────",
+    "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
+    "_X2_planned": [
+        "JSON Schema $ref composition for block reuse across schemas",
+        "Base 3-block schema extraction (format-independent foundation)",
+        "TOML 3-block schema (parallel to this JSON schema)"
+    ],
+
+    // X.3 TROUBLESHOOTING
+    "_X3": "─────────────────────────────────────────────────────────────",
+    "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
+    "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
+    "_X3_problems": {
+        "validation_fails_on_P1_at": "Pattern requires stage-phase.completion (a-01.00) or 'template'.",
+        "additionalProperties_error": "Schema allows additional properties. Real config fields (name, image, features) are not constrained — only _ fields are validated.",
+        "schema_self_reference": "This file IS a 3-block file AND defines the 3-block schema. The _ keys at root are this file's own structure; the _ keys inside 'properties' define the schema for other files."
+    },
+
+    // X.4 REFERENCE
+    "_X4": "─────────────────────────────────────────────────────────────",
+    "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
+    "_X4_related_files": [
+        "b-word/seed/data/json/config.jsonc — JSONC template (validated by this schema)",
+        "b-word/seed/data/json/data.json — Pure JSON template (validated by this schema)",
+        "b-word/seed/data/toml/config.toml — TOML root template (cross-format source)",
+        "c-tov/cws-struct/lib/formats/json.ts — Runtime linter (implements this schema's rules)"
+    ],
+    "_X4_validate": "ajv validate -s json-3block-schema.jsonc -d <target-file>",
+
+    // X.5 NOTE
+    "_X5": "─────────────────────────────────────────────────────────────",
+    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_note": "JSON has no comments. Underscore fields are the bridge. This schema validates that bridge — ensuring JSON files carry the same structural metadata as TOML, Go, and C files.",
+    "_X5_scripture": "A just weight and balance are the LORD'S: all the weights of the bag are his work. — Proverbs 16:11",
+    "_X5_anchor": "Structure before content. This schema IS the standard of weights.",
+
+    // ═══════════════════════════════════════════════════════════════
+    // END CLOSING [END]
+    // ═══════════════════════════════════════════════════════════════
+
+    "_closing_end": "═══════════════════════════════════════════════════════════════",
+    "_closing_end_tag": "END CLOSING [END]"
+}

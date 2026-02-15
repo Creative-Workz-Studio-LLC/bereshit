@@ -1,0 +1,329 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L2-os-temporal-boundaries"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "os"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "os"
+layer = "L2-platform/os"
+includes = "none"
+provides = ["TEMPORAL_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Temporal Boundaries — CPI-SI Time Awareness"
+brief = "Time-of-day, session phase, and circadian classifications with display metadata"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "boundaries.toml"
+key = "B-L2-os-temporal-boundaries"
+title = "Temporal Boundaries — CPI-SI Time Awareness"
+type = "Data (Rung)"
+component = "Rung"
+role = "Time classification definitions for three temporal domains: time-of-day (7 ranges), session duration (5 phases), and circadian rhythm (6 phases). Each entry maps hours or minutes to semantic labels, icons, and display colors."
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2026-02-15"
+updated = "2026-02-15"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "To every thing there is a season, and a time to every purpose under the heaven. — Ecclesiastes 3:1"
+principle = "Temporal awareness grounds the system in the rhythm of the day. A session at 2 AM is not the same as one at 10 AM — the context differs, the appropriate response differs. The system should know what time it is."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/L2-platform/ladder/os/health/score.toml"]
+consumers = ["temporal.go", "temporal/src/lib.rs", "CPI-SI statusline"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Seeded into platform.db temporal_boundaries table. Queried by temporal package at runtime."
+if_missing = "Temporal classification unavailable — falls back to hardcoded ranges"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Temporal boundary definitions in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines boundaries. Seeder populates SQLite. Go/Rust code queries."
+
+[_metadata.M6_location]
+path = "b-word/L2-platform/ladder/os/temporal/boundaries.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "temporal, time, session, circadian, L2, boundaries, omnicode"
+
+[_metadata.M8_intent]
+purpose = "Define configurable time boundaries for temporal awareness"
+core_design = "Three classification domains (time-of-day, session, circadian) with icons and colors for display integration"
+philosophy = "Time boundaries are contextual. A 4-core ARM server operator works different hours than a distributed team. The code asks the data; the data answers."
+
+[_metadata.M9_roadmap]
+history = [
+    "b-01.00 (2026-02-15) — Initial creation: time-of-day, session, circadian boundaries",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Timezone-aware boundaries", "Sabbath/rest detection", "Seasonal daylight adaptation"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────
+# Ternary Foundation
+# ───────────────────────────────────────────────────────────────
+
+[ternary]
+scale = "balanced"
+description = "Temporal classifications map to the ternary productivity model"
+
+[ternary.mapping]
+positive = "+1 (peak productivity hours — focused, alert, optimal)"
+neutral = "0 (transitional hours — rising, recovering, winding down)"
+negative = "-1 (rest hours — body preparing for or in recovery)"
+
+# ───────────────────────────────────────────────────────────────
+# Time of Day — 7 Ranges
+# ───────────────────────────────────────────────────────────────
+
+[time_of_day.morning]
+start_hour = 5
+end_hour = 9
+icon = "🌅"
+label = "morning"
+color = "yellow"
+description = "Morning — cortisol rising, alertness building"
+
+[time_of_day.mid_morning]
+start_hour = 9
+end_hour = 12
+icon = "☀️"
+label = "mid-morning"
+color = "bright_yellow"
+description = "Mid-morning — peak cognitive performance window"
+
+[time_of_day.midday]
+start_hour = 12
+end_hour = 14
+icon = "🌞"
+label = "midday"
+color = "yellow"
+description = "Midday — post-lunch dip normal, lighter tasks"
+
+[time_of_day.afternoon]
+start_hour = 14
+end_hour = 17
+icon = "🌤️"
+label = "afternoon"
+color = "cyan"
+description = "Afternoon — second wind building, moderate focus"
+
+[time_of_day.evening]
+start_hour = 17
+end_hour = 20
+icon = "🌆"
+label = "evening"
+color = "blue"
+description = "Evening — creativity often high, winding down"
+
+[time_of_day.night]
+start_hour = 20
+end_hour = 23
+icon = "🌙"
+label = "night"
+color = "magenta"
+description = "Night — decreasing alertness, prepare for rest"
+
+[time_of_day.late_night]
+start_hour = 23
+end_hour = 5
+icon = "🌑"
+label = "late night"
+color = "dim_blue"
+description = "Late night — body in recovery mode, rest recommended"
+
+# ───────────────────────────────────────────────────────────────
+# Session Phase — 5 Phases (by elapsed minutes)
+# ───────────────────────────────────────────────────────────────
+
+[session_phase.fresh]
+max_minutes = 15
+color = "green"
+description = "Fresh — just started, warming up"
+
+[session_phase.active]
+max_minutes = 60
+color = "cyan"
+description = "Active — in the flow, productive"
+
+[session_phase.sustained]
+max_minutes = 120
+color = "yellow"
+description = "Sustained — long session, watch for fatigue"
+
+[session_phase.long]
+max_minutes = 240
+color = "blue"
+description = "Long — consider a break, diminishing returns likely"
+
+[session_phase.extended]
+max_minutes = 0
+color = "magenta"
+description = "Extended — marathon session, rest strongly recommended"
+
+# ───────────────────────────────────────────────────────────────
+# Circadian Phase — 6 Phases
+# ───────────────────────────────────────────────────────────────
+
+[circadian.rising]
+start_hour = 5
+end_hour = 9
+productivity = "increasing"
+note = "cortisol rising, alertness building"
+
+[circadian.peak]
+start_hour = 9
+end_hour = 12
+productivity = "high"
+note = "peak cognitive performance"
+
+[circadian.dip]
+start_hour = 12
+end_hour = 14
+productivity = "lower"
+note = "post-lunch dip normal"
+
+[circadian.recovery]
+start_hour = 14
+end_hour = 17
+productivity = "moderate"
+note = "second wind building"
+
+[circadian.evening]
+start_hour = 17
+end_hour = 21
+productivity = "variable"
+note = "creativity often high"
+
+[circadian.rest]
+start_hour = 21
+end_hour = 5
+productivity = "low"
+note = "body preparing for rest"
+
+# ───────────────────────────────────────────────────────────────
+# System Limits
+# ───────────────────────────────────────────────────────────────
+
+[system]
+description = "Counts for the temporal boundary subsystem"
+
+[system.type_counts]
+time_of_day_ranges = 7
+session_phases = 5
+circadian_phases = 6
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Scripture references — canonical",
+    "Ternary productivity mapping — foundational",
+    "3-block structure (METADATA -> CONTENT -> CLOSING)",
+]
+careful = [
+    "Hour boundaries (affects time classification)",
+    "Session minute thresholds (affects phase transitions)",
+    "Icon assignments (affects display consistency)",
+]
+safe = [
+    "New temporal domains (seasonal, sabbath)",
+    "Additional circadian detail",
+    "Comments and examples",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new [domain.name] section under appropriate category",
+    "2. Include start/end values, icon, color, description",
+    "3. Update system.type_counts",
+    "4. Run TOML validation",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_reference = "Check all references point to valid sources"
+boundary_overlap = "Verify hour ranges are contiguous and non-overlapping (except wrap-around)"
+
+[_closing.X4_reference]
+related_files = [
+    "b-word/L2-platform/hybrid/temporal/temporal.go",
+    "b-word/L2-platform/hybrid/temporal/src/lib.rs",
+]
+required_sections = ["_pragma", "_metadata", "ternary", "time_of_day", "session_phase", "circadian", "system", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('boundaries.toml','rb'))\""
+
+[_closing.X5_note]
+note = "Temporal Boundaries — CPI-SI Time Awareness — configurable temporal classifications."
+scripture = "To every thing there is a season, and a time to every purpose under the heaven. — Ecclesiastes 3:1"
+anchor = "Temporal boundaries — foundation for time-aware system behavior. Genesis 1:1 anchors everything."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

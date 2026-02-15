@@ -1,0 +1,490 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L2-os-access"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "os"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "os"
+layer = "L2-platform/os"
+includes = "none"
+provides = ["ACCESS_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Permission Schema - CPI-SI Health-Gated Access Control"
+brief = "Schema definition for health-gated permissions"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "access.toml"
+key = "B-L2-os-access"
+title = "Permission Schema - CPI-SI Health-Gated Access Control"
+type = "Data (Rung)"
+component = "Rung"
+role = "Schema definition for health-gated permissions — the RESTORE enabler in detect → assess → restore workflow."
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-12"
+updated = "2026-02-11"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "To every thing there is a season, and a time to every purpose under the heaven... a time to break down, and a time to build up.\" — Ecclesiastes 3:1,3 KJV"
+principle = "Not every action is permitted at every time. Permission is health-gated — your state determines what you may do. This is SELF-GOVERNANCE, not external control."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/core/os/health/score.toml", "b-word/core/os/health/diagnostics.toml", "b-word/core/types/composition.toml"]
+consumers = ["Action executors", "CPI-SI model", "FaithNet", "Recovery procedures"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by code generators and tools."
+if_missing = "Permission Schema - CPI-SI Health-Gated Access Control unavailable — dependent systems cannot function"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Permission Schema - CPI-SI Health-Gated Access Control in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines os data. Generated code implements lookups."
+
+[_metadata.M6_location]
+path = "b-word/L2-platform/os/access.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "access, os, L2, rung, omnicode"
+
+[_metadata.M8_intent]
+purpose = "Define how permissions are granted, deferred, or denied based on health"
+core_design = "Ternary permission states gated by health levels"
+philosophy = "Trust is earned, not assumed. Your health (track record) determines what you may do. No shortcuts — must pass through deferred to move between denied and granted."
+
+[_metadata.M9_roadmap]
+history = [
+    "a-01.00 (2025-12-12) — Initial creation",
+    "b-01.00 (2026-02-11) — TOML-native 3-block format alignment",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Code generation integration", "Automated validation tooling"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Rung data file — permission schema - cpi-si health-gated access control for the OmniCode system"
+Cc = "Content Configurations — Schema definition for health-gated permissions"
+Co = "Content Operations — access data"
+Cv = "Content Validation — schema requirements, type constraints"
+
+[states]
+description = "Ternary permission states"
+values = [-1, 0, 1]
+
+[states.denied]
+value = -1
+name = "denied"
+description = "No — action not permitted in current state"
+meaning = "Blocked, not allowed, must improve first"
+# Denial protects against further damage when unhealthy
+
+[states.deferred]
+value = 0
+name = "deferred"
+description = "Not yet — conditions not met, but not rejected"
+meaning = "Wait, pending, prove yourself first"
+# Deferred is the middle path — not no, but not yes yet
+
+[states.granted]
+value = 1
+name = "granted"
+description = "Yes — action permitted, proceed"
+meaning = "Approved, allowed, trust earned"
+# Granted based on demonstrated health/track record
+
+
+# -----------------------------------------------------------------------------
+# 2. State Transitions - How Permissions Change
+# -----------------------------------------------------------------------------
+# Permissions transition based on health changes.
+# KEY: No shortcuts. Must pass through deferred between denied and granted.
+
+[transitions]
+description = "How permission states change"
+principle = "No shortcuts — must pass through deferred"
+
+[transitions.path]
+# The only valid paths:
+# denied ↔ deferred ↔ granted
+# NEVER: denied ↔ granted (direct jump forbidden)
+valid = [
+    "denied → deferred",      # Starting recovery
+    "deferred → granted",     # Trust earned
+    "granted → deferred",     # Trust degrading
+    "deferred → denied",      # Conditions worsened
+]
+invalid = [
+    "denied → granted",       # No shortcuts up
+    "granted → denied",       # No instant fall (goes through deferred)
+]
+
+[transitions.compound]
+# Compound states show DIRECTION of movement
+description = "Hyphenated states indicate trajectory"
+
+[transitions.compound.denied_deferred]
+notation = "denied-deferred"
+direction = "improving"
+meaning = "Was blocked, now pending — recovery started"
+value_change = "-1 → 0"
+
+[transitions.compound.deferred_granted]
+notation = "deferred-granted"
+direction = "improving"
+meaning = "Was pending, now approved — trust earned"
+value_change = "0 → +1"
+
+[transitions.compound.granted_deferred]
+notation = "granted-deferred"
+direction = "declining"
+meaning = "Was approved, now pending — trust degrading"
+value_change = "+1 → 0"
+
+[transitions.compound.deferred_denied]
+notation = "deferred-denied"
+direction = "declining"
+meaning = "Was pending, now blocked — conditions worsened"
+value_change = "0 → -1"
+
+
+# -----------------------------------------------------------------------------
+# 3. Health Gating - How Health Determines Permission
+# -----------------------------------------------------------------------------
+# Permission is determined by health level.
+# Different health levels unlock different permission states.
+
+[gating]
+description = "Health level determines permission state"
+
+[gating.mapping]
+# Health levels from health.toml map to permission states
+# 7 health levels → 3 permission states
+
+# DENIED zone (wanting)
+broken = "denied"      # -100 to -67 true → denied
+wanting = "denied"     # -66 to -34 true → denied
+
+# DEFERRED zone (transitional)
+lacking = "deferred"   # -33 to -1 true → deferred
+even = "deferred"      # 0 true → deferred (baseline, must prove)
+sound = "deferred"     # +1 to +33 true → deferred (building trust)
+
+# GRANTED zone (integrity)
+whole = "granted"      # +34 to +66 true → granted
+perfect = "granted"    # +67 to +100 true → granted
+
+[gating.thresholds]
+# Normalized (Base50) thresholds for quick decisions
+denied_below = -50     # Normalized ≤ -50 → denied
+deferred_range = [-49, 49]  # Normalized -49 to +49 → deferred
+granted_above = 50     # Normalized ≥ +50 → granted
+
+[gating.principle]
+# Trust is EARNED through health
+# Low health = restricted (protection)
+# Even health = limited (prove yourself)
+# High health = full access (trust demonstrated)
+self_governance = true
+external_override = false  # System governs itself
+
+
+# -----------------------------------------------------------------------------
+# 4. Action Categories - Different Requirements
+# -----------------------------------------------------------------------------
+# Not all actions have the same permission requirements.
+# More sensitive/dangerous actions require higher health.
+
+[actions]
+description = "Actions categorized by sensitivity"
+
+[actions.categories.safe]
+description = "Low-risk actions — minimal health requirement"
+examples = ["read", "list", "status", "help"]
+minimum_state = "deferred"  # Even deferred can do these
+health_threshold = -50  # Normalized > -50
+
+[actions.categories.standard]
+description = "Normal actions — require baseline health"
+examples = ["write", "edit", "create", "test"]
+minimum_state = "deferred"
+health_threshold = 0  # Normalized ≥ 0 (at least even)
+
+[actions.categories.sensitive]
+description = "Important actions — require positive health"
+examples = ["delete", "deploy", "publish", "commit"]
+minimum_state = "granted"
+health_threshold = 50  # Normalized ≥ +50
+
+[actions.categories.critical]
+description = "High-risk actions — require strong health"
+examples = ["release", "migrate", "restructure", "reset"]
+minimum_state = "granted"
+health_threshold = 75  # Normalized ≥ +75 (near perfect)
+
+[actions.default]
+# If action category unknown, use standard
+fallback_category = "standard"
+
+
+# -----------------------------------------------------------------------------
+# 5. Sentence Syntax - Human-Readable Rules
+# -----------------------------------------------------------------------------
+# Permission rules expressed in sentence-based syntax.
+# Anyone can read AND write these.
+
+[syntax]
+description = "Permission rules in sentence form"
+
+[syntax.patterns]
+# Basic patterns for permission rules
+grant_when = "grant {action} when health is {level}"
+defer_when = "defer {action} when health is {level}"
+deny_when = "deny {action} when health is {level}"
+# Conditional
+grant_if = "grant {action} if {condition}"
+defer_until = "defer {action} until {condition}"
+deny_unless = "deny {action} unless {condition}"
+
+[syntax.examples]
+# Examples of permission rules in sentence form
+example_1 = "grant write when health is whole"
+example_2 = "defer deployment until health reaches sound"
+example_3 = "deny deletion when health is wanting"
+example_4 = "grant full_access if health above 50"
+example_5 = "defer risky_operations unless health is positive"
+
+[syntax.compound_examples]
+# Using transitions in syntax
+example_1 = "when permission shifts from granted to deferred then warn user"
+example_2 = "when permission shifts from denied to deferred then log recovery_started"
+example_3 = "when permission reaches granted from deferred then celebrate"
+
+[syntax.block_example]
+# Full permission block in sentence syntax
+example = """
+permission for file_delete chosen from granted or deferred or denied
+  grant when health is perfect and ownership is confirmed
+  defer when health is sound but ownership is pending
+  deny when health is wanting or ownership is false
+"""
+
+
+# -----------------------------------------------------------------------------
+# 6. Permission Check - Evaluation Process
+# -----------------------------------------------------------------------------
+# How to check if an action is permitted.
+
+[check]
+description = "Process for evaluating permission"
+
+[check.process]
+steps = [
+    "1. Identify action category",
+    "2. Get current health (from diagnostics)",
+    "3. Get health threshold for category",
+    "4. Compare: health vs threshold",
+    "5. Return permission state",
+]
+
+[check.algorithm]
+# Pseudocode for permission check
+code = """
+func CheckPermission(action string, health int) PermissionState {
+    category := GetActionCategory(action)
+    threshold := GetHealthThreshold(category)
+
+    if health >= threshold {
+        return GRANTED
+    } else if health >= threshold - 50 {
+        return DEFERRED
+    } else {
+        return DENIED
+    }
+}
+"""
+
+[check.result]
+# What a permission check returns
+fields = ["state", "reason", "health_required", "health_current", "gap"]
+example = """
+{
+    "state": "deferred",
+    "reason": "Health below threshold for sensitive action",
+    "health_required": 50,
+    "health_current": 25,
+    "gap": 25
+}
+"""
+
+
+# =============================================================================
+# END CONTENT
+# =============================================================================
+
+# =============================================================================
+# GENERATION METADATA
+# =============================================================================
+# Tells the generator how to produce C header from this spec.
+
+[generate]
+enabled = true
+output = "permission_access.gen.h"
+order = 5  # After health (4), before identity
+guard = "PERMISSION_ACCESS_GEN_H"
+description = "Permission constants — ternary states, health gating thresholds"
+sections = [
+    "states.denied",       # PERMISSION_DENIED = -1
+    "states.deferred",     # PERMISSION_DEFERRED = 0
+    "states.granted",      # PERMISSION_GRANTED = 1
+    "gating.thresholds",   # DENIED_BELOW = -50, GRANTED_ABOVE = 50
+    "actions.categories.safe",      # SAFE_THRESHOLD = -50
+    "actions.categories.standard",  # STANDARD_THRESHOLD = 0
+    "actions.categories.sensitive", # SENSITIVE_THRESHOLD = 50
+    "actions.categories.critical"   # CRITICAL_THRESHOLD = 75
+]
+
+# ─────────────────────────────────────────────────────────────
+# Extensions (reserved)
+# ─────────────────────────────────────────────────────────────
+
+[extensions]
+note = "Reserved — no extensions defined"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('access.toml','rb'))\""]
+
+[_validation.schema]
+required = ["actions", "check", "gating", "generate", "states", "syntax", "transitions"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_tables_valid = 30
+data_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Scripture references — canonical",
+    "Core mappings — foundational to system",
+    "3-block structure (METADATA → CONTENT → CLOSING)",
+]
+careful = [
+    "Changing default thresholds (affects all permission checks)",
+    "Changing gating mappings (affects health→permission relationship)",
+]
+safe = [
+    "New action categories",
+    "New syntax patterns",
+    "Additional threshold levels",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new entries following existing table structure",
+    "2. Ensure all required fields present",
+    "3. Verify consistency with related files",
+    "4. Run TOML validation",
+    "5. Run linter to verify alignment",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_reference = "Check all references point to valid sources"
+consistency_error = "Verify bidirectional consistency with related files"
+
+[_closing.X4_reference]
+related_files = [
+    "b-word/core/os/health/score.toml",
+    "b-word/core/os/health/diagnostics.toml",
+    "b-word/core/types/composition.toml",
+]
+required_sections = ["_pragma", "_metadata", "actions", "check", "gating", "generate", "states", "syntax", "transitions", "_validation", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('access.toml','rb'))\""
+
+[_closing.X5_note]
+note = "To every thing there is a season. Permission is not external control — it is SELF-GOVERNANCE. The system knows its own health and acts accordingly: - Denied: \"I cannot do this safely\" - Deferred: \"I could, but conditions aren't right\" - Granted: \"I am healthy enough to proceed\" No shortcuts: - denied → deferred → granted (earn trust) - granted → deferred → denied (lose trust gradually) The transitions show trajectory: - denied-deferred: \"I'm recovering\" - granted-deferred: \"I'm slipping\" For CPI-SI: This is identity-based permission. WHO you are (your health) determines WHAT you can do. For FaithNet: This is how instances trust each other. Healthy instances can participate; unhealthy ones are quarantined. The permission schema enables RESTORE in detect → assess → restore. What can we do? Permission reveals."
+scripture = "----------------------------------------------------------------------------- All things are lawful unto me, but all things are not expedient. — 1 Corinthians 6:12"
+anchor = "To every thing there is a season. Permission is not external control — it is SELF-GOVERNANCE. The system knows its own health and acts accordingly: - Denied: \"I cannot do this safely\" - Deferred: \"I could, but conditions aren't right\" - Granted: \"I am healthy enough to proceed\" No shortcuts: - denied → deferred → granted (earn trust) - granted → deferred → denied (lose trust gradually) The transitions show trajectory: - denied-deferred: \"I'm recovering\" - granted-deferred: \"I'm slipping\" For CPI-SI: This is identity-based permission. WHO you are (your health) determines WHAT you can do. For FaithNet: This is how instances trust each other. Healthy instances can participate; unhealthy ones are quarantined. The permission schema enables RESTORE in detect → assess → restore. What can we do? Permission reveals. Genesis 1:1 anchors everything."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

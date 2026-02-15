@@ -1,0 +1,282 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L2-os-terminal-display"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "os"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "os"
+layer = "L2-platform/os"
+includes = "none"
+provides = ["TERMINAL_DISPLAY_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Terminal Display — CPI-SI Command Colors & Debug Configuration"
+brief = "State machine command colors, WezTerm integration config, health emoji mapping, debug session formatting"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "display.toml"
+key = "B-L2-os-terminal-display"
+title = "Terminal Display — CPI-SI Command Colors & Debug Configuration"
+type = "Data (Rung)"
+component = "Rung"
+role = "Terminal display configuration for the CPI-SI state machine. Maps command states (HALT/AWAIT/PROCEED) to terminal color schemes via OSC 10/11/12, defines health-to-emoji mappings for debug output, and configures WezTerm state persistence."
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2026-02-15"
+updated = "2026-02-15"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "A word fitly spoken is like apples of gold in pictures of silver. — Proverbs 25:11"
+principle = "Terminal display is the system's voice. The colors a developer sees during HALT, AWAIT, and PROCEED reflect the state machine's reality. Red means stop. Yellow means wait. Green means go. These aren't aesthetic choices — they're communication."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/L2-platform/ladder/os/health/score.toml"]
+consumers = ["wezterm.go", "debugging.go", "wezterm/src/lib.rs", "debugging/src/lib.rs"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Seeded into platform.db terminal_display table. Queried by wezterm and debugging packages at runtime."
+if_missing = "Terminal display defaults to hardcoded colors — functional but not configurable"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Terminal display configuration in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines display config. Seeder populates SQLite. Go/Rust code queries."
+
+[_metadata.M6_location]
+path = "b-word/L2-platform/ladder/os/terminal/display.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "terminal, display, wezterm, debugging, colors, L2, omnicode"
+
+[_metadata.M8_intent]
+purpose = "Define configurable terminal display properties for CPI-SI state visualization"
+core_design = "Command colors (HALT/AWAIT/PROCEED) as hex triplets, health emoji mapping, state file configuration"
+philosophy = "Display configuration belongs in data, not code. A dark-theme user might need different cursor colors than a light-theme user. The system should adapt without recompilation."
+
+[_metadata.M9_roadmap]
+history = [
+    "b-01.00 (2026-02-15) — Initial creation: command colors, health emoji, state file config",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Theme variants (light/dark)", "Custom icon sets", "Accessibility modes"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────
+# Ternary Foundation
+# ───────────────────────────────────────────────────────────────
+
+[ternary]
+scale = "balanced"
+description = "Command states map directly to the ternary model"
+
+[ternary.mapping]
+proceed = "+1 (flowing/go — green spectrum)"
+await = "0 (waiting/caution — yellow spectrum)"
+halt = "-1 (stopped/terminal — red spectrum)"
+
+# ───────────────────────────────────────────────────────────────
+# CPI-SI Command Colors (OSC 10/11/12)
+# ───────────────────────────────────────────────────────────────
+
+[command_colors.HALT]
+foreground = "#ff6b6b"
+background = "#1a1a2e"
+cursor = "#ff4757"
+description = "Red spectrum — terminal/stop state"
+
+[command_colors.AWAIT]
+foreground = "#ffd93d"
+background = "#1a1a2e"
+cursor = "#feca57"
+description = "Yellow spectrum — waiting/caution state"
+
+[command_colors.PROCEED]
+foreground = "#6bcb77"
+background = "#1a1a2e"
+cursor = "#26de81"
+description = "Green spectrum — flowing/go state"
+
+# ───────────────────────────────────────────────────────────────
+# WezTerm State File Configuration
+# ───────────────────────────────────────────────────────────────
+
+[state_file]
+runtime_dir_env = "XDG_RUNTIME_DIR"
+fallback_dir = "/tmp"
+filename = "cpisi-wezterm-state"
+permissions = "0600"
+description = "Persists current command for transition detection across invocations"
+
+# ───────────────────────────────────────────────────────────────
+# Health Emoji Mapping (for debug output)
+# ───────────────────────────────────────────────────────────────
+
+[[health_emoji]]
+min_percent = 90
+emoji = "💚"
+label = "Excellent"
+
+[[health_emoji]]
+min_percent = 70
+emoji = "💛"
+label = "Good"
+
+[[health_emoji]]
+min_percent = 50
+emoji = "🧡"
+label = "Moderate"
+
+[[health_emoji]]
+min_percent = 30
+emoji = "❤️"
+label = "Poor"
+
+[[health_emoji]]
+min_percent = 10
+emoji = "🩸"
+label = "Critical"
+
+[[health_emoji]]
+min_percent = 0
+emoji = "☠️"
+label = "Failed"
+
+# ───────────────────────────────────────────────────────────────
+# Debug Session Markers
+# ───────────────────────────────────────────────────────────────
+
+[debug_markers]
+session_start = "# DEBUG_SESSION_START"
+session_end = "# DEBUG_SESSION_END"
+section_separator = "────────────────────────────────────────────────────────────────"
+box_top = "┌────────────────────────────────────────────────────────────────┐"
+box_bottom = "└────────────────────────────────────────────────────────────────┘"
+box_divider = "├────────────────────────────────────────────────────────────────┤"
+description = "Structured markers for debug session parsing"
+
+# ───────────────────────────────────────────────────────────────
+# System Limits
+# ───────────────────────────────────────────────────────────────
+
+[system]
+description = "Counts for the terminal display subsystem"
+
+[system.type_counts]
+command_colors = 3
+health_emoji_levels = 6
+debug_markers = 6
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Scripture references — canonical",
+    "Ternary command mapping — foundational",
+    "3-block structure (METADATA -> CONTENT -> CLOSING)",
+]
+careful = [
+    "Command color hex values (affects visual consistency)",
+    "Health emoji mappings (affects debug readability)",
+    "State file path conventions (affects cross-process communication)",
+]
+safe = [
+    "New command states",
+    "Theme variants",
+    "Additional debug markers",
+    "Comments and examples",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. For new command: add [command_colors.<NAME>] with fg/bg/cursor hex",
+    "2. For new emoji level: add [[health_emoji]] entry (keep sorted by min_percent descending)",
+    "3. Update system.type_counts",
+    "4. Run TOML validation",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+hex_colors = "Must be valid 6-digit hex with # prefix (e.g., #ff6b6b)"
+emoji_order = "health_emoji entries must be sorted by min_percent descending"
+
+[_closing.X4_reference]
+related_files = [
+    "b-word/L2-platform/hybrid/terminal/wezterm/wezterm.go",
+    "b-word/L2-platform/hybrid/terminal/debugging/debugging.go",
+    "b-word/L2-platform/hybrid/terminal/display/display.go",
+]
+required_sections = ["_pragma", "_metadata", "ternary", "command_colors", "state_file", "health_emoji", "debug_markers", "system", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('display.toml','rb'))\""
+
+[_closing.X5_note]
+note = "Terminal Display — CPI-SI Command Colors & Debug Configuration — visual language of the state machine."
+scripture = "A word fitly spoken is like apples of gold in pictures of silver. — Proverbs 25:11"
+anchor = "Terminal display configuration — foundation for state visualization. Genesis 1:1 anchors everything."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

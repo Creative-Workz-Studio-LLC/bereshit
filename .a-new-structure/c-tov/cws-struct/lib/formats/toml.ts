@@ -241,6 +241,188 @@ function checkCrossRefs(file: string, data: TomlData): LintResult[] {
 }
 
 // ---------------------------------------------------------------------------
+// Transform — auto-fix missing Cc/Co/Cv labels
+// ---------------------------------------------------------------------------
+
+/** Escape a string for use inside TOML double quotes. */
+function escapeTomlValue(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+/**
+ * Generate Cc/Co/Cv label values from file metadata.
+ *
+ * - Cc derives from P5_summary.brief (what the file configures)
+ * - Co derives from P3_instance.provides (what capabilities it gives)
+ * - Cv is standard validation description
+ */
+function generateCcCoCv(
+  data: TomlData,
+): { cc: string; co: string; cv: string } {
+  const pragma = getTable(data, "_pragma");
+  const content = getTable(data, "_content");
+
+  // Cc — from P5_summary.brief, falling back to constraint
+  const p5 = pragma ? getTable(pragma, "P5_summary") : undefined;
+  const brief = (p5?.["brief"] as string) ?? "";
+  const constraint = (content?.["constraint"] as string) ?? "";
+  const ccSource = brief || constraint || "configuration data";
+  const cc = `Content Configurations — ${escapeTomlValue(ccSource)}`;
+
+  // Co — from P3_instance.provides, falling back to M1_identity.role
+  const p3 = pragma ? getTable(pragma, "P3_instance") : undefined;
+  const provides = p3?.["provides"];
+  const meta = getTable(data, "_metadata");
+  const m1 = meta ? getTable(meta, "M1_identity") : undefined;
+  const role = (m1?.["role"] as string) ?? "";
+
+  let co: string;
+  if (Array.isArray(provides) && provides.length > 0) {
+    const items = provides.map((p: string) =>
+      p.toLowerCase().replace(/_/g, " ")
+    );
+    const display = items.length <= 4
+      ? items.join(", ")
+      : items.slice(0, 3).join(", ") + `, +${items.length - 3} more`;
+    co = `Content Operations — ${escapeTomlValue(display)}`;
+  } else if (role) {
+    co = `Content Operations — ${escapeTomlValue(role)}`;
+  } else {
+    co = "Content Operations — type definitions and integration";
+  }
+
+  // Cv — standard validation description
+  const cv = "Content Validation — schema requirements, type constraints";
+
+  return { cc, co, cv };
+}
+
+/**
+ * Find the line index of the last scalar key = value line within [_content],
+ * before the next section separator (comment or table header).
+ * Returns -1 if [_content] not found.
+ */
+function findContentInsertionPoint(lines: string[]): number {
+  let inContent = false;
+  let lastKeyLine = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+
+    if (trimmed === "[_content]") {
+      inContent = true;
+      continue;
+    }
+
+    if (inContent) {
+      // Another TOML table header → stop
+      if (trimmed.startsWith("[") && !trimmed.startsWith("[_content")) {
+        break;
+      }
+      // Comment separator → stop (marks beginning of sub-blocks)
+      if (trimmed.startsWith("# ─") || trimmed.startsWith("# ═")) {
+        break;
+      }
+      // Key = value line (not a comment, not blank)
+      if (trimmed && !trimmed.startsWith("#") && trimmed.includes(" = ")) {
+        lastKeyLine = i;
+      }
+    }
+  }
+
+  return lastKeyLine;
+}
+
+/**
+ * Transform a TOML file by adding missing Cc/Co/Cv labels to [_content].
+ * Labels are generated from the file's own pragma and metadata.
+ */
+async function transformTomlFile(
+  filePath: string,
+  dryRun: boolean,
+): Promise<LintResult[]> {
+  const results: LintResult[] = [];
+
+  let text: string;
+  try {
+    text = await Deno.readTextFile(filePath);
+  } catch (e) {
+    return [error(filePath, "io/read", `Cannot read file: ${e}`)];
+  }
+
+  let data: TomlData;
+  try {
+    data = parseToml(text) as TomlData;
+  } catch (e) {
+    return [error(filePath, "parse/toml", `TOML parse error: ${e}`)];
+  }
+
+  const content = getTable(data, "_content");
+  if (!content) {
+    results.push(
+      info(filePath, "transform/skip", "No [_content] — nothing to transform"),
+    );
+    return results;
+  }
+
+  const needsCc = !has(content, "Cc");
+  const needsCo = !has(content, "Co");
+  const needsCv = !has(content, "Cv");
+
+  if (!needsCc && !needsCo && !needsCv) {
+    results.push(
+      info(
+        filePath,
+        "transform/ok",
+        "Cc/Co/Cv already present — no changes needed",
+      ),
+    );
+    return results;
+  }
+
+  // Generate labels from file metadata
+  const labels = generateCcCoCv(data);
+
+  // Find insertion point in raw text
+  const lines = text.split("\n");
+  const insertIdx = findContentInsertionPoint(lines);
+
+  if (insertIdx === -1) {
+    results.push(
+      error(
+        filePath,
+        "transform/position",
+        "Could not find insertion point in [_content]",
+      ),
+    );
+    return results;
+  }
+
+  // Build insertion lines
+  const insertLines: string[] = [];
+  if (needsCc) insertLines.push(`Cc = "${labels.cc}"`);
+  if (needsCo) insertLines.push(`Co = "${labels.co}"`);
+  if (needsCv) insertLines.push(`Cv = "${labels.cv}"`);
+
+  if (dryRun) {
+    for (const line of insertLines) {
+      results.push(info(filePath, "transform/would-add", line));
+    }
+    return results;
+  }
+
+  // Insert after the last key line in [_content]
+  lines.splice(insertIdx + 1, 0, ...insertLines);
+  await Deno.writeTextFile(filePath, lines.join("\n"));
+
+  for (const line of insertLines) {
+    results.push(info(filePath, "transform/added", line));
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
 // Lint orchestrator
 // ---------------------------------------------------------------------------
 
@@ -280,8 +462,9 @@ const tomlHandler: FormatHandler = {
   name: "toml",
   description: "TOML 3-block alignment (pragma, metadata M1-M9, content Cc/Co/Cv, closing X1-X5)",
   extensions: [".toml"],
-  maxDepth: 3,
+  maxDepth: 10,
   lint: lintTomlFile,
+  transform: transformTomlFile,
 };
 
 registerFormat(tomlHandler);

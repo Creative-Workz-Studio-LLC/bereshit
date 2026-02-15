@@ -1,53 +1,50 @@
-// L2 Platform — Operating System Layer
+// L2 Platform — Operating System & Platform Services Layer
 // "And God called the firmament Heaven." — Genesis 1:8
 //
-// The platform. MillenniumOS — a ternary-native operating system with
-// OmniCode + CPI-SI integrated. Stands on L0.
+// The platform. Where abstractions meet reality — filesystem contracts,
+// health monitoring, terminal services, permission models, server config.
+// Stands on L0 (foundation) and L1 (language).
 //
-// Language: C (kernel, drivers, boot)
-// Dependencies: L0 (libtrit)
-// Dependents: None directly (hosts L3-L5 at runtime)
+// Language: Go (platform services), Rust (future — spiral/)
+// Dependencies: L0 (types, config), L1 (pragma, OmniCode)
+// Dependents: L3 (CPI-SI), L4 (FaithNet), L5 (Applications)
 
 = L2 Platform
 
 == Purpose
 
-MillenniumOS — the operating system where Kingdom Technology runs natively.
-Ternary-native kernel, zone-aware filesystem integration, balanced ternary
-hardware abstraction. The firmament between hardware and applications.
+Platform services layer — the firmament between foundation and application.
+Filesystem contracts, health monitoring, terminal utilities, server configuration,
+permission models, and (future) database platform services.
 
-== Current Location (pre-migration)
-
-[cols="2,3"]
-|===
-| Component | Current Path
-
-| MillenniumOS (full OS)
-| `millenniumos/`
-
-| Kernel
-| `millenniumos/kernel/`
-
-| Boot
-| `millenniumos/boot/`
-
-| Drivers
-| `millenniumos/drivers/`
-|===
-
-== Target Structure
+== Structure
 
 ----
 L2-platform/
-├── millenniumos/   ← full OS (15K+ files, separate build system)
-├── filesystem/     ← native ternary filesystem
-├── fuse/           ← FUSE bridge layer
-└── drivers/        ← hardware abstraction
+├── ladder/                         ← Specs (TOML contracts)
+│   ├── filesystem/                 ← Filesystem contract + types
+│   ├── os/                         ← OS services
+│   │   ├── health/                 ← Health monitoring (6 specs)
+│   │   └── permission/             ← Permission model
+│   └── database/                   ← Platform database contract (upcoming)
+├── hybrid/                         ← Code (Go — platform services)
+│   ├── server/                     ← Server config + services
+│   │   ├── config/                 ← Hosts, paths, preferences, server
+│   │   └── services/builder/       ← Builder service handler
+│   ├── util/                       ← Utilities
+│   │   ├── term/                   ← Terminal (display, system, temporal, debug, wezterm)
+│   │   └── vcs/git/                ← Git operations
+│   ├── drivers/                    ← Hardware abstraction (placeholder)
+│   ├── fuse/                       ← FUSE bridge layer (placeholder)
+│   ├── millenniumos/               ← MillenniumOS (placeholder)
+│   └── substrates/                 ← Substrate-specific platform code
+│       └── millenniumos/           ← MillenniumOS substrate (placeholder)
+├── spiral/                         ← Future (Rust crates)
+└── root.adoc                       ← This file
 ----
 
 == Build
 
- make l2
+ make -C L2-platform check
 
-Delegates to `millenniumos/`. Separate build system — do NOT touch internals
-without understanding the full OS architecture.
+Runs quality gate: Go vet, structural lint, tests.

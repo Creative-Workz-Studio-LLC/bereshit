@@ -1,0 +1,249 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L2-os-deploy-hosts"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "os"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "os"
+layer = "L2-platform/os"
+includes = "none"
+provides = ["DEPLOYMENT_HOST_DATA", "SERVER_CONFIG_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Deployment Hosts — CPI-SI Production Infrastructure"
+brief = "Host definitions, production paths, and server configuration for deployment targets"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "hosts.toml"
+key = "B-L2-os-deploy-hosts"
+title = "Deployment Hosts — CPI-SI Production Infrastructure"
+type = "Data (Rung)"
+component = "Rung"
+role = "Production deployment targets and server configuration. Defines host connection details (SSH user, IP, architecture), production filesystem paths, and server runtime defaults. The Makefile and Go/Rust code both consume this data."
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2026-02-15"
+updated = "2026-02-15"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "Except the LORD build the house, they labour in vain that build it: except the LORD keep the city, the watchman waketh but in vain. — Psalm 127:1"
+principle = "Infrastructure definitions belong in data, not scattered across Makefiles and Go constants. When the Oracle IP changes or a new host comes online, one file updates — not twelve."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = []
+consumers = ["hosts.go", "server.go", "builder.go", "hosts/src/lib.rs", "server/src/lib.rs", "Makefile"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Seeded into platform.db deployment_hosts and server_config tables. Queried by deploy packages at runtime."
+if_missing = "Deployment unavailable — falls back to hardcoded host definitions"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Deployment host definitions in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines hosts. Seeder populates SQLite. Go/Rust code and Makefile query."
+
+[_metadata.M6_location]
+path = "b-word/L2-platform/ladder/os/deploy/hosts.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "deploy, hosts, server, infrastructure, L2, production, omnicode"
+
+[_metadata.M8_intent]
+purpose = "Define deployment targets and server configuration as data"
+core_design = "Host definitions with SSH details + architecture, production paths, server defaults"
+philosophy = "Infrastructure as data. The same host definitions power the Makefile's deploy target, the Go server's self-awareness, and the Rust crate's configuration. One source of truth."
+
+[_metadata.M9_roadmap]
+history = [
+    "b-01.00 (2026-02-15) — Initial creation: oracle, dell hosts + server config",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Fly.io standby host", "Health check endpoints per host", "Auto-failover configuration"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────
+# Ternary Foundation
+# ───────────────────────────────────────────────────────────────
+
+[ternary]
+scale = "balanced"
+description = "Host availability maps to the ternary health model"
+
+[ternary.mapping]
+primary = "+1 (primary production host — Oracle Cloud, always-on)"
+fallback = "0 (fallback host — Dell LAN, available when primary fails)"
+standby = "-1 (standby host — Fly.io, auto-stopped, cold start)"
+
+# ───────────────────────────────────────────────────────────────
+# Deployment Hosts
+# ───────────────────────────────────────────────────────────────
+
+[hosts.oracle]
+name = "oracle"
+address = "163.192.118.124"
+username = "seanje"
+arch = "arm64"
+is_primary = true
+description = "Oracle Cloud VM — ARM64, Ubuntu 24.04, 4 OCPU, 12GB RAM"
+
+[hosts.dell]
+name = "dell"
+address = "192.168.1.99"
+username = "seanje"
+arch = "amd64"
+is_primary = false
+description = "Dell workstation — LAN only, x86_64 fallback"
+
+# ───────────────────────────────────────────────────────────────
+# Production Paths
+# ───────────────────────────────────────────────────────────────
+
+[paths]
+prod_dir = "/home/seanje/cws"
+prod_bin = "/usr/local/bin/cws-server"
+description = "Remote filesystem paths shared by all deployment targets"
+
+# ───────────────────────────────────────────────────────────────
+# Server Configuration
+# ───────────────────────────────────────────────────────────────
+
+[server]
+description = "CWS server runtime defaults"
+
+[server.defaults]
+port = 3847
+env_port = "CWS_PORT"
+env_builder_dir = "CWS_BUILDER_DIR"
+description = "Default port and environment variable names"
+
+[server.features]
+health_endpoint = "/health"
+config_endpoint = "/api/config"
+preferences_endpoint = "/api/preferences"
+description = "Known HTTP endpoints served by cws-server"
+
+# ───────────────────────────────────────────────────────────────
+# System Limits
+# ───────────────────────────────────────────────────────────────
+
+[system]
+description = "Counts for the deployment subsystem"
+
+[system.type_counts]
+hosts = 2
+paths = 2
+server_endpoints = 3
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Scripture references — canonical",
+    "Ternary host mapping — foundational",
+    "3-block structure (METADATA -> CONTENT -> CLOSING)",
+]
+careful = [
+    "Host IP addresses (affects SSH connectivity)",
+    "Production paths (affects deployment)",
+    "Server port (affects service discovery)",
+]
+safe = [
+    "New hosts (Fly.io standby, additional cloud)",
+    "New server endpoints",
+    "Comments and examples",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new [hosts.<name>] section with address, username, arch, is_primary",
+    "2. Update system.type_counts.hosts",
+    "3. Run TOML validation",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+connectivity = "Verify host addresses are reachable from build machine"
+arch_mismatch = "Ensure arch value matches GOARCH/RUSTC target for cross-compilation"
+
+[_closing.X4_reference]
+related_files = [
+    "b-word/L2-platform/hybrid/deploy/hosts/hosts.go",
+    "b-word/L2-platform/hybrid/deploy/server/server.go",
+    "b-word/L2-platform/hybrid/deploy/builder/builder.go",
+    "server/Makefile",
+]
+required_sections = ["_pragma", "_metadata", "ternary", "hosts", "paths", "server", "system", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('hosts.toml','rb'))\""
+
+[_closing.X5_note]
+note = "Deployment Hosts — CPI-SI Production Infrastructure — one source of truth for all targets."
+scripture = "Except the LORD build the house, they labour in vain that build it. — Psalm 127:1"
+anchor = "Deployment configuration — foundation for infrastructure management. Genesis 1:1 anchors everything."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

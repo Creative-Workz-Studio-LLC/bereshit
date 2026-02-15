@@ -7,7 +7,7 @@
 # --- P1: Core ---
 # key:       B-root-Makefile
 # from:      B-seed-code-makefile-template
-# at:        a-01.25
+# at:        a-02.00
 #
 # --- P2: Family ---
 # type:      code
@@ -139,6 +139,22 @@
 #   make uninstall-user Remove all from ~/.local
 #   make update-user    Rebuild and reinstall all
 #
+# b-word (Go+Rust hybrid — orchestrates L0+L1+L2 layer Makefiles):
+#   make bword-build    Build L0+L1+L2 Go+Rust (delegates to layer Makefiles)
+#   make bword-test     Run L0+L1+L2 Go+Rust tests
+#   make bword-check    Full quality gate: L0+L1+L2 Go+Rust (vet, lint, clippy, test)
+#   make bword-clean    Clean L0+L1+L2 structural caches
+#
+# Structural (cached sentinels):
+#   make lint           Run all structural linters (Go + Rust)
+#   make lint-go        Lint Go 4-block alignment
+#   make lint-rust      Lint Rust 4-block alignment
+#   make go-check       Full Go quality gate: vet + lint + test
+#   make go-test        Run Go tests
+#   make go-build       Build Go packages
+#   make go-vet         Vet Go packages
+#   make clean-struct   Clear structural caches (root + L0 + L1 + L2)
+#
 # Maintain:
 #   make clean          Clean all build artifacts + cache
 #   make clean-libs     Clean library artifacts
@@ -171,6 +187,8 @@
         run run-tui run-cli run-os debug-os launcher \
         install-user uninstall-user update-user \
         clean clean-libs clean-fuse clean-engine clean-os clean-cache \
+        lint lint-go lint-rust go-test go-build go-vet go-check \
+        bword-build bword-test bword-check bword-clean clean-struct \
         status info help
 
 # Set default goal explicitly
@@ -236,6 +254,21 @@ export VERBOSE
 
 Q             := $(if $(VERBOSE),,@)
 ECHO          := @echo
+
+# S.2i Structural Tools [STRUCT]
+
+NEW_STRUCT    := $(BERESHIT_ROOT)/.a-new-structure
+CWS_STRUCT    := deno run --allow-read $(NEW_STRUCT)/c-tov/cws-struct/mod.ts
+B_WORD        := $(NEW_STRUCT)/b-word
+
+# Structural cache (lint is root-level; build/test/vet delegated to layer Makefiles)
+CACHE_LINT_GO   := $(CACHE_DIR)/.lint-go
+CACHE_LINT_RUST := $(CACHE_DIR)/.lint-rust
+GO_SRC_DIRS     := $(B_WORD)/L0-universal/hybrid $(B_WORD)/L1-omnicode/hybrid \
+                    $(B_WORD)/L2-platform/hybrid
+GO_TPL_DIR      := $(B_WORD)/seed/code/L0/go
+RUST_SRC_DIRS   := $(B_WORD)/L0-universal/hybrid $(B_WORD)/L0-universal/spiral \
+                    $(B_WORD)/L1-omnicode/hybrid $(B_WORD)/L2-platform/hybrid
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # END SETUP [END]
@@ -843,6 +876,28 @@ help:
 	$(ECHO) "    make test-engine   Test cornerstone only"
 	$(ECHO) ""
 	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "B-WORD TARGETS (Go+Rust hybrid — delegates to L0+L1+L2 Makefiles)"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "    make bword-build   Build L0+L1+L2 Go+Rust packages"
+	$(ECHO) "    make bword-test    Run L0+L1+L2 Go+Rust tests"
+	$(ECHO) "    make bword-check   Full quality gate: Go+Rust across L0+L1+L2"
+	$(ECHO) "    make bword-clean   Clean L0+L1+L2 structural caches"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "STRUCTURAL TARGETS (cached sentinels)"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) ""
+	$(ECHO) "    make lint          Run all structural linters (Go + Rust)"
+	$(ECHO) "    make lint-go       Lint Go 4-block alignment (cached)"
+	$(ECHO) "    make lint-rust     Lint Rust 4-block alignment (cached)"
+	$(ECHO) "    make go-check      Full Go quality gate: vet + lint + test"
+	$(ECHO) "    make go-test       Run Go tests (cached)"
+	$(ECHO) "    make go-build      Build Go packages"
+	$(ECHO) "    make go-vet        Vet Go packages (cached)"
+	$(ECHO) "    make clean-struct  Clear structural caches (root + L0 + L1 + L2)"
+	$(ECHO) ""
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
 	$(ECHO) "DIAGNOSTIC TOOLS"
 	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
 	$(ECHO) ""
@@ -890,6 +945,175 @@ help:
 	$(ECHO) "  L4:  FaithNet      ← Server (depends on L3)"
 	$(ECHO) "  L5:  cornerstone   ← Applications (depends on L0+L1)"
 	$(ECHO) ""
+
+# ───────────────────────────────────────────────────────────────────────────────
+# B.9 STRUCTURAL TARGETS — b-word Build, Test, Lint [STRUCT]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# Orchestrates the b-word/ Go + Rust workspace across L0 and L1.
+# Layer Makefiles handle per-layer caching. Root handles cross-layer ops.
+# Force re-run: make clean-struct then make bword-check (or delete sentinels).
+#
+
+# ── b-word Orchestration ─────────────────────────────────────────────────────
+
+## bword-build: Build all Go + Rust across L0, L1, and L2
+bword-build:
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  [b-word] Building L0 Universal + L1 OmniCode + L2 Platform — Go and Rust..."
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+	$(ECHO) "  [L0] Foundation layer — config loader, format, output, paths, CLI, identity"
+	$(Q)$(MAKE) -C $(B_WORD)/L0-universal build
+	$(ECHO) ""
+	$(ECHO) "  [L1] OmniCode layer — pragma reader, extension registry, format dispatch"
+	$(Q)$(MAKE) -C $(B_WORD)/L1-omnicode build
+	$(ECHO) ""
+	$(ECHO) "  [L2] Platform layer — builder, debugging, display, git, hosts, platform,"
+	$(ECHO) "       preferences, server, system, temporal, wezterm"
+	$(Q)$(MAKE) -C $(B_WORD)/L2-platform build
+	$(ECHO) ""
+	$(ECHO) "  ✓ b-word build complete — all three layers compiled"
+
+## bword-test: Run all Go + Rust tests across L0, L1, and L2
+bword-test:
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  [b-word] Testing L0 + L1 + L2 — Go and Rust suites..."
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+	$(ECHO) "  [L0] Go: config, util | Rust: cli, config, format, identity, output, paths"
+	$(Q)$(MAKE) -C $(B_WORD)/L0-universal test
+	$(ECHO) ""
+	$(ECHO) "  [L1] Go: pragma | Rust: bereshit-l1-pragma"
+	$(Q)$(MAKE) -C $(B_WORD)/L1-omnicode test
+	$(ECHO) ""
+	$(ECHO) "  [L2] Go + Rust: 11 packages (builder, debugging, display, git, hosts,"
+	$(ECHO) "       platform, preferences, server, system, temporal, wezterm)"
+	$(Q)$(MAKE) -C $(B_WORD)/L2-platform test
+	$(ECHO) ""
+	$(ECHO) "  ✓ b-word tests complete — all suites passed"
+
+## bword-check: Full quality gate across L0, L1, and L2 (vet + clippy + lint + fmt + test)
+bword-check:
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  [b-word] QUALITY GATE — L0 + L1 + L2 full verification..."
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+	$(ECHO) "  Stage 1/3: L0 Universal — 6 crates, 16 Go files, 19 Rust files"
+	$(Q)$(MAKE) -C $(B_WORD)/L0-universal check
+	$(ECHO) ""
+	$(ECHO) "  Stage 2/3: L1 OmniCode — 1 crate, 4 Go files, 6 Rust files"
+	$(Q)$(MAKE) -C $(B_WORD)/L1-omnicode check
+	$(ECHO) ""
+	$(ECHO) "  Stage 3/3: L2 Platform — 11 crates, 11 Go packages"
+	$(Q)$(MAKE) -C $(B_WORD)/L2-platform check
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  b-word QUALITY GATE — ALL PASSED"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  L0  vet · clippy · lint · fmt · test                  ✓"
+	$(ECHO) "  L1  vet · clippy · lint · fmt · test                  ✓"
+	$(ECHO) "  L2  vet · clippy · lint · fmt · test                  ✓"
+	$(ECHO) "────────────────────────────────────────────────────────────────────────────────"
+	$(ECHO) "  \"In the beginning God created the heaven and the earth.\""
+	$(ECHO) "  Foundation verified. All three layers hold."
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+
+## bword-clean: Clean all b-word layer caches and artifacts
+bword-clean:
+	$(ECHO) ""
+	$(ECHO) "  [b-word] Clearing L0 + L1 + L2 build caches..."
+	$(Q)$(MAKE) -C $(B_WORD)/L0-universal clean
+	$(Q)$(MAKE) -C $(B_WORD)/L1-omnicode clean
+	$(Q)$(MAKE) -C $(B_WORD)/L2-platform clean
+	$(ECHO) "  ✓ b-word caches cleared"
+	$(ECHO) ""
+
+# ── Individual Structural Targets ────────────────────────────────────────────
+
+## lint: Run all structural linters — Go + Rust (cached)
+lint: lint-go lint-rust
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  ✓ All structural lints passed — Go and Rust aligned"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+
+## lint-go: Lint Go files across L0 + L1 + L2 for 4-block alignment (cached)
+lint-go: | $(CACHE_DIR)
+	$(Q)if [ ! -f "$(CACHE_LINT_GO)" ] || \
+	    [ -n "$$(find $(GO_SRC_DIRS) -name '*.go' -newer $(CACHE_LINT_GO) 2>/dev/null)" ] || \
+	    [ -n "$$(find $(GO_TPL_DIR) -name '*.go' -newer $(CACHE_LINT_GO) 2>/dev/null)" ]; then \
+		echo ""; \
+		echo "  [lint-go] Checking 4-block alignment across L0 + L1 + L2..."; \
+		echo ""; \
+		$(CWS_STRUCT) lint go $(B_WORD)/L0-universal/hybrid/ && \
+		$(CWS_STRUCT) lint go $(B_WORD)/L1-omnicode/hybrid/ && \
+		$(CWS_STRUCT) lint go $(B_WORD)/L2-platform/hybrid/ && \
+		$(CWS_STRUCT) lint go $(B_WORD)/seed/code/L0/go/ && \
+		touch $(CACHE_LINT_GO) && \
+		echo "" && \
+		echo "  [lint-go] ✓ All Go files structurally aligned"; \
+	else \
+		echo "  [lint-go] ✓ Clean — no Go changes since last pass"; \
+	fi
+
+## lint-rust: Lint Rust files across L0 + L1 + L2 for 4-block alignment (cached)
+lint-rust: | $(CACHE_DIR)
+	$(Q)if [ ! -f "$(CACHE_LINT_RUST)" ] || \
+	    [ -n "$$(find $(RUST_SRC_DIRS) -name '*.rs' -newer $(CACHE_LINT_RUST) 2>/dev/null)" ]; then \
+		echo ""; \
+		echo "  [lint-rust] Checking 4-block alignment across L0 + L1 + L2..."; \
+		echo ""; \
+		$(CWS_STRUCT) lint rust $(B_WORD)/L0-universal/hybrid/ && \
+		$(CWS_STRUCT) lint rust $(B_WORD)/L0-universal/spiral/ && \
+		$(CWS_STRUCT) lint rust $(B_WORD)/L1-omnicode/hybrid/ && \
+		$(CWS_STRUCT) lint rust $(B_WORD)/L2-platform/hybrid/ && \
+		touch $(CACHE_LINT_RUST) && \
+		echo "" && \
+		echo "  [lint-rust] ✓ All Rust files structurally aligned"; \
+	else \
+		echo "  [lint-rust] ✓ Clean — no Rust changes since last pass"; \
+	fi
+
+## go-test: Run Go tests across L0 + L1 + L2
+go-test:
+	$(Q)$(MAKE) -C $(B_WORD)/L0-universal test
+	$(Q)$(MAKE) -C $(B_WORD)/L1-omnicode test
+	$(Q)$(MAKE) -C $(B_WORD)/L2-platform test
+
+## go-build: Build Go packages across L0 + L1 + L2
+go-build:
+	$(Q)$(MAKE) -C $(B_WORD)/L0-universal build
+	$(Q)$(MAKE) -C $(B_WORD)/L1-omnicode build
+	$(Q)$(MAKE) -C $(B_WORD)/L2-platform build
+
+## go-vet: Vet Go packages across L0 + L1 + L2
+go-vet:
+	$(Q)$(MAKE) -C $(B_WORD)/L0-universal vet
+	$(Q)$(MAKE) -C $(B_WORD)/L1-omnicode vet
+	$(Q)$(MAKE) -C $(B_WORD)/L2-platform vet
+
+## go-check: Full Go quality gate — vet + lint + test across all layers
+go-check: go-vet lint-go go-test
+	$(ECHO) ""
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) "  ✓ Go quality gate passed — vet, lint, test across L0 + L1 + L2"
+	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
+	$(ECHO) ""
+
+## clean-struct: Clear all structural caches (root + L0 + L1 + L2)
+clean-struct:
+	$(ECHO) "  [clean] Clearing structural caches — root, L0, L1, L2..."
+	$(Q)rm -f $(CACHE_LINT_GO) $(CACHE_LINT_RUST)
+	$(Q)$(MAKE) -C $(B_WORD)/L0-universal clean
+	$(Q)$(MAKE) -C $(B_WORD)/L1-omnicode clean
+	$(Q)$(MAKE) -C $(B_WORD)/L2-platform clean
+	$(ECHO) "  ✓ All structural caches cleared"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # END BODY [END]

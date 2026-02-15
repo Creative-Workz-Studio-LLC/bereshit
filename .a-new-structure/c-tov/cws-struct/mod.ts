@@ -48,9 +48,13 @@ import { verifyEnvironment } from "./lib/verify/env.ts";
 
 // Register all format handlers (side-effect imports)
 import "./lib/formats/toml.ts";
-// Future: import "./lib/formats/json.ts";
-// Future: import "./lib/formats/makefile.ts";
-// Future: import "./lib/formats/dotfiles.ts";
+import "./lib/formats/omni.ts";
+import "./lib/formats/ofd.ts";
+import "./lib/formats/json.ts";
+import "./lib/formats/go.ts";
+import "./lib/formats/makefile.ts";
+import "./lib/formats/dotfiles.ts";
+import "./lib/formats/rust.ts";
 
 // ---------------------------------------------------------------------------
 // Constants

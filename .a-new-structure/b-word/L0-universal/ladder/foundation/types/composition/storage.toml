@@ -1,0 +1,489 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L0-foundation-types-storage"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "foundation"
+layer = "L0-universal/foundation/types"
+includes = "none"
+provides = ["COMPOSITE_STORAGE", "STORAGE_ALIGNMENT"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Composite Storage"
+brief = "Binary representation — storage alignment rules for composite types"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "storage.toml"
+key = "B-L0-foundation-types-storage"
+title = "Composite Storage"
+type = "Data (Types)"
+component = "Rung"
+role = "Binary representation — how composite types map to memory"
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-10"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "Luke 14:28 — For which of you, intending to build a tower, sitteth not down first, and counteth the cost?"
+principle = "Count the cost before building. Storage defines how types map to hardware."
+anchor = "Ternary types live in binary storage until native ternary hardware exists"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/L0-universal/foundation/types/primitives.toml"]
+consumers = ["b-word/L0-universal/foundation/types/validation.toml"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by code generators. Storage specs define binary layout and alignment for composite types."
+if_missing = "No storage specs — composite types have no defined binary representation"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Type DEFINITIONS in TOML. Type DATA instances in JSON."
+jsonc = "None — storage has no JSONC counterpart"
+json = "None — storage has no JSON counterpart"
+relationship = "TOML defines storage. Generated code (C, Go, Rust) implements them."
+
+[_metadata.M5_dependencies.split_context]
+parent = "composition.toml"
+sections = "Cc.8 STORAGE — Binary Representation"
+
+[_metadata.M6_location]
+path = "b-word/L0-universal/foundation/types/composition/storage.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "composition, storage, alignment, packing, binary, memory, L0, foundation, types"
+
+[_metadata.M8_intent]
+purpose = "Define binary representation — storage alignment and packing rules for composite types"
+core_design = "Ternary types in binary storage with alignment rules for each composition strategy"
+philosophy = "Count the cost before building — Luke 14:28"
+
+[_metadata.M8_intent.key_features]
+composite_storage = "Layout rules — how struct/union/tuple/enum map to bytes"
+storage_alignment = "Alignment rules — byte boundaries and padding"
+
+[_metadata.M9_roadmap]
+history = ["a-01.00 (2025-12-11) — Split from monolithic composition.toml", "b-01.00 (2026-02-10) — TOML-native 3-block format, template alignment"]
+current = "b-01.00 — Full template alignment with enriched metadata"
+planned = ["Full cross-format support (JSON/JSONC instances)", "Code generation integration tests"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata. split_context in M5 is content-file-specific."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores, match Go struct field tags"
+constraint = "Each storage type defines packing rules, alignment, endianness, and binary-ternary bridging"
+Cc = "Content Configurations — Binary representation — storage alignment rules for composite types"
+Co = "Content Operations — composite storage, storage alignment"
+Cv = "Content Validation — schema requirements, type constraints"
+
+# Co — Content Operations
+
+# Cc.8 STORAGE — Binary Representation [STORAGE]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "For which of you, intending to build a tower, sitteth not down first, and
+#  counteth the cost, whether he have sufficient to finish it?" — Luke 14:28 KJV
+#
+# COUNT THE COST BEFORE BUILDING
+#
+# Storage defines how composite types map to binary hardware. CRITICAL: this
+# inherits from primitives.toml [storage] — the hardware reality. Ternary types
+# live in binary storage until MillenniumOS provides native ternary hardware.
+#
+# KEY INSIGHT (from primitives.toml [storage]):
+#   All composite types inherit the binary-ternary bridge
+#   Packed: Machine-efficient, 5 trits per byte
+#   Unpacked: Human-readable, one char per trit
+#
+# COMPOSITE STORAGE RULES:
+#   struct: Sum of member sizes + alignment padding
+#   union:  Size of largest variant (shared storage)
+#   tuple:  Concatenation of element sizes
+#   list:   Length prefix + packed elements
+#   map:    Length prefix + key-value pairs
+#   set:    Length prefix + unique elements
+#   bytes:  Length prefix + raw uint8 sequence
+#
+# THE COST PRINCIPLE:
+#   Unknown cost  | Counting      | Known cost
+#   Just building | This analysis | Informed building
+#   Tower fails   | Tower plans   | Tower succeeds
+#
+# TERNARY ALIGNMENT:
+#   unpacked = -1 (human-readable, less efficient)
+#   bridge   =  0 (the storage layer itself)
+#   packed   = +1 (machine-efficient, optimal)
+#
+# SCALE APPLICATIONS:
+#   L0 (Kernel):    Register layout, cache-line alignment
+#   L1 (System):    IPC buffer layout, syscall arg packing
+#   L2 (Runtime):   Object layout, stack frame structure
+#   L3 (Framework): Serialization format, wire protocol
+#   L4 (Health):    Health vector packing, status byte layout
+#   L5 (Network):   Packet layout, header alignment
+#   L6 (Storage):   Disk block layout, file format
+#   L7 (Engine):    State snapshot format, checkpoint layout
+#   L8 (App):       API payload format, user data encoding
+#
+# Implementation: pkg/core/types/storage.gen.h
+# Reference:      primitives.toml [storage], ternary.toml [packing]
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[composite_storage]
+description   = "How composite types map to binary storage"
+principle     = "Count the cost before building (Luke 14:28)"
+inherits_from = "primitives.toml [storage]"
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.8a ALIGNMENT — Storage Alignment Rules [ALIGNMENT]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "And he measured the city with the reed, twelve thousand furlongs. The length
+#  and the breadth and the height of it are equal." — Revelation 21:16 KJV
+#
+# Alignment ensures efficient memory access. Like the perfectly measured city,
+# types must be aligned for optimal hardware access.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment]
+name          = "alignment"
+description   = "How composite types map to binary storage with alignment"
+kind          = "storage"
+strategy      = "alignment"
+
+# Alignment Core Properties
+inherits_from = "primitives.toml [storage]"
+note          = "All ternary storage rules from primitives apply to composite types"
+
+# Alignment Semantic Properties
+semantic_meaning  = "optimal_layout"             # Efficient access
+ternary_value     = 0                            # 0 = bridge layer
+biblical_parallel = "Revelation 21:16"           # Perfectly measured
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Struct Storage
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.struct]
+description  = "Product type storage — all members present"
+packed       = "Sum of packed member sizes, respecting alignment"
+unpacked     = "JSON-like object: { field: value, ... }"
+padding      = "May include padding for alignment in packed form"
+order        = "Fields in declaration order"
+
+# Size calculation
+size_formula = "sum(member_sizes) + alignment_padding"
+alignment    = "max(member_alignments)"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Union Storage
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.union]
+description  = "Sum type storage — one variant active"
+packed       = "Size of largest variant (all variants share storage)"
+unpacked     = "JSON-like object: { type: 'variant', value: ... }"
+discriminant = "Tag byte (trit for 3 variants, uint8 for more)"
+layout       = "tag + variant_data"
+
+# Size calculation
+size_formula = "discriminant_size + max(variant_sizes)"
+alignment    = "max(variant_alignments)"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Tuple Storage
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.tuple]
+description  = "Anonymous product storage — positional elements"
+packed       = "Concatenation of packed element representations"
+unpacked     = "JSON-like array: [value0, value1, ...]"
+order        = "Elements in positional order (0, 1, 2...)"
+padding      = "May include padding for alignment"
+
+# Size calculation
+size_formula = "sum(element_sizes) + alignment_padding"
+alignment    = "max(element_alignments)"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# List Storage
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.list]
+description  = "Ordered collection storage — length-prefixed elements"
+packed       = "Length prefix + packed elements"
+unpacked     = "JSON-like array: [...]"
+length_type  = "uint9"                           # From primitives.toml
+max_elements = 19682                             # 3^9 - 1
+
+# Size calculation
+size_formula = "length_prefix_size + (element_size × count)"
+variable     = true                              # Size depends on content
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Map Storage
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.map]
+description    = "Key-value storage — length-prefixed pairs"
+packed         = "Length prefix + packed key-value pairs"
+unpacked       = "JSON-like object: { key: value, ... }"
+key_constraint = "Keys must be hashable (primitives or text)"
+length_type    = "uint9"                         # From primitives.toml
+
+# Size calculation
+size_formula   = "length_prefix_size + sum(key_sizes + value_sizes)"
+variable       = true                            # Size depends on content
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Set Storage
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.set]
+description        = "Unique collection storage — length-prefixed unique elements"
+packed             = "Length prefix + packed unique elements"
+unpacked           = "JSON-like array with uniqueness: [...]"
+element_constraint = "Elements must be hashable"
+length_type        = "uint9"                     # From primitives.toml
+
+# Size calculation
+size_formula       = "length_prefix_size + (element_size × count)"
+variable           = true                        # Size depends on content
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Bytes Storage
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.bytes]
+description  = "Raw binary storage — the bridge to hardware"
+packed       = "Length prefix (uint9) + raw uint8 sequence"
+unpacked     = "Base64 or hex string representation"
+element_size = 1                                 # 1 byte (uint8)
+length_type  = "uint9"                           # From primitives.toml
+note         = "Bridge between ternary logic and binary hardware storage"
+
+# Size calculation
+size_formula = "length_prefix_size + byte_count"
+variable     = true                              # Size depends on content
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Storage Language Types
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.types]
+description = "Storage representation in target languages"
+
+[storage_alignment.types.c]
+struct_layout  = "packed with __attribute__((packed)) or aligned"
+union_layout   = "native C union with tag wrapper"
+sizeof         = "sizeof(Type)"
+
+[storage_alignment.types.go]
+struct_layout  = "encoding/binary package"
+json_layout    = "encoding/json package"
+reflect        = "reflect.TypeOf(x).Size()"
+
+[storage_alignment.types.rust]
+struct_layout  = "#[repr(C)] for C-compatible layout"
+packed         = "#[repr(packed)] for no padding"
+size_of        = "std::mem::size_of::<Type>()"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Storage Scale Applications (L0-L8)
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.scales]
+description = "Storage at each architectural layer"
+
+L0_kernel    = { alignment = 64,   note = "Cache line aligned",         use = "DMA, registers" }
+L1_system    = { alignment = 8,    note = "Word aligned",               use = "Syscall buffers" }
+L2_runtime   = { alignment = 8,    note = "Pointer aligned",            use = "Object layout" }
+L3_framework = { alignment = 1,    note = "Byte aligned (wire format)", use = "Serialization" }
+L4_health    = { alignment = 1,    note = "Byte aligned (packed)",      use = "Health vectors" }
+L5_network   = { alignment = 1,    note = "Network byte order",         use = "Packet layout" }
+L6_storage   = { alignment = 512,  note = "Block aligned",              use = "Disk blocks" }
+L7_engine    = { alignment = 8,    note = "Word aligned",               use = "State snapshots" }
+L8_app       = { alignment = 1,    note = "Variable (JSON/TOML)",       use = "API payloads" }
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Bible Connection
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.bible_connection]
+description = "Bible addressing validates the storage model"
+note        = "Bible addressing (bible/addressing.toml) validates storage model"
+example     = "VerseAddress struct uses trit5 pair = 2 bytes packed"
+reference   = "See bible/addressing.toml [ternary.packed]"
+verses      = 31102                              # KJV verse count
+encoding    = "Ordinal → ternary address (fits in 10 trits = 2 bytes)"
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Storage Shared Sections
+# ───────────────────────────────────────────────────────────────────────────────
+
+[storage_alignment.omnicode]
+description = "OmniCode storage syntax overview"
+
+keywords    = ["store", "load", "pack", "unpack", "encode", "decode"]
+operators   = ["→", "←", "⇄"]                    # store, load, bidirectional
+modifiers   = ["packed", "unpacked", "aligned", "raw"]
+sigils      = ["$:", "!:", "@:"]                 # packed, unpacked, aligned
+
+[storage_alignment.cpisi]
+description = "Storage semantics in CPI-SI cognitive framework"
+
+direction   = ["persist_down", "bridge", "retrieve_up"]  # -1, 0, +1
+weight      = ["heavy", "grounded", "light"]
+action      = ["commit", "hold", "access"]
+genesis     = ["waters_below", "firmament", "waters_above"]
+
+[storage_alignment.efficiency]
+description = "Storage efficiency metrics"
+
+struct_overhead  = "alignment padding (0-7 bytes typical)"
+union_overhead   = "discriminant (1 byte) + largest variant padding"
+list_overhead    = "length prefix (2 bytes for uint9)"
+map_overhead     = "length prefix + key hashing"
+set_overhead     = "length prefix + uniqueness tracking"
+bytes_overhead   = "length prefix (2 bytes for uint9)"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# OPERATIONS (Co — Type Composition Operations)
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "And God made the firmament, and divided the waters which were under the
+#  firmament from the waters which were above the firmament: and it was so."
+#  — Genesis 1:7 KJV
+#
+# OPERATIONS THAT TRANSFORM TYPES
+#
+# Just as God's operations in creation divided, combined, and transformed the
+# primordial waters, type operations transform and combine types. These are the
+# verbs of the type system — what you DO with types, not what types ARE.
+#
+# STRUCTURE:
+#   Co.1 COMBINATION   — Intersection, union, merge (gathering types)
+#   Co.2 PROJECTION    — Pick, omit, transform (selecting from types)
+#   Co.3 EFFECTS       — Pure, IO, state, async (side effect tracking)
+#   Co.4 VALIDATION    — Assert, guard, narrow (runtime verification)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+
+[extensions]
+note = "Reserved — no extensions for storage"
+
+# Cv — Content Validation
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('storage.toml','rb'))\""]
+
+[_validation.schema]
+required = ["composite_storage", "storage_alignment"]
+optional = ["_content", "extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_fields_present = 30
+cross_references_valid = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = ["Break storage alignment rules", "Change binary-ternary bridge"]
+careful = ["Modify padding rules", "Change endianness handling"]
+safe = ["Add storage optimizations", "Add examples", "Add comments"]
+
+[_closing.X2_extension]
+planned = ["Ternary-native hardware storage", "SIMD alignment optimization"]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_alignment = "Verify storage type has alignment field — byte boundary for the type"
+
+[_closing.X4_reference]
+related_files = [
+    "composition.toml — Index file (parent)",
+    "primitives.toml — Base primitive types",
+]
+validate = "tomlv storage.toml"
+required_sections = ["_pragma", "_metadata", "_content", "composite_storage", "storage_alignment", "_validation", "_closing"]
+
+[_closing.X5_note]
+note = "Composite storage: count the cost. How types map to binary hardware."
+scripture = "In the beginning God created the heaven and the earth. — Genesis 1:1"
+anchor = "Genesis 1:1 — God counted the cost before building. Storage maps abstract types to physical reality."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

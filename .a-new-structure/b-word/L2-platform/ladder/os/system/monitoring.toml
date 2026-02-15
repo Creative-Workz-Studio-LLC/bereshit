@@ -1,0 +1,284 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L2-os-monitoring"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "os"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "os"
+layer = "L2-platform/os"
+includes = "none"
+provides = ["MONITORING_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "System Monitoring — CPI-SI Resource Thresholds"
+brief = "Threshold definitions for system load, memory, and disk monitoring"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "monitoring.toml"
+key = "B-L2-os-monitoring"
+title = "System Monitoring — CPI-SI Resource Thresholds"
+type = "Data (Rung)"
+component = "Rung"
+role = "Threshold definitions for system resource monitoring — load average, memory usage, disk usage. Each metric has two alert levels (yellow/red) matching the health system's ternary model."
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2026-02-15"
+updated = "2026-02-15"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "A false balance is abomination to the LORD: but a just weight is his delight. — Proverbs 11:1"
+principle = "System health is measured against calibrated thresholds — not arbitrary cutoffs, but boundaries that reflect real operational risk. The thresholds are configurable because what constitutes 'healthy' differs by context."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/L2-platform/os/health/score.toml"]
+consumers = ["system.go", "system/src/lib.rs", "CPI-SI statusline"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Seeded into platform.db system_monitoring table. Queried by system package at runtime."
+if_missing = "System monitoring unavailable — falls back to hardcoded defaults"
+
+[_metadata.M5_dependencies.cross_format]
+role = "System monitoring thresholds in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines thresholds. Seeder populates SQLite. Go/Rust code queries."
+
+[_metadata.M6_location]
+path = "b-word/L2-platform/ladder/os/system/monitoring.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "monitoring, system, L2, thresholds, health, omnicode"
+
+[_metadata.M8_intent]
+purpose = "Define configurable thresholds for system resource monitoring"
+core_design = "Two-level alert system (yellow/red) per metric, with icons for display"
+philosophy = "Thresholds belong in the database, not in code. What's 'critical' for a 4-core server differs from a 128-core cluster. The code asks the data; the data answers."
+
+[_metadata.M9_roadmap]
+history = [
+    "b-01.00 (2026-02-15) — Initial creation: load, memory, disk thresholds",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Network I/O thresholds", "GPU monitoring", "Temperature alerts"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────
+# Ternary Foundation
+# ───────────────────────────────────────────────────────────────
+
+[ternary]
+scale = "balanced"
+description = "Two-level alert thresholds map to the ternary health model"
+
+[ternary.mapping]
+green = "+1 (sound/whole/perfect range — system healthy)"
+yellow = "0 (even/lacking range — caution, approaching limits)"
+red = "-1 (wanting/broken range — action required)"
+
+# ───────────────────────────────────────────────────────────────
+# Load Average Monitoring
+# ───────────────────────────────────────────────────────────────
+
+[metrics.load]
+description = "System load average (1-minute) thresholds"
+source = "/proc/loadavg"
+icon = "📊"
+
+[metrics.load.yellow]
+threshold = 2.0
+description = "Elevated load — system busy but functional"
+health_mapping = "even/lacking"
+
+[metrics.load.red]
+threshold = 4.0
+description = "High load — system under stress, degraded performance"
+health_mapping = "wanting/broken"
+
+# ───────────────────────────────────────────────────────────────
+# Memory Monitoring
+# ───────────────────────────────────────────────────────────────
+
+[metrics.memory]
+description = "Memory usage percentage thresholds"
+source = "/proc/meminfo"
+icon = "🧠"
+
+[metrics.memory.yellow]
+threshold = 70.0
+description = "Elevated memory usage — swap pressure likely"
+health_mapping = "even/lacking"
+
+[metrics.memory.red]
+threshold = 90.0
+description = "Critical memory usage — OOM risk"
+health_mapping = "wanting/broken"
+
+# ───────────────────────────────────────────────────────────────
+# Disk Monitoring
+# ───────────────────────────────────────────────────────────────
+
+[metrics.disk]
+description = "Disk usage percentage thresholds"
+source = "syscall.Statfs / df"
+icon = "💾"
+
+[metrics.disk.yellow]
+threshold = 80.0
+description = "Disk filling — cleanup recommended"
+health_mapping = "even/lacking"
+
+[metrics.disk.red]
+threshold = 95.0
+description = "Disk nearly full — writes may fail"
+health_mapping = "wanting/broken"
+
+# ───────────────────────────────────────────────────────────────
+# Display Configuration
+# ───────────────────────────────────────────────────────────────
+
+[display]
+description = "Color and formatting for threshold display"
+
+[display.green]
+ansi = "\u001B[32m"
+label = "OK"
+health_range = "sound to perfect"
+
+[display.yellow]
+ansi = "\u001B[33m"
+label = "WARN"
+health_range = "lacking to even"
+
+[display.red]
+ansi = "\u001B[31m"
+label = "CRIT"
+health_range = "broken to wanting"
+
+# ───────────────────────────────────────────────────────────────
+# System Limits
+# ───────────────────────────────────────────────────────────────
+
+[system]
+description = "Operational limits for monitoring subsystem"
+
+[system.polling]
+min_interval_seconds = 1
+default_interval_seconds = 5
+max_interval_seconds = 60
+
+[system.type_counts]
+metrics = 3
+alert_levels = 2
+display_colors = 3
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Scripture references — canonical",
+    "Ternary health mapping — foundational",
+    "3-block structure (METADATA -> CONTENT -> CLOSING)",
+]
+careful = [
+    "Threshold values (affects operational alerts)",
+    "Icon assignments (affects display consistency)",
+]
+safe = [
+    "New metrics (network, GPU, temperature)",
+    "Additional alert levels",
+    "Comments and examples",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new [metrics.<name>] section",
+    "2. Include yellow and red sub-tables with threshold + description",
+    "3. Add icon and source fields",
+    "4. Update system.type_counts",
+    "5. Run TOML validation",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_reference = "Check all references point to valid sources"
+consistency_error = "Verify thresholds are ordered (yellow < red)"
+
+[_closing.X4_reference]
+related_files = [
+    "b-word/L2-platform/ladder/os/health/score.toml",
+    "b-word/L2-platform/hybrid/system/system.go",
+]
+required_sections = ["_pragma", "_metadata", "ternary", "metrics", "display", "system", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('monitoring.toml','rb'))\""
+
+[_closing.X5_note]
+note = "System Monitoring — CPI-SI Resource Thresholds — configurable operational boundaries."
+scripture = "A false balance is abomination to the LORD: but a just weight is his delight. — Proverbs 11:1"
+anchor = "System monitoring thresholds — foundation for runtime health assessment. Genesis 1:1 anchors everything."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

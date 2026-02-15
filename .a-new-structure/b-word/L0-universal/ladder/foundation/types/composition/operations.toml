@@ -1,0 +1,772 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L0-foundation-types-operations"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "foundation"
+layer = "L0-universal/foundation/types"
+includes = "none"
+provides = ["INTERSECTION", "UNION_OP", "MERGE", "DIFFERENCE", "PICK", "OMIT", "TRANSFORM", "PARTIAL", "REQUIRED_OP"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Type Operations"
+brief = "Type combining and projection — intersection, union, merge, difference, pick, omit, transform, partial, required"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "operations.toml"
+key = "B-L0-foundation-types-operations"
+title = "Type Operations"
+type = "Data (Types)"
+component = "Rung"
+role = "Type transformations — set operations and projections on types"
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-10"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "Genesis 1:9 — Let the waters be gathered together unto one place."
+principle = "Types combine and separate like waters gathering and land appearing."
+anchor = "Set operations on types — combining, separating, projecting"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/L0-universal/foundation/types/primitives.toml"]
+consumers = ["b-word/L0-universal/foundation/types/validation.toml"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by type resolvers. Operation specs define set operations and projections on types."
+if_missing = "No type operations — types cannot be combined, projected, or transformed"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Type DEFINITIONS in TOML. Type DATA instances in JSON."
+jsonc = "None — type operations have no JSONC counterpart"
+json = "None — type operations have no JSON counterpart"
+relationship = "TOML defines type operations. Generated code (C, Go, Rust) implements them."
+
+[_metadata.M5_dependencies.split_context]
+parent = "composition.toml"
+sections = "Co.1 COMBINATION + Co.2 PROJECTION — Type Combining and Selection"
+
+[_metadata.M6_location]
+path = "b-word/L0-universal/foundation/types/composition/operations.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "composition, operations, intersection, union, merge, pick, omit, transform, L0, foundation, types"
+
+[_metadata.M8_intent]
+purpose = "Define type combining and projection — intersection, union, merge, difference, pick, omit, transform, partial, required"
+core_design = "Set theory applied to types with 9-layer scale examples"
+philosophy = "Let the waters be gathered together — Genesis 1:9"
+
+[_metadata.M8_intent.key_features]
+intersection = "Common ground — properties shared by all input types"
+union = "Alternation — any one of multiple types"
+merge = "Combination — fields from all types merged into one"
+pick = "Selection — subset of fields from a type"
+omit = "Exclusion — all fields except specified ones"
+transform = "Projection — map one type structure to another"
+
+[_metadata.M9_roadmap]
+history = ["a-01.00 (2025-12-11) — Split from monolithic composition.toml", "b-01.00 (2026-02-10) — TOML-native 3-block format, template alignment"]
+current = "b-01.00 — Full template alignment with enriched metadata"
+planned = ["Full cross-format support (JSON/JSONC instances)", "Code generation integration tests"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata. split_context in M5 is content-file-specific."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores, match Go struct field tags"
+constraint = "Each operation defines set semantics, commutativity, language bindings, and 9-layer scales"
+Cc = "Content Configurations — Type combining and projection — intersection, union, merge, difference, pick, omit, transform, partial, required"
+Co = "Content Operations — intersection, union op, merge, +6 more"
+Cv = "Content Validation — schema requirements, type constraints"
+
+# Co — Content Operations
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Co.1 COMBINATION — Type Combining Operations [COMBINATION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "And God said, Let the waters under the heaven be gathered together unto one
+#  place, and let the dry land appear: and it was so." — Genesis 1:9 KJV
+#
+# GATHERING AND SEPARATING
+#
+# Type combination operations mirror God's creative acts of gathering and
+# separating. Intersection gathers what's common; union allows alternation;
+# merge combines structures; difference separates.
+#
+# SUB-SECTIONS:
+#   Co.1a intersection — Common ground (A & B yields shared properties)
+#   Co.1b union_op     — Either/or (A | B yields one of the types)
+#   Co.1c merge        — Both together (A + B yields combined properties)
+#   Co.1d difference   — Separation (A - B yields what's unique to A)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.1a INTERSECTION — Common Ground [INTERSECTION]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[intersection]
+name        = "intersection"
+description = "Type intersection — yields properties common to both types"
+kind        = "operation"
+category    = "combination"
+symbol      = "&"
+
+# Intersection Semantic Properties
+semantic_meaning       = "common_ground"
+ternary_value          = 0                                       # Balanced — takes from both
+biblical_parallel      = "Philippians 2:2"
+biblical_text          = "Be likeminded, having the same love, being of one accord"
+
+[intersection.omnicode]
+keywords    = ["where", "both", "and", "share"]
+pattern     = "<TypeA> where both <TypeB>"
+modifiers   = ["strict", "partial"]
+examples    = [
+    "Person where both Employee",
+    "Shape where both Colored",
+]
+
+[intersection.cpisi]
+direction   = ["narrow", "hold", "combine"]
+weight      = ["constrained", "balanced", "expanded"]
+action      = ["filter", "compare", "merge"]
+genesis     = ["separated", "named", "gathered"]
+
+[intersection.types.typescript]
+keyword     = "&"
+syntax      = "type Both = TypeA & TypeB"
+example     = "type ColoredShape = Shape & Colored"
+
+[intersection.types.go]
+keyword     = "embedded"
+syntax      = "type Both struct { TypeA; TypeB }"
+example     = "type ColoredShape struct { Shape; Colored }"
+
+[intersection.types.rust]
+keyword     = "+"
+syntax      = "impl TraitA + TraitB"
+example     = "fn draw<T: Shape + Colored>(item: T)"
+
+[intersection.scales]
+L0_kernel    = { name = "CapabilityMask",    example = "cpu_caps & required_caps",      use = "Hardware capability intersection" }
+L1_system    = { name = "PermissionMask",    example = "user_perms & file_perms",       use = "Access control intersection" }
+L2_runtime   = { name = "InterfaceMatch",    example = "Reader & Writer",               use = "Multiple interface requirements" }
+L3_framework = { name = "TraitBounds",       example = "Serialize & Clone",             use = "Combined trait requirements" }
+L4_health    = { name = "RiskFactors",       example = "genetic & lifestyle",           use = "Combined risk assessment" }
+L5_network   = { name = "ProtocolCaps",      example = "http2 & tls1.3",                use = "Protocol capability match" }
+L6_storage   = { name = "IndexIntersect",    example = "idx_a & idx_b",                 use = "Multi-index query" }
+L7_engine    = { name = "EntityComponents",  example = "Position & Velocity",           use = "ECS component queries" }
+L8_app       = { name = "FeatureFlags",      example = "premium & beta_tester",         use = "Combined feature access" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.1b UNION_OP — Either/Or [UNION_OP]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[union_op]
+name        = "union_op"
+description = "Type union operation — yields one of the given types"
+kind        = "operation"
+category    = "combination"
+symbol      = "|"
+
+# Union Operation Semantic Properties
+semantic_meaning       = "alternation"
+ternary_value          = 1                                       # Expansive — allows more
+biblical_parallel      = "Deuteronomy 30:19"
+biblical_text          = "I have set before you life and death... choose life"
+
+[union_op.omnicode]
+keywords    = ["or", "either", "one_of"]
+pattern     = "<TypeA> or <TypeB>"
+modifiers   = ["discriminated", "simple"]
+examples    = [
+    "Success or Failure",
+    "String or Number",
+]
+
+[union_op.cpisi]
+direction   = ["expand", "hold", "narrow"]
+weight      = ["flexible", "balanced", "constrained"]
+action      = ["widen", "offer", "choose"]
+genesis     = ["formless", "formed", "named"]
+
+[union_op.types.typescript]
+keyword     = "|"
+syntax      = "type Either = TypeA | TypeB"
+example     = "type Result = Success | Failure"
+
+[union_op.types.go]
+keyword     = "interface"
+syntax      = "interface{} or type switch"
+example     = "switch v := x.(type) { case int: ... case string: ... }"
+
+[union_op.types.rust]
+keyword     = "enum"
+syntax      = "enum Either { A(TypeA), B(TypeB) }"
+example     = "enum Result<T, E> { Ok(T), Err(E) }"
+
+[union_op.scales]
+L0_kernel    = { name = "RegisterValue",     example = "IntReg | FloatReg",             use = "Register type variants" }
+L1_system    = { name = "SyscallResult",     example = "Success | Error",               use = "System call returns" }
+L2_runtime   = { name = "DynamicType",       example = "int | string | bool",           use = "Dynamic value types" }
+L3_framework = { name = "ResponseType",      example = "JSON | XML | Binary",           use = "Response format variants" }
+L4_health    = { name = "DiagnosisResult",   example = "Positive | Negative | Pending", use = "Test result states" }
+L5_network   = { name = "MessageType",       example = "Request | Response | Error",    use = "Protocol message types" }
+L6_storage   = { name = "QueryResult",       example = "Rows | Count | Error",          use = "Database query returns" }
+L7_engine    = { name = "EventType",         example = "Input | Collision | Timer",     use = "Game event variants" }
+L8_app       = { name = "UIState",           example = "Loading | Ready | Error",       use = "Application state machine" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.1c MERGE — Both Together [MERGE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[merge]
+name        = "merge"
+description = "Type merge — combines all properties from both types"
+kind        = "operation"
+category    = "combination"
+symbol      = "+"
+
+# Merge Semantic Properties
+semantic_meaning       = "synthesis"
+ternary_value          = 1                                       # Expansive — adds together
+biblical_parallel      = "Genesis 2:24"
+biblical_text          = "They shall be one flesh"
+
+[merge.omnicode]
+keywords    = ["with", "plus", "combine", "together"]
+pattern     = "<TypeA> with <TypeB>"
+modifiers   = ["override", "preserve", "deep"]
+examples    = [
+    "BaseConfig with OverrideConfig",
+    "DefaultUser with AdminPermissions",
+]
+
+[merge.cpisi]
+direction   = ["combine", "hold", "separate"]
+weight      = ["unified", "balanced", "distinct"]
+action      = ["merge", "overlay", "synthesize"]
+genesis     = ["gathered_waters", "dry_land", "vegetation"]
+
+[merge.types.typescript]
+keyword     = "Omit & ..."
+syntax      = "type Merged = Omit<A, keyof B> & B"
+example     = "const merged = { ...defaults, ...overrides }"
+
+[merge.types.go]
+keyword     = "embed + fields"
+syntax      = "type Merged struct { Base; Extra Type }"
+example     = "func merge(a, b Config) Config { ... }"
+
+[merge.types.rust]
+keyword     = "struct update"
+syntax      = "Struct { field: value, ..other }"
+example     = "Config { debug: true, ..defaults }"
+
+[merge.scales]
+L0_kernel    = { name = "RegisterMerge",     example = "flags | new_flags",             use = "Flag register updates" }
+L1_system    = { name = "EnvMerge",          example = "system_env + user_env",         use = "Environment variable merge" }
+L2_runtime   = { name = "ConfigMerge",       example = "defaults + overrides",          use = "Configuration layering" }
+L3_framework = { name = "MiddlewareMerge",   example = "base + auth + logging",         use = "Middleware composition" }
+L4_health    = { name = "ProfileMerge",      example = "baseline + updates",            use = "Patient profile updates" }
+L5_network   = { name = "HeaderMerge",       example = "default_headers + custom",      use = "HTTP header composition" }
+L6_storage   = { name = "RecordMerge",       example = "existing + patch",              use = "Database record updates" }
+L7_engine    = { name = "ComponentMerge",    example = "prefab + instance",             use = "Entity customization" }
+L8_app       = { name = "StateMerge",        example = "prev_state + action",           use = "State reducer pattern" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.1d DIFFERENCE — Separation [DIFFERENCE]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[difference]
+name        = "difference"
+description = "Type difference — yields properties in A but not in B"
+kind        = "operation"
+category    = "combination"
+symbol      = "-"
+
+# Difference Semantic Properties
+semantic_meaning       = "separation"
+ternary_value          = -1                                      # Contractive — removes
+biblical_parallel      = "Genesis 1:4"
+biblical_text          = "God divided the light from the darkness"
+
+[difference.omnicode]
+keywords    = ["without", "except", "minus", "excluding"]
+pattern     = "<TypeA> without <TypeB>"
+modifiers   = ["strict", "partial"]
+examples    = [
+    "FullUser without PasswordFields",
+    "Config without Deprecated",
+]
+
+[difference.cpisi]
+direction   = ["remove", "hold", "add"]
+weight      = ["lighter", "balanced", "heavier"]
+action      = ["subtract", "exclude", "separate"]
+genesis     = ["divided_light", "firmament", "separated_waters"]
+
+[difference.types.typescript]
+keyword     = "Omit"
+syntax      = "type Without = Omit<A, keyof B>"
+example     = "type PublicUser = Omit<User, 'password' | 'salt'>"
+
+[difference.types.go]
+keyword     = "embed + exclude"
+syntax      = "// No direct support, use selective embedding"
+example     = "type Public struct { Name string; Age int }  // without private fields"
+
+[difference.types.rust]
+keyword     = "destructure + ignore"
+syntax      = "let Struct { needed, .. } = full"
+example     = "fn public_view(u: User) -> PublicUser { ... }"
+
+[difference.scales]
+L0_kernel    = { name = "FlagClear",         example = "flags & ^clear_mask",           use = "Clear specific flags" }
+L1_system    = { name = "PermRevoke",        example = "perms - revoked",               use = "Permission removal" }
+L2_runtime   = { name = "FieldOmit",         example = "struct - hidden_fields",        use = "API response filtering" }
+L3_framework = { name = "RouteMask",         example = "all_routes - admin_routes",     use = "Role-based route access" }
+L4_health    = { name = "ExcludeAllergies",  example = "medications - contraindicated", use = "Safe medication list" }
+L5_network   = { name = "HeaderStrip",       example = "headers - internal",            use = "Proxy header cleanup" }
+L6_storage   = { name = "ColumnExclude",     example = "SELECT * - sensitive",          use = "Column-level security" }
+L7_engine    = { name = "ComponentRemove",   example = "entity - Expired",              use = "Component cleanup" }
+L8_app       = { name = "FeatureDisable",    example = "features - deprecated",         use = "Feature flag removal" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Co.2 PROJECTION — Type Selection Operations [PROJECTION]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "And out of the ground the LORD God formed every beast of the field... and
+#  brought them unto Adam to see what he would call them." — Genesis 2:19 KJV
+#
+# SELECTING AND NAMING
+#
+# Projection operations select parts of types, like Adam selecting and naming
+# from the fullness of creation. Pick takes what you want; omit removes what
+# you don't; transform reshapes into new forms.
+#
+# SUB-SECTIONS:
+#   Co.2a pick      — Select specific fields from a type
+#   Co.2b omit      — Exclude specific fields from a type
+#   Co.2c transform — Map fields to new structure
+#   Co.2d partial   — Make all fields optional
+#   Co.2e required  — Make all fields required
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2a PICK — Select Fields [PICK]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[pick]
+name        = "pick"
+description = "Pick operation — select specific fields from a type"
+kind        = "operation"
+category    = "projection"
+symbol      = "[]"
+
+# Pick Semantic Properties
+semantic_meaning       = "selection"
+ternary_value          = -1                                      # Contractive — takes subset
+biblical_parallel      = "Luke 10:42"
+biblical_text          = "One thing is needful: and Mary hath chosen that good part"
+
+[pick.omnicode]
+keywords    = ["pick", "select", "take", "only"]
+pattern     = "pick <field>, <field> from <Type>"
+modifiers   = ["deep", "shallow", "recursive"]
+examples    = [
+    "pick name, email from User",
+    "pick id, title from Document",
+]
+
+[pick.cpisi]
+direction   = ["narrow", "hold", "expand"]
+weight      = ["focused", "balanced", "comprehensive"]
+action      = ["select", "filter", "extract"]
+genesis     = ["named_day", "named_night", "named_firmament"]
+
+[pick.types.typescript]
+keyword     = "Pick"
+syntax      = "type Subset = Pick<Full, 'field1' | 'field2'>"
+example     = "type LoginInfo = Pick<User, 'email' | 'password'>"
+
+[pick.types.go]
+keyword     = "new struct"
+syntax      = "type Subset struct { Field1 Type1; Field2 Type2 }"
+example     = "type LoginInfo struct { Email, Password string }"
+
+[pick.types.rust]
+keyword     = "struct"
+syntax      = "struct Subset { field1: Type1, field2: Type2 }"
+example     = "struct LoginInfo { email: String, password: String }"
+
+[pick.scales]
+L0_kernel    = { name = "RegisterSelect",    example = "pick ax, bx from registers",    use = "Select specific registers" }
+L1_system    = { name = "EnvSelect",         example = "pick PATH, HOME from env",      use = "Environment variable subset" }
+L2_runtime   = { name = "FieldSelect",       example = "pick name, age from person",    use = "Object field selection" }
+L3_framework = { name = "DtoProject",        example = "pick public from entity",       use = "DTO projection" }
+L4_health    = { name = "VitalSelect",       example = "pick hr, bp from vitals",       use = "Vital signs subset" }
+L5_network   = { name = "HeaderSelect",      example = "pick auth, type from headers",  use = "Header extraction" }
+L6_storage   = { name = "ColumnSelect",      example = "SELECT id, name FROM users",    use = "Column projection" }
+L7_engine    = { name = "ComponentSelect",   example = "pick Position, Health",         use = "ECS component query" }
+L8_app       = { name = "ViewModelProject",  example = "pick display from model",       use = "ViewModel creation" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2b OMIT — Exclude Fields [OMIT]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[omit]
+name        = "omit"
+description = "Omit operation — exclude specific fields from a type"
+kind        = "operation"
+category    = "projection"
+symbol      = "- []"
+
+# Omit Semantic Properties
+semantic_meaning       = "exclusion"
+ternary_value          = -1                                      # Contractive — removes
+biblical_parallel      = "Hebrews 12:1"
+biblical_text          = "Lay aside every weight, and the sin which doth so easily beset us"
+
+[omit.omnicode]
+keywords    = ["omit", "without", "except", "exclude"]
+pattern     = "omit <field>, <field> from <Type>"
+modifiers   = ["strict", "cascade"]
+examples    = [
+    "omit password, salt from User",
+    "omit internal from ApiResponse",
+]
+
+[omit.cpisi]
+direction   = ["remove", "hold", "add"]
+weight      = ["lighter", "balanced", "heavier"]
+action      = ["exclude", "strip", "filter_out"]
+genesis     = ["separated_light", "divided_waters", "cleared_dry_land"]
+
+[omit.types.typescript]
+keyword     = "Omit"
+syntax      = "type Without = Omit<Full, 'field1' | 'field2'>"
+example     = "type PublicUser = Omit<User, 'password' | 'salt'>"
+
+[omit.types.go]
+keyword     = "new struct"
+syntax      = "// Create new struct without specified fields"
+example     = "type PublicUser struct { Name string; Email string }  // omits password"
+
+[omit.types.rust]
+keyword     = "struct"
+syntax      = "// Create new struct without specified fields"
+example     = "struct PublicUser { name: String, email: String }  // omits password"
+
+[omit.scales]
+L0_kernel    = { name = "RegisterMask",      example = "omit reserved from flags",      use = "Mask reserved bits" }
+L1_system    = { name = "EnvFilter",         example = "omit secrets from env",         use = "Secure env export" }
+L2_runtime   = { name = "FieldFilter",       example = "omit private from object",      use = "API response filtering" }
+L3_framework = { name = "DtoFilter",         example = "omit internal from dto",        use = "External API response" }
+L4_health    = { name = "RedactPhi",         example = "omit ssn, dob from record",     use = "PHI redaction" }
+L5_network   = { name = "HeaderStrip",       example = "omit internal from headers",    use = "Proxy header sanitization" }
+L6_storage   = { name = "ColumnOmit",        example = "SELECT * EXCEPT password",      use = "Column exclusion" }
+L7_engine    = { name = "ComponentOmit",     example = "omit Debug from production",    use = "Debug component removal" }
+L8_app       = { name = "FormOmit",          example = "omit readonly from edit",       use = "Editable field filtering" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2c TRANSFORM — Reshape Type [TRANSFORM]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[transform]
+name        = "transform"
+description = "Transform operation — map fields to new structure"
+kind        = "operation"
+category    = "projection"
+symbol      = "=>"
+
+# Transform Semantic Properties
+semantic_meaning       = "metamorphosis"
+ternary_value          = 0                                       # Balanced — reshapes
+biblical_parallel      = "Romans 12:2"
+biblical_text          = "Be ye transformed by the renewing of your mind"
+
+[transform.omnicode]
+keywords    = ["transform", "map", "reshape", "convert"]
+pattern     = "transform <Type> to <NewType>"
+modifiers   = ["deep", "shallow", "lazy"]
+examples    = [
+    "transform User to UserDto",
+    "transform Entity to ViewModel",
+]
+
+[transform.cpisi]
+direction   = ["reshape", "hold", "preserve"]
+weight      = ["fluid", "balanced", "fixed"]
+action      = ["convert", "map", "translate"]
+genesis     = ["formed_man", "breathed_life", "became_soul"]
+
+[transform.types.typescript]
+keyword     = "mapped type"
+syntax      = "type Mapped = { [K in keyof T]: NewType<T[K]> }"
+example     = "type Readonly<T> = { readonly [K in keyof T]: T[K] }"
+
+[transform.types.go]
+keyword     = "func convert"
+syntax      = "func ToDto(e Entity) Dto { return Dto{...} }"
+example     = "func ToUserDto(u User) UserDto { return UserDto{Name: u.Name} }"
+
+[transform.types.rust]
+keyword     = "From/Into"
+syntax      = "impl From<Source> for Target { fn from(s: Source) -> Self { ... } }"
+example     = "impl From<User> for UserDto { fn from(u: User) -> Self { ... } }"
+
+[transform.scales]
+L0_kernel    = { name = "RegisterConvert",   example = "int to float register",         use = "Register type conversion" }
+L1_system    = { name = "DataConvert",       example = "struct to bytes",               use = "Serialization" }
+L2_runtime   = { name = "TypeCoerce",        example = "string to int",                 use = "Runtime type conversion" }
+L3_framework = { name = "DtoMap",            example = "Entity to DTO",                 use = "Layer mapping" }
+L4_health    = { name = "UnitConvert",       example = "kg to lbs",                     use = "Measurement conversion" }
+L5_network   = { name = "ProtocolConvert",   example = "HTTP to gRPC",                  use = "Protocol translation" }
+L6_storage   = { name = "RecordMap",         example = "row to entity",                 use = "ORM mapping" }
+L7_engine    = { name = "DataTransform",     example = "input to command",              use = "Input processing" }
+L8_app       = { name = "ViewModelMap",      example = "model to view",                 use = "Presentation mapping" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2d PARTIAL — Make Optional [PARTIAL]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[partial]
+name        = "partial"
+description = "Partial operation — make all fields optional"
+kind        = "operation"
+category    = "projection"
+symbol      = "?"
+
+# Partial Semantic Properties
+semantic_meaning       = "relaxation"
+ternary_value          = 1                                       # Expansive — allows absence
+biblical_parallel      = "Matthew 11:30"
+biblical_text          = "My yoke is easy, and my burden is light"
+
+[partial.omnicode]
+keywords    = ["partial", "maybe", "optional_all"]
+pattern     = "partial <Type>"
+modifiers   = ["deep", "shallow"]
+examples    = [
+    "partial User",
+    "partial UpdateRequest",
+]
+
+[partial.cpisi]
+direction   = ["relax", "hold", "require"]
+weight      = ["light", "balanced", "heavy"]
+action      = ["soften", "permit", "accept"]
+genesis     = ["void", "without_form", "darkness"]
+
+[partial.types.typescript]
+keyword     = "Partial"
+syntax      = "type MaybeAll = Partial<Full>"
+example     = "type UpdateUser = Partial<User>"
+
+[partial.types.go]
+keyword     = "pointer fields"
+syntax      = "type Partial struct { Field *Type }"
+example     = "type UpdateUser struct { Name *string; Age *int }"
+
+[partial.types.rust]
+keyword     = "Option fields"
+syntax      = "struct Partial { field: Option<Type> }"
+example     = "struct UpdateUser { name: Option<String>, age: Option<i32> }"
+
+[partial.scales]
+L0_kernel    = { name = "OptionalRegs",      example = "partial SavedRegs",             use = "Partial register save" }
+L1_system    = { name = "OptionalConfig",    example = "partial SysConfig",             use = "Partial config override" }
+L2_runtime   = { name = "OptionalFields",    example = "partial UpdateDto",             use = "PATCH request body" }
+L3_framework = { name = "OptionalParams",    example = "partial QueryParams",           use = "Optional query parameters" }
+L4_health    = { name = "OptionalData",      example = "partial PatientInfo",           use = "Incremental data entry" }
+L5_network   = { name = "OptionalHeaders",   example = "partial RequestHeaders",        use = "Optional HTTP headers" }
+L6_storage   = { name = "PartialUpdate",     example = "partial Record",                use = "Partial record update" }
+L7_engine    = { name = "OptionalComponent", example = "partial EntityState",           use = "Optional component init" }
+L8_app       = { name = "FormDraft",         example = "partial FormData",              use = "Form auto-save" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Co.2e REQUIRED — Make Required [REQUIRED_OP]
+# ───────────────────────────────────────────────────────────────────────────────
+
+[required_op]
+name        = "required_op"
+description = "Required operation — make all fields required"
+kind        = "operation"
+category    = "projection"
+symbol      = "!"
+
+# Required Operation Semantic Properties
+semantic_meaning       = "enforcement"
+ternary_value          = -1                                      # Contractive — demands presence
+biblical_parallel      = "Exodus 20:3"
+biblical_text          = "Thou shalt have no other gods before me"
+
+[required_op.omnicode]
+keywords    = ["required", "must", "demand", "all"]
+pattern     = "required <Type>"
+modifiers   = ["deep", "shallow"]
+examples    = [
+    "required PartialUser",
+    "required OptionalConfig",
+]
+
+[required_op.cpisi]
+direction   = ["demand", "hold", "relax"]
+weight      = ["heavy", "balanced", "light"]
+action      = ["require", "enforce", "validate"]
+genesis     = ["commanded_light", "named_day", "saw_good"]
+
+[required_op.types.typescript]
+keyword     = "Required"
+syntax      = "type MustAll = Required<Partial>"
+example     = "type ValidUser = Required<PartialUser>"
+
+[required_op.types.go]
+keyword     = "value fields"
+syntax      = "type Required struct { Field Type }"
+example     = "type ValidUser struct { Name string; Age int }"
+
+[required_op.types.rust]
+keyword     = "unwrap Option"
+syntax      = "struct Required { field: Type }"
+example     = "struct ValidUser { name: String, age: i32 }"
+
+[required_op.scales]
+L0_kernel    = { name = "RequiredRegs",      example = "required InitRegs",             use = "Mandatory register init" }
+L1_system    = { name = "RequiredConfig",    example = "required BootConfig",           use = "Required boot params" }
+L2_runtime   = { name = "RequiredFields",    example = "required CreateDto",            use = "POST request body" }
+L3_framework = { name = "RequiredParams",    example = "required PathParams",           use = "Required route params" }
+L4_health    = { name = "RequiredData",      example = "required VitalSigns",           use = "Mandatory vital signs" }
+L5_network   = { name = "RequiredHeaders",   example = "required AuthHeaders",          use = "Required HTTP headers" }
+L6_storage   = { name = "RequiredInsert",    example = "required NewRecord",            use = "Required insert fields" }
+L7_engine    = { name = "RequiredComponent", example = "required CoreState",            use = "Mandatory components" }
+L8_app       = { name = "FormSubmit",        example = "required FormData",             use = "Form validation" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+[extensions]
+note = "Reserved — no extensions for operations"
+
+# Cv — Content Validation
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('operations.toml','rb'))\""]
+
+[_validation.schema]
+required = ["intersection", "union_op", "merge", "difference", "pick", "omit", "transform", "partial", "required_op"]
+optional = ["_content", "extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_fields_present = 30
+cross_references_valid = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = ["Break set operation semantics", "Change operation commutativity"]
+careful = ["Modify transform rules", "Change partial/required semantics"]
+safe = ["Add operations", "Add examples", "Add comments"]
+
+[_closing.X2_extension]
+planned = ["Lazy type operations", "Operation fusion optimization"]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_semantics = "Verify operation has set_operation field — what set-theoretic operation this performs"
+
+[_closing.X4_reference]
+related_files = [
+    "composition.toml — Index file (parent)",
+    "primitives.toml — Base primitive types",
+]
+validate = "tomlv operations.toml"
+required_sections = ["_pragma", "_metadata", "_content", "intersection", "union_op", "merge", "difference", "pick", "omit", "transform", "partial", "required_op", "_validation", "_closing"]
+
+[_closing.X5_note]
+note = "Type operations: gather and separate. Set theory applied to types."
+scripture = "In the beginning God created the heaven and the earth. — Genesis 1:1"
+anchor = "Genesis 1:1 — God gathered waters and separated land. Type operations gather and separate."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

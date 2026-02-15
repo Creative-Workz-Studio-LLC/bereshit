@@ -35,10 +35,10 @@ All moved to `c-tov/cwe-creator-tools/`:
 ### TOML Data Files (65)
 | Layer | Destination | Files |
 |-------|-------------|:-----:|
-| L0 index | `b-word/L0-universal/foundation/` | 1 |
-| L0 bible | `b-word/L0-universal/foundation/bible/` | 8 |
-| L0 math | `b-word/L0-universal/foundation/math/` | 5 |
-| L0 types | `b-word/L0-universal/foundation/types/` | 35 |
+| L0 index | `b-word/L0-universal/ladder/foundation/` | 1 |
+| L0 bible | `b-word/L0-universal/ladder/foundation/bible/` | 8 |
+| L0 math | `b-word/L0-universal/ladder/foundation/math/` | 5 |
+| L0 types | `b-word/L0-universal/ladder/foundation/types/` | 35 |
 | L1 language | `b-word/L1-omnicode/language/` | 2 |
 | L2 filesystem | `b-word/L2-platform/filesystem/` | 2 |
 | L2 os/health | `b-word/L2-platform/os/health/` | 6 |

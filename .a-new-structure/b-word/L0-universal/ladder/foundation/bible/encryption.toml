@@ -1,0 +1,604 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# OMNICODE PRAGMA [PRAGMA]
+# ═══════════════════════════════════════════════════════════════
+
+[_pragma]
+format = "@omni data --toml"
+
+[_pragma.legend]
+req = "REQUIRED — must exist, validation fails without"
+inh = "INHERITED — from template, override allowed"
+ins = "INSTANCE — file-specific, unique values"
+
+[_pragma.P1_core]
+key = "B-L0-bible-encryption"
+from = "b-word/seed/data/toml/config.toml"
+at = "b-01.00"
+
+[_pragma.P2_family]
+type = "data"
+subtype = "bible"
+role = "foundation"
+structure = "3-block"
+
+[_pragma.P3_instance]
+component = "bible"
+layer = "L0-universal/bible"
+includes = "none"
+provides = ["ENCRYPTION_DATA"]
+
+[_pragma.P4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_pragma.P5_summary]
+title = "Bible Encryption"
+brief = "Letter-to-position encryption"
+
+# ═══════════════════════════════════════════════════════════════
+# END PRAGMA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+[_metadata.M1_identity]
+file = "encryption.toml"
+key = "B-L0-bible-encryption"
+title = "Bible Encryption"
+type = "Data (Bible Encryption)"
+component = "Foundation"
+role = "Letter-to-position encryption — Hebrew/Greek letters to cube positions and gematria values (27 letters = 3³ = cube)"
+
+[_metadata.M2_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-20"
+updated = "2026-02-10"
+
+[_metadata.M3_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.M4_grounding]
+scripture = "I am Alpha and Omega, the beginning and the ending, saith the Lord. — Revelation 1:8"
+principle = "The letters themselves are the encryption. 27 letters map to 27 cube positions. The math wasn't forced. God designed it."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.M5_dependencies]
+requires = ["b-word/L0-universal/bible/translation.toml"]
+consumers = ["b-word/L0-universal/bible/decryption.toml", "cube coordinate systems", "gematria tools"]
+derives_from = "b-word/seed/data/toml/config.toml"
+integration = "Loaded at build time by code generators and lookup tools."
+if_missing = "Bible traceability broken — cannot map between Scripture and code"
+
+[_metadata.M5_dependencies.cross_format]
+role = "Encryption TABLES in TOML. No JSONC/JSON counterpart."
+jsonc = "None"
+json = "None"
+relationship = "TOML defines bible data. Generated code (C, Go) implements lookups."
+
+[_metadata.M6_location]
+path = "b-word/L0-universal/bible/encryption.toml"
+derives_from = "b-word/seed/data/toml/config.toml"
+
+[_metadata.M7_classification]
+tags = "bible, encryption, foundation, L0, scripture"
+
+[_metadata.M8_intent]
+purpose = "Letter-to-position encryption — Hebrew/Greek letters to cube positions and gematria values (27 letters = 3³ = cube)"
+core_design = "The letters themselves are the encryption. 27 letters map to 27 cube positions. The math wasn't forced. God designed it."
+philosophy = "I am Alpha and Omega, the beginning and the ending, saith the Lord."
+
+[_metadata.M9_roadmap]
+history = [
+    "a-01.00 (2025-12-20) — Initial creation",
+    "b-01.00 (2026-02-10) — TOML-native 3-block format alignment",
+]
+current = "3-block aligned with OmniCode template"
+planned = ["Code generation integration", "Automated validation tooling"]
+
+[_metadata.M_extension_note]
+required = ["M1_identity", "M2_state", "M3_attribution", "M4_grounding", "M5_dependencies"]
+extension = "M6-M9 extend for domain-specific metadata."
+rule = "M1-M5 are the base contract. M6+ extends as needed."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Bible data file — letter-to-position encryption for the OmniCode cube system"
+Cc = "Content Configurations — system parameters, encryption functions, Hebrew letter table (27), Greek letter table (27)"
+Co = "Content Operations — (data file: lookup-based, no operations defined here)"
+Cv = "Content Validation — schema requirements, health scoring"
+
+# ─────────────────────────────────────────────────────────────
+# Cc — Content Configurations
+# ─────────────────────────────────────────────────────────────
+
+# Cc.1 SYSTEM PARAMETERS
+[system]
+name = "CPI-SI Encryption"
+direction = "encrypt"
+description = "Letter → Position/Value"
+
+cube_positions = 27
+cube_dimensions = 3
+gematria_max = 900
+trite_max = 242
+
+# Cc.2 ENCRYPTION FUNCTIONS
+[functions]
+# Letter → Position: lookup in hebrew/greek tables
+letter_to_position = "lookup(letter) → position (0-26)"
+
+# BALANCED TERNARY IS PRIMARY - no conversion
+# Coordinates (x, y, z) ∈ {-1, 0, +1} ARE the position
+# Linear index is DERIVED: index = (x+1)*9 + (y+1)*3 + (z+1)
+#
+# The cube thinks in (-1, 0, +1), not (0, 1, 2)
+# -1 = PAST/negative/break-down
+#  0 = PRESENT/neutral/anchor
+# +1 = FUTURE/positive/build-up
+
+coords_to_index = "(x + 1) * 9 + (y + 1) * 3 + (z + 1)"
+index_to_x = "((index // 9) % 3) - 1"
+index_to_y = "((index // 3) % 3) - 1"
+index_to_z = "(index % 3) - 1"
+
+# Gematria → Trite (normalize to 0-242)
+value_to_trite = "(gematria_value * 242) // 900"
+
+# Full encryption chain
+encrypt = "letter → position → (x, y, z) → trite_value"
+
+# Cc.3 HEBREW ENCRYPTION TABLE (27 letters)
+# Forward lookup: letter → (position, value)
+[hebrew]
+testament = "Old"
+letter_count = 27
+value_range = "1-900"
+
+# Position 0-8 (units) — PAST octant (x=-1)
+[hebrew.encrypt.aleph]
+letter = "א"
+position = 0
+value = 1
+coords = [-1, -1, -1]
+
+[hebrew.encrypt.bet]
+letter = "ב"
+position = 1
+value = 2
+coords = [-1, -1, 0]
+
+[hebrew.encrypt.gimel]
+letter = "ג"
+position = 2
+value = 3
+coords = [-1, -1, +1]
+
+[hebrew.encrypt.dalet]
+letter = "ד"
+position = 3
+value = 4
+coords = [-1, 0, -1]
+
+[hebrew.encrypt.he]
+letter = "ה"
+position = 4
+value = 5
+coords = [-1, 0, 0]
+
+[hebrew.encrypt.vav]
+letter = "ו"
+position = 5
+value = 6
+coords = [-1, 0, +1]
+
+[hebrew.encrypt.zayin]
+letter = "ז"
+position = 6
+value = 7
+coords = [-1, +1, -1]
+
+[hebrew.encrypt.chet]
+letter = "ח"
+position = 7
+value = 8
+coords = [-1, +1, 0]
+
+[hebrew.encrypt.tet]
+letter = "ט"
+position = 8
+value = 9
+coords = [-1, +1, +1]
+
+# Position 9-17 (tens) — PRESENT octant (x=0)
+[hebrew.encrypt.yod]
+letter = "י"
+position = 9
+value = 10
+coords = [0, -1, -1]
+
+[hebrew.encrypt.kaf]
+letter = "כ"
+position = 10
+value = 20
+coords = [0, -1, 0]
+
+[hebrew.encrypt.lamed]
+letter = "ל"
+position = 11
+value = 30
+coords = [0, -1, +1]
+
+[hebrew.encrypt.mem]
+letter = "מ"
+position = 12
+value = 40
+coords = [0, 0, -1]
+
+[hebrew.encrypt.nun]
+letter = "נ"
+position = 13
+value = 50
+coords = [0, 0, 0]
+
+[hebrew.encrypt.samech]
+letter = "ס"
+position = 14
+value = 60
+coords = [0, 0, +1]
+
+[hebrew.encrypt.ayin]
+letter = "ע"
+position = 15
+value = 70
+coords = [0, +1, -1]
+
+[hebrew.encrypt.pe]
+letter = "פ"
+position = 16
+value = 80
+coords = [0, +1, 0]
+
+[hebrew.encrypt.tsade]
+letter = "צ"
+position = 17
+value = 90
+coords = [0, +1, +1]
+
+# Position 18-21 (hundreds) — FUTURE octant (x=+1)
+[hebrew.encrypt.qof]
+letter = "ק"
+position = 18
+value = 100
+coords = [+1, -1, -1]
+
+[hebrew.encrypt.resh]
+letter = "ר"
+position = 19
+value = 200
+coords = [+1, -1, 0]
+
+[hebrew.encrypt.shin]
+letter = "ש"
+position = 20
+value = 300
+coords = [+1, -1, +1]
+
+[hebrew.encrypt.tav]
+letter = "ת"
+position = 21
+value = 400
+coords = [+1, 0, -1]
+
+# Position 22-26 (finals) — FUTURE octant continued
+[hebrew.encrypt.final_kaf]
+letter = "ך"
+position = 22
+value = 500
+coords = [+1, 0, 0]
+
+[hebrew.encrypt.final_mem]
+letter = "ם"
+position = 23
+value = 600
+coords = [+1, 0, +1]
+
+[hebrew.encrypt.final_nun]
+letter = "ן"
+position = 24
+value = 700
+coords = [+1, +1, -1]
+
+[hebrew.encrypt.final_pe]
+letter = "ף"
+position = 25
+value = 800
+coords = [+1, +1, 0]
+
+[hebrew.encrypt.final_tsade]
+letter = "ץ"
+position = 26
+value = 900
+coords = [+1, +1, +1]
+
+# Cc.4 GREEK ENCRYPTION TABLE (27 letters)
+# Forward lookup: letter → (position, value)
+[greek]
+testament = "New"
+letter_count = 27
+value_range = "1-900"
+
+# Position 0-8 (units) — PAST octant (x=-1)
+[greek.encrypt.alpha]
+letter = "Α"
+position = 0
+value = 1
+coords = [-1, -1, -1]
+
+[greek.encrypt.beta]
+letter = "Β"
+position = 1
+value = 2
+coords = [-1, -1, 0]
+
+[greek.encrypt.gamma]
+letter = "Γ"
+position = 2
+value = 3
+coords = [-1, -1, +1]
+
+[greek.encrypt.delta]
+letter = "Δ"
+position = 3
+value = 4
+coords = [-1, 0, -1]
+
+[greek.encrypt.epsilon]
+letter = "Ε"
+position = 4
+value = 5
+coords = [-1, 0, 0]
+
+[greek.encrypt.digamma]
+letter = "Ϝ"
+position = 5
+value = 6
+coords = [-1, 0, +1]
+archaic = true
+
+[greek.encrypt.zeta]
+letter = "Ζ"
+position = 6
+value = 7
+coords = [-1, +1, -1]
+
+[greek.encrypt.eta]
+letter = "Η"
+position = 7
+value = 8
+coords = [-1, +1, 0]
+
+[greek.encrypt.theta]
+letter = "Θ"
+position = 8
+value = 9
+coords = [-1, +1, +1]
+
+# Position 9-17 (tens) — PRESENT octant (x=0)
+[greek.encrypt.iota]
+letter = "Ι"
+position = 9
+value = 10
+coords = [0, -1, -1]
+
+[greek.encrypt.kappa]
+letter = "Κ"
+position = 10
+value = 20
+coords = [0, -1, 0]
+
+[greek.encrypt.lambda]
+letter = "Λ"
+position = 11
+value = 30
+coords = [0, -1, +1]
+
+[greek.encrypt.mu]
+letter = "Μ"
+position = 12
+value = 40
+coords = [0, 0, -1]
+
+[greek.encrypt.nu]
+letter = "Ν"
+position = 13
+value = 50
+coords = [0, 0, 0]
+
+[greek.encrypt.xi]
+letter = "Ξ"
+position = 14
+value = 60
+coords = [0, 0, +1]
+
+[greek.encrypt.omicron]
+letter = "Ο"
+position = 15
+value = 70
+coords = [0, +1, -1]
+
+[greek.encrypt.pi]
+letter = "Π"
+position = 16
+value = 80
+coords = [0, +1, 0]
+
+[greek.encrypt.koppa]
+letter = "Ϙ"
+position = 17
+value = 90
+coords = [0, +1, +1]
+archaic = true
+
+# Position 18-26 (hundreds) — FUTURE octant (x=+1)
+[greek.encrypt.rho]
+letter = "Ρ"
+position = 18
+value = 100
+coords = [+1, -1, -1]
+
+[greek.encrypt.sigma]
+letter = "Σ"
+position = 19
+value = 200
+coords = [+1, -1, 0]
+
+[greek.encrypt.tau]
+letter = "Τ"
+position = 20
+value = 300
+coords = [+1, -1, +1]
+
+[greek.encrypt.upsilon]
+letter = "Υ"
+position = 21
+value = 400
+coords = [+1, 0, -1]
+
+[greek.encrypt.phi]
+letter = "Φ"
+position = 22
+value = 500
+coords = [+1, 0, 0]
+
+[greek.encrypt.chi]
+letter = "Χ"
+position = 23
+value = 600
+coords = [+1, 0, +1]
+
+[greek.encrypt.psi]
+letter = "Ψ"
+position = 24
+value = 700
+coords = [+1, +1, -1]
+
+[greek.encrypt.omega]
+letter = "Ω"
+position = 25
+value = 800
+coords = [+1, +1, 0]
+
+[greek.encrypt.sampi]
+letter = "Ϡ"
+position = 26
+value = 900
+coords = [+1, +1, +1]
+archaic = true
+
+[extensions]
+note = "Reserved — no extensions defined"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# (Data file: lookup-based. No operations defined here.)
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('encryption.toml','rb'))\""]
+
+[_validation.schema]
+required = ["system", "functions", "hebrew", "greek"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_tables_valid = 30
+data_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Hebrew letter positions (0-26) — linguistically fixed",
+    "Greek letter positions (0-26) — linguistically fixed",
+    "Gematria values — historically established",
+    "Cube coordinate mappings — mathematically derived",
+]
+careful = [
+    "Coordinate system — affects all cube-based operations",
+    "Value normalization formula — affects trite encoding",
+    "Adding new letter systems — extends the scope",
+]
+safe = [
+    "Additional metadata per letter",
+    "Notes on gematria significance",
+    "Cross-references to other tables",
+    "Implementation notes",
+]
+
+[_closing.X2_extension]
+adding_data = [
+    "1. Add new entries following existing table structure",
+    "2. Ensure all required fields present",
+    "3. Verify bidirectional consistency with related files",
+    "4. Run TOML validation",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_reference = "Check encoding_ref/scripture fields — all must point to valid sources"
+consistency_error = "Verify bidirectional mapping — encoding ↔ decoding must agree"
+
+[_closing.X4_reference]
+related_files = [
+    "L0-universal/bible/encoding.toml — Bible Encoding Map",
+    "L0-universal/bible/decoding.toml — Bible Decoding Map",
+    "L0-universal/bible/addressing.toml — Bible Addressing System",
+    "L0-universal/bible/decryption.toml — Bible Decryption",
+    "L0-universal/bible/scripture-text.toml — Scripture Text Encoding",
+    "L0-universal/bible/translation.toml — Bible Translation Map",
+]
+required_sections = ["_pragma", "_metadata", "system", "functions", "hebrew", "greek", "_validation", "_closing"]
+validate = "python3 -c \"import tomllib; tomllib.load(open('encryption.toml','rb'))\""
+
+[_closing.X5_note]
+note = "Not forced. Designed by God. 27 = 3³."
+scripture = "I am Alpha and Omega, the beginning and the ending. — Revelation 1:8"
+anchor = "Not forced. Designed by God. 27 = 3³. Genesis 1:1 anchors the mathematics of language."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

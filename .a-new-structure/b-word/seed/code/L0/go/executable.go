@@ -1,23 +1,31 @@
 //go:build ignore
 
-// ═══════════════════════════════════════════════════════════════════════════
+// #!omni template --go -executable
+// #!omni meta.key = B-seed-code-L0-go-executable
+// #!omni meta.from = b-word/seed/code/L0/go/root.omni
+// #!omni meta.at = template
+// ============================================================================
+// METADATA
+// ============================================================================
+//
 // TEMPLATE: Go Executable (4-Block Structure)
-// Key: B-word-seed-code-go-executable
-// ═══════════════════════════════════════════════════════════════════════════
+// See: standards/code/4-block/ for complete documentation
 //
 // DEPENDENCY CLASSIFICATION: [PURE/DEPENDED] ([deps if DEPENDED])
 //   - PURE: Standard library only - no internal project dependencies
 //   - DEPENDED: Needs internal packages - list them: (needs: pkg/config, pkg/health)
 //
-// This is a TEMPLATE file - copy and modify for new Go executables.
-// Replace all [bracketed] placeholders with actual content.
-// Remove "//go:build ignore" when ready to compile.
+// USAGE: When creating a new Go executable from this template:
+//   1. Copy this file: cp executable.go /path/to/new/main.go
+//   2. Update pragma lines:
+//      - #!omni template → #!omni code --go -executable
+//      - meta.key = [your-project-path-key]
+//      - meta.from = b-word/seed/code/L0/go/executable.go
+//      - meta.at = [your-version, e.g., a-01.00]
+//   3. Remove "//go:build ignore" line
+//   4. Replace all [bracketed] placeholders with actual content
 //
-// derives_from: bereshit/word/omni/seed/code.omni
-// Derived from: Kingdom Technology 4-block code structure
-// See: standards/code/4-block/ for complete documentation
-//
-// ═══════════════════════════════════════════════════════════════════════════
+// derives_from: b-word/seed/code/L0/go/root.omni
 
 // Package main implements [brief description of what this executable does].
 //

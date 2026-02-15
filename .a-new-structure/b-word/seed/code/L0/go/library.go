@@ -1,8 +1,8 @@
 //go:build ignore
 
 // #!omni template --go -library
-// #!omni meta.key = B-word-seed-code-go-library
-// #!omni meta.from = bereshit/word/omni/seed/code.omni
+// #!omni meta.key = B-seed-code-L0-go-library
+// #!omni meta.from = b-word/seed/code/L0/go/root.omni
 // #!omni meta.at = template
 // ============================================================================
 // METADATA
@@ -16,7 +16,7 @@
 //   2. Update pragma lines:
 //      - #!omni template → #!omni code --go -library
 //      - meta.key = [your-project-path-key]
-//      - meta.from = bereshit/word/seed/code/go/library.go
+//      - meta.from = b-word/seed/code/L0/go/library.go
 //      - meta.at = [your-version, e.g., a-01.00]
 //   3. Remove "//go:build ignore" line
 //   4. Replace all [bracketed] placeholders with actual content
@@ -77,7 +77,7 @@ package packagename
 // ============================================================================
 //
 // Section order: Imports → Types → Type Methods → Constants → Variables → Package-Level State
-// See: bereshit/word/seed/code/go/library.go > SETUP
+// See: b-word/seed/code/L0/go/library.go > SETUP
 
 // ────────────────────────────────────────────────────────────────
 // Imports

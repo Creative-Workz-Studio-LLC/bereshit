@@ -1,0 +1,525 @@
+//omni:code --go -test
+//omni:key B-L2-platform-test
+//omni:version a-01.00
+
+// ═══════════════════════════════════════════════════════════════════════════
+// METADATA
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Key: B-L2-platform-test
+// Purpose: Integration tests for L2 platform database loader
+// Biblical: Psalm 127:1 — "Except the LORD build the house"
+// Authors: Nova Dawn
+// Version: 1.0.0
+// Created: 2026-02-15
+//
+// These are integration tests — they require the real platform.db.
+// The database path is resolved relative to the module root (b-word/).
+// Tests are skipped if the database is not found.
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+package platform
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════════════════════════════════════════
+
+import (
+	"os"
+	"path/filepath"
+	"runtime"
+	"testing"
+)
+
+// dbDir returns the platform database directory, resolved from this test
+// file's location. The path walks up from hybrid/platform/ to b-word/,
+// then down to data/platform/database/.
+func dbDir(t *testing.T) string {
+	t.Helper()
+
+	_, thisFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Skip("cannot determine test file path")
+	}
+
+	// Walk up: platform/ -> hybrid/ -> L2-platform/ -> b-word/
+	bWord := filepath.Join(filepath.Dir(thisFile), "..", "..", "..")
+	dir := filepath.Join(bWord, DatabaseDir)
+
+	dbPath := filepath.Join(dir, DatabaseFile)
+	if _, err := os.Stat(dbPath); err != nil {
+		t.Skipf("platform.db not found at %s — run seed-platform first", dbPath)
+	}
+
+	return dir
+}
+
+func openTestDB(t *testing.T) *DB {
+	t.Helper()
+	db, err := Open(dbDir(t))
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	t.Cleanup(func() { db.Close() })
+	return db
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BODY
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ───────────────────────────────────────────────────────────────────────────
+// Open/Close — verify database connection lifecycle
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestOpenSuccess(t *testing.T) {
+	db := openTestDB(t)
+	if db == nil {
+		t.Fatal("db should not be nil")
+	}
+}
+
+func TestOpenBadPath(t *testing.T) {
+	_, err := Open("/tmp/nonexistent-platform-db-99999")
+	if err == nil {
+		t.Error("Open with bad path should return error")
+	}
+}
+
+func TestOpenFromRoot(t *testing.T) {
+	_, thisFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Skip("cannot determine test file path")
+	}
+	bWord := filepath.Join(filepath.Dir(thisFile), "..", "..", "..")
+
+	db, err := OpenFromRoot(bWord)
+	if err != nil {
+		t.Skipf("OpenFromRoot: %v — run seed-platform first", err)
+	}
+	defer db.Close()
+
+	// Verify it's a real working connection.
+	count, err := db.SpecCount()
+	if err != nil {
+		t.Fatalf("SpecCount after OpenFromRoot: %v", err)
+	}
+	if count == 0 {
+		t.Error("SpecCount should be > 0")
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Spec Queries — verify seeded data
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestSpecCount(t *testing.T) {
+	db := openTestDB(t)
+	count, err := db.SpecCount()
+	if err != nil {
+		t.Fatalf("SpecCount: %v", err)
+	}
+	if count == 0 {
+		t.Error("SpecCount should be > 0")
+	}
+	t.Logf("specs: %d", count)
+}
+
+func TestAllSpecs(t *testing.T) {
+	db := openTestDB(t)
+	specs, err := db.AllSpecs()
+	if err != nil {
+		t.Fatalf("AllSpecs: %v", err)
+	}
+	if len(specs) == 0 {
+		t.Error("AllSpecs should return specs")
+	}
+
+	// Verify each spec has required fields.
+	for _, s := range specs {
+		if s.Key == "" {
+			t.Errorf("spec id=%d has empty key", s.ID)
+		}
+		if s.File == "" {
+			t.Errorf("spec %s has empty file", s.Key)
+		}
+	}
+}
+
+func TestSpecByKeyFound(t *testing.T) {
+	db := openTestDB(t)
+
+	// Get any spec to test SpecByKey.
+	specs, err := db.AllSpecs()
+	if err != nil || len(specs) == 0 {
+		t.Skip("no specs to test SpecByKey")
+	}
+
+	key := specs[0].Key
+	spec, err := db.SpecByKey(key)
+	if err != nil {
+		t.Fatalf("SpecByKey(%s): %v", key, err)
+	}
+	if spec.Key != key {
+		t.Errorf("SpecByKey returned key %q, want %q", spec.Key, key)
+	}
+}
+
+func TestSpecByKeyNotFound(t *testing.T) {
+	db := openTestDB(t)
+	_, err := db.SpecByKey("nonexistent-spec-key-99999")
+	if err == nil {
+		t.Error("SpecByKey for nonexistent key should return error")
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Health Levels — the 7 Hebrew-named states
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestAllHealthLevels(t *testing.T) {
+	db := openTestDB(t)
+	levels, err := db.AllHealthLevels()
+	if err != nil {
+		t.Fatalf("AllHealthLevels: %v", err)
+	}
+
+	if len(levels) != 7 {
+		t.Errorf("expected 7 health levels, got %d", len(levels))
+	}
+
+	// Verify all 7 English level names are present.
+	names := make(map[string]bool)
+	for _, l := range levels {
+		names[l.Name] = true
+		// Each level should have a non-empty Hebrew field.
+		if l.Hebrew == "" {
+			t.Errorf("level %s has empty Hebrew field", l.Name)
+		}
+	}
+
+	expected := []string{"broken", "wanting", "lacking", "even", "sound", "whole", "perfect"}
+	for _, name := range expected {
+		if !names[name] {
+			t.Errorf("missing health level: %s", name)
+		}
+	}
+}
+
+func TestHealthLevelByName(t *testing.T) {
+	db := openTestDB(t)
+	level, err := db.HealthLevelByName("even")
+	if err != nil {
+		t.Fatalf("HealthLevelByName(even): %v", err)
+	}
+	if level.Hebrew != "yashar" {
+		t.Errorf("even level Hebrew = %q, want %q", level.Hebrew, "yashar")
+	}
+	// "even" is the center point — stored value 128.
+	if level.MinStored > 128 || level.MaxStored < 128 {
+		t.Errorf("even level stored range [%d,%d] should include 128", level.MinStored, level.MaxStored)
+	}
+}
+
+func TestHealthLevelByNamePerfect(t *testing.T) {
+	db := openTestDB(t)
+	level, err := db.HealthLevelByName("perfect")
+	if err != nil {
+		t.Fatalf("HealthLevelByName(perfect): %v", err)
+	}
+	if level.Hebrew != "tov" {
+		t.Errorf("perfect Hebrew = %q, want %q", level.Hebrew, "tov")
+	}
+	// "perfect" should include stored value 255.
+	if level.MaxStored < 255 {
+		t.Errorf("perfect level MaxStored = %d, should include 255", level.MaxStored)
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Health Normalization — the 6 scales
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestAllNormalizationBases(t *testing.T) {
+	db := openTestDB(t)
+	bases, err := db.AllNormalizationBases()
+	if err != nil {
+		t.Fatalf("AllNormalizationBases: %v", err)
+	}
+	if len(bases) != 6 {
+		t.Errorf("expected 6 normalization bases, got %d", len(bases))
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Health Scoring — rules for score calculation
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestAllScoringRules(t *testing.T) {
+	db := openTestDB(t)
+	rules, err := db.AllScoringRules()
+	if err != nil {
+		t.Fatalf("AllScoringRules: %v", err)
+	}
+	if len(rules) == 0 {
+		t.Error("should have scoring rules")
+	}
+}
+
+func TestScoringRulesByCategory(t *testing.T) {
+	db := openTestDB(t)
+	// ScoringRulesByCategory appends % internally for LIKE prefix match.
+	rules, err := db.ScoringRulesByCategory("init")
+	if err != nil {
+		t.Fatalf("ScoringRulesByCategory(init): %v", err)
+	}
+	for _, r := range rules {
+		if len(r.RuleName) < 4 || r.RuleName[:4] != "init" {
+			t.Errorf("rule %q should start with 'init'", r.RuleName)
+		}
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Health Log Actions — event types
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestAllLogActions(t *testing.T) {
+	db := openTestDB(t)
+	actions, err := db.AllLogActions()
+	if err != nil {
+		t.Fatalf("AllLogActions: %v", err)
+	}
+	if len(actions) == 0 {
+		t.Error("should have log actions")
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// DAR (Detect-Assess-Restore) — phases, aspects, severity
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestAllDARPhases(t *testing.T) {
+	db := openTestDB(t)
+	phases, err := db.AllDARPhases()
+	if err != nil {
+		t.Fatalf("AllDARPhases: %v", err)
+	}
+	if len(phases) != 3 {
+		t.Errorf("expected 3 DAR phases, got %d", len(phases))
+	}
+}
+
+func TestAllDARAspects(t *testing.T) {
+	db := openTestDB(t)
+	aspects, err := db.AllDARAspects()
+	if err != nil {
+		t.Fatalf("AllDARAspects: %v", err)
+	}
+	if len(aspects) != 3 {
+		t.Errorf("expected 3 DAR aspects, got %d", len(aspects))
+	}
+}
+
+func TestAllDARSeverity(t *testing.T) {
+	db := openTestDB(t)
+	severity, err := db.AllDARSeverity()
+	if err != nil {
+		t.Fatalf("AllDARSeverity: %v", err)
+	}
+	if len(severity) != 3 {
+		t.Errorf("expected 3 DAR severity levels, got %d", len(severity))
+	}
+}
+
+func TestAllRestoreResults(t *testing.T) {
+	db := openTestDB(t)
+	results, err := db.AllRestoreResults()
+	if err != nil {
+		t.Fatalf("AllRestoreResults: %v", err)
+	}
+	if len(results) != 7 {
+		t.Errorf("expected 7 restore results, got %d", len(results))
+	}
+}
+
+func TestAllRestoreStrategies(t *testing.T) {
+	db := openTestDB(t)
+	strategies, err := db.AllRestoreStrategies()
+	if err != nil {
+		t.Fatalf("AllRestoreStrategies: %v", err)
+	}
+	if len(strategies) != 7 {
+		t.Errorf("expected 7 restore strategies, got %d", len(strategies))
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Permissions — states, categories, gating
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestAllPermissionStates(t *testing.T) {
+	db := openTestDB(t)
+	states, err := db.AllPermissionStates()
+	if err != nil {
+		t.Fatalf("AllPermissionStates: %v", err)
+	}
+	if len(states) != 3 {
+		t.Errorf("expected 3 permission states, got %d", len(states))
+	}
+}
+
+func TestAllActionCategories(t *testing.T) {
+	db := openTestDB(t)
+	categories, err := db.AllActionCategories()
+	if err != nil {
+		t.Fatalf("AllActionCategories: %v", err)
+	}
+	if len(categories) != 4 {
+		t.Errorf("expected 4 action categories, got %d", len(categories))
+	}
+}
+
+func TestAllPermissionGating(t *testing.T) {
+	db := openTestDB(t)
+	gating, err := db.AllPermissionGating()
+	if err != nil {
+		t.Fatalf("AllPermissionGating: %v", err)
+	}
+	if len(gating) == 0 {
+		t.Error("should have permission gating rules")
+	}
+}
+
+func TestPermissionForHealthEven(t *testing.T) {
+	db := openTestDB(t)
+	gating, err := db.PermissionForHealth("even")
+	if err != nil {
+		t.Fatalf("PermissionForHealth(even): %v", err)
+	}
+	if gating.HealthLevel != "even" {
+		t.Errorf("gating health level = %q, want %q", gating.HealthLevel, "even")
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Filesystem Extensions — biblical extension mappings
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestAllFilesystemExtensions(t *testing.T) {
+	db := openTestDB(t)
+	exts, err := db.AllFilesystemExtensions()
+	if err != nil {
+		t.Fatalf("AllFilesystemExtensions: %v", err)
+	}
+	if len(exts) == 0 {
+		t.Error("should have filesystem extensions")
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Dependencies — cross-reference queries
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestDependenciesOfUnknown(t *testing.T) {
+	db := openTestDB(t)
+	deps, err := db.DependenciesOf("nonexistent-key")
+	if err != nil {
+		t.Fatalf("DependenciesOf: %v", err)
+	}
+	if len(deps) != 0 {
+		t.Errorf("unknown spec should have 0 dependencies, got %d", len(deps))
+	}
+}
+
+func TestDependentsOnUnknown(t *testing.T) {
+	db := openTestDB(t)
+	deps, err := db.DependentsOn("nonexistent-key")
+	if err != nil {
+		t.Fatalf("DependentsOn: %v", err)
+	}
+	if len(deps) != 0 {
+		t.Errorf("unknown spec should have 0 dependents, got %d", len(deps))
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Convenience: ResolveHealthLevel — score to level mapping
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestResolveHealthLevelMidpoint(t *testing.T) {
+	db := openTestDB(t)
+	level, err := db.ResolveHealthLevel(128)
+	if err != nil {
+		t.Fatalf("ResolveHealthLevel(128): %v", err)
+	}
+	if level == nil {
+		t.Fatal("level should not be nil")
+	}
+	t.Logf("score 128 = %s (%s)", level.Name, level.Hebrew)
+}
+
+func TestResolveHealthLevelZero(t *testing.T) {
+	db := openTestDB(t)
+	level, err := db.ResolveHealthLevel(0)
+	if err != nil {
+		t.Fatalf("ResolveHealthLevel(0): %v", err)
+	}
+	if level.Name != "broken" {
+		t.Errorf("score 0 should be broken, got %q", level.Name)
+	}
+}
+
+func TestResolveHealthLevelMax(t *testing.T) {
+	db := openTestDB(t)
+	level, err := db.ResolveHealthLevel(255)
+	if err != nil {
+		t.Fatalf("ResolveHealthLevel(255): %v", err)
+	}
+	if level.Name != "perfect" {
+		t.Errorf("score 255 should be perfect, got %q", level.Name)
+	}
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Convenience: ResolvePermission — score to permission mapping
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestResolvePermissionMidpoint(t *testing.T) {
+	db := openTestDB(t)
+	perm, err := db.ResolvePermission(128)
+	if err != nil {
+		t.Fatalf("ResolvePermission(128): %v", err)
+	}
+	if perm == "" {
+		t.Error("permission should not be empty")
+	}
+	t.Logf("score 128 permission = %s", perm)
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Thread Safety — concurrent reads should not panic
+// ───────────────────────────────────────────────────────────────────────────
+
+func TestConcurrentReads(t *testing.T) {
+	db := openTestDB(t)
+	done := make(chan bool, 10)
+
+	for i := 0; i < 10; i++ {
+		go func() {
+			defer func() { done <- true }()
+			_, _ = db.AllHealthLevels()
+			_, _ = db.AllSpecs()
+			_, _ = db.SpecCount()
+		}()
+	}
+
+	for i := 0; i < 10; i++ {
+		<-done
+	}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLOSING
+// ═══════════════════════════════════════════════════════════════════════════

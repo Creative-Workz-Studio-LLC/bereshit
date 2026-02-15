@@ -1,49 +1,124 @@
 // L0 Universal — Foundation Layer
 // "In the beginning God created the heaven and the earth." — Genesis 1:1
 //
-// The bedrock. Balanced ternary types, mathematical foundations, zone-aware
-// filesystem. Everything else stands on this. No upward imports.
+// The bedrock. Organized by execution mode:
+//   ladder/  — strict sequence, baton-passing (specs, compiled libs)
+//   spiral/  — iterative growth, loops and refinement (glossary, identity)
+//   hybrid/  — ordered execution with spiral recovery (config, paths, cli, format, output)
 //
-// Language: C (compiled, persistent, foundational)
-// Dependencies: None (this IS the foundation)
-// Dependents: L1, L2, L5
+// Languages: Go (runtime packages), TOML (specifications), C (scaffolded)
+// Dependencies: github.com/BurntSushi/toml v1.6.0 (config loading only)
+// Dependents: L1, L2, L3, L5
 
 = L0 Universal
 
 == Purpose
 
-Universal foundations that every layer above depends on. Pure C libraries
-implementing balanced ternary arithmetic, mathematical operations, and
-zone-aware filesystem access. Platform-independent, substrate-independent.
+Universal foundations that every layer above depends on. Organized by
+execution mode — ladder (strict order), spiral (iterative), hybrid (both).
 
-== Current Location (pre-migration)
-
-[cols="2,3"]
-|===
-| Component | Current Path
-
-| libtrit (balanced ternary)
-| `word/work/pkg/trit/`
-
-| bereshit-fs (FUSE zones)
-| `word/work/pkg/fuse/`
-
-| libmath (future)
-| _not yet created_
-|===
-
-== Target Structure
+== Structure
 
 ----
 L0-universal/
-├── libtrit/        ← balanced ternary types + arithmetic
-├── libmath/        ← mathematical foundations
-├── bereshit-fs/    ← zone-aware filesystem (FUSE)
-└── foundation/     ← TOML specs (type system definitions)
+├── Makefile             ← builds all Go packages (make check = vet + lint + test)
+├── root.adoc            ← this file
+│
+├── ladder/              ← STRICT ORDER — compiled, foundational, baton-passing
+│   ├── foundation/      ← TOML: type specifications (60+ files)
+│   │   ├── index.toml    ← manifest index
+│   │   ├── bible/        ← scripture encoding, addressing, translation (8 files)
+│   │   ├── math/         ← ternary definitions, operations, cognition (5 files)
+│   │   └── types/        ← primitives, validation, composition, errors (36+ files)
+│   ├── libtrit/         ← scaffold: C balanced ternary library (from word/work/pkg/trit/)
+│   └── libmath/         ← scaffold: future C math library
+│
+├── spiral/              ← ITERATIVE — grows, refines, loops
+│   ├── identity/        ← Go: OmniCode package identity registry
+│   │   └── registry.go   ← Register/Lookup/ByLayer/ByDomain/ByTag
+│   └── definitions/     ← scaffold: glossary terms migrating from word/glossary/
+│
+└── hybrid/              ← ORDERED + RECOVERY — ladder forward, spiral to recover
+    ├── config/          ← Go: manifest-driven config loader (3000+ lines)
+    │   ├── loader.go     ← main loader, RWMutex caching, TOML/JSONC dispatch
+    │   ├── loader_test.go← comprehensive test suite (49 tests)
+    │   └── util/         ← shared config primitives (8 files)
+    │       ├── doc.go     ← package identity + registration
+    │       ├── errors.go  ← LoadError, ValidationError types
+    │       ├── exists.go  ← FileExists, DirExists
+    │       ├── formats.go ← format registry, extension dispatch
+    │       ├── jsonc.go   ← JSONC parser (comments, trailing commas)
+    │       ├── loader.go  ← TOML/JSONC loading, config discovery
+    │       ├── must.go    ← Must[T] generic wrapper
+    │       ├── root.go    ← RootGuard (set-once thread-safe root)
+    │       └── tripwire.go← loud fallback alerts
+    ├── paths/           ← Go: system-wide path resolution
+    │   └── paths.go      ← centralized path construction for all CPI-SI components
+    ├── cli/             ← Go: CLI scaffolding (flag parsing, usage builder)
+    │   └── cli.go        ← lightweight app builder wrapping Go's flag package
+    ├── format/          ← Go: pure value formatting (no side effects)
+    │   └── format.go     ← duration, path, number, string, model formatting
+    └── output/          ← Go: terminal output rendering (stdout)
+        └── output.go     ← headers, tables, key-value pairs, status, JSON
 ----
+
+== Execution Modes
+
+[cols="1,2,3"]
+|===
+| Mode | Characteristic | Contents
+
+| *Ladder*
+| Strict sequence. Can't skip, can't reorder. Baton passes forward only.
+| TOML specs (bible → math → types), C libraries (libtrit, libmath)
+
+| *Spiral*
+| Iterative. Revisits, grows, never done.
+| Identity registry (instances register/evolve), glossary definitions
+
+| *Hybrid*
+| Ladder forward, spiral to recover. Ordered execution with fallback loops.
+| Config loader, path resolution, CLI scaffolding, display formatting
+|===
 
 == Build
 
- make l0
+ make              # build all Go packages
+ make check        # full quality gate: vet + lint + test (cached)
+ make test         # run tests (cached)
+ make vet          # static analysis (cached)
+ make lint         # 4-block structural alignment (cached)
+ make clean        # reset build + cache
+ make help         # show all targets
 
-Delegates to `word/work/pkg/trit/` and `word/work/pkg/fuse/`.
+== Dependencies
+
+[cols="2,3"]
+|===
+| Package | External Dependencies
+
+| spiral/identity/
+| none (stdlib only)
+
+| hybrid/config/, hybrid/config/util/
+| `github.com/BurntSushi/toml v1.6.0`
+
+| hybrid/{paths,cli,format,output}/
+| none (stdlib + L0 spiral/identity)
+|===
+
+== Design
+
+Identity registry (spiral) is the bootstrap anchor — it registers itself, then
+every other package registers at `init()` time. The system knows itself at runtime.
+
+Config loader (hybrid) dispatches by file extension (TOML, JSONC) and loads
+foundation specs (ladder) in manifest order with fallback/retry for recovery.
+
+Domain packages (hybrid/{paths,cli,format,output}) are pure stdlib + L0 identity.
+No package in L0 imports from L1 or above. The layer boundary is a compile-time
+guarantee. Each domain is a genuine architectural seam — independently replaceable.
+
+Scaffold directories (ladder/libtrit, ladder/libmath, spiral/definitions) are
+staging areas for content migrating from older locations. They contain `.gitkeep`
+files and will be populated as migration continues.

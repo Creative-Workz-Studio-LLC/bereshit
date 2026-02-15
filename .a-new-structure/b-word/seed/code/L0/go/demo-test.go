@@ -1,23 +1,31 @@
 //go:build ignore
 
-// ═══════════════════════════════════════════════════════════════════════════
+// #!omni template --go -demo-test
+// #!omni meta.key = B-seed-code-L0-go-demo-test
+// #!omni meta.from = b-word/seed/code/L0/go/root.omni
+// #!omni meta.at = template
+// ============================================================================
+// METADATA
+// ============================================================================
+//
 // TEMPLATE: Go Demo-Test (4-Block Structure)
-// Key: B-word-seed-code-go-demo-test
-// ═══════════════════════════════════════════════════════════════════════════
+// See: standards/code/4-block/ for complete documentation
 //
 // DEPENDENCY CLASSIFICATION: [PURE/DEPENDED] ([deps if DEPENDED])
 //   - PURE: Standard library only - no internal project dependencies
 //   - DEPENDED: Needs internal packages - list them: (needs: pkg/config, pkg/health)
 //
-// This is a TEMPLATE file - copy and modify for new Go demo-test files.
-// Replace all [bracketed] placeholders with actual content.
-// Remove "//go:build ignore" when ready to compile.
+// USAGE: When creating a new Go demo-test from this template:
+//   1. Copy this file: cp demo-test.go /path/to/new/package_test.go
+//   2. Update pragma lines:
+//      - #!omni template → #!omni code --go -demo-test
+//      - meta.key = [your-project-path-key]
+//      - meta.from = b-word/seed/code/L0/go/demo-test.go
+//      - meta.at = [your-version, e.g., a-01.00]
+//   3. Remove "//go:build ignore" line
+//   4. Replace all [bracketed] placeholders with actual content
 //
-// derives_from: bereshit/word/omni/seed/code.omni
-// Derived from: Kingdom Technology 4-block code structure
-// See: standards/code/4-block/ for complete documentation
-//
-// ═══════════════════════════════════════════════════════════════════════════
+// derives_from: b-word/seed/code/L0/go/root.omni
 
 // Package [packagename]_test demonstrates [brief description of what this demo-test covers].
 //
