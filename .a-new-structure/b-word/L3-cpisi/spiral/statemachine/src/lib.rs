@@ -74,19 +74,19 @@ impl std::fmt::Display for Command {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Operator {
     // HALT operators
-    HaltRetreat,    // <- (finality)
-    HaltHold,       // @ (lateral)
-    HaltAdvance,    // -> (expansion)
+    HaltRetreat, // <- (finality)
+    HaltHold,    // @ (lateral)
+    HaltAdvance, // -> (expansion)
 
     // AWAIT operators
-    AwaitContract,  // - (finality)
-    AwaitBalance,   // = (lateral)
-    AwaitExpand,    // + (expansion)
+    AwaitContract, // - (finality)
+    AwaitBalance,  // = (lateral)
+    AwaitExpand,   // + (expansion)
 
     // PROCEED operators
-    ProceedDown,    // < (finality)
-    ProceedLevel,   // | (lateral)
-    ProceedUp,      // > (expansion)
+    ProceedDown,  // < (finality)
+    ProceedLevel, // | (lateral)
+    ProceedUp,    // > (expansion)
 }
 
 impl Operator {
@@ -193,11 +193,7 @@ impl Trajectory {
 
     /// Unique positions visited
     pub fn unique_positions(&self) -> Vec<u8> {
-        let mut positions: Vec<u8> = self
-            .transitions
-            .iter()
-            .map(|t| t.to_position)
-            .collect();
+        let mut positions: Vec<u8> = self.transitions.iter().map(|t| t.to_position).collect();
         positions.sort();
         positions.dedup();
         positions

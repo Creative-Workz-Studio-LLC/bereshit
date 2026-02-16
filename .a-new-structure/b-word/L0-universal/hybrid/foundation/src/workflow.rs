@@ -25,10 +25,11 @@ use std::fmt;
 // ────────────────────────────────────────────────────────────────
 
 /// Type of workflow operation being performed.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum WorkflowOperation {
     /// No active workflow.
     #[serde(rename = "")]
+    #[default]
     None,
     /// Creating new files from templates.
     #[serde(rename = "file-creation")]
@@ -82,11 +83,7 @@ pub struct RuntimeWorkflow {
 // B.1 WorkflowOperation
 // ────────────────────────────────────────────────────────────────
 
-impl Default for WorkflowOperation {
-    fn default() -> Self {
-        Self::None
-    }
-}
+// Default derived on enum declaration above (None variant)
 
 impl fmt::Display for WorkflowOperation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

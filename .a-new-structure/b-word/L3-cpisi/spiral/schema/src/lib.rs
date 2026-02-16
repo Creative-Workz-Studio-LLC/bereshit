@@ -194,7 +194,10 @@ pub static METADATA: &[(&str, &str)] = &[
     ),
     // -- M9: Dependencies -------------------------------------------------
     ("M9.needs.stdlib", "fmt (Display), path (Path)"),
-    ("M9.needs.external", "serde 1.0 (derive), toml 0.8 (parsing)"),
+    (
+        "M9.needs.external",
+        "serde 1.0 (derive), toml 0.8 (parsing)",
+    ),
     (
         "M9.needs.internal",
         "bereshit-l0-config (config file loading)",
@@ -740,12 +743,32 @@ impl StateSchema {
     /// shavar (0) -> tohu (1) -> bohu (2) -> choshek (3) -> or (4) -> ratzon (5) -> tov (6)
     pub fn default_states() -> Self {
         Self {
-            shavar: HebrewState::new("shavar", "broken", 0, "Initial broken state -- the starting condition"),
-            tohu: HebrewState::new("tohu", "formless", 1, "Without structure or defined purpose"),
+            shavar: HebrewState::new(
+                "shavar",
+                "broken",
+                0,
+                "Initial broken state -- the starting condition",
+            ),
+            tohu: HebrewState::new(
+                "tohu",
+                "formless",
+                1,
+                "Without structure or defined purpose",
+            ),
             bohu: HebrewState::new("bohu", "void", 2, "Empty space awaiting filling"),
             choshek: HebrewState::new("choshek", "darkness", 3, "Obscured, not yet illuminated"),
-            or: HebrewState::new("or", "light", 4, "Illumination begins, structure becomes visible"),
-            ratzon: HebrewState::new("ratzon", "will", 5, "Intentional direction and purpose emerge"),
+            or: HebrewState::new(
+                "or",
+                "light",
+                4,
+                "Illumination begins, structure becomes visible",
+            ),
+            ratzon: HebrewState::new(
+                "ratzon",
+                "will",
+                5,
+                "Intentional direction and purpose emerge",
+            ),
             tov: HebrewState::new("tov", "good", 6, "The restored, functional, complete state"),
         }
     }

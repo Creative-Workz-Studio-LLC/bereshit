@@ -33,9 +33,7 @@ use serde::{Deserialize, Serialize};
 
 /// Generic workflow types live in L0 — re-exported here so existing L3
 /// consumers don't need import changes. Import from L0 for new code.
-pub use bereshit_l0_foundation::workflow::{
-    RuntimeWorkflow, WorkflowOperation, WorkflowStep,
-};
+pub use bereshit_l0_foundation::workflow::{RuntimeWorkflow, WorkflowOperation, WorkflowStep};
 
 // ============================================================================
 // BODY
@@ -208,13 +206,14 @@ pub struct RuntimeTransition {
 ///   -1 = Finality (toward foundation, completion, or retreat)
 ///    0 = Lateral  (maintain, hold position, awaiting)
 ///   +1 = Expansion (toward God, growth, building)
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum KeyValue {
     /// Toward foundation, completion, or retreat (-1)
     #[serde(rename = "-1")]
     Finality,
     /// Maintain, hold position, awaiting (0)
     #[serde(rename = "0")]
+    #[default]
     Lateral,
     /// Toward God, growth, building (+1)
     #[serde(rename = "1")]
@@ -250,17 +249,12 @@ impl KeyValue {
     }
 }
 
-impl Default for KeyValue {
-    fn default() -> Self {
-        Self::Lateral
-    }
-}
-
 /// HaltType represents whether a HALT was reached and what kind.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum HaltType {
     /// No HALT reached, work continues
     #[serde(rename = "none")]
+    #[default]
     None,
     /// Anchor reached, choice validated
     #[serde(rename = "completed")]
@@ -270,27 +264,16 @@ pub enum HaltType {
     Interrupted,
 }
 
-impl Default for HaltType {
-    fn default() -> Self {
-        Self::None
-    }
-}
-
 /// Tendency represents the direction of moral alignment.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Tendency {
     #[serde(rename = "God")]
     God,
     #[serde(rename = "self")]
     Self_,
     #[serde(rename = "neutral")]
+    #[default]
     Neutral,
-}
-
-impl Default for Tendency {
-    fn default() -> Self {
-        Self::Neutral
-    }
 }
 
 /// ChoiceContext captures the context BEFORE outcome is known.
@@ -430,25 +413,13 @@ pub struct ChoiceSummary {
 }
 
 /// ChoiceHistory tracks all choices in a session.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ChoiceHistory {
     pub session_id: String,
     pub started_at: String,
     pub last_updated: String,
     pub choices: Vec<ChoiceRecord>,
     pub summary: ChoiceSummary,
-}
-
-impl Default for ChoiceHistory {
-    fn default() -> Self {
-        Self {
-            session_id: String::new(),
-            started_at: String::new(),
-            last_updated: String::new(),
-            choices: Vec::new(),
-            summary: ChoiceSummary::default(),
-        }
-    }
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -505,7 +476,11 @@ pub fn new_choice_history(session_id: &str) -> ChoiceHistory {
 ///   scaled     = normalized * 100            maps to integer percentage
 ///   delta      = normalized * weight         where weight = 0.05 (lateral) or 0.1 (directed)
 ///   new_k_align = (current * 0.9) + delta    exponential moving average, clamped to [-1,+1]
-pub fn new_impact_scores(true_score: f64, key_direction: i32, current_k_align: f64) -> ImpactScores {
+pub fn new_impact_scores(
+    true_score: f64,
+    key_direction: i32,
+    current_k_align: f64,
+) -> ImpactScores {
     let normalized = (true_score * 2.0) - 1.0;
     let scaled = (normalized * 100.0) as i32;
 
@@ -515,12 +490,7 @@ pub fn new_impact_scores(true_score: f64, key_direction: i32, current_k_align: f
         normalized * 0.1
     };
 
-    let mut new_k_align = (current_k_align * 0.9) + delta;
-    if new_k_align > 1.0 {
-        new_k_align = 1.0;
-    } else if new_k_align < -1.0 {
-        new_k_align = -1.0;
-    }
+    let new_k_align = ((current_k_align * 0.9) + delta).clamp(-1.0, 1.0);
 
     ImpactScores {
         true_score,
@@ -581,8 +551,7 @@ impl ChoiceHistory {
         }
 
         if self.summary.total_choices > 0 {
-            self.summary.average_true_score =
-                score_sum / f64::from(self.summary.total_choices);
+            self.summary.average_true_score = score_sum / f64::from(self.summary.total_choices);
         }
     }
 }
@@ -874,8 +843,7 @@ mod tests {
         };
 
         let json = serde_json::to_string(&state).expect("serialize");
-        let deserialized: RuntimeState =
-            serde_json::from_str(&json).expect("deserialize");
+        let deserialized: RuntimeState = serde_json::from_str(&json).expect("deserialize");
 
         assert_eq!(deserialized.version, "1.0.0");
         assert_eq!(deserialized.anchor_key, "genesis");
@@ -888,8 +856,7 @@ mod tests {
         record.set_pattern("trigger", "related", "reason");
 
         let json = serde_json::to_string(&record).expect("serialize");
-        let deserialized: ChoiceRecord =
-            serde_json::from_str(&json).expect("deserialize");
+        let deserialized: ChoiceRecord = serde_json::from_str(&json).expect("deserialize");
 
         assert_eq!(deserialized.id, "sess-1-choice-5");
         assert_eq!(deserialized.context.intended_key, KeyValue::Expansion);

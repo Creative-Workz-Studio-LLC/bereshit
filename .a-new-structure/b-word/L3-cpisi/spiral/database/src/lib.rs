@@ -288,7 +288,7 @@ pub mod cognition {
     }
 
     /// A detected pattern in cognitive behavior across sessions.
-    #[derive(Debug, Clone, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Default, Serialize, Deserialize)]
     pub struct CognitionPattern {
         pub id: i64,
         pub session_id: String,
@@ -297,20 +297,6 @@ pub mod cognition {
         pub trigger_type: String,
         pub trigger_detail: String,
         pub timestamp: String,
-    }
-
-    impl Default for CognitionPattern {
-        fn default() -> Self {
-            Self {
-                id: 0,
-                session_id: String::new(),
-                from_state: String::new(),
-                to_state: String::new(),
-                trigger_type: String::new(),
-                trigger_detail: String::new(),
-                timestamp: String::new(),
-            }
-        }
     }
 
     /// Repository trait for cognitive state persistence.
@@ -506,7 +492,7 @@ pub mod projects {
     use serde::{Deserialize, Serialize};
 
     /// A tracked project with lifecycle state.
-    #[derive(Debug, Clone, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Default, Serialize, Deserialize)]
     pub struct Project {
         pub id: i64,
         pub name: String,
@@ -519,24 +505,8 @@ pub mod projects {
         pub completed_at: Option<String>,
     }
 
-    impl Default for Project {
-        fn default() -> Self {
-            Self {
-                id: 0,
-                name: String::new(),
-                description: String::new(),
-                priority: String::new(),
-                status: String::new(),
-                workspace_path: String::new(),
-                started_at: None,
-                target_date: None,
-                completed_at: None,
-            }
-        }
-    }
-
     /// A project milestone marking a significant deliverable.
-    #[derive(Debug, Clone, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Default, Serialize, Deserialize)]
     pub struct Milestone {
         pub id: i64,
         pub project_id: i64,
@@ -545,20 +515,6 @@ pub mod projects {
         pub target_date: Option<String>,
         pub completed_at: Option<String>,
         pub status: String,
-    }
-
-    impl Default for Milestone {
-        fn default() -> Self {
-            Self {
-                id: 0,
-                project_id: 0,
-                name: String::new(),
-                description: String::new(),
-                target_date: None,
-                completed_at: None,
-                status: String::new(),
-            }
-        }
     }
 
     /// Repository trait for project tracking persistence.
@@ -671,15 +627,17 @@ mod tests {
         };
 
         let json = serde_json::to_string(&original).expect("serialize");
-        let restored: sessions::Session =
-            serde_json::from_str(&json).expect("deserialize");
+        let restored: sessions::Session = serde_json::from_str(&json).expect("deserialize");
 
         assert_eq!(restored.id, "sess-roundtrip");
         assert_eq!(restored.ended_at, Some("2026-02-16T11:30:00Z".into()));
         assert_eq!(restored.final_k_align, 0.78);
         assert_eq!(restored.exchange_count, 15);
         assert_eq!(restored.cpi_score, 0.82);
-        assert_eq!(restored.narrative_summary, "Deep exploration of ternary mapping");
+        assert_eq!(
+            restored.narrative_summary,
+            "Deep exploration of ternary mapping"
+        );
     }
 
     // ────────────────────────────────────────────────────────────

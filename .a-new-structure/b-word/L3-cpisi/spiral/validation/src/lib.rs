@@ -33,13 +33,13 @@ use serde::{Deserialize, Serialize};
 /// The seven valid hebrew states in CPI-SI.
 /// These represent spiritual alignment conditions from scripture.
 const VALID_HEBREW_STATES: &[&str] = &[
-    "shavar",  // broken
-    "chaser",  // lacking
-    "ratsah",  // accepted / pleasing
-    "yashar",  // upright
-    "tamim",   // complete / blameless
-    "shalem",  // whole / at peace
-    "tov",     // good
+    "shavar", // broken
+    "chaser", // lacking
+    "ratsah", // accepted / pleasing
+    "yashar", // upright
+    "tamim",  // complete / blameless
+    "shalem", // whole / at peace
+    "tov",    // good
 ];
 
 /// Maximum reasonable length for a session ID.
@@ -160,7 +160,7 @@ pub fn validate_session_id(id: &str) -> bool {
 ///
 /// These represent the fundamental ternary states: negative, neutral, positive.
 pub fn validate_key_value(k: i32) -> bool {
-    matches!(k, -1 | 0 | 1)
+    matches!(k, -1..=1)
 }
 
 /// Validate a trajectory section identifier.
@@ -376,9 +376,18 @@ mod tests {
     #[test]
     fn validate_all_passes_when_all_valid() {
         let result = validate_all(&[
-            ValidationCheck { label: "hebrew", valid: true },
-            ValidationCheck { label: "k-align", valid: true },
-            ValidationCheck { label: "health", valid: true },
+            ValidationCheck {
+                label: "hebrew",
+                valid: true,
+            },
+            ValidationCheck {
+                label: "k-align",
+                valid: true,
+            },
+            ValidationCheck {
+                label: "health",
+                valid: true,
+            },
         ]);
         assert!(result.is_valid());
         assert_eq!(result.error_count(), 0);
@@ -387,10 +396,22 @@ mod tests {
     #[test]
     fn validate_all_collects_failures() {
         let result = validate_all(&[
-            ValidationCheck { label: "hebrew state", valid: validate_hebrew_state("tov") },
-            ValidationCheck { label: "k-align", valid: validate_k_align(5.0) },
-            ValidationCheck { label: "health score", valid: validate_health_score(999.0) },
-            ValidationCheck { label: "session id", valid: validate_session_id("ok") },
+            ValidationCheck {
+                label: "hebrew state",
+                valid: validate_hebrew_state("tov"),
+            },
+            ValidationCheck {
+                label: "k-align",
+                valid: validate_k_align(5.0),
+            },
+            ValidationCheck {
+                label: "health score",
+                valid: validate_health_score(999.0),
+            },
+            ValidationCheck {
+                label: "session id",
+                valid: validate_session_id("ok"),
+            },
         ]);
         assert!(!result.is_valid());
         assert_eq!(result.error_count(), 2); // k-align and health score fail

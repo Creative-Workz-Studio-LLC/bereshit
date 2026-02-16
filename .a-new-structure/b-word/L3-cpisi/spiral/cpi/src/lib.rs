@@ -69,8 +69,8 @@ impl ExchangeType {
         }
     }
 
-    /// Parse from string
-    pub fn from_str(s: &str) -> Option<Self> {
+    /// Parse from string representation
+    pub fn parse(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "learning" => Some(Self::Learning),
             "execution" => Some(Self::Execution),
@@ -240,7 +240,7 @@ mod tests {
         ];
         for t in &types {
             let s = t.as_str();
-            assert_eq!(ExchangeType::from_str(s).as_ref(), Some(t));
+            assert_eq!(ExchangeType::parse(s).as_ref(), Some(t));
         }
     }
 

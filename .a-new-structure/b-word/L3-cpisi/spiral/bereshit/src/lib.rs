@@ -138,7 +138,13 @@ impl CreationDay {
 
 impl std::fmt::Display for CreationDay {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Day {} ({} = {})", self.number(), self.hebrew_state(), self.meaning())
+        write!(
+            f,
+            "Day {} ({} = {})",
+            self.number(),
+            self.hebrew_state(),
+            self.meaning()
+        )
     }
 }
 
