@@ -1,562 +1,254 @@
 # L3-cpisi: Full Reorganization, Refactoring, + Rust Parity
 
-## Context
+## Status
 
-L3-cpisi is the CPI-SI intelligence layer — 68 Go files across 24 packages, 2 TOML specs, 1 SQL schema. Three systemic problems:
-
-1. **Structure** — flat domain layout, not ladder/hybrid/spiral like L0-L2
-2. **Coupling** — Claude Code-specific code in cognition/hookoutput, broken import paths
-3. **Duplication** — ~3,500 lines re-implement what L0-L2 already provide (health, config, paths, logging)
-
-Additionally: no caching for hot-path TOML/schema loads, 2 of 5 database domains are unreachable stubs, no Rust parity.
-
-### Plan Overview (7 phases)
-
-| Phase | What | Goal |
-|-------|------|------|
-| 0 | Wave commit | Clean git state |
-| 1 | Structural reorg (git mv) | ladder/hybrid/spiral |
-| 2 | Fix Go import paths | Correct module paths |
-| 3 | **Refactor Go code** | Substrate-agnostic, use L0-L2, caching, DB wiring |
-| 4 | Rust counterparts (11 crates) | Production-grade parity of *clean* code |
-| 5 | //omni directives + linting | Structural compliance |
-| 6 | L3 Makefile + verification | Quality gate |
-
-No C needed — Rust handles all L3 computation natively. L0's libtrit available via FFI later if needed.
+| Phase | Status | Notes |
+|-------|--------|-------|
+| 0 | DONE | Wave commit (423 files) |
+| 1 | DONE | git mv into ladder/hybrid/spiral (100 files) |
+| 2 | DONE | Fix Go import paths (42 files) |
+| **PIVOT** | **IN PROGRESS** | Strengthen L0-L2 before building L3 |
+| 3 | PENDING | Refactor L3 Go to consume upgraded L0-L2 |
+| 4 | PENDING | 11 Rust crates with Go parity |
+| 5 | PENDING | //omni directives + linting |
+| 6 | PENDING | L3 Makefile + verification |
 
 ---
 
-## Phase 0: Wave Commit
+## THE PIVOT: Strengthen L0-L2 to Support L3
 
-Commit all ~200 dirty changes for clean git state before `git mv`.
+### Why
 
-```bash
-git add -A
-git commit -m "wave: snapshot all in-flight work before L3 reorganization"
-git status  # verify clean
-```
+L3 currently duplicates ~2,700 lines of infrastructure that belongs in lower layers.
+Instead of refactoring L3 in isolation, we strengthen the foundations FIRST — then L3
+becomes a thin intelligence layer that consumes real infrastructure.
 
----
+The principle: **you don't build the temple on sand, you lay the foundation stones first.**
 
-## Phase 1: Structural Reorganization (git mv)
+### What Moves Where
 
-### Classification
+#### A. L0 Gains (Universal Infrastructure) — Go + Rust
 
-| Current | Mode | Rationale |
-|---------|------|-----------|
-| `identity/` | **ladder/** | TOML specs — foundational truth declarations |
-| `core/` | **hybrid/** | Go+Rust code — ordered execution + recovery |
-| `foundation/` | **hybrid/** | Go+Rust code — types, schema, database |
-| `orchestration/` | **hybrid/** | Go+Rust code — config, cognition, lifecycle |
-| `util/` | **hybrid/** | Go+Rust code — shared utilities |
-| `cognition/` (.gitkeep) | **spiral/** | Future — iterative by nature |
-| `skills/` (.gitkeep) | **spiral/** | Future — iterative growth |
-| `substrates/` | **spiral/** | Future — evolves as runtimes change |
+| From L3 | To L0 | What | Lines |
+|---------|-------|------|-------|
+| `foundation/result/` | `L0-universal/hybrid/foundation/result/` | Generic Result, LookupResult, ValidationResult types | ~145 |
+| `util/fs/session/` | `L0-universal/hybrid/foundation/session/` | Session ID, paths, duration, log entries | ~151 |
+| `foundation/types/session.go` | `L0-universal/hybrid/foundation/types/sessioncontext.go` | Claude Code statusline API schema (SessionContext) | ~80 |
+| `foundation/types/types.go` (partial) | `L0-universal/hybrid/foundation/types/workflow.go` | Generic WorkflowOperation, WorkflowStep, RuntimeWorkflow | ~60 |
 
-### Flatten cpisi/ to max 2 levels (L2 convention)
+**L0 Rust updates:** New modules in `bereshit-l0-foundation`:
+- `result.rs` — Result/LookupResult/ValidationResult
+- `session.rs` — Session/SessionLog/SessionPaths
+- `session_context.rs` — SessionContext (substrate integration)
+- `workflow.rs` — WorkflowOperation/Step/RuntimeWorkflow
 
-```
-BEFORE: core/cpisi/bereshit/   →  AFTER: core/bereshit/
-BEFORE: core/cpisi/compute/    →  AFTER: core/compute/
-BEFORE: core/cpisi/cpi/        →  AFTER: core/cpi/
-```
+**L0 Go updates:** New packages under `L0-universal/hybrid/foundation/`:
+- `result/` — result.go
+- `session/` — session.go
+- `types/sessioncontext.go` — added to existing types package
+- `types/workflow.go` — added to existing types package
 
-### git mv Sequence
+#### B. L2 Gains (Platform Infrastructure) — Go + Rust
 
-```bash
-mkdir -p L3-cpisi/{ladder,hybrid,spiral}
+| From L3 | To L2 | What | Lines |
+|---------|-------|------|-------|
+| `foundation/database/{interface,multidb,bridge,legacy,sqlite}.go` | `L2-platform/hybrid/database/` | Multi-database infrastructure: Repository interface, MultiDB coordinator, connection pooling, migration runner | ~450 |
+| `orchestration/logging/{logging,category}.go` (generic parts) | `L2-platform/hybrid/logging/` | Structured logger: lifecycle, levels, output modes, file I/O, category logger infrastructure | ~300 |
 
-# ladder/
-git mv L3-cpisi/identity L3-cpisi/ladder/identity
+**L2 Rust updates:** Two new crates:
+- `bereshit-l2-database` — Repository trait, MultiDB, connection pool, migration
+- `bereshit-l2-logging` — Logger, LogLevel, OutputMode, CategoryLogger
 
-# hybrid/ — foundation cluster
-git mv L3-cpisi/foundation L3-cpisi/hybrid/foundation
+**L2 Go updates:** Two new packages:
+- `L2-platform/hybrid/database/` — interface.go, multidb.go, sqlite.go, pool.go
+- `L2-platform/hybrid/logging/` — logger.go, category.go, level.go
 
-# hybrid/ — core cluster (flatten cpisi/)
-git mv L3-cpisi/core L3-cpisi/hybrid/core
-git mv L3-cpisi/hybrid/core/cpisi/bereshit L3-cpisi/hybrid/core/bereshit
-git mv L3-cpisi/hybrid/core/cpisi/compute  L3-cpisi/hybrid/core/compute
-git mv L3-cpisi/hybrid/core/cpisi/cpi      L3-cpisi/hybrid/core/cpi
-# remove empty cpisi/
+#### C. L3 Substrate Moves (Claude Code → Spiral)
 
-# hybrid/ — orchestration cluster
-git mv L3-cpisi/orchestration L3-cpisi/hybrid/orchestration
+| From | To | What |
+|------|-----|------|
+| `hybrid/util/pure/hookoutput/` | `spiral/substrates/claude-code/hooks/` | Claude Code hook event types, permission constants, response builders |
+| `hybrid/util/transcript/` | `spiral/substrates/claude-code/transcript/` | JSONL transcript parser, thinking/response extraction |
 
-# hybrid/ — util
-git mv L3-cpisi/util L3-cpisi/hybrid/util
+These are substrate-specific — they parse Claude Code's exact formats. Not CPI-SI intelligence.
 
-# spiral/
-git mv L3-cpisi/cognition  L3-cpisi/spiral/cognition
-git mv L3-cpisi/skills     L3-cpisi/spiral/skills
-git mv L3-cpisi/substrates L3-cpisi/spiral/substrates
-```
+#### D. L3 Refactor to Consume L0-L2
 
-### Result Structure
+After A-C, L3's hybrid/ code gets updated:
+1. **Delete duplicated infrastructure** — result types, session paths, generic logging, DB infra
+2. **Import from L0/L2** — result → L0, session → L0, logging → L2, database infra → L2
+3. **Add sync.Once caching** — schema TOML loads, config TOML loads (coordinates already has this)
+4. **Wire temporal.db + projects.db** — schemas exist, just never instantiated in MultiDB.OpenAll()
+5. **Substrate adapter interface** — cognition uses SubstrateAdapter trait instead of hardcoded Claude Code
+6. **Remove dead code** — bridge.go (superseded by multibridge), legacy.go if no longer called
 
-```
-L3-cpisi/
-├── ladder/
-│   └── identity/               (contract.toml, model.toml)
-├── hybrid/
-│   ├── core/                   (semantic cluster)
-│   │   ├── bereshit/           (Bible data loading)
-│   │   ├── compute/            (Cube engine)
-│   │   ├── coordinates/        (Bible coordinates)
-│   │   ├── cpi/                (CPI scoring)
-│   │   ├── health/             (Health display)
-│   │   ├── statemachine/       (27-position cube)
-│   │   └── validation/         (Validation)
-│   ├── foundation/             (semantic cluster)
-│   │   ├── database/           (Multi-DB + SQL)
-│   │   ├── result/             (Result types)
-│   │   ├── schema/             (Config loader)
-│   │   └── types/              (Core types)
-│   ├── orchestration/          (semantic cluster)
-│   │   ├── cognition/          (Cognition engine)
-│   │   ├── config/             (Config mgmt)
-│   │   ├── lifecycle/          (Events)
-│   │   ├── loader/             (Orch loading)
-│   │   ├── logging/            (Logging)
-│   │   └── restore/            (Restore)
-│   └── util/                   (utility packages)
-│       ├── fs/session/
-│       ├── pure/hookoutput/
-│       └── transcript/
-├── spiral/
-│   ├── cognition/              (.gitkeep — future)
-│   ├── skills/                 (.gitkeep — future)
-│   └── substrates/             (claude-code/ — future)
-├── Makefile                    (Phase 6)
-└── root.adoc
-```
-
-Commit: `refactor(L3): reorganize into ladder/hybrid/spiral execution modes`
+**Net L3 reduction: ~2,700 lines removed, replaced by L0-L2 imports.**
 
 ---
 
-## Phase 2: Fix Go Import Paths
+## Detailed Phase Breakdown
+
+### Phase A: L0 Universal Infrastructure (Go + Rust)
+
+#### A.1 — Result Types
+
+**Go:** Create `L0-universal/hybrid/foundation/result/result.go`
+- Copy from L3's `foundation/result/result.go` (it's already clean, generic)
+- Verify no CPI-SI imports
 
-~42 files with broken imports. Three source patterns → one correct pattern.
+**Rust:** Add to `bereshit-l0-foundation/src/`:
+- `result.rs` with `Result`, `LookupResult`, `ValidationResult` structs
+- Derive serde, implement Display
+- Add constructors: `ok()`, `not_found()`, `error()`, `found()`, `no_match()`, `valid()`, `invalid()`
 
-### Import Mapping
+#### A.2 — Session Management
 
-**Pattern A: `word/work/pkg/` → new paths**
-```
-word/work/pkg/foundation/types       → L3-cpisi/hybrid/foundation/types
-word/work/pkg/foundation/schema      → L3-cpisi/hybrid/foundation/schema
-word/work/pkg/foundation/database    → L3-cpisi/hybrid/foundation/database
-word/work/pkg/core/coordinates       → L3-cpisi/hybrid/core/coordinates
-word/work/pkg/core/health            → L3-cpisi/hybrid/core/health
-word/work/pkg/core/statemachine      → L3-cpisi/hybrid/core/statemachine
-word/work/pkg/core/cpisi/bereshit    → L3-cpisi/hybrid/core/bereshit
-word/work/pkg/core/cpisi/compute     → L3-cpisi/hybrid/core/compute
-word/work/pkg/orchestration/config   → L3-cpisi/hybrid/orchestration/config
-word/work/pkg/orchestration/loader   → L3-cpisi/hybrid/orchestration/loader
-word/work/pkg/util/fs/session        → L3-cpisi/hybrid/util/fs/session
-word/work/pkg/util/pure/hookoutput   → L3-cpisi/hybrid/util/pure/hookoutput
-word/work/pkg/util/transcript        → L3-cpisi/hybrid/util/transcript
-```
+**Go:** Create `L0-universal/hybrid/foundation/session/session.go`
+- Move session types from L3 `util/fs/session/session.go`
+- Types: Session (ID, start time, compaction), SessionLog, SessionPaths
+- Functions: LoadSession, FormatDuration, path helpers
+- Remove any CPI-SI-specific fields (if any) — keep pure infrastructure
 
-**Pattern B: `cws.studio/pkg/` → new paths**
-```
-cws.studio/pkg/foundation/*          → L3-cpisi/hybrid/foundation/*
-cws.studio/pkg/core/*                → L3-cpisi/hybrid/core/*
-cws.studio/pkg/util/fs/paths         → L0-universal/hybrid/paths  (CROSS-LAYER)
-cws.studio/pkg/util/term/display     → L2-platform/hybrid/terminal/display  (CROSS-LAYER)
-```
+**Rust:** Add to `bereshit-l0-foundation/src/`:
+- `session.rs` with Session, SessionLog, SessionPaths structs
+- Path resolution using `bereshit-l0-paths`
 
-**Pattern C: Already correct** — `L0-universal/hybrid/config/util` stays as-is.
+#### A.3 — SessionContext (Substrate Integration)
 
-All imports get full `creativeworkzstudio.com/bereshit/` prefix.
+**Go:** Add `L0-universal/hybrid/foundation/types/sessioncontext.go`
+- Move SessionContext struct from L3 `foundation/types/session.go`
+- Helper methods: GetWorkDir, CurrentContextTokens, ContextPercentage, CacheEfficiency, APIEfficiency
 
-Commit: `fix(L3): update all Go import paths to hybrid/ structure`
+**Rust:** Add to `bereshit-l0-foundation/src/`:
+- `session_context.rs` with SessionContext struct
+- serde(rename_all) for JSON field mapping
 
----
+#### A.4 — Generic Workflow Types
 
-## Phase 3: Refactor Go Code (The Big One)
+**Go:** Add `L0-universal/hybrid/foundation/types/workflow.go`
+- Extract from L3 `foundation/types/types.go`:
+  - WorkflowOperation enum (none, active, complete, failed)
+  - WorkflowStep struct
+  - RuntimeWorkflow struct
+- Leave CPI-SI types (Choice*, Halt*, Tendency, Hebrew states) in L3
+
+**Rust:** Add to `bereshit-l0-foundation/src/`:
+- `workflow.rs` with WorkflowOperation, WorkflowStep, RuntimeWorkflow
 
-Three refactoring dimensions applied to the now-correctly-structured Go code.
+### Phase B: L2 Platform Infrastructure (Go + Rust)
 
-### 3A: Claude-Specific → CPI-SI Substrate-Agnostic
+#### B.1 — Database Infrastructure
 
-**Current state:** ~70% substrate-agnostic (identity, mental constructs, lifecycle interfaces are good). The 30% that's Claude Code-specific:
+**Go:** Create `L2-platform/hybrid/database/`
+- `interface.go` — Repository interface (generic: Migrate, Close, Exec, Query)
+  - Extract from L3 `foundation/database/interface.go`
+  - Strip CPI-SI-specific methods (session/choice/hebrew/pattern methods stay L3)
+- `multidb.go` — MultiDB coordinator pattern
+  - Extract from L3 `foundation/database/multidb.go`
+  - Generic: manages named SQLite databases, opens/closes/migrates
+  - Domain-specific wiring stays in L3
+- `sqlite.go` — SQLite connection helper with pool tuning
+  - SetMaxOpenConns(25), SetMaxIdleConns(5), SetConnMaxLifetime(5m)
+- `pool.go` — Connection pool configuration types
 
-#### 3A.1 — hookoutput/types.go (HIGH)
+**Rust:** New crate `bereshit-l2-database`:
+- `Cargo.toml`: deps = rusqlite (bundled), bereshit-l0-paths
+- `src/lib.rs` — Repository trait, MultiDB struct, SqlitePool
+- `src/migration.rs` — Schema migration runner
+- Register in workspace Cargo.toml
 
-**Problem:** Hard-coded Claude Code hook event names (`EventSessionStart`, `EventPreToolUse`, etc.), permission constants (`PermissionAllow/Deny/Ask`), JSON schema matching Claude's exact format.
+#### B.2 — Logging Infrastructure
 
-**Fix:** Create substrate adapter interface + move Claude-specific code to spiral/substrates/claude-code/:
+**Go:** Create `L2-platform/hybrid/logging/`
+- `logger.go` — Logger struct, lifecycle (New, Close, EnableFileLogging)
+  - Extract generic parts from L3 `orchestration/logging/logging.go`
+  - Log levels: DEBUG, INFO, WARN, ERROR, FATAL
+  - Output modes: compact, verbose
+  - File I/O: rotation, formatting
+- `category.go` — CategoryLogger infrastructure
+  - Extract from L3 `orchestration/logging/category.go`
+  - Multi-file output pattern (.log + .jsonl)
+  - Generic: any consumer defines their own categories
+- `level.go` — LogLevel type and parsing
 
-```go
-// NEW: hybrid/orchestration/lifecycle/substrate.go
-type SubstrateAdapter interface {
-    SessionStartEvent() string
-    PromptSubmitEvent() string
-    ToolPreEvent() string
-    ToolPostEvent() string
-    StopEvent() string
-    ParseHookOutput(raw []byte) (HookContext, error)
-    FormatInjection(construct MentalConstruct) string
-    PermissionOptions() []string
-}
-```
+**Rust:** New crate `bereshit-l2-logging`:
+- `Cargo.toml`: deps = bereshit-l0-paths
+- `src/lib.rs` — Logger, LogLevel, OutputMode, CategoryLogger
+- Register in workspace Cargo.toml
 
-```go
-// MOVE TO: spiral/substrates/claude-code/adapter.go
-type ClaudeCodeAdapter struct{}
-func (a ClaudeCodeAdapter) SessionStartEvent() string { return "SessionStart" }
-// ... concrete Claude Code implementations
-```
+### Phase C: L3 Substrate Segregation
 
-**Files changed:**
-- `util/pure/hookoutput/types.go` — Extract interface, keep only substrate-agnostic types
-- NEW `orchestration/lifecycle/substrate.go` — SubstrateAdapter interface
-- NEW `spiral/substrates/claude-code/adapter.go` — Claude Code implementation
-- `orchestration/cognition/*.go` — Accept SubstrateAdapter instead of hardcoding
+#### C.1 — Hook Output Types
 
-#### 3A.2 — cognition/ package (HIGH)
+**Move:** `hybrid/util/pure/hookoutput/types.go` → `spiral/substrates/claude-code/hooks/types.go`
+- Update package name: `hookoutput` → `hooks`
+- These are Claude Code's exact hook schemas — substrate-specific
 
-**Problem:** Comments and logic assume Claude's `additionalContext` injection. Context building is hardcoded to Claude's hook format.
+#### C.2 — Transcript Parser
 
-**Fix:** Cognition builds substrate-agnostic `MentalConstruct`. The SubstrateAdapter.FormatInjection() translates to the target format:
-- Claude Code: `additionalContext` markdown string
-- Future GPT: different prompt format
-- Future MillenniumOS: native interface
+**Move:** `hybrid/util/transcript/transcript.go` → `spiral/substrates/claude-code/transcript/transcript.go`
+- Update package name if needed
+- Parses Claude Code JSONL format — substrate-specific
 
-**Files changed:**
-- `orchestration/cognition/cognition.go` — Remove "shapes HOW Claude thinks" framing; accept adapter
-- `orchestration/cognition/feedback.go` — Abstract `PostToolUse.additionalContext` behind adapter
-- `orchestration/cognition/prompt.go` — Use adapter.FormatInjection() instead of raw markdown
-- `orchestration/cognition/workflow.go` — Same pattern
+### Phase D: L3 Consume Upgraded L0-L2
 
-#### 3A.3 — config/ terminology (LOW)
+#### D.1 — Replace L3 Result with L0
 
-**Problem:** "claude-global" terminology in comments and loader.
+- Delete `L3-cpisi/hybrid/foundation/result/result.go`
+- Update all L3 imports: `L3-cpisi/hybrid/foundation/result` → `L0-universal/hybrid/foundation/result`
 
-**Fix:** Rename to "instance config" / "CPI-SI config". ~10 comment lines across 2 files.
+#### D.2 — Replace L3 Session with L0
 
-#### 3A.4 — lifecycle/handler.go (LOW)
+- Delete `L3-cpisi/hybrid/util/fs/session/session.go`
+- Update imports to use L0 session package
 
-**Problem:** Returns `AdditionalContext` — Claude-specific term.
+#### D.3 — Replace L3 Database Infra with L2
 
-**Fix:** Rename to `InjectedContext`. One type rename + callers.
+- Delete infrastructure files from `L3-cpisi/hybrid/foundation/database/` (interface.go, multidb.go, bridge.go, legacy.go, sqlite.go)
+- Keep domain repos (cognition/, growth/, sessions/, temporal/, projects/) — they implement L2's Repository interface
+- Update domain repos to import L2 database infrastructure
+- Wire temporal.db and projects.db in L3's domain-specific orchestrator
 
-### 3B: Remove L0-L2 Duplication (~3,500 lines → ~500)
+#### D.4 — Replace L3 Logging with L2
 
-#### 3B.1 — Health System (CRITICAL — ~678 lines)
+- Refactor `orchestration/logging/logging.go` to wrap L2 Logger
+- Refactor `orchestration/logging/category.go` to use L2 CategoryLogger infra
+- Keep CPI-SI-specific: health ternary scale, 6 category definitions
 
-**Files:** `core/health/loader.go` (453 lines), `core/health/display.go` (225 lines)
+#### D.5 — Substrate Adapter Interface
 
-**Duplicates:**
-- TOML config parsing → use L0 `config.util` loader
-- Ternary scale constants (-100/0/+100) → query L0 `foundation` database
-- Health level boundaries (hardcoded score ranges) → query L2 `registry.HealthNormalizationScales()`
-- Emoji/color mapping → query L2 `registry` + use L2 `terminal/display` constants
+- Create `hybrid/orchestration/lifecycle/substrate.go`:
+  ```go
+  type SubstrateAdapter interface {
+      SessionStartEvent() string
+      PromptSubmitEvent() string
+      ToolPreEvent() string
+      ToolPostEvent() string
+      StopEvent() string
+      ParseHookOutput(raw []byte) (HookContext, error)
+      FormatInjection(construct MentalConstruct) string
+      PermissionOptions() []string
+  }
+  ```
+- Create `spiral/substrates/claude-code/adapter.go` implementing it
+- Update cognition engine to accept SubstrateAdapter
 
-**Refactored health/loader.go (~150 lines):**
-```go
-import (
-    "creativeworkzstudio.com/bereshit/L0-universal/hybrid/config/util"
-    "creativeworkzstudio.com/bereshit/L2-platform/hybrid/registry"
-)
+#### D.6 — Add Caching
 
-type HealthConfig struct {
-    registry *registry.Registry  // L2 cross-layer queries
-    // Remove: all hardcoded levels, emojis, colors, ternary constants
-}
+- `foundation/schema/loader.go`: sync.Once for CachedSchemas()
+- `orchestration/config/loader.go`: sync.Once for CachedConfig()
+- Pattern: match coordinates/loader.go which already caches Bible data
 
-func NewHealthConfig(reg *registry.Registry) *HealthConfig { ... }
+#### D.7 — Clean Dead Code
 
-func (h *HealthConfig) LevelFromScore(score float64) (HealthLevel, error) {
-    scales, _ := h.registry.HealthNormalizationScales()
-    // Use L0 scales instead of hardcoded boundaries
-}
+- Remove bridge.go (superseded by multibridge.go)
+- Remove legacy.go if no callers
+- Audit unused schema views
 
-func (h *HealthConfig) Emoji(level string) string {
-    // Query L2 instead of switch statement
-}
-```
+### Phase E-F: (Original Phases 4-6, unchanged)
 
-**Net reduction:** ~678 → ~150 lines. Delete ~530 lines of duplication.
-
-#### 3B.2 — Config Loading (CRITICAL — ~2,200 lines)
-
-**Files:** `orchestration/config/loader.go` (~1,200 lines), `orchestration/config/config.go` (~1,000 lines)
-
-**Duplicates:**
-- Direct `toml.DecodeFile()` → use L0 `config.Loader`
-- Path resolution → use L0 `paths` module
-- JSONC parsing → use L0 `config.util.LoadJSONWithComments()`
-- Singleton config → use L0 `config.util.Must()` pattern
-
-**Refactored (~600 lines):**
-```go
-import (
-    "creativeworkzstudio.com/bereshit/L0-universal/hybrid/config"
-    "creativeworkzstudio.com/bereshit/L0-universal/hybrid/paths"
-)
-
-func LoadConfig() (*CpisiConfig, error) {
-    path := paths.CPISIConfigDir()            // L0 paths
-    return config.LoadTOML[CpisiConfig](path) // L0 config loader
-}
-```
-
-**Net reduction:** ~2,200 → ~600 lines. Delete ~1,600 lines.
-
-#### 3B.3 — Session Paths (MODERATE — ~151 lines)
-
-**File:** `util/fs/session/session.go`
-
-**Duplicates:** `DefaultPaths()` reimplements what L0 `paths.ClaudeSession()`, `paths.ClaudeHome()` already provide. Calls `os.UserHomeDir()` without caching.
-
-**Refactored (~40 lines):**
-```go
-import "creativeworkzstudio.com/bereshit/L0-universal/hybrid/paths"
-
-func DefaultPaths() SessionPaths {
-    return SessionPaths{
-        SessionDir: paths.ClaudeSession(),
-        HomeDir:    paths.ClaudeHome(),
-        // ... all from L0
-    }
-}
-```
-
-**Net reduction:** ~151 → ~40 lines. Delete ~111 lines.
-
-#### 3B.4 — Logging/Display (MODERATE — ~658 lines)
-
-**Files:** `orchestration/logging/logging.go` (224 lines), `orchestration/logging/category.go` (434 lines)
-
-**Duplicates:** ANSI color constants, health display integration (chains into duplicated health loader), log level constants.
-
-**Refactored (~200 lines):**
-```go
-import (
-    "creativeworkzstudio.com/bereshit/L2-platform/hybrid/terminal/display" // ANSI colors
-    "creativeworkzstudio.com/bereshit/L2-platform/hybrid/registry"         // health data
-)
-```
-
-**Net reduction:** ~658 → ~200 lines. Delete ~458 lines.
-
-**Total Phase 3B reduction: ~3,687 → ~990 lines. ~2,700 lines of duplication removed.**
-
-### 3C: Caching + Database Wiring
-
-#### 3C.1 — Add sync.Once Caching (HIGH)
-
-**Schema TOML loads (hot path):**
-```go
-// foundation/schema/loader.go — ADD:
-var (
-    cachedSchemas *Schemas
-    schemasOnce   sync.Once
-    schemasErr    error
-)
-
-func CachedSchemas() (*Schemas, error) {
-    schemasOnce.Do(func() {
-        cachedSchemas, schemasErr = LoadSchemas(paths.SchemaDir())
-    })
-    return cachedSchemas, schemasErr
-}
-```
-
-**Config TOML loads:**
-```go
-// orchestration/config/loader.go — ADD:
-var (
-    cachedConfig *CpisiConfig
-    configOnce   sync.Once
-    configErr    error
-)
-
-func CachedConfig() (*CpisiConfig, error) {
-    configOnce.Do(func() {
-        cachedConfig, configErr = LoadConfig()
-    })
-    return cachedConfig, configErr
-}
-```
-
-**Already cached:** Bible coordinate data (sync.Once in coordinates/loader.go). Good pattern to replicate.
-
-#### 3C.2 — Wire temporal.db + projects.db (MEDIUM)
-
-**Current state:** Declared in MultiDB struct but never instantiated in OpenAll(). No schema files.
-
-**Fix for temporal.db:**
-- Create `foundation/database/temporal/sqlite.go` implementation
-- Add migration SQL: `schema/005_temporal.sql`
-- Wire into `multidb.go:OpenAll()` and `multidb.go:Close()`
-- Tables: `celestial_events`, `appointed_times`, `work_rhythms`
-
-**Fix for projects.db:**
-- Create `foundation/database/projects/sqlite.go` implementation
-- Add migration SQL: `schema/006_projects.sql`
-- Wire into `multidb.go:OpenAll()` and `multidb.go:Close()`
-- Tables: `projects`, `milestones`, `project_sessions`
-
-#### 3C.3 — Remove Dead Code (LOW)
-
-- `foundation/database/bridge.go` — OLD monolithic interface, superseded by multibridge.go
-- `foundation/database/legacy.go` — Backward compat adapter (check if still called; if not, remove)
-- Unused schema views: `tool_choice_stats`, `hebrew_state_frequency` — add Go wrappers or remove from schema
-
-#### 3C.4 — Connection Pool Tuning (LOW)
-
-Add to each SQLite repo constructor:
-```go
-db.SetMaxOpenConns(25)
-db.SetMaxIdleConns(5)
-db.SetConnMaxLifetime(5 * time.Minute)
-```
-
-Commit: `refactor(L3): substrate-agnostic CPI-SI, use L0-L2, add caching + DB wiring`
-
----
-
-## Phase 4: Rust Counterparts — 11 Crates
-
-Now building from the *refactored* Go code. Crates are leaner because L3 Go code itself is leaner.
-
-### Crate Inventory
-
-| # | Crate | Workspace Path | Key Types | Deps |
-|---|-------|---------------|-----------|------|
-| 1 | `bereshit-l3-types` | `L3-cpisi/hybrid/foundation/types` | `RuntimeState`, `ChoiceRecord`, `ChoiceHistory`, `KeyValue`, `ValidationResult` | serde, serde_json |
-| 2 | `bereshit-l3-schema` | `L3-cpisi/hybrid/foundation/schema` | `Schemas`, `CubeSchema`, `StateMachineConfig`, `Perspective`, PSI constants | toml, serde, bereshit-l0-config |
-| 3 | `bereshit-l3-database` | `L3-cpisi/hybrid/foundation/database` | `Repository` trait, `SqliteRepo`, `MultiDB`, 5 domain stores | rusqlite (bundled), bereshit-l3-types |
-| 4 | `bereshit-l3-coordinates` | `L3-cpisi/hybrid/core/coordinates` | `BibleCoordinate`, `Ranking`, `Pipeline`, `Encoding` | bereshit-l3-schema, bereshit-l3-types |
-| 5 | `bereshit-l3-health` | `L3-cpisi/hybrid/core/health` | `HealthConfig` (wraps L2 registry) | bereshit-l3-types, bereshit-l2-registry |
-| 6 | `bereshit-l3-compute` | `L3-cpisi/hybrid/core/compute` | `Cube`, `Shape`, `FrameworkPosition`, `BibleLoader` | bereshit-l3-schema, bereshit-l3-types, toml, serde |
-| 7 | `bereshit-l3-cpi` | `L3-cpisi/hybrid/core/cpi` | `Exchange`, `Insight`, `Narrative`, `Scoring` | bereshit-l3-types, bereshit-l3-compute |
-| 8 | `bereshit-l3-statemachine` | `L3-cpisi/hybrid/core/statemachine` | `StateMachine`, `Position`, `Trit`, `Command`, `Psi(N)` | bereshit-l3-compute, bereshit-l3-schema, bereshit-l3-database, bereshit-l3-types |
-| 9 | `bereshit-l3-cognition` | `L3-cpisi/hybrid/orchestration/cognition` | `CognitionEngine`, `MentalConstruct`, `SubstrateAdapter` trait | bereshit-l3-statemachine, bereshit-l3-health, bereshit-l3-types |
-| 10 | `bereshit-l3-orchestration` | `L3-cpisi/hybrid/orchestration` | `Orchestrator`, `ConfigLoader`, `EventHandler`, `Logger` | bereshit-l3-statemachine, bereshit-l3-schema, bereshit-l0-config, bereshit-l0-paths |
-| 11 | `bereshit-l3-util` | `L3-cpisi/hybrid/util` | `SessionFS`, `HookOutput`, `Transcript` | bereshit-l3-types, bereshit-l0-paths |
-
-### Key Design Notes
-
-- **bereshit-l3-health** depends on `bereshit-l2-registry` (not L0 foundation) — mirrors Go refactoring
-- **bereshit-l3-cognition** defines `SubstrateAdapter` trait — Rust equivalent of Go interface
-- **bereshit-l3-orchestration** uses `bereshit-l0-config` and `bereshit-l0-paths` — no duplication
-- **bereshit-l3-statemachine** is multi-file: lib.rs + types.rs + machine.rs + trajectory.rs + display.rs + runtime.rs
-
-### Dependency Graph (build order)
-
-```
-Layer 0:  bereshit-l3-types
-              |
-Layer 1:  bereshit-l3-schema    bereshit-l3-database
-              |                      |
-Layer 2:  bereshit-l3-compute   bereshit-l3-health   bereshit-l3-util
-              |         \
-Layer 3:  bereshit-l3-coordinates   bereshit-l3-cpi
-              |
-Layer 4:  bereshit-l3-statemachine  (compute + schema + database + types)
-              |
-Layer 5:  bereshit-l3-cognition     bereshit-l3-orchestration
-```
-
-### Workspace Registration
-
-Add to `b-word/Cargo.toml`:
-
-```toml
-# [workspace] members — append:
-"L3-cpisi/hybrid/foundation/types",
-"L3-cpisi/hybrid/foundation/schema",
-"L3-cpisi/hybrid/foundation/database",
-"L3-cpisi/hybrid/core/coordinates",
-"L3-cpisi/hybrid/core/health",
-"L3-cpisi/hybrid/core/statemachine",
-"L3-cpisi/hybrid/core/compute",
-"L3-cpisi/hybrid/core/cpi",
-"L3-cpisi/hybrid/orchestration/cognition",
-"L3-cpisi/hybrid/orchestration",
-"L3-cpisi/hybrid/util",
-
-# [workspace.dependencies] — append:
-bereshit-l3-types = { path = "L3-cpisi/hybrid/foundation/types" }
-bereshit-l3-schema = { path = "L3-cpisi/hybrid/foundation/schema" }
-bereshit-l3-database = { path = "L3-cpisi/hybrid/foundation/database" }
-bereshit-l3-coordinates = { path = "L3-cpisi/hybrid/core/coordinates" }
-bereshit-l3-health = { path = "L3-cpisi/hybrid/core/health" }
-bereshit-l3-statemachine = { path = "L3-cpisi/hybrid/core/statemachine" }
-bereshit-l3-compute = { path = "L3-cpisi/hybrid/core/compute" }
-bereshit-l3-cpi = { path = "L3-cpisi/hybrid/core/cpi" }
-bereshit-l3-cognition = { path = "L3-cpisi/hybrid/orchestration/cognition" }
-bereshit-l3-orchestration = { path = "L3-cpisi/hybrid/orchestration" }
-bereshit-l3-util = { path = "L3-cpisi/hybrid/util" }
-```
-
-Commit: `feat(L3): 11 production-grade Rust crates with full Go parity`
-
----
-
-## Phase 5: //omni Directives + Linting
-
-### Go Files (~68 files)
-
-Add 3-line pragma header to each Go file:
-```go
-//omni:code --go -library
-//omni:key B-L3-{package-name}
-//omni:version a-01.00
-```
-
-### Rust Files (~15-18 new)
-
-Already included in Phase 4 templates.
-
-### TOML + Structural Linting
-
-```bash
-cws-struct lint toml L3-cpisi/ladder/identity/
-cws-struct lint go L3-cpisi/hybrid/ --errors-only
-cws-struct lint rust L3-cpisi/hybrid/ --errors-only
-```
-
-Commit: `chore(L3): add //omni directives to all Go + Rust files`
-
----
-
-## Phase 6: L3 Makefile + Verification
-
-### L3 Makefile
-
-Following L0 Makefile template (4-block aligned, cached targets, dual Go+Rust):
-
-- `make all` — build Go + Rust
-- `make check` — full quality gate (vet + clippy + lint + fmt-check + test)
-- `make build-go`, `make build-rust`
-- `make test`, `make test-go`, `make test-rust`, `make test-v`
-- `make vet`, `make clippy`, `make fmt-check`, `make lint`
-- `make clean`, `make help`
-
-RUST_CRATES: all 11 L3 crates.
-
-### Verification
-
-```bash
-# Go
-cd b-word && go build ./L3-cpisi/...
-cd b-word && go vet ./L3-cpisi/...
-cd b-word && go test -count=1 ./L3-cpisi/...
-
-# Rust
-cd b-word && cargo build -p bereshit-l3-{all 11}
-cd b-word && cargo test -p bereshit-l3-{all 11}
-cd b-word && cargo clippy -p bereshit-l3-{all 11} -- -D warnings
-
-# Full quality gate
-make -C b-word/L3-cpisi check
-```
-
-Commit: `feat(L3): complete reorganization — ladder/hybrid/spiral + refactored Go + 11 Rust crates`
+- Phase E: 11 Rust crates with Go parity (building on CLEAN refactored code)
+- Phase F: //omni directives + L3 Makefile + verification
 
 ---
 
@@ -564,34 +256,11 @@ Commit: `feat(L3): complete reorganization — ladder/hybrid/spiral + refactored
 
 | File | Role |
 |------|------|
-| `b-word/Cargo.toml` | Workspace root — register 11 L3 crates |
-| `b-word/L0-universal/Makefile` | Template for L3 Makefile |
-| `b-word/L0-universal/hybrid/foundation/src/lib.rs` | Reference Rust pattern |
-| `b-word/L0-universal/hybrid/config/util/` | L0 config loader (used by refactored L3) |
-| `b-word/L0-universal/hybrid/paths/` | L0 path resolution (replaces L3 session paths) |
-| `b-word/L2-platform/hybrid/registry/` | L2 cross-layer registry (replaces L3 health hardcoding) |
-| `b-word/L2-platform/hybrid/terminal/display/` | L2 display constants (replaces L3 color duplication) |
-| `L3-cpisi/core/statemachine/statemachine.go` | Most complex Go file |
-| `L3-cpisi/foundation/database/multidb.go` | Multi-DB where temporal/projects need wiring |
-| `L3-cpisi/orchestration/cognition/cognition.go` | Primary Claude→CPI-SI refactoring target |
-| `L3-cpisi/util/pure/hookoutput/types.go` | Claude Code hook types → substrate adapter |
-
-## Language Consideration
-
-**Rust only.** No C needed:
-- Psi(N): std::f64 = same hardware instructions as C libm
-- Cube formula: trivial integer arithmetic
-- DB ops: I/O-bound
-- L0 libtrit: available via FFI if batch trit encoding needed later
-
-## Summary
-
-| Phase | What | Impact |
-|-------|------|--------|
-| 0 | Wave commit | ~200 dirty changes committed |
-| 1 | git mv into ladder/hybrid/spiral | 8 directory moves + cpisi flatten |
-| 2 | Fix Go imports | ~42 .go files corrected |
-| 3 | **Refactor Go code** | ~2,700 lines removed (duplication), substrate-agnostic, caching, DB wiring |
-| 4 | 11 Rust crates | ~28 new files (of clean, refactored code) |
-| 5 | //omni directives + lint | ~68 Go files + ~18 Rust files |
-| 6 | L3 Makefile + verification | Quality gate passing |
+| `L0-universal/hybrid/foundation/src/lib.rs` | L0 Rust foundation — add result/session/workflow modules |
+| `L0-universal/hybrid/foundation/types/` | L0 Go types — add sessioncontext.go, workflow.go |
+| `L2-platform/hybrid/registry/` | L2 reference for new database/logging packages |
+| `L3-cpisi/hybrid/foundation/result/result.go` | Source for L0 result (copy, then delete) |
+| `L3-cpisi/hybrid/util/fs/session/session.go` | Source for L0 session (move, then delete) |
+| `L3-cpisi/hybrid/foundation/database/multidb.go` | Source for L2 database infra (extract, then slim) |
+| `L3-cpisi/hybrid/orchestration/logging/logging.go` | Source for L2 logger (extract, then wrap) |
+| `L3-cpisi/hybrid/util/pure/hookoutput/types.go` | Move to spiral/substrates/claude-code/hooks/ |

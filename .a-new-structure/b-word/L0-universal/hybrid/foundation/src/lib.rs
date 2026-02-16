@@ -51,7 +51,16 @@ use std::fmt;
 use std::path::{Path, PathBuf};
 
 // ────────────────────────────────────────────────────────────────
-// S.2 Types
+// S.2 Modules (promoted from L3 — universal infrastructure)
+// ────────────────────────────────────────────────────────────────
+
+pub mod result;
+pub mod session;
+pub mod session_context;
+pub mod workflow;
+
+// ────────────────────────────────────────────────────────────────
+// S.3 Types
 // ────────────────────────────────────────────────────────────────
 
 /// A TOML specification file's metadata.
@@ -192,7 +201,7 @@ pub struct DB {
 }
 
 // ────────────────────────────────────────────────────────────────
-// S.3 Constants
+// S.4 Constants
 // ────────────────────────────────────────────────────────────────
 
 /// Path to foundation database relative to module root (b-word/).
