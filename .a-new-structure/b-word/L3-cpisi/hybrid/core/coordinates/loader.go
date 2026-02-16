@@ -24,7 +24,6 @@ package coordinates
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 	"path/filepath"
 	"sync"

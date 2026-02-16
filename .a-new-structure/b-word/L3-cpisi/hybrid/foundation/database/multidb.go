@@ -56,7 +56,7 @@ type MultiDB struct {
 
 // OpenAll opens and migrates all 5 domain databases
 func OpenAll(ctx context.Context) (*MultiDB, error) {
-	basePath := paths.DatabaseBasePath()
+	basePath := paths.DatabaseDir()
 
 	// Ensure data directory exists
 	if err := os.MkdirAll(basePath, 0755); err != nil {

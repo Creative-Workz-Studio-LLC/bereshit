@@ -27,6 +27,8 @@ package types
 
 import (
 	"time"
+
+	l0types "creativeworkzstudio.com/bereshit/L0-universal/hybrid/foundation/types"
 )
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -318,37 +320,22 @@ type ChoiceHistory struct {
 }
 
 // ───────────────────────────────────────────────────────────────────────────
-// WORKFLOW TYPES
+// WORKFLOW TYPES (re-exported from L0-universal)
 // ───────────────────────────────────────────────────────────────────────────
 
-// WorkflowOperation represents the type of operation being performed
-// Maps to workflow/*.jsonc files
-type WorkflowOperation string
+// Generic workflow types live in L0 — re-exported here so existing L3
+// consumers don't need import changes. Import from L0 for new code.
+type WorkflowOperation = l0types.WorkflowOperation
+type WorkflowStep = l0types.WorkflowStep
+type RuntimeWorkflow = l0types.RuntimeWorkflow
 
 const (
-	WorkflowNone         WorkflowOperation = ""              // No active workflow
-	WorkflowFileCreation WorkflowOperation = "file-creation" // Creating new files from templates
-	WorkflowAlignment    WorkflowOperation = "alignment"     // Aligning documentation with reality
-	WorkflowBlockUpdate  WorkflowOperation = "block-update"  // Updating existing files block by block
-	WorkflowCommit       WorkflowOperation = "commit"        // Git commit workflow
+	WorkflowNone         = l0types.WorkflowNone
+	WorkflowFileCreation = l0types.WorkflowFileCreation
+	WorkflowAlignment    = l0types.WorkflowAlignment
+	WorkflowBlockUpdate  = l0types.WorkflowBlockUpdate
+	WorkflowCommit       = l0types.WorkflowCommit
 )
-
-// WorkflowStep represents a step within a workflow
-type WorkflowStep struct {
-	Index       int    `json:"index"`       // Step number (1-based)
-	Action      string `json:"action"`      // What to do
-	Description string `json:"description"` // Human-readable description
-	Completed   bool   `json:"completed"`   // Whether step is done
-}
-
-// RuntimeWorkflow tracks current workflow state
-type RuntimeWorkflow struct {
-	Operation   WorkflowOperation `json:"operation"`    // Current operation type
-	CurrentStep int               `json:"current_step"` // Current step index (1-based)
-	TotalSteps  int               `json:"total_steps"`  // Total steps in workflow
-	StartedAt   string            `json:"started_at"`   // When workflow started
-	Steps       []WorkflowStep    `json:"steps"`        // All steps with completion status
-}
 
 // ───────────────────────────────────────────────────────────────────────────
 // CONSTRUCTORS AND METHODS
