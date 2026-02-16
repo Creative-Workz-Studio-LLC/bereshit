@@ -1,6 +1,6 @@
-// #!omni code --go -library
-// #!omni meta.key = claude-global-pkg-cpisi-schema-statemachine-loader
-// #!omni meta.at = a-03.00
+//omni:code --go -library
+//omni:key B-L3-schema-statemachine-loader
+//omni:version a-03.00
 // ============================================================================
 // METADATA
 // ============================================================================

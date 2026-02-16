@@ -1,6 +1,6 @@
-// #!omni code --go -library
-// #!omni meta.key = claude-global-pkg-cpisi-schema-assurance
-// #!omni meta.at = a-01.00
+//omni:code --go -library
+//omni:key B-L3-schema-assurance
+//omni:version a-01.00
 // ============================================================================
 // METADATA
 // ============================================================================

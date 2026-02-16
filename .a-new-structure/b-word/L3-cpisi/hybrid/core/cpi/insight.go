@@ -1,6 +1,6 @@
-// #!omni code --go -library
-// #!omni meta.key = bereshit-pkg-cpisi-cpi-insight
-// #!omni meta.at = a-01.00
+//omni:code --go -library
+//omni:key B-L3-cpi-insight
+//omni:version a-01.00
 // ============================================================================
 // METADATA
 // ============================================================================

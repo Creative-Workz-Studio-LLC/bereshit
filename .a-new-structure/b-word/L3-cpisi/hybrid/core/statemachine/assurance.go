@@ -1,6 +1,6 @@
-// #!omni code --go -library
-// #!omni meta.key = claude-global-pkg-statemachine-assurance
-// #!omni meta.at = a-01.00
+//omni:code --go -library
+//omni:key B-L3-statemachine-assurance
+//omni:version a-01.00
 // ============================================================================
 // METADATA
 // ============================================================================

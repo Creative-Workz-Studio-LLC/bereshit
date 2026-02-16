@@ -1,3 +1,6 @@
+//omni:code --go -test
+//omni:key B-L3-compute-cube_test
+//omni:version a-01.00
 package compute_test
 
 import (

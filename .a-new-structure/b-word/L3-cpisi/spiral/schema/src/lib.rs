@@ -1,3 +1,7 @@
+//omni:code --rust -library
+//omni:key B-L3-schema
+//omni:version a-01.00
+
 //! # CPI-SI Schema Types
 //!
 //! Schema types for loading and validating CPI-SI TOML schema files that define

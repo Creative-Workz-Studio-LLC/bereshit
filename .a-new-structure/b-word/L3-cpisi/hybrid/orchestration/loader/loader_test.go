@@ -1,3 +1,6 @@
+//omni:code --go -test
+//omni:key B-L3-loader-loader_test
+//omni:version a-01.00
 package loader_test
 
 import (

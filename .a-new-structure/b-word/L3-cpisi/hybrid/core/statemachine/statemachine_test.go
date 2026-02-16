@@ -1,3 +1,6 @@
+//omni:code --go -test
+//omni:key B-L3-statemachine-statemachine_test
+//omni:version a-01.00
 package statemachine_test
 
 import (

@@ -1,8 +1,6 @@
-// #!omni code --go -library
-// #!omni meta.key = claude-global-pkg-cpisi-compute-cube
-// #!omni meta.math = pkg/config/CUBE-MODEL-ALIGNMENT.txt
-// #!omni meta.steering = pkg/config/STEERING.txt
-// #!omni meta.at = a-01.20
+//omni:code --go -library
+//omni:key B-L3-compute-cube
+//omni:version a-01.20
 // ============================================================================
 // METADATA
 // ============================================================================

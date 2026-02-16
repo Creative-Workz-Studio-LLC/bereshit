@@ -1,7 +1,6 @@
-// #!omni code --go -library
-// #!omni meta.key = claude-global-pkg-config-config
-// #!omni meta.from = bereshit/word/seed/code/go/library.go
-// #!omni meta.at = a-01.00
+//omni:code --go -library
+//omni:key B-L3-config-config
+//omni:version a-01.00
 // ============================================================================
 // METADATA
 // ============================================================================

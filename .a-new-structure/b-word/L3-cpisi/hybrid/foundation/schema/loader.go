@@ -1,6 +1,6 @@
-// #!omni code --go -library
-// #!omni meta.key = claude-global-pkg-cpisi-schema-loader
-// #!omni meta.at = a-02.00
+//omni:code --go -library
+//omni:key B-L3-schema-loader
+//omni:version a-02.00
 // ============================================================================
 // METADATA
 // ============================================================================

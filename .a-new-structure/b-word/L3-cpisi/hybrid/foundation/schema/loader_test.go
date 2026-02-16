@@ -1,3 +1,6 @@
+//omni:code --go -test
+//omni:key B-L3-schema-loader_test
+//omni:version a-01.00
 package schema_test
 
 import (
