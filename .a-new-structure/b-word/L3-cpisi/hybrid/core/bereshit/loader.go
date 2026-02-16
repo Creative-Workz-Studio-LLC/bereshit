@@ -67,8 +67,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	// L0 shared config utilities — throughline consolidation
-	// TODO(module): Update import path when go.mod is established
 	"creativeworkzstudio.com/bereshit/L0-universal/hybrid/config/util"
 )
 
@@ -281,11 +279,6 @@ const (
 // Helpers
 // ────────────────────────────────────────────────────────────────
 
-// fileExists delegates to L0 shared utility.
-// TODO(throughline): Remove wrapper when import paths stabilize.
-func fileExists(path string) bool {
-	return util.FileExists(path)
-}
 
 // newAlphabetTable creates an empty alphabet table with 27 positions.
 // Traces to: HALT_03 (PSI = 27 = 3³), HALT_10 (7 States = 7 Days)
@@ -328,7 +321,7 @@ func LoadTransliteration(dir string) (*Transliteration, error) {
 
 	// Load encryption.toml (letter → position)
 	encPath := filepath.Join(dir, EncryptionFile)
-	if !fileExists(encPath) {
+	if !util.FileExists(encPath) {
 		return nil, util.NewLoadError(EncryptionFile, "find", errors.New("not found"))
 	}
 
@@ -401,7 +394,7 @@ func LoadTransliteration(dir string) (*Transliteration, error) {
 
 	// Load decryption.toml to fill in any missing names
 	decPath := filepath.Join(dir, DecryptionFile)
-	if fileExists(decPath) {
+	if util.FileExists(decPath) {
 		var decData rawDecryptionFile
 		if _, err := toml.DecodeFile(decPath, &decData); err == nil {
 			// Merge names from decryption into existing entries

@@ -111,8 +111,6 @@ import (
 	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/core/compute"
 	"creativeworkzstudio.com/bereshit/L3-cpisi/hybrid/foundation/schema"
 
-	// L0 shared config utilities — throughline consolidation
-	// TODO(module): Update import path when go.mod is established
 	"creativeworkzstudio.com/bereshit/L0-universal/hybrid/config/util"
 )
 

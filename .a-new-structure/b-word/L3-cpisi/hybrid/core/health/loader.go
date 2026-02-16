@@ -31,8 +31,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"creativeworkzstudio.com/bereshit/L0-universal/hybrid/paths"
 
-	// L0 shared config utilities — throughline consolidation
-	// TODO(module): Update import path when go.mod is established
 	"creativeworkzstudio.com/bereshit/L0-universal/hybrid/config/util"
 )
 

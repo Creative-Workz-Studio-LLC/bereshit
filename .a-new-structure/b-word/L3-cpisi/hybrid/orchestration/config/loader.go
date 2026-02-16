@@ -98,8 +98,6 @@ import (
 )
 
 //--- I.3 Internal Packages [IMPORT] (0) ---
-// L0 shared config utilities — extracted from duplicated code across loaders
-// TODO(module): Update import path when go.mod is established
 import (
 	"creativeworkzstudio.com/bereshit/L0-universal/hybrid/config/util" // FileExists, LoadError, Must, RootGuard, TripwireBanner
 )

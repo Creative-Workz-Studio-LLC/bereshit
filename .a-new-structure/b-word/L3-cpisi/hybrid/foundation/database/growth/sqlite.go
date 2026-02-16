@@ -23,7 +23,7 @@ import (
 	"embed"
 	"fmt"
 
-	_ "modernc.org/sqlite"
+	l2db "creativeworkzstudio.com/bereshit/L2-platform/hybrid/database"
 )
 
 //go:embed schema/*.sql
@@ -43,13 +43,9 @@ var _ Repository = (*SQLiteRepository)(nil)
 
 // NewSQLiteRepository creates a new growth SQLite repository
 func NewSQLiteRepository(dbPath string) (*SQLiteRepository, error) {
-	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)")
+	db, err := l2db.OpenDefault(dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("open growth db: %w", err)
-	}
-	if err := db.Ping(); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("ping growth db: %w", err)
 	}
 	return &SQLiteRepository{db: db}, nil
 }

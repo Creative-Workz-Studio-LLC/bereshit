@@ -98,9 +98,6 @@ import (
 // [Reserved: No external dependencies — uses standard library JSON]
 
 //--- I.3 Internal Packages [IMPORT] (0) ---
-// Same package as loader.go — uses Root(), Extensions() for config-driven paths
-// L0 shared config utilities
-// TODO(module): Update import path when go.mod is established
 import (
 	"creativeworkzstudio.com/bereshit/L0-universal/hybrid/config/util" // ParseJSONC, LoadJSONCFile, LoadError
 )

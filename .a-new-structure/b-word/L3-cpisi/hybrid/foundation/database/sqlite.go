@@ -31,7 +31,7 @@ import (
 	"fmt"
 	"time"
 
-	_ "modernc.org/sqlite" // Pure Go SQLite driver (no CGO)
+	l2db "creativeworkzstudio.com/bereshit/L2-platform/hybrid/database"
 )
 
 //go:embed schema/*.sql
@@ -51,17 +51,10 @@ var _ Repository = (*SQLiteRepository)(nil)
 
 // NewSQLiteRepository creates a new SQLite repository
 func NewSQLiteRepository(dbPath string) (*SQLiteRepository, error) {
-	db, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)")
+	db, err := l2db.OpenDefault(dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("open database: %w", err)
 	}
-
-	// Test connection
-	if err := db.Ping(); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("ping database: %w", err)
-	}
-
 	return &SQLiteRepository{db: db}, nil
 }
 
