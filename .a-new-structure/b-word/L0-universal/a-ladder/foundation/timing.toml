@@ -1,0 +1,239 @@
+# #!omni document --toml
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# I — Identity: What IS This File
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.I1_core]
+key = "B-L0-types-timing"
+format = "@omni document --toml"
+from = "seed/data/L0/toml/config.toml"
+at = "document"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "timing.toml"
+title = "OmniCode Timing Types"
+component = "Timing types — intervals, rotation tiers, retention policies. 5 intervals, 9 rotation tiers, all derived from POLL anchor."
+path = "timing.toml"
+provides = ["TIMING_INTERVALS", "ROTATION_TIERS"]
+brief = "Timing intervals and rotation tiers — all derived from POLL anchor (1000ms) using ternary math. 5 intervals (DEBOUNCE to TIMEOUT), 9 rotation tiers (real-time to weekly)."
+
+[_metadata.I4_architecture]
+layers = "L0:C, L3:Go, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+# ─────────────────────────────────────────────────────────────
+# C — Context: What Do I Need to KNOW
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.C1_state]
+version = "a-01.00"
+status = "Active"
+created = "2026-01-25"
+updated = "2026-02-16"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "Ecclesiastes 3:1 — To every thing there is a season, and a time to every purpose under the heaven."
+principle = "Time is ordered by divine design. Intervals follow ternary math — derived from a single anchor (POLL = 1000ms) using multiplication and division by ternary constants."
+anchor = "Genesis 1:1 — In the beginning. POLL is the timing anchor from which all intervals derive."
+
+[_metadata.C4_dependencies]
+requires = ["primitives/primitives-catalog.toml", "math/core/definitions.toml"]
+consumers = ["Health monitoring (poll intervals)", "Log rotation (timing tiers)", "Timeout handling (TIMEOUT interval)"]
+integration = "Loaded by Go config loader, generates C header via index.toml"
+if_missing = "Systems fall back to hardcoded 1000ms poll — no derived intervals or rotation"
+
+[_metadata.C4_dependencies.cross_format]
+role = "TOML defines timing structure and derivation formulas. C header generated from these definitions."
+note = "No JSON/JSONC counterpart — timing is type specification, not runtime data."
+
+[_metadata.C5_intent]
+purpose = "Define timing intervals and rotation policies for health monitoring"
+core_design = "All intervals derive from POLL (1000ms) using ternary math"
+philosophy = "One anchor (POLL), all else derived. Ternary scaling. Time is ordered by divine design."
+
+[_metadata.C6_roadmap]
+history = [
+    "a-01.00 (2026-01-25) — Created as standalone timing type specification",
+    "a-01.00 (2026-02-10) — Moved to new structure, TOML-native 3-block format",
+    "a-01.00 (2026-02-16) — I/C metadata upgrade",
+]
+current = "5 intervals and 9 rotation tiers derived from POLL anchor"
+planned = [
+    "Adaptive polling based on system load",
+    "Retention policy enforcement",
+]
+
+[_metadata.C7_classification]
+tags = ["timing", "intervals", "rotation", "poll", "ternary-math", "L0", "types"]
+
+# ─────────────────────────────────────────────────────────────
+# Contract
+# ─────────────────────────────────────────────────────────────
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C5_intent", "C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = ["X2_extension", "X3_troubleshooting", "X4_reference"]
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+[_content]
+format = "TOML — native tables, UTF-8, LF line endings"
+key_convention = "UPPER_SNAKE for interval names, lower_snake for properties"
+constraint = "POLL (1000ms) is the anchor. All other intervals derived from it. 9 rotation tiers from real-time to weekly."
+Cc = "Content Configurations — 9 rotation tiers (real-time to weekly), POLL anchor (1000ms), 5 intervals"
+Co = "Content Operations — interval derivation, rotation scheduling, bounds"
+Cv = "Content Validation — schema requirements, health scoring"
+
+# ─────────────────────────────────────────────────────────────
+# Identity
+# ─────────────────────────────────────────────────────────────
+
+[identity]
+name = "OmniCode Timing Types"
+version = "a-01.00"
+domain = "types"
+scope = "Timing intervals and rotation tiers — all derived from POLL anchor (1000ms)"
+
+# ─────────────────────────────────────────────────────────────
+# Cc — Content Configurations [CONFIG]
+# ─────────────────────────────────────────────────────────────
+
+[timing]
+description = "Timing intervals derived from POLL anchor"
+anchor_ms = 1000
+count = 5
+
+# Interval definitions (derived from POLL = 1000ms)
+[timing.intervals]
+description = "5 intervals: fastest to slowest"
+
+DEBOUNCE  = { index = 0, ms = 100,  formula = "POLL / 10", description = "Fastest — UI debounce" }
+HALF_POLL = { index = 1, ms = 499,  formula = "POLL / 2 - 1", description = "Half poll interval" }
+POLL      = { index = 2, ms = 1000, formula = "POLL (anchor)", description = "CENTER — standard check" }
+FLUSH     = { index = 3, ms = 3000, formula = "POLL * 3", description = "Buffer flush interval" }
+TIMEOUT   = { index = 4, ms = 5000, formula = "POLL * 5", description = "Slowest — operation timeout" }
+
+# Bounds
+[timing.bounds]
+min_ms = 100
+max_ms = 5000
+center_index = 2
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations [OPS]
+# ─────────────────────────────────────────────────────────────
+
+# Rotation tiers (9 tiers for log rotation)
+[timing.rotation]
+description = "9 rotation tiers for log management"
+count = 9
+
+# Tier 0 = most frequent (100ms), Tier 8 = least frequent (1 week)
+tiers = [
+    { index = 0, interval = "100ms", description = "Real-time" },
+    { index = 1, interval = "1s", description = "Second" },
+    { index = 2, interval = "10s", description = "Deca-second" },
+    { index = 3, interval = "1m", description = "Minute" },
+    { index = 4, interval = "10m", description = "Deca-minute (CENTER)" },
+    { index = 5, interval = "1h", description = "Hour" },
+    { index = 6, interval = "6h", description = "Quarter-day" },
+    { index = 7, interval = "1d", description = "Day" },
+    { index = 8, interval = "1w", description = "Week" },
+]
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation [VALIDATE]
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["cws-struct lint toml timing.toml"]
+
+[_validation.schema]
+required = ["identity", "timing", "timing.intervals", "timing.bounds", "timing.rotation"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+valid_values = 30
+derivation_integrity = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Proverbs 22:28 (KJV) — Remove not the ancient landmark, which thy fathers have set."
+never = [
+    "Remove POLL anchor (all intervals derive from it)",
+    "Change interval derivation formulas without updating all consumers",
+    "Remove rotation tiers (breaks log management)",
+]
+careful = [
+    "Adding new intervals (must follow derivation pattern)",
+    "Changing tier intervals",
+    "Modifying bounds",
+]
+safe = [
+    "Updating descriptions",
+    "Adding metadata",
+    "Adding new rotation tiers",
+]
+
+[_closing.X2_extension]
+planned = [
+    "Adaptive polling based on system load",
+    "Retention policy enforcement",
+]
+
+[_closing.X3_troubleshooting]
+interval_not_derived = "All intervals must derive from POLL (1000ms). Check formula."
+rotation_gap = "9 tiers cover real-time to weekly. Verify no gaps in coverage."
+
+[_closing.X4_reference]
+related_files = [
+    "math/core/definitions.toml — Ternary constants for derivation",
+    "primitives/primitives-catalog.toml — Base types (int types for ms values)",
+]
+
+[_closing.X5_note]
+note = "One anchor (POLL), all else derived. Time is ordered by divine design. Ternary scaling from the center."
+scripture = "Ephesians 5:16 — Redeeming the time, because the days are evil."
+anchor = "In the beginning God created — Genesis 1:1. POLL is the timing anchor, just as Genesis 1:1 is the identity anchor."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

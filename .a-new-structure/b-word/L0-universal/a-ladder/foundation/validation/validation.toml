@@ -1,0 +1,312 @@
+# #!omni data --toml
+
+# ═════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═════════════════════════════════════════════════════════════
+
+[_metadata.I1_core]
+key = "B-L0-types-validation"
+format = "@omni data --toml"
+from = "b-word/seed/data/L0/toml/config.toml"
+at = "b-02.00"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "types"
+role = "ladder"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "validation.toml"
+title = "OmniCode Validation Rules — Index"
+component = "foundation"
+path = "validation/validation.toml"
+provides = ["VALIDATION_INDEX", "SPLIT_DOCUMENTATION"]
+brief = "Index for split validation specification — truth enforcement for the type system"
+
+[_metadata.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_metadata.C1_state]
+version = "b-02.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-16"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "Prove all things; hold fast that which is good. — 1 Thessalonians 5:21"
+principle = "Test everything — validation is truth enforcement applied to data."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.C4_dependencies]
+requires = ["primitives/primitives.toml", "composition/composition.toml"]
+consumers = ["parsers", "compilers", "runtime validators"]
+derives_from = "b-word/seed/data/L0/toml/config.toml"
+integration = "Loaded at build time by code generators. Validation rules become runtime checks in generated code."
+if_missing = "No validation possible — type system cannot enforce correctness"
+
+[_metadata.C4_dependencies.split_files]
+validation_primitive = "validation-primitive.toml — Base type validation (trit, int, text, bool3)"
+validation_constraint = "validation-constraint.toml — Applied constraint validation (range, pattern, enum, etc.)"
+validation_structural = "validation-structural.toml — Composite type validation (struct, union, list, map, tuple, bytes)"
+validation_schema = "validation-schema.toml — OmniCode file structure validation (pragma, blocks, metadata)"
+validation_errors_modes = "validation-errors-modes.toml — Error handling and validation timing modes"
+validation_cognition = "validation-cognition.toml — CPI-SI interpretation of validation"
+validation_generation = "validation-generation.toml — Code generation from validation spec"
+runtime_checks = "runtime-checks.toml — Runtime verification operations (assert, guard, validate, coerce)"
+
+[_metadata.C4_dependencies.cross_format]
+role = "Validation RULES in TOML. Generated code (C, Go, Rust) implements them."
+relationship = "TOML defines validation rules. Generated code implements validators."
+
+[_metadata.C5_intent]
+purpose = "Index for the validation specification — truth enforcement for the type system across 28 validators in 4 categories"
+core_design = "Split index with 8 content files. Primitive (base types), constraint (applied rules), structural (composites), schema (OmniCode files), errors+modes (operations), cognition (CPI-SI), generation (build), runtime-checks (verification operations). Each file is independently valid TOML."
+philosophy = "Prove all things; hold fast that which is good. Validation is the gatekeeper — nothing invalid passes unchallenged."
+
+[_metadata.C6_roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Initial monolithic creation (3145 lines)",
+    "b-01.00 (2026-02-10) — Split into 7 content files + index, TOML-native 3-block format",
+    "b-02.00 (2026-02-16) — I/C metadata upgrade, runtime-checks.toml joined from composition/",
+]
+current = "Split index — 8 content files covering primitive, constraint, structural, schema, errors+modes, cognition, generation, runtime-checks"
+planned = [
+    "Full template alignment for all 8 content files",
+    "Validation tooling integration",
+]
+
+[_metadata.C7_classification]
+tags = ["types", "validation", "foundation", "L0", "truth", "constraints", "schema", "errors", "modes", "index"]
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies", "C5_intent"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+
+# ═════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═════════════════════════════════════════════════════════════
+
+
+# ═════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═════════════════════════════════════════════════════════════
+
+[identity]
+key = "B-L0-types-validation"
+name = "validation"
+title = "OmniCode Validation Rules — Index"
+version = "b-02.00"
+
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Index file — references split content files. No validation rules defined here."
+Cc = "Content Configurations — Index for split validation specification — truth enforcement for the type system"
+Co = "Content Operations — validation index, split documentation"
+Cv = "Content Validation — schema requirements, type constraints"
+
+# ─────────────────────────────────────────────────────────────
+# SPLIT FILE OVERVIEW
+# ─────────────────────────────────────────────────────────────
+#
+# Validation rules for the OmniCode type system.
+# Structure: Cc (Rules) → Co (Operations) → Cv (Cognition) → Cx (Generation)
+#
+# Organization Pattern:
+#   Cc.1 PRIMITIVE   — Base type validation (trit, int9, text, bool3)
+#   Cc.2 CONSTRAINT  — Applied constraint validation (range, pattern, enum)
+#   Cc.3 STRUCTURAL  — Composite type validation (struct, union, list, map)
+#   Cc.4 SCHEMA      — OmniCode file structure validation (pragma, blocks)
+#   Co.1 ERROR       — Error handling, severity levels, aggregation
+#   Co.2 MODES       — When validation runs (compile, runtime, boundary)
+#   Co.3 RUNTIME     — Runtime verification operations (assert, guard, validate, coerce)
+#   Cv.1-4 COGNITION — Biblical grounding, mental model, wisdom, ternary
+#   Cx.1-6 GENERATION — Code generation targets, templates, validation
+#
+# ─────────────────────────────────────────────────────────────
+
+[index]
+type = "split_index"
+total_files = 8
+total_sections = 17
+original_lines = 3145
+
+[index.key_constants]
+total_validators = 28
+validator_categories = 4
+severity_levels = 3
+validation_modes = 4
+
+[index.files]
+primitive = { file = "validation-primitive.toml", sections = "Cc.1" }
+constraint = { file = "validation-constraint.toml", sections = "Cc.2" }
+structural = { file = "validation-structural.toml", sections = "Cc.3" }
+schema = { file = "validation-schema.toml", sections = "Cc.4" }
+errors_modes = { file = "validation-errors-modes.toml", sections = "Co.1-2" }
+runtime_checks = { file = "runtime-checks.toml", sections = "Co.3" }
+cognition = { file = "validation-cognition.toml", sections = "Cv.1-4" }
+generation = { file = "validation-generation.toml", sections = "Cx.1-6" }
+
+# ─────────────────────────────────────────────────────────────
+# VALIDATION CATEGORIES
+# ─────────────────────────────────────────────────────────────
+#
+# PRIMITIVE (8 validators):
+#   trit, trit5, int9, uint9, int27, uint27, text, bool3
+#
+# CONSTRAINT (8 validators):
+#   range, pattern, enum, length, unique, foreign_key, default, immutable
+#
+# STRUCTURAL (6 validators):
+#   struct, union, list, map, tuple, bytes
+#
+# SCHEMA (6 validators):
+#   pragma, blocks_3, blocks_4, blocks_5, block_boundary, metadata
+#
+# RUNTIME OPERATIONS (4 operations):
+#   assert, guard, validate, coerce
+#
+# ERROR SYSTEM:
+#   3 severity levels (error, warning, info)
+#   Structured error format with location, code, message, help
+#   Aggregation with configurable limits
+#
+# VALIDATION MODES:
+#   compile_time — Static analysis (strictest)
+#   runtime — Dynamic checks (strict)
+#   parse_time — Parsing checks (strict, early)
+#   boundary — System boundary checks (never trust external)
+#
+# TOTAL: 28 validators across 4 categories + 4 runtime operations + error system + 4 modes
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Extensions (reserved)
+# ─────────────────────────────────────────────────────────────
+
+[extensions]
+note = "Reserved — no extensions for index file"
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["cws-struct lint toml validation/"]
+
+[_validation.schema]
+required = ["identity", "index"]
+optional = ["index.key_constants", "index.files", "extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_split_files_valid = 30
+index_completeness = 30
+
+# ═════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═════════════════════════════════════════════════════════════
+
+
+# ═════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Validation rule names (validate_trit, validate_range, etc.)",
+    "Error severity level meanings (error, warning, info)",
+    "Ternary validation result values (-1=invalid, 0=unknown, +1=valid)",
+    "3-block structure (METADATA → CONTENT → CLOSING)",
+]
+careful = [
+    "Adding new validators — must match type system changes",
+    "Changing error formats — affects all error consumers",
+    "Modifying validation modes — affects when checks run",
+    "Changing aggregation limits — affects error reporting",
+]
+safe = [
+    "Comments for clarity",
+    "Additional validation examples",
+    "Scale-specific notes",
+    "Implementation guidance",
+    "Additional error messages",
+]
+
+[_closing.X2_extension]
+implemented = []
+planned = [
+    "Dependent type validation (types that depend on values)",
+    "Effect validation (side effect tracking verification)",
+]
+adding_primitive_validator = [
+    "1. Add type section in validation-primitive.toml with rule, error, omnicode, cpisi, types, scales",
+    "2. Add ternary alignment in validation-cognition.toml [cognition.ternary]",
+    "3. Add generation template in validation-generation.toml",
+    "4. Update validation.toml index overview",
+]
+adding_constraint_validator = [
+    "1. Add constraint section in validation-constraint.toml with rule, error, omnicode, cpisi, types, scales",
+    "2. Add ternary alignment in validation-cognition.toml [cognition.ternary]",
+    "3. Add generation template in validation-generation.toml",
+    "4. Update validation.toml index overview",
+]
+adding_structural_validator = [
+    "1. Add structural section in validation-structural.toml with rule, error, omnicode, cpisi, types, scales",
+    "2. Ensure composition.toml defines the composite type",
+    "3. Add generation template in validation-generation.toml",
+    "4. Update validation.toml index overview",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+validator_not_found = "Check spelling (case-sensitive), ensure type is defined in primitives/composition"
+false_positive = "Check validation mode — compile_time vs runtime have different strictness"
+generation_failed = "Verify all required fields present: rule, error, omnicode, types"
+
+[_closing.X4_reference]
+split_files = [
+    "validation-primitive.toml — Base type validation (Cc.1)",
+    "validation-constraint.toml — Constraint validation (Cc.2)",
+    "validation-structural.toml — Composite type validation (Cc.3)",
+    "validation-schema.toml — OmniCode structure validation (Cc.4)",
+    "validation-errors-modes.toml — Error handling + modes (Co.1-2)",
+    "runtime-checks.toml — Runtime verification operations (Co.3)",
+    "validation-cognition.toml — CPI-SI interpretation (Cv.1-4)",
+    "validation-generation.toml — Code generation (Cx.1-6)",
+]
+related_files = [
+    "../primitives/primitives.toml — Primitive types",
+    "../composition/composition.toml — Composite types",
+    "../errors/ — Error code definitions",
+]
+required_sections = [
+    "_metadata",
+    "identity",
+    "index",
+    "_validation",
+    "_closing",
+]
+validate = "cws-struct lint toml validation/validation.toml"
+
+[_closing.X5_note]
+note = "Validation is truth enforcement. These rules define what it means for data to be correct. Let nothing invalid pass unchallenged."
+scripture = "Prove all things; hold fast that which is good. — 1 Thessalonians 5:21"
+anchor = "Validation is the gatekeeper. Every value tested, every constraint enforced, every boundary guarded. Truth enforcement applied to data."
+
+# ═════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═════════════════════════════════════════════════════════════

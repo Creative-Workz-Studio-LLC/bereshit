@@ -1,0 +1,433 @@
+# #!omni document --toml
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# I — Identity: What IS This File
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.I1_core]
+key = "B-L0-bible-text-character-table"
+format = "@omni document --toml"
+from = "seed/data/L0/toml/config.toml"
+at = "document"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "bible"
+role = "rung"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "character-table.toml"
+title = "Scripture Character Table"
+component = "Character-to-trit5 value mapping — 243 characters (128 ASCII + 115 extended)"
+path = ".staging/bible/text/character-table.toml"
+provides = ["CHARACTER_TABLE_DATA"]
+brief = "Maps every character to a unique trit5 value (0-242) for reversible Scripture text encoding."
+
+[_metadata.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+# ─────────────────────────────────────────────────────────────
+# C — Context: What Do I Need to KNOW
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.C1_state]
+version = "a-01.00"
+status = "Active"
+created = "2025-12-14"
+updated = "2026-02-16"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "Psalm 119:105 (KJV) — Thy word is a lamp unto my feet, and a light unto my path."
+principle = "Every letter of the Word preserved. 243 characters — one trit5 value each — nothing lost."
+anchor = "Genesis 1:1 anchors the text. The character table preserves every letter."
+
+[_metadata.C4_dependencies]
+requires = "none — foundational data table"
+consumers = ["text-codec.toml", "scripture-format.toml", "scripture encoder", "scripture decoder"]
+integration = "Loaded at build time by code generators. Character mappings become lookup tables."
+if_missing = "Cannot encode or decode Scripture text — character mapping undefined"
+
+[_metadata.C4_dependencies.cross_format]
+role = "Character table DATA in TOML. No JSONC/JSON counterpart."
+note = "TOML defines character mappings. Generated code (C, Go) implements lookups."
+
+[_metadata.C5_intent]
+purpose = "Character-to-trit5 value mapping for reversible Scripture text encoding"
+core_design = "ASCII range (0-127) maps directly. Extended range (128-242) adds typographic marks, Hebrew, Greek. 57 values reserved for future use."
+philosophy = "Every letter of the Word preserved. Encoding is exact — no approximation, no lossy compression."
+
+[_metadata.C6_roadmap]
+history = [
+    "a-01.00 (2025-12-14) — Initial creation (part of scripture-text.toml)",
+    "a-01.00 (2026-02-16) — Split from scripture-text.toml into dedicated character table file"
+]
+current = "Character table split — standalone data file with I/C metadata"
+planned = ["Fill all 57 reserved extended character slots", "Accented character support"]
+
+[_metadata.C7_classification]
+tags = ["bible", "character-table", "trit5", "encoding", "text", "L0", "foundation"]
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C5_intent", "C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = ["X2_extension", "X3_troubleshooting", "X4_reference"]
+valid_patterns = ["I{N}_{name}", "C{N}_{name}", "X{N}_{name}", "_{name}"]
+rule = "Required sections are structural. Extensions follow naming patterns."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "UPPERCASE character names with trit5 integer values"
+constraint = "Bible data file — character-to-trit5 mapping for the OmniCode type system"
+Cc = "Content Configurations — ASCII character table (0-127), extended characters (128-242)"
+Co = "Content Operations — (data file: lookup-based, no operations defined here)"
+Cv = "Content Validation — schema requirements, health scoring"
+
+# ─────────────────────────────────────────────────────────────
+# Cc — Content Configurations
+# ─────────────────────────────────────────────────────────────
+
+# Cc.0 IDENTITY — What Is This Config? [REQUIRED]
+[identity]
+name = "scripture-character-table"
+version = "a-01.00"
+description = "Character-to-trit5 value mapping for Scripture text encoding"
+type = "bible-data"
+
+# Cc.1 CHARACTER TABLE — ASCII Character to Trit5 Value Mapping
+[character_table]
+description = "ASCII character to trit5 value mapping"
+total_values = 243
+ascii_range = [0, 127]
+spare_range = [128, 242]
+note = "Each character maps to unique trit5 value for reversible encoding"
+
+# Control characters and basic punctuation (0-31)
+[character_table.control]
+description = "Control characters and whitespace"
+NUL = 0    # Null terminator
+SOH = 1    # Start of heading (unused)
+STX = 2    # Start of text (unused)
+ETX = 3    # End of text (unused)
+EOT = 4    # End of transmission (unused)
+ENQ = 5    # Enquiry (unused)
+ACK = 6    # Acknowledge (unused)
+BEL = 7    # Bell (unused)
+BS = 8     # Backspace (unused)
+TAB = 9    # Horizontal tab
+LF = 10    # Line feed (newline)
+VT = 11    # Vertical tab (unused)
+FF = 12    # Form feed (unused)
+CR = 13    # Carriage return
+SO = 14    # Shift out (unused)
+SI = 15    # Shift in (unused)
+DLE = 16   # Data link escape (unused)
+DC1 = 17   # Device control 1 (unused)
+DC2 = 18   # Device control 2 (unused)
+DC3 = 19   # Device control 3 (unused)
+DC4 = 20   # Device control 4 (unused)
+NAK = 21   # Negative acknowledge (unused)
+SYN = 22   # Synchronous idle (unused)
+ETB = 23   # End of transmission block (unused)
+CAN = 24   # Cancel (unused)
+EM = 25    # End of medium (unused)
+SUB = 26   # Substitute (unused)
+ESC = 27   # Escape (unused)
+FS = 28    # File separator (unused)
+GS = 29    # Group separator (unused)
+RS = 30    # Record separator (unused)
+US = 31    # Unit separator (unused)
+
+# Printable ASCII (32-126)
+[character_table.printable]
+description = "Printable ASCII characters"
+SPACE = 32        # ' '
+EXCLAIM = 33      # '!'
+DQUOTE = 34       # '"'
+HASH = 35         # '#'
+DOLLAR = 36       # '$'
+PERCENT = 37      # '%'
+AMPERSAND = 38    # '&'
+SQUOTE = 39       # "'"
+LPAREN = 40       # '('
+RPAREN = 41       # ')'
+ASTERISK = 42     # '*'
+PLUS = 43         # '+'
+COMMA = 44        # ','
+MINUS = 45        # '-'
+PERIOD = 46       # '.'
+SLASH = 47        # '/'
+
+# Digits (48-57)
+DIGIT_0 = 48      # '0'
+DIGIT_1 = 49      # '1'
+DIGIT_2 = 50      # '2'
+DIGIT_3 = 51      # '3'
+DIGIT_4 = 52      # '4'
+DIGIT_5 = 53      # '5'
+DIGIT_6 = 54      # '6'
+DIGIT_7 = 55      # '7'
+DIGIT_8 = 56      # '8'
+DIGIT_9 = 57      # '9'
+
+# Punctuation (58-64)
+COLON = 58        # ':'
+SEMICOLON = 59    # ';'
+LESSTHAN = 60     # '<'
+EQUALS = 61       # '='
+GREATERTHAN = 62  # '>'
+QUESTION = 63     # '?'
+AT = 64           # '@'
+
+# Uppercase letters (65-90)
+UPPER_A = 65
+UPPER_B = 66
+UPPER_C = 67
+UPPER_D = 68
+UPPER_E = 69
+UPPER_F = 70
+UPPER_G = 71
+UPPER_H = 72
+UPPER_I = 73
+UPPER_J = 74
+UPPER_K = 75
+UPPER_L = 76
+UPPER_M = 77
+UPPER_N = 78
+UPPER_O = 79
+UPPER_P = 80
+UPPER_Q = 81
+UPPER_R = 82
+UPPER_S = 83
+UPPER_T = 84
+UPPER_U = 85
+UPPER_V = 86
+UPPER_W = 87
+UPPER_X = 88
+UPPER_Y = 89
+UPPER_Z = 90
+
+# Punctuation (91-96)
+LBRACKET = 91     # '['
+BACKSLASH = 92    # '\'
+RBRACKET = 93     # ']'
+CARET = 94        # '^'
+UNDERSCORE = 95   # '_'
+BACKTICK = 96     # '`'
+
+# Lowercase letters (97-122)
+LOWER_A = 97
+LOWER_B = 98
+LOWER_C = 99
+LOWER_D = 100
+LOWER_E = 101
+LOWER_F = 102
+LOWER_G = 103
+LOWER_H = 104
+LOWER_I = 105
+LOWER_J = 106
+LOWER_K = 107
+LOWER_L = 108
+LOWER_M = 109
+LOWER_N = 110
+LOWER_O = 111
+LOWER_P = 112
+LOWER_Q = 113
+LOWER_R = 114
+LOWER_S = 115
+LOWER_T = 116
+LOWER_U = 117
+LOWER_V = 118
+LOWER_W = 119
+LOWER_X = 120
+LOWER_Y = 121
+LOWER_Z = 122
+
+# Final punctuation (123-126)
+LBRACE = 123      # '{'
+PIPE = 124        # '|'
+RBRACE = 125      # '}'
+TILDE = 126       # '~'
+
+# DEL (127)
+DEL = 127         # Delete character
+
+
+# Cc.2 EXTENDED CHARACTERS (128-242)
+[extended_characters]
+description = "Extended character mappings beyond ASCII"
+range = [128, 242]
+total_spare = 115
+note = "Reserved for future use - Hebrew, Greek, typographic marks"
+
+# Typographic marks (128-139)
+[extended_characters.typography]
+description = "Common typographic characters"
+EM_DASH = 128          # '—' (em dash)
+EN_DASH = 129          # '–' (en dash)
+LEFT_SINGLE_QUOTE = 130   # '''
+RIGHT_SINGLE_QUOTE = 131  # '''
+LEFT_DOUBLE_QUOTE = 132   # '"'
+RIGHT_DOUBLE_QUOTE = 133  # '"'
+ELLIPSIS = 134         # '…'
+BULLET = 135           # '•'
+DAGGER = 136           # '†'
+DOUBLE_DAGGER = 137    # '‡'
+SECTION = 138          # '§'
+PILCROW = 139          # '¶'
+
+# Hebrew letters (140-161) - for Strong's references
+[extended_characters.hebrew]
+description = "Hebrew alphabet for Strong's concordance"
+ALEPH = 140    # א
+BET = 141      # ב
+GIMEL = 142    # ג
+DALET = 143    # ד
+HE = 144       # ה
+VAV = 145      # ו
+ZAYIN = 146    # ז
+CHET = 147     # ח
+TET = 148      # ט
+YOD = 149      # י
+KAF = 150      # כ
+LAMED = 151    # ל
+MEM = 152      # מ
+NUN = 153      # נ
+SAMECH = 154   # ס
+AYIN = 155     # ע
+PE = 156       # פ
+TSADE = 157    # צ
+QOF = 158      # ק
+RESH = 159     # ר
+SHIN = 160     # ש
+TAV = 161      # ת
+
+# Greek letters (162-185) - for New Testament references
+[extended_characters.greek]
+description = "Greek alphabet for NT Strong's concordance"
+ALPHA = 162    # Α/α
+BETA = 163     # Β/β
+GAMMA = 164    # Γ/γ
+DELTA = 165    # Δ/δ
+EPSILON = 166  # Ε/ε
+ZETA = 167     # Ζ/ζ
+ETA = 168      # Η/η
+THETA = 169    # Θ/θ
+IOTA = 170     # Ι/ι
+KAPPA = 171    # Κ/κ
+LAMBDA = 172   # Λ/λ
+MU = 173       # Μ/μ
+NU = 174       # Ν/ν
+XI = 175       # Ξ/ξ
+OMICRON = 176  # Ο/ο
+PI = 177       # Π/π
+RHO = 178      # Ρ/ρ
+SIGMA = 179    # Σ/σ
+TAU = 180      # Τ/τ
+UPSILON = 181  # Υ/υ
+PHI = 182      # Φ/φ
+CHI = 183      # Χ/χ
+PSI = 184      # Ψ/ψ
+OMEGA = 185    # Ω/ω
+
+# Reserved for future use (186-242)
+[extended_characters.reserved]
+description = "Reserved for future extensions"
+range = [186, 242]
+count = 57
+note = "Available for: accented characters, additional symbols, markup"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# (Data file: lookup-based. No operations defined here.
+#  See text-codec.toml for encoding/decoding algorithms.)
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["cws-struct lint toml character-table.toml"]
+
+[_validation.schema]
+required = ["character_table", "extended_characters"]
+optional = []
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 30
+all_mappings_unique = 40
+coverage_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Proverbs 22:28 (KJV) — Remove not the ancient landmark, which thy fathers have set."
+never = [
+    "ASCII mapping (0-127) — must be direct for compatibility",
+    "Hebrew letter order (140-161) — linguistically fixed",
+    "Greek letter order (162-185) — linguistically fixed",
+]
+careful = [
+    "Adding new extended characters — update both tables and consumers",
+    "Changing typography mappings — affects document rendering",
+]
+safe = [
+    "Filling reserved slots (186-242) with new characters",
+    "Notes and clarifications",
+]
+
+[_closing.X2_extension]
+planned = ["Accented character mappings", "Additional typographic marks"]
+
+[_closing.X3_troubleshooting]
+duplicate_value = "Each trit5 value must be unique — check for collisions when adding"
+missing_character = "Check ascii_range and extended tables — all 243 slots should be accounted for"
+
+[_closing.X4_reference]
+related_files = [
+    ".staging/bible/text/text-codec.toml — Encoding/decoding algorithms using this table",
+    ".staging/bible/text/scripture-format.toml — Binary file format for scripture storage",
+    ".staging/bible/codec/ — Concept-level encoding (Hebrew roots → OmniCode)",
+]
+
+[_closing.X5_note]
+note = "Every letter matters. 243 unique values — one for each character the Word can hold."
+scripture = "Psalm 119:105 (KJV) — Thy word is a lamp unto my feet, and a light unto my path."
+anchor = "Every letter of Scripture preserved in trit5. Genesis 1:1 anchors the text."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

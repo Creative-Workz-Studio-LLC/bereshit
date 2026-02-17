@@ -1,0 +1,342 @@
+# #!omni document --toml
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# I — Identity: What IS This File
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.I1_core]
+key = "B-L0-types-error-generation"
+format = "@omni document --toml"
+from = "seed/data/L0/toml/config.toml"
+at = "document"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "generation.toml"
+title = "Error System Code Generation"
+component = "Code generation targets and templates for error system — C header, Go package, Rust module. Build-time concern: reads foundation.toml architecture and produces language-specific code."
+path = "errors/generation.toml"
+provides = ["GENERATION_TARGETS", "GENERATION_PROCESS", "CODE_TEMPLATES", "VALIDATION_COMMANDS"]
+brief = "Error code generation. 3 targets (C, Go, Rust). Templates for headers, packages, modules. Layer/formula patterns. Build-time concern — reads architecture from foundation.toml."
+
+[_metadata.I4_architecture]
+layers = "L0:C, L3:Go, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+# ─────────────────────────────────────────────────────────────
+# C — Context: What Do I Need to KNOW
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.C1_state]
+version = "a-01.00"
+status = "Active"
+created = "2026-02-16"
+updated = "2026-02-16"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "Exodus 25:40 — And look that thou make them after their pattern, which was shewed thee in the mount."
+principle = "Generated code follows the pattern defined in architecture. The TOML spec is the pattern on the mount; generated code is the earthly realization."
+anchor = "Genesis 1:1 — Creation follows specification. Architecture (foundation.toml) defines the pattern; this file defines HOW to generate the implementation."
+
+[_metadata.C4_dependencies]
+requires = ["errors/foundation.toml", "errors/codes.toml"]
+consumers = ["Build system (code generation pipeline)", "CI/CD (validation commands)", "Developer tooling (generated headers/packages)"]
+integration = "Build system reads this file to know WHAT to generate and HOW. Foundation.toml provides the architecture data."
+if_missing = "Code generation falls back to manual header maintenance — error-prone and drift-susceptible"
+
+[_metadata.C4_dependencies.cross_format]
+role = "TOML defines generation targets, templates, and validation. Build system reads these definitions to produce C/Go/Rust code."
+note = "This file drives cross-format generation. It's the bridge between TOML specifications and compiled code."
+
+[_metadata.C5_intent]
+purpose = "Define code generation targets, templates, and validation for the error system"
+core_design = "3 language targets (C, Go, Rust). Each has output file, type definition, and code patterns. Templates provide boilerplate; patterns define per-entity generation."
+philosophy = "The pattern on the mount. Architecture is truth (foundation.toml). Generation is faithful reproduction in each target language. Validation confirms the reproduction is accurate."
+
+[_metadata.C6_roadmap]
+history = [
+    "a-01.00 (2026-02-16) — Extracted from foundation.toml (was Cx section: generation targets, templates, patterns)",
+]
+current = "3 targets (C, Go, Rust), generation process, templates, validation"
+planned = [
+    "C# target (L5 layer)",
+    "Automated generation pipeline",
+    "Template versioning",
+]
+
+[_metadata.C7_classification]
+tags = ["error-system", "generation", "code-gen", "C", "Go", "Rust", "build", "L0", "types"]
+
+# ─────────────────────────────────────────────────────────────
+# Contract
+# ─────────────────────────────────────────────────────────────
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C5_intent", "C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = ["X2_extension", "X3_troubleshooting", "X4_reference"]
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+[_content]
+format = "TOML — native tables, UTF-8, LF line endings"
+key_convention = "lower_snake for properties, language-idiomatic for patterns"
+constraint = "Generated code must match foundation.toml architecture exactly. Templates are language-specific but architecturally identical."
+Cc = "Content Configurations — generation targets (C, Go, Rust), output files, type definitions"
+Co = "Content Operations — generation process, templates, code patterns"
+Cv = "Content Validation — syntax checks, test commands, schema"
+
+# ─────────────────────────────────────────────────────────────
+# Identity
+# ─────────────────────────────────────────────────────────────
+
+[identity]
+key = "B-L0-types-error-generation"
+name = "generation"
+title = "Error System Code Generation"
+version = "a-01.00"
+parent = "foundation.toml"
+sections = "Cx — Code Generation (C, Go, Rust targets)"
+
+# ─────────────────────────────────────────────────────────────
+# Cc — Content Configurations [CONFIG]
+# ─────────────────────────────────────────────────────────────
+
+[generate]
+description = "Code generation configuration for error system"
+
+# ─────────────────────────────────────────────────────────────
+# Cc.1 TARGETS — Language targets
+# ─────────────────────────────────────────────────────────────
+
+[generate.targets]
+description = "Languages to generate error handling code for"
+
+[generate.targets.c]
+enabled = true
+output = "error.gen.h"
+type_def = "typedef uint16_t CpisiError"
+patterns = ["#define macros", "enum error codes", "static inline functions"]
+
+[generate.targets.go]
+enabled = true
+output = "error_gen.go"
+package = "cpisi"
+type_def = "type CpisiError uint16"
+patterns = ["const blocks", "type definitions", "methods"]
+
+[generate.targets.rust]
+enabled = true
+output = "error_gen.rs"
+type_def = "type CpisiError = u16"
+patterns = ["const definitions", "enum variants", "impl blocks"]
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations [OPS]
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Co.1 PROCESS — Generation steps
+# ─────────────────────────────────────────────────────────────
+
+[generate.process]
+description = "Steps to generate error handling code"
+steps = [
+    "1. Parse foundation.toml architecture",
+    "2. Generate layer base constants",
+    "3. Generate tier offset constants",
+    "4. Generate position constants",
+    "5. Generate MAKE_ERROR macro/function",
+    "6. Generate extraction macros/functions",
+    "7. Generate severity mapping (from operations.toml)",
+    "8. Generate DAR phase handlers (from operations.toml)",
+]
+
+# ─────────────────────────────────────────────────────────────
+# Co.2 TEMPLATES — Language-specific boilerplate
+# ─────────────────────────────────────────────────────────────
+
+[generate.template.c_header]
+description = "C header guard and includes"
+content = """
+#ifndef CPISI_ERROR_GEN_H
+#define CPISI_ERROR_GEN_H
+
+#include <stdint.h>
+
+/* Generated from foundation.toml - DO NOT EDIT */
+
+typedef uint16_t CpisiError;
+
+{content}
+
+#endif /* CPISI_ERROR_GEN_H */
+"""
+
+[generate.template.go_package]
+description = "Go package declaration"
+content = """
+// Package cpisi provides error handling types and functions.
+// Generated from foundation.toml - DO NOT EDIT
+package cpisi
+
+{content}
+"""
+
+[generate.template.rust_module]
+description = "Rust module declaration"
+content = """
+//! CPI-SI Error types and handling.
+//! Generated from foundation.toml - DO NOT EDIT
+
+{content}
+"""
+
+# ─────────────────────────────────────────────────────────────
+# Co.3 PATTERNS — Per-entity generation patterns
+# ─────────────────────────────────────────────────────────────
+
+[generate.layer.c_pattern]
+description = "C layer constant pattern"
+pattern = "#define CPISI_ERR_BASE_{NAME} ({index} * 27)"
+example = "#define CPISI_ERR_BASE_KERNEL (0 * 27)  /* = 0 */"
+
+[generate.layer.go_pattern]
+description = "Go layer constant pattern"
+pattern = "const ErrBase{Name} CpisiError = {index} * 27"
+example = "const ErrBaseKernel CpisiError = 0 * 27  // = 0"
+
+[generate.layer.rust_pattern]
+description = "Rust layer constant pattern"
+pattern = "pub const ERR_BASE_{NAME}: CpisiError = {index} * 27;"
+example = "pub const ERR_BASE_KERNEL: CpisiError = 0 * 27;  // = 0"
+
+[generate.formula.make_error_c]
+description = "C MAKE_ERROR macro"
+pattern = "#define CPISI_MAKE_ERROR(layer, tier, pos) (((layer) * 27) + ((tier) * 9) + (pos))"
+
+[generate.formula.make_error_go]
+description = "Go MakeError function"
+pattern = """
+func MakeError(layer, tier, pos int) CpisiError {
+    return CpisiError(layer*27 + tier*9 + pos)
+}
+"""
+
+[generate.formula.extract_c]
+description = "C extraction macros"
+pattern = """
+#define CPISI_ERR_LAYER(e)    ((e) / 27)
+#define CPISI_ERR_TIER(e)     (((e) % 27) / 9)
+#define CPISI_ERR_POSITION(e) (((e) % 27) % 9)
+"""
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation [VALIDATE]
+# ─────────────────────────────────────────────────────────────
+
+[generate.validation]
+description = "How to validate generated code"
+
+[generate.validation.syntax]
+c_compile = "gcc -fsyntax-only -Wall -Werror -pedantic {file}"
+go_build = "go build -v {package}"
+rust_check = "cargo check --lib"
+
+[generate.validation.tests]
+c_test = "Test MAKE_ERROR produces expected values"
+go_test = "Test extraction functions round-trip"
+rust_test = "Test const values match specification"
+
+[_validation]
+commands = ["cws-struct lint toml errors/generation.toml"]
+
+[_validation.schema]
+required = ["identity", "generate"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+valid_values = 30
+template_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Proverbs 22:28 (KJV) — Remove not the ancient landmark, which thy fathers have set."
+never = [
+    "Remove generation targets without updating build system",
+    "Change output file names (breaks build pipeline)",
+    "Remove template definitions (breaks code generation)",
+]
+careful = [
+    "Adding new language targets (requires build system update)",
+    "Changing template content (affects all generated code)",
+    "Modifying generation process steps",
+]
+safe = [
+    "Updating descriptions",
+    "Adding metadata",
+    "Adding validation commands",
+]
+
+[_closing.X2_extension]
+planned = [
+    "C# target (L5 layer)",
+    "Automated generation pipeline",
+    "Template versioning",
+]
+
+[_closing.X3_troubleshooting]
+generated_code_wrong = "Verify foundation.toml architecture matches generated constants. Re-run generation."
+template_parse_error = "Check TOML multiline string syntax. Triple-quote strings must be well-formed."
+validation_fails = "Run syntax check commands in generate.validation.syntax. Fix compilation errors."
+
+[_closing.X4_reference]
+related_files = [
+    "errors/foundation.toml — Error architecture (source of truth for generation)",
+    "errors/codes.toml — Specific error codes (generated code defines these)",
+    "errors/operations.toml — DAR/severity/recovery (steps 7-8 of generation)",
+]
+
+[_closing.X5_note]
+note = "Generated code follows the pattern on the mount. Foundation.toml defines the architecture; this file defines how to reproduce it faithfully in each target language."
+scripture = "In the beginning God created the heaven and the earth. — Genesis 1:1"
+anchor = "Look that thou make them after their pattern (Exodus 25:40). The TOML spec is the pattern; generated code is the faithful reproduction."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

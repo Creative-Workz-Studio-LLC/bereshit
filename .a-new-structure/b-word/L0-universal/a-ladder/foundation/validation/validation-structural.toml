@@ -1,0 +1,755 @@
+# #!omni data --toml
+
+# ═════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═════════════════════════════════════════════════════════════
+
+[_metadata.I1_core]
+key = "B-L0-types-validation-structural"
+format = "@omni data --toml"
+from = "b-word/seed/data/L0/toml/config.toml"
+at = "b-02.00"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "validation-structural.toml"
+title = "Structural Validation — Rung"
+component = "foundation"
+path = "validation/validation-structural.toml"
+provides = ["STRUCTURAL_VALIDATION", "STRUCT_VALIDATION", "UNION_VALIDATION", "COLLECTION_VALIDATION"]
+brief = "Composite type validation — struct, union, list, map, tuple, bytes"
+
+[_metadata.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_metadata.C1_state]
+version = "b-02.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-16"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "Except the LORD build the house, they labour in vain that build it. — Psalm 127:1"
+principle = "Build on solid foundation — structural validation ensures compositions are well-formed."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.C4_dependencies]
+requires = ["validation/validation.toml", "composition/composition.toml"]
+consumers = ["parsers", "compilers", "runtime validators"]
+derives_from = "b-word/seed/data/L0/toml/config.toml"
+integration = "Loaded at build time by code generators. Structural validation rules verify composite types (struct, union, list, map, tuple, bytes) are well-formed."
+if_missing = "No structural validation — composite types (struct, union, list, map, tuple, bytes) cannot be verified as well-formed"
+
+[_metadata.C4_dependencies.split_context]
+parent = "validation.toml"
+sections = "Cc.3 STRUCTURAL — Composite Type Validation"
+
+[_metadata.C4_dependencies.cross_format]
+role = "Validation RULES in TOML. Validation DATA instances in JSON."
+relationship = "TOML defines validation rules. Generated code (C, Go, Rust) implements validators."
+
+[_metadata.C5_intent]
+purpose = "Validate composite type structure — required fields present, types match, nesting valid, composition rules enforced"
+core_design = "6 structural validators (struct, union, list, map, tuple, bytes), each with rule, error, omnicode syntax, CPI-SI mapping, type info, and 9-layer scale applications."
+philosophy = "Build on solid foundation. Structural validation ensures the house is built on rock, not sand."
+
+[_metadata.C5_intent.key_features]
+six_validators = "struct, union, list, map, tuple, bytes"
+composition_rules = "Required fields, type matching, nesting depth, variant validity"
+recursive_validation = "Nested composites validated recursively"
+scale_applications = "9-layer (L0-L8) structural validation use cases"
+
+[_metadata.C6_roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Split from monolithic validation.toml (3145 lines)",
+    "b-01.00 (2026-02-10) — TOML-native 3-block format, template alignment",
+    "b-02.00 (2026-02-16) — I/C metadata upgrade, production architecture review",
+]
+current = "b-02.00 — I/C metadata, production architecture review"
+planned = [
+    "Full cross-format support (JSON/JSONC instances)",
+    "Cross-reference with composition.toml composite type definitions",
+]
+
+[_metadata.C7_classification]
+tags = ["types", "validation", "structural", "struct", "union", "list", "map", "tuple", "bytes", "composite", "foundation", "L0"]
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies", "C5_intent"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+
+# ═════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═════════════════════════════════════════════════════════════
+
+
+# ═════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═════════════════════════════════════════════════════════════
+
+[identity]
+key = "B-L0-types-validation-structural"
+name = "validation-structural"
+title = "Structural Validation — Rung"
+version = "b-02.00"
+parent = "validation.toml"
+sections = "Cc.3"
+
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Content file — validation rules for 6 composite types (struct, union, list, map, tuple, bytes)"
+Cc = "Content Configurations — Composite type validation — struct, union, list, map, tuple, bytes"
+Co = "Content Operations — structural validation, struct validation, union validation, collection validation"
+Cv = "Content Validation — schema requirements, type constraints"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# Cc.3 STRUCTURAL — Composite Type Validation [STRUCTURAL]
+# ═════════════════════════════════════════════════════════════════════════════
+#
+# "Except the LORD build the house, they labour in vain that build it."
+#  — Psalm 127:1 KJV
+#
+# VALIDATING COMPOSITE STRUCTURES
+#
+# Structural validation verifies that composite types (struct, union, list, map)
+# are well-formed. This includes checking required fields, type matches, and
+# composition rules from composition.toml.
+#
+# KEY INSIGHT (from composition.toml):
+#   Composite types have internal structure to validate:
+#   struct:  All required fields present, all fields correct type
+#   union:   Exactly one variant active, discriminator valid
+#   list:    All elements same type, length constraints
+#   map:     Keys unique, key/value types match
+#
+# VALIDATION PRINCIPLE:
+#   Structure must match schema. Missing required = error.
+#   Unknown fields = error (strict) or warning (lenient).
+#
+# Reference: L0-universal/foundation/composition/composition.toml [composition.*]
+#
+# ═════════════════════════════════════════════════════════════════════════════
+
+[structural]
+description = "Structural validation — verifying composite types are well-formed"
+principle   = "The LORD builds the house (Ps 127:1) — structure must match design"
+source      = "L0-universal/foundation/composition/composition.toml"
+categories  = ["struct", "union", "list", "map", "tuple", "bytes"]
+
+# ─────────────────────────────────────────────────────────────
+# Cc.3a STRUCT — Product Type Validation [STRUCT]
+# ─────────────────────────────────────────────────────────────
+
+[structural.struct]
+name             = "struct"
+description      = "Validate struct composition — named fields, all present (product type)"
+source_type      = "composition.toml [struct]"
+category         = "product"
+
+[structural.struct.rule]
+type             = "product"
+check_required   = true                                      # All fields must be present
+check_types      = true                                      # Each field matches declared type
+allow_extra      = false                                     # No undeclared fields
+preserve_order   = false                                     # Field order irrelevant for validation
+
+[structural.struct.rule.field_checks]
+required_present = "all declared fields must have values"
+type_match       = "each value must match its declared type"
+no_unknown       = "reject fields not in declaration"
+nested_validate  = "recursively validate nested structs"
+
+[structural.struct.error]
+code             = "STRUCT_VIOLATION"
+severity         = "error"
+message          = "Struct validation failed"
+
+[structural.struct.error.required_field]
+code             = "MISSING_REQUIRED_FIELD"
+message_template = "Required field '{field}' is missing from struct '{struct}'"
+
+[structural.struct.error.type_mismatch]
+code             = "FIELD_TYPE_MISMATCH"
+message_template = "Field '{field}' in struct '{struct}': expected {expected}, got {actual}"
+
+[structural.struct.error.unknown_field]
+code             = "UNKNOWN_FIELD"
+message_template = "Unknown field '{field}' in struct '{struct}' — strict mode rejects extra fields"
+
+[structural.struct.error.nested_failure]
+code             = "NESTED_STRUCT_INVALID"
+message_template = "Nested struct at '{path}' failed validation: {reason}"
+
+[structural.struct.omnicode]
+declare          = "let person be struct { name: text, age: uint9 }"
+check            = "{value} is valid struct"
+validate         = "validate {struct} against {schema}"
+field_access     = "get {field} from {struct}"
+construct        = "create struct { name = \"Nova\", age = 1 }"
+
+[structural.struct.cpisi]
+valid_meaning    = "All fields present and correctly typed — product is complete"
+invalid_meaning  = "Structure incomplete or mistyped — contract violation"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "composition"
+weight           = "varies"                                  # Depends on field count/complexity
+genesis_parallel = "Creation of distinct, named things — ordering the formless"
+
+[structural.struct.types]
+c_validator      = "bool validate_struct(const void* s, const StructSchema* schema) { /* field iteration */ }"
+go_validator     = "func ValidateStruct(v any, schema StructSchema) error { /* reflection-based check */ }"
+rust_validator   = "fn validate_struct<T: StructValidate>(v: &T, schema: &StructSchema) -> Result<(), ValidationError>"
+c_repr           = "struct { ... }"
+go_repr          = "struct { ... }"
+rust_repr        = "struct { ... }"
+
+[structural.struct.scales]
+description      = "struct validation at each architectural layer"
+L0_kernel        = { use = "kernel config structs",          example = "device_info { id, type, flags }" }
+L1_system        = { use = "syscall arg structs",            example = "ipc_message { sender, data }" }
+L2_runtime       = { use = "object instances",               example = "session { user_id, state }" }
+L3_framework     = { use = "config containers",              example = "app_settings { theme, lang }" }
+L4_health        = { use = "health records",                 example = "health_status { score, checks }" }
+L5_network       = { use = "message payloads",               example = "request { header, body }" }
+L6_storage       = { use = "data records",                   example = "user_record { name, email }" }
+L7_engine        = { use = "state containers",               example = "machine_state { current, history }" }
+L8_app           = { use = "domain objects",                 example = "order { items, total, customer }" }
+
+# ─────────────────────────────────────────────────────────────
+# Cc.3b UNION — Sum Type Validation [UNION]
+# ─────────────────────────────────────────────────────────────
+
+[structural.union]
+name             = "union"
+description      = "Validate union composition — tagged sum type, exactly one variant active"
+source_type      = "composition.toml [union]"
+category         = "sum"
+
+[structural.union.rule]
+type             = "sum"
+require_tag      = true                                      # Discriminator must be present
+exactly_one      = true                                      # Exactly one variant active
+check_variant    = true                                      # Variant matches declared type
+exhaustive       = false                                     # Match doesn't require all variants
+
+[structural.union.rule.variant_checks]
+tag_present      = "discriminator field must exist"
+tag_valid        = "discriminator must name declared variant"
+value_typed      = "value must match variant's declared type"
+single_active    = "only one variant can be active"
+
+[structural.union.error]
+code             = "UNION_VIOLATION"
+severity         = "error"
+message          = "Union validation failed"
+
+[structural.union.error.no_discriminator]
+code             = "MISSING_DISCRIMINATOR"
+message_template = "Union '{union}' missing discriminator tag — cannot determine active variant"
+
+[structural.union.error.invalid_variant]
+code             = "INVALID_VARIANT"
+message_template = "Unknown variant '{variant}' in union '{union}' — valid variants: {valid_list}"
+
+[structural.union.error.type_mismatch]
+code             = "VARIANT_TYPE_MISMATCH"
+message_template = "Variant '{variant}' in union '{union}': expected {expected}, got {actual}"
+
+[structural.union.error.multiple_active]
+code             = "MULTIPLE_ACTIVE_VARIANTS"
+message_template = "Union '{union}' has multiple active variants — sum types allow exactly one"
+
+[structural.union.omnicode]
+declare          = "let result be union { ok: int9, err: text }"
+check            = "{value} is valid union"
+match            = "match {union} with ok -> handle_ok, err -> handle_err"
+tag_access       = "get variant of {union}"
+construct        = "create union result as ok(42)"
+
+[structural.union.cpisi]
+valid_meaning    = "Exactly one variant active with correct type — sum is coherent"
+invalid_meaning  = "No variant, wrong variant, or type mismatch — sum is broken"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "branching"
+weight           = "varies"                                  # Depends on active variant complexity
+genesis_parallel = "Light or darkness, not both — separation of states"
+
+[structural.union.types]
+c_validator      = "bool validate_union(const TaggedUnion* u, const UnionSchema* schema) { /* tag + value check */ }"
+go_validator     = "func ValidateUnion(v any, schema UnionSchema) error { /* interface assertion */ }"
+rust_validator   = "fn validate_union<T: UnionValidate>(v: &T, schema: &UnionSchema) -> Result<(), ValidationError>"
+c_repr           = "struct { int tag; union { ... } value; }"
+go_repr          = "interface{} with type switch"
+rust_repr        = "enum { Variant1(T1), Variant2(T2), ... }"
+
+[structural.union.scales]
+description      = "union validation at each architectural layer"
+L0_kernel        = { use = "result types",                   example = "result { ok: value, err: code }" }
+L1_system        = { use = "syscall returns",                example = "syscall_result { data | error }" }
+L2_runtime       = { use = "response variants",              example = "response { success | failure }" }
+L3_framework     = { use = "option types",                   example = "maybe { some: T | none }" }
+L4_health        = { use = "health outcomes",                example = "check_result { pass | warn | fail }" }
+L5_network       = { use = "message types",                  example = "packet { request | response }" }
+L6_storage       = { use = "record variants",                example = "entry { file | directory }" }
+L7_engine        = { use = "state branches",                 example = "transition { advance | retreat | hold }" }
+L8_app           = { use = "domain variants",                example = "payment { card | bank | crypto }" }
+
+# ─────────────────────────────────────────────────────────────
+# Cc.3c LIST — Homogeneous Sequence Validation [LIST]
+# ─────────────────────────────────────────────────────────────
+
+[structural.list]
+name             = "list"
+description      = "Validate list composition — homogeneous sequence, all elements same type"
+source_type      = "composition.toml [list]"
+category         = "sequence"
+
+[structural.list.rule]
+type             = "sequence"
+homogeneous      = true                                      # All elements must match declared type
+ordered          = true                                      # Index matters
+check_elements   = true                                      # Validate each element
+check_length     = true                                      # Optional length constraints
+
+[structural.list.rule.element_checks]
+type_match       = "every element must match declared element type"
+nested_validate  = "recursively validate element if composite"
+index_bounds     = "index must be in [0, length)"
+null_handling    = "null elements according to nullability setting"
+
+[structural.list.rule.length_constraints]
+min_length       = "list length >= min if specified"
+max_length       = "list length <= max if specified"
+exact_length     = "list length == exact if specified"
+power_of_3       = "optional: length is power of 3 (ternary-aligned)"
+
+[structural.list.error]
+code             = "LIST_VIOLATION"
+severity         = "error"
+message          = "List validation failed"
+
+[structural.list.error.element_type]
+code             = "LIST_ELEMENT_TYPE_MISMATCH"
+message_template = "List element at index {index}: expected {expected}, got {actual}"
+
+[structural.list.error.length_min]
+code             = "LIST_TOO_SHORT"
+message_template = "List has {actual} elements, minimum required is {min}"
+
+[structural.list.error.length_max]
+code             = "LIST_TOO_LONG"
+message_template = "List has {actual} elements, maximum allowed is {max}"
+
+[structural.list.error.null_element]
+code             = "LIST_NULL_ELEMENT"
+message_template = "List element at index {index} is null — non-nullable list"
+
+[structural.list.error.index_bounds]
+code             = "LIST_INDEX_OUT_OF_BOUNDS"
+message_template = "Index {index} out of bounds for list of length {length}"
+
+[structural.list.omnicode]
+declare          = "let numbers be list of int9"
+declare_bounded  = "let items be list of text (min 1, max 27)"
+check            = "{value} is valid list of {type}"
+element_access   = "get element {index} from {list}"
+length           = "length of {list}"
+construct        = "create list [ 1, 2, 3 ] of int9"
+append           = "append {value} to {list}"
+
+[structural.list.cpisi]
+valid_meaning    = "All elements typed correctly, length in bounds — sequence is coherent"
+invalid_meaning  = "Element type mismatch or length violation — sequence broken"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "collection"
+weight           = "scales with length"                      # O(n) validation
+genesis_parallel = "Ordering of days — numbered sequence of same-nature things"
+
+[structural.list.types]
+c_validator      = "bool validate_list(const void* list, size_t len, const TypeSchema* elem_type) { /* iterate */ }"
+go_validator     = "func ValidateList(v []any, elemType TypeSchema) error { /* range loop */ }"
+rust_validator   = "fn validate_list<T: Validate>(v: &[T], schema: &TypeSchema) -> Result<(), ValidationError>"
+c_repr           = "T* with size_t length"
+go_repr          = "[]T"
+rust_repr        = "Vec<T>"
+
+[structural.list.scales]
+description      = "list validation at each architectural layer"
+L0_kernel        = { use = "trit arrays",                    example = "flags[27] of trit" }
+L1_system        = { use = "syscall arg arrays",             example = "fds[8] of handle" }
+L2_runtime       = { use = "stack frames",                   example = "call_stack[] of frame" }
+L3_framework     = { use = "config arrays",                  example = "plugins[] of plugin_config" }
+L4_health        = { use = "metric series",                  example = "samples[] of measurement" }
+L5_network       = { use = "packet buffers",                 example = "messages[] of packet" }
+L6_storage       = { use = "record collections",             example = "users[] of user_record" }
+L7_engine        = { use = "rule lists",                     example = "transitions[] of rule" }
+L8_app           = { use = "domain collections",             example = "cart_items[] of product" }
+
+# ─────────────────────────────────────────────────────────────
+# Cc.3d MAP — Key-Value Pair Validation [MAP]
+# ─────────────────────────────────────────────────────────────
+
+[structural.map]
+name             = "map"
+description      = "Validate map composition — key-value pairs, unique keys"
+source_type      = "composition.toml [map]"
+category         = "associative"
+
+[structural.map.rule]
+type             = "associative"
+unique_keys      = true                                      # No duplicate keys
+check_key_type   = true                                      # Keys match declared key type
+check_val_type   = true                                      # Values match declared value type
+ordered          = false                                     # Key order not guaranteed
+
+[structural.map.rule.key_checks]
+type_match       = "every key must match declared key type"
+hashable         = "keys must be hashable (immutable)"
+non_null         = "keys cannot be null"
+unique           = "all keys must be distinct"
+
+[structural.map.rule.value_checks]
+type_match       = "every value must match declared value type"
+nested_validate  = "recursively validate value if composite"
+null_handling    = "null values according to nullability setting"
+
+[structural.map.rule.size_constraints]
+min_entries      = "map size >= min if specified"
+max_entries      = "map size <= max if specified"
+
+[structural.map.error]
+code             = "MAP_VIOLATION"
+severity         = "error"
+message          = "Map validation failed"
+
+[structural.map.error.duplicate_key]
+code             = "DUPLICATE_MAP_KEY"
+message_template = "Duplicate key '{key}' in map — keys must be unique"
+
+[structural.map.error.key_type]
+code             = "MAP_KEY_TYPE_MISMATCH"
+message_template = "Map key '{key}': expected {expected}, got {actual}"
+
+[structural.map.error.value_type]
+code             = "MAP_VALUE_TYPE_MISMATCH"
+message_template = "Map value at key '{key}': expected {expected}, got {actual}"
+
+[structural.map.error.null_key]
+code             = "MAP_NULL_KEY"
+message_template = "Map keys cannot be null"
+
+[structural.map.error.size_min]
+code             = "MAP_TOO_FEW_ENTRIES"
+message_template = "Map has {actual} entries, minimum required is {min}"
+
+[structural.map.error.size_max]
+code             = "MAP_TOO_MANY_ENTRIES"
+message_template = "Map has {actual} entries, maximum allowed is {max}"
+
+[structural.map.omnicode]
+declare          = "let lookup be map of text to int9"
+declare_bounded  = "let cache be map of text to int9 (max 243)"
+check            = "{value} is valid map of {key_type} to {value_type}"
+get              = "get {key} from {map}"
+set              = "set {key} in {map} to {value}"
+has              = "{map} contains key {key}"
+keys             = "keys of {map}"
+values           = "values of {map}"
+construct        = "create map { \"a\" = 1, \"b\" = 2 } of text to int9"
+
+[structural.map.cpisi]
+valid_meaning    = "All keys unique and typed, all values typed — association is coherent"
+invalid_meaning  = "Duplicate key, type mismatch, or constraint violation — association broken"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "association"
+weight           = "scales with entry count"                 # O(n) validation
+genesis_parallel = "Naming of creation — distinct names mapping to distinct things"
+
+[structural.map.types]
+c_validator      = "bool validate_map(const Map* m, const TypeSchema* key_type, const TypeSchema* val_type)"
+go_validator     = "func ValidateMap(v map[any]any, keyType, valType TypeSchema) error"
+rust_validator   = "fn validate_map<K: Validate + Hash, V: Validate>(m: &HashMap<K, V>, schema: &MapSchema) -> Result<(), ValidationError>"
+c_repr           = "custom hash table or tree map"
+go_repr          = "map[K]V"
+rust_repr        = "HashMap<K, V> or BTreeMap<K, V>"
+
+[structural.map.scales]
+description      = "map validation at each architectural layer"
+L0_kernel        = { use = "symbol tables",                  example = "syscall_table: map[int9 -> func_ptr]" }
+L1_system        = { use = "resource mappings",              example = "fd_table: map[handle -> resource]" }
+L2_runtime       = { use = "object caches",                  example = "session_cache: map[id -> session]" }
+L3_framework     = { use = "config lookups",                 example = "settings: map[key -> value]" }
+L4_health        = { use = "metric lookups",                 example = "health_checks: map[name -> status]" }
+L5_network       = { use = "routing tables",                 example = "routes: map[address -> next_hop]" }
+L6_storage       = { use = "index structures",               example = "user_index: map[email -> record]" }
+L7_engine        = { use = "state lookup",                   example = "state_map: map[input -> next_state]" }
+L8_app           = { use = "domain dictionaries",            example = "products: map[sku -> product]" }
+
+# ─────────────────────────────────────────────────────────────
+# Cc.3e TUPLE — Fixed-Size Heterogeneous Sequence Validation [TUPLE]
+# ─────────────────────────────────────────────────────────────
+
+[structural.tuple]
+name             = "tuple"
+description      = "Validate tuple composition — fixed-size heterogeneous sequence, position-typed"
+source_type      = "composition.toml [tuple]"
+category         = "product"
+
+[structural.tuple.rule]
+type             = "product"
+fixed_size       = true                                      # Size determined at declaration
+heterogeneous    = true                                      # Different types per position
+positional       = true                                      # Access by index, type by position
+ordered          = true                                      # Index order matters
+
+[structural.tuple.rule.element_checks]
+count_exact      = "tuple must have exactly declared number of elements"
+position_typed   = "element at position N must match type N in declaration"
+nested_validate  = "recursively validate element if composite"
+
+[structural.tuple.error]
+code             = "TUPLE_VIOLATION"
+severity         = "error"
+message          = "Tuple validation failed"
+
+[structural.tuple.error.wrong_size]
+code             = "TUPLE_WRONG_SIZE"
+message_template = "Tuple expected {expected} elements, got {actual}"
+
+[structural.tuple.error.position_type]
+code             = "TUPLE_POSITION_TYPE_MISMATCH"
+message_template = "Tuple element at position {position}: expected {expected}, got {actual}"
+
+[structural.tuple.error.null_element]
+code             = "TUPLE_NULL_ELEMENT"
+message_template = "Tuple element at position {position} is null — non-nullable tuple"
+
+[structural.tuple.omnicode]
+declare          = "let point be tuple of (int9, int9)"
+declare_named    = "let record be tuple of (name: text, age: uint9, active: bool3)"
+check            = "{value} is valid tuple of ({types})"
+element_access   = "get element {position} from {tuple}"
+destruct         = "let (x, y) be {tuple}"
+construct        = "create tuple (42, \"hello\", true)"
+
+[structural.tuple.cpisi]
+valid_meaning    = "All positions filled with correct types — fixed product is complete"
+invalid_meaning  = "Wrong count or position type mismatch — fixed product broken"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "coordinate"
+weight           = "fixed"                                   # O(n) where n is tuple arity
+genesis_parallel = "Paired creation — things that go together by design"
+
+[structural.tuple.types]
+c_validator      = "bool validate_tuple(const void* t, const TypeSchema** elem_types, size_t arity)"
+go_validator     = "func ValidateTuple(v []any, elemTypes []TypeSchema) error"
+rust_validator   = "fn validate_tuple<T: TupleValidate>(v: &T, schema: &TupleSchema) -> Result<(), ValidationError>"
+c_repr           = "struct { T0 _0; T1 _1; ... }"
+go_repr          = "custom struct or []any with type assertion"
+rust_repr        = "(T0, T1, ...)"
+
+[structural.tuple.scales]
+description      = "tuple validation at each architectural layer"
+L0_kernel        = { use = "coordinate pairs",               example = "(x: int9, y: int9)" }
+L1_system        = { use = "syscall pairs",                  example = "(result: int9, errno: uint9)" }
+L2_runtime       = { use = "function returns",               example = "(value: T, error: E)" }
+L3_framework     = { use = "config pairs",                   example = "(key: text, value: text)" }
+L4_health        = { use = "metric pairs",                   example = "(score: uint9, timestamp: int27)" }
+L5_network       = { use = "address tuples",                 example = "(ip: bytes, port: uint9)" }
+L6_storage       = { use = "key-value pairs",                example = "(key: bytes, offset: int27)" }
+L7_engine        = { use = "state pairs",                    example = "(state: uint9, data: int27)" }
+L8_app           = { use = "domain pairs",                   example = "(id: text, name: text)" }
+
+# ─────────────────────────────────────────────────────────────
+# Cc.3f BYTES — Raw Binary Data Validation [BYTES]
+# ─────────────────────────────────────────────────────────────
+
+[structural.bytes]
+name             = "bytes"
+description      = "Validate bytes composition — raw binary data, length-constrained"
+source_type      = "composition.toml [bytes]"
+category         = "binary"
+
+[structural.bytes.rule]
+type             = "binary"
+raw              = true                                      # No encoding assumption
+length_checked   = true                                      # Size constraints apply
+alignment        = "optional"                                # Memory alignment if needed
+encoding         = "none"                                    # Raw bytes, not text
+
+[structural.bytes.rule.size_constraints]
+min_length       = "bytes length >= min if specified"
+max_length       = "bytes length <= max if specified"
+exact_length     = "bytes length == exact if specified"
+multiple_of      = "bytes length multiple of N if specified (alignment)"
+power_of_3       = "optional: length is power of 3 (ternary-aligned)"
+
+[structural.bytes.error]
+code             = "BYTES_VIOLATION"
+severity         = "error"
+message          = "Bytes validation failed"
+
+[structural.bytes.error.length_min]
+code             = "BYTES_TOO_SHORT"
+message_template = "Bytes has {actual} bytes, minimum required is {min}"
+
+[structural.bytes.error.length_max]
+code             = "BYTES_TOO_LONG"
+message_template = "Bytes has {actual} bytes, maximum allowed is {max}"
+
+[structural.bytes.error.alignment]
+code             = "BYTES_MISALIGNED"
+message_template = "Bytes length {actual} not multiple of alignment {alignment}"
+
+[structural.bytes.error.null_bytes]
+code             = "BYTES_NULL"
+message_template = "Bytes value is null — non-nullable bytes"
+
+[structural.bytes.omnicode]
+declare          = "let data be bytes"
+declare_bounded  = "let hash be bytes (exact 32)"
+declare_aligned  = "let block be bytes (multiple of 9)"
+check            = "{value} is valid bytes"
+length           = "length of {bytes}"
+slice            = "slice {bytes} from {start} to {end}"
+construct        = "create bytes from [0x00, 0x01, 0x02]"
+concat           = "concat {bytes1} with {bytes2}"
+
+[structural.bytes.cpisi]
+valid_meaning    = "Binary data within size constraints — raw form is acceptable"
+invalid_meaning  = "Size constraint violated — binary exceeds bounds"
+ternary_result   = { valid = 1, unknown = 0, invalid = -1 }
+role             = "storage"
+weight           = "scales with length"                      # O(1) for length check only
+genesis_parallel = "Formless matter — raw substance before shaping"
+
+[structural.bytes.types]
+c_validator      = "bool validate_bytes(const uint8_t* data, size_t len, const BytesSchema* schema)"
+go_validator     = "func ValidateBytes(v []byte, schema BytesSchema) error"
+rust_validator   = "fn validate_bytes(v: &[u8], schema: &BytesSchema) -> Result<(), ValidationError>"
+c_repr           = "uint8_t*"
+go_repr          = "[]byte"
+rust_repr        = "Vec<u8> or &[u8]"
+
+[structural.bytes.scales]
+description      = "bytes validation at each architectural layer"
+L0_kernel        = { use = "raw memory",                     example = "trit_pack[5] for trit5 storage" }
+L1_system        = { use = "syscall buffers",                example = "read_buffer[4096]" }
+L2_runtime       = { use = "serialized data",                example = "json_bytes[]" }
+L3_framework     = { use = "config blobs",                   example = "config_binary[243]" }
+L4_health        = { use = "metric snapshots",               example = "health_dump[]" }
+L5_network       = { use = "packet payloads",                example = "message_body[1500]" }
+L6_storage       = { use = "file content",                   example = "file_data[]" }
+L7_engine        = { use = "state snapshots",                example = "checkpoint_data[]" }
+L8_app           = { use = "document content",               example = "attachment_bytes[]" }
+
+# ─────────────────────────────────────────────────────────────
+# Extensions (reserved)
+# ─────────────────────────────────────────────────────────────
+
+[extensions]
+note = "Reserved — no extensions for structural validation"
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = [
+    "cws-struct lint toml validation/validation-structural.toml",
+]
+
+[_validation.schema]
+required = ["identity", "structural"]
+optional = ["structural.struct_type", "structural.union", "structural.list", "extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_fields_present = 30
+cross_references_valid = 30
+
+
+# ═════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═════════════════════════════════════════════════════════════
+
+
+# ═════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Structural validator names",
+    "Error code patterns",
+    "Composition rule enforcement",
+    "3-block structure (METADATA → CONTENT → CLOSING)",
+]
+careful = [
+    "Adding new structural validators — must match composition.toml",
+    "Changing field requirements",
+]
+safe = [
+    "Additional validation examples",
+    "Nesting depth notes",
+    "Performance considerations",
+]
+
+[_closing.X2_extension]
+implemented = []
+planned = [
+    "Cross-reference with composition.toml composite type definitions",
+    "Recursive validation depth testing",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+structural_error = "Verify composite type is defined in composition.toml"
+nesting_error = "Check recursive nesting depth — may hit implementation limits"
+
+[_closing.X4_reference]
+related_files = [
+    "validation.toml — Index file (parent)",
+    "validation-primitive.toml — Base type validation (Cc.1)",
+    "validation-constraint.toml — Constraint validation (Cc.2)",
+    "validation-structural.toml — Composite type validation (Cc.3)",
+    "validation-schema.toml — OmniCode structure validation (Cc.4)",
+    "validation-errors-modes.toml — Error handling + modes (Co.1-2)",
+    "validation-cognition.toml — CPI-SI interpretation (Cv.1-4)",
+    "validation-generation.toml — Code generation (Cx.1-6)",
+    "runtime-checks.toml — Runtime type verification (Co.3)",
+]
+required_sections = ["_metadata", "identity", "structural", "_validation", "_closing"]
+validate = "cws-struct lint toml validation/validation-structural.toml"
+
+[_closing.X5_note]
+note = "Structural validation verifies that composites are well-formed — the house built on rock."
+scripture = "In the beginning God created the heaven and the earth. — Genesis 1:1"
+anchor = "Build on solid foundation. Psalm 127:1 applied to composite types — structure before content."
+
+# ═════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═════════════════════════════════════════════════════════════

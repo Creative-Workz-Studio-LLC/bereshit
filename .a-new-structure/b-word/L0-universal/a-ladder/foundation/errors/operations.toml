@@ -1,0 +1,345 @@
+# #!omni document --toml
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# I — Identity: What IS This File
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.I1_core]
+key = "B-L0-types-error-operations"
+format = "@omni document --toml"
+from = "seed/data/L0/toml/config.toml"
+at = "document"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "operations.toml"
+title = "Error System Operations — DAR, Severity, Recovery"
+component = "Error handling operations — DAR phases (Detect/Assess/Recover), 5 severity levels, 5 recovery modes. The BEHAVIOR of error handling, not the structure."
+path = "errors/operations.toml"
+provides = ["DAR_PHASES", "SEVERITY_LEVELS", "RECOVERY_MODES"]
+brief = "Error handling behavior. DAR phases map to building blocks (-1/0/+1). 5 severity levels (FATAL through DEBUG). 5 recovery modes (RETRY through TERMINATE). Scoped to how errors are HANDLED, not how they're STRUCTURED."
+
+[_metadata.I4_architecture]
+layers = "L0:C, L3:Go, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+# ─────────────────────────────────────────────────────────────
+# C — Context: What Do I Need to KNOW
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.C1_state]
+version = "a-01.00"
+status = "Active"
+created = "2026-02-16"
+updated = "2026-02-16"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "Proverbs 24:16 — For a just man falleth seven times, and riseth up again: but the wicked shall fall into mischief."
+principle = "Recovery is expected, not exceptional. The error handling system is built for graceful recovery — detect the fall, assess the damage, recover with wisdom."
+anchor = "DAR maps to building blocks: Detect (-1, break down), Assess (0, balanced evaluation), Recover (+1, build up). The same flow that governs cognition governs error handling."
+
+[_metadata.C4_dependencies]
+requires = ["errors/foundation.toml"]
+consumers = ["Error handling code (C/Go/Rust)", "Health monitoring (severity mapping)", "Recovery subsystem (DAR phases)"]
+integration = "Loaded by Go config loader. Consumers use foundation.toml for structure and this file for behavior."
+if_missing = "Error handling has structure but no behavior — codes exist but nothing knows how to respond to them"
+
+[_metadata.C4_dependencies.cross_format]
+role = "TOML defines error handling operations. Code generators use these definitions to produce DAR handlers, severity mappers, and recovery strategies."
+note = "No JSON/JSONC counterpart — operations are type specification, not runtime data."
+
+[_metadata.C5_intent]
+purpose = "Define HOW errors are handled — detection, assessment, and recovery behavior"
+core_design = "DAR phases (Detect/Assess/Recover) map to building block method (-1/0/+1). Severity levels determine response urgency. Recovery modes define corrective action."
+philosophy = "Structure (foundation.toml) defines WHAT errors are. This file defines WHAT TO DO about them. Different consumers, different change velocity."
+
+[_metadata.C6_roadmap]
+history = [
+    "a-01.00 (2026-02-16) — Extracted from foundation.toml (was Co section: DAR, severity, recovery)",
+]
+current = "3 DAR phases, 5 severity levels, 5 recovery modes"
+planned = [
+    "Adaptive severity based on system state",
+    "Recovery strategy composition",
+]
+
+[_metadata.C7_classification]
+tags = ["error-system", "operations", "DAR", "severity", "recovery", "L0", "types"]
+
+# ─────────────────────────────────────────────────────────────
+# Contract
+# ─────────────────────────────────────────────────────────────
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C5_intent", "C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = ["X2_extension", "X3_troubleshooting", "X4_reference"]
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+[_content]
+format = "TOML — native tables, UTF-8, LF line endings"
+key_convention = "UPPER_SNAKE for phase/level/mode names, lower_snake for properties"
+constraint = "DAR phases map to building blocks (-1/0/+1). Severity levels ordered fatal(0) through debug(4). Recovery modes are strategies, not prescriptions."
+Cc = "Content Configurations — DAR phases, severity levels, recovery modes"
+Co = "Content Operations — phase flow, severity mapping, recovery selection"
+Cv = "Content Validation — schema requirements, health scoring"
+
+# ─────────────────────────────────────────────────────────────
+# Identity
+# ─────────────────────────────────────────────────────────────
+
+[identity]
+key = "B-L0-types-error-operations"
+name = "operations"
+title = "Error System Operations — DAR, Severity, Recovery"
+version = "a-01.00"
+parent = "foundation.toml"
+sections = "Co — Error Handling Operations (DAR, Severity, Recovery)"
+
+# ─────────────────────────────────────────────────────────────
+# Cc — Content Configurations [CONFIG]
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Cc.1 DAR — Detect/Assess/Recover Phases
+# ─────────────────────────────────────────────────────────────
+
+[dar]
+description = "Detect → Assess → Recover: The three phases of error handling"
+phases = ["detect", "assess", "recover"]
+
+[dar.detect]
+phase = 1
+name = "DETECT"
+brief = "Notice the error"
+description = "First awareness that something went wrong"
+questions = ["What happened?", "Where did it happen?", "What was the context?"]
+
+[dar.detect.omnicode]
+marker = "@dar.detect"
+example = "@dar.detect KERNEL.CORE.NULL"
+
+[dar.detect.cpisi]
+mental_pos = "(-1, 0, 0)"
+k_factor = -1
+role = "Awareness — breaking down to identify problem"
+
+[dar.assess]
+phase = 2
+name = "ASSESS"
+brief = "Understand severity and impact"
+description = "Evaluate how serious the error is"
+questions = ["How bad is it?", "Can we recover?", "What resources do we need?"]
+
+[dar.assess.omnicode]
+marker = "@dar.assess"
+example = "@dar.assess severity=critical"
+
+[dar.assess.cpisi]
+mental_pos = "(0, 0, 0)"
+k_factor = 0
+role = "Evaluation — balanced assessment"
+
+[dar.recover]
+phase = 3
+name = "RECOVER"
+brief = "Take corrective action"
+description = "Fix the problem or fail gracefully"
+questions = ["What's the fix?", "How do we clean up?", "What do we report?"]
+
+[dar.recover.omnicode]
+marker = "@dar.recover"
+example = "@dar.recover action=retry"
+
+[dar.recover.cpisi]
+mental_pos = "(+1, 0, 0)"
+k_factor = +1
+role = "Action — building up toward solution"
+
+# ─────────────────────────────────────────────────────────────
+# Cc.2 SEVERITY — Error Severity Levels
+# ─────────────────────────────────────────────────────────────
+
+[severity]
+description = "Error severity determines required response"
+levels = ["fatal", "critical", "warning", "info", "debug"]
+
+[severity.fatal]
+level = 0
+name = "FATAL"
+ternary = -1
+brief = "Cannot continue"
+description = "System must terminate immediately"
+action = "Log and exit"
+tier_map = "CORE tier, positions 1-4"
+
+[severity.critical]
+level = 1
+name = "CRITICAL"
+ternary = -1
+brief = "Major problem"
+description = "Operation failed, requires attention"
+action = "Log, notify, attempt recovery"
+tier_map = "CORE tier, positions 5-8"
+
+[severity.warning]
+level = 2
+name = "WARNING"
+ternary = 0
+brief = "Minor problem"
+description = "Something unexpected but recoverable"
+action = "Log, continue with fallback"
+tier_map = "EXT tier"
+
+[severity.info]
+level = 3
+name = "INFO"
+ternary = 0
+brief = "Informational"
+description = "Noteworthy condition"
+action = "Log for diagnostics"
+tier_map = "SYS tier, positions 0-4"
+
+[severity.debug]
+level = 4
+name = "DEBUG"
+ternary = +1
+brief = "Debug only"
+description = "Developer information"
+action = "Log in debug builds only"
+tier_map = "SYS tier, positions 5-8"
+
+# ─────────────────────────────────────────────────────────────
+# Cc.3 RECOVERY — Recovery Modes
+# ─────────────────────────────────────────────────────────────
+
+[recovery]
+description = "Recovery strategies for different error types"
+
+[recovery.retry]
+name = "RETRY"
+description = "Try the operation again"
+when = ["Transient failures", "Network timeouts", "Resource busy"]
+max_attempts = 3
+backoff = "exponential"
+
+[recovery.fallback]
+name = "FALLBACK"
+description = "Use alternative approach"
+when = ["Primary path unavailable", "Resource exhausted"]
+example = "Use cached value if network fails"
+
+[recovery.propagate]
+name = "PROPAGATE"
+description = "Let caller handle it"
+when = ["Caller has more context", "Error affects caller's operation"]
+transform = "May wrap error with additional context"
+
+[recovery.ignore]
+name = "IGNORE"
+description = "Continue without handling"
+when = ["DEBUG level errors", "Non-critical metrics"]
+warning = "Use sparingly — most errors should be handled"
+
+[recovery.terminate]
+name = "TERMINATE"
+description = "Stop operation or process"
+when = ["FATAL errors", "Unrecoverable state"]
+cleanup = "Always clean up resources before terminating"
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation [VALIDATE]
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["cws-struct lint toml errors/operations.toml"]
+
+[_validation.schema]
+required = ["identity", "dar", "severity", "recovery"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+valid_values = 30
+dar_completeness = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Proverbs 22:28 (KJV) — Remove not the ancient landmark, which thy fathers have set."
+never = [
+    "Remove DAR phases (fundamental error handling pattern)",
+    "Change severity level ordering (breaks triage logic)",
+    "Remove recovery modes (breaks error handling contracts)",
+]
+careful = [
+    "Adding new severity levels (affects all severity consumers)",
+    "Changing DAR phase definitions (affects building block mapping)",
+    "Modifying recovery mode semantics",
+]
+safe = [
+    "Updating descriptions",
+    "Adding metadata",
+    "Adding new recovery strategies",
+]
+
+[_closing.X2_extension]
+planned = [
+    "Adaptive severity based on system state",
+    "Recovery strategy composition",
+]
+
+[_closing.X3_troubleshooting]
+severity_wrong = "CORE = critical, EXT = warning, SYS = internal. Use tier to determine severity."
+dar_phase_unknown = "DAR is Detect(-1) → Assess(0) → Recover(+1). Maps to building block method."
+recovery_choice = "Match recovery mode to severity: FATAL → TERMINATE, CRITICAL → RETRY/FALLBACK, WARNING → FALLBACK, INFO/DEBUG → IGNORE."
+
+[_closing.X4_reference]
+related_files = [
+    "errors/foundation.toml — Error architecture (layers, tiers, positions, formulas)",
+    "errors/codes.toml — Specific error codes",
+    "flags.toml — Restore strategy flags (recovery action flags)",
+]
+
+[_closing.X5_note]
+note = "DAR maps to building blocks: Detect (-1, break down), Assess (0, balanced), Recover (+1, build up). The same flow that governs cognition governs error handling. Behavior, not structure."
+scripture = "In the beginning God created the heaven and the earth. — Genesis 1:1"
+anchor = "Recovery is expected, not exceptional. A just man falleth seven times and riseth up again. Design for graceful recovery."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

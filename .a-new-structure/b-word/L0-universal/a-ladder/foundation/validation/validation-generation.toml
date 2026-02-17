@@ -1,0 +1,403 @@
+# #!omni data --toml
+
+# ═════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═════════════════════════════════════════════════════════════
+
+[_metadata.I1_core]
+key = "B-L0-types-validation-generation"
+format = "@omni data --toml"
+from = "b-word/seed/data/L0/toml/config.toml"
+at = "b-02.00"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "validation-generation.toml"
+title = "Validation Code Generation — Rung"
+component = "foundation"
+path = "validation/validation-generation.toml"
+provides = ["GENERATION_TARGETS", "VALIDATOR_GENERATION", "ERROR_GENERATION", "GENERATION_TEMPLATES"]
+brief = "Code generation — targets (C, Go, Rust), validator functions, error constants, templates"
+
+[_metadata.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_metadata.C1_state]
+version = "b-02.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-16"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "Write the vision, and make it plain upon tables, that he may run that readeth it. — Habakkuk 2:2"
+principle = "Write the vision plainly — validation specs become validator implementations."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth"
+
+[_metadata.C4_dependencies]
+requires = ["validation/validation.toml"]
+consumers = ["build system (code generation pipeline)", "CI/CD (validation commands)", "developer tooling (generated validators)"]
+derives_from = "b-word/seed/data/L0/toml/config.toml"
+integration = "Loaded at build time by code generators. Defines HOW to generate validator implementations for C, Go, Rust targets."
+if_missing = "No validation code generation — cannot produce validator implementations for C, Go, Rust targets"
+
+[_metadata.C4_dependencies.split_context]
+parent = "validation.toml"
+sections = "Cx.1-6 GENERATION + generate metadata"
+
+[_metadata.C4_dependencies.cross_format]
+role = "Validation RULES in TOML. Validation DATA instances in JSON."
+relationship = "TOML defines validation rules. Generated code (C, Go, Rust) implements validators."
+
+[_metadata.C5_intent]
+purpose = "Define code generation for validation — language targets, validator function patterns, error constant generation, output templates"
+core_design = "Six sections covering generation scope, language targets (C, Go, Rust), validator function templates, error constant generation, output validation, and generate metadata for the build pipeline."
+philosophy = "Write the vision plainly. Validation specs ARE the source of truth — generated validators are the faithful expression."
+
+[_metadata.C5_intent.key_features]
+generation_scope = "Which validators generate code, which targets, output paths"
+language_targets = "C (libtrit), Go (pkg), Rust (crate) validator mappings"
+function_templates = "Validator function patterns per target language"
+generate_metadata = "Build pipeline integration (generate section)"
+
+[_metadata.C6_roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Split from monolithic validation.toml (3145 lines)",
+    "b-01.00 (2026-02-10) — TOML-native 3-block format, template alignment",
+    "b-02.00 (2026-02-16) — I/C metadata upgrade, production architecture review",
+]
+current = "b-02.00 — I/C metadata, production architecture review"
+planned = [
+    "Full cross-format support (JSON/JSONC instances)",
+    "Code generator integration testing",
+]
+
+[_metadata.C7_classification]
+tags = ["types", "validation", "generation", "codegen", "targets", "templates", "validators", "C", "Go", "Rust", "foundation", "L0"]
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies", "C5_intent"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+
+# ═════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═════════════════════════════════════════════════════════════
+
+
+# ═════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═════════════════════════════════════════════════════════════
+
+[identity]
+key = "B-L0-types-validation-generation"
+name = "validation-generation"
+title = "Validation Code Generation — Rung"
+version = "b-02.00"
+parent = "validation.toml"
+sections = "Cx.1-6 GENERATION + generate metadata"
+
+
+# Cc — Content Configurations
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Content file — code generation for validators, targets, templates, and build pipeline integration"
+Cc = "Content Configurations — Code generation — targets (C, Go, Rust), validator functions, error constants, templates"
+Co = "Content Operations — generation targets, validator generation, error generation, generation templates"
+Cv = "Content Validation — schema requirements, type constraints"
+
+# ─────────────────────────────────────────────────────────────
+# Co — Content Operations
+# ─────────────────────────────────────────────────────────────
+
+# Cx — GENERATION: Code Generation from Validation Spec
+# ═════════════════════════════════════════════════════════════════════════════
+# Purpose: How to generate validator code from this specification.
+# Pattern: Spec → Template → Generated Code → Validation
+# ─────────────────────────────────────────────────────────────
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Cx.1 TARGETS — Generation Targets [TARGETS]
+# ═════════════════════════════════════════════════════════════════════════════
+
+[generation.targets]
+name             = "targets"
+description      = "Code generation targets from validation spec"
+
+[generation.targets.c]
+name             = "C"
+enabled          = true
+output_header    = "validation.gen.h"
+output_source    = "validation.gen.c"
+guard            = "VALIDATION_GEN_H"
+
+[generation.targets.c.patterns]
+validator_proto  = "bool validate_{type}({c_type} value);"
+validator_impl   = "bool validate_{type}({c_type} value) { return {check}; }"
+error_const      = "#define {code} \"{message}\""
+
+[generation.targets.go]
+name             = "Go"
+enabled          = true
+output_file      = "validation_gen.go"
+package          = "validation"
+
+[generation.targets.go.patterns]
+validator_func   = "func Validate{Type}(v {go_type}) error { if {check} { return nil }; return fmt.Errorf({message}) }"
+error_var        = "var Err{Code} = errors.New(\"{message}\")"
+
+[generation.targets.rust]
+name             = "Rust"
+enabled          = true
+output_file      = "validation_gen.rs"
+module           = "validation"
+
+[generation.targets.rust.patterns]
+validator_fn     = "pub fn validate_{type}(v: {rust_type}) -> Result<(), ValidationError> { if {check} { Ok(()) } else { Err(ValidationError::{Code}) } }"
+error_enum       = "{Code},"
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Cx.2 GENERATION — Generation Process [GENERATION]
+# ═════════════════════════════════════════════════════════════════════════════
+
+[generation.process]
+name             = "process"
+description      = "How code generation proceeds"
+
+[generation.process.steps]
+step_1           = "Parse validation.toml → extract validator definitions"
+step_2           = "For each primitive validator → generate type-specific function"
+step_3           = "For each constraint validator → generate constraint checker"
+step_4           = "For each structural validator → generate composition checker"
+step_5           = "Generate error codes and messages"
+step_6           = "Write output files for each target language"
+step_7           = "Validate generated code compiles"
+
+[generation.process.ordering]
+order            = 3                                         # After composition (2), before language (4)
+depends_on       = ["primitives.toml", "composition.toml"]
+generates        = ["validation.gen.h", "validation.gen.c", "validation_gen.go", "validation_gen.rs"]
+
+[generation.process.omnicode]
+generate         = "generate validators from validation.toml"
+output           = "output {language} validators to {file}"
+validate         = "validate generated code compiles"
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Cx.3 VALIDATORS — Validator Function Generation [VALIDATORS]
+# ═════════════════════════════════════════════════════════════════════════════
+
+[generation.validators]
+name             = "validators"
+description      = "How validator functions are generated for each type"
+
+[generation.validators.primitive]
+description      = "Primitive type validator generation"
+pattern          = "validate_{type}(value) → bool/error"
+c_template       = "bool validate_{type}({c_type} value) { return {condition}; }"
+go_template      = "func Validate{Type}(v {go_type}) error { if {condition} { return nil }; return Err{Type}Invalid }"
+rust_template    = "pub fn validate_{type}(v: {rust_type}) -> Result<(), ValidationError> { if {condition} { Ok(()) } else { Err(ValidationError::{Type}Invalid) } }"
+
+[generation.validators.constraint]
+description      = "Constraint validator generation"
+pattern          = "check_{constraint}(value, params) → bool/error"
+c_template       = "bool check_{constraint}({c_type} value, {params}) { return {condition}; }"
+go_template      = "func Check{Constraint}(v {go_type}, {params}) error { if {condition} { return nil }; return Err{Constraint}Violated }"
+rust_template    = "pub fn check_{constraint}(v: {rust_type}, {params}) -> Result<(), ValidationError> { if {condition} { Ok(()) } else { Err(ValidationError::{Constraint}Violated) } }"
+
+[generation.validators.structural]
+description      = "Structural validator generation"
+pattern          = "validate_{structure}(value, schema) → errors"
+c_template       = "ValidationResult validate_{structure}(const void* value, const Schema* schema)"
+go_template      = "func Validate{Structure}(v any, schema Schema) []error"
+rust_template    = "pub fn validate_{structure}<T>(v: &T, schema: &Schema) -> Vec<ValidationError>"
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Cx.4 ERRORS — Error Constant Generation [ERRORS]
+# ═════════════════════════════════════════════════════════════════════════════
+
+[generation.errors]
+name             = "errors"
+description      = "How error codes and messages are generated"
+
+[generation.errors.codes]
+description      = "Error code constant generation"
+c_template       = "#define {CODE} \"{code}\""
+go_template      = "const {Code} = \"{code}\""
+rust_template    = "{Code},"
+
+[generation.errors.messages]
+description      = "Error message constant generation"
+c_template       = "#define {CODE}_MSG \"{message}\""
+go_template      = "var Err{Code} = errors.New(\"{message}\")"
+rust_template    = "{Code} => \"{message}\","
+
+[generation.errors.severity_enum]
+description      = "Severity level enum generation"
+c_template       = "typedef enum { SEVERITY_ERROR = 1, SEVERITY_WARNING = 0, SEVERITY_INFO = -1 } Severity;"
+go_template      = "type Severity int; const (SeverityError Severity = 1; SeverityWarning = 0; SeverityInfo = -1)"
+rust_template    = "pub enum Severity { Error = 1, Warning = 0, Info = -1 }"
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Cx.5 TEMPLATES — Code Generation Templates [TEMPLATES]
+# ═════════════════════════════════════════════════════════════════════════════
+
+[generation.templates]
+name             = "templates"
+description      = "Templates for generated validator code structure"
+
+[generation.templates.header]
+description      = "Template for generated file header"
+c_comment        = "/* Generated from validation.toml at {timestamp} — DO NOT EDIT */"
+go_comment       = "// Code generated from validation.toml at {timestamp}. DO NOT EDIT."
+rust_comment     = "//! Generated from validation.toml at {timestamp} — DO NOT EDIT"
+
+[generation.templates.guard]
+description      = "Template for header guards"
+c_guard          = "#ifndef {GUARD}\n#define {GUARD}\n\n{content}\n\n#endif /* {GUARD} */"
+
+[generation.templates.package]
+description      = "Template for package declarations"
+go_package       = "package {package}\n\nimport \"errors\"\n\n{content}"
+rust_module      = "//! Validation functions\n\nuse thiserror::Error;\n\n{content}"
+
+[generation.templates.error_type]
+description      = "Template for error type definition"
+c_struct         = "typedef struct { const char* code; const char* message; int severity; } ValidationError;"
+go_struct        = "type ValidationError struct { Code string; Message string; Severity Severity }"
+rust_enum        = "#[derive(Debug, Error)]\npub enum ValidationError { {variants} }"
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Cx.6 VALIDATION — Generated Code Validation [GEN_VALIDATION]
+# ═════════════════════════════════════════════════════════════════════════════
+
+[generation.validation]
+name             = "validation"
+description      = "How to validate generated code compiles and works"
+enabled          = true
+
+[generation.validation.compile_check]
+description      = "Verify generated code compiles"
+c_command        = "gcc -c -Wall -Werror {file}.c"
+go_command       = "go build {file}.go"
+rust_command     = "rustc --emit=metadata {file}.rs"
+
+[generation.validation.test_generation]
+description      = "Generate tests for validators"
+enabled          = true
+test_valid       = "Assert valid values pass"
+test_invalid     = "Assert invalid values fail"
+test_boundary    = "Test boundary conditions"
+
+[generation.validation.coverage]
+description      = "Ensure all validators have tests"
+min_coverage     = 100                                       # All validators must have tests
+require_boundary = true                                      # Boundary tests required
+
+[generation.validation.omnicode]
+verify           = "verify generated code compiles"
+test             = "test validators against known values"
+coverage         = "ensure {min_coverage}% test coverage"
+
+
+# ─────────────────────────────────────────────────────────────
+# Extensions (reserved)
+# ─────────────────────────────────────────────────────────────
+
+[extensions]
+note = "Reserved — no extensions for code generation"
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["cws-struct lint toml validation/validation-generation.toml"]
+
+[_validation.schema]
+required = ["identity", "generation"]
+optional = ["_content", "extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_fields_present = 30
+cross_references_valid = 30
+
+# ═════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═════════════════════════════════════════════════════════════
+
+
+# ═════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = [
+    "Generator output filename (validation.gen.h)",
+    "Error constant names",
+    "Validator function patterns",
+    "3-block structure (METADATA → CONTENT → CLOSING)",
+]
+careful = [
+    "Target language mappings — affects generated code",
+    "Template patterns",
+    "Generation order",
+]
+safe = [
+    "New language targets",
+    "Additional templates",
+    "Validation process notes",
+]
+
+[_closing.X2_extension]
+implemented = []
+planned = [
+    "Additional language targets (C#, Python)",
+    "Code generator integration testing framework",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+generation_failed = "Verify all required generate fields present: enabled, output, order, guard"
+target_mismatch = "Check generated output matches expected validation function patterns"
+
+[_closing.X4_reference]
+related_files = [
+    "validation.toml — Index file (parent)",
+    "validation-primitive.toml — Base type validation (Cc.1)",
+    "validation-constraint.toml — Constraint validation (Cc.2)",
+    "validation-structural.toml — Composite type validation (Cc.3)",
+    "validation-schema.toml — OmniCode structure validation (Cc.4)",
+    "validation-errors-modes.toml — Error handling + modes (Co.1-2)",
+    "validation-cognition.toml — CPI-SI interpretation (Cv.1-4)",
+    "validation-generation.toml — Code generation (Cx.1-6)",
+    "runtime-checks.toml — Runtime type verification (Co.3)",
+]
+required_sections = ["_metadata", "identity", "generation", "generate", "_validation", "_closing"]
+validate = "cws-struct lint toml validation/validation-generation.toml"
+
+[_closing.X5_note]
+note = "Generation bridges spec and code — these rules become actual validator implementations."
+scripture = "In the beginning God created the heaven and the earth. — Genesis 1:1"
+anchor = "Write the vision plainly. Habakkuk 2:2 applied to code generation — specs become validators faithfully."
+
+# ═════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═════════════════════════════════════════════════════════════

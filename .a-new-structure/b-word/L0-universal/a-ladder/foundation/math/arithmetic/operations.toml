@@ -1,0 +1,597 @@
+# #!omni document --toml
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# I — Identity: What IS This File
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.I1_core]
+key = "B-L0-math-operations"
+format = "@omni document --toml"
+from = "seed/data/L0/toml/config.toml"
+at = "document"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "constants"
+role = "rung"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "operations.toml"
+title = "Ternary Math Operations"
+component = "All ternary arithmetic operations as lookup tables and algorithms — the ALU of ternary computing"
+path = "math/arithmetic/operations.toml"
+provides = ["TRIT_ARITHMETIC", "HALF_ADDER", "FULL_ADDER", "SUBTRACTION", "DIVISION", "PACK_UNPACK"]
+brief = "O(1) truth tables for single-trit arithmetic, half/full adders, subtraction via negation, centered-remainder division, and Horner pack/unpack."
+
+[_metadata.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+# ─────────────────────────────────────────────────────────────
+# C — Context: What Do I Need to KNOW
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.C1_state]
+version = "b-01.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-16"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "Proverbs 16:11 (KJV) — A just weight and balance are the LORD's: all the weights of the bag are his work."
+principle = "Just operations — lookup tables encode mathematical truth, not arbitrary rules."
+anchor = "Genesis 1:1 — In the beginning God created the heaven and the earth."
+
+[_metadata.C4_dependencies]
+requires = ["math/math.toml", "math/core/definitions.toml"]
+consumers = ["foundation/primitives/primitives.toml", "foundation/composition/composition.toml"]
+integration = "Lookup tables embedded in generated C headers and Go packages. O(1) array indexing at runtime."
+if_missing = "No arithmetic operations available — ternary ALU cannot function"
+
+[_metadata.C4_dependencies.cross_format]
+role = "Math CONSTANTS in TOML. No JSONC/JSON counterpart."
+note = "TOML defines truth tables. Generated code (C, Go, Rust) implements them as static arrays."
+
+[_metadata.C5_intent]
+purpose = "Define all ternary arithmetic operations as lookup tables and algorithms — the ALU of ternary computing"
+core_design = "Six sections: basic arithmetic (unary+binary), half adder (2-input), full adder (3-input), subtraction (via negation), division (centered remainder), pack/unpack (byte bridge)."
+philosophy = "Operations are mathematical truth encoded in tables. O(1) lookup replaces branching computation — no decisions, just indexed truth."
+
+[_metadata.C5_intent.key_features]
+lookup_tables = "All single-trit operations as 3x3 or 3x3x3 arrays — O(1) access"
+half_adder = "Two-input addition with carry: (a, b) → (sum, carry)"
+full_adder = "Three-input addition: (a, b, c_in) → (sum, c_out) — enables chaining"
+pack_unpack = "Horner's method (pack) and repeated division (unpack) for byte bridge"
+
+[_metadata.C6_roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Part of monolithic ternary.toml (2414 lines)",
+    "b-01.00 (2026-02-10) — Split into focused operations file, TOML-native 3-block format",
+    "b-01.00 (2026-02-16) — I/C metadata upgrade, moved to math/arithmetic/operations.toml",
+]
+current = "Operations content complete — full I/C metadata with domain-appropriate home"
+planned = [
+    "Carry-lookahead adder specification",
+    "Multiplication algorithm (multi-trit)",
+    "Newton-Raphson division optimization",
+]
+
+[_metadata.C7_classification]
+tags = ["math", "ternary", "operations", "arithmetic", "adder", "subtraction", "division", "pack", "unpack", "L0", "foundation"]
+
+# ─────────────────────────────────────────────────────────────
+# Contract
+# ─────────────────────────────────────────────────────────────
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C5_intent", "C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = ["X2_extension", "X3_troubleshooting", "X4_reference"]
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Lookup tables encode mathematical truth — exact values, no approximations. All tables indexed by [value + 1]."
+Cc = "Content Configurations — truth tables (AND/OR/XOR/NOT), arithmetic tables, comparison tables"
+Co = "Content Operations — adders, subtraction, division, pack/unpack algorithms"
+Cv = "Content Validation — schema requirements, health scoring"
+
+# ─────────────────────────────────────────────────────────────
+# Identity
+# ─────────────────────────────────────────────────────────────
+
+[identity]
+name = "Ternary Math Operations"
+version = "b-01.00"
+domain = "math"
+scope = "All ternary arithmetic as O(1) lookup tables and algorithms"
+
+# ─────────────────────────────────────────────────────────────
+# Cc — Content Configurations
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Co.1 ARITHMETIC — Basic Trit Operations
+# ─────────────────────────────────────────────────────────────
+#
+# "A just weight and balance are the LORD's" — Proverbs 16:11
+#
+# FUNDAMENTAL OPERATIONS: THE ALU OF TERNARY COMPUTING
+#
+# These lookup tables define the basic operations on single trits.
+# All tables are indexed by [value + 1] to map trit values to array indices:
+#   trit -1 → index 0
+#   trit  0 → index 1
+#   trit +1 → index 2
+#
+# Lookup tables provide O(1) operation time—no branching, no computation,
+# just array indexing.
+#
+# Implementation: L0-universal/libtrit/src/matter/math.op.c
+#
+# ─────────────────────────────────────────────────────────────
+
+[arithmetic]
+description = "Lookup tables for O(1) single-trit operations"
+
+# Unary Operations (3 entries each)
+
+negation      = [1, 0, -1]                                   # -(-1)=+1, -(0)=0, -(+1)=-1
+absolute      = [1, 0, 1]                                    # |-1|=+1, |0|=0, |+1|=+1
+sign          = [-1, 0, 1]                                   # sgn(-1)=-1, sgn(0)=0, sgn(+1)=+1
+increment_sat = [0, 1, 1]                                    # -1→0, 0→+1, +1→+1
+decrement_sat = [-1, -1, 0]                                  # -1→-1, 0→-1, +1→0
+
+# Binary Operations — Addition (simplified, wrapping, no carry)
+[arithmetic.addition]
+description = "Simplified addition without carry (wrapping)"
+table = [
+    [-1, -1,  0],                                            # -1 + {-1, 0, +1}
+    [-1,  0,  1],                                            #  0 + {-1, 0, +1}
+    [ 0,  1,  1]                                             # +1 + {-1, 0, +1}
+]
+
+# Binary Operations — Multiplication
+[arithmetic.multiplication]
+description = "Trit multiplication table"
+table = [
+    [ 1,  0, -1],                                            # -1 × {-1, 0, +1}
+    [ 0,  0,  0],                                            #  0 × {-1, 0, +1}
+    [-1,  0,  1]                                             # +1 × {-1, 0, +1}
+]
+
+# Binary Operations — Comparison
+[arithmetic.compare]
+description = "Three-way comparison (spaceship operator)"
+table = [
+    [ 0, -1, -1],                                            # -1 <=> {-1, 0, +1}
+    [ 1,  0, -1],                                            #  0 <=> {-1, 0, +1}
+    [ 1,  1,  0]                                             # +1 <=> {-1, 0, +1}
+]
+
+# Binary Operations — Min/Max
+[arithmetic.min]
+description = "Minimum of two trits"
+table = [
+    [-1, -1, -1],
+    [-1,  0,  0],
+    [-1,  0,  1]
+]
+
+[arithmetic.max]
+description = "Maximum of two trits"
+table = [
+    [-1,  0,  1],
+    [ 0,  0,  1],
+    [ 1,  1,  1]
+]
+
+# Ternary Logic Operations (Kleene/Łukasiewicz style)
+[arithmetic.logic_and]
+description = "Ternary AND (Kleene logic, -1=false, 0=unknown, +1=true)"
+table = [
+    [-1, -1, -1],
+    [-1,  0,  0],
+    [-1,  0,  1]
+]
+
+[arithmetic.logic_or]
+description = "Ternary OR (Kleene logic)"
+table = [
+    [-1,  0,  1],
+    [ 0,  0,  1],
+    [ 1,  1,  1]
+]
+
+[arithmetic.logic_xor]
+description = "Ternary XOR (difference detection)"
+table = [
+    [ 0,  1,  1],
+    [ 1,  0,  1],
+    [ 1,  1,  0]
+]
+
+[arithmetic.consensus]
+description = "Returns value if both agree, 0 if disagreement"
+table = [
+    [-1,  0,  0],
+    [ 0,  0,  0],
+    [ 0,  0,  1]
+]
+
+
+# ─────────────────────────────────────────────────────────────
+# Co.2 HALF ADDER — Two-Input Addition
+# ─────────────────────────────────────────────────────────────
+#
+# "A false balance is abomination to the LORD: but a just weight
+#  is his delight." — Proverbs 11:1
+#
+# HALF ADDER: THE BUILDING BLOCK OF MULTI-TRIT ADDITION
+#   (a, b) → (sum, carry)
+#
+# Unlike binary, ternary carry can be -1, 0, or +1.
+# Negative carry naturally handles subtraction within addition.
+#
+# Implementation: L0-universal/libtrit/src/matter/math.op.c (trit_half_add)
+#
+# ─────────────────────────────────────────────────────────────
+
+[operations.half_adder]
+description = "Two-input trit addition with carry: (a, b) → (sum, carry)"
+
+sum = [
+    [ 1, -1,  0],                                            # a=-1: {-1+-1=+1*, -1+0=-1, -1+1=0}
+    [-1,  0,  1],                                            # a= 0: {0+-1=-1, 0+0=0, 0+1=+1}
+    [ 0,  1, -1]                                             # a=+1: {+1+-1=0, +1+0=+1, +1+1=-1*}
+]
+
+carry = [
+    [-1,  0,  0],                                            # a=-1: borrow on -1+-1
+    [ 0,  0,  0],                                            # a= 0: no carry possible
+    [ 0,  0,  1]                                             # a=+1: carry on +1++1
+]
+
+[operations.half_adder.verification]
+description = "For each (a,b): sum + 3*carry = a + b"
+formula = "sum + (3 × carry) = a + b"
+
+[operations.half_adder.properties]
+commutative = true
+associative = true
+identity    = 0
+inverse     = "negation"
+
+
+# ─────────────────────────────────────────────────────────────
+# Co.3 FULL ADDER — Three-Input Addition
+# ─────────────────────────────────────────────────────────────
+#
+# "For where two or three are gathered together in my name, there
+#  am I in the midst of them." — Matthew 18:20
+#
+# FULL ADDER: COMPLETE POSITIONAL ADDITION
+#   (a, b, c_in) → (sum, c_out)
+#
+# 27 combinations (3³). Enables chaining for multi-trit addition.
+# Indexed: [a+1][b+1][c_in+1]
+#
+# Implementation: L0-universal/libtrit/src/matter/math.op.c (trit_full_add)
+#
+# ─────────────────────────────────────────────────────────────
+
+[operations.full_adder]
+description = "Three-input trit addition: (a, b, c_in) → (sum, c_out)"
+dimensions  = "3x3x3 = 27 combinations"
+
+sum = [
+    # a = -1
+    [[ 0,  1, -1],
+     [ 1, -1,  0],
+     [-1,  0,  1]],
+    # a = 0
+    [[ 1, -1,  0],
+     [-1,  0,  1],
+     [ 0,  1, -1]],
+    # a = +1
+    [[-1,  0,  1],
+     [ 0,  1, -1],
+     [ 1, -1,  0]]
+]
+
+carry_out = [
+    # a = -1
+    [[-1, -1,  0],
+     [-1,  0,  0],
+     [ 0,  0,  0]],
+    # a = 0
+    [[-1,  0,  0],
+     [ 0,  0,  0],
+     [ 0,  0,  1]],
+    # a = +1
+    [[ 0,  0,  0],
+     [ 0,  0,  1],
+     [ 0,  1,  1]]
+]
+
+[operations.full_adder.verification]
+description = "For each (a,b,c): sum + 3*c_out = a + b + c_in"
+formula = "sum + (3 × carry_out) = a + b + carry_in"
+
+[operations.full_adder.chain]
+max_carry_run = "log3(n)"
+worst_case    = "all +/-1 inputs"
+optimization  = "carry-lookahead"
+
+
+# ─────────────────────────────────────────────────────────────
+# Co.4 SUBTRACTION — Via Negation
+# ─────────────────────────────────────────────────────────────
+#
+# "I have set before you life and death, blessing and cursing:
+#  therefore choose life." — Deuteronomy 30:19
+#
+# SUBTRACTION: THE ELEGANCE OF BALANCED TERNARY
+#   a - b = a + negate(b)
+#
+# No new hardware or tables needed. Negation is a sign-flip lookup,
+# addition is already defined. This is why balanced ternary is
+# considered more elegant than binary.
+#
+# ─────────────────────────────────────────────────────────────
+
+[operations.subtraction]
+description = "Subtraction via composition: a - b = a + negate(b)"
+method      = "negate_then_add"
+
+[operations.subtraction.composition]
+step_1      = "neg_b = arithmetic.negation[b + 1]"
+step_2      = "(sum, carry) = half_adder(a, neg_b)"
+result      = "sum with carry propagation for multi-trit"
+
+[operations.subtraction.properties]
+anticommutative = true
+right_identity  = 0
+self_inverse    = 0
+
+
+# ─────────────────────────────────────────────────────────────
+# Co.5 DIVISION — Balanced Ternary Division
+# ─────────────────────────────────────────────────────────────
+#
+# "Thou shalt not have in thy bag divers weights, a great and a
+#  small." — Deuteronomy 25:13
+#
+# DIVISION: LONG DIVISION WITH CENTERED REMAINDER
+#
+# Remainder is centered: remainder in (-divisor/2, divisor/2]
+# Division by 3^n is equivalent to right-shift by n (O(1)).
+#
+# Implementation: L0-universal/libtrit/src/matter/math.op.c (trit_divide)
+#
+# ─────────────────────────────────────────────────────────────
+
+[operations.division]
+description    = "Balanced ternary long division with centered remainder"
+method         = "long_division"
+remainder_rule = "centered"
+
+[operations.division.quotient_selection]
+description        = "Select quotient digit based on partial remainder"
+positive_threshold = "divisor / 2"
+negative_threshold = "-divisor / 2"
+zero_range         = "[-divisor/2, divisor/2]"
+
+[operations.division.shift]
+description = "Division by 3^n is right-shift by n positions (O(1))"
+powers_of_3 = [1, 3, 9, 27, 81, 243, 729, 2187, 6561]
+
+[operations.division.shift.examples]
+div_by_3   = "right_shift(x, 1)"
+div_by_9   = "right_shift(x, 2)"
+div_by_27  = "right_shift(x, 3)"
+div_by_81  = "right_shift(x, 4)"
+div_by_243 = "right_shift(x, 5)"
+
+[operations.division.complexity]
+general     = "O(n^2)"
+power_of_3  = "O(1)"
+with_newton = "O(n log n)"
+
+
+# ─────────────────────────────────────────────────────────────
+# Co.6 ALGORITHMS — Pack/Unpack Conversion
+# ─────────────────────────────────────────────────────────────
+#
+# "The LORD by wisdom hath founded the earth; by understanding
+#  hath he established the heavens." — Proverbs 3:19
+#
+# PACK/UNPACK: BRIDGING TERNARY AND BINARY
+#
+# Convert between trit arrays (conceptual) and packed integers (storage).
+# Balanced trits (-1, 0, +1) offset to unsigned (0, 1, 2) for packing.
+#
+# Implementation: L0-universal/libtrit/src/matter/pack.op.c
+#
+# ─────────────────────────────────────────────────────────────
+
+[algorithms]
+description = "Pack/unpack algorithms for trit-byte conversion"
+
+[algorithms.conversion]
+description     = "Trit value offset for packing algorithms"
+to_unsigned     = "unsigned = balanced + 1"
+to_balanced     = "balanced = unsigned - 1"
+balanced_values = [-1, 0, 1]
+unsigned_values = [0, 1, 2]
+
+# Pack: Trit[] → Integer (Horner's Method)
+[algorithms.pack]
+description = "Convert trit array to packed integer using Horner's method"
+name        = "Horner's method"
+complexity  = "O(n)"
+direction   = "MST first (most significant trit first)"
+formula     = "result = result × 3 + (trit + 1)"
+
+[algorithms.pack.pseudocode]
+code = """
+function pack(trits[n]):
+    result = 0
+    for i = n-1 downto 0:
+        result = result * 3 + (trits[i] + 1)
+    return result
+"""
+
+[algorithms.pack.example]
+input   = [1, 0, -1]
+step_1  = "result = 0 * 3 + (1 + 1) = 2"
+step_2  = "result = 2 * 3 + (0 + 1) = 7"
+step_3  = "result = 7 * 3 + (-1 + 1) = 21"
+output  = 21
+
+# Unpack: Integer → Trit[] (Repeated Division)
+[algorithms.unpack]
+description = "Convert packed integer to trit array using repeated division"
+name        = "Repeated division"
+complexity  = "O(n)"
+direction   = "LST first (least significant trit first)"
+formula     = "trit = (value % 3) - 1; value = value / 3"
+
+[algorithms.unpack.pseudocode]
+code = """
+function unpack(value, n):
+    trits[n] = []
+    for i = 0 to n-1:
+        trits[i] = (value % 3) - 1
+        value = value / 3
+    return trits
+"""
+
+[algorithms.unpack.example]
+input   = 21
+step_1  = "trit[0] = (21 % 3) - 1 = 0 - 1 = -1; value = 21 / 3 = 7"
+step_2  = "trit[1] = (7 % 3) - 1 = 1 - 1 = 0; value = 7 / 3 = 2"
+step_3  = "trit[2] = (2 % 3) - 1 = 2 - 1 = +1; value = 2 / 3 = 0"
+output  = [-1, 0, 1]
+
+# Batch Operations (for 243-scale efficiency)
+[algorithms.batch]
+description = "Batch pack/unpack for 243-trit blocks"
+
+pack_5 = """
+byte = t[4]*81 + t[3]*27 + t[2]*9 + t[1]*3 + t[0] + 121
+where each t[i] is (trit + 1), and 121 centers the range
+"""
+
+unpack_5 = """
+for i = 0 to 4:
+    trit[i] = ((byte / powers[i]) % 3) - 1
+where powers = [1, 3, 9, 27, 81]
+"""
+
+pack_243   = "Apply pack_5 to each group of 5 trits (48 groups + 3 remainder)"
+unpack_243 = "Apply unpack_5 to each byte, handle 3-trit remainder"
+
+# Endianness and Byte Order
+[algorithms.endianness]
+description = "Byte ordering for multi-byte packed values"
+trit_order  = "LST at index 0, MST at highest index"
+byte_order  = "little-endian"
+network     = "big-endian"
+
+# ─────────────────────────────────────────────────────────────
+# Cv — Content Validation
+# ─────────────────────────────────────────────────────────────
+
+[_validation]
+commands = ["cws-struct lint toml math/arithmetic/operations.toml"]
+
+[_validation.schema]
+required = ["identity", "arithmetic", "operations.half_adder", "operations.full_adder", "operations.subtraction", "operations.division", "algorithms"]
+optional = ["extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+valid_values = 30
+mathematical_invariants = 30
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Proverbs 22:28 (KJV) — Remove not the ancient landmark, which thy fathers have set."
+never = [
+    "Operation lookup tables (add, mul, compare)",
+    "Adder truth tables",
+    "Pack/unpack algorithms",
+    "3-block structure (METADATA → CONTENT → CLOSING)",
+]
+careful = [
+    "Algorithm implementations — mathematical invariants must hold",
+    "Division edge cases",
+]
+safe = [
+    "New algorithm implementations",
+    "Additional examples",
+    "Performance notes",
+]
+
+[_closing.X2_extension]
+planned = [
+    "Carry-lookahead adder specification",
+    "Multiplication algorithm (multi-trit)",
+    "Newton-Raphson division optimization",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes around strings, duplicate keys in same section, tab characters"
+table_invariant = "sum + 3*carry must equal a + b for all half/full adder entries"
+index_offset = "Tables indexed by [value + 1] — trit -1 maps to index 0, trit +1 maps to index 2"
+type_mismatch = "Lookup tables must be arrays of exact integer values — no floating point"
+
+[_closing.X4_reference]
+related_files = [
+    "math/math.toml — Index file (parent)",
+    "math/core/definitions.toml — Identity, settings, resources, behavior",
+    "cognition/ — Building block, Genesis, dimensions, temporal (separate domain)",
+    "generation/ — Code generation targets, templates, validation (separate domain)",
+]
+
+[_closing.X5_note]
+note = "Operations are the ALU of ternary computing — lookup tables encoding mathematical truth."
+scripture = "Genesis 1:1 (KJV) — In the beginning God created the heaven and the earth."
+anchor = "Lookup tables are truth, not computation. O(1) access to mathematical facts."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════

@@ -1,0 +1,624 @@
+# #!omni data --toml
+
+# ═════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═════════════════════════════════════════════════════════════
+
+[_metadata.I1_core]
+key = "B-L0-types-composition-relationships"
+format = "@omni data --toml"
+from = "b-word/seed/data/L0/toml/config.toml"
+at = "b-02.00"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "types"
+role = "rung"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "relationships.toml"
+title = "Type Relationships"
+component = "foundation"
+path = "composition/relationships.toml"
+provides = ["SUBTYPE", "COMPATIBLE", "COERCION", "EQUALITY"]
+brief = "Type compatibility — subtype, compatible, coercion, equality"
+
+[_metadata.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[_metadata.C1_state]
+version = "b-02.00"
+status = "Active"
+created = "2025-12-11"
+updated = "2026-02-16"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "© 2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "Amos 3:3 — Can two walk together, except they be agreed?"
+principle = "Types must be compatible to interact. Compatibility requires agreement."
+anchor = "Subtype is substitution, compatible is assignment, coercion is conversion"
+
+[_metadata.C4_dependencies]
+requires = ["primitives/primitives.toml"]
+consumers = ["validation/validation.toml"]
+derives_from = "b-word/seed/data/L0/toml/config.toml"
+integration = "Loaded at build time by type checkers. Relationship specs define compatibility and conversion between types."
+if_missing = "No type relationships — types isolated, no conversion or compatibility checking"
+
+[_metadata.C4_dependencies.split_context]
+parent = "composition.toml"
+sections = "Cc.7 RELATIONSHIPS — Type Compatibility"
+
+[_metadata.C5_intent]
+purpose = "Define type compatibility — subtype (substitution), compatible (assignment), coercion (conversion), equality (identity)"
+core_design = "Four relationship modes covering the full spectrum of type interaction"
+philosophy = "Can two walk together, except they be agreed? — Amos 3:3"
+
+[_metadata.C6_roadmap]
+history = [
+    "a-01.00 (2025-12-11) — Split from monolithic composition.toml",
+    "b-01.00 (2026-02-10) — TOML-native 3-block format, template alignment",
+    "b-02.00 (2026-02-16) — I/C metadata upgrade, production architecture review",
+]
+current = "Type Relationships definitions with I/C metadata alignment"
+planned = ["Full cross-format support (JSON/JSONC instances)", "Code generation integration tests"]
+
+[_metadata.C7_classification]
+tags = ["composition", "relationships", "subtype", "compatible", "coercion", "equality", "L0", "foundation", "types"]
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies", "C5_intent"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+
+# ═════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═════════════════════════════════════════════════════════════
+
+
+# ═════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═════════════════════════════════════════════════════════════
+
+[identity]
+key = "B-L0-types-composition-relationships"
+name = "relationships"
+title = "Type Relationships"
+version = "b-02.00"
+parent = "composition.toml"
+sections = "Cc.7 RELATIONSHIPS — Type Compatibility"
+
+[_content]
+format = "TOML — UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores, match Go struct field tags"
+constraint = "Each relationship type defines substitution, compatibility, conversion, language bindings, and 9-layer scales"
+Cc = "Content Configurations — Type compatibility — subtype, compatible, coercion, equality"
+Co = "Content Operations — subtype, compatible, coercion, equality"
+Cv = "Content Validation — schema requirements, type constraints"
+
+# Co — Content Operations
+
+# Cc.7 RELATIONSHIPS — Type Compatibility [RELATIONSHIPS]
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# "Can two walk together, except they be agreed?" — Amos 3:3 KJV
+#
+# COMPATIBILITY REQUIRES AGREEMENT
+#
+# Type relationships define when types can interact — assignment, comparison,
+# coercion. Like two walking together, types must be compatible to interact.
+#
+# KEY INSIGHT (type relations):
+#   Subtype:    A can be used where B expected (substitution)
+#   Compatible: A can be assigned to B (assignment)
+#   Coercion:   A can become B automatically (conversion)
+#   Equality:   A and B are the same type (identity)
+#
+# FOUR RELATIONSHIP KINDS:
+#   Subtype:    Is-a relationship (Liskov substitution)
+#   Compatible: Can-assign relationship (safe assignment)
+#   Coercion:   Becomes relationship (automatic conversion)
+#   Equality:   Same-as relationship (type identity)
+#
+# TERNARY ALIGNMENT:
+#   coercion  = -1 (transformation, loss possible)
+#   equality  =  0 (neutral, same type)
+#   subtype   = +1 (expansion, more specific)
+#
+# SCALE APPLICATIONS:
+#   L0 (Kernel):    Register type compatibility, instruction operands
+#   L1 (System):    Syscall type checking, error type compatibility
+#   L2 (Runtime):   Object type compatibility, interface satisfaction
+#   L3 (Framework): Schema compatibility, API versioning
+#   L4 (Health):    Metric type compatibility, score normalization
+#   L5 (Network):   Protocol version compatibility, codec negotiation
+#   L6 (Storage):   Schema migration, format compatibility
+#   L7 (Engine):    State type compatibility, action type checking
+#   L8 (App):       Domain type compatibility, DTO mapping
+#
+# Implementation: pkg/core/types/relationship.gen.h
+# Reference:      syntax.toml [relation]
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[relationship]
+description = "Type compatibility — when types can interact"
+principle   = "Can two walk together, except they be agreed (Amos 3:3)"
+kinds       = ["subtype", "compatible", "coercion", "equality"]
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.7a SUBTYPE — Subtype Relationship [SUBTYPE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Ye are the children of the prophets, and of the covenant which God made
+#  with our fathers." — Acts 3:25 KJV
+#
+# Subtyping: children can be used where fathers are expected. If Dog is a
+# subtype of Animal, a Dog can be used wherever an Animal is expected.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.subtype]
+name        = "subtype"
+description = "Type A is subtype of B if A can be used where B expected"
+kind        = "relationship"
+strategy    = "subtype"
+
+# Subtype Core Properties
+notation    = "A <: B"
+reflexive   = true                               # A <: A
+transitive  = true                               # A <: B and B <: C implies A <: C
+antisymmetric = true                             # A <: B and B <: A implies A = B
+
+# Subtype Semantic Properties
+semantic_meaning  = "substitutability"           # Can use child for parent
+ternary_value     = 1                            # +1 = expansion (more specific)
+biblical_parallel = "Acts 3:25"                  # Children of the covenant
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Subtype OmniCode Syntax
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.subtype.omnicode]
+description = "OmniCode syntax for subtype relationships"
+
+keywords    = ["is", "a"]
+pattern     = "<Subtype> is a <Supertype>"
+
+[relationship.subtype.omnicode.examples]
+simple      = "Admin is a Person"
+chain       = "Dog is a Mammal is a Animal"
+structural  = "Point is a {x: int27, y: int27}"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Subtype CPI-SI Semantics
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.subtype.cpisi]
+description = "Subtype semantics in CPI-SI cognitive framework"
+
+direction   = ["supertype", "checking", "subtype"]  # -1, 0, +1
+weight      = ["general", "comparing", "specific"]
+action      = ["generalize", "check", "specialize"]
+genesis     = ["father", "covenant", "child"]
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Subtype Language Types
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.subtype.types]
+description = "Subtype relationship in target languages"
+
+[relationship.subtype.types.c]
+syntax      = "// convention — no native subtyping"
+note        = "C uses void* or function pointers"
+
+[relationship.subtype.types.go]
+syntax      = "// interfaces implicitly satisfied"
+structural  = true
+
+[relationship.subtype.types.rust]
+syntax      = "impl Supertrait for Subtype"
+trait_bounds = true
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Subtype Scale Applications (L0-L8)
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.subtype.scales]
+description = "Subtype at each layer"
+
+L0_kernel    = { name = "Operand",        example = "Reg <: Operand",          use = "Instruction operands" }
+L1_system    = { name = "Error",          example = "IOError <: Error",        use = "Error hierarchy" }
+L2_runtime   = { name = "Collection",     example = "List <: Collection",      use = "Collection types" }
+L3_framework = { name = "Entity",         example = "User <: Entity",          use = "Domain hierarchy" }
+L4_health    = { name = "Metric",         example = "Latency <: Metric",       use = "Metric types" }
+L5_network   = { name = "Packet",         example = "TCP <: IP <: Packet",     use = "Protocol layers" }
+L6_storage   = { name = "Record",         example = "User <: Record",          use = "Schema types" }
+L7_engine    = { name = "State",          example = "ErrorState <: State",     use = "State hierarchy" }
+L8_app       = { name = "DTO",            example = "UserDTO <: DTO",          use = "Transfer objects" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.7b COMPATIBLE — Assignment Compatibility [COMPATIBLE]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Giving honour unto the wife, as unto the weaker vessel, and as being heirs
+#  together of the grace of life." — 1 Peter 3:7 KJV
+#
+# Compatibility: types that can safely interact in assignment. Like heirs
+# together — compatible but not necessarily identical.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.compatible]
+name        = "compatible"
+description = "Types that can be safely assigned to each other"
+kind        = "relationship"
+strategy    = "compatible"
+
+# Compatible Core Properties
+symmetric             = false                    # int9 → int27, not reverse
+considers_constraints = true                     # Constraints affect compatibility
+
+# Compatible Semantic Properties
+semantic_meaning  = "safe_assignment"            # Can assign without loss
+ternary_value     = 0                            # 0 = neutral (compatibility check)
+biblical_parallel = "1 Peter 3:7"                # Heirs together
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Compatible OmniCode Syntax
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.compatible.omnicode]
+description = "OmniCode syntax for compatibility"
+
+keywords    = ["can", "serve", "as"]
+pattern     = "<Type> can serve as <OtherType>"
+
+[relationship.compatible.omnicode.examples]
+widening    = "int9 can serve as int27"
+structural  = "Employee can serve as Person"
+constrained = "PositiveInt can serve as int27"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Compatible CPI-SI Semantics
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.compatible.cpisi]
+description = "Compatible semantics in CPI-SI cognitive framework"
+
+direction   = ["incompatible", "checking", "compatible"]  # -1, 0, +1
+weight      = ["rejected", "evaluating", "accepted"]
+action      = ["reject", "check", "accept"]
+genesis     = ["separate", "comparing", "together"]
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Compatible Language Types
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.compatible.types]
+description = "Compatibility in target languages"
+
+[relationship.compatible.types.c]
+syntax      = "// implicit widening allowed"
+check       = "Compiler warnings for narrowing"
+
+[relationship.compatible.types.go]
+syntax      = "// explicit conversion required"
+strict      = true
+
+[relationship.compatible.types.rust]
+syntax      = "// explicit conversion with as or into()"
+strict      = true
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Compatible Scale Applications (L0-L8)
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.compatible.scales]
+description = "Compatibility at each layer"
+
+L0_kernel    = { name = "RegCompat",      example = "reg8 → reg32",            use = "Register widening" }
+L1_system    = { name = "ArgCompat",      example = "int → long",              use = "Syscall args" }
+L2_runtime   = { name = "TypeCompat",     example = "Child → Parent",          use = "Polymorphism" }
+L3_framework = { name = "SchemaCompat",   example = "v1 → v2 migration",       use = "API versioning" }
+L4_health    = { name = "MetricCompat",   example = "int → float",             use = "Metric aggregation" }
+L5_network   = { name = "ProtoCompat",    example = "v1 → v2 fallback",        use = "Protocol negotiation" }
+L6_storage   = { name = "FormatCompat",   example = "JSON → TOML",             use = "Format conversion" }
+L7_engine    = { name = "StateCompat",    example = "OldState → NewState",     use = "State migration" }
+L8_app       = { name = "DTOCompat",      example = "Entity → DTO",            use = "Mapping" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.7c COERCION — Automatic Conversion [COERCION]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "Be ye transformed by the renewing of your mind." — Romans 12:2 KJV
+#
+# Coercion: automatic transformation from one type to another. Like
+# transformation of the mind — the thing becomes something new.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.coercion]
+name        = "coercion"
+description = "Automatic type conversion rules"
+kind        = "relationship"
+strategy    = "coercion"
+
+# Coercion Core Properties
+explicit_preferred = true                        # Prefer explicit casts
+implicit_allowed   = ["widening", "null_promotion"]
+never_implicit     = ["narrowing", "lossy", "semantic_change"]
+
+# Coercion Semantic Properties
+semantic_meaning  = "transformation"             # Type becomes another
+ternary_value     = -1                           # -1 = transformation (potential loss)
+biblical_parallel = "Romans 12:2"                # Be ye transformed
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Coercion OmniCode Syntax
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.coercion.omnicode]
+description = "OmniCode syntax for coercion"
+
+keywords    = ["becomes"]
+pattern     = "<value> becomes <TargetType>"
+
+[relationship.coercion.omnicode.examples]
+implicit    = "int9 becomes int27"
+explicit    = "text becomes int27 explicitly"
+lossy       = "float27 becomes int27 with truncation"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Coercion CPI-SI Semantics
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.coercion.cpisi]
+description = "Coercion semantics in CPI-SI cognitive framework"
+
+direction   = ["source", "transforming", "target"]  # -1, 0, +1
+weight      = ["original", "converting", "converted"]
+action      = ["read", "convert", "write"]
+genesis     = ["old_nature", "renewing", "new_nature"]
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Coercion Language Types
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.coercion.types]
+description = "Coercion in target languages"
+
+[relationship.coercion.types.c]
+syntax      = "(TargetType)value"
+implicit    = "Integer promotion, pointer decay"
+
+[relationship.coercion.types.go]
+syntax      = "TargetType(value)"
+explicit    = "Always explicit"
+
+[relationship.coercion.types.rust]
+syntax      = "value as TargetType or value.into()"
+traits      = "From, Into traits"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Coercion Scale Applications (L0-L8)
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.coercion.scales]
+description = "Coercion at each layer"
+
+L0_kernel    = { name = "IntPromo",       example = "int8 → int32",            use = "ALU widening" }
+L1_system    = { name = "ArgConvert",     example = "ptr → int",               use = "Syscall args" }
+L2_runtime   = { name = "BoxConvert",     example = "value → boxed",           use = "Boxing" }
+L3_framework = { name = "DTOConvert",     example = "Entity → DTO",            use = "Mapping" }
+L4_health    = { name = "Normalize",      example = "raw → percentage",        use = "Normalization" }
+L5_network   = { name = "Encode",         example = "struct → bytes",          use = "Serialization" }
+L6_storage   = { name = "Marshal",        example = "object → JSON",           use = "Persistence" }
+L7_engine    = { name = "StateConvert",   example = "event → action",          use = "FSM transition" }
+L8_app       = { name = "UserConvert",    example = "form → entity",           use = "Input processing" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Cc.7d EQUALITY — Type Equality [EQUALITY]
+# ───────────────────────────────────────────────────────────────────────────────
+#
+# "There is one body, and one Spirit, even as ye are called in one hope of
+#  your calling." — Ephesians 4:4 KJV
+#
+# Type equality: when two type expressions denote the same type. One body,
+# one Spirit — structurally identical types are the same type.
+#
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.equality]
+name        = "type_equality"
+description = "When two type expressions denote the same type"
+kind        = "relationship"
+strategy    = "equality"
+
+# Equality Core Properties
+structural            = true                     # Based on structure, not name
+considers_constraints = true                     # Constraints must match
+reflexive             = true                     # A = A
+symmetric             = true                     # A = B implies B = A
+transitive            = true                     # A = B and B = C implies A = C
+
+# Equality Semantic Properties
+semantic_meaning  = "identity"                   # Same type
+ternary_value     = 0                            # 0 = neutral (same)
+biblical_parallel = "Ephesians 4:4"              # One body, one Spirit
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Equality OmniCode Syntax
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.equality.omnicode]
+description = "OmniCode syntax for type equality"
+
+keywords    = ["is", "the", "same", "as"]
+pattern     = "<Type> is the same as <OtherType>"
+
+[relationship.equality.omnicode.examples]
+structural  = "Point is the same as {x: int27, y: int27}"
+alias       = "UserID is the same as int27"     # Alias
+distinct    = "UserID is not the same as OrderID"  # Newtype
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Equality CPI-SI Semantics
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.equality.cpisi]
+description = "Equality semantics in CPI-SI cognitive framework"
+
+direction   = ["different", "comparing", "same"]  # -1, 0, +1
+weight      = ["distinct", "evaluating", "identical"]
+action      = ["distinguish", "compare", "unify"]
+genesis     = ["many", "comparing", "one"]
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Equality Language Types
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.equality.types]
+description = "Type equality in target languages"
+
+[relationship.equality.types.c]
+syntax      = "sizeof and layout comparison"
+note        = "C has no type equality check"
+
+[relationship.equality.types.go]
+syntax      = "reflect.TypeOf(a) == reflect.TypeOf(b)"
+runtime     = true
+
+[relationship.equality.types.rust]
+syntax      = "TypeId::of::<A>() == TypeId::of::<B>()"
+runtime     = "std::any::TypeId"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Equality Scale Applications (L0-L8)
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.equality.scales]
+description = "Type equality at each layer"
+
+L0_kernel    = { name = "TypeMatch",      example = "operand type check",      use = "Instruction decode" }
+L1_system    = { name = "SignatureMatch", example = "syscall arg types",       use = "Syscall validation" }
+L2_runtime   = { name = "TypeCheck",      example = "dynamic type check",      use = "Polymorphism" }
+L3_framework = { name = "SchemaMatch",    example = "schema comparison",       use = "Validation" }
+L4_health    = { name = "MetricMatch",    example = "metric type check",       use = "Aggregation" }
+L5_network   = { name = "ProtoMatch",     example = "protocol version",        use = "Negotiation" }
+L6_storage   = { name = "FormatMatch",    example = "schema equality",         use = "Migration" }
+L7_engine    = { name = "StateMatch",     example = "state type check",        use = "Transition guard" }
+L8_app       = { name = "EntityMatch",    example = "entity type check",       use = "Polymorphism" }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Relationships Shared Sections
+# ───────────────────────────────────────────────────────────────────────────────
+
+[relationship.omnicode]
+description = "OmniCode relationship syntax overview"
+
+keywords    = ["is", "a", "can", "serve", "as", "becomes", "same"]
+
+[relationship.cpisi]
+description = "Relationship semantics in CPI-SI cognitive framework"
+
+direction   = ["coercion", "equality", "subtype"]  # -1, 0, +1
+weight      = ["transforming", "comparing", "specializing"]
+action      = ["convert", "compare", "substitute"]
+genesis     = ["transformation", "unity", "lineage"]
+
+[relationship.scales]
+description = "Relationships at each layer"
+
+L0_kernel    = { subtype = "operand",     compatible = "register", coercion = "int_promo", equality = "type_match" }
+L1_system    = { subtype = "error",       compatible = "arg",      coercion = "ptr_conv",  equality = "sig_match" }
+L2_runtime   = { subtype = "collection",  compatible = "type",     coercion = "boxing",    equality = "type_check" }
+L3_framework = { subtype = "entity",      compatible = "schema",   coercion = "dto_conv",  equality = "schema" }
+L4_health    = { subtype = "metric",      compatible = "metric",   coercion = "normalize", equality = "metric" }
+L5_network   = { subtype = "packet",      compatible = "proto",    coercion = "encode",    equality = "proto" }
+L6_storage   = { subtype = "record",      compatible = "format",   coercion = "marshal",   equality = "format" }
+L7_engine    = { subtype = "state",       compatible = "state",    coercion = "convert",   equality = "state" }
+L8_app       = { subtype = "dto",         compatible = "entity",   coercion = "map",       equality = "entity" }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+[extensions]
+note = "Reserved — no extensions for relationships"
+
+# Cv — Content Validation
+[_validation]
+commands = ["python3 -c \"import tomllib; tomllib.load(open('relationships.toml','rb'))\""]
+
+[_validation.schema]
+required = ["identity", "relationship"]
+optional = ["_content", "extensions"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 40
+all_fields_present = 30
+cross_references_valid = 30
+
+# ═════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═════════════════════════════════════════════════════════════
+
+
+# ═════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═════════════════════════════════════════════════════════════
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. — Proverbs 22:28"
+never = ["Break subtyping semantics", "Change coercion transitivity"]
+careful = ["Modify compatibility rules", "Change equality definition"]
+safe = ["Add relationship types", "Add examples", "Add comments"]
+
+[_closing.X2_extension]
+implemented = []
+planned = ["Structural subtyping rules", "Coercion chain optimization"]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_direction = "Verify relationship has direction — subtype, compatible, coercion, or equality"
+
+[_closing.X4_reference]
+related_files = [
+    "../composition.toml — Index file (parent)",
+    "../primitives/primitives.toml — Base primitive types",
+]
+validate = "cws-struct lint toml composition/relationships.toml"
+required_sections = [
+    "_metadata",
+    "identity",
+    "_content",
+    "relationship",
+    "_validation",
+    "_closing",
+]
+
+[_closing.X5_note]
+note = "Type relationships: can two walk together except they be agreed?"
+scripture = "In the beginning God created the heaven and the earth. — Genesis 1:1"
+anchor = "Genesis 1:1 — Heaven and earth in relationship. Types must agree to interact."
+
+# ═════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═════════════════════════════════════════════════════════════

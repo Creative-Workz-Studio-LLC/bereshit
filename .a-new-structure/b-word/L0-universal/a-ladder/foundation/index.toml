@@ -1,0 +1,736 @@
+# #!omni document --toml
+
+# ===============================================================
+# METADATA BLOCK [METADATA]
+# ===============================================================
+
+# ---------------------------------------------------------------
+# I -- Identity: What IS This File
+# ---------------------------------------------------------------
+
+[_metadata.I1_core]
+key = "B-L0-foundation-index"
+format = "@omni document --toml"
+from = "seed/data/L0/toml/config.toml"
+at = "document"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "manifest"
+role = "ladder"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "index.toml"
+title = "Foundation Specification Index"
+component = "Manifest for all L0 foundation TOML specifications. Single source of truth for loaders, generators, and documentation."
+path = "index.toml"
+provides = ["FOUNDATION_INDEX", "SPEC_MANIFEST", "DEPENDENCY_GRAPH"]
+brief = "Master index for 51 specification files across 8 domains. Defines dependency ordering, generation targets, and system topology."
+
+[_metadata.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+# ---------------------------------------------------------------
+# C -- Context: What Do I Need to KNOW
+# ---------------------------------------------------------------
+
+[_metadata.C1_state]
+version = "b-02.00"
+status = "Active"
+created = "2025-12-14"
+updated = "2026-02-17"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "In the beginning God created the heaven and the earth. -- Genesis 1:1"
+principle = "Every OmniCode construct traces to Scripture. This index maps the territory."
+anchor = "Genesis 1:1. The foundation defines WHAT exists and HOW it relates. Before language, before platform, before network -- establish the bedrock."
+
+[_metadata.C4_dependencies]
+requires = []
+consumers = ["code generators", "config loaders", "documentation builders", "linters"]
+integration = "Loaded at build time. Generators walk the dependency graph to determine build order. Loaders resolve specs by domain."
+if_missing = "Foundation index unavailable -- no spec can be located, no code can be generated"
+
+[_metadata.C4_dependencies.cross_format]
+role = "TOML manifest. No JSONC/JSON counterpart -- this is the authoritative spec registry."
+note = "Generated code (C headers, Go packages, Rust crates) is produced FROM these specs."
+
+[_metadata.C5_intent]
+purpose = "Master index for the L0 foundation layer -- maps all specification files, their dependencies, and generation targets"
+core_design = "8 domains organized as peer directories under foundation/. Each domain has a split-index pattern: one index file + N content files. Cross-cutting specs (flags, layer, metadata-slots, timing) sit as flat files at the foundation level."
+philosophy = "The Bible is our codex. OmniCode constructs are discovered from Scripture, not invented. This index maps what has been discovered."
+
+[_metadata.C6_roadmap]
+history = [
+    "a-01.00 (2025-12-14) -- Initial creation with M-prefix metadata",
+    "b-01.00 (2026-02-11) -- TOML-native 3-block format alignment",
+    "b-02.00 (2026-02-17) -- I/C metadata upgrade, flat domain organization, path updates",
+]
+current = "8 domains, 51 spec files, all lint-clean with I/C metadata format"
+planned = [
+    "Automated dependency graph validation",
+    "Generation pipeline integration",
+    "Cross-layer reference validation (L0 -> L1 -> L2)",
+]
+
+[_metadata.C7_classification]
+tags = ["index", "manifest", "foundation", "L0", "dependency-graph", "code-generation", "omnicode"]
+
+# ---------------------------------------------------------------
+# Contract
+# ---------------------------------------------------------------
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C5_intent", "C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = ["X2_extension", "X3_troubleshooting", "X4_reference"]
+
+# ===============================================================
+# END METADATA [END]
+# ===============================================================
+
+
+# ===============================================================
+# CONTENT BLOCK [CONTENT]
+# ===============================================================
+
+[_content]
+format = "TOML -- native tables, UTF-8, LF line endings"
+key_convention = "lowercase_with_underscores"
+constraint = "Manifest file -- spec index and dependency graph. No domain data defined here."
+Cc = "Content Configurations -- 8 domain systems, file manifests, dependency ordering"
+Co = "Content Operations -- (index file: references only, no operations)"
+Cv = "Content Validation -- schema requirements, health scoring"
+
+# ---------------------------------------------------------------
+# Identity
+# ---------------------------------------------------------------
+
+[identity]
+name = "Foundation Specification Index"
+version = "b-02.00"
+domain = "manifest"
+scope = "Master index for 51 TOML specification files across 8 foundation domains"
+
+# ---------------------------------------------------------------
+# FOUNDATION TOPOLOGY
+# ---------------------------------------------------------------
+#
+# 8 peer domains at the foundation/ level:
+#
+#   DOMAIN          FILES  DESCRIPTION
+#   math/              3   Ternary mathematics -- the bedrock
+#   primitives/        8   23 atomic types (split-index + 7 content files)
+#   composition/      11   Type composition rules (composites, constraints, generics, ...)
+#   validation/        9   Type validation (structural, primitive, constraint, ...)
+#   errors/            4   Error system (foundation, codes, operations, generation)
+#   bible/            10   Scripture integration (addressing, cipher, codec, text, translation)
+#   cognition/         1   Cognitive model specifications
+#   generation/        1   Code generation specifications
+#
+# 4 cross-cutting flat files:
+#   flags.toml            Type flags and attributes
+#   layer.toml            L0-L8 layer architecture
+#   metadata-slots.toml   13 BRIDGE slots (243 + 13 = 256)
+#   timing.toml           Temporal intervals from POLL anchor
+#
+# Dependency flow: math -> primitives -> composition -> validation -> errors
+#                  math -> bible (addressing uses ternary ordinals)
+#                  primitives -> cognition, generation, flags, layer, timing, metadata-slots
+#
+# ---------------------------------------------------------------
+
+
+# ===============================================================
+# DOMAIN 0: MATH -- Ternary Mathematics
+# ===============================================================
+# "The LORD by wisdom hath founded the earth" -- Proverbs 3:19
+
+[[systems]]
+name = "math"
+path = "math/"
+order = 0
+description = "Ternary mathematics -- the foundation all types and systems build on"
+depends_on = []
+files = 3
+
+[[systems.specs]]
+file = "math/math.toml"
+generates = false
+description = "Math domain index -- ternary definitions, arithmetic"
+depends_on = []
+
+[[systems.specs]]
+file = "math/core/definitions.toml"
+generates = true
+output = "ternary_math.gen.h"
+description = "Ternary constants, powers, boundaries, trit lookup tables"
+depends_on = []
+
+[[systems.specs]]
+file = "math/arithmetic/operations.toml"
+generates = true
+output = "ternary_ops.gen.h"
+description = "Ternary arithmetic, packing, half/full adder operations"
+depends_on = ["math/core/definitions.toml"]
+
+
+# ===============================================================
+# DOMAIN 1: PRIMITIVES -- 23 Atomic Types
+# ===============================================================
+# "And God said, Let there be light" -- Genesis 1:3
+# (Primitives are the first things named into existence)
+
+[[systems]]
+name = "primitives"
+path = "primitives/"
+order = 1
+description = "23 atomic type definitions -- the atoms from which all complex types compose"
+depends_on = ["math"]
+files = 8
+
+[[systems.specs]]
+file = "primitives/primitives.toml"
+generates = false
+description = "Split-index: 23 types across 10 families, maps to 7 content files"
+depends_on = ["math/core/definitions.toml"]
+
+[[systems.specs]]
+file = "primitives/primitives-catalog.toml"
+generates = true
+output = "primitives_catalog.gen.h"
+description = "Type catalog -- identity, distinctions, architecture for all 23 types"
+depends_on = ["primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "primitives/primitives-settings.toml"
+generates = true
+output = "primitives_settings.gen.h"
+description = "Primary configuration -- defaults, sizes, parameters for all 23 types"
+depends_on = ["primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "primitives/primitives-resources.toml"
+generates = true
+output = "primitives_resources.gen.h"
+description = "Storage, packing, alignment, capacity for all 23 types"
+depends_on = ["primitives/primitives.toml", "math/core/definitions.toml"]
+
+[[systems.specs]]
+file = "primitives/primitives-behavior.toml"
+generates = true
+output = "primitives_behavior.gen.h"
+description = "OmniCode syntax, CPI-SI mappings, language bindings"
+depends_on = ["primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "primitives/primitives-operations.toml"
+generates = true
+output = "primitives_ops.gen.h"
+description = "Conversion, validation, coercion rules between types"
+depends_on = ["primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "primitives/primitives-paradigm.toml"
+generates = false
+description = "Ternary principles embodied in types, composition paradigm"
+depends_on = ["primitives/primitives.toml", "math/core/definitions.toml"]
+
+[[systems.specs]]
+file = "primitives/primitives-generation.toml"
+generates = true
+output = "primitives.gen.h"
+description = "Code generation targets, templates, validation for all 23 types"
+depends_on = ["primitives/primitives.toml"]
+
+
+# ===============================================================
+# DOMAIN 2: COMPOSITION -- Type Composition Rules
+# ===============================================================
+# "The stone which the builders refused is become the head stone" -- Psalm 118:22
+
+[[systems]]
+name = "composition"
+path = "composition/"
+order = 2
+description = "Type composition rules -- how atomic primitives combine into complex types"
+depends_on = ["math", "primitives"]
+files = 11
+
+[[systems.specs]]
+file = "composition/composition.toml"
+generates = false
+description = "Composition domain index -- overview of composite type construction"
+depends_on = ["primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "composition/composite-types.toml"
+generates = true
+output = "composition.gen.h"
+description = "Composite type definitions and construction rules"
+depends_on = ["composition/composition.toml", "primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "composition/constraints.toml"
+generates = true
+output = "constraint.gen.h"
+description = "Type constraint definitions and enforcement rules"
+depends_on = ["composition/composition.toml"]
+
+[[systems.specs]]
+file = "composition/effects.toml"
+generates = false
+description = "Type effect system -- side effects and purity tracking"
+depends_on = ["composition/composition.toml"]
+
+[[systems.specs]]
+file = "composition/generics.toml"
+generates = true
+output = "generics.gen.h"
+description = "Generic type parameters and instantiation rules"
+depends_on = ["composition/composition.toml", "composition/constraints.toml"]
+
+[[systems.specs]]
+file = "composition/inheritance.toml"
+generates = true
+output = "inheritance.gen.h"
+description = "Type inheritance and subtyping rules"
+depends_on = ["composition/composition.toml"]
+
+[[systems.specs]]
+file = "composition/nullability.toml"
+generates = true
+output = "nullability.gen.h"
+description = "Ternary nullability triad -- present, absent, unknown"
+depends_on = ["composition/composition.toml", "primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "composition/operations.toml"
+generates = true
+output = "type_ops.gen.h"
+description = "Type-level operations -- union, intersection, difference"
+depends_on = ["composition/composition.toml"]
+
+[[systems.specs]]
+file = "composition/references.toml"
+generates = true
+output = "reference.gen.h"
+description = "Reference types -- ownership, borrowing, lifetime rules"
+depends_on = ["composition/composition.toml"]
+
+[[systems.specs]]
+file = "composition/relationships.toml"
+generates = true
+output = "relationship.gen.h"
+description = "Type relationships -- subtype, supertype, convertible"
+depends_on = ["composition/composition.toml"]
+
+[[systems.specs]]
+file = "composition/storage.toml"
+generates = true
+output = "storage.gen.h"
+description = "Storage layout -- alignment, packing, memory representation"
+depends_on = ["composition/composition.toml", "primitives/primitives-resources.toml"]
+
+
+# ===============================================================
+# DOMAIN 3: VALIDATION -- Type Validation Rules
+# ===============================================================
+# "Prove all things; hold fast that which is good" -- 1 Thessalonians 5:21
+
+[[systems]]
+name = "validation"
+path = "validation/"
+order = 3
+description = "Type validation -- checking correctness, constraints, structural integrity"
+depends_on = ["math", "primitives", "composition"]
+files = 9
+
+[[systems.specs]]
+file = "validation/validation.toml"
+generates = false
+description = "Validation domain index -- overview of type checking approach"
+depends_on = ["primitives/primitives.toml", "composition/composition.toml"]
+
+[[systems.specs]]
+file = "validation/validation-primitive.toml"
+generates = true
+output = "validation_primitive.gen.h"
+description = "Primitive type validation -- range checks, format verification"
+depends_on = ["validation/validation.toml", "primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "validation/validation-structural.toml"
+generates = true
+output = "validation_structural.gen.h"
+description = "Structural validation -- composite type integrity, field presence"
+depends_on = ["validation/validation.toml", "composition/composition.toml"]
+
+[[systems.specs]]
+file = "validation/validation-constraint.toml"
+generates = true
+output = "validation_constraint.gen.h"
+description = "Constraint validation -- generic bounds, type parameter enforcement"
+depends_on = ["validation/validation.toml", "composition/constraints.toml"]
+
+[[systems.specs]]
+file = "validation/validation-errors-modes.toml"
+generates = true
+output = "validation_modes.gen.h"
+description = "Validation error modes -- strict, lenient, progressive"
+depends_on = ["validation/validation.toml"]
+
+[[systems.specs]]
+file = "validation/validation-schema.toml"
+generates = false
+description = "Schema validation rules for TOML spec files themselves"
+depends_on = ["validation/validation.toml"]
+
+[[systems.specs]]
+file = "validation/validation-cognition.toml"
+generates = false
+description = "Cognitive validation -- CPI-SI awareness in type checking"
+depends_on = ["validation/validation.toml"]
+
+[[systems.specs]]
+file = "validation/validation-generation.toml"
+generates = true
+output = "validation.gen.h"
+description = "Validation code generation targets"
+depends_on = ["validation/validation.toml"]
+
+[[systems.specs]]
+file = "validation/runtime-checks.toml"
+generates = true
+output = "runtime_checks.gen.h"
+description = "Runtime type checks -- dynamic validation, assertion contracts"
+depends_on = ["validation/validation.toml", "primitives/primitives.toml"]
+
+
+# ===============================================================
+# DOMAIN 4: ERRORS -- Error System
+# ===============================================================
+# "A just man falleth seven times, and riseth up again" -- Proverbs 24:16
+
+[[systems]]
+name = "errors"
+path = "errors/"
+order = 4
+description = "Error handling system -- DAR phases, severity codes, recovery patterns"
+depends_on = ["math", "primitives", "validation"]
+files = 4
+
+[[systems.specs]]
+file = "errors/foundation.toml"
+generates = true
+output = "error_system.gen.h"
+description = "Error system architecture -- bridge equation, 9-layer error model"
+depends_on = ["primitives/primitives.toml", "validation/validation.toml"]
+
+[[systems.specs]]
+file = "errors/codes.toml"
+generates = true
+output = "error_codes.gen.h"
+description = "Error code catalog -- severity levels, exit codes, error families"
+depends_on = ["errors/foundation.toml"]
+
+[[systems.specs]]
+file = "errors/operations.toml"
+generates = true
+output = "error_ops.gen.h"
+description = "Error operations -- DAR phases, severity mapping, recovery strategies"
+depends_on = ["errors/foundation.toml", "errors/codes.toml"]
+
+[[systems.specs]]
+file = "errors/generation.toml"
+generates = true
+output = "error_generation.gen.h"
+description = "Error system code generation targets (C, Go, Rust)"
+depends_on = ["errors/foundation.toml", "errors/codes.toml", "errors/operations.toml"]
+
+
+# ===============================================================
+# DOMAIN 5: BIBLE -- Scripture Integration
+# ===============================================================
+# "Thy word is a lamp unto my feet" -- Psalm 119:105
+
+[[systems]]
+name = "bible"
+path = "bible/"
+order = 5
+description = "Scripture systems -- encoding, addressing, translation, cipher"
+depends_on = ["math", "primitives"]
+files = 10
+
+[[systems.specs]]
+file = "bible/bible.toml"
+generates = false
+description = "Bible domain index -- overview of scripture integration"
+depends_on = []
+
+[[systems.specs]]
+file = "bible/text/character-table.toml"
+generates = true
+output = "scripture_chars.gen.h"
+description = "Character encoding table for scripture text (ASCII subset + extended)"
+depends_on = ["math/core/definitions.toml"]
+
+[[systems.specs]]
+file = "bible/text/scripture-format.toml"
+generates = false
+description = "Scripture text formatting rules and conventions"
+depends_on = ["bible/text/character-table.toml"]
+
+[[systems.specs]]
+file = "bible/text/text-codec.toml"
+generates = false
+description = "Text encoding/decoding codec for scripture"
+depends_on = ["bible/text/character-table.toml"]
+
+[[systems.specs]]
+file = "bible/addressing/addressing.toml"
+generates = true
+output = "bible_addressing.gen.h"
+description = "Verse addressing -- book/chapter/verse to ternary ordinal"
+depends_on = ["math/core/definitions.toml", "bible/text/character-table.toml"]
+
+[[systems.specs]]
+file = "bible/codec/encoding.toml"
+generates = false
+description = "How scripture text is encoded in trit-bytes"
+depends_on = ["bible/text/character-table.toml"]
+
+[[systems.specs]]
+file = "bible/codec/decoding.toml"
+generates = false
+description = "How encoded scripture is decoded back to text"
+depends_on = ["bible/codec/encoding.toml"]
+
+[[systems.specs]]
+file = "bible/translation/translation.toml"
+generates = false
+description = "KJV base + WEB variant marking, Hebrew/Greek gematria tables"
+depends_on = ["bible/text/character-table.toml", "bible/addressing/addressing.toml"]
+
+[[systems.specs]]
+file = "bible/cipher/encryption.toml"
+generates = false
+description = "Letter -> Position/Value transliteration (Hebrew + Greek gematria)"
+depends_on = ["math/core/definitions.toml", "bible/translation/translation.toml"]
+
+[[systems.specs]]
+file = "bible/cipher/decryption.toml"
+generates = false
+description = "Position/Value -> Letter transliteration (reverse of encryption)"
+depends_on = ["bible/cipher/encryption.toml"]
+
+
+# ===============================================================
+# DOMAIN 6: COGNITION -- Cognitive Model
+# ===============================================================
+# "Be ye transformed by the renewing of your mind" -- Romans 12:2
+
+[[systems]]
+name = "cognition"
+path = "cognition/"
+order = 6
+description = "Cognitive model -- CPI-SI mental construct, Hebrew states, 27-position cube"
+depends_on = ["math", "primitives"]
+files = 1
+
+[[systems.specs]]
+file = "cognition/cognition.toml"
+generates = false
+description = "Cognitive model specification -- states, transitions, awareness levels"
+depends_on = ["math/core/definitions.toml", "primitives/primitives.toml"]
+
+
+# ===============================================================
+# DOMAIN 7: GENERATION -- Code Generation
+# ===============================================================
+# "And God said, Let the earth bring forth" -- Genesis 1:24
+
+[[systems]]
+name = "generation"
+path = "generation/"
+order = 7
+description = "Code generation -- how specs become C headers, Go packages, Rust crates"
+depends_on = ["math", "primitives", "composition", "validation", "errors"]
+files = 1
+
+[[systems.specs]]
+file = "generation/generation.toml"
+generates = false
+description = "Generation pipeline specification -- targets, templates, validation"
+depends_on = ["primitives/primitives.toml", "composition/composition.toml"]
+
+
+# ===============================================================
+# CROSS-CUTTING SPECS -- Foundation-Level Infrastructure
+# ===============================================================
+# "Upon this rock I will build my church" -- Matthew 16:18
+# (These specs are the rock that every domain stands on)
+
+[[systems]]
+name = "infrastructure"
+path = "."
+order = 8
+description = "Cross-cutting foundation specs -- layer architecture, flags, metadata slots, timing"
+depends_on = ["math", "primitives"]
+files = 4
+
+[[systems.specs]]
+file = "layer.toml"
+generates = true
+output = "layer.gen.h"
+description = "L0-L8 layer architecture -- KERNEL to APP with HEALTH at center"
+depends_on = ["math/core/definitions.toml", "primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "flags.toml"
+generates = true
+output = "flags.gen.h"
+description = "Restore strategy bit flags -- 6 flags for recovery operations"
+depends_on = ["primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "metadata-slots.toml"
+generates = true
+output = "metadata_slots.gen.h"
+description = "13 BRIDGE slots completing 243 + 13 = 256 (PENTERACT to byte boundary)"
+depends_on = ["math/core/definitions.toml", "primitives/primitives.toml"]
+
+[[systems.specs]]
+file = "timing.toml"
+generates = true
+output = "timing.gen.h"
+description = "5 timing intervals derived from POLL anchor (1000ms)"
+depends_on = ["math/core/definitions.toml", "primitives/primitives.toml"]
+
+# ---------------------------------------------------------------
+# Extensions (reserved)
+# ---------------------------------------------------------------
+
+[extensions]
+note = "Reserved -- no extensions defined"
+
+# ---------------------------------------------------------------
+# Cv -- Content Validation
+# ---------------------------------------------------------------
+
+[_validation]
+commands = ["cws-struct lint toml index.toml"]
+
+[_validation.schema]
+required = ["identity"]
+optional = ["extensions", "systems"]
+
+[_validation.health_scoring]
+total = 100
+correct_structure = 30
+all_domains_registered = 30
+dependency_graph_valid = 20
+file_paths_resolvable = 20
+
+# ===============================================================
+# END CONTENT [END]
+# ===============================================================
+
+
+# ===============================================================
+# CLOSING BLOCK [CLOSING]
+# ===============================================================
+
+[_closing.X1_policy]
+scripture = "Remove not the ancient landmark, which thy fathers have set. -- Proverbs 22:28"
+never = [
+    "Remove a domain system without migrating its specs",
+    "Break the dependency graph (circular deps, missing refs)",
+    "Change generation output filenames without updating build system",
+    "3-block structure (METADATA -> CONTENT -> CLOSING)",
+]
+careful = [
+    "Adding new domain systems -- must define clear boundaries",
+    "Changing dependency ordering -- affects build chain",
+    "Renaming spec files -- all consumers must update",
+]
+safe = [
+    "Adding new specs to existing domains",
+    "Adding dependency edges (no cycles)",
+    "Updating descriptions and documentation",
+    "New metadata fields",
+]
+
+[_closing.X2_extension]
+adding_domain = [
+    "1. Create domain directory under foundation/",
+    "2. Create domain index .toml as first file",
+    "3. Add [[systems]] entry to this index with correct order",
+    "4. Add [[systems.specs]] for each file",
+    "5. Define depends_on edges (no cycles)",
+    "6. Run cws-struct lint to verify all files",
+]
+adding_spec = [
+    "1. Create spec file in the domain directory",
+    "2. Use 3-block I/C template (seed/data/L0/toml/config.toml)",
+    "3. Add [[systems.specs]] entry to this index",
+    "4. Define depends_on relative to foundation/",
+    "5. Run cws-struct lint on new file",
+]
+planned = [
+    "Domain 9: networking -- distributed system primitives",
+    "Domain 10: security -- trust model and access control",
+    "Split single-file domains (cognition, generation) as they grow",
+]
+
+[_closing.X3_troubleshooting]
+invalid_toml = "Missing quotes, duplicate keys, or bare keys with special characters"
+missing_spec = "File referenced in index but not found on disk -- verify path"
+circular_dep = "A depends on B depends on A -- break cycle by extracting shared spec"
+lint_failure = "Run cws-struct lint toml <file> -- fix errors before committing"
+
+[_closing.X4_reference]
+domains = [
+    "math/ -- Ternary mathematics (3 files)",
+    "primitives/ -- 23 atomic types (8 files)",
+    "composition/ -- Type composition rules (11 files)",
+    "validation/ -- Type validation rules (9 files)",
+    "errors/ -- Error handling system (4 files)",
+    "bible/ -- Scripture integration (10 files)",
+    "cognition/ -- Cognitive model (1 file)",
+    "generation/ -- Code generation (1 file)",
+    ". -- Cross-cutting infrastructure (4 flat files)",
+]
+total_specs = 51
+total_domains = 9
+validate = "cws-struct lint toml index.toml"
+related_files = [
+    "math/math.toml -- ternary mathematics domain index",
+    "primitives/primitives.toml -- atomic types domain index",
+    "composition/composition.toml -- type composition domain index",
+    "validation/validation.toml -- type validation domain index",
+    "errors/foundation.toml -- error system root",
+    "bible/bible.toml -- scripture integration domain index",
+    "cognition/cognition.toml -- cognitive model",
+    "generation/generation.toml -- code generation",
+]
+
+[_closing.X5_note]
+note = "Foundation specification index -- maps the bedrock of the Bereshit type system. 8 peer domains + 4 cross-cutting specs. All paths relative to foundation/."
+scripture = "In the beginning God created the heaven and the earth. -- Genesis 1:1"
+anchor = "Before language, before platform, before network -- establish the foundation. This index maps what exists at the very bottom. Everything else builds from here."
+
+# ===============================================================
+# END CLOSING [END]
+# ===============================================================
