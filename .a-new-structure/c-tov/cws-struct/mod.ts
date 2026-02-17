@@ -80,6 +80,7 @@ function parseArgs(args: string[]): CliOptions {
       errorsOnly: false,
       summaryOnly: false,
       dryRun: false,
+      extensions: false,
     };
   }
 
@@ -91,6 +92,7 @@ function parseArgs(args: string[]): CliOptions {
       errorsOnly: false,
       summaryOnly: false,
       dryRun: false,
+      extensions: false,
     };
   }
 
@@ -118,6 +120,7 @@ function parseArgs(args: string[]): CliOptions {
     errorsOnly: rest.includes("--errors-only"),
     summaryOnly: rest.includes("--summary"),
     dryRun: rest.includes("--dry-run"),
+    extensions: rest.includes("--extensions"),
   };
 }
 
@@ -153,6 +156,7 @@ ${COLORS.bold}Options:${COLORS.reset}
   --errors-only     Show only errors
   --summary         Show only file-level summary
   --dry-run         Preview transforms without writing
+  --extensions      Also scaffold extension sections (I4, C5-C7, X2-X4, etc.)
   --help, -h        Show this help
   --version         Show version
 
@@ -288,7 +292,10 @@ async function runTransform(opts: CliOptions): Promise<boolean> {
   let errors = 0;
 
   for (const file of files) {
-    const results = await handler.transform(file, opts.dryRun);
+    const results = await handler.transform(file, {
+      dryRun: opts.dryRun,
+      extensions: opts.extensions,
+    });
     const summary = summarize(relative(cwd, file), results);
     printFileSummary(summary, opts.verbose);
     errors += summary.errors;

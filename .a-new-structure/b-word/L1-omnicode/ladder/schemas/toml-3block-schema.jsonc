@@ -19,7 +19,7 @@
     "_P1_tag": "P.1 CORE — Identity [CORE]",
     "_P1_key": "B-definitions-omni-toml-3block-schema",
     "_P1_from": "b-word/seed/data/json/config.jsonc",
-    "_P1_at": "a-01.00",
+    "_P1_at": "a-02.00",
 
     // P.2 FAMILY — Classification
     "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
@@ -33,7 +33,7 @@
     "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
     "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
     "_P3_component": "definitions",
-    "_P3_layer": "b-word/definitions/omni",
+    "_P3_layer": "b-word/L1-omnicode/ladder/schemas",
     "_P3_includes": "none",
     "_P3_provides": ["TOML_3BLOCK_SCHEMA"],
 
@@ -47,7 +47,7 @@
     "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
     "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
     "_P5_title": "TOML 3-Block Schema",
-    "_P5_brief": "Defines how TOML implements OmniCode 3-block structure using nested tables. Parallel to json-3block-schema.jsonc — same concepts, TOML-native representation.",
+    "_P5_brief": "Defines how TOML implements OmniCode 3-block structure using nested tables. Uses unified I/C metadata (I1-I4, C1-C7), content Cc/Co/Cv zones, and X1-X5 closing with required/defined classification.",
 
     // ═══════════════════════════════════════════════════════════════
     // END PRAGMA [END]
@@ -70,15 +70,15 @@
         "title": "TOML 3-Block Schema",
         "type": "Data (Schema Definition)",
         "component": "Ladder",
-        "role": "Define TOML-native representation of OmniCode 3-block structure"
+        "role": "Define TOML-native representation of OmniCode 3-block structure with unified I/C metadata"
     },
 
     // M.2 STATE
     "_M2_state": {
-        "version": "a-01.00",
+        "version": "a-02.00",
         "status": "Active",
         "created": "2026-02-13",
-        "updated": "2026-02-13"
+        "updated": "2026-02-16"
     },
 
     // M.3 ATTRIBUTION
@@ -99,8 +99,8 @@
         "requires": "base-3block-schema.jsonc — shared $defs for format-independent concepts",
         "consumers": "c-tov/cws-struct/lib/formats/toml.ts — runtime linter implements these rules",
         "cross_format": {
-            "base": "b-word/definitions/omni/base-3block-schema.jsonc — shared concepts",
-            "json_sibling": "b-word/definitions/omni/json-3block-schema.jsonc — JSON expression of same structure",
+            "base": "b-word/L1-omnicode/ladder/schemas/base-3block-schema.jsonc — shared concepts",
+            "json_sibling": "b-word/L1-omnicode/ladder/schemas/json-3block-schema.jsonc — JSON expression of same structure",
             "relationship": "Same 3-block concepts, TOML-native tables instead of flat _ keys"
         }
     },
@@ -124,14 +124,18 @@
     // ═══════════════════════════════════════════════════════════════
     //
     // TOML represents 3-block structure through nested tables:
-    //   [_pragma]            — pragma block
-    //   [_pragma.P1_core]    — P.1 section within pragma
-    //   [_metadata.M1_identity] — M.1 section within metadata
-    //   [_content]           — content block header
-    //   [_closing.X1_policy] — X.1 section within closing
+    //   [_metadata]              — metadata block root
+    //   [_metadata.I1_core]      — I.1 section within metadata
+    //   [_metadata.C1_state]     — C.1 section within metadata
+    //   [_metadata._contract]    — structural self-description
+    //   [_content]               — content block header
+    //   [_closing.X1_policy]     — X.1 section within closing
     //
     // The table hierarchy IS the block structure.
     // No separators needed — tables are self-delimiting.
+    //
+    // NOTE: Old _pragma block (P1-P5) merged into _metadata as I1-I4.
+    //       Old M1-M5 metadata replaced by C1-C7 context.
 
     "_content_start": "═══════════════════════════════════════════════════════════════",
     "_content_tag": "CONTENT BLOCK [CONTENT]",
@@ -149,10 +153,16 @@
 
     "format_mapping": {
         "note": "How OmniCode concepts map to TOML syntax",
-        "block_boundaries": "Table headers ([_pragma], [_metadata], [_content], [_closing]) — self-delimiting",
-        "section_navigation": "Dotted tables ([_pragma.P1_core], [_metadata.M1_identity]) — hierarchy via dots",
+        "block_boundaries": "Table headers ([_metadata], [_content], [_closing]) — self-delimiting",
+        "section_navigation": "Dotted tables ([_metadata.I1_core], [_metadata.C3_grounding]) — hierarchy via dots",
         "separators": "Block comment banners (# ═══...) — visual only, not structural",
-        "data_keys": "Simple key = value pairs within tables"
+        "data_keys": "Simple key = value pairs within tables",
+        "naming_patterns": {
+            "metadata": "I{N}_{name} for identity, C{N}_{name} for context, _{name} for meta-sections",
+            "closing": "X{N}_{name} for closing sections, _{name} for meta-sections",
+            "metadata_regex": "/^(?:I\\d+_[a-z][a-z_]*|C\\d+_[a-z][a-z_]*|_[a-z][a-z_]*)$/",
+            "closing_regex": "/^(?:X\\d+_[a-z][a-z_]*|_[a-z][a-z_]*)$/"
+        }
     },
 
     // ───────────────────────────────────────────────────────────
@@ -160,8 +170,8 @@
     // ───────────────────────────────────────────────────────────
     //
     // Complete TOML table structure definition.
-    // Each entry maps a TOML table path to its purpose
-    // and the base schema $def it implements.
+    // Each entry maps a TOML table path to its purpose,
+    // the base schema $def it implements, and field requirements.
 
     "_Co": "─────────────────────────────────────────────────────────────",
     "_Co_tag": "Co — Content Operations [OPS]",
@@ -169,133 +179,116 @@
     "toml_structure": {
 
         // ═══════════════════════════════════════════════════════
-        // PRAGMA BLOCK — [_pragma] tree
+        // METADATA BLOCK — [_metadata] tree
         // ═══════════════════════════════════════════════════════
+        //
+        // Unified I/C structure: Identity (I1-I4) + Context (C1-C7) + _contract
+        // OLD pragma (P1-P5) merged into metadata as I1-I4.
+        // OLD metadata (M1-M5) replaced by C1-C4 (required) + C5-C7 (extension).
 
-        "[_pragma]": {
-            "purpose": "Pragma block root — contains format declaration",
-            "required_keys": ["format"],
-            "implements": "Pragma concept from base-3block-schema",
-            "example": "[_pragma]\nformat = \"@omni data --toml\""
+        // ─── I — Identity: What IS this file ───
+
+        "[_metadata.I1_core]": {
+            "purpose": "I.1 CORE — File identity [REQUIRED]",
+            "required_keys": ["key", "format", "from", "at"],
+            "implements": "$defs/I1_core",
+            "note": "key = Bereshit key (B- prefix), format = @omni declaration, from = derivation path, at = lifecycle position"
         },
 
-        "[_pragma.legend]": {
-            "purpose": "Field classification legend",
-            "required_keys": ["req", "inh", "ins"],
-            "implements": "$defs/pragma_legend",
-            "example": "[_pragma.legend]\nreq = \"REQUIRED\"\ninh = \"INHERITED\"\nins = \"INSTANCE\""
-        },
-
-        "[_pragma.P1_core]": {
-            "purpose": "P.1 CORE — Identity",
-            "required_keys": ["key", "from", "at"],
-            "implements": "$defs/P1_core",
-            "note": "key = Bereshit key (B- prefix), from = derivation path, at = living version"
-        },
-
-        "[_pragma.P2_family]": {
-            "purpose": "P.2 FAMILY — Classification",
-            "required_keys": ["type", "subtype", "role", "structure"],
-            "implements": "$defs/P2_family",
+        "[_metadata.I2_family]": {
+            "purpose": "I.2 FAMILY — Classification [REQUIRED]",
+            "required_keys": ["type", "structure"],
+            "defined_keys": ["subtype", "role"],
+            "implements": "$defs/I2_family",
             "note": "type = data|code|documentation, structure = 3-block|4-block|5-block"
         },
 
-        "[_pragma.P3_instance]": {
-            "purpose": "P.3 INSTANCE — File Details",
-            "required_keys": ["component", "layer", "includes", "provides"],
-            "implements": "$defs/P3_instance",
+        "[_metadata.I3_instance]": {
+            "purpose": "I.3 INSTANCE — File details [REQUIRED]",
+            "required_keys": ["file", "title"],
+            "defined_keys": ["component", "path", "provides", "brief"],
+            "implements": "$defs/I3_instance",
             "note": "provides = array of UPPER_SNAKE capability constants"
         },
 
-        "[_pragma.P4_architecture]": {
-            "purpose": "P.4 ARCHITECTURE — Scaling Context",
-            "required_keys": ["anchor"],
-            "optional_keys": ["layers", "streams"],
-            "implements": "$defs/P4_architecture"
+        "[_metadata.I4_architecture]": {
+            "purpose": "I.4 ARCHITECTURE — Scaling context [EXTENSION]",
+            "optional_keys": ["layers", "anchor"],
+            "implements": "$defs/I4_architecture"
         },
 
-        "[_pragma.P5_summary]": {
-            "purpose": "P.5 SUMMARY — Human Identity",
-            "required_keys": ["title", "brief"],
-            "optional_keys": ["usage"],
-            "implements": "$defs/P5_summary"
-        },
+        // ─── C — Context: What do I need to KNOW ───
 
-        // ═══════════════════════════════════════════════════════
-        // METADATA BLOCK — [_metadata] tree
-        // ═══════════════════════════════════════════════════════
-
-        "[_metadata.M1_identity]": {
-            "purpose": "M.1 IDENTITY — File identity",
-            "required_keys": ["file", "key", "title", "type", "component", "role"],
-            "implements": "$defs/M1_identity"
-        },
-
-        "[_metadata.M2_state]": {
-            "purpose": "M.2 STATE — Version and lifecycle",
-            "required_keys": ["version", "status", "created", "updated"],
-            "implements": "$defs/M2_state",
+        "[_metadata.C1_state]": {
+            "purpose": "C.1 STATE — Version and lifecycle [REQUIRED]",
+            "required_keys": ["version", "status"],
+            "defined_keys": ["created", "updated"],
+            "implements": "$defs/C1_state",
             "note": "version = living version pattern, dates = YYYY-MM-DD"
         },
 
-        "[_metadata.M3_attribution]": {
-            "purpose": "M.3 ATTRIBUTION — Authorship",
-            "required_keys": ["architect", "implementation"],
-            "optional_keys": ["organization", "copyright"],
-            "implements": "$defs/M3_attribution"
+        "[_metadata.C2_attribution]": {
+            "purpose": "C.2 ATTRIBUTION — Authorship [REQUIRED]",
+            "required_keys": ["organization"],
+            "defined_keys": ["architect", "implementation", "copyright"],
+            "implements": "$defs/C2_attribution"
         },
 
-        "[_metadata.M4_grounding]": {
-            "purpose": "M.4 GROUNDING — Biblical foundation",
-            "required_keys": ["scripture", "principle"],
-            "optional_keys": ["anchor"],
-            "implements": "$defs/M4_grounding"
+        "[_metadata.C3_grounding]": {
+            "purpose": "C.3 GROUNDING — Biblical foundation [REQUIRED]",
+            "required_keys": ["scripture"],
+            "defined_keys": ["principle", "anchor"],
+            "implements": "$defs/C3_grounding"
         },
 
-        "[_metadata.M5_dependencies]": {
-            "purpose": "M.5 DEPENDENCIES — Dependency graph",
+        "[_metadata.C4_dependencies]": {
+            "purpose": "C.4 DEPENDENCIES — Dependency graph [REQUIRED]",
             "required_keys": ["requires", "consumers"],
-            "optional_keys": ["integration", "if_missing"],
-            "implements": "$defs/M5_dependencies"
+            "defined_keys": ["integration", "if_missing"],
+            "implements": "$defs/C4_dependencies"
         },
 
-        "[_metadata.M5_dependencies.related_data]": {
+        "[_metadata.C4_dependencies.related]": {
             "purpose": "Related data — parent/children relationships",
             "optional_keys": ["parent", "children"],
-            "note": "Nested table under M5"
+            "note": "Nested table under C4"
         },
 
-        "[_metadata.M5_dependencies.cross_format]": {
+        "[_metadata.C4_dependencies.cross_format]": {
             "purpose": "Cross-format relationships",
-            "optional_keys": ["role", "note"],
+            "optional_keys": ["role", "note", "jsonc", "relationship"],
             "note": "How this TOML file relates to JSON/JSONC siblings"
         },
 
-        "[_metadata.M6_location]": {
-            "purpose": "M.6 LOCATION — Optional: file path and derivation",
+        "[_metadata.C5_intent]": {
+            "purpose": "C.5 INTENT — Purpose, design philosophy [EXTENSION]",
             "optional": true,
-            "implements": "Extension metadata"
+            "implements": "$defs/C5_intent"
         },
 
-        "[_metadata.M7_classification]": {
-            "purpose": "M.7 CLASSIFICATION — Optional: tags and categorization",
-            "optional": true
+        "[_metadata.C5_intent.key_features]": {
+            "purpose": "Key features of this file",
+            "optional": true,
+            "note": "Nested table under C5"
         },
 
-        "[_metadata.M8_intent]": {
-            "purpose": "M.8 INTENT — Optional: purpose, design philosophy",
-            "optional": true
+        "[_metadata.C6_roadmap]": {
+            "purpose": "C.6 ROADMAP — History, current, planned [EXTENSION]",
+            "optional": true,
+            "implements": "$defs/C6_roadmap"
         },
 
-        "[_metadata.M9_roadmap]": {
-            "purpose": "M.9 ROADMAP — Optional: history, current, planned",
-            "optional": true
+        "[_metadata.C7_classification]": {
+            "purpose": "C.7 CLASSIFICATION — Tags and categorization [EXTENSION]",
+            "optional": true,
+            "implements": "$defs/C7_classification"
         },
 
-        "[_metadata.M_extension_note]": {
-            "purpose": "Extension contract — M1-M5 base + M6+ domain rules",
-            "required_keys": ["required", "extension", "rule"],
-            "implements": "$defs/M_extension_note"
+        "[_metadata._contract]": {
+            "purpose": "Structural self-description — declares what this file's metadata/closing contract is [EXTENSION]",
+            "optional_keys": ["required_identity", "required_context", "extension_identity", "extension_context", "required_closing", "defined_closing", "valid_patterns", "rule"],
+            "implements": "$defs/_contract",
+            "note": "When present, the linter cross-validates contract fields against reality"
         },
 
         // ═══════════════════════════════════════════════════════
@@ -306,72 +299,125 @@
             "purpose": "Content block header — format and conventions",
             "required_keys": ["Cc", "Co", "Cv"],
             "optional_keys": ["format", "key_convention", "constraint"],
-            "note": "Cc/Co/Cv are label strings that name the three content sections. Actual data follows in separate tables."
+            "note": "Cc/Co/Cv are label strings that name the three content zones. Actual data follows in separate tables."
         },
 
         "data_tables": {
             "purpose": "The actual content — user-defined tables after [_content]",
             "note": "Tables like [identity], [settings], [resources], [behavior] — these are the real configuration data. They sit between [_content] and [_closing]. No _ prefix needed.",
-            "convention": "Cc data comes first (identity, settings), Co data next (operations), Cv data last ([_validation])"
+            "convention": "Cc data comes first (identity, settings, resources), Co data next (behavior, integrations), Cv data last ([_validation])"
+        },
+
+        "[identity]": {
+            "purpose": "Cc.1 IDENTITY — What this config IS [REQUIRED in Cc zone]",
+            "required_keys": ["name", "version"],
+            "defined_keys": ["description", "type"],
+            "implements": "$defs/content_identity",
+            "note": "Every TOML config must have an identity section"
+        },
+
+        "[settings]": {
+            "purpose": "Cc.2 SETTINGS — Primary configuration values [DEFINED in Cc zone]",
+            "note": "Keys are domain-specific"
+        },
+
+        "[resources]": {
+            "purpose": "Cc.3 RESOURCES — Paths, limits, constraints [DEFINED in Cc zone]",
+            "note": "Common nested tables: resources.paths, resources.limits"
+        },
+
+        "[behavior]": {
+            "purpose": "Co.1 BEHAVIOR — Runtime modes and toggles [DEFINED in Co zone]",
+            "note": "Keys are domain-specific (logging, runtime, features)"
+        },
+
+        "[integrations]": {
+            "purpose": "Co.2 INTEGRATIONS — External service configuration [DEFINED in Co zone]",
+            "note": "Common nested tables: integrations.database, integrations.cache"
+        },
+
+        "[_extensions]": {
+            "purpose": "Extension zones — experimental patterns [OPTIONAL]",
+            "note": "Three sub-tables: [_extensions.cc], [_extensions.co], [_extensions.cv]. May be promoted into main sections."
         },
 
         "[_validation]": {
-            "purpose": "Cv — Content Validation section",
-            "optional_keys": ["commands"],
+            "purpose": "Cv.1 VALIDATION — Schema, health scoring, content rules [REQUIRED in Cv zone]",
+            "required_keys": ["commands"],
+            "defined_keys": ["schema"],
+            "implements": "$defs/content_validation",
             "note": "TOML-specific: validation lives in [_validation] table, not inline with content"
         },
 
         "[_validation.schema]": {
-            "purpose": "Schema constraints — required and optional sections",
-            "optional_keys": ["required", "optional"]
+            "purpose": "Schema constraints — self-describing contract",
+            "defined_keys": ["required", "defined", "optional", "fields"],
+            "note": "'fields' enables per-section field requirements: [_validation.schema.fields.identity] → required = ['name', 'version']"
+        },
+
+        "[_validation.schema.fields.*]": {
+            "purpose": "Per-section field requirements",
+            "optional_keys": ["required", "defined"],
+            "note": "Each entry declares which fields are required/defined for a content section. Linter cross-validates these against reality."
         },
 
         "[_validation.health_scoring]": {
             "purpose": "Health scoring criteria — weights summing to 100",
-            "optional_keys": ["total", "correct_structure", "valid_configuration", "useful_documentation"]
+            "optional_keys": ["total", "correct_structure", "valid_configuration", "useful_documentation", "code_integration"]
+        },
+
+        "[_validation.content]": {
+            "purpose": "Content-specific validation rules — enums, ranges, ordering",
+            "note": "Domain-specific constraints (e.g., mode_valid = ['development', 'production'])"
         },
 
         // ═══════════════════════════════════════════════════════
         // CLOSING BLOCK — [_closing] tree
         // ═══════════════════════════════════════════════════════
+        //
+        // Classification:
+        //   REQUIRED: X1_policy, X5_note — every file needs guardrails and an anchor
+        //   DEFINED:  X2_extension, X3_troubleshooting, X4_reference — expected, info if missing
+        //   TEMPLATE: X6_template — only in seed/template files
 
         "[_closing.X1_policy]": {
-            "purpose": "X.1 POLICY — Modification guidelines",
+            "purpose": "X.1 POLICY — Modification guidelines [REQUIRED]",
             "required_keys": ["never", "careful", "safe"],
-            "optional_keys": ["scripture"],
+            "defined_keys": ["scripture"],
             "implements": "$defs/X1_policy"
         },
 
         "[_closing.X2_extension]": {
-            "purpose": "X.2 EXTENSION — Future ideas",
+            "purpose": "X.2 EXTENSION — Future ideas [DEFINED]",
             "optional": true,
-            "optional_keys": ["planned", "considered"],
+            "defined_keys": ["planned", "considered"],
             "implements": "$defs/X2_extension"
         },
 
         "[_closing.X3_troubleshooting]": {
-            "purpose": "X.3 TROUBLESHOOTING — Common problems",
+            "purpose": "X.3 TROUBLESHOOTING — Common problems [DEFINED]",
             "optional": true,
+            "defined_keys": ["scripture"],
             "note": "Keys are problem descriptions, values are solutions",
             "implements": "$defs/X3_troubleshooting"
         },
 
         "[_closing.X4_reference]": {
-            "purpose": "X.4 REFERENCE — Quick lookup",
-            "required_keys": ["related_files"],
-            "optional_keys": ["required_sections", "validate"],
+            "purpose": "X.4 REFERENCE — Quick lookup [DEFINED]",
+            "optional": true,
+            "defined_keys": ["related_files", "required_sections", "validate", "env_pattern"],
             "implements": "$defs/X4_reference"
         },
 
         "[_closing.X5_note]": {
-            "purpose": "X.5 NOTE — Final guidance",
-            "required_keys": ["note"],
-            "optional_keys": ["scripture", "anchor"],
+            "purpose": "X.5 NOTE — Final anchor [REQUIRED]",
+            "required_keys": ["note", "scripture"],
+            "defined_keys": ["anchor"],
             "implements": "$defs/X5_note"
         },
 
         "[_closing.X6_template]": {
-            "purpose": "X.6 TEMPLATE — Instantiation guide (remove on instantiation)",
+            "purpose": "X.6 TEMPLATE — Instantiation guide [TEMPLATE-ONLY: remove when instantiating]",
             "optional": true,
             "note": "Only in seed/template files. Removed when copy-and-fill."
         }
@@ -387,32 +433,54 @@
     "_Cv": "─────────────────────────────────────────────────────────────",
     "_Cv_tag": "Cv — Content Validation [VALIDATE]",
     "_Cv_verify": "deno run --allow-read mod.ts lint toml <file>",
-    "_Cv_expected_state": "All [_pragma], [_metadata], [_content], [_closing] tables present with required keys.",
+    "_Cv_expected_state": "All [_metadata], [_content], [_closing] tables present with required keys and field-level validation passing.",
 
     "validation_contract": {
-        "pragma": {
-            "required_tables": ["[_pragma]", "[_pragma.P1_core]", "[_pragma.P2_family]", "[_pragma.P3_instance]", "[_pragma.P4_architecture]", "[_pragma.P5_summary]"],
-            "required_keys": {
-                "[_pragma]": ["format"],
-                "[_pragma.P1_core]": ["key", "from", "at"],
-                "[_pragma.P2_family]": ["type", "structure"],
-                "[_pragma.P5_summary]": ["title", "brief"]
-            }
-        },
         "metadata": {
-            "required_tables": ["[_metadata.M1_identity]", "[_metadata.M2_state]", "[_metadata.M3_attribution]", "[_metadata.M4_grounding]", "[_metadata.M5_dependencies]"],
-            "optional_tables": ["[_metadata.M6_location]", "[_metadata.M7_classification]", "[_metadata.M8_intent]", "[_metadata.M9_roadmap]"]
+            "required_identity": ["[_metadata.I1_core]", "[_metadata.I2_family]", "[_metadata.I3_instance]"],
+            "extension_identity": ["[_metadata.I4_architecture]"],
+            "required_context": ["[_metadata.C1_state]", "[_metadata.C2_attribution]", "[_metadata.C3_grounding]", "[_metadata.C4_dependencies]"],
+            "extension_context": ["[_metadata.C5_intent]", "[_metadata.C6_roadmap]", "[_metadata.C7_classification]", "[_metadata._contract]"],
+            "key_pattern": "/^(?:I\\d+_[a-z][a-z_]*|C\\d+_[a-z][a-z_]*|_[a-z][a-z_]*)$/",
+            "field_requirements": {
+                "I1_core": { "required": ["key", "format", "from", "at"] },
+                "I2_family": { "required": ["type", "structure"], "defined": ["subtype", "role"] },
+                "I3_instance": { "required": ["file", "title"], "defined": ["component", "path", "provides", "brief"] },
+                "C1_state": { "required": ["version", "status"], "defined": ["created", "updated"] },
+                "C2_attribution": { "required": ["organization"], "defined": ["architect", "implementation", "copyright"] },
+                "C3_grounding": { "required": ["scripture"], "defined": ["principle", "anchor"] },
+                "C4_dependencies": { "required": ["requires", "consumers"], "defined": ["integration", "if_missing"] }
+            }
         },
         "content": {
             "required_tables": ["[_content]"],
             "required_keys": {
                 "[_content]": ["Cc", "Co", "Cv"]
             },
-            "note": "Actual data tables are format-specific — no _ prefix required"
+            "required_sections": ["[identity]"],
+            "defined_sections": ["[settings]", "[resources]", "[behavior]", "[integrations]"],
+            "defined_cc": ["[settings]", "[resources]"],
+            "defined_co": ["[behavior]", "[integrations]"],
+            "required_validation": ["[_validation]"],
+            "extension_zones": ["cc", "co", "cv"],
+            "field_requirements": {
+                "identity": { "required": ["name", "version"], "defined": ["description"] },
+                "_validation": { "required": ["commands"], "defined": ["schema"] }
+            },
+            "note": "Actual data tables are format-specific — no _ prefix required. [_validation.schema.fields] enables per-file field requirements."
         },
         "closing": {
-            "required_tables": ["[_closing.X1_policy]", "[_closing.X4_reference]", "[_closing.X5_note]"],
-            "optional_tables": ["[_closing.X2_extension]", "[_closing.X3_troubleshooting]", "[_closing.X6_template]"]
+            "required_tables": ["[_closing.X1_policy]", "[_closing.X5_note]"],
+            "defined_tables": ["[_closing.X2_extension]", "[_closing.X3_troubleshooting]", "[_closing.X4_reference]"],
+            "template_tables": ["[_closing.X6_template]"],
+            "key_pattern": "/^(?:X\\d+_[a-z][a-z_]*|_[a-z][a-z_]*)$/",
+            "field_requirements": {
+                "X1_policy": { "required": ["never", "careful", "safe"], "defined": ["scripture"] },
+                "X2_extension": { "required": ["planned"], "defined": [] },
+                "X3_troubleshooting": { "required": [], "defined": ["scripture"] },
+                "X4_reference": { "required": ["related_files"], "defined": ["required_sections", "validate"] },
+                "X5_note": { "required": ["note", "scripture"], "defined": ["anchor"] }
+            }
         }
     },
 
@@ -429,53 +497,58 @@
 
     "_closing_start": "═══════════════════════════════════════════════════════════════",
     "_closing_tag": "CLOSING BLOCK [CLOSING]",
-    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note",
+    "_closing_structure": "X.1 Policy [REQUIRED] → X.2 Extension [DEFINED] → X.3 Troubleshooting [DEFINED] → X.4 Reference [DEFINED] → X.5 Note [REQUIRED]",
 
-    // X.1 POLICY
+    // X.1 POLICY [REQUIRED]
     "_X1": "─────────────────────────────────────────────────────────────",
     "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
     "_X1_scripture": "For God is not the author of confusion, but of peace. — 1 Corinthians 14:33",
     "_X1_never": [
-        "Remove required table definitions",
-        "Change table naming convention ([_pragma] → something else)",
-        "Break the TOML ↔ JSON parallel without updating both schemas"
+        "Remove required table definitions (I1-I3, C1-C4, X1, X5)",
+        "Change table naming convention ([_metadata.I1_core] → something else)",
+        "Break the TOML ↔ JSON parallel without updating both schemas",
+        "Remove field_requirements from validation_contract"
     ],
     "_X1_careful": [
         "Adding new required tables (cascades to all TOML files)",
-        "Changing required_keys within tables",
-        "Modifying the [_content] label convention (Cc/Co/Cv)"
+        "Changing required_keys within tables (breaks existing files)",
+        "Modifying the [_content] label convention (Cc/Co/Cv)",
+        "Changing closing classification (required vs defined)"
     ],
     "_X1_safe": [
-        "Adding optional tables or keys to existing sections",
+        "Adding optional/defined keys to existing sections",
         "Adding descriptions and documentation",
-        "Adding examples to table definitions"
+        "Adding examples to table definitions",
+        "Adding new extension tables"
     ],
 
-    // X.2 EXTENSION
+    // X.2 EXTENSION [DEFINED]
     "_X2": "─────────────────────────────────────────────────────────────",
     "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
     "_X2_planned": [
         "Formal cross-reference to base-3block-schema $defs via $ref paths",
         "TOML-specific validation patterns beyond what toml.ts checks",
-        "4-block TOML schema (code configs with SETUP block)"
+        "Schema cross-validation between this file and toml.ts linter constants"
     ],
 
-    // X.4 REFERENCE
+    // X.4 REFERENCE [DEFINED]
     "_X4": "─────────────────────────────────────────────────────────────",
     "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
     "_X4_related_files": [
-        "b-word/definitions/omni/base-3block-schema.jsonc — Base concepts (parent)",
-        "b-word/definitions/omni/json-3block-schema.jsonc — JSON sibling schema",
-        "b-word/seed/data/L0/toml/config.toml — TOML seed template (canonical example)",
+        "b-word/L1-omnicode/ladder/schemas/base-3block-schema.jsonc — Base concepts (parent)",
+        "b-word/L1-omnicode/ladder/schemas/json-3block-schema.jsonc — JSON sibling schema",
+        "b-word/seed/data/L0/toml/config.toml — TOML seed template (canonical root example)",
+        "b-word/seed/code/L0/toml/config.toml — Code config template (canonical code example)",
+        "b-word/seed/code/L0/toml/compiler/config.toml — Compiler config template (canonical compiler example)",
         "c-tov/cws-struct/lib/formats/toml.ts — Runtime linter (implements these rules)"
     ],
 
-    // X.5 NOTE
+    // X.5 NOTE [REQUIRED]
     "_X5": "─────────────────────────────────────────────────────────────",
-    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
-    "_X5_note": "TOML and JSON express the same 3-block structure in their native tongues. TOML uses nested tables — the hierarchy IS the structure. JSON uses flat _ keys — explicit markers in a flat namespace. Same truth, different expression. Like Scripture in two languages — the meaning carries, the words adapt.",
+    "_X5_tag": "X.5 NOTE — Final Anchor [NOTE]",
+    "_X5_note": "TOML and JSON express the same 3-block structure in their native tongues. TOML uses nested tables — the hierarchy IS the structure. JSON uses flat _ keys — explicit markers in a flat namespace. Same truth, different expression. The unified I/C metadata (Identity + Context) replaces the old pragma+metadata split — being and knowing unified in one block, as Genesis unified creation in one verse.",
     "_X5_scripture": "For God is not the author of confusion, but of peace. — 1 Corinthians 14:33",
-    "_X5_anchor": "Tables are boundaries. Boundaries are Genesis 1. Structure before content.",
+    "_X5_anchor": "Tables are boundaries. Boundaries are Genesis 1. Structure before content. Identity before context. Both in one block.",
 
     // ═══════════════════════════════════════════════════════════════
     // END CLOSING [END]

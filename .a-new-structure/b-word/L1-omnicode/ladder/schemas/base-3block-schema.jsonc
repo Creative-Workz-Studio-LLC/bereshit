@@ -19,7 +19,7 @@
     "_P1_tag": "P.1 CORE — Identity [CORE]",
     "_P1_key": "B-definitions-omni-base-3block-schema",
     "_P1_from": "b-word/seed/data/json/config.jsonc",
-    "_P1_at": "a-01.00",
+    "_P1_at": "a-02.00",
 
     // P.2 FAMILY — Classification
     "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
@@ -33,7 +33,7 @@
     "_P3_INSTANCE": "─────────────────────────────────────────────────────────────",
     "_P3_tag": "P.3 INSTANCE — File Details [INSTANCE]",
     "_P3_component": "definitions",
-    "_P3_layer": "b-word/definitions/omni",
+    "_P3_layer": "b-word/L1-omnicode/ladder/schemas",
     "_P3_includes": "none",
     "_P3_provides": ["BASE_3BLOCK_SCHEMA", "SHARED_DEFS"],
 
@@ -47,7 +47,7 @@
     "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
     "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
     "_P5_title": "Base 3-Block Schema",
-    "_P5_brief": "Format-independent foundation for OmniCode 3-block structure. Defines shared type definitions ($defs) that format-specific schemas reference.",
+    "_P5_brief": "Format-independent foundation for OmniCode 3-block structure. Defines shared $defs using unified I/C metadata (I1-I4 identity, C1-C7 context), content Cc/Co/Cv zones, and X1-X5 closing with field-level requirements.",
 
     // ═══════════════════════════════════════════════════════════════
     // END PRAGMA [END]
@@ -70,15 +70,15 @@
         "title": "Base 3-Block Schema",
         "type": "Data (Schema Foundation)",
         "component": "Ladder",
-        "role": "Define format-independent 3-block structure shared by all OmniCode formats"
+        "role": "Define format-independent 3-block structure with unified I/C metadata"
     },
 
     // M.2 STATE
     "_M2_state": {
-        "version": "a-01.00",
+        "version": "a-02.00",
         "status": "Active",
         "created": "2026-02-13",
-        "updated": "2026-02-13"
+        "updated": "2026-02-16"
     },
 
     // M.3 ATTRIBUTION
@@ -119,14 +119,19 @@
     // CONTENT BLOCK [CONTENT]
     // ═══════════════════════════════════════════════════════════════
     //
-    // The 3-block structure is format-independent:
-    //   PRAGMA → METADATA → CONTENT → CLOSING
+    // The 3-block structure uses UNIFIED METADATA (I/C):
+    //   _metadata — single block containing both Identity (I) and Context (C)
+    //   _content  — data with Cc/Co/Cv zones
+    //   _closing  — guidance with X1-X5 sections
+    //
+    // The OLD pragma+metadata split has been MERGED:
+    //   OLD: _pragma (P1-P5) + _metadata (M1-M5+) → NEW: _metadata (I1-I4 + C1-C7 + _contract)
     //
     // Each format expresses this differently:
-    //   JSON  — flat _ keys  (_pragma, _P1_key, _M1_identity, _Cc, _X1)
-    //   TOML  — nested tables ([_pragma], [_pragma.P1_core], [_closing.X1_policy])
-    //   Go    — comments (// METADATA BLOCK, // M.1 IDENTITY)
-    //   C     — comments (/* METADATA BLOCK */, /* M.1 IDENTITY */)
+    //   TOML  — nested tables ([_metadata.I1_core], [_closing.X1_policy])
+    //   JSON  — flat _ keys (_M1_identity) or nested objects
+    //   Go    — comments (// I.1 CORE, // C.1 STATE)
+    //   C     — comments (/* I.1 CORE */, /* C.1 STATE */)
     //
     // The $defs below define WHAT each section contains.
     // Format schemas define HOW to represent it.
@@ -146,7 +151,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://creativeworkzstudio.com/schemas/omnicode/base-3block.schema.json",
     "title": "OmniCode Base 3-Block Structure",
-    "description": "Format-independent definition of OmniCode 3-block structure. Provides shared $defs for pragma, metadata, content, and closing concepts. Format-specific schemas (JSON, TOML) inherit and map these to their native representation.",
+    "description": "Format-independent definition of OmniCode 3-block structure. Uses unified I/C metadata: I1-I4 (Identity — what IS this file) + C1-C7 (Context — what do I need to KNOW) + _contract. Content uses Cc/Co/Cv zones. Closing uses X1-X5 with required/defined classification.",
 
     // ───────────────────────────────────────────────────────────
     // Co — Content Operations [OPS]
@@ -207,166 +212,205 @@
         },
 
         // ═══════════════════════════════════════════════════════
-        // PRAGMA — OmniCode Identity (P.1–P.5)
+        // METADATA — Unified I/C Structure
         // ═══════════════════════════════════════════════════════
         //
-        // Pragma establishes WHO this file is.
-        // Every format MUST express these five sections.
+        // Metadata uses TWO namespaces in one block:
+        //   I — Identity: What IS this file (I1-I4)
+        //   C — Context:  What do I need to KNOW (C1-C7)
+        //   _contract:    Structural self-description
+        //
+        // Classification:
+        //   REQUIRED identity:  I1_core, I2_family, I3_instance
+        //   EXTENSION identity: I4_architecture
+        //   REQUIRED context:   C1_state, C2_attribution, C3_grounding, C4_dependencies
+        //   EXTENSION context:  C5_intent, C6_roadmap, C7_classification, _contract
+        //
+        // Valid key pattern: I{N}_{name} | C{N}_{name} | _{name}
+        // Regex: /^(?:I\d+_[a-z][a-z_]*|C\d+_[a-z][a-z_]*|_[a-z][a-z_]*)$/
 
-        "pragma_legend": {
+        // ─── I — Identity sections ───
+
+        "I1_core": {
             "type": "object",
-            "description": "Field classification: req (required), inh (inherited), ins (instance-specific)",
+            "description": "I.1 CORE — File identity: unique key, format declaration, template derivation, lifecycle position",
             "properties": {
-                "req": { "type": "string", "description": "REQUIRED — must exist, validation fails without" },
-                "inh": { "type": "string", "description": "INHERITED — from template, override allowed" },
-                "ins": { "type": "string", "description": "INSTANCE — file-specific, unique values" }
+                "key": { "$ref": "#/$defs/bereshit_key", "description": "Unique Bereshit key (B- prefix)" },
+                "format": { "type": "string", "description": "OmniCode format declaration (@omni template --toml, @omni document --toml)" },
+                "from": { "type": "string", "description": "Template derivation path or 'none' for roots" },
+                "at": { "type": "string", "description": "Lifecycle position: 'template' for seeds, living version for instances" }
             },
-            "required": ["req", "inh", "ins"]
+            "required": ["key", "format", "from", "at"]
         },
 
-        "P1_core": {
+        "I2_family": {
             "type": "object",
-            "description": "P.1 CORE — Identity: unique key, template derivation, version",
-            "properties": {
-                "key": { "$ref": "#/$defs/bereshit_key" },
-                "from": { "type": "string", "description": "Template derivation path (b-word/ relative) or 'none' for roots" },
-                "at": { "$ref": "#/$defs/living_version" }
-            },
-            "required": ["key", "from", "at"]
-        },
-
-        "P2_family": {
-            "type": "object",
-            "description": "P.2 FAMILY — Classification: type, subtype, role, structure",
+            "description": "I.2 FAMILY — Classification: content type, subtype, architectural role, block structure",
             "properties": {
                 "type": { "$ref": "#/$defs/content_type" },
                 "subtype": { "type": "string", "description": "Subtype (config, schema, types, constants, etc.)" },
-                "role": { "$ref": "#/$defs/architectural_role" },
+                "role": { "type": "string", "description": "Architectural role (seed, scaffold, ladder, rung, rails)" },
                 "structure": { "$ref": "#/$defs/block_structure" }
             },
-            "required": ["type", "subtype", "role", "structure"]
+            "required": ["type", "structure"]
         },
 
-        "P3_instance": {
+        "I3_instance": {
             "type": "object",
-            "description": "P.3 INSTANCE — File Details: component position, layer path, dependencies, capabilities",
+            "description": "I.3 INSTANCE — File details: filename, title, component description, path, capabilities",
             "properties": {
-                "component": { "type": "string", "description": "Component position in hierarchy" },
-                "layer": { "type": "string", "description": "Layer path within b-word/" },
-                "includes": {
-                    "oneOf": [
-                        { "type": "string", "const": "none" },
-                        { "type": "array", "items": { "type": "string" } }
-                    ],
-                    "description": "Dependencies ('none' or array of paths)"
-                },
+                "file": { "type": "string", "description": "Filename" },
+                "title": { "type": "string", "description": "Human-readable title" },
+                "component": { "type": "string", "description": "What this file IS in the system" },
+                "path": { "type": "string", "description": "Relative path within project" },
                 "provides": {
                     "type": "array",
                     "items": { "type": "string" },
                     "description": "Capabilities (UPPER_SNAKE constants)"
-                }
+                },
+                "brief": { "type": "string", "description": "One-line description" }
             },
-            "required": ["component", "layer", "includes", "provides"]
+            "required": ["file", "title"]
         },
 
-        "P4_architecture": {
+        "I4_architecture": {
             "type": "object",
-            "description": "P.4 ARCHITECTURE — Scaling Context: layer mapping, anchor chain",
+            "description": "I.4 ARCHITECTURE — Scaling context: layer mapping, anchor chain [EXTENSION]",
             "properties": {
-                "layers": { "type": "string", "description": "Layer-to-language mapping" },
-                "streams": { "type": "string", "description": "Build stream definitions" },
+                "layers": { "type": "string", "description": "Layer-to-language mapping (L0:C, L1:C, ...)" },
                 "anchor": { "type": "string", "description": "Anchor chain (genesis_1_1 -> ...)" }
-            },
-            "required": ["anchor"]
+            }
         },
 
-        "P5_summary": {
-            "type": "object",
-            "description": "P.5 SUMMARY — Human Identity: display title, brief description",
-            "properties": {
-                "title": { "type": "string", "description": "Human-readable display title" },
-                "brief": { "type": "string", "description": "One-sentence description" },
-                "usage": { "type": "string", "description": "Usage instructions" }
-            },
-            "required": ["title", "brief"]
-        },
+        // ─── C — Context sections ───
 
-        // ═══════════════════════════════════════════════════════
-        // METADATA — M.1–M.5 (required) + M.6–M.10 (optional)
-        // ═══════════════════════════════════════════════════════
-        //
-        // Metadata establishes WHAT this file's state is.
-        // M1-M5 are the base contract. M6+ extend per domain.
-
-        "M1_identity": {
+        "C1_state": {
             "type": "object",
-            "description": "M.1 IDENTITY — File identity: filename, key, title, type, component, role",
-            "properties": {
-                "file": { "type": "string" },
-                "key": { "$ref": "#/$defs/bereshit_key" },
-                "title": { "type": "string" },
-                "type": { "type": "string" },
-                "component": { "type": "string" },
-                "role": { "type": "string" }
-            },
-            "required": ["file", "key", "title", "type", "component", "role"]
-        },
-
-        "M2_state": {
-            "type": "object",
-            "description": "M.2 STATE — Version and lifecycle: version, status, created, updated",
+            "description": "C.1 STATE — Version and lifecycle: living version, status, dates",
             "properties": {
                 "version": { "$ref": "#/$defs/living_version" },
                 "status": { "$ref": "#/$defs/lifecycle_status" },
                 "created": { "$ref": "#/$defs/iso_date" },
                 "updated": { "$ref": "#/$defs/iso_date" }
             },
-            "required": ["version", "status", "created", "updated"]
+            "required": ["version", "status"]
         },
 
-        "M3_attribution": {
+        "C2_attribution": {
             "type": "object",
-            "description": "M.3 ATTRIBUTION — Authorship: architect, implementation, organization, copyright",
+            "description": "C.2 ATTRIBUTION — Authorship: architect, implementation, organization, copyright",
             "properties": {
                 "architect": { "type": "string" },
                 "implementation": { "type": "string" },
                 "organization": { "type": "string" },
                 "copyright": { "type": "string" }
             },
-            "required": ["architect", "implementation"]
+            "required": ["organization"]
         },
 
-        "M4_grounding": {
+        "C3_grounding": {
             "type": "object",
-            "description": "M.4 GROUNDING — Biblical foundation: scripture reference, derived principle, anchor statement",
+            "description": "C.3 GROUNDING — Biblical foundation: scripture reference, derived principle, anchor statement",
             "properties": {
-                "scripture": { "type": "string" },
-                "principle": { "type": "string" },
-                "anchor": { "type": "string" }
+                "scripture": { "type": "string", "description": "Scripture reference with text" },
+                "principle": { "type": "string", "description": "Principle derived from scripture" },
+                "anchor": { "type": "string", "description": "How this grounds the file's purpose" }
             },
-            "required": ["scripture", "principle"]
+            "required": ["scripture"]
         },
 
-        "M5_dependencies": {
+        "C4_dependencies": {
             "type": "object",
-            "description": "M.5 DEPENDENCIES — Dependency graph: requires, consumers, integration notes",
+            "description": "C.4 DEPENDENCIES — Dependency graph: what this file needs, who consumes it, integration notes",
             "properties": {
-                "requires": { "type": "string" },
-                "consumers": { "type": "string" },
-                "integration": { "type": "string" },
-                "if_missing": { "type": "string" },
-                "related_data": { "type": "object" },
-                "cross_format": { "type": "object" }
+                "requires": { "type": "string", "description": "What this file depends on" },
+                "consumers": { "type": "string", "description": "What depends on this file" },
+                "integration": { "type": "string", "description": "How to integrate" },
+                "if_missing": { "type": "string", "description": "Behavior when not found" },
+                "related": {
+                    "type": "object",
+                    "description": "Parent/children relationships",
+                    "properties": {
+                        "parent": { "type": "string" },
+                        "children": { "type": "array", "items": { "type": "string" } }
+                    }
+                },
+                "cross_format": {
+                    "type": "object",
+                    "description": "Cross-format relationships (TOML ↔ JSON, etc.)"
+                }
             },
             "required": ["requires", "consumers"]
         },
 
-        "M_extension_note": {
+        "C5_intent": {
             "type": "object",
-            "description": "Extension contract — documents base (M1-M5) + domain extension (M6+) rules",
+            "description": "C.5 INTENT — Purpose, design philosophy, key features [EXTENSION]",
             "properties": {
-                "required": { "type": "array", "items": { "type": "string" } },
-                "extension": { "type": "string" },
+                "purpose": { "type": "string" },
+                "core_design": { "type": "string" },
+                "philosophy": { "type": "string" },
+                "key_features": { "type": "object" }
+            }
+        },
+
+        "C6_roadmap": {
+            "type": "object",
+            "description": "C.6 ROADMAP — History, current state, planned work [EXTENSION]",
+            "properties": {
+                "history": { "type": "array", "items": { "type": "string" } },
+                "current": { "type": "string" },
+                "planned": { "type": "array", "items": { "type": "string" } }
+            }
+        },
+
+        "C7_classification": {
+            "type": "object",
+            "description": "C.7 CLASSIFICATION — Tags and categorization [EXTENSION]",
+            "properties": {
+                "tags": { "type": "array", "items": { "type": "string" } }
+            }
+        },
+
+        "_contract": {
+            "type": "object",
+            "description": "Structural self-description — declares which sections are required/extension/closing [EXTENSION]",
+            "properties": {
+                "required_identity": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Required I sections: [I1_core, I2_family, I3_instance]"
+                },
+                "required_context": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Required C sections: [C1_state, C2_attribution, C3_grounding, C4_dependencies]"
+                },
+                "extension_identity": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Extension I sections: [I4_architecture]"
+                },
+                "extension_context": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Extension C sections: [C5_intent, C6_roadmap, C7_classification]"
+                },
+                "required_closing": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Required X sections: [X1_policy, X5_note]"
+                },
+                "defined_closing": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Defined X sections: [X2_extension, X3_troubleshooting, X4_reference]"
+                },
+                "valid_patterns": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Valid naming patterns: [I{N}_{name}, C{N}_{name}, X{N}_{name}, _{name}]"
+                },
                 "rule": { "type": "string" }
             }
         },
@@ -376,54 +420,112 @@
         // ═══════════════════════════════════════════════════════
         //
         // Content is WHERE the actual data lives.
-        // Three sections, always in this order:
-        //   Cc = Configurations (identity, settings, format rules)
-        //   Co = Operations (the primary data — what this file IS)
-        //   Cv = Validation (verification rules, health scoring)
+        // Three zones, always in this order:
+        //   Cc = Configurations (identity, settings, resources)
+        //   Co = Operations (behavior, integrations, domain data)
+        //   Cv = Validation (_validation — schema, health scoring, content rules)
+        //
+        // Content header declares: format, key_convention, constraint, Cc, Co, Cv
 
-        "content_sections": {
+        "content_header": {
             "type": "object",
-            "description": "Content block structure — three sections in fixed order",
+            "description": "Content block header — declares format conventions and Cc/Co/Cv zone labels",
             "properties": {
-                "Cc": {
-                    "type": "string",
-                    "const": "Content Configurations",
-                    "description": "Format rules, settings, identity of the content"
+                "format": { "type": "string", "description": "Format declaration (e.g., TOML — UTF-8, LF line endings)" },
+                "key_convention": { "type": "string" },
+                "constraint": { "type": "string" },
+                "Cc": { "type": "string", "description": "Label for Content Configurations zone" },
+                "Co": { "type": "string", "description": "Label for Content Operations zone" },
+                "Cv": { "type": "string", "description": "Label for Content Validation zone" }
+            },
+            "required": ["Cc", "Co", "Cv"]
+        },
+
+        "content_identity": {
+            "type": "object",
+            "description": "Cc.1 IDENTITY — What this config IS [REQUIRED in Cc zone]",
+            "properties": {
+                "name": { "type": "string", "description": "Config name" },
+                "version": { "$ref": "#/$defs/living_version" },
+                "description": { "type": "string" },
+                "type": { "type": "string" }
+            },
+            "required": ["name", "version"]
+        },
+
+        "content_validation": {
+            "type": "object",
+            "description": "Cv.1 VALIDATION — Schema, health scoring, content rules [REQUIRED in Cv zone]",
+            "properties": {
+                "commands": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Validation commands to run"
                 },
-                "Co": {
-                    "type": "string",
-                    "const": "Content Operations",
-                    "description": "Primary data — the actual content of this file"
+                "schema": {
+                    "type": "object",
+                    "description": "Self-describing schema contract",
+                    "properties": {
+                        "required": { "type": "array", "items": { "type": "string" }, "description": "Sections that MUST exist" },
+                        "defined": { "type": "array", "items": { "type": "string" }, "description": "Sections expected to exist" },
+                        "optional": { "type": "array", "items": { "type": "string" }, "description": "Sections that MAY exist" },
+                        "fields": {
+                            "type": "object",
+                            "description": "Per-section field requirements",
+                            "additionalProperties": {
+                                "type": "object",
+                                "properties": {
+                                    "required": { "type": "array", "items": { "type": "string" } },
+                                    "defined": { "type": "array", "items": { "type": "string" } }
+                                }
+                            }
+                        }
+                    }
                 },
-                "Cv": {
-                    "type": "string",
-                    "const": "Content Validation",
-                    "description": "Verification rules, health scoring, expected state"
+                "health_scoring": {
+                    "type": "object",
+                    "description": "Health scoring weights (sum to 100)",
+                    "properties": {
+                        "total": { "type": "integer", "const": 100 }
+                    }
+                },
+                "content": {
+                    "type": "object",
+                    "description": "Content-specific validation rules (enums, ranges, etc.)"
                 }
-            }
+            },
+            "required": ["commands"]
         },
 
         // ═══════════════════════════════════════════════════════
-        // CLOSING — X.1–X.5
+        // CLOSING — X.1–X.5 (+ X.6 template-only)
         // ═══════════════════════════════════════════════════════
         //
         // Closing provides guidance for LIVING with this file.
-        // Five sections, X.1 and X.4 required, others recommended.
+        //
+        // Classification:
+        //   REQUIRED: X1_policy, X5_note — every file needs guardrails and an anchor
+        //   DEFINED:  X2_extension, X3_troubleshooting, X4_reference — expected, info if missing
+        //   TEMPLATE: X6_template — only in seed/template files, removed on instantiation
+        //
+        // Valid key pattern: X{N}_{name} | _{name}
+        // Regex: /^(?:X\d+_[a-z][a-z_]*|_[a-z][a-z_]*)$/
 
         "X1_policy": {
             "type": "object",
-            "description": "X.1 POLICY — Modification guidelines: never, careful, safe classifications",
+            "description": "X.1 POLICY — Modification guidelines [REQUIRED]",
             "properties": {
                 "scripture": { "type": "string" },
                 "never": { "type": "array", "items": { "type": "string" }, "description": "Actions that must NEVER be taken" },
                 "careful": { "type": "array", "items": { "type": "string" }, "description": "Actions requiring caution" },
                 "safe": { "type": "array", "items": { "type": "string" }, "description": "Actions that are always safe" }
-            }
+            },
+            "required": ["never", "careful", "safe"]
         },
 
         "X2_extension": {
             "type": "object",
-            "description": "X.2 EXTENSION — Future ideas and planned work",
+            "description": "X.2 EXTENSION — Future ideas and planned work [DEFINED]",
             "properties": {
                 "planned": { "type": "array", "items": { "type": "string" } },
                 "considered": { "type": "array", "items": { "type": "string" } }
@@ -432,7 +534,7 @@
 
         "X3_troubleshooting": {
             "type": "object",
-            "description": "X.3 TROUBLESHOOTING — Common problems and solutions",
+            "description": "X.3 TROUBLESHOOTING — Common problems and solutions [DEFINED]",
             "properties": {
                 "scripture": { "type": "string" }
             },
@@ -441,21 +543,33 @@
 
         "X4_reference": {
             "type": "object",
-            "description": "X.4 REFERENCE — Quick lookup: related files, validation commands",
+            "description": "X.4 REFERENCE — Quick lookup [DEFINED]",
             "properties": {
                 "related_files": { "type": "array", "items": { "type": "string" } },
                 "required_sections": { "type": "array", "items": { "type": "string" } },
-                "validate": { "type": "string" }
+                "validate": { "type": "string" },
+                "env_pattern": { "type": "string" }
             }
         },
 
         "X5_note": {
             "type": "object",
-            "description": "X.5 NOTE — Final guidance: closing thought, scripture, anchor",
+            "description": "X.5 NOTE — Final anchor [REQUIRED]",
+            "properties": {
+                "note": { "type": "string", "description": "Closing thought" },
+                "scripture": { "type": "string", "description": "Scripture anchor" },
+                "anchor": { "type": "string", "description": "How this grounds the file" }
+            },
+            "required": ["note", "scripture"]
+        },
+
+        "X6_template": {
+            "type": "object",
+            "description": "X.6 TEMPLATE — Instantiation guide [TEMPLATE-ONLY: remove when instantiating]",
             "properties": {
                 "note": { "type": "string" },
-                "scripture": { "type": "string" },
-                "anchor": { "type": "string" }
+                "usage": { "type": "string" },
+                "update": { "type": "array", "items": { "type": "string" } }
             }
         }
     },
@@ -470,7 +584,7 @@
     "_Cv": "─────────────────────────────────────────────────────────────",
     "_Cv_tag": "Cv — Content Validation [VALIDATE]",
     "_Cv_verify": "This schema provides $defs only. Validate format-specific schemas against their targets.",
-    "_Cv_expected_state": "All $defs present with correct types, patterns, and required fields.",
+    "_Cv_expected_state": "All $defs present with correct types, patterns, required fields, and field-level requirements.",
 
     // ═══════════════════════════════════════════════════════════════
     // END CONTENT [END]
@@ -485,16 +599,16 @@
 
     "_closing_start": "═══════════════════════════════════════════════════════════════",
     "_closing_tag": "CLOSING BLOCK [CLOSING]",
-    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note",
+    "_closing_structure": "X.1 Policy [REQUIRED] → X.2 Extension [DEFINED] → X.3 Troubleshooting [DEFINED] → X.4 Reference [DEFINED] → X.5 Note [REQUIRED]",
 
-    // X.1 POLICY
+    // X.1 POLICY [REQUIRED]
     "_X1": "─────────────────────────────────────────────────────────────",
     "_X1_tag": "X.1 POLICY — Modification Guidelines [POLICY]",
     "_X1_scripture": "In the beginning God created the heaven and the earth. — Genesis 1:1",
     "_X1_never": [
         "Remove a $def that format schemas reference",
         "Change required fields without updating all format schemas",
-        "Remove the base contract (M1-M5, P1-P5, Cc/Co/Cv, X1-X5)"
+        "Remove the base contract (I1-I4, C1-C7, _contract, Cc/Co/Cv, X1-X5)"
     ],
     "_X1_careful": [
         "Adding new $defs (format schemas need to adopt them)",
@@ -507,7 +621,7 @@
         "Adding new optional $defs that don't affect existing schemas"
     ],
 
-    // X.2 EXTENSION
+    // X.2 EXTENSION [DEFINED]
     "_X2": "─────────────────────────────────────────────────────────────",
     "_X2_tag": "X.2 EXTENSION — Future Ideas [EXTENSION]",
     "_X2_planned": [
@@ -516,32 +630,33 @@
         "JSON Schema $ref composition across format schemas"
     ],
 
-    // X.3 TROUBLESHOOTING
+    // X.3 TROUBLESHOOTING [DEFINED]
     "_X3": "─────────────────────────────────────────────────────────────",
     "_X3_tag": "X.3 TROUBLESHOOTING — Common Problems [TROUBLESHOOTING]",
     "_X3_scripture": "If any of you lack wisdom, let him ask of God. — James 1:5",
     "_X3_problems": {
-        "defs_not_found": "Format schemas reference $defs by path: #/$defs/M1_identity. Verify the $def name matches.",
-        "format_mismatch": "This is the BASE — it doesn't validate files directly. Use json-3block-schema.jsonc or toml-3block-schema.jsonc.",
+        "defs_not_found": "Format schemas reference $defs by path: #/$defs/I1_core. Verify the $def name matches.",
+        "old_refs": "If you see P1_core, M1_identity, M5_dependencies — those are OLD names. Use I1_core, I3_instance, C4_dependencies.",
+        "format_mismatch": "This is the BASE — it doesn't validate files directly. Use toml-3block-schema.jsonc or json-3block-schema.jsonc.",
         "which_schema": "JSON/JSONC files → json-3block-schema. TOML files → toml.ts handler. This file defines what both share."
     },
 
-    // X.4 REFERENCE
+    // X.4 REFERENCE [DEFINED]
     "_X4": "─────────────────────────────────────────────────────────────",
     "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
     "_X4_related_files": [
-        "b-word/definitions/omni/json-3block-schema.jsonc — JSON format schema (child)",
-        "b-word/definitions/omni/toml-3block-schema.jsonc — TOML format schema (child)",
+        "b-word/L1-omnicode/ladder/schemas/json-3block-schema.jsonc — JSON format schema (child)",
+        "b-word/L1-omnicode/ladder/schemas/toml-3block-schema.jsonc — TOML format schema (child)",
         "c-tov/cws-struct/lib/formats/json.ts — JSON runtime linter",
-        "c-tov/cws-struct/lib/formats/toml.ts — TOML runtime linter"
+        "c-tov/cws-struct/lib/formats/toml.ts — TOML runtime linter (implements these rules)"
     ],
 
-    // X.5 NOTE
+    // X.5 NOTE [REQUIRED]
     "_X5": "─────────────────────────────────────────────────────────────",
-    "_X5_tag": "X.5 NOTE — Final Guidance [NOTE]",
+    "_X5_tag": "X.5 NOTE — Final Anchor [NOTE]",
     "_X5_note": "Before format, before syntax, before representation — there is structure. This schema defines the structure that every format must express. Genesis 1 separated light from darkness before filling either. We separate structure from content before filling the formats.",
     "_X5_scripture": "In the beginning God created the heaven and the earth. — Genesis 1:1",
-    "_X5_anchor": "The base of all bases. Every 3-block file traces back here.",
+    "_X5_anchor": "The base of all bases. Every 3-block file traces back here. I/C metadata mirrors Genesis: Identity (what IS) and Context (what is KNOWN) — being precedes doing.",
 
     // ═══════════════════════════════════════════════════════════════
     // END CLOSING [END]

@@ -31,12 +31,24 @@ export type Severity = "error" | "warn" | "info";
 // Lint Results
 // ---------------------------------------------------------------------------
 
+/** Suggested correction for a lint finding. */
+export interface FixSuggestion {
+  /** Human description of the fix (e.g., "Add missing [_metadata.I1_core] table"). */
+  description: string;
+  /** TOML snippet to insert or replace. */
+  toml: string;
+  /** Insertion hint (e.g., "after [_metadata]", "in _metadata.I1_core"). */
+  location?: string;
+}
+
 /** Single finding from a lint check. */
 export interface LintResult {
   file: string;
   severity: Severity;
   rule: string;
   message: string;
+  /** Optional auto-correction suggestion. */
+  fix?: FixSuggestion;
 }
 
 /** Aggregated results for one file. */
@@ -51,6 +63,14 @@ export interface LintSummary {
 // ---------------------------------------------------------------------------
 // Format Handler — the contract for adding new formats
 // ---------------------------------------------------------------------------
+
+/** Options passed to transform handlers. */
+export interface TransformOptions {
+  /** Preview mode — report changes without writing. */
+  dryRun: boolean;
+  /** Scaffold extension sections (I4, C5-C7, _contract, X2-X4, etc.). */
+  extensions: boolean;
+}
 
 /** Every format registers a handler that satisfies this interface. */
 export interface FormatHandler {
@@ -76,7 +96,7 @@ export interface FormatHandler {
   lint(filePath: string): Promise<LintResult[]>;
 
   /** Transform a single file in place (optional). */
-  transform?(filePath: string, dryRun: boolean): Promise<LintResult[]>;
+  transform?(filePath: string, opts: TransformOptions): Promise<LintResult[]>;
 }
 
 // ---------------------------------------------------------------------------
@@ -91,6 +111,7 @@ export interface CliOptions {
   errorsOnly: boolean;
   summaryOnly: boolean;
   dryRun: boolean;
+  extensions: boolean;
 }
 
 // ============================================================================
@@ -101,16 +122,22 @@ export interface CliOptions {
 // Result constructors — convenience builders
 // ---------------------------------------------------------------------------
 
-export function error(file: string, rule: string, message: string): LintResult {
-  return { file, severity: "error", rule, message };
+export function error(
+  file: string, rule: string, message: string, fix?: FixSuggestion,
+): LintResult {
+  return fix ? { file, severity: "error", rule, message, fix } : { file, severity: "error", rule, message };
 }
 
-export function warn(file: string, rule: string, message: string): LintResult {
-  return { file, severity: "warn", rule, message };
+export function warn(
+  file: string, rule: string, message: string, fix?: FixSuggestion,
+): LintResult {
+  return fix ? { file, severity: "warn", rule, message, fix } : { file, severity: "warn", rule, message };
 }
 
-export function info(file: string, rule: string, message: string): LintResult {
-  return { file, severity: "info", rule, message };
+export function info(
+  file: string, rule: string, message: string, fix?: FixSuggestion,
+): LintResult {
+  return fix ? { file, severity: "info", rule, message, fix } : { file, severity: "info", rule, message };
 }
 
 /** Tally a results array into a summary. */

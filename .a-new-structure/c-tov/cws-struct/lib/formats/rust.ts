@@ -37,7 +37,7 @@
 // SETUP
 // ============================================================================
 
-import type { FormatHandler, LintResult } from "../types.ts";
+import type { FormatHandler, LintResult, TransformOptions } from "../types.ts";
 import { error, warn, info } from "../types.ts";
 import { registerFormat } from "./registry.ts";
 
@@ -829,8 +829,9 @@ async function lintRustFile(filePath: string): Promise<LintResult[]> {
  */
 async function transformRustFile(
   filePath: string,
-  dryRun: boolean,
+  opts: TransformOptions,
 ): Promise<LintResult[]> {
+  const { dryRun } = opts;
   const results: LintResult[] = [];
 
   let text: string;

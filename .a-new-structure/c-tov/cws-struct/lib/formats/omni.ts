@@ -26,7 +26,7 @@
 // ============================================================================
 
 import { dirname, join } from "@std/path";
-import type { FormatHandler, LintResult } from "../types.ts";
+import type { FormatHandler, LintResult, TransformOptions } from "../types.ts";
 import { error, warn, info } from "../types.ts";
 import { registerFormat } from "./registry.ts";
 
@@ -738,7 +738,8 @@ function compileToOfd(text: string, parsed: ParsedOmni, sourceFilename: string):
 
 // --- Transform orchestrator ---
 
-async function transformOmniFile(filePath: string, dryRun: boolean): Promise<LintResult[]> {
+async function transformOmniFile(filePath: string, opts: TransformOptions): Promise<LintResult[]> {
+  const { dryRun } = opts;
   let text: string;
   try {
     text = await Deno.readTextFile(filePath);
