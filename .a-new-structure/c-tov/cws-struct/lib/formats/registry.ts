@@ -68,11 +68,15 @@ export function listFormatDetails(): Array<{ name: string; description: string; 
  * Returns the first matching handler name, or undefined.
  */
 export function detectFormat(filePath: string): string | undefined {
-  const ext = filePath.slice(filePath.lastIndexOf("."));
+  // Extract basename first, then find extension within it.
+  // Prevents dots in directory names from producing garbage extensions
+  // (e.g., "/path/my.project/Makefile" would wrongly yield ".project/Makefile").
   const base = filePath.slice(filePath.lastIndexOf("/") + 1);
+  const dotIdx = base.lastIndexOf(".");
+  const ext = dotIdx > 0 ? base.slice(dotIdx) : "";
 
   for (const [name, handler] of registry) {
-    if (handler.extensions.includes(ext)) return name;
+    if (ext && handler.extensions.includes(ext)) return name;
     if (handler.basenames?.includes(base)) return name;
   }
 

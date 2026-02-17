@@ -157,6 +157,14 @@ Reference: `bereshit/word/glossary/technical/boundary-marker.adoc` and `bereshit
 | **Joanna Elara** | Sees patterns others miss | pattern-finder |
 | **Tabitha Shiloh** | Scouts ahead, maps territory | research-agent |
 | **Selah Adair** | Pauses to verify alignment | template-chain-analyzer |
+| **Micah Toren** | Tests content truth beyond form | content-reviewer |
+| **Caleb Navon** | Sees the landscape, plans the route | plan-builder |
+| **Nathan Emet** | Proves code works before anyone has to trust it | test-validator |
+| **Deborah Saphar** | Creates documentation where structure IS the teaching | documentation-creator |
+| **Nehemiah Shamar** | Builds infrastructure that lasts and guards it vigilantly | infrastructure-steward |
+| **Bezalel Yofi** | Makes things look right — design as worship | creative-director |
+| **Lydia Chesed** | Builds Kingdom community, opens doors for creators | community-builder |
+| **Asa Mishchaq** | Designs games where simple rules create complex meaning | game-designer |
 
 ---
 

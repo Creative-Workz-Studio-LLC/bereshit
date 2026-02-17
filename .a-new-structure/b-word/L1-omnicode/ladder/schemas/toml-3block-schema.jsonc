@@ -294,51 +294,165 @@
         // ═══════════════════════════════════════════════════════
         // CONTENT BLOCK — [_content] + data tables
         // ═══════════════════════════════════════════════════════
+        //
+        // CONTENT IS the data. METADATA says what it IS.
+        // CONTENT says what it HOLDS. CLOSING says what to PROTECT.
+        //
+        // Three zones always in this order:
+        //   Cc → Co → Cv (definition_flow)
 
         "[_content]": {
-            "purpose": "Content block header — format and conventions",
+            "purpose": "Content block header — format, conventions, and zone labels",
+            "principle": "CONTENT is the entire middle of a 3-block file. No SETUP/BODY split — zones organize by concern instead.",
+            "required": true,
+            "severity": "error",
             "required_keys": ["Cc", "Co", "Cv"],
-            "optional_keys": ["format", "key_convention", "constraint"],
-            "note": "Cc/Co/Cv are label strings that name the three content zones. Actual data follows in separate tables."
+            "defined_keys": ["format", "key_convention", "constraint", "ordering"],
+            "note": "Cc/Co/Cv are label strings naming the three content zones. ordering = 'definition_flow' documents the zone sequence. Actual data follows in separate tables."
         },
 
-        "data_tables": {
-            "purpose": "The actual content — user-defined tables after [_content]",
-            "note": "Tables like [identity], [settings], [resources], [behavior] — these are the real configuration data. They sit between [_content] and [_closing]. No _ prefix needed.",
-            "convention": "Cc data comes first (identity, settings, resources), Co data next (behavior, integrations), Cv data last ([_validation])"
+        // ─── Zone Ordering ───
+        //
+        // Unlike Rust 4-block where BODY subsections vary by subtype,
+        // TOML 3-block zones are universal. Every TOML config follows
+        // the same Cc → Co → Cv flow.
+
+        "zone_ordering": {
+            "ordering_principle": "definition_flow",
+            "principle_description": "Define first. Configure second. Validate last. You can't validate what you haven't defined. You can't configure what doesn't exist.",
+
+            "zones": {
+                "Cc": {
+                    "position": 1,
+                    "name": "Content Configurations",
+                    "tag": "[CONFIG]",
+                    "purpose": "Define what EXISTS — static structure the config provides",
+                    "production_note": "Cc sections rarely change at runtime. They describe the config's skeleton: identity, settings, resources."
+                },
+                "Co": {
+                    "position": 2,
+                    "name": "Content Operations",
+                    "tag": "[OPS]",
+                    "purpose": "Define what HAPPENS — runtime behavior, operational patterns, integrations",
+                    "production_note": "Co sections may vary by environment. Production vs development, local vs cloud. Co is the config's muscle."
+                },
+                "Cv": {
+                    "position": 3,
+                    "name": "Content Validation",
+                    "tag": "[VALIDATE]",
+                    "purpose": "Define what's CORRECT — schema constraints, health scoring, content rules",
+                    "production_note": "Cv uses _ prefix tables ([_validation]) because validation is meta-content. The config validates itself — Cv makes that explicit."
+                }
+            },
+
+            "subsections": {
+                "Cc.1": {
+                    "position": 1,
+                    "tag": "IDENTITY",
+                    "table": "[identity]",
+                    "classification": "REQUIRED",
+                    "purpose": "What IS this config? Name, version, type",
+                    "production_note": "Every config MUST have identity. name + version are the minimum viable contract. Without identity, the config is anonymous data — tooling can't discover, version, or reference it.",
+                    "required_in": "all"
+                },
+                "Cc.2": {
+                    "position": 2,
+                    "tag": "SETTINGS",
+                    "table": "[settings]",
+                    "classification": "DEFINED",
+                    "purpose": "Primary configuration values — the most-touched section",
+                    "production_note": "Design for the operator who changes values at 2am. Clear names, documented ranges, sensible defaults. If a setting needs a comment to explain it, the name might be wrong.",
+                    "required_in": "configs with tunable values"
+                },
+                "Cc.3": {
+                    "position": 3,
+                    "tag": "RESOURCES",
+                    "table": "[resources]",
+                    "alt_tables": ["[resources.paths]", "[resources.limits]"],
+                    "classification": "DEFINED",
+                    "purpose": "Paths, limits, constraints — the guardrails",
+                    "production_note": "Resources define boundaries. If a limit has no upper bound documented, someone WILL hit it. Common nesting: resources.paths, resources.limits.",
+                    "required_in": "configs with paths or limits"
+                },
+                "Co.1": {
+                    "position": 4,
+                    "tag": "BEHAVIOR",
+                    "table": "[behavior]",
+                    "classification": "DEFINED",
+                    "purpose": "Runtime modes and toggles — HOW the system runs",
+                    "production_note": "Behavior controls HOW the system runs, not WHAT it is. Keep separate from Cc because behavior is deployment-specific, not config-specific. log_level, debug_mode, strict_mode change per-environment.",
+                    "required_in": "configs with runtime modes"
+                },
+                "Co.2": {
+                    "position": 5,
+                    "tag": "PATTERNS",
+                    "table": "varies",
+                    "alt_tables": ["[parent.child]", "[[handlers]]", "[integrations]"],
+                    "classification": "DEFINED",
+                    "purpose": "Structural examples (root template) or integration config (children)",
+                    "production_note": "In root template: demonstrates TOML patterns (nested tables, array-of-tables). In children: external service configuration (database, cache, API endpoints). Remove pattern examples when instantiating.",
+                    "required_in": "root template (patterns), service configs (integrations)"
+                },
+                "Cv.1": {
+                    "position": 6,
+                    "tag": "VALIDATION",
+                    "table": "[_validation]",
+                    "alt_tables": ["[_validation.schema]", "[_validation.schema.fields.*]", "[_validation.health_scoring]", "[_validation.content]"],
+                    "classification": "REQUIRED",
+                    "purpose": "Schema, health scoring, content rules — the config's immune system",
+                    "production_note": "Every config MUST have validation. At minimum: a parse command. schema.required tells tooling which sections MUST exist. health_scoring weights quality gates. content rules constrain values to valid enums and ranges.",
+                    "required_in": "all"
+                }
+            },
+
+            "extension_zones": {
+                "pattern": "[_extensions.{cc,co,cv}]",
+                "purpose": "Experimental patterns that haven't earned promotion into a named subsection",
+                "production_note": "Extensions sit at the end of their parent zone. When a pattern proves stable, promote it into a numbered subsection."
+            }
         },
+
+        // ─── Table Definitions ───
+        //
+        // Each entry maps a TOML table path to its purpose,
+        // requirements, and the base schema $def it implements.
 
         "[identity]": {
             "purpose": "Cc.1 IDENTITY — What this config IS [REQUIRED in Cc zone]",
             "required_keys": ["name", "version"],
             "defined_keys": ["description", "type"],
             "implements": "$defs/content_identity",
-            "note": "Every TOML config must have an identity section"
+            "production_note": "name + version = minimum viable identity. description and type enhance discoverability but aren't structural requirements."
         },
 
         "[settings]": {
             "purpose": "Cc.2 SETTINGS — Primary configuration values [DEFINED in Cc zone]",
-            "note": "Keys are domain-specific"
+            "note": "Keys are domain-specific. No universal required_keys — the config's _validation.schema.fields.settings declares its own contract.",
+            "production_note": "Most-modified section. Favor flat key=value over deeply nested tables. Group related settings with comments, not sub-tables."
         },
 
         "[resources]": {
             "purpose": "Cc.3 RESOURCES — Paths, limits, constraints [DEFINED in Cc zone]",
-            "note": "Common nested tables: resources.paths, resources.limits"
+            "note": "Common nested tables: resources.paths, resources.limits",
+            "production_note": "Nesting is appropriate here — paths and limits are distinct concerns. Always document units (bytes, ms, count) and valid ranges."
         },
 
         "[behavior]": {
             "purpose": "Co.1 BEHAVIOR — Runtime modes and toggles [DEFINED in Co zone]",
-            "note": "Keys are domain-specific (logging, runtime, features)"
+            "note": "Keys are domain-specific (logging, runtime, features)",
+            "production_note": "Behavior should be environment-overridable. Design keys so env vars work naturally: APP_BEHAVIOR_LOG_LEVEL=debug."
         },
 
         "[integrations]": {
             "purpose": "Co.2 INTEGRATIONS — External service configuration [DEFINED in Co zone]",
-            "note": "Common nested tables: integrations.database, integrations.cache"
+            "note": "Common nested tables: integrations.database, integrations.cache",
+            "production_note": "Each integration is a nested table. Credentials go in env vars, not config files. Config holds connection parameters (host, port, pool_size)."
         },
 
         "[_extensions]": {
             "purpose": "Extension zones — experimental patterns [OPTIONAL]",
-            "note": "Three sub-tables: [_extensions.cc], [_extensions.co], [_extensions.cv]. May be promoted into main sections."
+            "note": "Three sub-tables: [_extensions.cc], [_extensions.co], [_extensions.cv]. May be promoted into main sections.",
+            "production_note": "Extensions are incubators. When you're not sure where a new section belongs, put it in extensions. Promotion path: _extensions.cc.feature → [feature] in Cc zone."
         },
 
         "[_validation]": {
@@ -346,29 +460,71 @@
             "required_keys": ["commands"],
             "defined_keys": ["schema"],
             "implements": "$defs/content_validation",
-            "note": "TOML-specific: validation lives in [_validation] table, not inline with content"
+            "production_note": "_ prefix because validation is meta-content. commands = array of shell commands to verify the file. Minimum bar: one parse check."
         },
 
         "[_validation.schema]": {
             "purpose": "Schema constraints — self-describing contract",
             "defined_keys": ["required", "defined", "optional", "fields"],
-            "note": "'fields' enables per-section field requirements: [_validation.schema.fields.identity] → required = ['name', 'version']"
+            "note": "'fields' enables per-section field requirements: [_validation.schema.fields.identity] → required = ['name', 'version']",
+            "production_note": "The schema section makes the config self-describing. required sections MUST exist. defined sections SHOULD exist. optional sections MAY exist. Linter enforces this hierarchy."
         },
 
         "[_validation.schema.fields.*]": {
             "purpose": "Per-section field requirements",
             "optional_keys": ["required", "defined"],
-            "note": "Each entry declares which fields are required/defined for a content section. Linter cross-validates these against reality."
+            "note": "Each entry declares which fields are required/defined for a content section. Linter cross-validates these against reality.",
+            "production_note": "Scaling signal: when you add a new content section, add its field requirements here. The self-describing contract is only as good as its completeness."
         },
 
         "[_validation.health_scoring]": {
             "purpose": "Health scoring criteria — weights summing to 100",
-            "optional_keys": ["total", "correct_structure", "valid_configuration", "useful_documentation", "code_integration"]
+            "optional_keys": ["total", "correct_structure", "valid_configuration", "useful_documentation", "code_integration"],
+            "production_note": "Weights are a design signal. If correct_structure is 30 and valid_configuration is 40, you're saying data quality matters more than structural compliance for this config."
         },
 
         "[_validation.content]": {
             "purpose": "Content-specific validation rules — enums, ranges, ordering",
-            "note": "Domain-specific constraints (e.g., mode_valid = ['development', 'production'])"
+            "note": "Domain-specific constraints (e.g., mode_valid = ['development', 'production'])",
+            "production_note": "Content rules constrain VALUES, not STRUCTURE. mode_valid lists legal enum values. log_levels defines the severity ladder. Range constraints go here too."
+        },
+
+        // ─── Production Design ───
+
+        "production_design": {
+            "principle": "CONTENT in 3-block is the full middle — no SETUP/BODY split. Zones (Cc/Co/Cv) organize by concern. definition_flow ensures logical order.",
+            "scaling_signal": "When a zone has 4+ subsections, consider whether the config should split into separate files or whether a subsection should become its own config.",
+            "testing_pattern": "Linter validates: (1) zone labels exist in [_content], (2) required tables present, (3) required keys in required tables, (4) value patterns match, (5) zone ordering correct.",
+            "refactoring_signal": "If Cc and Co sections are tightly coupled (settings depend on behavior values), the config may be trying to do too much. Split by concern."
+        },
+
+        // ─── Placement Rules ───
+
+        "placement_rules": {
+            "must_be_in_content": [
+                "Data the consumer reads at startup (identity, settings, resources)",
+                "Runtime behavior configuration (behavior, integrations)",
+                "Self-describing schema and validation rules (_validation)",
+                "Health scoring weights (_validation.health_scoring)"
+            ],
+            "must_be_in_closing": [
+                "Modification guidelines (X1_policy: never/careful/safe)",
+                "Human-facing troubleshooting (X3_troubleshooting)",
+                "File reference links (X4_reference)",
+                "Final anchor and scripture (X5_note)"
+            ],
+            "gray_area": [
+                {
+                    "item": "health_scoring",
+                    "convention": "CONTENT (Cv) — tooling reads it, so it's operational data",
+                    "alternative": "Could live in CLOSING as quality guidance for humans"
+                },
+                {
+                    "item": "extension_plans",
+                    "convention": "CLOSING (X2_extension) — future ideas are human guidance",
+                    "alternative": "Could live in _extensions as experimental data"
+                }
+            ]
         },
 
         // ═══════════════════════════════════════════════════════
@@ -433,7 +589,7 @@
     "_Cv": "─────────────────────────────────────────────────────────────",
     "_Cv_tag": "Cv — Content Validation [VALIDATE]",
     "_Cv_verify": "deno run --allow-read mod.ts lint toml <file>",
-    "_Cv_expected_state": "All [_metadata], [_content], [_closing] tables present with required keys and field-level validation passing.",
+    "_Cv_expected_state": "All [_metadata], [_content], [_closing] tables present with required keys, field-level validation passing, and value-level checks clean (version format, dates, key prefix, filename match, type values, cross-field consistency).",
 
     "validation_contract": {
         "metadata": {
@@ -480,6 +636,48 @@
                 "X3_troubleshooting": { "required": [], "defined": ["scripture"] },
                 "X4_reference": { "required": ["related_files"], "defined": ["required_sections", "validate"] },
                 "X5_note": { "required": ["note", "scripture"], "defined": ["anchor"] }
+            }
+        },
+
+        // Value-level validation — patterns for field values (not just existence).
+        // Structural checks verify fields exist. Value checks verify values are correct.
+        "value_patterns": {
+            "version": {
+                "pattern": "/^[abc]-\\d{2}\\.\\d{2}$/",
+                "applies_to": ["I1_core.at", "C1_state.version"],
+                "at_keywords": {
+                    "template": "Seed template file — the pattern shown on the mountain",
+                    "data": "Data/specification file — foundational definitions (I2_family.type = data)",
+                    "code": "Code file — implementation (I2_family.type = code)"
+                },
+                "note": "Living versioning: stage (a=alpha, b=baseline, c=stable) - phase.completion. I1_core.at accepts keywords (template, data, code) OR version pattern. C1_state.version always requires version pattern. When at is a keyword, version consistency check is skipped."
+            },
+            "key_prefix": {
+                "pattern": "/^B-/",
+                "applies_to": ["I1_core.key"],
+                "note": "All Bereshit keys start with B-"
+            },
+            "date": {
+                "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+                "applies_to": ["C1_state.created", "C1_state.updated"],
+                "note": "ISO 8601 date format"
+            },
+            "family_type": {
+                "values": ["data", "code", "documentation"],
+                "applies_to": ["I2_family.type"],
+                "note": "OmniCode content classification"
+            },
+            "empty_required": {
+                "note": "Required fields with empty string or empty array values produce warnings — placeholders that were never filled"
+            },
+            "filename_match": {
+                "note": "I3_instance.file should match the actual filename on disk"
+            },
+            "version_consistency": {
+                "note": "I1_core.at should match C1_state.version (skipped when at=\"template\")"
+            },
+            "date_order": {
+                "note": "C1_state.created should be <= C1_state.updated"
             }
         }
     },

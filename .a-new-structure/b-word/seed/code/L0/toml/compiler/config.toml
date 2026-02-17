@@ -1,4 +1,4 @@
-# #!omni template --toml
+# #!omni template --toml --compiler
 
 # ═══════════════════════════════════════════════════════════════
 # METADATA BLOCK [METADATA]
@@ -10,7 +10,7 @@
 
 [_metadata.I1_core]
 key = "B-word-seed-code-compiler-toml-config"
-format = "@omni template --toml"
+format = "@omni template --toml --compiler"
 from = "b-word/seed/code/L0/toml/config.toml"
 at = "template"
 
@@ -113,11 +113,44 @@ rule = "Required sections are structural. Extensions follow naming patterns. Inv
 # ═══════════════════════════════════════════════════════════════
 # CONTENT BLOCK [CONTENT]
 # ═══════════════════════════════════════════════════════════════
+#
+# CONTENT IS the data. METADATA says what this file IS. CONTENT
+# says what it HOLDS. CLOSING says what to PROTECT.
+#
+# Compiler configs specialize the code config template for compilation
+# phases. Language DEFINITION stays in code. Behavioral TUNING goes
+# in config. If it changes HOW the compiler works, it's here.
+# If it changes WHAT OmniCode IS, it belongs in source code.
+#
+# Three zones, always in this order:
+#
+#   Cc — Configurations  Define what exists (identity, settings, phases, resources)
+#   Co — Operations      Define what happens (behavior, health scoring, tuning)
+#   Cv — Validation      Define what's correct (schema, health, content rules)
+#
+# Ordering principle: "definition_flow"
+#   Define first. Configure second. Validate last.
+#
+# Subsections:
+#
+#   Cc.1 Identity       — Compiler name, version, target [REQUIRED]
+#   Cc.2 Settings       — Mode, optimization, phases [DEFINED]
+#   Cc.3 Resources      — Paths, limits, constraints [DEFINED]
+#   ---
+#   Co.1 Behavior       — Per-phase behavior (lexer, parser, codegen) [DEFINED]
+#   Co.2 Health         — Quality scoring weights and thresholds [DOMAIN]
+#   Co.3 Tuning         — Advanced performance parameters [DOMAIN]
+#   ---
+#   Cv.1 Validation     — Schema, health scoring, content rules [REQUIRED]
+#
+# Note: Co.2 and Co.3 are domain-specific subsections (compiler only).
+# They don't appear in the generic code config template.
 
 [_content]
 format = "TOML — UTF-8, LF line endings"
 key_convention = "lowercase_with_underscores, match Go struct field tags"
 constraint = "Language definition stays in code. Only behavioral tuning in config."
+ordering = "definition_flow"
 Cc = "Content Configurations — compiler identity, settings, phases, resources"
 Co = "Content Operations — behavior (per-phase), health scoring, tuning"
 Cv = "Content Validation — schema, health scoring, content rules"
@@ -125,8 +158,16 @@ Cv = "Content Validation — schema, health scoring, content rules"
 # ─────────────────────────────────────────────────────────────
 # Cc — Content Configurations
 # ─────────────────────────────────────────────────────────────
+#
+# Cc defines what EXISTS. Compiler identity, compilation settings,
+# phase enables, and resource constraints. These sections define
+# the shape of a compilation run.
 
 # Cc.1 IDENTITY — Compiler Identity [REQUIRED]
+#
+# Production: Compiler identity includes target architecture.
+# target = "ternary" is the OmniCode default — this distinguishes
+# our compiler from conventional binary-target compilers.
 [identity]
 name = "omnicode"
 version = "a-01.00"
@@ -134,6 +175,11 @@ description = "OmniCode compiler configuration"
 target = "ternary"                      # Target architecture
 
 # Cc.2 SETTINGS — Compilation Settings [DEFINED]
+#
+# Production: settings.phases is a sub-table enabling/disabling
+# individual compilation phases. All phases true = full compilation.
+# Disabling a phase skips it AND everything downstream. Optimization
+# levels mirror GCC conventions (0=none, 3=aggressive).
 [settings]
 mode = "debug"                          # debug | release
 optimization = 1                        # 0-3
@@ -146,6 +192,11 @@ semantic = true
 codegen = true
 
 # Cc.3 RESOURCES — Paths, Limits, Constraints [DEFINED]
+#
+# Production: Limits are phase-specific guardrails. max_token_length
+# protects the lexer, max_nesting_depth protects the parser.
+# max_errors triggers abort — continuing after too many errors
+# produces noise, not diagnostics.
 [resources.paths]
 source = "src/"
 output = "build/"
@@ -164,8 +215,17 @@ note = "Experimental Cc patterns — may be promoted into identity, settings, or
 # ─────────────────────────────────────────────────────────────
 # Co — Content Operations
 # ─────────────────────────────────────────────────────────────
+#
+# Co defines what HAPPENS. Per-phase behavior, health scoring,
+# and performance tuning. These sections are compiler-specific —
+# they don't appear in generic code configs.
 
 # Co.1 BEHAVIOR — Phase-Specific Behavior [DEFINED]
+#
+# Production: Each compiler phase gets its own behavior sub-table.
+# Not all phases need all settings — lexer needs tab_width, parser
+# needs error_recovery, codegen needs debug_info. runtime controls
+# apply to the compiler process itself, not individual phases.
 [behavior.lexer]
 tab_width = 4                           # Position calculation
 
@@ -180,6 +240,12 @@ verbose = false
 strict = false
 
 # Co.2 HEALTH — Quality Scoring Configuration [DOMAIN]
+#
+# Production: Health scoring is compiler-domain-specific. Phase
+# weights control how much each phase contributes to overall
+# quality score. semantic = 1.5 means semantic analysis is weighted
+# 50% more than other phases. Thresholds define warning/error
+# boundaries — error_level MUST be less than warning_level.
 [health.phases]
 lexer = 1.0                             # Phase health weight
 parser = 1.0
@@ -191,6 +257,12 @@ warning_level = 0.7                     # Below = warning
 error_level = 0.5                       # Below = error
 
 # Co.3 TUNING — Advanced Performance Parameters [DOMAIN]
+#
+# Production: Tuning parameters affect performance, not correctness.
+# Changing these should never change compilation output — only speed.
+# If a tuning parameter changes output, it belongs in settings, not
+# tuning. parallel = false is safe default; enable only when phases
+# are verified to be thread-safe.
 [tuning]
 symbol_table_size = 1024                # Initial symbol table
 ast_pool_size = 4096                    # AST node pool
@@ -203,8 +275,17 @@ note = "Experimental Co patterns — may be promoted into behavior, health, or t
 # ─────────────────────────────────────────────────────────────
 # Cv — Content Validation
 # ─────────────────────────────────────────────────────────────
+#
+# Cv defines what's CORRECT. Schema constraints, health scoring
+# criteria, and content rules (valid enums, ranges, ordering).
+# The compiler config validates itself — Cv makes that explicit.
 
 # Cv.1 VALIDATION — Schema, Health, Content Rules [REQUIRED]
+#
+# Production: Compiler validation includes both TOML parse check
+# AND Go build verification. content rules enforce domain constraints:
+# target must be in valid set, optimization must be in range,
+# threshold ordering must be maintained (error < warning).
 [_validation]
 commands = ["tomlv config.toml", "go build -v ./pkg/compiler/config"]
 

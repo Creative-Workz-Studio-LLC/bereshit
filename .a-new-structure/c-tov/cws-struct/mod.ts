@@ -18,8 +18,10 @@
 //   vain that build it." — Psalm 127:1
 //
 // usage:
-//   cws-struct lint [format] <targets...> [options]
-//   cws-struct transform [format] <targets...> [--dry-run]
+//   cws-struct <operation> [format] <targets...> [options]
+//   cws-struct lint [format] <targets...>       # validate (format auto-detected)
+//   cws-struct transform [format] <targets...>  # fix (format auto-detected)
+//   cws-struct verify env [--verbose]           # check dev environment
 //   cws-struct formats                          # list registered formats
 //   cws-struct help
 //
@@ -41,6 +43,7 @@ import {
 } from "./lib/output.ts";
 import {
   getFormat,
+  listFormats,
   listFormatDetails,
   detectFormat,
 } from "./lib/formats/registry.ts";
@@ -138,18 +141,17 @@ ${COLORS.dim}"Except the LORD build the house, they labour in vain that build it
 ${COLORS.dim}— Psalm 127:1${COLORS.reset}
 
 ${COLORS.bold}Usage:${COLORS.reset}
-  ${TOOL_NAME} lint [format] <targets...> [options]
-  ${TOOL_NAME} transform [format] <targets...> [--dry-run]
-  ${TOOL_NAME} verify env [--verbose]
-  ${TOOL_NAME} formats
-  ${TOOL_NAME} help
+  ${TOOL_NAME} <operation> [format] <targets...> [options]
 
-${COLORS.bold}Commands:${COLORS.reset}
+${COLORS.bold}Operations:${COLORS.reset}
   lint        Validate structural alignment
   transform   Transform files to aligned structure
   verify env  Check development environment tools and versions
   formats     List registered format handlers
   help        Show this help
+
+  ${COLORS.dim}Format is optional — omit it to auto-detect from file extensions.${COLORS.reset}
+  ${COLORS.dim}When specified, only files matching that format are processed.${COLORS.reset}
 
 ${COLORS.bold}Options:${COLORS.reset}
   --verbose, -v     Show all results (including info)
@@ -168,12 +170,14 @@ ${COLORS.bold}Registered formats:${COLORS.reset}`);
 
   console.log(`
 ${COLORS.bold}Examples:${COLORS.reset}
-  ${TOOL_NAME} lint toml word/core/types/
-  ${TOOL_NAME} lint .                        # auto-detect formats
-  ${TOOL_NAME} lint toml . --summary
-  ${TOOL_NAME} transform toml file.toml --dry-run
-  ${TOOL_NAME} verify env                    # check all dev tools
-  ${TOOL_NAME} verify env --verbose          # include optional tools
+  ${TOOL_NAME} lint .                        ${COLORS.dim}# auto-detect all formats${COLORS.reset}
+  ${TOOL_NAME} lint rust src/                ${COLORS.dim}# lint only Rust files${COLORS.reset}
+  ${TOOL_NAME} lint toml word/core/types/    ${COLORS.dim}# lint only TOML files${COLORS.reset}
+  ${TOOL_NAME} lint toml . --summary         ${COLORS.dim}# summary view${COLORS.reset}
+  ${TOOL_NAME} transform .                   ${COLORS.dim}# auto-fix all formats${COLORS.reset}
+  ${TOOL_NAME} transform rust src/ --dry-run ${COLORS.dim}# preview Rust fixes${COLORS.reset}
+  ${TOOL_NAME} verify env                    ${COLORS.dim}# check dev tools${COLORS.reset}
+  ${TOOL_NAME} verify env --verbose          ${COLORS.dim}# include optional tools${COLORS.reset}
 `);
 }
 
@@ -187,50 +191,24 @@ function showFormats(): void {
   }
 }
 
-async function runLint(opts: CliOptions): Promise<boolean> {
-  const handler = opts.format ? getFormat(opts.format) : undefined;
-
-  if (opts.format && !handler) {
-    console.error(`${COLORS.red}Unknown format: ${opts.format}${COLORS.reset}`);
-    console.error(`Run '${TOOL_NAME} formats' to see available formats.`);
-    return false;
-  }
-
-  if (!handler) {
-    console.error(
-      `${COLORS.red}No format specified. Use '${TOOL_NAME} lint <format> <target>'${COLORS.reset}`,
-    );
-    console.error(`Run '${TOOL_NAME} formats' to see available formats.`);
-    return false;
-  }
-
-  if (opts.targets.length === 0) {
-    console.error(
-      `${COLORS.red}No targets specified. Provide files or directories to lint.${COLORS.reset}`,
-    );
-    return false;
-  }
-
-  // Discover files
-  const files = await discoverFiles(opts.targets, handler);
-
-  if (files.length === 0) {
-    console.error(
-      `${COLORS.red}No ${handler.extensions.join("/")} files found in specified targets.${COLORS.reset}`,
-    );
-    return false;
-  }
-
-  // Print header
-  printHeader(TOOL_NAME, VERSION, files.length, handler.description);
-
-  // Lint each file
+/**
+ * Lint files for a single format handler.
+ * Extracted so both explicit-format and auto-detect paths share the same logic.
+ */
+async function lintWithHandler(
+  opts: CliOptions,
+  handler: import("./lib/types.ts").FormatHandler,
+  files: string[],
+): Promise<LintSummary[]> {
   const cwd = Deno.cwd();
   const summaries: LintSummary[] = [];
 
   for (const file of files) {
     const results = await handler.lint(file);
-    const summary = summarize(relative(cwd, file), results);
+    const health = handler.computeHealth
+      ? await handler.computeHealth(file, results)
+      : undefined;
+    const summary = summarize(relative(cwd, file), results, health);
     summaries.push(summary);
 
     if (!opts.summaryOnly) {
@@ -242,7 +220,6 @@ async function runLint(opts: CliOptions): Promise<boolean> {
     }
   }
 
-  // Summary-only mode: compact listing
   if (opts.summaryOnly) {
     for (const s of summaries) {
       const status =
@@ -253,43 +230,84 @@ async function runLint(opts: CliOptions): Promise<boolean> {
     }
   }
 
-  printTotals(summaries);
-
-  return summaries.every((s) => s.errors === 0);
+  return summaries;
 }
 
-async function runTransform(opts: CliOptions): Promise<boolean> {
-  const handler = opts.format ? getFormat(opts.format) : undefined;
-
-  if (!handler?.transform) {
-    console.error(
-      `${COLORS.red}Transform not available for format: ${opts.format ?? "none"}${COLORS.reset}`,
-    );
-    return false;
-  }
-
+async function runLint(opts: CliOptions): Promise<boolean> {
   if (opts.targets.length === 0) {
     console.error(
-      `${COLORS.red}No targets specified.${COLORS.reset}`,
+      `${COLORS.red}No targets specified. Provide files or directories to lint.${COLORS.reset}`,
     );
     return false;
   }
 
-  const files = await discoverFiles(opts.targets, handler);
+  // ── Explicit format: lint with that handler ────────────────────
+  if (opts.format) {
+    const handler = getFormat(opts.format);
+    if (!handler) {
+      console.error(`${COLORS.red}Unknown format: ${opts.format}${COLORS.reset}`);
+      console.error(`Run '${TOOL_NAME} formats' to see available formats.`);
+      return false;
+    }
 
-  if (files.length === 0) {
+    const files = await discoverFiles(opts.targets, handler);
+    if (files.length === 0) {
+      console.error(
+        `${COLORS.red}No ${handler.extensions.join("/")} files found in specified targets.${COLORS.reset}`,
+      );
+      return false;
+    }
+
+    printHeader(TOOL_NAME, VERSION, files.length, handler.description);
+    const summaries = await lintWithHandler(opts, handler, files);
+    printTotals(summaries);
+    return summaries.every((s) => s.errors === 0);
+  }
+
+  // ── No format: auto-detect — lint is the operation, format is discovered ──
+  const allFormats = listFormats();
+  const allSummaries: LintSummary[] = [];
+  let totalFiles = 0;
+
+  for (const formatName of allFormats) {
+    const handler = getFormat(formatName)!;
+    const files = await discoverFiles(opts.targets, handler);
+    if (files.length === 0) continue;
+
+    totalFiles += files.length;
+    console.log(
+      `\n${COLORS.bold}── ${handler.name}${COLORS.reset} (${files.length} file${files.length > 1 ? "s" : ""}) — ${handler.description}`,
+    );
+
+    const summaries = await lintWithHandler(opts, handler, files);
+    allSummaries.push(...summaries);
+  }
+
+  if (totalFiles === 0) {
     console.error(
-      `${COLORS.red}No matching files found.${COLORS.reset}`,
+      `${COLORS.red}No files matched any registered format in specified targets.${COLORS.reset}`,
     );
+    console.error(`Run '${TOOL_NAME} formats' to see available formats.`);
     return false;
   }
 
-  console.log(
-    `${COLORS.bold}Transforming ${files.length} file(s)${opts.dryRun ? " (dry run)" : ""}...${COLORS.reset}\n`,
-  );
+  printTotals(allSummaries);
+  return allSummaries.every((s) => s.errors === 0);
+}
+
+/**
+ * Transform files for a single format handler.
+ * Extracted so both explicit-format and auto-detect paths share the same logic.
+ */
+async function transformWithHandler(
+  opts: CliOptions,
+  handler: import("./lib/types.ts").FormatHandler,
+  files: string[],
+): Promise<LintSummary[]> {
+  if (!handler.transform) return [];
 
   const cwd = Deno.cwd();
-  let errors = 0;
+  const summaries: LintSummary[] = [];
 
   for (const file of files) {
     const results = await handler.transform(file, {
@@ -297,11 +315,78 @@ async function runTransform(opts: CliOptions): Promise<boolean> {
       extensions: opts.extensions,
     });
     const summary = summarize(relative(cwd, file), results);
+    summaries.push(summary);
     printFileSummary(summary, opts.verbose);
-    errors += summary.errors;
   }
 
-  return errors === 0;
+  return summaries;
+}
+
+async function runTransform(opts: CliOptions): Promise<boolean> {
+  if (opts.targets.length === 0) {
+    console.error(
+      `${COLORS.red}No targets specified. Provide files or directories to transform.${COLORS.reset}`,
+    );
+    return false;
+  }
+
+  // ── Explicit format: transform with that handler ────────────────
+  if (opts.format) {
+    const handler = getFormat(opts.format);
+    if (!handler?.transform) {
+      console.error(
+        `${COLORS.red}Transform not available for format: ${opts.format}${COLORS.reset}`,
+      );
+      return false;
+    }
+
+    const files = await discoverFiles(opts.targets, handler);
+    if (files.length === 0) {
+      console.error(
+        `${COLORS.red}No ${handler.extensions.join("/")} files found in specified targets.${COLORS.reset}`,
+      );
+      return false;
+    }
+
+    console.log(
+      `${COLORS.bold}Transforming ${files.length} file(s)${opts.dryRun ? " (dry run)" : ""}...${COLORS.reset}\n`,
+    );
+    const summaries = await transformWithHandler(opts, handler, files);
+    printTotals(summaries);
+    return summaries.every((s) => s.errors === 0);
+  }
+
+  // ── No format: auto-detect — transform is the operation, format is discovered ──
+  const allFormats = listFormats();
+  const allSummaries: LintSummary[] = [];
+  let totalFiles = 0;
+
+  for (const formatName of allFormats) {
+    const handler = getFormat(formatName)!;
+    if (!handler.transform) continue;
+
+    const files = await discoverFiles(opts.targets, handler);
+    if (files.length === 0) continue;
+
+    totalFiles += files.length;
+    console.log(
+      `\n${COLORS.bold}── ${handler.name}${COLORS.reset} (${files.length} file${files.length > 1 ? "s" : ""})${opts.dryRun ? " (dry run)" : ""}`,
+    );
+
+    const summaries = await transformWithHandler(opts, handler, files);
+    allSummaries.push(...summaries);
+  }
+
+  if (totalFiles === 0) {
+    console.error(
+      `${COLORS.red}No files matched any format with transform support in specified targets.${COLORS.reset}`,
+    );
+    console.error(`Run '${TOOL_NAME} formats' to see available formats.`);
+    return false;
+  }
+
+  printTotals(allSummaries);
+  return allSummaries.every((s) => s.errors === 0);
 }
 
 // ============================================================================

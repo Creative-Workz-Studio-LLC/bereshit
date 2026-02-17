@@ -25,8 +25,8 @@ import (
 //
 // ============================================================================
 
-// Test root - the claude-global project root
-const testRoot = "/media/seanje-lenox-wise/Project/CreativeWorkzStudio_LLC/claude-global"
+// Test root - the Bereshit project's config root
+const testRoot = "/media/seanje-lenox-wise/Project/Bereshit/word/claude"
 
 // Test identities
 const (

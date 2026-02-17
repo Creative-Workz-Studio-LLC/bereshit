@@ -115,11 +115,38 @@ rule = "Required sections are structural. Extensions follow naming patterns. Inv
 # ═══════════════════════════════════════════════════════════════
 # CONTENT BLOCK [CONTENT]
 # ═══════════════════════════════════════════════════════════════
+#
+# CONTENT IS the data. METADATA says what this file IS. CONTENT
+# says what it HOLDS. CLOSING says what to PROTECT.
+#
+# Code configs specialize the root data template for packages:
+# language definition stays in code, behavioral tuning goes in config.
+#
+# Three zones, always in this order:
+#
+#   Cc — Configurations  Define what exists (identity, settings, resources)
+#   Co — Operations      Define what happens (behavior, integrations)
+#   Cv — Validation      Define what's correct (schema, health, content rules)
+#
+# Ordering principle: "definition_flow"
+#   Define first. Configure second. Validate last.
+#
+# Subsections:
+#
+#   Cc.1 Identity       — Package name, version, type [REQUIRED]
+#   Cc.2 Settings       — Build mode, entry point, deps [DEFINED]
+#   Cc.3 Resources      — Paths, limits, constraints [DEFINED]
+#   ---
+#   Co.1 Behavior       — Logging, runtime, feature toggles [DEFINED]
+#   Co.2 Integrations   — Database, cache, external services [DEFINED]
+#   ---
+#   Cv.1 Validation     — Schema, health scoring, content rules [REQUIRED]
 
 [_content]
 format = "TOML — UTF-8, LF line endings"
 key_convention = "lowercase_with_underscores, match Go struct field tags"
 constraint = "All values typed. Go struct tags must match TOML key names."
+ordering = "definition_flow"
 Cc = "Content Configurations — identity, settings, resources"
 Co = "Content Operations — behavior (logging, runtime, features), integrations (database, cache)"
 Cv = "Content Validation — schema, health scoring"
@@ -127,8 +154,15 @@ Cv = "Content Validation — schema, health scoring"
 # ─────────────────────────────────────────────────────────────
 # Cc — Content Configurations
 # ─────────────────────────────────────────────────────────────
+#
+# Cc defines what EXISTS. Package identity and static structure.
+# These sections define the shape of the package config.
 
 # Cc.1 IDENTITY — Package Identity [REQUIRED]
+#
+# Production: Every package config MUST have identity. name + version
+# let tooling discover and reference this config. type distinguishes
+# libraries from binaries from plugins — build behavior depends on it.
 [identity]
 name = "package-name"
 version = "a-01.00"
@@ -136,12 +170,20 @@ description = "Package configuration"
 type = "library"                        # library | binary | plugin
 
 # Cc.2 SETTINGS — Primary Package Configuration [DEFINED]
+#
+# Production: Build settings change per environment. debug vs release
+# affects optimization, debug symbols, and output size. entry_point
+# only matters for binaries — libraries don't have one.
 [settings]
 build_mode = "debug"                    # debug | release
 entry_point = "main.go"                 # For binaries
 deps_file = "go.mod"
 
 # Cc.3 RESOURCES — Paths, Limits, Constraints [DEFINED]
+#
+# Production: Resource paths are relative to the package root.
+# Limits prevent runaway builds — always document units and
+# what happens when a limit is exceeded.
 [resources.paths]
 source = "src/"
 output = "bin/"
@@ -161,8 +203,17 @@ note = "Experimental Cc patterns — may be promoted into identity, settings, or
 # ─────────────────────────────────────────────────────────────
 # Co — Content Operations
 # ─────────────────────────────────────────────────────────────
+#
+# Co defines what HAPPENS. Runtime behavior, external integrations.
+# These sections vary by deployment — production vs development,
+# local vs cloud, connected vs isolated.
 
 # Co.1 BEHAVIOR — Runtime Modes and Toggles [DEFINED]
+#
+# Production: Behavior is organized by concern (logging, runtime,
+# features) using nested tables. Each sub-table groups related
+# controls. Logging should always have a level and format.
+# Workers = 0 means "auto-detect" — document this convention.
 [behavior.logging]
 level = "info"                          # error, warn, info, debug, trace
 format = "text"                         # text | json
@@ -179,6 +230,11 @@ tracing_enabled = false
 profiling_enabled = false
 
 # Co.2 INTEGRATIONS — External Service Configuration [DEFINED]
+#
+# Production: Credentials go in env vars, not config files.
+# Config holds connection parameters (host, port, pool_size).
+# Each integration is a nested table. If a service is optional,
+# the whole sub-table can be absent — check before accessing.
 [integrations.database]
 driver = "postgres"
 host = "localhost"
@@ -199,8 +255,17 @@ note = "Experimental Co patterns — may be promoted into behavior or integratio
 # ─────────────────────────────────────────────────────────────
 # Cv — Content Validation
 # ─────────────────────────────────────────────────────────────
+#
+# Cv defines what's CORRECT. Schema constraints, health scoring,
+# content rules. The config validates itself — Cv makes that
+# explicit. Uses _ prefix tables because validation is meta-content.
 
 # Cv.1 VALIDATION — Schema, Health, Content Rules [REQUIRED]
+#
+# Production: commands includes both TOML parse check AND build
+# verification. schema.fields enables per-section field contracts.
+# health_scoring weights quality: structure, configuration, and
+# code_integration (does the config actually work with the code?).
 [_validation]
 commands = ["tomlv config.toml", "go build -v ./..."]
 

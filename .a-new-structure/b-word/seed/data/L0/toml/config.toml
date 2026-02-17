@@ -115,11 +115,49 @@ rule = "Required sections are structural. Extensions follow naming patterns. Inv
 # ═══════════════════════════════════════════════════════════════
 # CONTENT BLOCK [CONTENT]
 # ═══════════════════════════════════════════════════════════════
+#
+# CONTENT IS the data. METADATA says what this file IS. CONTENT
+# says what it HOLDS. CLOSING says what to PROTECT.
+#
+# In 3-block structure, CONTENT is the entire middle — there is
+# no separate SETUP/BODY split like 4-block code. Instead, three
+# zones organize the data by concern:
+#
+#   Cc — Configurations  Define what EXISTS (identity, settings, resources)
+#   Co — Operations      Define what HAPPENS (behavior, patterns, integrations)
+#   Cv — Validation      Define what's CORRECT (schema, health, content rules)
+#
+# Ordering principle: "definition_flow"
+#   Define first. Configure second. Validate last.
+#   You can't validate what you haven't defined.
+#   You can't configure what doesn't exist.
+#
+# Subsections:
+#
+#   Cc.1 Identity       — What IS this config? Name, version, type [REQUIRED]
+#   Cc.2 Settings       — Primary configuration values [DEFINED]
+#   Cc.3 Resources      — Paths, limits, constraints [DEFINED]
+#   ---
+#   Co.1 Behavior       — Runtime modes and toggles [DEFINED]
+#   Co.2 Patterns       — TOML structural examples (root template only) [TEMPLATE]
+#   ---
+#   Cv.1 Validation     — Schema, health scoring, content rules [REQUIRED]
+#
+# Between zones: [_extensions.{cc,co,cv}] holds experimental patterns
+# that haven't earned promotion into a named subsection yet.
+#
+# Placement clarity:
+#   CONTENT: Data the consumer reads or the system validates
+#   CLOSING: Guardrails for humans modifying this file
+#   Gray area: health_scoring could live in either — it's about
+#   the data (CONTENT) but guides human behavior (CLOSING).
+#   Convention: keep it in Cv because tooling reads it.
 
 [_content]
 format = "TOML — UTF-8, LF line endings"
 key_convention = "lowercase_with_underscores, match Go struct field tags"
 constraint = "All values typed. Go struct tags must match TOML key names."
+ordering = "definition_flow"
 Cc = "Content Configurations — identity, settings, resources"
 Co = "Content Operations — behavior, patterns (root template examples)"
 Cv = "Content Validation — schema, health scoring, content rules"
@@ -127,8 +165,16 @@ Cv = "Content Validation — schema, health scoring, content rules"
 # ─────────────────────────────────────────────────────────────
 # Cc — Content Configurations
 # ─────────────────────────────────────────────────────────────
+#
+# Cc defines what EXISTS. Static structure the config provides.
+# These sections rarely change at runtime — they describe shape.
+# Think of Cc as the config's skeleton: identity, settings, resources.
 
 # Cc.1 IDENTITY — What Is This Config? [REQUIRED]
+#
+# Production: Every config MUST have identity. name + version are
+# the minimum viable contract. Without identity, the config is
+# anonymous data — tooling can't discover, version, or reference it.
 [identity]
 name = "config-name"                            # Unique configuration identifier
 version = "a-01.00"                             # Living version (stage-phase.completion)
@@ -136,6 +182,11 @@ description = "Configuration file description"
 type = "generic"                                # Config type for categorization
 
 # Cc.2 SETTINGS — Primary Configuration Values [DEFINED]
+#
+# Production: Settings are the most-touched section. Design for the
+# operator who changes values at 2am. Clear names, documented ranges,
+# sensible defaults. If a setting needs a comment to explain it, the
+# name might be wrong.
 [settings]
 # Core settings — most commonly modified values
 # Type annotations: string, int, float, bool, array, table
@@ -144,6 +195,10 @@ enabled = true                                  # Enable core feature
 name = "default"                                # Primary string setting
 
 # Cc.3 RESOURCES — Paths, Limits, Constraints [DEFINED]
+#
+# Production: Resources define boundaries — paths the system uses,
+# limits it respects, constraints it enforces. These are the guardrails.
+# If a limit has no upper bound documented, someone WILL hit it.
 [resources.paths]
 root = "./"
 output = "./output"
@@ -161,8 +216,18 @@ note = "Experimental Cc patterns — may be promoted into identity, settings, or
 # ─────────────────────────────────────────────────────────────
 # Co — Content Operations
 # ─────────────────────────────────────────────────────────────
+#
+# Co defines what HAPPENS. Runtime behavior, operational patterns,
+# integration points. These sections may vary by environment —
+# production vs development, local vs cloud. Co is the config's
+# muscle: how the system actually behaves.
 
 # Co.1 BEHAVIOR — Runtime Modes and Toggles [DEFINED]
+#
+# Production: Behavior settings control HOW the system runs, not
+# WHAT it is. log_level, debug_mode, strict_mode — these change
+# per-environment. Keep them separate from Cc because they're
+# deployment-specific, not config-specific.
 [behavior]
 log_level = "info"                              # error, warn, info, debug
 debug_mode = false
@@ -170,6 +235,11 @@ strict_mode = false
 verbose_output = false
 
 # Co.2 PATTERNS — TOML Structural Templates (root template only)
+#
+# Production: This subsection exists ONLY in the root template.
+# Children don't need pattern examples — they follow the patterns.
+# Demonstrates nested tables and array-of-tables for reference.
+# Remove this section when instantiating (same as X6_template).
 
 # Nested Table Pattern
 # Access in code: config.Parent.Child.Setting
@@ -198,8 +268,24 @@ note = "Experimental Co patterns — may be promoted into behavior or new operat
 # ─────────────────────────────────────────────────────────────
 # Cv — Content Validation
 # ─────────────────────────────────────────────────────────────
+#
+# Cv defines what's CORRECT. Schema constraints, health scoring,
+# content rules. The config validates itself — Cv makes that explicit.
+# This zone uses _ prefix tables ([_validation]) because validation
+# is meta-content, not data the consumer reads directly.
+#
+# Cv is the config's immune system: it knows what healthy looks like.
 
 # Cv.1 VALIDATION — Schema, Health, Content Rules [REQUIRED]
+#
+# Production: Every config MUST have validation. At minimum, a
+# command to verify the file parses. schema.required tells tooling
+# which sections MUST exist. health_scoring weights quality gates.
+# content rules constrain values to valid enums and ranges.
+#
+# Scaling signal: When you need per-field type constraints or
+# cross-section consistency rules, those go here in Cv — not
+# in the sections themselves. Keep data clean, validation separate.
 [_validation]
 commands = ["tomlv config.toml"]
 

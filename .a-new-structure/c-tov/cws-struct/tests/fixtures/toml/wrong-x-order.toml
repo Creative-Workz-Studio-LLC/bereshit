@@ -1,0 +1,146 @@
+# #!omni data --toml
+
+# ═══════════════════════════════════════════════════════════════
+# Wrong X Order — 3-Block Test Fixture
+# ═══════════════════════════════════════════════════════════════
+#
+# Structure: 3-block (METADATA + CONTENT + CLOSING)
+# Purpose:   CLOSING X sections in wrong order (X3 before X1).
+#            Should produce closing/x-order warning.
+
+# ═══════════════════════════════════════════════════════════════
+# METADATA BLOCK [METADATA]
+# ═══════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# I — Identity: What IS This File
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.I1_core]
+key = "B-test-fixture-wrong-x-order"
+format = "@omni data --toml"
+from = "b-word/seed/data/L0/toml/config.toml"
+at = "a-01.00"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "test-fixture"
+role = "test"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "wrong-x-order.toml"
+title = "Wrong X Section Order Test Fixture"
+component = "CLOSING X sections intentionally misordered"
+path = "c-tov/cws-struct/tests/fixtures/toml/wrong-x-order.toml"
+provides = ["WRONG_X_ORDER_FIXTURE"]
+brief = "Test fixture with X3 before X1 in CLOSING. Should trigger closing/x-order warning."
+
+# ─────────────────────────────────────────────────────────────
+# C — Context: What Do I Need to KNOW
+# ─────────────────────────────────────────────────────────────
+
+[_metadata.C1_state]
+version = "a-01.00"
+status = "Active"
+created = "2026-02-17"
+updated = "2026-02-17"
+
+[_metadata.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[_metadata.C3_grounding]
+scripture = "Psalm 119:105 (WEB) — Your word is a lamp to my feet, and a light for my path."
+principle = "Ordered sections reflect ordered thinking."
+anchor = "Structure serves the reader. Order matters."
+
+[_metadata.C4_dependencies]
+requires = "cws-struct TOML linter for validation"
+consumers = "TOML linter test suite"
+integration = "Test fixture — consumed by tests/toml_test.ts"
+if_missing = "TOML X ordering tests cannot run"
+
+[_metadata.C4_dependencies.related]
+parent = "seed/data/L0/toml/config.toml — config template"
+children = []
+
+[_metadata.C4_dependencies.cross_format]
+role = "TOML test fixture."
+note = "Intentionally violates X ordering convention."
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = []
+extension_context = []
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = ["X3_troubleshooting"]
+valid_patterns = ["I{N}_{name}", "C{N}_{name}", "X{N}_{name}", "_{name}"]
+rule = "TOML 3-block alignment. Metadata in _metadata, content in user-defined tables, closing in _closing."
+
+# ═══════════════════════════════════════════════════════════════
+# END METADATA [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CONTENT BLOCK [CONTENT]
+# ═══════════════════════════════════════════════════════════════
+
+[_content]
+Cc = "Content Configurations"
+Co = "Content Operations"
+Cv = "Content Validation"
+
+# Cc — Configurations
+[identity]
+name = "test-fixture"
+version = "0.1.0"
+
+[settings]
+name = "test"
+value = 42
+
+# Cv — Content Validation
+[_validation]
+commands = "deno test --allow-read"
+
+[_validation.schema]
+required = ["identity"]
+defined = ["settings"]
+
+# ═══════════════════════════════════════════════════════════════
+# END CONTENT [END]
+# ═══════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLOSING BLOCK [CLOSING]
+# ═══════════════════════════════════════════════════════════════
+
+# WRONG: X3 appears before X1 — should produce ordering warning
+
+# X.3 TROUBLESHOOTING [DEFINED]
+[_closing.X3_troubleshooting]
+scripture = "James 1:5 (WEB) — If any lacks wisdom, let him ask of God."
+common_issue = "This is intentionally misordered for testing."
+
+# X.1 POLICY — Modification Guidelines [REQUIRED]
+[_closing.X1_policy]
+scripture = "Proverbs 22:28 (WEB) — Don't move the ancient boundary stone."
+never = ["Break 3-block structure"]
+careful = ["Section ordering"]
+safe = ["Content updates"]
+
+# X.5 NOTE — Final Anchor [REQUIRED]
+[_closing.X5_note]
+note = "Test fixture for wrong X ordering."
+scripture = "Psalm 119:105 (WEB) — Your word is a lamp to my feet."
+anchor = "Order reflects intention."
+
+# ═══════════════════════════════════════════════════════════════
+# END CLOSING [END]
+# ═══════════════════════════════════════════════════════════════
