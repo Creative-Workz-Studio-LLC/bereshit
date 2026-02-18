@@ -34,15 +34,15 @@ import { getFormat } from "../../lib/engine/mod.ts";
 // discoverFiles — file targets
 // ---------------------------------------------------------------------------
 
-Deno.test("discoverFiles: single file target returns that file", async () => {
+Deno.test("discovery/discoverFiles: single file target returns that file", async () => {
   const toml = getFormat("toml")!;
-  const fixture = new URL("../fixtures/toml/valid-complete.toml", import.meta.url).pathname;
+  const fixture = new URL("../fixtures/toml/structure/valid-complete.toml", import.meta.url).pathname;
   const files = await discoverFiles([fixture], toml);
   assertEquals(files.length, 1, "Should find exactly 1 file");
   assert(files[0]!.endsWith("valid-complete.toml"), "Should be the target file");
 });
 
-Deno.test("discoverFiles: non-matching file returns empty", async () => {
+Deno.test("discovery/discoverFiles: non-matching file returns empty", async () => {
   const toml = getFormat("toml")!;
   // Pass a .ts file — TOML handler won't match it
   const fixture = new URL("../helpers.ts", import.meta.url).pathname;
@@ -54,7 +54,7 @@ Deno.test("discoverFiles: non-matching file returns empty", async () => {
 // discoverFiles — directory targets
 // ---------------------------------------------------------------------------
 
-Deno.test("discoverFiles: directory walk finds TOML files", async () => {
+Deno.test("discovery/discoverFiles: directory walk finds TOML files", async () => {
   const toml = getFormat("toml")!;
   const fixtureDir = new URL("../fixtures/toml/", import.meta.url).pathname;
   const files = await discoverFiles([fixtureDir], toml);
@@ -66,7 +66,7 @@ Deno.test("discoverFiles: directory walk finds TOML files", async () => {
   }
 });
 
-Deno.test("discoverFiles: directory walk finds Rust files", async () => {
+Deno.test("discovery/discoverFiles: directory walk finds Rust files", async () => {
   const rust = getFormat("rust")!;
   const fixtureDir = new URL("../fixtures/rust/", import.meta.url).pathname;
   const files = await discoverFiles([fixtureDir], rust);
@@ -77,7 +77,7 @@ Deno.test("discoverFiles: directory walk finds Rust files", async () => {
   }
 });
 
-Deno.test("discoverFiles: results are sorted", async () => {
+Deno.test("discovery/discoverFiles: results are sorted", async () => {
   const toml = getFormat("toml")!;
   const fixtureDir = new URL("../fixtures/toml/", import.meta.url).pathname;
   const files = await discoverFiles([fixtureDir], toml);
@@ -85,7 +85,7 @@ Deno.test("discoverFiles: results are sorted", async () => {
   assertEquals(files, sorted, "Files should be sorted alphabetically");
 });
 
-Deno.test("discoverFiles: non-existent path doesn't crash", async () => {
+Deno.test("discovery/discoverFiles: non-existent path doesn't crash", async () => {
   const toml = getFormat("toml")!;
   const files = await discoverFiles(["/tmp/definitely-does-not-exist-xyz123"], toml);
   assertEquals(files.length, 0, "Should return empty for non-existent path");
@@ -95,14 +95,14 @@ Deno.test("discoverFiles: non-existent path doesn't crash", async () => {
 // relativePaths
 // ---------------------------------------------------------------------------
 
-Deno.test("relativePaths: converts absolute to relative", () => {
+Deno.test("discovery/relativePaths: converts absolute to relative", () => {
   const abs = ["/home/user/project/file.toml", "/home/user/project/sub/other.toml"];
   const rel = relativePaths(abs, "/home/user/project");
   assertEquals(rel[0], "file.toml");
   assertEquals(rel[1], "sub/other.toml");
 });
 
-Deno.test("relativePaths: empty array returns empty", () => {
+Deno.test("discovery/relativePaths: empty array returns empty", () => {
   const rel = relativePaths([]);
   assertEquals(rel.length, 0);
 });

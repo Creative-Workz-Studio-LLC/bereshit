@@ -19,7 +19,7 @@
     "_P1_tag": "P.1 CORE — Identity [CORE]",
     "_P1_key": "B-L1-schemas-go-4block-schema",
     "_P1_from": "b-word/seed/data/L0/json/config.jsonc",
-    "_P1_at": "a-02.00",
+    "_P1_at": "a-03.00",
 
     // P.2 FAMILY — Classification
     "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
@@ -75,10 +75,10 @@
 
     // M.2 STATE
     "_M2_state": {
-        "version": "a-02.00",
+        "version": "a-03.00",
         "status": "Active",
         "created": "2026-02-15",
-        "updated": "2026-02-17"
+        "updated": "2026-02-18"
     },
 
     // M.3 ATTRIBUTION
@@ -96,7 +96,7 @@
     // M.5 DEPENDENCIES
     "_M5_dependencies": {
         "requires": "base-4block-schema.jsonc — shared 4-block $defs; base-3block-schema.jsonc — shared I/C metadata $defs",
-        "consumers": "c-tov/cws-struct/lib/formats/go.ts — runtime linter implements these rules",
+        "consumers": "c-tov/cws-struct/lib/handlers/go.ts — runtime linter implements these rules",
         "cross_format": {
             "makefile_sibling": "b-word/L1-omnicode/ladder/schemas/makefile-4block-schema.jsonc — Makefile 4-block (also comment-based)",
             "rust_sibling": "b-word/L1-omnicode/ladder/schemas/rust-4block-schema.jsonc — Rust 4-block (also //-comment-based)",
@@ -128,8 +128,8 @@
     //   //omni:version a-01.00           — version directive
     //   // ====...====                   — block boundary (76 = chars)
     //   // METADATA                      — block label
-    //   // ----...----                   — subsection boundary (64 - chars)
-    //   //--- I.1 Imports               — SETUP subsection marker
+    //   // ────...────                   — subsection boundary (74 ─ chars, U+2500)
+    //   // 1. Imports                   — SETUP subsection header
     //   // END METADATA                 — block end marker
     //
     // Two file classifications:
@@ -160,8 +160,9 @@
         "identity_vars": "var Pragma = [][2]string{...} and var Metadata = [][2]string{...} — I/C identity",
         "block_boundaries": "// ====...==== (76 =) separator + // BLOCK_NAME label",
         "end_markers": "// END BLOCK_NAME — marks block end",
-        "subsection_markers": "//--- TAG.N Label — within SETUP; // ────...Label — within BODY",
-        "separators": "// ====...==== (76 chars) for blocks, // ----...---- (64 chars) for subsections",
+        "setup_sections": "// ──────... (74 ─) divider + // N. Label — 10 numbered sections in SETUP",
+        "body_subsections": "// ──────...────── (74 ─) + // N. Name — numbered subsections within BODY",
+        "separators": "// ====...==== (76 =) for blocks, // ──────...────── (74 ─) for SETUP and BODY subsections",
         "template_directive": "// #!omni template --go -library (first structural line in templates)",
         "build_constraint": "//go:build ignore — required for template files (prevents compilation)"
     },
@@ -170,9 +171,10 @@
         "block_separator": "// ============================================================================",
         "block_label": "// METADATA | // SETUP | // BODY | // CLOSING",
         "end_marker": "// END METADATA | // END SETUP | // END BODY | // END CLOSING",
-        "subsection_separator": "// --------------------------------------------------------------------",
-        "setup_subsection": "//--- I.1 Imports | //--- T.1 Types | //--- K.1 Constants",
-        "body_subsection": "// ──── Helpers | // ──── Core Operations | // ──── Public APIs",
+        "setup_section_divider": "// ──────────────────────────────────────────────────────────────────────────",
+        "setup_section_header": "// 1. Imports | // 2. Constants | ... | // 10. Build Tags",
+        "body_subsection_divider": "// ──────────────────────────────────────────────────────────────────────────",
+        "body_subsection_header": "// 1. Org Chart | // 2. Helpers | // 3. Core Operations | // 4. Error Handling | // 5. Public APIs",
         "omni_directive": "//omni:key B-package-name",
         "pragma_line": "// #!omni template --go -library"
     },
@@ -369,55 +371,86 @@
         },
 
         // ═══════════════════════════════════════════════════════
-        // SETUP BLOCK — imports, types, constants, variables
+        // SETUP BLOCK — declarations the BODY depends on
         // ═══════════════════════════════════════════════════════
 
         "SETUP": {
-            "purpose": "Imports, type definitions, constants, variables — everything needed before BODY logic",
+            "purpose": "SETUP makes things EXIST. BODY makes things HAPPEN. All declarations — imports, types, constants, errors, interfaces — go here. BODY contains only functions.",
             "boundary": "// ============================================================================",
             "label": "// SETUP",
             "end_marker": "// END SETUP",
             "required": true,
             "severity": "error",
 
-            "subsection_order": {
-                "note": "Canonical order — linter checks that present subsections appear in this sequence",
-                "I": {
-                    "tag": "I",
+            "section_order": {
+                "note": "10-section dependency chain — each layer uses only what's above. Aligned with Rust 4-block SETUP pattern, adapted for Go conventions.",
+                "1": {
                     "label": "Imports",
-                    "pattern": "//--- I.N ...",
-                    "purpose": "Import declarations"
+                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
+                    "header": "// 1. Imports",
+                    "purpose": "What this file depends on. Groups: Standard Library → External → Internal → Package-Internal"
                 },
-                "T": {
-                    "tag": "T",
-                    "label": "Types",
-                    "pattern": "//--- T.N ...",
-                    "purpose": "Type definitions (structs, interfaces)"
-                },
-                "TM": {
-                    "tag": "TM",
-                    "label": "Type Methods",
-                    "pattern": "//--- TM ...",
-                    "purpose": "Methods on types defined in T section"
-                },
-                "K": {
-                    "tag": "K",
+                "2": {
                     "label": "Constants",
-                    "pattern": "//--- K.N ...",
-                    "purpose": "Constant declarations"
+                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
+                    "header": "// 2. Constants",
+                    "purpose": "Compile-time fixed values. Don't depend on types — they come first."
                 },
-                "V": {
-                    "tag": "V",
+                "3": {
                     "label": "Variables",
-                    "pattern": "//--- V.N ...",
-                    "purpose": "Package-level variable declarations"
+                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
+                    "header": "// 3. Variables",
+                    "purpose": "Package-level mutable state. Sentinel errors, registries, lazy singletons."
                 },
-                "PS": {
-                    "tag": "PS",
-                    "label": "Package-Level State",
-                    "pattern": "//--- PS.N ...",
-                    "purpose": "Singleton state, registries, caches"
+                "4": {
+                    "label": "Type Aliases",
+                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
+                    "header": "// 4. Type Aliases",
+                    "purpose": "Shorthand for complex signatures. type X = Y (true alias)."
+                },
+                "5": {
+                    "label": "Error Types",
+                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
+                    "header": "// 5. Error Types",
+                    "purpose": "Custom errors + Error() method. Before Core Types because methods return these."
+                },
+                "6": {
+                    "label": "Core Types",
+                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
+                    "header": "// 6. Core Types",
+                    "purpose": "struct definitions + simple constructors. The shapes this file works with."
+                },
+                "7": {
+                    "label": "Interface Defs",
+                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
+                    "header": "// 7. Interface Definitions",
+                    "purpose": "Behavioral contracts (shape, not fulfillment). Implementations go in BODY."
+                },
+                "8": {
+                    "label": "Type Methods",
+                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
+                    "header": "// 8. Type Methods",
+                    "purpose": "Structural behaviors — completing interface impls (Error, String, Unwrap). Business logic goes in BODY."
+                },
+                "9": {
+                    "label": "Code Generation",
+                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
+                    "header": "// 9. Code Generation",
+                    "purpose": "go:generate directives. Go's equivalent of Rust macros."
+                },
+                "10": {
+                    "label": "Build Tags",
+                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
+                    "header": "// 10. Build Tags",
+                    "purpose": "Conditional compilation items. //go:build constraints and tag-specific code."
                 }
+            },
+
+            "subtype_adaptations": {
+                "note": "Same 10 sections across all subtypes, but commentary and examples adapt per subtype",
+                "executable": "Exit codes in §2, minimal §6 (consume from libraries), §7/§9 rarely needed",
+                "library": "Rich §5-§7 (API contract errors, domain types, interface definitions)",
+                "demo_test": "§6 becomes 'Test Fixtures' with fixture*() pattern, §9 becomes 'Assertion Helpers' with t.Helper()"
             },
 
             "go_requirements": {
@@ -438,27 +471,12 @@
             "note": "BODY contains the actual Go functions — the reason the file exists",
 
             "subsection_order": {
-                "note": "Flexible ordering — linter checks that present subsections appear in canonical sequence",
-                "Org Chart": {
-                    "pattern": "Org Chart | APU Inventory",
-                    "purpose": "Package-level organization overview"
-                },
-                "Helpers": {
-                    "pattern": "// Helpers | // ────...Helpers",
-                    "purpose": "Internal helper functions"
-                },
-                "Core Operations": {
-                    "pattern": "Core Operations",
-                    "purpose": "Primary business logic"
-                },
-                "Error Handling": {
-                    "pattern": "Error Handling | Error Helpers",
-                    "purpose": "Error types, wrapping, recovery"
-                },
-                "Public APIs": {
-                    "pattern": "Public APIs",
-                    "purpose": "Exported functions — the package contract"
-                }
+                "note": "Numeric ascending — linter checks // N. Name headers appear in ascending order (subtype-agnostic)",
+                "format": "// N. Name — numbered headers between 74-char ─ separators",
+                "legacy_format": "§N — Name (backward-compatible, matched by BODY_SUBSECTION_LEGACY)",
+                "library": ["1. Org Chart", "2. Helpers", "3. Core Operations", "4. Error Handling", "5. Public APIs"],
+                "executable": ["1. Org Chart", "2. Helpers", "3. Core Operations", "4. Error Handling", "5. Public APIs"],
+                "demo_test": ["1. Org Chart", "2. Helpers", "3. Core Operations", "4. Error Handling", "5. Test Functions"]
             }
         },
 
@@ -473,7 +491,7 @@
             "end_marker": "// END CLOSING",
             "required": true,
             "severity": "error",
-            "note": "Go closing blocks are typically brief — a summary comment documenting what the file does, its scripture anchor, and version history."
+            "note": "CLOSING uses 9 zones: 3 code zones (Cv → Ce → Cc) then 6 doc sections (X1 → X2 → X3 → X4 → X5 + X6 template-only). Code zones must precede doc sections. Missing zones are valid."
         }
     },
 
@@ -492,20 +510,23 @@
     "validation_contract": {
 
         "checks_summary": {
-            "total": 11,
-            "version": "a-02.00",
+            "total": 14,
+            "version": "a-06.00",
             "checks": [
                 "1. checkDirectives — //omni:key (required), //omni:code + //omni:version (recommended)",
                 "2. checkBlockStructure — 4 blocks present, correct order, END markers",
                 "3. checkPackageAndImports — package declaration, import statement",
                 "4. checkPragmaMetadata — var Pragma (I1-I4) and var Metadata (C1-C7) [][2]string identity vars",
                 "5. checkCommentMetadata — Key:, Purpose:, Biblical:, Version: in METADATA comments (secondary to Pragma/Metadata vars)",
-                "6. checkSeparatorConsistency — = widths consistent (standard: 76), - widths consistent (standard: 64)",
+                "6. checkSeparatorConsistency — 3-tier: = widths (76), ─ widths (74 U+2500), ASCII - (legacy)",
                 "7. checkTemplateVsDerived — //go:build ignore for templates, not for derived",
-                "8. checkSetupSubsectionOrder — I → T → TM → K → V → PS",
-                "9. checkBodySubsectionOrder — Org → Helpers → Core → Error → APIs",
+                "8. checkSetupSectionOrder — 10-section dependency chain: Imports → Constants → Variables → TypeAliases → ErrorTypes → CoreTypes → InterfaceDefs → TypeMethods → CodeGeneration → BuildTags",
+                "9. checkBodySubsectionOrder — ascending numeric // N. Name order (subtype-agnostic, matches Rust pattern)",
                 "10. checkDirectiveFormat — //omni:code matches known patterns",
-                "11. (skip check) — files without //omni: or block markers skipped with info"
+                "11. checkContentPlacement — declarations in correct blocks (imports in SETUP, funcs in BODY, etc.)",
+                "12. checkClosingZoneOrder — Cv → Ce → Cc → X1 → X2 → X3 → X4 → X5 → X6 canonical order",
+                "13. checkIdentityRegistration — Pragma exists but no init() runtime registration",
+                "14. checkClosingContentPlacement — test funcs belong in Cv, main() belongs in Ce"
             ]
         },
 
@@ -526,8 +547,11 @@
         "separators": {
             "block_width": 76,
             "block_char": "=",
-            "subsection_width": 64,
-            "subsection_char": "-",
+            "setup_section_width": 74,
+            "setup_section_char": "─",
+            "setup_section_note": "Box Drawing Light Horizontal (U+2500) — 74 chars after '// '",
+            "body_subsection_width": 74,
+            "body_subsection_char": "─",
             "consistency_severity": "warn",
             "standard_severity": "info"
         },
@@ -569,14 +593,20 @@
 
         "transformer": {
             "capabilities": [
-                "Fix block separator widths (= → 76 chars)",
-                "Fix subsection separator widths (- → 64 chars)",
-                "Add //go:build ignore to template files"
+                "1. Fix block separator widths (= → 76 chars)",
+                "2. Fix SETUP/BODY/CLOSING section divider widths (─ → 74 chars)",
+                "3. Convert ASCII - separators to Unicode ─ (U+2500)",
+                "4. Normalize separator prefix spacing (tab → 2 spaces)",
+                "5. Add //go:build ignore to template files",
+                "6. Move test functions from BODY to CLOSING Cv zone",
+                "7. Move func main() from BODY to CLOSING Ce zone",
+                "8. Reorder CLOSING zones to canonical order (Cv → Ce → Cc → X1-X5)",
+                "9. Scaffold missing identity fields in Pragma/Metadata vars"
             ],
             "limitations": [
                 "Does NOT inject missing block boundaries",
                 "Does NOT add missing //omni: directives",
-                "Does NOT reorder subsections"
+                "Does NOT reorder SETUP subsections (warns only)"
             ],
             "usage": "deno run --allow-read --allow-write mod.ts transform go <file>"
         }
@@ -595,7 +625,7 @@
 
     "_closing_start": "═══════════════════════════════════════════════════════════════",
     "_closing_tag": "CLOSING BLOCK [CLOSING]",
-    "_closing_structure": "X.1 Policy → X.2 Extension → X.3 Troubleshooting → X.4 Reference → X.5 Note",
+    "_closing_structure": "Cv → Ce → Cc → X1 → X2 → X3 → X4 → X5 (+ X6 template-only)",
 
     // X.1 POLICY
     "_X1": "─────────────────────────────────────────────────────────────",
@@ -608,8 +638,8 @@
     ],
     "_X1_careful": [
         "Adding new required //omni: directives (cascades to all Go files)",
-        "Changing SETUP subsection order (I → T → TM → K → V → PS)",
-        "Modifying separator width standards (76= / 64-)"
+        "Changing SETUP section order (1-10 dependency chain — aligned with Rust)",
+        "Modifying separator width standards (76= blocks / 74─ SETUP+BODY+CLOSING subsections)"
     ],
     "_X1_safe": [
         "Adding optional BODY subsections",
@@ -623,7 +653,7 @@
     "_X2_planned": [
         "Cross-file identity validation (doc.go _pragma keys match //omni:key in package files)",
         "Health scoring based on check completeness",
-        "CLOSING block section detection (summary, scripture, version history)"
+        "Per-zone content validation (Cv requires verification commands, Ce requires entry point, etc.)"
     ],
 
     // X.4 REFERENCE
@@ -637,7 +667,7 @@
         "b-word/seed/code/L0/go/library.go — Go library seed template",
         "b-word/seed/code/L0/go/executable.go — Go executable seed template",
         "b-word/seed/code/L0/go/demo-test.go — Go demo-test seed template",
-        "c-tov/cws-struct/lib/formats/go.ts — Runtime linter (implements these rules)"
+        "c-tov/cws-struct/lib/handlers/go.ts — Runtime linter (implements these rules)"
     ],
 
     // X.5 NOTE

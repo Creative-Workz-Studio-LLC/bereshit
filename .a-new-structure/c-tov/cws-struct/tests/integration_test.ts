@@ -51,7 +51,7 @@ if (!toml) throw new Error("TOML handler not registered");
 // ---------------------------------------------------------------------------
 
 for (const template of ["library.rs", "executable.rs", "demo-test.rs"]) {
-  Deno.test(`seed/rust/${template}: zero errors`, async () => {
+  Deno.test(`integration/seed/rust/${template}: zero errors`, async () => {
     const path = SEED_RUST + template;
     const results = await rust.lint(path);
     const errs = errors(results);
@@ -62,7 +62,7 @@ for (const template of ["library.rs", "executable.rs", "demo-test.rs"]) {
     );
   });
 
-  Deno.test(`seed/rust/${template}: warnings are style-only`, async () => {
+  Deno.test(`integration/seed/rust/${template}: warnings are style-only`, async () => {
     const path = SEED_RUST + template;
     const results = await rust.lint(path);
     // Warnings on seed templates should only be about separator widths (cosmetic)
@@ -79,7 +79,7 @@ for (const template of ["library.rs", "executable.rs", "demo-test.rs"]) {
 // TOML seed template: zero errors
 // ---------------------------------------------------------------------------
 
-Deno.test("seed/toml/config.toml: zero errors", async () => {
+Deno.test("integration/seed/toml/config.toml: zero errors", async () => {
   const path = SEED_TOML + "config.toml";
   try {
     const results = await toml.lint(path);

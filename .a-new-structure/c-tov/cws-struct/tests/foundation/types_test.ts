@@ -34,7 +34,7 @@ import type {
 // Result constructors — error, warn, info
 // ---------------------------------------------------------------------------
 
-Deno.test("error: creates error-severity result", () => {
+Deno.test("types/error: creates error-severity result", () => {
   const r = error("test.toml", "test/rule", "Something broke");
   assertEquals(r.severity, "error");
   assertEquals(r.file, "test.toml");
@@ -44,24 +44,24 @@ Deno.test("error: creates error-severity result", () => {
   assertEquals(r.fix, undefined);
 });
 
-Deno.test("warn: creates warn-severity result", () => {
+Deno.test("types/warn: creates warn-severity result", () => {
   const r = warn("test.toml", "test/rule", "Be careful");
   assertEquals(r.severity, "warn");
   assertEquals(r.message, "Be careful");
 });
 
-Deno.test("info: creates info-severity result", () => {
+Deno.test("types/info: creates info-severity result", () => {
   const r = info("test.toml", "test/rule", "FYI");
   assertEquals(r.severity, "info");
   assertEquals(r.message, "FYI");
 });
 
-Deno.test("error: accepts line number via ResultOpts", () => {
+Deno.test("types/error: accepts line number via ResultOpts", () => {
   const r = error("test.toml", "test/rule", "Line 42 error", { line: 42 });
   assertEquals(r.line, 42);
 });
 
-Deno.test("warn: accepts fix suggestion via ResultOpts", () => {
+Deno.test("types/warn: accepts fix suggestion via ResultOpts", () => {
   const fix: FixSuggestion = {
     description: "Add missing table",
     toml: '[_metadata.I1_core]\nkey = ""',
@@ -73,7 +73,7 @@ Deno.test("warn: accepts fix suggestion via ResultOpts", () => {
   assertEquals(r.fix!.location, "after [_metadata]");
 });
 
-Deno.test("error: accepts bare FixSuggestion for backward compat", () => {
+Deno.test("types/error: accepts bare FixSuggestion for backward compat", () => {
   const fix: FixSuggestion = {
     description: "Add section",
     toml: "[section]\nkey = \"\"",
@@ -84,7 +84,7 @@ Deno.test("error: accepts bare FixSuggestion for backward compat", () => {
   assertEquals(r.fix!.description, "Add section");
 });
 
-Deno.test("info: accepts line + fix together", () => {
+Deno.test("types/info: accepts line + fix together", () => {
   const fix: FixSuggestion = { description: "Fix it", toml: "key = \"\"" };
   const r = info("test.toml", "test/rule", "Note", { line: 10, fix });
   assertEquals(r.line, 10);
@@ -95,7 +95,7 @@ Deno.test("info: accepts line + fix together", () => {
 // summarize
 // ---------------------------------------------------------------------------
 
-Deno.test("summarize: tallies errors/warnings/infos correctly", () => {
+Deno.test("types/summarize: tallies errors/warnings/infos correctly", () => {
   const results: LintResult[] = [
     error("f.toml", "r1", "err1"),
     error("f.toml", "r2", "err2"),
@@ -113,7 +113,7 @@ Deno.test("summarize: tallies errors/warnings/infos correctly", () => {
   assertEquals(s.health, undefined);
 });
 
-Deno.test("summarize: empty results array", () => {
+Deno.test("types/summarize: empty results array", () => {
   const s = summarize("clean.toml", []);
   assertEquals(s.errors, 0);
   assertEquals(s.warnings, 0);
@@ -121,7 +121,7 @@ Deno.test("summarize: empty results array", () => {
   assertEquals(s.results.length, 0);
 });
 
-Deno.test("summarize: includes health when provided", () => {
+Deno.test("types/summarize: includes health when provided", () => {
   const health = {
     total: 85,
     blocks: [],
@@ -134,7 +134,7 @@ Deno.test("summarize: includes health when provided", () => {
   assertEquals(s.health!.total, 85);
 });
 
-Deno.test("summarize: omits health when undefined", () => {
+Deno.test("types/summarize: omits health when undefined", () => {
   const s = summarize("f.toml", []);
   assertEquals(s.health, undefined);
   // Verify health key doesn't exist in the object

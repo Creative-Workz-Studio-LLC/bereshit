@@ -6,9 +6,9 @@
 // key:     B-tov-cws-struct-lib-handlers-go
 // title:   CWS Struct — Go Format Handler
 // type:    Code (Library)
-// version: a-03.00
+// version: a-06.00
 // created: 2026-02-13
-// updated: 2026-02-17
+// updated: 2026-02-18
 // authors: Nova Dawn (CPI-SI)
 // purpose: Go 4-block alignment linter + transformer with I/C field validation.
 //          Validates Go source files for:
@@ -23,7 +23,7 @@
 //          - Package declaration, import presence
 //          - Separator style (consistency + standard widths)
 //          - Template vs derived file classification
-//          - SETUP subsection order (I → T → TM → K → V → PS)
+//          - SETUP section order (10-section dependency chain)
 //          - BODY subsection order (Org → Helpers → Core → Error → APIs)
 //          - //omni:code directive format validation
 //          - Content placement (right constructs in right blocks/subsections)
@@ -86,24 +86,42 @@ const END_PATTERNS: Record<string, RegExp> = {
   CLOSING:  /^\/\/\s+END CLOSING\s*$/,
 };
 
-/** SETUP subsection markers in required order. */
+/**
+ * SETUP section markers in canonical dependency-chain order.
+ *
+ * 10 sections — each can reference only what came before it.
+ * Not all must be present; linter only checks that PRESENT sections
+ * appear in this sequence. The ordering principle is the Go dependency
+ * chain: imports before types, types before interfaces, etc.
+ *
+ * Patterns are ANCHORED to the start of the comment text — a line like
+ * "// Core Types — wraps the Constants module" matches CoreTypes, NOT
+ * Constants, because "Core Types" is at the start and "Constants" is
+ * embedded in descriptive text. Optional "N. " prefix is allowed
+ * (e.g., "// 3. Constants").
+ *
+ * Also matches legacy //--- TAG.N markers for backward compatibility.
+ */
 const SETUP_SUBSECTIONS = [
-  { tag: "I",  label: "Imports",             pattern: /^\/\/---\s+I\.\d/ },
-  { tag: "T",  label: "Types",              pattern: /^\/\/---\s+T\.\d/ },
-  { tag: "TM", label: "Type Methods",       pattern: /^\/\/---\s+TM\s/ },
-  { tag: "K",  label: "Constants",           pattern: /^\/\/---\s+K\.\d/ },
-  { tag: "V",  label: "Variables",           pattern: /^\/\/---\s+V\.\d/ },
-  { tag: "PS", label: "Package-Level State", pattern: /^\/\/---\s+PS\.\d/ },
+  { tag: "Imports",       pattern: /^\/\/\s+(?:\d+\.\s+)?Imports\b|^\/\/---\s+I\.\d/i },
+  { tag: "Constants",     pattern: /^\/\/\s+(?:\d+\.\s+)?Constants\b|^\/\/---\s+K\.\d/i },
+  { tag: "Variables",     pattern: /^\/\/\s+(?:\d+\.\s+)?Variables\b|^\/\/---\s+V\.\d/i },
+  { tag: "TypeAliases",   pattern: /^\/\/\s+(?:\d+\.\s+)?Type\s*Aliases\b/i },
+  { tag: "ErrorTypes",    pattern: /^\/\/\s+(?:\d+\.\s+)?Error\s*Types\b/i },
+  { tag: "CoreTypes",     pattern: /^\/\/\s+(?:\d+\.\s+)?Core\s*Types\b|^\/\/---\s+T\.\d/i },
+  { tag: "InterfaceDefs", pattern: /^\/\/\s+(?:\d+\.\s+)?Interface\s*(?:Def(?:inition)?s?)\b/i },
+  { tag: "TypeMethods",   pattern: /^\/\/\s+(?:\d+\.\s+)?Type\s*Methods\b|^\/\/---\s+TM\s/i },
+  { tag: "CodeGeneration", pattern: /^\/\/\s+(?:\d+\.\s+)?Code\s*Generation\b|^\/\/---\s+PS\.\d/i },
+  { tag: "BuildTags",     pattern: /^\/\/\s+(?:\d+\.\s+)?Build\s*Tags\b/i },
 ] as const;
 
-/** BODY subsection labels in expected order (flexible — checks what's present). */
-const BODY_SUBSECTIONS = [
-  { label: "Org Chart",        pattern: /Org\s*Chart|APU\s*Inventory/i },
-  { label: "Helpers",          pattern: /^\/\/\s+Helpers|^\/\/\s+────.*Helpers/i },
-  { label: "Core Operations",  pattern: /Core\s*Operations/i },
-  { label: "Error Handling",   pattern: /Error\s*(?:Handling|Helpers)/i },
-  { label: "Public APIs",      pattern: /Public\s*APIs/i },
-] as const;
+/**
+ * BODY subsection pattern — matches `// N. Name` format (same as Rust).
+ * Also handles legacy `§N — Name` format for backward compatibility.
+ * The handler checks ascending numeric order only — subtype-agnostic.
+ */
+const BODY_SUBSECTION_PATTERN = /^\/\/\s+(\d+)\.?\s+(.+)/;
+const BODY_SUBSECTION_LEGACY  = /^\/\/\s+§(\d+)\s*[—–-]\s*(.+)/;
 
 /** Known //omni:code directive patterns. */
 const KNOWN_CODE_DIRECTIVES = [
@@ -135,8 +153,8 @@ export const METADATA_FIELD_REQUIREMENTS: Record<string, { required: string[]; d
 };
 
 /** Standard separator widths. */
-const BLOCK_SEPARATOR_WIDTH = 76;     // // ====...==== (76 = chars)
-const SUBSECTION_SEPARATOR_WIDTH = 64; // // ----...---- (64 - chars)
+const BLOCK_SEPARATOR_WIDTH = 76;         // // ====...==== (76 = chars)
+const SUBSECTION_SEPARATOR_WIDTH = 74;    // // ────...──── (74 ─ chars)
 
 // ---------------------------------------------------------------------------
 // Content Classification — what Go constructs are, where they belong
@@ -178,22 +196,26 @@ const BLOCK_PLACEMENT: Partial<Record<GoContentKind, string>> = {
 };
 
 /**
- * Which SUBSECTION within SETUP a construct belongs in.
+ * Which SECTION within SETUP a construct belongs in.
  *
- * Schema source: go-4block-schema.jsonc → subsection_order → S1-S6
- * Maps content kinds to the canonical subsection tag where they should live.
- * Used for subsection-level scoring (health scoring foundation).
+ * Schema source: go-4block-schema.jsonc → section_order → S1-S10
+ * Maps content kinds to the canonical section tag where they should live.
+ * Used for section-level scoring (health scoring foundation).
  *
- * Note: method_decl maps to TM (Type Methods) when in SETUP context —
- * receiver methods closely tied to type definitions belong in SETUP.TM.
+ * Note: method_decl maps to TypeMethods when in SETUP context —
+ * receiver methods closely tied to type definitions belong there.
  * Standalone methods implementing business logic belong in BODY.
+ *
+ * Note: type_decl maps to CoreTypes as the most common case. TypeAliases
+ * and InterfaceDefs are also type_decl but are distinguishable by content
+ * (future: refine classifier to split type aliases from struct defs).
  */
 const SUBSECTION_PLACEMENT: Partial<Record<GoContentKind, string>> = {
-  import_decl: "I",
-  type_decl:   "T",
-  method_decl: "TM",
-  const_decl:  "K",
-  var_decl:    "V",
+  import_decl: "Imports",
+  const_decl:  "Constants",
+  var_decl:    "Variables",
+  type_decl:   "CoreTypes",
+  method_decl: "TypeMethods",
 };
 
 /**
@@ -998,6 +1020,7 @@ function checkSeparatorConsistency(ctx: GoFileContext): LintResult[] {
   const file = ctx.filePath;
 
   const eqSeparators: Array<{ line: number; width: number }> = [];
+  const boxSeparators: Array<{ line: number; width: number }> = [];
   const dashSeparators: Array<{ line: number; width: number }> = [];
 
   for (let i = 0; i < ctx.lines.length; i++) {
@@ -1009,7 +1032,13 @@ function checkSeparatorConsistency(ctx: GoFileContext): LintResult[] {
       eqSeparators.push({ line: i + 1, width: eqMatch[1]!.length });
     }
 
-    // Subsection separators (-)
+    // Subsection separators — Unicode box-drawing (─) full-width only
+    const boxMatch = trimmed.match(/^\/\/\s+(─{4,})\s*$/);
+    if (boxMatch) {
+      boxSeparators.push({ line: i + 1, width: boxMatch[1]!.length });
+    }
+
+    // Subsection separators — ASCII dash (-) full-width only
     const dashMatch = trimmed.match(/^\/\/\s+(-{4,})\s*$/);
     if (dashMatch) {
       dashSeparators.push({ line: i + 1, width: dashMatch[1]!.length });
@@ -1021,36 +1050,55 @@ function checkSeparatorConsistency(ctx: GoFileContext): LintResult[] {
     const widths = new Set(eqSeparators.map((s) => s.width));
     if (widths.size > 1) {
       const widthList = [...widths].sort().join(", ");
+      const firstBad = eqSeparators.find((s) => s.width !== eqSeparators[0]!.width);
       results.push(
         warn(file, "style/eq-separator-width",
-          `Inconsistent block separator widths: ${widthList} chars — pick one`),
+          `Inconsistent block separator widths: ${widthList} chars — pick one`,
+          { line: firstBad?.line ?? eqSeparators[0]!.line }),
       );
     }
-    // Standard-aware: check against expected width
     const dominant = eqSeparators[0]!.width;
     if (dominant !== BLOCK_SEPARATOR_WIDTH) {
       results.push(
         info(file, "style/eq-separator-standard",
-          `Block separators are ${dominant} chars wide (standard: ${BLOCK_SEPARATOR_WIDTH})`),
+          `Block separators are ${dominant} chars wide (standard: ${BLOCK_SEPARATOR_WIDTH})`,
+          { line: eqSeparators[0]!.line }),
       );
     }
   }
 
-  // Check subsection separator consistency
+  // Check Unicode box-drawing separator consistency
+  if (boxSeparators.length >= 2) {
+    const widths = new Set(boxSeparators.map((s) => s.width));
+    if (widths.size > 1) {
+      const widthList = [...widths].sort().join(", ");
+      const firstBad = boxSeparators.find((s) => s.width !== boxSeparators[0]!.width);
+      results.push(
+        warn(file, "style/box-separator-width",
+          `Inconsistent subsection separator widths: ${widthList} ─ chars — pick one`,
+          { line: firstBad?.line ?? boxSeparators[0]!.line }),
+      );
+    }
+    const dominant = boxSeparators[0]!.width;
+    if (dominant !== SUBSECTION_SEPARATOR_WIDTH) {
+      results.push(
+        info(file, "style/box-separator-standard",
+          `Subsection separators are ${dominant} ─ chars wide (standard: ${SUBSECTION_SEPARATOR_WIDTH})`,
+          { line: boxSeparators[0]!.line }),
+      );
+    }
+  }
+
+  // Check ASCII dash separator consistency (fallback / legacy style)
   if (dashSeparators.length >= 2) {
     const widths = new Set(dashSeparators.map((s) => s.width));
     if (widths.size > 1) {
       const widthList = [...widths].sort().join(", ");
+      const firstBad = dashSeparators.find((s) => s.width !== dashSeparators[0]!.width);
       results.push(
         warn(file, "style/dash-separator-width",
-          `Inconsistent subsection separator widths: ${widthList} chars — pick one`),
-      );
-    }
-    const dominant = dashSeparators[0]!.width;
-    if (dominant !== SUBSECTION_SEPARATOR_WIDTH) {
-      results.push(
-        info(file, "style/dash-separator-standard",
-          `Subsection separators are ${dominant} chars wide (standard: ${SUBSECTION_SEPARATOR_WIDTH})`),
+          `Inconsistent dash separator widths: ${widthList} chars — pick one`,
+          { line: firstBad?.line ?? dashSeparators[0]!.line }),
       );
     }
   }
@@ -1090,25 +1138,30 @@ function checkTemplateVsDerived(ctx: GoFileContext): LintResult[] {
   return results;
 }
 
-/** Check 8: SETUP subsection order (I → T → TM → K → V → PS). */
+/** Check 8: SETUP section order (10-section dependency chain). */
 function checkSetupSubsectionOrder(ctx: GoFileContext): LintResult[] {
   const results: LintResult[] = [];
   const file = ctx.filePath;
 
-  // Templates mention subsection names in overview comments — skip order check
+  // Templates mention section names in overview comments — skip order check
   if (ctx.isTemplate) return results;
 
   const setupLines = getBlockLines(ctx.lines, ctx.blocks, "SETUP");
   if (setupLines.length === 0) return results;
 
-  // Find which subsections are present and their positions
-  const found: Array<{ tag: string; label: string; lineIdx: number }> = [];
+  // Find which sections are present and their positions
+  const found: Array<{ tag: string; lineIdx: number }> = [];
 
   for (let i = 0; i < setupLines.length; i++) {
     const trimmed = setupLines[i]!.trim();
+    // Skip separator-only lines
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
     for (const sub of SETUP_SUBSECTIONS) {
       if (sub.pattern.test(trimmed)) {
-        found.push({ tag: sub.tag, label: sub.label, lineIdx: i });
+        if (!found.some((f) => f.tag === sub.tag)) {
+          found.push({ tag: sub.tag, lineIdx: i });
+        }
         break;
       }
     }
@@ -1118,15 +1171,18 @@ function checkSetupSubsectionOrder(ctx: GoFileContext): LintResult[] {
 
   // Check ordering against the canonical sequence
   const canonicalOrder: string[] = SETUP_SUBSECTIONS.map((s) => s.tag);
-  const foundTags = found.map((f) => f.tag);
 
   let lastCanonIdx = -1;
   for (const f of found) {
     const canonIdx = canonicalOrder.indexOf(f.tag);
     if (canonIdx < lastCanonIdx) {
+      const foundTags = found.map((x) => x.tag).join(" → ");
+      const setupBlock = ctx.blocks.find((b) => b.name === "SETUP");
+      const fileLine = setupBlock ? setupBlock.line + 1 + f.lineIdx : f.lineIdx + 1;
       results.push(
         warn(file, "setup/subsection-order",
-          `SETUP subsection ${f.tag} (${f.label}) appears after a later subsection — expected: ${foundTags.join(" → ")}, canonical: I → T → TM → K → V → PS`),
+          `SETUP section ${f.tag} appears after a later section — found: ${foundTags}, expected: ${canonicalOrder.join(" → ")}`,
+          { line: fileLine }),
       );
       break;
     }
@@ -1136,7 +1192,7 @@ function checkSetupSubsectionOrder(ctx: GoFileContext): LintResult[] {
   return results;
 }
 
-/** Check 9: BODY subsection order. */
+/** Check 9: BODY subsection order (numeric ascending, subtype-agnostic). */
 function checkBodySubsectionOrder(ctx: GoFileContext): LintResult[] {
   const results: LintResult[] = [];
   const file = ctx.filePath;
@@ -1147,39 +1203,43 @@ function checkBodySubsectionOrder(ctx: GoFileContext): LintResult[] {
   const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
   if (bodyLines.length === 0) return results;
 
-  // Find which subsections are present
-  const found: Array<{ label: string; lineIdx: number }> = [];
+  // Find numbered subsection markers in BODY (// N. Name or §N — Name)
+  const found: Array<{ num: number; name: string; lineIdx: number }> = [];
 
   for (let i = 0; i < bodyLines.length; i++) {
     const trimmed = bodyLines[i]!.trim();
-    for (const sub of BODY_SUBSECTIONS) {
-      if (sub.pattern.test(trimmed)) {
-        // Only take first occurrence of each
-        if (!found.some((f) => f.label === sub.label)) {
-          found.push({ label: sub.label, lineIdx: i });
-        }
-        break;
+    // Skip separator-only lines
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
+    const match = BODY_SUBSECTION_PATTERN.exec(trimmed) ??
+                  BODY_SUBSECTION_LEGACY.exec(trimmed);
+    if (match) {
+      const num = parseInt(match[1]!, 10);
+      const name = match[2]!.trim();
+      // Only record first occurrence of each number
+      if (!found.some((f) => f.num === num)) {
+        found.push({ num, name, lineIdx: i });
       }
     }
   }
 
+  // Need at least 2 subsections to check ordering
   if (found.length < 2) return results;
 
-  // Check ordering
-  const canonicalOrder: string[] = BODY_SUBSECTIONS.map((s) => s.label);
-
-  let lastCanonIdx = -1;
+  // Check that numbers appear in ascending order
+  let lastNum = -1;
   for (const f of found) {
-    const canonIdx = canonicalOrder.indexOf(f.label);
-    if (canonIdx < lastCanonIdx) {
-      const foundLabels = found.map((x) => x.label).join(" → ");
+    if (f.num < lastNum) {
+      const foundOrder = found.map((x) => `${x.num}. ${x.name}`).join(" → ");
+      const fileLine = blockLineToFile(ctx.blocks, "BODY", f.lineIdx);
       results.push(
         warn(file, "body/subsection-order",
-          `BODY subsection "${f.label}" appears after a later subsection — found: ${foundLabels}`),
+          `BODY subsection §${f.num} (${f.name}) appears after §${lastNum} — found: ${foundOrder}`,
+          { line: fileLine }),
       );
       break;
     }
-    lastCanonIdx = canonIdx;
+    lastNum = f.num;
   }
 
   return results;
@@ -1228,7 +1288,7 @@ function checkDirectiveFormat(ctx: GoFileContext): LintResult[] {
  *
  * Two tiers:
  *   1. Code zones (Cv, Ce, Cc) — validation, execution, cleanup
- *   2. Documentation sections (X1-X5) — policy, testing, changelog, reference, note
+ *   2. Documentation sections (X1-X6) — policy, extension, troubleshooting, reference, note, template guide
  *
  * Code zones MUST precede documentation sections.
  * Within each tier, zones appear in canonical order.
@@ -1247,6 +1307,7 @@ const CLOSING_ZONES = [
   { tag: "X3", kind: "doc" as const, pattern: /^\/\/\s+X3[:\s]/ },
   { tag: "X4", kind: "doc" as const, pattern: /^\/\/\s+X4[:\s]/ },
   { tag: "X5", kind: "doc" as const, pattern: /^\/\/\s+X5[:\s]/ },
+  { tag: "X6", kind: "doc" as const, pattern: /^\/\/\s+X6[:\s]/ },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -1364,7 +1425,7 @@ function checkContentPlacement(ctx: GoFileContext): LintResult[] {
  * Validate CLOSING zone ordering.
  *
  * Two-tier check:
- *   1. Code zones (Cv, Ce, Cc) must all appear before documentation (X1-X5)
+ *   1. Code zones (Cv, Ce, Cc) must all appear before documentation (X1-X6)
  *   2. Within each tier, zones must appear in canonical order
  *
  * Only checks zones that ARE present — missing zones are valid
@@ -1408,7 +1469,7 @@ function checkClosingZoneOrder(ctx: GoFileContext): LintResult[] {
     const fileLine = blockLineToFile(ctx.blocks, "CLOSING", lastCode.lineIdx);
     results.push(
       warn(file, "closing/zone-order",
-        `Code zone ${lastCode.tag} appears after documentation section ${firstDoc.tag} — code zones (Cv/Ce/Cc) must precede documentation (X1-X5)`,
+        `Code zone ${lastCode.tag} appears after documentation section ${firstDoc.tag} — code zones (Cv/Ce/Cc) must precede documentation (X1-X6)`,
         { line: fileLine }),
     );
   }
@@ -1450,7 +1511,7 @@ function checkClosingZoneOrder(ctx: GoFileContext): LintResult[] {
       const fileLine = blockLineToFile(ctx.blocks, "CLOSING", curr.lineIdx);
       results.push(
         warn(file, "closing/doc-section-order",
-          `Documentation section ${curr.tag} appears after ${prev.tag} — expected X1 → X2 → ... → X5, found: ${foundOrder}`,
+          `Documentation section ${curr.tag} appears after ${prev.tag} — expected X1 → X2 → ... → X6, found: ${foundOrder}`,
           { line: fileLine }),
       );
       break;
@@ -1599,6 +1660,228 @@ async function lintGoFile(filePath: string): Promise<LintResult[]> {
 }
 
 // ---------------------------------------------------------------------------
+// Transformer helpers — block range detection, content moves
+// ---------------------------------------------------------------------------
+
+/** Line range within a block (0-based indices into the file's lines array). */
+interface BlockRange {
+  contentStart: number;
+  contentEnd: number;
+}
+
+/**
+ * Find the content range of a named block in the file.
+ *
+ * Returns the line indices (0-based) of the content area — after the header's
+ * closing separator and before the END marker's opening separator. Returns null
+ * if the block isn't found.
+ */
+function findBlockRange(lines: string[], blockName: string): BlockRange | null {
+  let headerLine = -1;
+  let endLine = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i]!.trim();
+
+    // Block header: `// BLOCKNAME` between separators
+    if (trimmed === `// ${blockName}` && headerLine < 0) {
+      const above = i > 0 ? lines[i - 1]!.trim() : "";
+      if (/^\/\/\s+={10,}$/.test(above)) {
+        headerLine = i;
+        continue;
+      }
+    }
+
+    // END marker: `// END BLOCKNAME`
+    if (trimmed === `// END ${blockName}` && headerLine >= 0 && endLine < 0) {
+      endLine = i;
+      break;
+    }
+  }
+
+  if (headerLine < 0) return null;
+
+  // Content starts after the closing = separator of the header
+  let contentStart = headerLine + 1;
+  if (contentStart < lines.length && /^\/\/\s+={10,}$/.test(lines[contentStart]!.trim())) {
+    contentStart++;
+  }
+
+  // Content ends at the = separator before END marker (or at endLine if present)
+  let contentEnd: number;
+  if (endLine >= 0) {
+    contentEnd = endLine;
+    if (contentEnd > 0 && /^\/\/\s+={10,}$/.test(lines[contentEnd - 1]!.trim())) {
+      contentEnd--;
+    }
+  } else {
+    contentEnd = lines.length;
+  }
+
+  return { contentStart, contentEnd };
+}
+
+/**
+ * Find Test functions (func TestXxx(*testing.T)) in a line range.
+ * Returns the start/end indices (inclusive) of the first test function found,
+ * or null if none. Uses brace tracking to find the complete function body.
+ */
+function findTestFuncInRange(
+  lines: string[], rangeStart: number, rangeEnd: number,
+): { start: number; end: number } | null {
+  for (let i = rangeStart; i < rangeEnd; i++) {
+    const trimmed = lines[i]!.trim();
+    if (!/^func\s+Test\w+\s*\(/.test(trimmed)) continue;
+
+    const start = i;
+    let braceDepth = 0;
+    let foundOpenBrace = false;
+
+    for (let j = i; j < rangeEnd; j++) {
+      const line = lines[j]!;
+      for (const ch of line) {
+        if (ch === "{") { braceDepth++; foundOpenBrace = true; }
+        if (ch === "}") braceDepth--;
+      }
+      if (foundOpenBrace && braceDepth === 0) {
+        return { start, end: j };
+      }
+    }
+
+    return null; // Incomplete block — don't move
+  }
+  return null;
+}
+
+/**
+ * Find func main() in a line range.
+ * Returns the start/end indices (inclusive) or null.
+ */
+function findMainFuncInRange(
+  lines: string[], rangeStart: number, rangeEnd: number,
+): { start: number; end: number } | null {
+  for (let i = rangeStart; i < rangeEnd; i++) {
+    const trimmed = lines[i]!.trim();
+    if (!/^func\s+main\s*\(\s*\)/.test(trimmed)) continue;
+
+    const start = i;
+    let braceDepth = 0;
+    let foundOpenBrace = false;
+
+    for (let j = i; j < rangeEnd; j++) {
+      const line = lines[j]!;
+      for (const ch of line) {
+        if (ch === "{") { braceDepth++; foundOpenBrace = true; }
+        if (ch === "}") braceDepth--;
+      }
+      if (foundOpenBrace && braceDepth === 0) {
+        return { start, end: j };
+      }
+    }
+
+    return null;
+  }
+  return null;
+}
+
+/**
+ * Parse CLOSING content lines into zones, then return them in canonical order
+ * if reordering is needed. Returns null if already in correct order.
+ *
+ * Canonical order: code zones (Cv, Ce, Cc) then documentation (X1-X6).
+ * Within each tier, canonical order applies.
+ */
+function reorderClosingZones(closingContent: string[]): string[] | null {
+  interface ZoneChunk {
+    tag: string;
+    kind: "code" | "doc";
+    lines: string[];
+    canonicalIdx: number;
+  }
+
+  const canonicalOrder = ["Cv", "Ce", "Cc", "X1", "X2", "X3", "X4", "X5"];
+
+  const zones: ZoneChunk[] = [];
+  let preambleLines: string[] = [];
+  let currentZone: ZoneChunk | null = null;
+
+  for (let i = 0; i < closingContent.length; i++) {
+    const trimmed = closingContent[i]!.trim();
+
+    let matchedZone: { tag: string; kind: "code" | "doc" } | null = null;
+    for (const zone of CLOSING_ZONES) {
+      if (zone.pattern.test(trimmed)) {
+        matchedZone = { tag: zone.tag, kind: zone.kind };
+        break;
+      }
+    }
+
+    if (matchedZone) {
+      if (currentZone) {
+        zones.push(currentZone);
+      }
+
+      const newZoneLines: string[] = [];
+
+      // Grab the separator line that precedes this zone header
+      if (i > 0 && /^\/\/\s*[─=\-]{10,}\s*$/.test(closingContent[i - 1]!.trim())) {
+        if (currentZone && currentZone.lines.length > 0) {
+          newZoneLines.push(currentZone.lines.pop()!);
+        } else if (preambleLines.length > 0) {
+          newZoneLines.push(preambleLines.pop()!);
+        }
+        // Also grab the blank line before the separator
+        if (currentZone && currentZone.lines.length > 0 &&
+            currentZone.lines[currentZone.lines.length - 1]!.trim() === "") {
+          newZoneLines.unshift(currentZone.lines.pop()!);
+        } else if (!currentZone && preambleLines.length > 0 &&
+                   preambleLines[preambleLines.length - 1]!.trim() === "") {
+          newZoneLines.unshift(preambleLines.pop()!);
+        }
+      }
+
+      newZoneLines.push(closingContent[i]!);
+
+      currentZone = {
+        tag: matchedZone.tag,
+        kind: matchedZone.kind,
+        lines: newZoneLines,
+        canonicalIdx: canonicalOrder.indexOf(matchedZone.tag),
+      };
+    } else if (currentZone) {
+      currentZone.lines.push(closingContent[i]!);
+    } else {
+      preambleLines.push(closingContent[i]!);
+    }
+  }
+
+  if (currentZone) {
+    zones.push(currentZone);
+  }
+
+  if (zones.length < 2) return null;
+
+  let inOrder = true;
+  for (let i = 1; i < zones.length; i++) {
+    if (zones[i]!.canonicalIdx < zones[i - 1]!.canonicalIdx) {
+      inOrder = false;
+      break;
+    }
+  }
+
+  if (inOrder) return null;
+
+  zones.sort((a, b) => a.canonicalIdx - b.canonicalIdx);
+
+  const result: string[] = [...preambleLines];
+  for (const zone of zones) {
+    result.push(...zone.lines);
+  }
+
+  return result;
+}
+
+// ---------------------------------------------------------------------------
 // Transformer helpers — identity field scaffolding
 // ---------------------------------------------------------------------------
 
@@ -1647,15 +1930,15 @@ function findVarClosingLine(lines: string[], varName: string): number {
  * Transform a Go file to fix structural issues.
  *
  * Capabilities:
- *   1. Fix separator widths (= → 76, - → 64)
- *   2. Add //go:build ignore to template files
- *   3. Scaffold missing identity fields in Pragma/Metadata vars
- *
- * Identity scaffolding:
- *   - Lints the file to discover missing I/C fields (via FixSuggestion)
- *   - Required fields always scaffolded; defined fields with --extensions
- *   - Inserts {"section.field", ""} before closing } of the var
- *   - Processes Metadata before Pragma (bottom-up line preservation)
+ *   1. Fix block separator widths (= → 76)
+ *   2. Fix Unicode subsection separator widths (─ → 74)
+ *   3. Convert ASCII dash subsection separators (----) to Unicode (────)
+ *   4. Normalize subsection separator comment prefix to standard `// `
+ *   5. Add //go:build ignore to template files
+ *   6. Move test functions from BODY to CLOSING Cv zone
+ *   7. Move func main() from BODY to CLOSING Ce zone
+ *   8. Reorder CLOSING zones to canonical order (Cv → Ce → Cc → X1-X6)
+ *   9. Scaffold missing identity fields in Pragma/Metadata vars
  *
  * Does NOT inject missing block boundaries (too risky for arbitrary positions).
  * Lint first, fix structure manually, then transform for cleanup.
@@ -1683,7 +1966,7 @@ async function transformGoFile(
     const trimmed = lines[i]!.trim();
     const eqMatch = trimmed.match(/^(\/\/\s+)(={4,})(\s*)$/);
     if (eqMatch && eqMatch[2]!.length !== BLOCK_SEPARATOR_WIDTH) {
-      const newLine = `${eqMatch[1]!}${"=".repeat(BLOCK_SEPARATOR_WIDTH)}`;
+      const newLine = `${eqMatch[1]}${"=".repeat(BLOCK_SEPARATOR_WIDTH)}`;
       if (dryRun) {
         wouldModify = true;
         results.push(info(filePath, "transform/eq-width",
@@ -1697,28 +1980,67 @@ async function transformGoFile(
     }
   }
 
-  // --- Transform 2: Fix subsection separator widths (- chars) ---
+  // --- Transform 2: Fix Unicode subsection separator widths (─ chars) ---
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i]!.trim();
-    const dashMatch = trimmed.match(/^(\/\/\s+)(-{4,})(\s*)$/);
-    if (dashMatch && dashMatch[2]!.length !== SUBSECTION_SEPARATOR_WIDTH) {
-      const newLine = `${dashMatch[1]!}${"-".repeat(SUBSECTION_SEPARATOR_WIDTH)}`;
+    const boxMatch = trimmed.match(/^(\/\/\s+)(─{4,})(\s*)$/);
+    if (boxMatch && boxMatch[2]!.length !== SUBSECTION_SEPARATOR_WIDTH) {
+      const newLine = `${boxMatch[1]}${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`;
       if (dryRun) {
         wouldModify = true;
-        results.push(info(filePath, "transform/dash-width",
-          `Line ${i + 1}: would fix subsection separator ${dashMatch[2]!.length} → ${SUBSECTION_SEPARATOR_WIDTH} chars`));
+        results.push(info(filePath, "transform/box-width",
+          `Line ${i + 1}: would fix subsection separator ${boxMatch[2]!.length} → ${SUBSECTION_SEPARATOR_WIDTH} ─ chars`));
       } else {
         lines[i] = newLine;
         modified = true;
-        results.push(info(filePath, "transform/dash-width",
-          `Line ${i + 1}: fixed subsection separator ${dashMatch[2]!.length} → ${SUBSECTION_SEPARATOR_WIDTH} chars`));
+        results.push(info(filePath, "transform/box-width",
+          `Line ${i + 1}: fixed subsection separator ${boxMatch[2]!.length} → ${SUBSECTION_SEPARATOR_WIDTH} ─ chars`));
       }
     }
   }
 
-  // --- Transform 3: Add //go:build ignore to template files ---
-  const isTemplate = lines.some((l) => /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
-  const hasBuildIgnore = lines.some((l) => l.trim() === "//go:build ignore");
+  // --- Transform 3: Convert ASCII dash separators to Unicode ─ ---
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i]!.trim();
+    const dashMatch = trimmed.match(/^(\/\/\s*)(-{4,})(\s*)$/);
+    if (dashMatch) {
+      const newLine = `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`;
+      if (dryRun) {
+        wouldModify = true;
+        results.push(info(filePath, "transform/dash-to-unicode",
+          `Line ${i + 1}: would convert ${dashMatch[2]!.length} ASCII dashes → ${SUBSECTION_SEPARATOR_WIDTH} Unicode ─`));
+      } else {
+        lines[i] = newLine;
+        modified = true;
+        results.push(info(filePath, "transform/dash-to-unicode",
+          `Line ${i + 1}: converted ${dashMatch[2]!.length} ASCII dashes → ${SUBSECTION_SEPARATOR_WIDTH} Unicode ─`));
+      }
+    }
+  }
+
+  // --- Transform 4: Normalize subsection separator prefix to `// ` ---
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i]!.trim();
+    const prefixMatch = trimmed.match(/^\/\/(\s{0}|\s{2,})(─{4,}|={4,})(\s*)$/);
+    if (prefixMatch) {
+      const newLine = `// ${prefixMatch[2]}`;
+      if (dryRun) {
+        wouldModify = true;
+        results.push(info(filePath, "transform/prefix-normalize",
+          `Line ${i + 1}: would normalize separator prefix to standard '// '`));
+      } else if (lines[i]!.trim() !== newLine) {
+        lines[i] = newLine;
+        modified = true;
+        const sepChar = prefixMatch[2]!.charAt(0);
+        results.push(info(filePath, "transform/prefix-normalize",
+          `Line ${i + 1}: normalized separator prefix to standard '// ' (${sepChar} separator)`));
+      }
+    }
+  }
+
+  // --- Transform 5: Add //go:build ignore to template files ---
+  const isTemplate = lines.some((l: string) => /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
+  const hasBuildIgnore = lines.some((l: string) => l.trim() === "//go:build ignore");
 
   if (isTemplate && !hasBuildIgnore) {
     if (dryRun) {
@@ -1733,7 +2055,149 @@ async function transformGoFile(
     }
   }
 
-  // --- Transform 4: Scaffold missing identity fields ---
+  // --- Transform 6: Move test functions from BODY to CLOSING Cv ---
+  // Loop: Go test functions are individual (unlike Rust's #[cfg(test)] module),
+  // so we must find-and-move until BODY has no test functions left.
+  {
+    let moveCount = 0;
+    const allExtracted: string[][] = [];
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const bodyBlock = findBlockRange(lines, "BODY");
+      const closingBlock = findBlockRange(lines, "CLOSING");
+      if (!bodyBlock || !closingBlock) break;
+
+      const testRange = findTestFuncInRange(lines, bodyBlock.contentStart, bodyBlock.contentEnd);
+      if (!testRange) break;
+
+      let extractStart = testRange.start;
+      while (extractStart > bodyBlock.contentStart &&
+             (lines[extractStart - 1]!.trim() === "" ||
+              lines[extractStart - 1]!.trim().startsWith("// WRONG"))) {
+        extractStart--;
+      }
+
+      const extractedLines = lines.slice(extractStart, testRange.end + 1);
+
+      if (dryRun) {
+        wouldModify = true;
+        results.push(info(filePath, "transform/move-tests",
+          `Lines ${extractStart + 1}–${testRange.end + 1}: would move test function from BODY to CLOSING Cv zone`));
+        break; // Dry-run: report first, don't loop (no mutation)
+      }
+
+      // Remove from BODY (including trailing blank lines)
+      let removeEnd = testRange.end + 1;
+      while (removeEnd < bodyBlock.contentEnd && lines[removeEnd]!.trim() === "") {
+        removeEnd++;
+      }
+      lines.splice(extractStart, removeEnd - extractStart);
+      allExtracted.push(extractedLines);
+      moveCount++;
+    }
+
+    // Insert all extracted tests into CLOSING Cv zone at once
+    if (!dryRun && allExtracted.length > 0) {
+      const closingBlock = findBlockRange(lines, "CLOSING");
+      if (closingBlock) {
+        const cvZone = [
+          "",
+          `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
+          "// Cv — Closing Validation",
+          `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
+          "",
+        ];
+        for (const extracted of allExtracted) {
+          cvZone.push(...extracted, "");
+        }
+
+        lines.splice(closingBlock.contentStart, 0, ...cvZone);
+        modified = true;
+        results.push(info(filePath, "transform/move-tests",
+          `Moved ${moveCount} test function(s) from BODY to CLOSING Cv zone`));
+      }
+    }
+  }
+
+  // --- Transform 7: Move func main() from BODY to CLOSING Ce ---
+  {
+    const bodyBlock = findBlockRange(lines, "BODY");
+    const closingBlock = findBlockRange(lines, "CLOSING");
+
+    if (bodyBlock && closingBlock) {
+      const mainRange = findMainFuncInRange(lines, bodyBlock.contentStart, bodyBlock.contentEnd);
+      if (mainRange) {
+        let extractStart = mainRange.start;
+        while (extractStart > bodyBlock.contentStart &&
+               (lines[extractStart - 1]!.trim() === "" ||
+                lines[extractStart - 1]!.trim().startsWith("// WRONG"))) {
+          extractStart--;
+        }
+
+        const extractedLines = lines.slice(extractStart, mainRange.end + 1);
+
+        const ceZone = [
+          "",
+          `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
+          "// Ce — Closing Execution",
+          `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
+          "",
+          ...extractedLines,
+        ];
+
+        const insertIdx = closingBlock.contentStart;
+
+        if (dryRun) {
+          wouldModify = true;
+          results.push(info(filePath, "transform/move-main",
+            `Lines ${extractStart + 1}–${mainRange.end + 1}: would move func main() from BODY to CLOSING Ce zone`));
+        } else {
+          let removeEnd = mainRange.end + 1;
+          while (removeEnd < bodyBlock.contentEnd && lines[removeEnd]!.trim() === "") {
+            removeEnd++;
+          }
+          lines.splice(extractStart, removeEnd - extractStart);
+          modified = true;
+
+          const shift = removeEnd - extractStart;
+          const newInsertIdx = insertIdx - shift;
+          lines.splice(newInsertIdx, 0, ...ceZone);
+
+          results.push(info(filePath, "transform/move-main",
+            `Moved func main() from BODY to CLOSING Ce zone (${extractedLines.length} lines)`));
+        }
+      }
+    }
+  }
+
+  // --- Transform 8: Reorder CLOSING zones ---
+  {
+    const closingBlock = findBlockRange(lines, "CLOSING");
+    if (closingBlock) {
+      const reordered = reorderClosingZones(
+        lines.slice(closingBlock.contentStart, closingBlock.contentEnd),
+      );
+      if (reordered) {
+        if (dryRun) {
+          wouldModify = true;
+          results.push(info(filePath, "transform/reorder-closing",
+            "CLOSING zones would be reordered to canonical order (Cv → Ce → Cc → X1-X6)"));
+        } else {
+          lines.splice(
+            closingBlock.contentStart,
+            closingBlock.contentEnd - closingBlock.contentStart,
+            ...reordered,
+          );
+          modified = true;
+          results.push(info(filePath, "transform/reorder-closing",
+            "Reordered CLOSING zones to canonical order (Cv → Ce → Cc → X1-X6)"));
+        }
+      }
+    }
+  }
+
+  // --- Transform 9: Scaffold missing identity fields ---
   //
   // Pipeline: parse existing fields → compare against requirements → insert missing.
   // Required fields (warn-level) always scaffold. Defined fields (info-level)
@@ -1741,15 +2205,13 @@ async function transformGoFile(
   //
   // Process Metadata BEFORE Pragma (bottom-up) so line indices stay valid.
   if (!isTemplate) {
-    // Process each var: Metadata first (later in file), then Pragma
     for (const varConfig of [
       { varName: "Metadata", reqs: METADATA_FIELD_REQUIREMENTS },
       { varName: "Pragma", reqs: PRAGMA_FIELD_REQUIREMENTS },
     ] as const) {
       const fields = parseSliceFields(lines, varConfig.varName);
-      if (fields.length === 0) continue; // var not present or empty — linter handles
+      if (fields.length === 0) continue;
 
-      // Find missing fields
       const presentFields = new Map<string, Set<string>>();
       for (const f of fields) {
         if (!presentFields.has(f.section)) presentFields.set(f.section, new Set());
@@ -1759,13 +2221,11 @@ async function transformGoFile(
       const snippets: string[] = [];
       for (const [section, req] of Object.entries(varConfig.reqs)) {
         const sectionSet = presentFields.get(section);
-        // Required fields always scaffold
         for (const field of req.required) {
           if (!sectionSet?.has(field)) {
             snippets.push(`\t{"${section}.${field}", ""},`);
           }
         }
-        // Defined fields only with --extensions
         if (extensions) {
           for (const field of req.defined) {
             if (!sectionSet?.has(field)) {
@@ -1895,8 +2355,9 @@ async function computeGoHealth(
   const sepActions: AtomicAction[] = [
     ...acts("style/eq-separator-width", "separators", "structural"),
     ...acts("style/eq-separator-standard", "separators", "structural"),
+    ...acts("style/box-separator-width", "separators", "structural"),
+    ...acts("style/box-separator-standard", "separators", "structural"),
     ...acts("style/dash-separator-width", "separators", "structural"),
-    ...acts("style/dash-separator-standard", "separators", "structural"),
   ];
 
   const goActions: AtomicAction[] = [];
@@ -2097,25 +2558,34 @@ export default goHandler;
 // [][2]string with I/C fields). This handler reads markers, parses identity,
 // and verifies the skeleton is sound before anyone fills in the flesh.
 //
-// a-03.00: I/C identity parsing + field validation + transformer scaffolding.
+// a-05.00: BODY subsection numeric alignment (matches Rust handler pattern).
+//   - BODY_SUBSECTIONS label array → BODY_SUBSECTION_PATTERN numeric regex
+//   - checkBodySubsectionOrder: ascending numeric check (subtype-agnostic)
+//   - Legacy §N — Name format matched via BODY_SUBSECTION_LEGACY regex
+//
+// a-04.00: 10-section SETUP alignment + separator upgrade + transformer expansion.
 //   Linter:
-//   - parseSliceFields: parse [][2]string{"key","value"} tuples
-//   - validateICFields: check I1-I4 (PRAGMA) and C1-C7 (METADATA)
-//   - PRAGMA/METADATA_FIELD_REQUIREMENTS: schema-driven contracts
-//   - Legacy _pragma/_metadata detection → upgrade notice
-//   - Severity downgrade: comment metadata → info when vars present
-//   Transformer (Transform 4):
-//   - Scaffold missing identity fields into Pragma/Metadata vars
-//   - Required fields always scaffold; defined fields with --extensions
-//   - Bottom-up insertion (Metadata before Pragma) for line stability
-//   - findVarClosingLine: locate closing } of [][2]string vars
-//   - wouldModify tracking: accurate dry-run reporting
+//   - SETUP subsections upgraded from 6 (I/T/TM/K/V/PS) to 10-section
+//     dependency chain: Imports → Constants → Variables → TypeAliases →
+//     ErrorTypes → CoreTypes → InterfaceDefs → TypeMethods → CodeGeneration →
+//     BuildTags (aligned with Rust handler and go-4block-schema.jsonc)
+//   - Legacy //--- TAG.N patterns still matched for backward compatibility
+//   - Separator check: 3-tier (76= blocks, 74─ SETUP, ASCII - legacy)
+//   - Unicode box-drawing ─ (U+2500) separators validated at 74 chars
+//   Transformer:
+//   - Transform 1: Fix block separator widths (= → 76)
+//   - Transform 2: Fix Unicode ─ separator widths (─ → 74)
+//   - Transform 3: Convert ASCII dash separators to Unicode ─
+//   - Transform 4: Normalize separator prefix spacing to `// `
+//   - Transform 5: Add //go:build ignore to template files
+//   - Transform 6: Move test functions from BODY to CLOSING Cv zone
+//   - Transform 7: Move func main() from BODY to CLOSING Ce zone
+//   - Transform 8: Reorder CLOSING zones to canonical order
+//   - Transform 9: Scaffold missing identity fields
+//
+// a-03.00: I/C identity parsing + field validation + transformer scaffolding.
 //
 // a-02.00: 11 checks (6 original + 5 new) + transformer.
-//   - Template vs derived classification
-//   - SETUP/BODY subsection order validation
-//   - Directive format validation, separator widths (76= / 64-)
-//   - Transformer: fix separators, add build tags
 //
 // "Let all things be done decently and in order." — 1 Corinthians 14:40
 // ============================================================================

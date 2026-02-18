@@ -69,20 +69,20 @@ async function runCli(...args: string[]): Promise<CliResult> {
 // help command
 // ---------------------------------------------------------------------------
 
-Deno.test("cli: --help exits 0 with usage info", async () => {
+Deno.test("cli/help: --help exits 0 with usage info", async () => {
   const result = await runCli("--help");
   assertEquals(result.code, 0);
   assert(result.stdout.includes("Usage"), "Should show usage information");
   assert(result.stdout.includes("Operations"), "Should list operations");
 });
 
-Deno.test("cli: help exits 0", async () => {
+Deno.test("cli/help: help command exits 0", async () => {
   const result = await runCli("help");
   assertEquals(result.code, 0);
   assert(result.stdout.includes("cws-struct"), "Should mention tool name");
 });
 
-Deno.test("cli: no args shows help", async () => {
+Deno.test("cli/help: no args shows help", async () => {
   const result = await runCli();
   assertEquals(result.code, 0);
   assert(result.stdout.includes("Usage"), "No args should show help");
@@ -92,7 +92,7 @@ Deno.test("cli: no args shows help", async () => {
 // version command
 // ---------------------------------------------------------------------------
 
-Deno.test("cli: --version exits 0 with version string", async () => {
+Deno.test("cli/version: --version exits 0 with version string", async () => {
   const result = await runCli("--version");
   assertEquals(result.code, 0);
   assert(result.stdout.includes("cws-struct v"), "Should print version");
@@ -102,7 +102,7 @@ Deno.test("cli: --version exits 0 with version string", async () => {
 // formats command
 // ---------------------------------------------------------------------------
 
-Deno.test("cli: formats exits 0 and lists registered formats", async () => {
+Deno.test("cli/formats: exits 0 and lists registered formats", async () => {
   const result = await runCli("formats");
   assertEquals(result.code, 0);
   assert(result.stdout.includes("toml"), "Should list TOML format");
@@ -114,12 +114,12 @@ Deno.test("cli: formats exits 0 and lists registered formats", async () => {
 // lint command — error cases
 // ---------------------------------------------------------------------------
 
-Deno.test("cli: lint with no targets exits 1", async () => {
+Deno.test("cli/lint: no targets exits 1", async () => {
   const result = await runCli("lint");
   assertEquals(result.code, 1);
 });
 
-Deno.test("cli: lint unknown format exits 1", async () => {
+Deno.test("cli/lint: unknown format exits 1", async () => {
   const result = await runCli("lint", "nonexistent_format", ".");
   assertEquals(result.code, 1);
 });
@@ -128,15 +128,15 @@ Deno.test("cli: lint unknown format exits 1", async () => {
 // lint command — valid invocation
 // ---------------------------------------------------------------------------
 
-Deno.test("cli: lint toml on valid fixture exits 0", async () => {
-  const fixture = join(dirname(MOD_PATH), "tests", "fixtures", "toml", "valid-complete.toml");
+Deno.test("cli/lint: toml on valid fixture exits 0", async () => {
+  const fixture = join(dirname(MOD_PATH), "tests", "fixtures", "toml", "structure", "valid-complete.toml");
   const result = await runCli("lint", "toml", fixture);
   assertEquals(result.code, 0, `Expected exit 0, stderr: ${result.stderr}`);
   assert(result.stdout.includes("OK") || result.stdout.includes("valid"), "Should report success");
 });
 
-Deno.test("cli: lint toml on broken fixture exits 1", async () => {
-  const fixture = join(dirname(MOD_PATH), "tests", "fixtures", "toml", "missing-metadata.toml");
+Deno.test("cli/lint: toml on broken fixture exits 1", async () => {
+  const fixture = join(dirname(MOD_PATH), "tests", "fixtures", "toml", "structure", "missing-metadata.toml");
   const result = await runCli("lint", "toml", fixture);
   assertEquals(result.code, 1, "Should fail for file with missing metadata");
 });
@@ -145,16 +145,16 @@ Deno.test("cli: lint toml on broken fixture exits 1", async () => {
 // lint command — flags
 // ---------------------------------------------------------------------------
 
-Deno.test("cli: lint --verbose shows info-level results", async () => {
-  const fixture = join(dirname(MOD_PATH), "tests", "fixtures", "toml", "valid-complete.toml");
+Deno.test("cli/lint: --verbose shows info-level results", async () => {
+  const fixture = join(dirname(MOD_PATH), "tests", "fixtures", "toml", "structure", "valid-complete.toml");
   const result = await runCli("lint", "toml", fixture, "--verbose");
   assertEquals(result.code, 0);
   // Verbose mode should show more output than default
   assertGreater(result.stdout.length, 0, "Should produce output");
 });
 
-Deno.test("cli: lint --summary shows only summary", async () => {
-  const fixture = join(dirname(MOD_PATH), "tests", "fixtures", "toml", "valid-complete.toml");
+Deno.test("cli/lint: --summary shows only summary", async () => {
+  const fixture = join(dirname(MOD_PATH), "tests", "fixtures", "toml", "structure", "valid-complete.toml");
   const result = await runCli("lint", "toml", fixture, "--summary");
   assertEquals(result.code, 0);
   assert(result.stdout.includes("OK") || result.stdout.includes("0E"), "Summary should show status");

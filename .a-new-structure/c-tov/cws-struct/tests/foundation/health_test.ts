@@ -50,14 +50,14 @@ function fail(
 // computeContainerScore
 // ---------------------------------------------------------------------------
 
-Deno.test("computeContainerScore: empty actions = 100", () => {
+Deno.test("scoring/computeContainerScore: empty actions = 100", () => {
   const score = computeContainerScore("section", "block", []);
   assertEquals(score.score, 100);
   assertEquals(score.total, 0);
   assertEquals(score.passed, 0);
 });
 
-Deno.test("computeContainerScore: all passing = 100", () => {
+Deno.test("scoring/computeContainerScore: all passing = 100", () => {
   const actions = [pass("check1"), pass("check2"), pass("check3")];
   const score = computeContainerScore("I1_core", "metadata", actions);
   assertEquals(score.score, 100);
@@ -66,7 +66,7 @@ Deno.test("computeContainerScore: all passing = 100", () => {
   assertEquals(score.failedErrors, 0);
 });
 
-Deno.test("computeContainerScore: one error in 10 checks = asymmetric scoring", () => {
+Deno.test("scoring/computeContainerScore: one error in 10 checks = asymmetric scoring", () => {
   // 9 pass + 1 error: earned = 9, penalty = 2, raw = (9-2)/10 = 0.7 → 70%
   const actions = [
     ...Array(9).fill(null).map((_, i) => pass(`check${i}`)),
@@ -77,7 +77,7 @@ Deno.test("computeContainerScore: one error in 10 checks = asymmetric scoring", 
   assertEquals(score.failedErrors, 1);
 });
 
-Deno.test("computeContainerScore: one warning in 10 checks", () => {
+Deno.test("scoring/computeContainerScore: one warning in 10 checks", () => {
   // 9 pass + 1 warn: earned = 9, penalty = 1, raw = (9-1)/10 = 0.8 → 80%
   const actions = [
     ...Array(9).fill(null).map((_, i) => pass(`check${i}`)),
@@ -88,7 +88,7 @@ Deno.test("computeContainerScore: one warning in 10 checks", () => {
   assertEquals(score.failedWarnings, 1);
 });
 
-Deno.test("computeContainerScore: one info in 10 checks", () => {
+Deno.test("scoring/computeContainerScore: one info in 10 checks", () => {
   // 9 pass + 1 info: earned = 9, penalty = 0.25, raw = (9-0.25)/10 = 0.875 → 88%
   const actions = [
     ...Array(9).fill(null).map((_, i) => pass(`check${i}`)),
@@ -99,7 +99,7 @@ Deno.test("computeContainerScore: one info in 10 checks", () => {
   assertEquals(score.failedInfos, 1);
 });
 
-Deno.test("computeContainerScore: all errors = 0 (clamped)", () => {
+Deno.test("scoring/computeContainerScore: all errors = 0 (clamped)", () => {
   const actions = [fail("e1", "error"), fail("e2", "error")];
   const score = computeContainerScore("broken", "metadata", actions);
   assertEquals(score.score, 0, "All errors should clamp to 0");
@@ -107,7 +107,7 @@ Deno.test("computeContainerScore: all errors = 0 (clamped)", () => {
   assertEquals(score.failedErrors, 2);
 });
 
-Deno.test("computeContainerScore: mixed failures", () => {
+Deno.test("scoring/computeContainerScore: mixed failures", () => {
   // 5 pass + 1 error + 1 warn + 1 info = 8 total
   // earned = 5, penalty = 2 + 1 + 0.25 = 3.25, raw = (5-3.25)/8 = 0.21875 → 22%
   const actions = [
@@ -126,13 +126,13 @@ Deno.test("computeContainerScore: mixed failures", () => {
 // computeBlockScore
 // ---------------------------------------------------------------------------
 
-Deno.test("computeBlockScore: empty containers = 0", () => {
+Deno.test("scoring/computeBlockScore: empty containers = 0", () => {
   const score = computeBlockScore("metadata", []);
   assertEquals(score.score, 0);
   assertEquals(score.containers.length, 0);
 });
 
-Deno.test("computeBlockScore: averages container scores", () => {
+Deno.test("scoring/computeBlockScore: averages container scores", () => {
   const c1 = computeContainerScore("I1", "metadata", [pass("a"), pass("b")]);
   const c2 = computeContainerScore("I2", "metadata", [pass("a"), fail("b", "error")]);
   // c1 = 100, c2 = 0 (1 pass - 2 penalty = -1/2 = 0 clamped) → average = 50
@@ -140,7 +140,7 @@ Deno.test("computeBlockScore: averages container scores", () => {
   assertEquals(block.score, 50);
 });
 
-Deno.test("computeBlockScore: single perfect container = 100", () => {
+Deno.test("scoring/computeBlockScore: single perfect container = 100", () => {
   const c1 = computeContainerScore("I1", "metadata", [pass("a")]);
   const block = computeBlockScore("metadata", [c1]);
   assertEquals(block.score, 100);
@@ -150,7 +150,7 @@ Deno.test("computeBlockScore: single perfect container = 100", () => {
 // computeHealthScore
 // ---------------------------------------------------------------------------
 
-Deno.test("computeHealthScore: empty blocks = 0", () => {
+Deno.test("scoring/computeHealthScore: empty blocks = 0", () => {
   const health = computeHealthScore([]);
   assertEquals(health.total, 0);
   assertEquals(health.totalActions, 0);
@@ -158,7 +158,7 @@ Deno.test("computeHealthScore: empty blocks = 0", () => {
   assertEquals(health.failCount, 0);
 });
 
-Deno.test("computeHealthScore: aggregates from blocks", () => {
+Deno.test("scoring/computeHealthScore: aggregates from blocks", () => {
   const c1 = computeContainerScore("I1", "metadata", [pass("a"), pass("b")]);
   const c2 = computeContainerScore("X1", "closing", [pass("a"), fail("b", "warn")]);
   const b1 = computeBlockScore("metadata", [c1]);
@@ -173,7 +173,7 @@ Deno.test("computeHealthScore: aggregates from blocks", () => {
   assertEquals(health.failCount, 1);
 });
 
-Deno.test("computeHealthScore: perfect health = 100", () => {
+Deno.test("scoring/computeHealthScore: perfect health = 100", () => {
   const c1 = computeContainerScore("I1", "metadata", [pass("a"), pass("b"), pass("c")]);
   const c2 = computeContainerScore("X1", "closing", [pass("d"), pass("e")]);
   const b1 = computeBlockScore("metadata", [c1]);

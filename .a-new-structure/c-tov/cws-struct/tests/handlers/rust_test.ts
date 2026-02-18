@@ -6,14 +6,16 @@
 // key:     B-tov-cws-struct-tests-handlers-rust
 // title:   CWS Struct — Rust Linter Tests
 // type:    Code (Test)
-// version: b-01.50
+// version: b-02.00
 // created: 2026-02-17
+// updated: 2026-02-18
 // authors: Nova Dawn (CPI-SI)
 // purpose: Tests for the Rust 4-block format handler. Tests go through the
 //          public FormatHandler.lint() interface — same path the CLI uses.
 //
-//          Fixture-driven: each .rs file in tests/fixtures/rust/ targets a
-//          specific condition. Tests assert on result counts and rule names.
+//          Fixture-driven: each .rs file in tests/fixtures/rust/<category>/
+//          targets a specific condition. Tests assert on result counts and
+//          rule names. Category prefixes enable --filter targeting.
 //
 // ============================================================================
 
@@ -45,17 +47,17 @@ if (!rust) {
 }
 
 // ---------------------------------------------------------------------------
-// Happy path: valid library
+// structure/ — Overall block structure
 // ---------------------------------------------------------------------------
 
-Deno.test("valid-library: zero errors", async () => {
-  const results = await rust.lint(fixture("rust/valid-library.rs"));
+Deno.test("structure/valid-library: zero errors", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-library.rs"));
   const errs = errors(results);
   assertEquals(errs.length, 0, `Expected 0 errors, got ${errs.length}: ${JSON.stringify(errs, null, 2)}`);
 });
 
-Deno.test("valid-library: may have separator width warnings", async () => {
-  const results = await rust.lint(fixture("rust/valid-library.rs"));
+Deno.test("structure/valid-library: may have separator width warnings", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-library.rs"));
   // Warnings about separator widths are acceptable — not errors.
   for (const w of warnings(results)) {
     assert(
@@ -65,22 +67,14 @@ Deno.test("valid-library: may have separator width warnings", async () => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// Happy path: valid executable
-// ---------------------------------------------------------------------------
-
-Deno.test("valid-executable: zero errors", async () => {
-  const results = await rust.lint(fixture("rust/valid-executable.rs"));
+Deno.test("structure/valid-executable: zero errors", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-executable.rs"));
   const errs = errors(results);
   assertEquals(errs.length, 0, `Expected 0 errors, got ${errs.length}: ${JSON.stringify(errs, null, 2)}`);
 });
 
-// ---------------------------------------------------------------------------
-// Missing block entirely
-// ---------------------------------------------------------------------------
-
-Deno.test("missing-block: produces block error", async () => {
-  const results = await rust.lint(fixture("rust/missing-block.rs"));
+Deno.test("structure/missing-block: produces block error", async () => {
+  const results = await rust.lint(fixture("rust/structure/missing-block.rs"));
   const errs = errors(results);
   assertGreater(errs.length, 0, "Expected at least one error for missing METADATA block");
   // Should mention the missing block
@@ -90,12 +84,46 @@ Deno.test("missing-block: produces block error", async () => {
   );
 });
 
+Deno.test("structure/wrong-block-order: produces order error", async () => {
+  const results = await rust.lint(fixture("rust/structure/wrong-block-order.rs"));
+  const errs = errors(results);
+  assertGreater(errs.length, 0, "Expected error for wrong block order (SETUP before METADATA)");
+  assert(
+    hasRule(results, "block/order"),
+    `Expected block/order error, got rules: ${errs.map((e) => e.rule).join(", ")}`,
+  );
+});
+
+Deno.test("structure/content-placement-correct: zero placement warnings", async () => {
+  const results = await rust.lint(fixture("rust/structure/content-placement-correct.rs"));
+  const errs = errors(results);
+  const placementWarns = byRule(results, "content/");
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+  assertEquals(placementWarns.length, 0, `Expected 0 content placement warnings: ${JSON.stringify(placementWarns, null, 2)}`);
+});
+
+Deno.test("structure/content-placement-wrong: detects fn in SETUP and use/struct in BODY", async () => {
+  const results = await rust.lint(fixture("rust/structure/content-placement-wrong.rs"));
+  const placementWarns = byRule(results, "content/block-placement");
+  // fn in SETUP, use in BODY, struct in BODY = 3 block-placement warnings
+  assertGreater(placementWarns.length, 0, "Should detect at least one block-placement violation");
+  // Verify specific violations are named
+  assert(
+    hasMessage(results, "fn_decl") && hasMessage(results, "SETUP"),
+    "Should flag fn_decl in SETUP block",
+  );
+  assert(
+    hasMessage(results, "use_decl") && hasMessage(results, "BODY"),
+    "Should flag use_decl in BODY block",
+  );
+});
+
 // ---------------------------------------------------------------------------
-// Missing I/C fields (fixture is lib.rs so isCrateRoot = true → I/C validation runs)
+// metadata/ — METADATA block
 // ---------------------------------------------------------------------------
 
-Deno.test("missing-ic-fields: warns about missing required fields", async () => {
-  const results = await rust.lint(fixture("rust/missing-ic-crate/lib.rs"));
+Deno.test("metadata/missing-ic-fields: warns about missing required fields", async () => {
+  const results = await rust.lint(fixture("rust/metadata/missing-ic-crate/lib.rs"));
   const warns = warnings(results);
 
   // Missing from PRAGMA: I1.key, I1.from, I2.type
@@ -113,32 +141,133 @@ Deno.test("missing-ic-fields: warns about missing required fields", async () => 
   assert(hasRule(results, "C4.consumers"), "Should warn about missing C4.consumers");
 });
 
-Deno.test("missing-ic-fields: zero errors (missing fields are warnings, not errors)", async () => {
-  const results = await rust.lint(fixture("rust/missing-ic-crate/lib.rs"));
+Deno.test("metadata/missing-ic-fields: zero errors (missing fields are warnings, not errors)", async () => {
+  const results = await rust.lint(fixture("rust/metadata/missing-ic-crate/lib.rs"));
   const errs = errors(results);
   assertEquals(errs.length, 0, `Expected 0 errors, got: ${JSON.stringify(errs, null, 2)}`);
 });
 
-// ---------------------------------------------------------------------------
-// Wrong block order
-// ---------------------------------------------------------------------------
-
-Deno.test("wrong-block-order: produces order error", async () => {
-  const results = await rust.lint(fixture("rust/wrong-block-order.rs"));
-  const errs = errors(results);
-  assertGreater(errs.length, 0, "Expected error for wrong block order (SETUP before METADATA)");
+Deno.test("metadata/placeholder-values: warns about template placeholders", async () => {
+  const results = await rust.lint(fixture("rust/metadata/placeholder-values.rs"));
+  // Should detect [bracketed] placeholder values
   assert(
-    hasRule(results, "block/order"),
-    `Expected block/order error, got rules: ${errs.map((e) => e.rule).join(", ")}`,
+    hasRule(results, "placeholder") || hasRule(results, "template") || hasMessage(results, "placeholder") || hasMessage(results, "["),
+    "Should detect placeholder values in I/C fields",
+  );
+});
+
+Deno.test("metadata/metadata-leak: detects code declarations in METADATA block", async () => {
+  const results = await rust.lint(fixture("rust/metadata/metadata-leak.rs"));
+  const leakWarns = byRule(results, "content/metadata-leak");
+  assertGreater(leakWarns.length, 0, "Should detect code declarations in METADATA block");
+  assert(
+    hasMessage(results, "use_decl") || hasMessage(results, "struct_decl"),
+    "Should identify the type of leaked construct",
   );
 });
 
 // ---------------------------------------------------------------------------
-// No omni markers
+// setup/ — SETUP block
 // ---------------------------------------------------------------------------
 
-Deno.test("no-omni: info only, no errors", async () => {
-  const results = await rust.lint(fixture("rust/no-omni.rs"));
+Deno.test("setup/subsection-order-correct: all 10 subsections in correct order — zero order warnings", async () => {
+  const results = await rust.lint(fixture("rust/setup/subsection-order-correct.rs"));
+  const errs = errors(results);
+  const orderWarns = byRule(results, "setup/subsection-order");
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+  assertEquals(orderWarns.length, 0, `Expected 0 subsection-order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
+});
+
+Deno.test("setup/subsection-order-wrong: detects Core Types before Constants", async () => {
+  const results = await rust.lint(fixture("rust/setup/subsection-order-wrong.rs"));
+  assert(
+    hasRule(results, "setup/subsection-order"),
+    `Should detect wrong SETUP subsection order, got rules: ${warnings(results).map((w) => w.rule).join(", ")}`,
+  );
+});
+
+Deno.test("setup/subsection-partial-correct: 3 of 10 in correct relative order — zero order warnings", async () => {
+  const results = await rust.lint(fixture("rust/setup/subsection-partial-correct.rs"));
+  const errs = errors(results);
+  const orderWarns = byRule(results, "setup/subsection-order");
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+  assertEquals(orderWarns.length, 0, `Expected 0 subsection-order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
+});
+
+// ---------------------------------------------------------------------------
+// body/ — BODY block
+// ---------------------------------------------------------------------------
+
+Deno.test("body/wrong-body-order: detects BODY subsections out of order", async () => {
+  const results = await rust.lint(fixture("rust/body/wrong-body-order.rs"));
+  const errs = errors(results);
+  const orderWarns = byRule(results, "body/subsection-order");
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+  assertGreater(orderWarns.length, 0, "Should detect wrong BODY subsection order");
+  assert(
+    hasMessage(results, "§1") && hasMessage(results, "§4"),
+    "Should reference the misordered subsection numbers",
+  );
+});
+
+Deno.test("body/valid-library: zero body subsection order warnings", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-library.rs"));
+  const orderWarns = byRule(results, "body/subsection-order");
+  assertEquals(orderWarns.length, 0, `Expected 0 body/subsection-order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
+});
+
+// ---------------------------------------------------------------------------
+// closing/ — CLOSING block
+// ---------------------------------------------------------------------------
+
+Deno.test("closing/wrong-closing-order: detects code zone after documentation section", async () => {
+  const results = await rust.lint(fixture("rust/closing/wrong-closing-order.rs"));
+  const errs = errors(results);
+  const zoneWarns = byRule(results, "closing/zone-order");
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+  assertGreater(zoneWarns.length, 0, "Should detect code zone after documentation section");
+  assert(
+    hasMessage(results, "X1") || hasMessage(results, "Cv") || hasMessage(results, "Cc"),
+    "Should reference the misordered zones",
+  );
+});
+
+Deno.test("closing/valid-library: zero closing zone order warnings", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-library.rs"));
+  const zoneWarns = byRule(results, "closing/");
+  assertEquals(zoneWarns.length, 0, `Expected 0 closing zone warnings: ${JSON.stringify(zoneWarns, null, 2)}`);
+});
+
+Deno.test("closing/tests-in-body: detects #[cfg(test)] in BODY — should be CLOSING Cv", async () => {
+  const results = await rust.lint(fixture("rust/closing/tests-in-body.rs"));
+  const errs = errors(results);
+  const testWarns = byRule(results, "closing/test-placement");
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+  assertGreater(testWarns.length, 0, "Should detect test module in BODY block");
+  assert(
+    hasMessage(results, "CLOSING Cv") || hasMessage(results, "Cv zone"),
+    "Should guide toward CLOSING Cv zone",
+  );
+});
+
+Deno.test("closing/main-in-body: detects fn main() in BODY — should be CLOSING Ce", async () => {
+  const results = await rust.lint(fixture("rust/closing/main-in-body.rs"));
+  const errs = errors(results);
+  const mainWarns = byRule(results, "closing/main-placement");
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+  assertGreater(mainWarns.length, 0, "Should detect fn main() in BODY block");
+  assert(
+    hasMessage(results, "CLOSING Ce") || hasMessage(results, "Ce zone"),
+    "Should guide toward CLOSING Ce zone",
+  );
+});
+
+// ---------------------------------------------------------------------------
+// format/ — Format detection
+// ---------------------------------------------------------------------------
+
+Deno.test("format/no-omni: info only, no errors", async () => {
+  const results = await rust.lint(fixture("rust/format/no-omni.rs"));
   const errs = errors(results);
   const warns = warnings(results);
 
@@ -151,161 +280,10 @@ Deno.test("no-omni: info only, no errors", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Placeholder values
+// unit/ — Unit tests for exported functions
 // ---------------------------------------------------------------------------
 
-Deno.test("placeholder-values: warns about template placeholders", async () => {
-  const results = await rust.lint(fixture("rust/placeholder-values.rs"));
-  // Should detect [bracketed] placeholder values
-  assert(
-    hasRule(results, "placeholder") || hasRule(results, "template") || hasMessage(results, "placeholder") || hasMessage(results, "["),
-    "Should detect placeholder values in I/C fields",
-  );
-});
-
-// ---------------------------------------------------------------------------
-// 10-subsection SETUP order (dependency chain validation)
-// ---------------------------------------------------------------------------
-
-Deno.test("subsection-order-correct: all 10 subsections in correct order — zero order warnings", async () => {
-  const results = await rust.lint(fixture("rust/subsection-order-correct.rs"));
-  const errs = errors(results);
-  const orderWarns = byRule(results, "setup/subsection-order");
-  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
-  assertEquals(orderWarns.length, 0, `Expected 0 subsection-order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
-});
-
-Deno.test("subsection-order-wrong: detects Core Types before Constants", async () => {
-  const results = await rust.lint(fixture("rust/subsection-order-wrong.rs"));
-  assert(
-    hasRule(results, "setup/subsection-order"),
-    `Should detect wrong SETUP subsection order, got rules: ${warnings(results).map((w) => w.rule).join(", ")}`,
-  );
-});
-
-Deno.test("subsection-partial-correct: 3 of 10 in correct relative order — zero order warnings", async () => {
-  const results = await rust.lint(fixture("rust/subsection-partial-correct.rs"));
-  const errs = errors(results);
-  const orderWarns = byRule(results, "setup/subsection-order");
-  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
-  assertEquals(orderWarns.length, 0, `Expected 0 subsection-order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
-});
-
-// ---------------------------------------------------------------------------
-// Content placement — block-level and subsection-level validation
-// ---------------------------------------------------------------------------
-
-Deno.test("content-placement-correct: zero placement warnings", async () => {
-  const results = await rust.lint(fixture("rust/content-placement-correct.rs"));
-  const errs = errors(results);
-  const placementWarns = byRule(results, "content/");
-  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
-  assertEquals(placementWarns.length, 0, `Expected 0 content placement warnings: ${JSON.stringify(placementWarns, null, 2)}`);
-});
-
-Deno.test("content-placement-wrong: detects fn in SETUP and use/struct in BODY", async () => {
-  const results = await rust.lint(fixture("rust/content-placement-wrong.rs"));
-  const placementWarns = byRule(results, "content/block-placement");
-  // fn in SETUP, use in BODY, struct in BODY = 3 block-placement warnings
-  assertGreater(placementWarns.length, 0, "Should detect at least one block-placement violation");
-  // Verify specific violations are named
-  assert(
-    hasMessage(results, "fn_decl") && hasMessage(results, "SETUP"),
-    "Should flag fn_decl in SETUP block",
-  );
-  assert(
-    hasMessage(results, "use_decl") && hasMessage(results, "BODY"),
-    "Should flag use_decl in BODY block",
-  );
-});
-
-Deno.test("metadata-leak: detects code declarations in METADATA block", async () => {
-  const results = await rust.lint(fixture("rust/metadata-leak.rs"));
-  const leakWarns = byRule(results, "content/metadata-leak");
-  assertGreater(leakWarns.length, 0, "Should detect code declarations in METADATA block");
-  assert(
-    hasMessage(results, "use_decl") || hasMessage(results, "struct_decl"),
-    "Should identify the type of leaked construct",
-  );
-});
-
-// ---------------------------------------------------------------------------
-// BODY subsection ordering — numbered markers must be in ascending order
-// ---------------------------------------------------------------------------
-
-Deno.test("wrong-body-order: detects BODY subsections out of order", async () => {
-  const results = await rust.lint(fixture("rust/wrong-body-order.rs"));
-  const errs = errors(results);
-  const orderWarns = byRule(results, "body/subsection-order");
-  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
-  assertGreater(orderWarns.length, 0, "Should detect wrong BODY subsection order");
-  assert(
-    hasMessage(results, "§1") && hasMessage(results, "§4"),
-    "Should reference the misordered subsection numbers",
-  );
-});
-
-Deno.test("valid-library: zero body subsection order warnings", async () => {
-  const results = await rust.lint(fixture("rust/valid-library.rs"));
-  const orderWarns = byRule(results, "body/subsection-order");
-  assertEquals(orderWarns.length, 0, `Expected 0 body/subsection-order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
-});
-
-// ---------------------------------------------------------------------------
-// CLOSING zone ordering — code zones before documentation, canonical order
-// ---------------------------------------------------------------------------
-
-Deno.test("wrong-closing-order: detects code zone after documentation section", async () => {
-  const results = await rust.lint(fixture("rust/wrong-closing-order.rs"));
-  const errs = errors(results);
-  const zoneWarns = byRule(results, "closing/zone-order");
-  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
-  assertGreater(zoneWarns.length, 0, "Should detect code zone after documentation section");
-  assert(
-    hasMessage(results, "X1") || hasMessage(results, "Cv") || hasMessage(results, "Cc"),
-    "Should reference the misordered zones",
-  );
-});
-
-Deno.test("valid-library: zero closing zone order warnings", async () => {
-  const results = await rust.lint(fixture("rust/valid-library.rs"));
-  const zoneWarns = byRule(results, "closing/");
-  assertEquals(zoneWarns.length, 0, `Expected 0 closing zone warnings: ${JSON.stringify(zoneWarns, null, 2)}`);
-});
-
-// ---------------------------------------------------------------------------
-// CLOSING content placement — tests in BODY → Cv, main in BODY → Ce
-// ---------------------------------------------------------------------------
-
-Deno.test("tests-in-body: detects #[cfg(test)] in BODY — should be CLOSING Cv", async () => {
-  const results = await rust.lint(fixture("rust/tests-in-body.rs"));
-  const errs = errors(results);
-  const testWarns = byRule(results, "closing/test-placement");
-  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
-  assertGreater(testWarns.length, 0, "Should detect test module in BODY block");
-  assert(
-    hasMessage(results, "CLOSING Cv") || hasMessage(results, "Cv zone"),
-    "Should guide toward CLOSING Cv zone",
-  );
-});
-
-Deno.test("main-in-body: detects fn main() in BODY — should be CLOSING Ce", async () => {
-  const results = await rust.lint(fixture("rust/main-in-body.rs"));
-  const errs = errors(results);
-  const mainWarns = byRule(results, "closing/main-placement");
-  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
-  assertGreater(mainWarns.length, 0, "Should detect fn main() in BODY block");
-  assert(
-    hasMessage(results, "CLOSING Ce") || hasMessage(results, "Ce zone"),
-    "Should guide toward CLOSING Ce zone",
-  );
-});
-
-// ---------------------------------------------------------------------------
-// Unit tests: classifyLine
-// ---------------------------------------------------------------------------
-
-Deno.test("classifyLine: identifies all major Rust constructs", () => {
+Deno.test("unit/classifyLine: identifies all major Rust constructs", () => {
   const cases: Array<[string, RustContentKind]> = [
     ["", "blank"],
     ["// comment", "comment"],
@@ -353,11 +331,7 @@ Deno.test("classifyLine: identifies all major Rust constructs", () => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// Unit tests: getTopLevelDeclarations — brace depth tracking
-// ---------------------------------------------------------------------------
-
-Deno.test("getTopLevelDeclarations: skips nested content", () => {
+Deno.test("unit/getTopLevelDeclarations: skips nested content", () => {
   const lines = [
     "use std::io;",
     "pub struct Config {",
@@ -380,7 +354,7 @@ Deno.test("getTopLevelDeclarations: skips nested content", () => {
     `Expected top-level only, got: ${JSON.stringify(decls, null, 2)}`);
 });
 
-Deno.test("getTopLevelDeclarations: handles multi-level nesting", () => {
+Deno.test("unit/getTopLevelDeclarations: handles multi-level nesting", () => {
   const lines = [
     "impl Foo {",
     "    fn bar() {",
@@ -397,11 +371,7 @@ Deno.test("getTopLevelDeclarations: handles multi-level nesting", () => {
   assertEquals(decls[1]!.kind, "const_decl");
 });
 
-// ---------------------------------------------------------------------------
-// Unit tests: getSubsectionRanges
-// ---------------------------------------------------------------------------
-
-Deno.test("getSubsectionRanges: finds subsection boundaries", () => {
+Deno.test("unit/getSubsectionRanges: finds subsection boundaries", () => {
   const lines = [
     "// ──────────────────────────────────────────────────────────────────────────",
     "// Imports",
@@ -425,11 +395,7 @@ Deno.test("getSubsectionRanges: finds subsection boundaries", () => {
   assertEquals(ranges[0]!.endIdx, ranges[1]!.startIdx);
 });
 
-// ---------------------------------------------------------------------------
-// Unit tests: parseStaticFields
-// ---------------------------------------------------------------------------
-
-Deno.test("parseStaticFields: extracts PRAGMA fields", () => {
+Deno.test("unit/parseStaticFields: extracts PRAGMA fields", () => {
   const lines = [
     `pub static PRAGMA: &[(&str, &str)] = &[`,
     `    ("I1.key", "test-value"),`,
@@ -447,7 +413,7 @@ Deno.test("parseStaticFields: extracts PRAGMA fields", () => {
   assertEquals(fields[2]!.field, "type");
 });
 
-Deno.test("parseStaticFields: handles nested keys (C4.requires.stdlib)", () => {
+Deno.test("unit/parseStaticFields: handles nested keys (C4.requires.stdlib)", () => {
   const lines = [
     `pub static METADATA: &[(&str, &str)] = &[`,
     `    ("C4.requires.stdlib", "none"),`,
@@ -460,7 +426,7 @@ Deno.test("parseStaticFields: handles nested keys (C4.requires.stdlib)", () => {
   assertEquals(fields[0]!.field, "requires.stdlib");
 });
 
-Deno.test("parseStaticFields: skips comment-only lines", () => {
+Deno.test("unit/parseStaticFields: skips comment-only lines", () => {
   const lines = [
     `pub static PRAGMA: &[(&str, &str)] = &[`,
     `    // This is a comment`,
@@ -472,7 +438,7 @@ Deno.test("parseStaticFields: skips comment-only lines", () => {
   assertEquals(fields.length, 1);
 });
 
-Deno.test("parseStaticFields: handles single-line static", () => {
+Deno.test("unit/parseStaticFields: handles single-line static", () => {
   const lines = [
     `pub static PRAGMA: &[(&str, &str)] = &[("I1.key", "value"), ("I1.format", "rust")];`,
   ];
@@ -480,7 +446,7 @@ Deno.test("parseStaticFields: handles single-line static", () => {
   assertEquals(fields.length, 2);
 });
 
-Deno.test("parseStaticFields: returns empty for missing static", () => {
+Deno.test("unit/parseStaticFields: returns empty for missing static", () => {
   const lines = [
     `fn main() {`,
     `    println!("no statics");`,
@@ -490,7 +456,7 @@ Deno.test("parseStaticFields: returns empty for missing static", () => {
   assertEquals(fields.length, 0);
 });
 
-Deno.test("parseStaticFields: handles OWN_ prefix", () => {
+Deno.test("unit/parseStaticFields: handles OWN_ prefix", () => {
   const lines = [
     `pub static OWN_PRAGMA: &[(&str, &str)] = &[`,
     `    ("I1.key", "value"),`,
@@ -500,7 +466,7 @@ Deno.test("parseStaticFields: handles OWN_ prefix", () => {
   assertEquals(fields.length, 1);
 });
 
-Deno.test("parseStaticFields: handles r# raw strings", () => {
+Deno.test("unit/parseStaticFields: handles r# raw strings", () => {
   const lines = [
     `pub static PRAGMA: &[(&str, &str)] = &[`,
     `    ("I1.key", r#"value-with-"quotes""#),`,
@@ -513,11 +479,7 @@ Deno.test("parseStaticFields: handles r# raw strings", () => {
   assertEquals(fields[1]!.value, "rust");
 });
 
-// ---------------------------------------------------------------------------
-// Unit tests: validateICFields
-// ---------------------------------------------------------------------------
-
-Deno.test("validateICFields: all required present produces no warnings", () => {
+Deno.test("unit/validateICFields: all required present produces no warnings", () => {
   const fields = [
     { section: "I1", field: "key", value: "test", line: 1 },
     { section: "I1", field: "format", value: "rust", line: 2 },
@@ -533,7 +495,7 @@ Deno.test("validateICFields: all required present produces no warnings", () => {
   assertEquals(warns.length, 0, `Unexpected warnings: ${JSON.stringify(warns, null, 2)}`);
 });
 
-Deno.test("validateICFields: missing required produces warnings", () => {
+Deno.test("unit/validateICFields: missing required produces warnings", () => {
   const fields = [
     // I1: missing key, from
     { section: "I1", field: "format", value: "rust", line: 1 },
@@ -549,7 +511,7 @@ Deno.test("validateICFields: missing required produces warnings", () => {
   assertEquals(warns.length, 3, "Should warn about I1.key, I1.from, I2.type");
 });
 
-Deno.test("validateICFields: nested keys count as base field present", () => {
+Deno.test("unit/validateICFields: nested keys count as base field present", () => {
   const fields = [
     { section: "C4", field: "requires.stdlib", value: "none", line: 1 },
     { section: "C4", field: "consumers", value: "test", line: 2 },
@@ -560,7 +522,7 @@ Deno.test("validateICFields: nested keys count as base field present", () => {
   assertEquals(warns.length, 0, "C4.requires.stdlib should satisfy 'requires' requirement");
 });
 
-Deno.test("validateICFields: missing defined fields produce info, not warn", () => {
+Deno.test("unit/validateICFields: missing defined fields produce info, not warn", () => {
   const fields = [
     { section: "I2", field: "type", value: "code", line: 1 },
     { section: "I2", field: "structure", value: "4-block", line: 2 },
@@ -575,11 +537,11 @@ Deno.test("validateICFields: missing defined fields produce info, not warn", () 
 });
 
 // ---------------------------------------------------------------------------
-// Transformer: cosmetic transforms (separator fixes)
+// transform/ — Transformer tests
 // ---------------------------------------------------------------------------
 
-Deno.test("transform-separators: dry-run detects ASCII dashes and prefix issues", async () => {
-  const f = fixture("rust/transform-separators.rs");
+Deno.test("transform/separators: dry-run detects ASCII dashes and prefix issues", async () => {
+  const f = fixture("rust/format/transform-separators.rs");
   const results = await rust.transform!(f, { dryRun: true, extensions: false });
   const dashRules = byRule(results, "dash-to-unicode");
   assert(dashRules.length >= 2, `Expected ≥2 dash-to-unicode, got ${dashRules.length}`);
@@ -587,28 +549,24 @@ Deno.test("transform-separators: dry-run detects ASCII dashes and prefix issues"
   assert(prefixRules.length >= 1, `Expected ≥1 prefix-normalize, got ${prefixRules.length}`);
 });
 
-Deno.test("transform-separators: dry-run does not modify file", async () => {
-  const f = fixture("rust/transform-separators.rs");
+Deno.test("transform/separators: dry-run does not modify file", async () => {
+  const f = fixture("rust/format/transform-separators.rs");
   const before = await Deno.readTextFile(f);
   await rust.transform!(f, { dryRun: true, extensions: false });
   const after = await Deno.readTextFile(f);
   assertEquals(before, after, "File should be unchanged after dry-run");
 });
 
-// ---------------------------------------------------------------------------
-// Transformer: structural transforms (content moves)
-// ---------------------------------------------------------------------------
-
-Deno.test("transform move-tests: dry-run detects #[cfg(test)] in BODY", async () => {
-  const f = fixture("rust/tests-in-body.rs");
+Deno.test("transform/move-tests: dry-run detects #[cfg(test)] in BODY", async () => {
+  const f = fixture("rust/closing/tests-in-body.rs");
   const results = await rust.transform!(f, { dryRun: true, extensions: false });
   assert(hasRule(results, "move-tests"), "Should detect tests to move");
   assert(hasMessage(results, "#[cfg(test)]"), "Message should mention #[cfg(test)]");
 });
 
-Deno.test("transform move-tests: actual transform moves tests to CLOSING Cv", async () => {
+Deno.test("transform/move-tests: actual transform moves tests to CLOSING Cv", async () => {
   // Work on a temp copy
-  const src = fixture("rust/tests-in-body.rs");
+  const src = fixture("rust/closing/tests-in-body.rs");
   const tmp = await Deno.makeTempFile({ suffix: ".rs" });
   await Deno.copyFile(src, tmp);
 
@@ -638,15 +596,15 @@ Deno.test("transform move-tests: actual transform moves tests to CLOSING Cv", as
   }
 });
 
-Deno.test("transform move-main: dry-run detects fn main() in BODY", async () => {
-  const f = fixture("rust/main-in-body.rs");
+Deno.test("transform/move-main: dry-run detects fn main() in BODY", async () => {
+  const f = fixture("rust/closing/main-in-body.rs");
   const results = await rust.transform!(f, { dryRun: true, extensions: false });
   assert(hasRule(results, "move-main"), "Should detect main to move");
   assert(hasMessage(results, "fn main()"), "Message should mention fn main()");
 });
 
-Deno.test("transform move-main: actual transform moves main to CLOSING Ce", async () => {
-  const src = fixture("rust/main-in-body.rs");
+Deno.test("transform/move-main: actual transform moves main to CLOSING Ce", async () => {
+  const src = fixture("rust/closing/main-in-body.rs");
   const tmp = await Deno.makeTempFile({ suffix: ".rs" });
   await Deno.copyFile(src, tmp);
 
@@ -668,14 +626,14 @@ Deno.test("transform move-main: actual transform moves main to CLOSING Ce", asyn
   }
 });
 
-Deno.test("transform reorder-closing: dry-run detects out-of-order zones", async () => {
-  const f = fixture("rust/wrong-closing-order.rs");
+Deno.test("transform/reorder-closing: dry-run detects out-of-order zones", async () => {
+  const f = fixture("rust/closing/wrong-closing-order.rs");
   const results = await rust.transform!(f, { dryRun: true, extensions: false });
   assert(hasRule(results, "reorder-closing"), "Should detect zones needing reorder");
 });
 
-Deno.test("transform reorder-closing: actual transform fixes zone order", async () => {
-  const src = fixture("rust/wrong-closing-order.rs");
+Deno.test("transform/reorder-closing: actual transform fixes zone order", async () => {
+  const src = fixture("rust/closing/wrong-closing-order.rs");
   const tmp = await Deno.makeTempFile({ suffix: ".rs" });
   await Deno.copyFile(src, tmp);
 
@@ -699,8 +657,8 @@ Deno.test("transform reorder-closing: actual transform fixes zone order", async 
   }
 });
 
-Deno.test("transform valid-library: no changes needed", async () => {
-  const f = fixture("rust/valid-library.rs");
+Deno.test("transform/valid-library: no changes needed", async () => {
+  const f = fixture("rust/structure/valid-library.rs");
   const results = await rust.transform!(f, { dryRun: true, extensions: false });
   // Valid library may have some separator width fixes but no structural moves
   const moves = results.filter((r) =>
@@ -718,6 +676,9 @@ Deno.test("transform valid-library: no changes needed", async () => {
 // lint() and transform() interfaces. Unit tests for parseStaticFields and
 // validateICFields target the parser directly with synthetic data.
 // Transformer tests use temp copies to verify non-destructive operation.
+//
+// Categories: structure/, metadata/, setup/, body/, closing/, format/, unit/, transform/
+// Filter: deno test --filter "category/" tests/handlers/rust_test.ts
 //
 // "Prove all things; hold fast that which is good." — 1 Thessalonians 5:21
 // ============================================================================

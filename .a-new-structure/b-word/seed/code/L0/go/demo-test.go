@@ -56,9 +56,9 @@
 //	Metadata    C1-C7     Context — when, where, why, how  MetadataGet
 package packagename_test
 
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 // Metadata Imports
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 //
 // Imports required by the METADATA block (Pragma/Metadata vars and accessors).
 // Kept separate from SETUP imports so METADATA is self-contained.
@@ -69,9 +69,9 @@ import (
 	// Add imports here if PragmaGet/MetadataGet accessors move to METADATA.
 )
 
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 // Identity (I1-I4)
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 
 // Pragma carries the OmniCode identity sections (I1-I4) for this package.
 //
@@ -113,9 +113,9 @@ var Pragma = [][2]string{
 	{"I4.pattern", "cp demo-test.go pkg/mypackage/mypackage_test.go"},
 }
 
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 // Context (C1-C7)
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 
 // Metadata carries the OmniCode context sections (C1-C7) for this package.
 //
@@ -138,10 +138,10 @@ var Pragma = [][2]string{
 //	version := MetadataGet("C1.version") // returns "a-02.00"
 var Metadata = [][2]string{
 	// C1: State
-	{"C1.version", "a-02.00"},
+	{"C1.version", "a-04.00"},
 	{"C1.status", "Active"},
 	{"C1.created", "2026-02-17"},
-	{"C1.updated", "2026-02-17"},
+	{"C1.updated", "2026-02-18"},
 	// C2: Attribution
 	{"C2.organization", "CreativeWorkzStudio LLC"},
 	{"C2.architect", "Nova Dawn"},
@@ -162,9 +162,8 @@ var Metadata = [][2]string{
 	{"C5.purpose", "Canonical 4-block structure for Go test files with I/C metadata"},
 	{"C5.philosophy", "Tests prove truth — structured validation over hope"},
 	// C6: Roadmap
-	{"C6.current", "a-02.00 — Metadata block production-grade"},
+	{"C6.current", "a-04.00 — CLOSING block aligned with standard zone model"},
 	{"C6.planned", "Go 4-block linter, schema-driven validation"},
-	{"C6.limitations", "SETUP/BODY/CLOSING blocks pending alignment"},
 	// C7: Classification
 	{"C7.tags", "template, go, demo-test, 4-block, seed, omnicode"},
 	{"C7.category", "Foundation"},
@@ -180,340 +179,162 @@ var Metadata = [][2]string{
 // SETUP
 // ============================================================================
 //
-// For SETUP structure explanation, see: standards/code/4-block/CWS-STD-006-CODE-setup-block.md
+// SETUP makes things EXIST. BODY makes things HAPPEN.
 //
-// Section order: Imports → Constants → Variables → Types → Type Methods → Package-Level State
-// This flows: dependencies → fixed config → dynamic state → data model → behaviors → infrastructure
+// Test SETUP establishes everything the test functions need — imports,
+// fixtures, helpers, constants. The BODY contains only test functions
+// and their assertions.
 //
-// IMPORTANT: All sections MUST be present, even if empty or reserved.
-// For empty sections, use: // [Reserved: Brief reason why not needed]
+// If anything must be hardcoded, it lives here — never scattered through BODY.
+// When a hardcoded value gets promoted to config, you extract from one place.
 //
-// -----------------------------------------------------------------------------
-// SETUP Sections Overview
-// -----------------------------------------------------------------------------
+// Section order (dependency chain — each layer uses only what's above):
 //
-// 1. IMPORTS (Dependencies)
-//    Purpose: External code this file needs
-//    Subsections: Standard Library → Internal Packages → External Packages
-//
-// 2. CONSTANTS
-//    Purpose: Fixed values that never change
-//    Subsections: Category Constants → Defaults
-//
-// 3. VARIABLES
-//    Purpose: Mutable state at package level
-//    Subsections: Registries → Configuration State
-//
-// 4. TYPES
-//    Purpose: Data structures and type definitions
-//    Subsections: Building Blocks → Composed Types → Configuration Types → Error Types
-//
-// 5. TYPE METHODS
-//    Purpose: Structural behaviors for types (NOT business logic - that's BODY)
-//    Subsections: Interface Implementations → Conversion Methods → Accessor Patterns
-//
-// 6. PACKAGE-LEVEL STATE (Rails Pattern)
-//    Purpose: Logging, debugging, health scoring infrastructure
-//    Subsections: Rails Infrastructure → Initialization
+//   1. Imports           — Package under test + assertion utilities
+//   2. Constants         — Expected values, test limits, magic strings
+//   3. Variables         — Shared test state (avoid — tests run in parallel)
+//   4. Type Aliases      — Result aliases for test ergonomics
+//   5. Error Types       — Test-specific error types (rare)
+//   6. Core Types        — Test-only data structures (fixtures, builders)
+//   7. Interface Defs    — Test-only contracts (rare)
+//   8. Type Methods      — Structural behaviors for test types
+//   9. Code Generation   — Test helper generation (rare)
+//  10. Build Tags        — Conditional test groups
 
-// ────────────────────────────────────────────────────────────────
-// Imports
-// ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
+// 1. Imports
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// Dependencies this component needs. Organized by source - standard library
-// provides Go's built-in capabilities, internal packages provide project-specific
-// functionality. Each import commented with purpose, not just name.
+// For same-package tests (*_test.go in same directory):
+//   Access to unexported functions and types.
 //
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-001-imports.md
+// For external tests (package foo_test):
+//   Import the package explicitly — tests the public API only.
 
-//--- Standard Library ---
-// Foundation packages providing Go's built-in capabilities.
-// Why stdlib: Stability, no external dependency churn, if Go works this works.
-
+// --- Standard Library ---
 import (
 	"testing"  // Required for test functions and benchmarks
 
-	// "fmt"           // Formatted output for [purpose]
-	// "os"            // File operations and [purpose]
-	// "strings"       // String manipulation for [purpose]
-	// "time"          // Timestamps and duration tracking
+	// "fmt"     // Formatted assertions
+	// "os"      // Test file operations
+	// "strings" // String matching in assertions
 )
 
-//--- Internal Packages ---
-// Project-specific packages showing architectural dependencies.
-// Why internal: Shared functionality within project boundary.
+// --- External Packages ---
+// [Currently none — uses stdlib testing only]
 
+// --- Package Under Test ---
 // import (
-// 	"[module]/internal/[package]"  // [Purpose within project]
-// 	"[module]/pkg/[package]"       // [Shared library purpose]
+// 	"[module]/pkg/[package]"  // Package being tested
 // )
 
-//--- External Packages ---
-// Third-party dependencies (use sparingly - each adds risk).
-// Why external: [Justify what stdlib lacks that requires this dependency]
+// ────────────────────────────────────────────────────────────────────────────────────
+// 2. Constants
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// [Reserved: Currently none - foundational component uses standard library only]
+// Expected values, test boundaries, fixture data. Named constants
+// make test assertions self-documenting.
 
-// import (
-// 	"github.com/[org]/[package]"  // [Justification for external dependency]
-// )
+// const expectedKey = "[project-key]"
+// const expectedFormat = "go"
+// const testTimeoutSecs = 5
 
-// ────────────────────────────────────────────────────────────────
-// Constants
-// ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
+// 3. Variables
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// Named values that never change. Magic numbers given meaningful names,
-// configuration values documented with reasoning. Constants prevent bugs
-// from typos and make intent clear.
+// Shared test state. AVOID — Go tests run in parallel by default.
+// Use fixture functions returning fresh instances instead.
+// Only use variables for truly immutable, package-level test data.
+
+// var testData = []string{"alpha", "beta", "gamma"}
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// 4. Type Aliases
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-002-constants.md
+// Result aliases for test ergonomics. Makes fallible test signatures cleaner.
 
-//--- [Category Name] Constants ---
-// [Brief explanation of this group and their purpose]
+// type TestResult = error
 
-// const (
-// 	// [ConstantName] [brief description].
-// 	//
-// 	// Set to [value] based on [reasoning]. Higher values risk [problem],
-// 	// lower values cause [problem].
-// 	[ConstantName] = [value]  // [Inline context if needed]
+// ────────────────────────────────────────────────────────────────────────────────────
+// 5. Error Types
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// 	// [AnotherConstant] [brief description].
-// 	[AnotherConstant] = [value]
-// )
+// Rarely needed — tests typically use the package's own error types.
+// Define here only if tests need error types not exposed by the package.
 
-//--- Defaults ---
-// Default values for optional configuration. Zero values should be sensible.
-
-// const (
-// 	// Default[Thing] is used when [Thing] not explicitly configured.
-// 	Default[Thing] = [value]
-// )
-
-// ────────────────────────────────────────────────────────────────
-// Variables
-// ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
+// 6. Core Types — Test Fixtures
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// Package-level mutable state. Use sparingly - prefer constants for fixed
-// values and function parameters for dynamic behavior. Variables here are
-// typically: registries, caches, or configuration that changes at runtime.
+// Reusable test data. Functions returning fresh instances (not package vars)
+// to avoid shared mutable state. Go tests run in parallel by default —
+// fixtures must be independent.
 //
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-003-variables.md
+// Pattern: fixture*() functions that build known-good test objects.
+// Each function is self-contained — no dependency on other fixtures.
 
-//--- Registries ---
-// Maps or slices that collect items for lookup or iteration.
-// Pattern: Define structure in SETUP, populate in init() or lazily.
-
-// var (
-// 	// [registryName] maps [key description] to [value description].
-// 	//
-// 	// Populated by [mechanism - init(), Register() calls, etc].
-// 	// Thread-safety: [safe/unsafe - describe synchronization if any]
-// 	[registryName] = make(map[[keyType]][valueType])
-// )
-
-//--- Configuration State ---
-// Runtime-modifiable settings. Document default values and valid ranges.
-
-// var (
-// 	// [configVar] controls [behavior].
-// 	//
-// 	// Default: [value]. Valid range: [min] to [max].
-// 	// Modified by: [what changes this - flags, environment, API calls]
-// 	[configVar] = [defaultValue]
-// )
-
-// ────────────────────────────────────────────────────────────────
-// Types
-// ────────────────────────────────────────────────────────────────
-//
-// Data structures organized bottom-up: simple building blocks first,
-// then composed structures. This organization reveals dependencies.
-//
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-004-types.md
-
-//--- Building Blocks ---
-// Simple foundational types used throughout this component.
-// These are the atoms - other types compose from these.
-
-// // [TypeName] represents [what this models].
-// //
-// // [2-4 sentences: what it represents, when used, key constraints]
-// //
-// // Fields:
-// //
-// //   - [FieldName]: [purpose and meaning]
-// //   - [FieldName]: [purpose, units if applicable, constraints]
-// //
-// // Example:
-// //
-// //	t := [TypeName]{
-// //	    [Field]: [value],
-// //	}
-// type [TypeName] struct {
-// 	[FieldName] [type]  // [Inline explanation]
-// 	[FieldName] [type]  // [Inline explanation]
-// }
-
-//--- Composed Types ---
-// Complex types built from building blocks above.
-// Document the composition relationship explicitly.
-
-// // [ComposedType] combines [building blocks] to represent [concept].
-// //
-// // [Explain relationships: why these pieces go together, what
-// // higher-level functionality they create together]
-// //
-// // Fields:
-// //
-// //   - [FieldName]: [purpose]
-// //   - [FieldName]: Uses [BuildingBlock] for [reason]
-// //
-// // Example:
-// //
-// //	c := [ComposedType]{
-// //	    [Field]: [value],
-// //	    [Block]: [BuildingBlock]{...},
-// //	}
-// type [ComposedType] struct {
-// 	[FieldName]  [type]          // [Purpose]
-// 	[BlockField] [BuildingBlock] // Composition from above
-// }
-
-//--- Configuration Types ---
-// Options and settings passed to constructors/functions.
-// Zero values should provide sensible defaults.
-
-// // [Config] holds configuration options for [component].
-// //
-// // Zero values are sensible defaults - can instantiate with [Config]{}
-// // for default behavior.
-// //
-// // Fields:
-// //
-// //   - [Field]: [purpose] (default: [value])
-// type [Config] struct {
-// 	[Field] [type]  // [Purpose] (default: [zero value behavior])
-// }
-
-//--- Error Types ---
-// Custom errors for this component. Implement error interface.
-// Include context needed for handling/debugging.
-
-// // [ErrorType] represents [error condition].
-// //
-// // [When this error occurs, what context it captures]
-// type [ErrorType] struct {
-// 	[Field] [type]  // [What context this provides]
+// // fixtureDefault creates a default [TypeName] for testing.
+// func fixtureDefault() *[TypeName] {
+// 	return &[TypeName]{
+// 		[Field]: "[test-value]",
+// 	}
 // }
 //
-// // Error implements the error interface.
-// func (e *[ErrorType]) Error() string {
-// 	return fmt.Sprintf("[format string]", e.[Field])
-// }
-
-// ────────────────────────────────────────────────────────────────
-// Type Methods
-// ────────────────────────────────────────────────────────────────
-//
-// Structural behaviors for types defined above. These are NOT business
-// logic - those go in BODY. Type methods here are:
-//   - Interface implementations (Error(), String(), etc.)
-//   - Conversion methods (ToX(), FromX())
-//   - Accessor/mutator patterns if needed
-//
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-005-type-methods.md
-//
-// Key distinction:
-//   - SETUP type methods: Structural (formatting, conversion, interface impl)
-//   - BODY methods: Business logic (Process(), Validate(), Execute())
-
-//--- Interface Implementations ---
-// Methods required by Go interfaces (error, fmt.Stringer, etc.)
-
-// // String implements fmt.Stringer for [TypeName].
-// //
-// // Returns [description of string format].
-// func (t *[TypeName]) String() string {
-// 	return fmt.Sprintf("[format]", t.[Field])
-// }
-
-//--- Conversion Methods ---
-// Transform between types or formats.
-
-// // To[OtherType] converts [TypeName] to [OtherType].
-// //
-// // [When/why you'd use this conversion]
-// func (t *[TypeName]) To[OtherType]() *[OtherType] {
-// 	return &[OtherType]{
-// 		[Field]: t.[Field],
+// // fixtureConfigured creates a fully-configured [TypeName] for testing.
+// func fixtureConfigured() *[TypeName] {
+// 	return &[TypeName]{
+// 		[Field]:   "[test-value]",
+// 		[Feature]: true,
 // 	}
 // }
 
-//--- Accessor Patterns ---
-// Getters/setters if encapsulation needed. Prefer direct field access
-// when no validation or side effects required.
-
-// // [Reserved: Currently no accessor methods needed]
-// // Use direct field access unless validation or side effects required.
-
-// ────────────────────────────────────────────────────────────────
-// Package-Level State (Rails Pattern)
-// ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
+// 7. Interface Definitions
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// Infrastructure available throughout component. Rails pattern - each
-// component creates own logger independently without parameter passing.
-// This is orthogonal infrastructure that all components attach to directly.
-//
-// See: standards/code/patterns/CWS-PATTERN-003-CODE-rails.md
-// See: standards/code/4-block/sections/setup/CWS-SECTION-SETUP-006-package-level-state.md
-//
-// Note: Not all libraries need Rails infrastructure. Simple pure-function
-// libraries may skip this section entirely.
+// Rarely needed in test files. If you're defining test interfaces,
+// consider whether the abstraction belongs in the library package.
 
-//--- Rails Infrastructure ---
-// Package-level logger and inspector for this component.
-// Each component creates own infrastructure attachment independently.
-
-// // componentLogger provides health tracking throughout this component.
-// //
-// // All functions in this package use this logger for health scoring and
-// // event recording. Created in init() with component-specific identifier.
-// var componentLogger *logging.Logger
+// ────────────────────────────────────────────────────────────────────────────────────
+// 8. Type Methods
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// // componentInspector provides detailed state inspection for debugging.
-// //
-// // Enabled by default for development visibility. Can be toggled at
-// // runtime for production environments.
-// var componentInspector *debugging.Inspector
+// Structural behaviors for test types. Rarely needed — test fixtures
+// are typically plain structs. Use only for test-specific formatting
+// or conversion methods.
 
-//--- Initialization ---
-// Attach to Rails infrastructure at package load time.
-
-// func init() {
-// 	// Attach to logging rail
-// 	componentLogger = logging.NewLogger("[componentname]")
+// ────────────────────────────────────────────────────────────────────────────────────
+// 9. Code Generation — Assertion Helpers
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// 	// Attach to debugging rail
-// 	componentInspector = debugging.NewInspector("[componentname]")
-// 	componentInspector.Enable()  // Enable by default for development
+// Custom assertion functions reduce boilerplate across test functions.
+// Keep focused — if a helper is complex, it needs its own tests.
+//
+// Prefer functions for simple helpers. Go doesn't have macros —
+// use helper functions with t.Helper() for clean stack traces.
+
+// // assertErrorContains checks that err is non-nil and contains expected.
+// func assertErrorContains(t *testing.T, err error, expected string) {
+// 	t.Helper()
+// 	if err == nil {
+// 		t.Fatalf("expected error containing %q, got nil", expected)
+// 	}
+// 	if !strings.Contains(err.Error(), expected) {
+// 		t.Errorf("error %q should contain %q", err.Error(), expected)
+// 	}
 // }
 
-// -----------------------------------------------------------------------------
-// SETUP Omission Guide
-// -----------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────────────────────────────
+// 10. Build Tags
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// ALL sections MUST be present. Content may be reserved with reason:
-//
-//   - Imports: Rarely reserved - tests need testing package at minimum
-//   - Constants: [Reserved: No fixed configuration values needed]
-//   - Variables: [Reserved: Stateless - uses function parameters only]
-//   - Types: [Reserved: Uses types from imported packages only]
-//   - Type Methods: [Reserved: No custom type methods needed]
-//   - Package-Level State: [Reserved: Pure utility - no health tracking]
-//
-// Unlike METADATA (sections omitted entirely with [OMIT:]), SETUP preserves
-// all section headers with [Reserved:] notation for unused sections.
+// Conditional test groups. Tests for build-tagged functionality.
+// Use separate _test.go files with //go:build tags per Go convention.
+
+// File-level constraint: //go:build integration
+// Separates slow/integration tests from unit tests.
 
 // ============================================================================
 // END SETUP
@@ -526,42 +347,24 @@ import (
 // For BODY structure explanation, see: standards/code/4-block/CWS-STD-007-CODE-body-block.md
 //
 // -----------------------------------------------------------------------------
-// BODY Sections Overview
+// BODY Sections Overview (Demo-Test: 5 sections)
 // -----------------------------------------------------------------------------
 //
-// 1. ORGANIZATIONAL CHART (Internal Structure)
-//    Purpose: Map dependencies and execution flow within this demo/test
-//    Subsections: Test Structure → Demonstration Flow → Coverage Map
+// 1. Org Chart — Map dependencies and execution flow within this demo/test
+// 2. Helpers — Test fixtures, setup/teardown, utility functions
+// 3. Core Operations — Test infrastructure and shared test logic
+// 4. Error Handling — Test assertions, cleanup on error, panic recovery
+// 5. Test Functions — Test functions (Test*), benchmark functions (Benchmark*), examples
 //
-// 2. HELPERS/UTILITIES (Test Support)
-//    Purpose: Test fixtures, setup/teardown, utility functions
-//    Subsections: Test Fixtures → Mock Functions → Utility Functions
+// Section order: 1 → 2 → 3 → 4 → 5 (ascending numeric — handler validates order only)
+// Flow: understand structure → build fixtures → implement tests → handle failures → expose
 //
-// 3. CORE OPERATIONS (Test/Demo Logic)
-//    Purpose: Individual tests or demonstrations of functionality
-//    Subsections: [Test Category 1] → [Test Category 2] → ... (organized by concern)
-//
-// 4. ERROR HANDLING/RECOVERY (Test Safety)
-//    Purpose: Test failure handling, cleanup on error, panic recovery
-//    Subsections: Cleanup Functions → Error Assertions → Recovery Patterns
-//
-// 5. PUBLIC APIs (Exported Tests/Demos)
-//    Purpose: Test functions (Test*), benchmark functions (Benchmark*), examples
-//    Subsections: Unit Tests → Integration Tests → Examples → Benchmarks
-//
-// Section order: Org Chart → Helpers → Core Operations → Error Handling → Public APIs
-// This flows: understand structure → build fixtures → implement tests → handle failures → expose test interface
-//
-// Universal mapping (see standards for cross-language patterns):
-//   Organizational Chart ≈ Test/Demo Structure Documentation
-//   Helpers/Utilities ≈ Test Fixtures and Utilities
-//   Core Operations ≈ Test/Demo Logic
-//   Error Handling ≈ Test Failure Handling
-//   Public APIs ≈ Exported Test Functions
+// Format: // N. Name (each subsection uses 74-char ─ separators)
+// The handler checks ascending numeric order, not canonical names.
 
-// ────────────────────────────────────────────────────────────────
-// Organizational Chart - Internal Structure
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 1. Org Chart
+// ──────────────────────────────────────────────────────────────────────────
 // Maps bidirectional dependencies and baton flow within this component.
 // Provides navigation for both development (what's available to use) and
 // maintenance (what depends on this function).
@@ -599,9 +402,9 @@ import (
 // - [X] core operations (business logic)
 // - [X] public APIs (exported interface)
 
-// ────────────────────────────────────────────────────────────────
-// Helpers/Utilities - Internal Support
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 2. Helpers
+// ──────────────────────────────────────────────────────────────────────────
 // Foundation functions used throughout this component. Bottom rungs of
 // the ladder - simple, focused, reusable utilities. Usually not exported.
 //
@@ -629,9 +432,9 @@ import (
 //     return [result]  // Return transformed/calculated result
 // }
 
-// ────────────────────────────────────────────────────────────────
-// Core Operations - Test Infrastructure
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 3. Core Operations
+// ──────────────────────────────────────────────────────────────────────────
 // Test-specific functionality supporting test execution. Unlike library/executable
 // "business logic", test infrastructure provides fixtures, test data, and complex
 // setup operations that multiple tests share.
@@ -641,9 +444,9 @@ import (
 // Note: Tests CONSUME the library's business logic - they don't implement their own.
 // This section contains infrastructure that supports testing, not the tests themselves.
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // [Test Fixture Category] - [What It Provides]
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // What These Do:
 // [High-level description of this category of test infrastructure]
 //
@@ -705,9 +508,9 @@ import (
 //     return obj
 // }
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // [Test Data Category] - [What Scenarios It Covers]
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // What These Do:
 // [Description of test data this category provides]
 //
@@ -745,9 +548,9 @@ import (
 //         }
 //     }
 
-// ────────────────────────────────────────────────────────────────
-// Error Handling - Test Assertions
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 4. Error Handling
+// ──────────────────────────────────────────────────────────────────────────
 // Patterns for testing error conditions. Unlike library/executable error
 // handling which focuses on RECOVERY, test error handling focuses on
 // VERIFICATION - ensuring code produces expected errors in error scenarios.
@@ -855,9 +658,9 @@ import (
 //     fn()  // Should panic
 // }
 
-// ────────────────────────────────────────────────────────────────
-// Test Functions - Demonstrations
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 5. Test Functions
+// ──────────────────────────────────────────────────────────────────────────
 // Test functions demonstrating component behavior. Named TestX for go test
 // compliance, but designed as demonstrations - showing how things work,
 // not just asserting correctness.
@@ -926,11 +729,11 @@ func Benchmark[FeatureName](b *testing.B) {
 //
 // ALL five sections MUST be present. Content may be reserved with reason:
 //
-//   - Organizational Chart: Rarely reserved - test structure benefits from map
-//   - Helpers/Utilities: [Reserved: No test fixtures - uses standard testing only]
-//   - Core Operations: Rarely reserved - contains test/demo implementation
-//   - Error Handling: [Reserved: Uses t.Fatal/t.Error, no custom recovery]
-//   - Public APIs: Rarely reserved - Test*/Benchmark*/Example* are the interface
+//   - 1. Org Chart: Rarely reserved — test structure benefits from map
+//   - 2. Helpers: [Reserved: No test fixtures — uses standard testing only]
+//   - 3. Core Operations: Rarely reserved — contains test/demo implementation
+//   - 4. Error Handling: [Reserved: Uses t.Fatal/t.Error, no custom recovery]
+//   - 5. Test Functions: Rarely reserved — Test*/Benchmark*/Example* are the interface
 //
 // Unlike METADATA (sections omitted entirely with [OMIT:]), BODY preserves
 // all section headers with [Reserved:] notation for unused sections.
@@ -950,78 +753,24 @@ func Benchmark[FeatureName](b *testing.B) {
 //
 // For CLOSING structure explanation, see: standards/code/4-block/CWS-STD-008-CODE-closing-block.md
 //
-// -----------------------------------------------------------------------------
-// CLOSING Sections Overview
-// -----------------------------------------------------------------------------
+// ──────────────────────────────────────────────────────────────────────────
+// CLOSING Zones Overview
+// ──────────────────────────────────────────────────────────────────────────
 //
-// GROUP 1: CODING (Operations - Verify, Execute, Clean)
+// 3 Code Zones (operations):  Cv → Ce → Cc
+// 6 Doc Sections (guidance):  X1 → X2 → X3 → X4 → X5 (+ X6 template-only)
 //
-// 1. CODE VALIDATION (Test Execution)
-//    Purpose: Run tests and verify correct behavior
-//    Subsections: Test Execution → Coverage Requirements → Benchmark Execution
+// Three-tier ordering:
+//   1. All code zones before any doc sections
+//   2. Within code: Cv (Validation) → Ce (Execution) → Cc (Cleanup)
+//   3. Within docs: X1 (Policy) → X2 (Extension) → X3 (Troubleshooting)
+//                   → X4 (Reference) → X5 (Note) → X6 (Template Guide)
 //
-// 2. CODE EXECUTION (Test Runner)
-//    Purpose: How tests are executed via go test
-//    Subsections: Entry Point → Test Flow → Exit Codes
-//
-// 3. CODE CLEANUP (Test Cleanup)
-//    Purpose: Test fixture cleanup and resource management
-//    Subsections: Cleanup Patterns → t.Cleanup() Usage
-//
-// GROUP 2: FINAL DOCUMENTATION (Synthesis - Reference Back to Earlier Blocks)
-//
-// 4. TEST OVERVIEW (Summary with Back-References)
-//    Purpose: High-level summary of what this test file covers
-//    References: METADATA "Purpose & Function", tested component
-//
-// 5. MODIFICATION POLICY (Safe/Careful/Never)
-//    Purpose: Guide future maintainers on what's safe to change
-//    Subsections: Safe to Modify → Modify with Care → Never Modify
-//
-// 6. LADDER AND BATON FLOW (Back-Reference to BODY)
-//    Purpose: Point to BODY Organizational Chart for test structure
-//    References: BODY "Organizational Chart - Internal Structure"
-//
-// 7. SURGICAL UPDATE POINTS (Back-Reference to BODY)
-//    Purpose: Point to BODY test organization for adding tests
-//    References: BODY "Core Operations" test categories
-//
-// 8. PERFORMANCE CONSIDERATIONS (Benchmark Notes)
-//    Purpose: Benchmark results and performance testing guidance
-//    References: Benchmark functions in this file
-//
-// 9. TROUBLESHOOTING GUIDE (Test Failures)
-//    Purpose: Common test failures and how to diagnose
-//    References: BODY test functions with error conditions
-//
-// 10. RELATED COMPONENTS (Tested Components)
-//     Purpose: Point to components being tested
-//     References: METADATA "Dependencies" - what this tests
-//
-// 11. FUTURE EXPANSIONS (Test Coverage Roadmap)
-//     Purpose: Planned test coverage, edge cases to add
-//     Subsections: Coverage Gaps → Edge Cases → Integration Tests
-//
-// 12. CONTRIBUTION GUIDELINES (Adding Tests)
-//     Purpose: How to add new tests to this file
-//     Subsections: Test Naming → Test Structure → Assertions
-//
-// 13. QUICK REFERENCE (Test Commands)
-//     Purpose: Copy-paste ready test commands
-//     Subsections: Run All → Run Specific → Run Benchmarks → Coverage
-//
-// Section order: Validation → Execution → Cleanup → Overview → Policy → Ladder/Baton →
-//                Surgical → Performance → Troubleshooting → Related → Future → Contribution → Reference
-// This flows: run tests → clean up → document → guide test expansion
-//
-// ════════════════════════════════════════════════════════════════
-// GROUP 1: CODING
-// ════════════════════════════════════════════════════════════════
-//
-// ────────────────────────────────────────────────────────────────
-// Code Validation: [testName] (Demo-Test)
-// ────────────────────────────────────────────────────────────────
-// For Code Validation section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-001-code-validation.md
+// Flow: verify → (use/run) → clean → document → guide future work
+
+// ──────────────────────────────────────────────────────────────────────────
+// Cv — Validation
+// ──────────────────────────────────────────────────────────────────────────
 //
 // Test Execution:
 //   - go test -v ./... (run all tests with verbose output)
@@ -1053,11 +802,10 @@ func Benchmark[FeatureName](b *testing.B) {
 //
 //     # Check coverage
 //     go test -cover ./...
-//
-// ────────────────────────────────────────────────────────────────
-// Code Execution: [testName] (Demo-Test)
-// ────────────────────────────────────────────────────────────────
-// For Code Execution section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-002-code-execution.md
+
+// ──────────────────────────────────────────────────────────────────────────
+// Ce — Execution
+// ──────────────────────────────────────────────────────────────────────────
 //
 // This is a DEMO-TEST file. Execution is via go test, not direct invocation.
 // The test runner discovers and executes TestX, ExampleX, and BenchmarkX functions.
@@ -1090,11 +838,10 @@ func Benchmark[FeatureName](b *testing.B) {
 //
 //     # Run benchmarks
 //     go test -bench=.
-//
-// ────────────────────────────────────────────────────────────────
-// Code Cleanup: [testName] (Demo-Test)
-// ────────────────────────────────────────────────────────────────
-// For Code Cleanup section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-003-code-cleanup.md
+
+// ──────────────────────────────────────────────────────────────────────────
+// Cc — Cleanup
+// ──────────────────────────────────────────────────────────────────────────
 //
 // Resource Management:
 //   - Test fixtures: Created in test setup, cleaned in t.Cleanup()
@@ -1131,267 +878,135 @@ func Benchmark[FeatureName](b *testing.B) {
 //         // Test using resource
 //         // ...
 //     }
+
+// ──────────────────────────────────────────────────────────────────────────
+// X1: Policy
+// ──────────────────────────────────────────────────────────────────────────
 //
-// ════════════════════════════════════════════════════════════════
-// FINAL DOCUMENTATION
-// ════════════════════════════════════════════════════════════════
+// "Remove not the ancient landmark, which thy fathers have set."
+// — Proverbs 22:28
 //
-// ────────────────────────────────────────────────────────────────
-// Demo-Test Overview & Summary
-// ────────────────────────────────────────────────────────────────
-// For Demo-Test Overview section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-004-library-overview.md
+// Safe to Modify:
+//   - Add new Test/Example/Benchmark functions (follow naming patterns)
+//   - Add new [helper functions] in test utilities
+//   - Extend [test coverage] for new features
 //
-// Purpose: See METADATA "Purpose & Function" section above
+// Modify with Care:
+//   - TestMain setup/teardown — affects all tests in package
+//   - Shared test fixtures — other tests depend on them
+//   - [Benchmark baselines] — used for performance tracking
 //
-// Demonstrates: See METADATA "Key Features" list above for what this test covers
+// Never Modify:
+//   - 4-block structure (METADATA, SETUP, BODY, CLOSING)
+//   - [Fundamental test invariants]
+//   - [Architectural pattern — Rails/etc]
 //
-// Quick summary (high-level only - details in METADATA):
-//   - [1-2 sentence overview of what this demo-test demonstrates]
-//   - [Feature]: [What it shows]
+// Architecture: See BODY "1. Org Chart" for test structure.
+// Validation: See Cv zone above.
+
+// ──────────────────────────────────────────────────────────────────────────
+// X2: Extension
+// ──────────────────────────────────────────────────────────────────────────
 //
-// Test Functions: See BODY "Test Functions - Demonstrations" section above
-// for complete list of TestX, ExampleX, and BenchmarkX functions
+// Designed Growth Points (see BODY subsection headers for details):
+//   - Adding tests: See BODY "3. Core Operations" test categories
+//   - Adding benchmarks: See BODY "[Benchmarks]" subsection
+//   - Adding helpers: See BODY "2. Helpers" section organization
 //
-// Execution: go test -v ./... (see Code Execution section above)
+// Future Test Coverage:
+//   - [Edge case 1]
+//   - [Integration test 1]
+//   - [Coverage gap 1]
 //
-// Architecture: See METADATA "CPI-SI Identity" section above for complete
-// architectural role (Rails/Ladder/Baton) explanation
+// Known Limitations:
+//   - [Limitation 1]
+//   - [Limitation 2]
+
+// ──────────────────────────────────────────────────────────────────────────
+// X3: Troubleshooting
+// ──────────────────────────────────────────────────────────────────────────
 //
-// ────────────────────────────────────────────────────────────────
-// Modification Policy
-// ────────────────────────────────────────────────────────────────
-// For Modification Policy section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-005-modification-policy.md
+// "If any of you lack wisdom, let him ask of God." — James 1:5
 //
-// Safe to Modify (Extension Points):
-//   ✅ Add new [functions/types/constants] (follow existing patterns)
-//   ✅ Add new [helper functions] in appropriate groups
-//   ✅ Extend [specific feature] (add more [specific thing])
-//   ✅ [Other safe modification]
-//   ✅ [Other safe modification]
+// Performance: See benchmark functions in BODY for baseline expectations.
 //
-// Modify with Extreme Care (Breaking Changes):
-//   ⚠️ Public API function signatures - breaks all calling code
-//   ⚠️ [Exported struct] fields - breaks code accessing fields directly
-//   ⚠️ [Critical system behavior] - affects all users
-//   ⚠️ [Data format/protocol] - breaks parsing tools
-//   ⚠️ [Core algorithm] - affects correctness
+// Common Test Failures:
+//   - [Problem 1]: See [TestFunctionName] for expected behavior
+//   - [Problem 2]: [Cause] → [Solution]
+//   - Flaky test: Check for race conditions (go test -race)
+
+// ──────────────────────────────────────────────────────────────────────────
+// X4: Reference
+// ──────────────────────────────────────────────────────────────────────────
 //
-// NEVER Modify (Foundational Rails):
-//   ❌ 4-block structure (METADATA, SETUP, BODY, CLOSING)
-//   ❌ [Fundamental principle 1]
-//   ❌ [Fundamental principle 2]
-//   ❌ [Architectural pattern - Rails/etc]
-//   ❌ [Core design invariant]
+// Dependencies:   See METADATA C4 (requires, consumers, integration)
+// Tests:          [What component/package this file tests]
+// Template:       b-word/seed/code/L0/go/demo-test.go
 //
-// Validation After Modifications:
-//   See "Code Validation" section in GROUP 1: CODING above for comprehensive
-//   testing requirements, build verification, and integration testing procedures.
+// Quick Commands:
 //
-// ────────────────────────────────────────────────────────────────
-// Ladder and Baton Flow
-// ────────────────────────────────────────────────────────────────
-// For Ladder and Baton Flow section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-006-ladder-baton-flow.md
+//     # Run all tests
+//     go test -v ./...
 //
-// See BODY "Organizational Chart - Internal Structure" section above for
-// complete ladder structure (dependencies) and baton flow (execution paths).
+//     # Run specific test
+//     go test -v -run TestFeatureName
 //
-// The Organizational Chart in BODY provides the detailed map showing:
-// - All functions and their dependencies (ladder)
-// - Complete execution flow paths (baton)
-// - APU count (Available Processing Units)
+//     # Run benchmarks
+//     go test -bench=. -benchmem
 //
-// Quick architectural summary (details in BODY Organizational Chart):
-// - [X] public APIs orchestrate [Y] core operations using [Z] helpers
-// - Ladder: [Brief dependency summary]
-// - Baton: [Brief execution flow summary]
-//
-// ────────────────────────────────────────────────────────────────
-// Surgical Update Points (Extension Guide)
-// ────────────────────────────────────────────────────────────────
-// For Surgical Update Points section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-007-surgical-update-points.md
-//
-// See BODY "Core Operations" subsection header comments above for detailed
-// extension points. Each subsection includes "Extension Point" guidance showing:
-// - Where to add new functionality
-// - What naming pattern to follow
-// - How to integrate with existing code
-// - What tests to update
-//
-// Quick reference (details in BODY subsection comments):
-// - Adding [Feature Type 1]: See BODY "[Subsection Name]" extension point
-// - Adding [Feature Type 2]: See BODY "[Another Subsection]" extension point
-// - Adding helpers: See BODY "Helpers/Utilities" section organization
-//
-// ────────────────────────────────────────────────────────────────
-// Performance Considerations
-// ────────────────────────────────────────────────────────────────
-// For Performance Considerations section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-008-performance-considerations.md
-//
-// See SETUP section above for performance characteristics:
-// - Constants: Performance notes on configuration values (memory per operation, etc.)
-// - Types: Memory usage and complexity analysis for data structures
-//
-// See BODY function docstrings above for operation-specific performance notes.
-//
-// Quick summary (details in SETUP/BODY above):
-// - [Most expensive operation]: [Brief cost summary - see BODY docstring for details]
-// - [Memory characteristics]: [Brief summary - see SETUP types for details]
-// - Key optimization: [1-2 sentence tip]
-//
-// ────────────────────────────────────────────────────────────────
-// Troubleshooting Guide
-// ────────────────────────────────────────────────────────────────
-// For Troubleshooting Guide section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-009-troubleshooting-guide.md
-//
-// See BODY function docstrings above for operation-specific troubleshooting.
-// Functions that commonly have issues include "Troubleshooting" sections in
-// their docstrings with problem/check/solution patterns.
-//
-// Quick reference (details in BODY function docstrings above):
-// - [Common Problem 1]: See [FunctionName] docstring troubleshooting section
-// - [Common Problem 2]: See [AnotherFunction] docstring troubleshooting section
-//   - Expected: [If this is normal behavior]
-//   - Note: [Design decision explanation]
-//
-// Problem: [Common problem 5]
-//   - Cause: [Root cause]
-//   - Solution: [How to fix]
-//   - Note: [Additional context]
-//
-// ────────────────────────────────────────────────────────────────
-// Related Components & Dependencies
-// ────────────────────────────────────────────────────────────────
-// For Related Components section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-010-related-components.md
-//
-// See METADATA "Dependencies" section above for complete dependency information:
-// - Dependencies (What This Needs): Standard Library, External, Internal
-// - Dependents (What Uses This): Commands, Libraries, Tools that depend on this
-// - Integration Points: How other systems connect and interact
-//
-// Quick summary (details in METADATA Dependencies section above):
-// - Key dependencies: [1-2 most critical dependencies]
-// - Primary consumers: [Who uses this most]
-//
-// Parallel Implementation (if applicable):
-//   - [Language 1] version: [path to parallel implementation]
-//   - [Language 2] version: [path to this or related implementation]
-//   - Shared [format/protocol/philosophy]: [What's consistent across implementations]
-//
-// ────────────────────────────────────────────────────────────────
-// Future Expansions & Roadmap
-// ────────────────────────────────────────────────────────────────
-// For Future Expansions section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-011-future-expansions.md
-//
-// Planned Features:
-//   ✓ [Completed feature] - COMPLETED
-//   ✓ [Another completed feature] - COMPLETED
-//   ⏳ [Planned feature 1]
-//   ⏳ [Planned feature 2]
-//   ⏳ [Planned feature 3]
-//   ⏳ [Planned feature 4]
-//
-// Research Areas:
-//   - [Research direction 1]
-//   - [Research direction 2]
-//   - [Research direction 3]
-//   - [Research direction 4]
-//   - [Research direction 5]
-//
-// Integration Targets:
-//   - [System/language to integrate with]
-//   - [Another integration target]
-//   - [Cross-system correlation or bridging]
-//   - [Centralized or distributed capability]
-//   - [Monitoring or analysis system]
-//   - [Performance or profiling integration]
-//
-// Known Limitations to Address:
-//   - [Limitation 1 - description]
-//   - [Limitation 2 - description]
-//   - [Limitation 3 - description]
-//   - [Limitation 4 - description]
-//   - [Limitation 5 - description]
-//   - [Limitation 6 - description]
-//
-// Version History:
-//
-// See METADATA "Authorship & Lineage" section above for brief version changelog.
-// Comprehensive version history with full context below:
-//
-//   [X.Y.Z] ([Date]) - [Version description]
-//         - [Major feature or change]
-//         - [Another feature or change]
-//         - [Another feature or change]
-//         - [Design decision or principle established]
-//
-// ────────────────────────────────────────────────────────────────
-// Closing Note
-// ────────────────────────────────────────────────────────────────
-// For Closing Note section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-012-closing-note.md
+//     # Coverage report
+//     go test -cover -coverprofile=coverage.out ./...
+
+// ──────────────────────────────────────────────────────────────────────────
+// X5: Note
+// ──────────────────────────────────────────────────────────────────────────
 //
 // This demo-test demonstrates [what it shows about the component being tested].
-// [Explain what behaviors/capabilities are demonstrated and verified].
+// [1-2 sentences: what behaviors are verified, what patterns are shown].
 //
-// Modify thoughtfully - changes here affect [scope of impact]. [Any critical
-// design guarantees that must be maintained].
+// Purpose: See METADATA C5 (purpose, philosophy) for design intent.
+// Tested component: See METADATA C4 (requires) for what this validates.
 //
-// For questions, issues, or contributions:
-//   - Review the modification policy above
-//   - Follow the 4-block structure pattern
-//   - Test thoroughly before committing ([specific test commands])
-//   - Document all changes comprehensively (What/Why/How pattern)
-//   - [Any additional contribution guidelines]
+// "[Relevant Scripture verse]" — [Reference]
+
+// ──────────────────────────────────────────────────────────────────────────
+// X6: Template Guide (remove this section when instantiating)
+// ──────────────────────────────────────────────────────────────────────────
 //
-// "[Relevant Scripture verse]" - [Reference]
-//
-// ────────────────────────────────────────────────────────────────
-// Quick Reference: Usage Examples
-// ────────────────────────────────────────────────────────────────
-// For Quick Reference section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-013-quick-reference.md
-//
-// Basic Setup:
-//   [example code for basic usage]
-//
-// [Pattern/Feature 1]:
-//   [example code demonstrating this pattern]
-//
-// [Pattern/Feature 2]:
-//   [example code demonstrating this pattern]
-//
-// [Pattern/Feature 3]:
-//   [example code demonstrating this pattern]
-//
-// [Dynamic Control/Advanced Usage]:
-//   [example code for advanced scenarios]
-//
-// -----------------------------------------------------------------------------
+// Instantiation:
+//   1.  cp demo-test.go /path/to/new/package/mypackage_test.go
+//   2.  Change pragma: #!omni template → //omni:code --go -demo-test
+//   3.  Update meta.key, meta.from, meta.at for your test file
+//   4.  Fill Pragma (I1-I4) with test identity
+//   5.  Fill Metadata (C1-C7) with test context
+//   6.  Replace [placeholder] markers with actual values
+//   7.  Implement Test/Example/Benchmark functions in BODY
+//   8.  Fill CLOSING zones (Cv-Cc with validation/usage, X1-X5 with guidance)
+//   9.  Remove X6 section and all [placeholder] markers
+//  10.  Remove //go:build ignore line
+//  11.  Run: go test -v ./... && go test -race ./... && go test -cover ./...
+
+// ──────────────────────────────────────────────────────────────────────────
 // CLOSING Omission Guide
-// -----------------------------------------------------------------------------
+// ──────────────────────────────────────────────────────────────────────────
 //
-// ALL thirteen sections MUST be present. Content may be reserved with reason:
+// All 9 zones should be present. Content may be minimal with reason:
 //
-// GROUP 1: CODING
-//   - Code Validation: Test execution and coverage commands
-//   - Code Execution: How go test invokes this file
-//   - Code Cleanup: t.Cleanup() patterns and fixture management
+// Code Zones:
+//   - Cv (Validation): Test execution, coverage, and benchmark commands
+//   - Ce (Execution): go test invocation flow (not direct execution)
+//   - Cc (Cleanup): t.Cleanup() patterns and fixture management
 //
-// GROUP 2: FINAL DOCUMENTATION (mostly back-references)
-//   - Test Overview: Summary of what this test file covers
-//   - Modification Policy: Guide for modifying tests safely
-//   - Ladder and Baton Flow: Back-reference to BODY test structure
-//   - Surgical Update Points: Back-reference to BODY test categories
-//   - Performance Considerations: Benchmark notes and guidance
-//   - Troubleshooting Guide: Common test failures and diagnosis
-//   - Related Components: What this file tests
-//   - Future Expansions: [Reserved: Full coverage, no planned tests]
-//   - Contribution Guidelines: How to add tests
-//   - Quick Reference: Test commands for quick use
+// Doc Sections:
+//   - X1 (Policy): Rarely omitted — always guides test maintainers
+//   - X2 (Extension): Test coverage gaps + future tests; [Reserved: if complete]
+//   - X3 (Troubleshooting): Common test failures; back-ref to BODY test functions
+//   - X4 (Reference): Test commands + what component is tested
+//   - X5 (Note): Summary + scripture anchor
+//   - X6 (Template Guide): Template-only — REMOVE when instantiating
 //
-// Unlike BODY (which uses [Reserved:] inline), CLOSING sections can be
-// entirely replaced with back-references to avoid duplication.
-//
-// The key principle: CLOSING synthesizes, METADATA/SETUP/BODY contain details.
-// Don't repeat - reference back to where the information lives.
+// Principle: CLOSING synthesizes. METADATA/SETUP/BODY contain details.
+// Don't repeat — reference back to where the information lives.
 
 // ============================================================================
 // END CLOSING

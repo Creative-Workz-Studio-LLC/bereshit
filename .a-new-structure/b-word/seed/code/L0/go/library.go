@@ -42,9 +42,9 @@
 //	Metadata    C1-C7     Context — when, where, why, how  MetadataGet
 package library
 
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 // Metadata Imports
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 //
 // Imports required by the METADATA block (Pragma/Metadata vars and accessors).
 // Kept separate from SETUP imports so METADATA is self-contained.
@@ -55,9 +55,9 @@ import (
 	// Add imports here if PragmaGet/MetadataGet accessors move to METADATA.
 )
 
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 // Identity (I1-I4)
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 
 // Pragma carries the OmniCode identity sections (I1-I4) for this package.
 //
@@ -99,9 +99,9 @@ var Pragma = [][2]string{
 	{"I4.pattern", "cp library.go pkg/mypackage/mypackage.go"},
 }
 
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 // Context (C1-C7)
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
 
 // Metadata carries the OmniCode context sections (C1-C7) for this package.
 //
@@ -124,10 +124,10 @@ var Pragma = [][2]string{
 //	version := MetadataGet("C1.version") // returns "a-02.00"
 var Metadata = [][2]string{
 	// C1: State
-	{"C1.version", "a-02.00"},
+	{"C1.version", "a-04.00"},
 	{"C1.status", "Active"},
 	{"C1.created", "2026-02-17"},
-	{"C1.updated", "2026-02-17"},
+	{"C1.updated", "2026-02-18"},
 	// C2: Attribution
 	{"C2.organization", "CreativeWorkzStudio LLC"},
 	{"C2.architect", "Nova Dawn"},
@@ -148,9 +148,8 @@ var Metadata = [][2]string{
 	{"C5.purpose", "Canonical 4-block structure for Go library packages with I/C metadata"},
 	{"C5.philosophy", "Structure is skeleton; content is flesh — boundaries before content"},
 	// C6: Roadmap
-	{"C6.current", "a-02.00 — Metadata block production-grade"},
+	{"C6.current", "a-04.00 — CLOSING block aligned with standard zone model"},
 	{"C6.planned", "Go 4-block linter, schema-driven validation"},
-	{"C6.limitations", "SETUP/BODY/CLOSING blocks pending alignment"},
 	// C7: Classification
 	{"C7.tags", "template, go, library, 4-block, seed, omnicode"},
 	{"C7.category", "Foundation"},
@@ -166,98 +165,102 @@ var Metadata = [][2]string{
 // SETUP
 // ============================================================================
 //
-// Section order: Imports → Types → Type Methods → Constants → Variables → Package-Level State
-// See: b-word/seed/code/L0/go/library.go > SETUP
-
-// ────────────────────────────────────────────────────────────────
-// Imports
-// ────────────────────────────────────────────────────────────────
-
-//--- I.1 Standard Library [IMPORT] (1) ---
-// [Summary of stdlib usage - e.g., "Error handling, filesystem, path operations"]
-// import (
-// 	"fmt"           // [purpose - e.g., error formatting]
-// 	"os"            // [purpose - e.g., file reading, environment]
-// 	"path/filepath" // [purpose - e.g., path construction]
-// )
-
-//--- I.2 External Packages [IMPORT] (-1) ---
-// [Summary of why needed - e.g., "TOML parsing (Go stdlib lacks support)"]
-// OR: [Reserved: No external dependencies — reason]
-// import (
-// 	"github.com/org/pkg" // [purpose]
-// )
-
-//--- I.3 Internal Packages [IMPORT] (0) ---
-// [Summary of internal usage - e.g., "Same package as X — uses Y(), Z()"]
-// OR: [Reserved: Pure library — no internal dependencies]
-// import (
-// 	"module/pkg/internal" // [what it provides]
-// )
-
-// ────────────────────────────────────────────────────────────────
-// Types
-// ────────────────────────────────────────────────────────────────
+// SETUP makes things EXIST. BODY makes things HAPPEN.
 //
-// Subsections: Building Blocks, Composed Types, [Domain Types], Error Types
+// Everything the BODY needs — types, constants, imports, error definitions —
+// is declared here. The BODY contains only functions that operate on what
+// SETUP established.
+//
+// If anything must be hardcoded, it lives here — never scattered through BODY.
+// When a hardcoded value gets promoted to config, you extract from one place.
+//
+// Section order (dependency chain — each layer uses only what's above):
+//
+//   1. Imports           — What this file depends on
+//   2. Constants         — Compile-time fixed values
+//   3. Variables         — Package-level mutable state
+//   4. Type Aliases      — Shorthand for complex signatures
+//   5. Error Types       — Custom errors + Error() method
+//   6. Core Types        — struct definitions + simple constructors
+//   7. Interface Defs    — Behavioral contracts (shape, not fulfillment)
+//   8. Type Methods      — Structural behaviors (completing interface impls)
+//   9. Code Generation   — go:generate directives
+//  10. Build Tags        — Conditional compilation items
 
-//--- T.1 Building Blocks [TYPE] (1) ---
-// Fundamental units returned by Load*/Get* functions
-// [What these types represent and where they come from]
+// ────────────────────────────────────────────────────────────────────────────────────
+// 1. Imports
+// ────────────────────────────────────────────────────────────────────────────────────
+//
+// Order: Standard Library → External Packages → Internal Packages → Package-Internal
+// Group by origin with blank-line separation. Each group alphabetical.
+// Wildcard imports (import . "pkg") are discouraged — be explicit.
 
-// // [TypeName] represents [what this models].
-// // Access data via [field access pattern].
-// //
-// // Example:
-// //
-// //	item, err := Load[Type]("[path]")
-// //	item.[Field]  // [what this gives you]
-// //
-// type [TypeName] struct {
-// 	Name string         // identifier, e.g., "ternary.toml"
-// 	Path string         // full path for debugging
-// 	Data map[string]any // parsed content
-// }
+// --- Standard Library ---
+// import (
+// 	"fmt"           // Error formatting
+// 	"os"            // File reading, environment
+// 	"path/filepath" // Path construction
+// )
 
-//--- T.2 Composed Types [TYPE] (1) ---
-// Aggregates returned by batch operations
-// [Summary: what these aggregate - e.g., "batch loading results", "validation results"]
+// --- External Packages ---
+// [Pure library — no external dependencies at L0]
 
-// // [ResultType] holds the result of [batch operation].
-// // Returned by [BatchFunction]().
-// //
-// // Example:
-// //
-// //	result := LoadAll[Type]("[path]")
-// //	if !result.Valid {
-// //	    for _, err := range result.Errors { log.Println(err) }
-// //	}
-// //
-// type [ResultType] struct {
-// 	Items  [][ItemType] // successfully loaded items
-// 	Valid  bool         // true only if ALL succeeded
-// 	Errors []error      // all errors encountered
-// }
+// --- Internal Packages ---
+// [Self-contained at L0 — no internal dependencies]
 
-//--- T.3 [Domain] Types [TYPE] (1) ---
-// [Domain-specific types - e.g., Manifest Types, Config Types, Path Types]
-// [Summary: what domain these serve - traces to DATA source]
+// --- Package-Internal ---
+// [Root package — no sub-imports at this level]
 
-// // [DomainType] represents [domain concept from DATA].
-// // Maps to: [source file/section]
-// //
-// type [DomainType] struct {
-// 	[Field] [type] `toml:"[name]"` // [purpose - traces to DATA]
-// }
+// ────────────────────────────────────────────────────────────────────────────────────
+// 2. Constants
+// ────────────────────────────────────────────────────────────────────────────────────
+//
+// Compile-time fixed values. Don't depend on types — they come first.
+// Prefer named constants over raw literals in BODY.
 
-//--- T.4 Error Types [TYPE] (1) ---
-// Config-driven errors: originate in DATA, manifest in CODE
-// See: BODY > Error Helpers for constructors
-// [Summary: what error categories - used by health scoring]
+// const MaxRetries = 3
+// const DefaultTimeoutSecs = 30
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// 3. Variables
+// ────────────────────────────────────────────────────────────────────────────────────
+//
+// Runtime-initialized mutable state. Lazy singletons, registries.
+// NOTE: PRAGMA and METADATA identity variables live in the METADATA block.
+//
+// Keep minimal — explicit SetX() over implicit mutation.
+
+// var (
+// 	[packageName]Root string  // absolute path, set via SetRoot()
+// 	loadedConfig      *Config // cached config after first load
+// )
+
+// --- Sentinel Errors ---
+// var (
+// 	err[Name] = fmt.Errorf("[error message]")
+// )
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// 4. Type Aliases
+// ────────────────────────────────────────────────────────────────────────────────────
+//
+// Shorthand for complex types. Improves readability of function signatures.
+// Don't overuse — aliases hide information. Use when the full type is unwieldy.
+
+// type Result = error
+// type FieldMap = map[string][]string
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// 5. Error Types
+// ────────────────────────────────────────────────────────────────────────────────────
+//
+// Errors are part of the API contract — they define how failure looks.
+// Place BEFORE core types because core type methods return these errors.
+//
+// Pattern: struct for context → Error() for messages → Unwrap() for chaining.
+// Consider sentinel errors (var Err... = errors.New(...)) for simple cases.
 
 // // [ErrorType] represents [error condition from operation].
-// // Constructed by: [helper function in BODY]
-// //
 // type [ErrorType] struct {
 // 	Op      string // operation that failed
 // 	Path    string // file/resource involved
@@ -267,130 +270,105 @@ var Metadata = [][2]string{
 // func (e *[ErrorType]) Error() string { return fmt.Sprintf("[op] %s: %v", e.Path, e.Wrapped) }
 // func (e *[ErrorType]) Unwrap() error { return e.Wrapped }
 
-// ────────────────────────────────────────────────────────────────
-// Type Methods
-// ────────────────────────────────────────────────────────────────
-
-//--- TM Type Methods [METHOD] (0) ---
-// [Reserved: Phase N — typed accessors, conversion methods]
-// Error types implement error interface above (Error(), Unwrap())
-// Use direct field access unless validation or side effects required.
-
-// ────────────────────────────────────────────────────────────────
-// Constants
-// ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
+// 6. Core Types
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// [Brief description of what this section provides for THIS library].
-// Primary source is [config/manifest]; constants here for [fallback/direct access].
+// Data structures for this library's domain. The shapes of what this
+// library works with — not the operations on them (those go in BODY).
 //
-// [N-System/Category Architecture (dependency order, 0=anchor)]:
-//   0. [anchor]    — [role description]
-//   1. [layer 1]   — [role description]
-//   2. [layer 2]   — [role description]
-//   ...
-//   N. [top layer] — [role description]
+// Simple constructors (New*()) belong here WITH the type.
+// Complex methods and logic belong in BODY.
 //
-// Include architecture overview for config-driven systems.
-// Omit for simple libraries with no multi-system architecture.
+// Patterns:
+//   Builder     — Config struct → validated output type
+//   Newtype     — type Wrapper struct{ inner Inner } for type-safe domain values
+//   Functional  — type Option func(*Config) for flexible configuration
 
-//--- K.1 [Organization/Structure] [DATA] (1) ---
-// Directory structure, file paths, architectural constants
-// const (
-// 	[DirName]  = "[path]" // relative to project root
-// 	[FileExt]  = ".[ext]" // file extension
-// )
+// // [TypeName] represents [what this models].
+// //
+// // [2-4 sentences: what it represents, lifecycle, key constraints.]
+// //
+// // Example:
+// //
+// //	item, err := Load[Type]("[path]")
+// //	item.[Field]  // [what this gives you]
+// type [TypeName] struct {
+// 	Name string         // identifier, e.g., "ternary.toml"
+// 	Path string         // full path for debugging
+// 	Data map[string]any // parsed content
+// }
 
-//--- K.2 [Categories/Groups] [DATA] (1) ---
-// Category definitions, groupings, manifests
-// See: [reference to architecture documentation above]
-// Tripwire: Helpers > Fallback Data > [fallbackMapName]
+// // [ComposedType] holds the result of [operation].
+// //
+// // Created by [BatchFunction](). Query methods only
+// // available on this type (typestate enforcement).
+// type [ComposedType] struct {
+// 	Items  [][ItemType] // successfully loaded items
+// 	Valid  bool         // true only if ALL succeeded
+// 	Errors []error      // all errors encountered
+// }
 
-//--- K.3 [Type Constants] [DATA] (1) ---
-// Type strings, format identifiers, protocol constants
-// const (
-// 	Type[Name] = "[value]"
-// )
-
-//--- K.4 [Thresholds/Limits] [DATA] (1) ---
-// Boundaries, limits, scoring thresholds
-// const (
-// 	[Metric]Perfect  = 100 // [description]
-// 	[Metric]Good     = 80  // [description]
-// 	[Metric]Degraded = 50  // [description]
-// 	[Metric]Failed   = 0   // [description]
-// )
-
-// ────────────────────────────────────────────────────────────────
-// Variables
-// ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
+// 7. Interface Definitions
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// Package-level mutable state. Kept minimal — explicit SetX() over implicit.
+// Behavioral contracts — the SHAPE of what something does, not the doing.
+// Interface definitions (the contract) belong here.
+// Interface implementations belong in BODY.
 //
-// Subsections: Configuration State, Sentinel Errors, [Domain-specific]
+// Exception: completing impls (Error(), String(), Unwrap()) stay with
+// their type in sections 5-6 — they complete the type's existence.
 
-//--- V.1 Configuration State [DATA] (1) ---
-// Set once at startup, read by all Load*/Get* functions.
-// var (
-// 	[packageName]Root string  // absolute path, set via SetRoot()
-// 	loadedConfig      *Config // cached config after first load
-// )
+// // [InterfaceName] defines the contract for [behavior].
+// //
+// // Implementors must provide [key capability].
+// type [InterfaceName] interface {
+// 	// [Method description.]
+// 	[Method]([params]) [ReturnType]
+// }
 
-//--- V.2 Sentinel Errors [DATA] (1) ---
-// Unexported — wrapped by public error types for context.
-// See: BODY > Public APIs > [FunctionName] (err[Name])
-// var (
-// 	err[Name] = fmt.Errorf("[error message]")
-// )
-
-//--- V.3 [Domain-Specific] [DATA] (1) ---
-// Cached state, registries, lazy-initialized instances.
-// Pattern: Define structure in SETUP, populate in init() or lazily.
-// var (
-// 	default[Thing] *[Type]                         // cached instance
-// 	[registryName] = make(map[[keyType]][valueType]) // registry map
-// )
-
-// ────────────────────────────────────────────────────────────────
-// Package-Level State
-// ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
+// 8. Type Methods
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// Cross-package coordination via [SetRoot()/config loader/etc].
-// [Describe how other packages interact with this one's state.]
+// Structural behaviors for types defined above. These are NOT business
+// logic — those go in BODY. Type methods here are:
+//   - Interface implementations (Error(), String(), etc.)
+//   - Conversion methods (ToX(), FromX())
+//   - Accessor/mutator patterns if needed
 //
-// Subsections: Coordination Pattern, Initialization Order, Reserved Features
+// Key distinction:
+//   - SETUP type methods: Structural (formatting, conversion, interface impl)
+//   - BODY methods: Business logic (Process(), Validate(), Execute())
 
-//--- PS.1 Coordination Pattern [DOC] (1) ---
-// How other packages interact with this package's state.
-// [Describe the pattern - e.g., "All packages call SetRoot() at startup"]
+// // String implements fmt.Stringer for [TypeName].
+// func (t *[TypeName]) String() string {
+// 	return fmt.Sprintf("[format]", t.[Field])
+// }
 
-//--- PS.2 Initialization Order [DOC] (1) ---
-// Sequence of operations for proper initialization.
-//   1. [First step - e.g., loader.SetRoot() called by main/hook]
-//   2. [Second step - e.g., DefaultLoader() creates instance]
-//   3. [Third step - e.g., Functions use cached instance]
-
-//--- PS.3 Reserved Features [DOC] (0) ---
-// [Reserved: init() auto-discovery from [location] or environment]
-// [Reserved: Rails infrastructure for cross-package coordination]
-
-// Note: Simple pure-function libraries may mark all PS sections [Reserved].
-// Use this section when package maintains state other packages depend on.
-
-// -----------------------------------------------------------------------------
-// SETUP Omission Guide
-// -----------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────────────────────────────
+// 9. Code Generation
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-// ALL sections MUST be present. Content may be reserved with reason:
+// go:generate directives for code generation tools.
+// Macros don't exist in Go — code generation is the equivalent.
+// Macro invocations may generate types (SETUP) or functions (BODY).
+
+// //go:generate stringer -type=[TypeName]
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// 10. Build Tags
+// ────────────────────────────────────────────────────────────────────────────────────
 //
-//   - Imports: Rarely reserved - most files import something
-//   - Types: Rarely reserved - libraries typically define types
-//   - Type Methods: [Reserved: No custom type methods needed]
-//   - Constants: [Reserved: No fixed configuration values needed]
-//   - Variables: [Reserved: Stateless - uses function parameters only]
-//   - Package-Level State: [Reserved: Pure utility - no health tracking]
+// Conditional compilation items. Build-tagged types, imports, or constants
+// that only exist under certain build configurations.
 //
-// Unlike METADATA (sections omitted entirely with [OMIT:]), SETUP preserves
-// all section headers with [Reserved:] notation for unused sections.
+// Individual //go:build on separate files is Go convention.
+// This section is for documenting build-tag decisions and tag-specific code.
+
+// //go:build !cgo
+// // Pure-Go fallback implementations for CGO-dependent features.
 
 // ============================================================================
 // END SETUP
@@ -403,42 +381,24 @@ var Metadata = [][2]string{
 // For BODY structure explanation, see: standards/code/4-block/CWS-STD-007-CODE-body-block.md
 //
 // -----------------------------------------------------------------------------
-// BODY Sections Overview
+// BODY Sections Overview (Library: 5 sections)
 // -----------------------------------------------------------------------------
 //
-// 1. ORGANIZATIONAL CHART (Internal Structure)
-//    Purpose: Map dependencies and execution flow within this component
-//    Subsections: Ladder Structure → Baton Flow → Module Dependencies → APUs
+// 1. Org Chart — Map dependencies and execution flow within this component
+// 2. Helpers — Foundation functions: simple, focused, reusable utilities
+// 3. Core Operations — Component-specific business logic
+// 4. Error Handling — Centralized error management and recovery strategies
+// 5. Public APIs — Top-level orchestration: simple functions calling proven pieces
 //
-// 2. HELPERS/UTILITIES (Internal Support)
-//    Purpose: Foundation functions - simple, focused, reusable utilities
-//    Subsections: Pure Functions → Utility Functions → [Reserved if extracted]
+// Section order: 1 → 2 → 3 → 4 → 5 (ascending numeric — handler validates order only)
+// Flow: understand structure → build foundations → implement logic → handle errors → expose
 //
-// 3. CORE OPERATIONS (Business Logic)
-//    Purpose: Component-specific functionality implementing primary purpose
-//    Subsections: [Category 1] → [Category 2] → ... (organized by concern)
-//
-// 4. ERROR HANDLING/RECOVERY (Safety Patterns)
-//    Purpose: Centralized error management and recovery strategies
-//    Subsections: Design Principle → Recovery Strategy → Helper Functions
-//
-// 5. PUBLIC APIs (Exported Interface)
-//    Purpose: Top-level orchestration - simple functions calling proven pieces
-//    Subsections: [Category 1] → [Category 2] → ... (organized by purpose)
-//
-// Section order: Org Chart → Helpers → Core Operations → Error Handling → Public APIs
-// This flows: understand structure → build foundations → implement logic → handle errors → expose interface
-//
-// Universal mapping (see standards for cross-language patterns):
-//   Organizational Chart ≈ Dependency/Flow Documentation
-//   Helpers/Utilities ≈ Internal Functions (static/private)
-//   Core Operations ≈ Business Logic (the work)
-//   Error Handling ≈ Recovery/Safety Patterns
-//   Public APIs ≈ Exported Interface (what others call)
+// Format: // N. Name (each subsection uses 74-char ─ separators)
+// The handler checks ascending numeric order, not canonical names.
 
-// ────────────────────────────────────────────────────────────────
-// Organizational Chart - Internal Structure
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 1. Org Chart
+// ──────────────────────────────────────────────────────────────────────────
 // Maps bidirectional dependencies and baton flow within this component.
 // Provides navigation for both development (what's available to use) and
 // maintenance (what depends on this function).
@@ -481,9 +441,9 @@ var Metadata = [][2]string{
 // - [X] core operations (business logic)
 // - [X] public APIs (exported interface)
 
-// ────────────────────────────────────────────────────────────────
-// Helpers/Utilities - Internal Support
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 2. Helpers
+// ──────────────────────────────────────────────────────────────────────────
 // Foundation functions used throughout this component. Bottom rungs of
 // the ladder - simple, focused, reusable utilities. Usually not exported.
 //
@@ -601,9 +561,9 @@ var Metadata = [][2]string{
 // // Tripwire: Future versions may load from [config file]; this is the fallback.
 // var fallback[Name] = [type]{...}
 
-// ────────────────────────────────────────────────────────────────
-// Core Operations - Business Logic
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 3. Core Operations
+// ──────────────────────────────────────────────────────────────────────────
 //
 // Middle rung. Depends on Helpers below, used by Public APIs above.
 // See: Org Chart > Ladder Structure > Core Operations
@@ -779,14 +739,14 @@ var Metadata = [][2]string{
 //     // return [result]
 // }
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // [Category 2 Name] - [Purpose]
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // [Same documentation pattern as Category 1]
 
-// ────────────────────────────────────────────────────────────────
-// Error Handling/Recovery Patterns
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 4. Error Handling
+// ──────────────────────────────────────────────────────────────────────────
 // Centralized error management ensuring component handles failures gracefully.
 // Provides safety boundaries and recovery strategies for robust operation.
 //
@@ -872,9 +832,9 @@ var Metadata = [][2]string{
 //     return fmt.Errorf("%s failed (%s): %w", operation, contextStr, err)  // Wrap with context
 // }
 
-// ────────────────────────────────────────────────────────────────
-// Public APIs - Exported Interface
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 5. Public APIs
+// ──────────────────────────────────────────────────────────────────────────
 // Exported functions defining component's public interface. Top rungs of
 // the ladder - orchestrate helpers and core operations into complete
 // functionality. Simple by design - complexity lives in helpers and core
@@ -960,11 +920,11 @@ var Metadata = [][2]string{
 //
 // ALL five sections MUST be present. Content may be reserved with reason:
 //
-//   - Organizational Chart: Rarely reserved - most files benefit from structure map
-//   - Helpers/Utilities: [Reserved: No internal helpers - uses imported utilities only]
-//   - Core Operations: Rarely reserved - contains primary business logic
-//   - Error Handling: [Reserved: Uses standard error returns, no custom recovery]
-//   - Public APIs: [Reserved: Library-only - no exported functions in this file]
+//   - 1. Org Chart: Rarely reserved — most files benefit from structure map
+//   - 2. Helpers: [Reserved: No internal helpers — uses imported utilities only]
+//   - 3. Core Operations: Rarely reserved — contains primary business logic
+//   - 4. Error Handling: [Reserved: Uses standard error returns, no custom recovery]
+//   - 5. Public APIs: [Reserved: Library-only — no exported functions in this file]
 //
 // Unlike METADATA (sections omitted entirely with [OMIT:]), BODY preserves
 // all section headers with [Reserved:] notation for unused sections.
@@ -982,86 +942,30 @@ var Metadata = [][2]string{
 // CLOSING
 // ============================================================================
 //
-// For CLOSING structure explanation, see: standards/code/4-block/CWS-STD-008-CODE-closing-block.md
+// ──────────────────────────────────────────────────────────────────────────
+// CLOSING Zones Overview
+// ──────────────────────────────────────────────────────────────────────────
 //
-// -----------------------------------------------------------------------------
-// CLOSING Sections Overview
-// -----------------------------------------------------------------------------
+// 3 Code Zones (operations):  Cv → Ce → Cc
+// 6 Doc Sections (guidance):  X1 → X2 → X3 → X4 → X5 (+ X6 template-only)
 //
-// GROUP 1: CODING (Operations - Verify, Use, Clean)
+// Three-tier ordering:
+//   1. All code zones before any doc sections
+//   2. Within code: Cv (Validation) → Ce (Execution) → Cc (Cleanup)
+//   3. Within docs: X1 (Policy) → X2 (Extension) → X3 (Troubleshooting)
+//                   → X4 (Reference) → X5 (Note) → X6 (Template Guide)
 //
-// 1. CODE VALIDATION (Testing & Verification)
-//    Purpose: Prove correctness before shipping - build, test, verify
-//    Subsections: Testing Requirements → Integration Testing → Example Usage
-//
-// 2. CODE EXECUTION (Library Usage)
-//    [Reserved: Libraries don't execute - they're imported and called]
-//
-// 3. CODE CLEANUP (Resource Management)
-//    Purpose: Resource management patterns for library consumers
-//    Subsections: Resource Patterns → Error Handling Patterns
-//
-// GROUP 2: FINAL DOCUMENTATION (Synthesis - Reference Back to Earlier Blocks)
-//
-// 4. LIBRARY OVERVIEW (Summary with Back-References)
-//    Purpose: High-level summary pointing back to METADATA for details
-//    References: METADATA "Purpose & Function", "Key Features", "Usage & Integration"
-//
-// 5. MODIFICATION POLICY (Safe/Careful/Never)
-//    Purpose: Guide future maintainers on what's safe to change
-//    Subsections: Safe to Modify → Modify with Care → Never Modify → Validation After
-//
-// 6. LADDER AND BATON FLOW (Back-Reference to BODY)
-//    Purpose: Point to BODY Organizational Chart for architecture
-//    References: BODY "Organizational Chart - Internal Structure"
-//
-// 7. SURGICAL UPDATE POINTS (Back-Reference to BODY)
-//    Purpose: Point to BODY subsection extension points
-//    References: BODY "Core Operations" subsection comments
-//
-// 8. PERFORMANCE CONSIDERATIONS (Back-Reference to SETUP/BODY)
-//    Purpose: Point to performance notes in earlier sections
-//    References: SETUP constants/types, BODY function docstrings
-//
-// 9. TROUBLESHOOTING GUIDE (Back-Reference to BODY)
-//    Purpose: Point to troubleshooting in function docstrings
-//    References: BODY function docstrings with troubleshooting sections
-//
-// 10. RELATED COMPONENTS (Back-Reference to METADATA)
-//     Purpose: Point to METADATA Dependencies section
-//     References: METADATA "Dependencies" section
-//
-// 11. FUTURE EXPANSIONS (Roadmap)
-//     Purpose: Planned features, research areas, integration targets
-//     Subsections: Planned Features → Research Areas → Integration Targets → Known Limitations
-//
-// 12. CONTRIBUTION GUIDELINES (How to Contribute)
-//     Purpose: Guide for contributing to this component
-//     Subsections: How to Contribute → Scripture/Grounding
-//
-// 13. QUICK REFERENCE (Usage Examples)
-//     Purpose: Copy-paste ready examples for common operations
-//     Subsections: Basic Setup → [Pattern Examples] → Advanced Usage
-//
-// Section order: Validation → [Execution Reserved] → Cleanup → Overview → Policy → Ladder/Baton →
-//                Surgical → Performance → Troubleshooting → Related → Future → Contribution → Reference
-// This flows: verify → (no execution) → clean → document → guide future work
-//
-// ════════════════════════════════════════════════════════════════
-// GROUP 1: CODING
-// ════════════════════════════════════════════════════════════════
-//
-// ────────────────────────────────────────────────────────────────
-// Code Validation: None (Library)
-// ────────────────────────────────────────────────────────────────
-// For Code Validation section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-001-code-validation.md
+// Flow: verify → (use/run) → clean → document → guide future work
+
+// ──────────────────────────────────────────────────────────────────────────
+// Cv — Validation
+// ──────────────────────────────────────────────────────────────────────────
 //
 // Testing Requirements:
 //   - Import the library without errors
 //   - Call each public function/method with representative parameters
 //   - Verify [output/files/results] created correctly
 //   - Check [format/structure] remains [parseable/valid]
-//   - Ensure [health tracking/scoring/behavior] produces expected values
 //   - Confirm no go vet warnings introduced
 //   - Run: go test -v ./... (when tests exist)
 //
@@ -1070,346 +974,172 @@ var Metadata = [][2]string{
 //   - go vet ./... (no warnings)
 //   - [Any linting or static analysis tools]
 //
-// Integration Testing:
-//   - Test with actual calling code
-//   - Verify [specific behavior] in real usage context
-//   - Check [performance/resource usage] under load
-//   - Validate [data/format/protocol] with consumers
+// Example validation:
 //
-// Example validation code:
-//
-//     // Test basic functionality
 //     result, err := YourFunction(input)
 //     if err != nil {
 //         t.Errorf("YourFunction failed: %v", err)
 //     }
-//     if result != expected {
-//         t.Errorf("Expected %v, got %v", expected, result)
-//     }
+
+// ──────────────────────────────────────────────────────────────────────────
+// Ce — Execution
+// ──────────────────────────────────────────────────────────────────────────
 //
-// ────────────────────────────────────────────────────────────────
-// Code Execution: None (Library)
-// ────────────────────────────────────────────────────────────────
-// For Code Execution section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-002-code-execution.md
-//
-// This is a LIBRARY, not an executable. There is no entry point, no main function,
-// no execution flow. All functions defined in BODY wait to be called by other components.
+// Library — no entry point. Imported and called, not executed directly.
 //
 // Usage: import "[your-module-path]/[package-name]"
 //
-// The library is imported into the calling package, making all exported functions
-// and types available. No code executes during import - functions are defined and ready to use.
-//
-// Example import and usage:
+// Example:
 //
 //     package main
 //
 //     import "[your-module-path]/[package-name]"
 //
 //     func main() {
-//         // Call library functions
 //         result, err := packagename.YourFunction(params)
 //         if err != nil {
 //             log.Fatal(err)
 //         }
-//         // Use result
 //     }
-//
-// ────────────────────────────────────────────────────────────────
-// Code Cleanup: None (Library)
-// ────────────────────────────────────────────────────────────────
-// For Code Cleanup section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-003-code-cleanup.md
+
+// ──────────────────────────────────────────────────────────────────────────
+// Cc — Cleanup
+// ──────────────────────────────────────────────────────────────────────────
 //
 // Resource Management:
-//   - [Resource type 1]: [How it's managed - auto/manual/deferred]
-//   - [Resource type 2]: [Management strategy]
-//   - [Resource type 3]: [Cleanup approach]
+//   - [Resource type]: [How managed — auto/manual/deferred]
+//   - N/A for libraries (no lifecycle) — calling code responsible
+//   - If stateful: provide Close() or Cleanup() function
 //
-// Graceful Shutdown:
-//   - N/A for libraries (no lifecycle)
-//   - Calling code responsible for resource cleanup
-//   - If stateful: [Cleanup function to call]
+// Example cleanup pattern:
 //
-// Error State Cleanup:
-//   - Panic recovery ensures no partial state corruption
-//   - [Specific cleanup on error paths if applicable]
-//   - [Any rollback mechanisms]
-//
-// Memory Management:
-//   - Go's garbage collector handles memory
-//   - [Any manual memory considerations]
-//   - [Large allocations to be aware of]
-//
-// Example cleanup pattern (if library provides cleanup function):
-//
-//     // In calling code
 //     resource := packagename.NewResource()
-//     defer resource.Close()  // Cleanup when done
-//
-//     // Use resource
+//     defer resource.Close()
 //     resource.DoWork()
+
+// ──────────────────────────────────────────────────────────────────────────
+// X1: Policy
+// ──────────────────────────────────────────────────────────────────────────
 //
-// ════════════════════════════════════════════════════════════════
-// FINAL DOCUMENTATION
-// ════════════════════════════════════════════════════════════════
+// "Remove not the ancient landmark, which thy fathers have set."
+// — Proverbs 22:28
 //
-// ────────────────────────────────────────────────────────────────
-// Library Overview & Integration Summary
-// ────────────────────────────────────────────────────────────────
-// For Library Overview section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-004-library-overview.md
+// Safe to Modify:
+//   - Add new [functions/types/constants] (follow existing patterns)
+//   - Add new [helper functions] in appropriate groups
+//   - Extend [specific feature] (add more [specific thing])
 //
-// Purpose: See METADATA "Purpose & Function" section above
+// Modify with Care:
+//   - Public API function signatures — breaks all calling code
+//   - [Exported struct] fields — breaks code accessing fields directly
+//   - [Critical system behavior] — affects all users
 //
-// Provides: See METADATA "Key Features" list above for comprehensive capabilities
+// Never Modify:
+//   - 4-block structure (METADATA, SETUP, BODY, CLOSING)
+//   - [Fundamental principle 1]
+//   - [Architectural pattern — Rails/etc]
 //
-// Quick summary (high-level only - details in METADATA):
-//   - [1-2 sentence overview of what this library does]
-//   - [Feature 5]: [What it does]
+// Architecture: See BODY "1. Org Chart" for ladder/baton flow.
+// Validation: See Cv zone above.
+
+// ──────────────────────────────────────────────────────────────────────────
+// X2: Extension
+// ──────────────────────────────────────────────────────────────────────────
 //
-// Integration Pattern: See METADATA "Usage & Integration" section above for
-// complete step-by-step integration guide
+// Designed Growth Points (see BODY subsection headers for details):
+//   - Adding [Feature Type 1]: See BODY "3. Core Operations" extension points
+//   - Adding [Feature Type 2]: See BODY "[Subsection]" extension points
+//   - Adding helpers: See BODY "2. Helpers" section organization
 //
-// Public API: See METADATA "Usage & Integration" section above for complete
-// public API list organized by category in typical usage order
-//
-// Architecture: See METADATA "CPI-SI Identity" section above for complete
-// architectural role (Rails/Ladder/Baton) explanation
-//
-// ────────────────────────────────────────────────────────────────
-// Modification Policy
-// ────────────────────────────────────────────────────────────────
-// For Modification Policy section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-005-modification-policy.md
-//
-// Safe to Modify (Extension Points):
-//   ✅ Add new [functions/types/constants] (follow existing patterns)
-//   ✅ Add new [helper functions] in appropriate groups
-//   ✅ Extend [specific feature] (add more [specific thing])
-//   ✅ [Other safe modification]
-//   ✅ [Other safe modification]
-//
-// Modify with Extreme Care (Breaking Changes):
-//   ⚠️ Public API function signatures - breaks all calling code
-//   ⚠️ [Exported struct] fields - breaks code accessing fields directly
-//   ⚠️ [Critical system behavior] - affects all users
-//   ⚠️ [Data format/protocol] - breaks parsing tools
-//   ⚠️ [Core algorithm] - affects correctness
-//
-// NEVER Modify (Foundational Rails):
-//   ❌ 4-block structure (METADATA, SETUP, BODY, CLOSING)
-//   ❌ [Fundamental principle 1]
-//   ❌ [Fundamental principle 2]
-//   ❌ [Architectural pattern - Rails/etc]
-//   ❌ [Core design invariant]
-//
-// Validation After Modifications:
-//   See "Code Validation" section in GROUP 1: CODING above for comprehensive
-//   testing requirements, build verification, and integration testing procedures.
-//
-// ────────────────────────────────────────────────────────────────
-// Ladder and Baton Flow
-// ────────────────────────────────────────────────────────────────
-// For Ladder and Baton Flow section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-006-ladder-baton-flow.md
-//
-// See BODY "Organizational Chart - Internal Structure" section above for
-// complete ladder structure (dependencies) and baton flow (execution paths).
-//
-// The Organizational Chart in BODY provides the detailed map showing:
-// - All functions and their dependencies (ladder)
-// - Complete execution flow paths (baton)
-// - APU count (Available Processing Units)
-//
-// Quick architectural summary (details in BODY Organizational Chart):
-// - [X] public APIs orchestrate [Y] core operations using [Z] helpers
-// - Ladder: [Brief dependency summary]
-// - Baton: [Brief execution flow summary]
-//
-// ────────────────────────────────────────────────────────────────
-// Surgical Update Points (Extension Guide)
-// ────────────────────────────────────────────────────────────────
-// For Surgical Update Points section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-007-surgical-update-points.md
-//
-// See BODY "Core Operations" subsection header comments above for detailed
-// extension points. Each subsection includes "Extension Point" guidance showing:
-// - Where to add new functionality
-// - What naming pattern to follow
-// - How to integrate with existing code
-// - What tests to update
-//
-// Quick reference (details in BODY subsection comments):
-// - Adding [Feature Type 1]: See BODY "[Subsection Name]" extension point
-// - Adding [Feature Type 2]: See BODY "[Another Subsection]" extension point
-// - Adding helpers: See BODY "Helpers/Utilities" section organization
-//
-// ────────────────────────────────────────────────────────────────
-// Performance Considerations
-// ────────────────────────────────────────────────────────────────
-// For Performance Considerations section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-008-performance-considerations.md
-//
-// See SETUP section above for performance characteristics:
-// - Constants: Performance notes on configuration values (memory per operation, etc.)
-// - Types: Memory usage and complexity analysis for data structures
-//
-// See BODY function docstrings above for operation-specific performance notes.
-//
-// Quick summary (details in SETUP/BODY above):
-// - [Most expensive operation]: [Brief cost summary - see BODY docstring for details]
-// - [Memory characteristics]: [Brief summary - see SETUP types for details]
-// - Key optimization: [1-2 sentence tip]
-//
-// ────────────────────────────────────────────────────────────────
-// Troubleshooting Guide
-// ────────────────────────────────────────────────────────────────
-// For Troubleshooting Guide section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-009-troubleshooting-guide.md
-//
-// See BODY function docstrings above for operation-specific troubleshooting.
-// Functions that commonly have issues include "Troubleshooting" sections in
-// their docstrings with problem/check/solution patterns.
-//
-// Quick reference (details in BODY function docstrings above):
-// - [Common Problem 1]: See [FunctionName] docstring troubleshooting section
-// - [Common Problem 2]: See [AnotherFunction] docstring troubleshooting section
-//   - Expected: [If this is normal behavior]
-//   - Note: [Design decision explanation]
-//
-// Problem: [Common problem 5]
-//   - Cause: [Root cause]
-//   - Solution: [How to fix]
-//   - Note: [Additional context]
-//
-// ────────────────────────────────────────────────────────────────
-// Related Components & Dependencies
-// ────────────────────────────────────────────────────────────────
-// For Related Components section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-010-related-components.md
-//
-// See METADATA "Dependencies" section above for complete dependency information:
-// - Dependencies (What This Needs): Standard Library, External, Internal
-// - Dependents (What Uses This): Commands, Libraries, Tools that depend on this
-// - Integration Points: How other systems connect and interact
-//
-// Quick summary (details in METADATA Dependencies section above):
-// - Key dependencies: [1-2 most critical dependencies]
-// - Primary consumers: [Who uses this most]
-//
-// Parallel Implementation (if applicable):
-//   - [Language 1] version: [path to parallel implementation]
-//   - [Language 2] version: [path to this or related implementation]
-//   - Shared [format/protocol/philosophy]: [What's consistent across implementations]
-//
-// ────────────────────────────────────────────────────────────────
-// Future Expansions & Roadmap
-// ────────────────────────────────────────────────────────────────
-// For Future Expansions section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-011-future-expansions.md
-//
-// Planned Features:
-//   ✓ [Completed feature] - COMPLETED
-//   ✓ [Another completed feature] - COMPLETED
-//   ⏳ [Planned feature 1]
-//   ⏳ [Planned feature 2]
-//   ⏳ [Planned feature 3]
-//   ⏳ [Planned feature 4]
-//
-// Research Areas:
+// Future Considerations:
+//   - [Planned feature 1]
 //   - [Research direction 1]
-//   - [Research direction 2]
-//   - [Research direction 3]
-//   - [Research direction 4]
-//   - [Research direction 5]
+//   - [Integration target 1]
 //
-// Integration Targets:
-//   - [System/language to integrate with]
-//   - [Another integration target]
-//   - [Cross-system correlation or bridging]
-//   - [Centralized or distributed capability]
-//   - [Monitoring or analysis system]
-//   - [Performance or profiling integration]
+// Known Limitations:
+//   - [Limitation 1]
+//   - [Limitation 2]
+
+// ──────────────────────────────────────────────────────────────────────────
+// X3: Troubleshooting
+// ──────────────────────────────────────────────────────────────────────────
 //
-// Known Limitations to Address:
-//   - [Limitation 1 - description]
-//   - [Limitation 2 - description]
-//   - [Limitation 3 - description]
-//   - [Limitation 4 - description]
-//   - [Limitation 5 - description]
-//   - [Limitation 6 - description]
+// "If any of you lack wisdom, let him ask of God." — James 1:5
 //
-// Version History:
+// Performance: See SETUP constants/types and BODY function docstrings
+// for operation-specific performance characteristics.
 //
-// See METADATA "Authorship & Lineage" section above for brief version changelog.
-// Comprehensive version history with full context below:
+// Common Issues:
+//   - [Problem 1]: See [FunctionName] docstring troubleshooting
+//   - [Problem 2]: [Cause] → [Solution]
+//   - [Problem 3]: [Cause] → [Solution]
+
+// ──────────────────────────────────────────────────────────────────────────
+// X4: Reference
+// ──────────────────────────────────────────────────────────────────────────
 //
-//   [X.Y.Z] ([Date]) - [Version description]
-//         - [Major feature or change]
-//         - [Another feature or change]
-//         - [Another feature or change]
-//         - [Design decision or principle established]
+// Dependencies:   See METADATA C4 (requires, consumers, integration)
+// Dependents:     [Who uses this — see METADATA C4.consumers]
+// Template:       b-word/seed/code/L0/go/library.go
 //
-// ────────────────────────────────────────────────────────────────
-// Closing Note
-// ────────────────────────────────────────────────────────────────
-// For Closing Note section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-012-closing-note.md
+// Quick Usage:
 //
-// This library is [architectural role - RAILS/LADDER/BATON description].
-// [Explain its place in the ecosystem and what depends on it].
+//     // Basic setup
+//     [example code for basic usage]
 //
-// Modify thoughtfully - changes here affect [scope of impact]. [Any critical
-// design guarantees that must be maintained].
+//     // [Pattern/Feature]:
+//     [example code demonstrating pattern]
+
+// ──────────────────────────────────────────────────────────────────────────
+// X5: Note
+// ──────────────────────────────────────────────────────────────────────────
 //
-// For questions, issues, or contributions:
-//   - Review the modification policy above
-//   - Follow the 4-block structure pattern
-//   - Test thoroughly before committing ([specific test commands])
-//   - Document all changes comprehensively (What/Why/How pattern)
-//   - [Any additional contribution guidelines]
+// This library is [architectural role — RAILS/LADDER/BATON description].
+// [1-2 sentences: place in ecosystem, what depends on it].
 //
-// "[Relevant Scripture verse]" - [Reference]
+// Purpose: See METADATA C5 (purpose, philosophy) for design intent.
+// Integration: See METADATA C4 (integration) for step-by-step guide.
 //
-// ────────────────────────────────────────────────────────────────
-// Quick Reference: Usage Examples
-// ────────────────────────────────────────────────────────────────
-// For Quick Reference section explanation, see: standards/code/4-block/sections/closing/CWS-SECTION-CLOSING-013-quick-reference.md
+// "[Relevant Scripture verse]" — [Reference]
+
+// ──────────────────────────────────────────────────────────────────────────
+// X6: Template Guide (remove this section when instantiating)
+// ──────────────────────────────────────────────────────────────────────────
 //
-// Basic Setup:
-//   [example code for basic usage]
-//
-// [Pattern/Feature 1]:
-//   [example code demonstrating this pattern]
-//
-// [Pattern/Feature 2]:
-//   [example code demonstrating this pattern]
-//
-// [Pattern/Feature 3]:
-//   [example code demonstrating this pattern]
-//
-// [Dynamic Control/Advanced Usage]:
-//   [example code for advanced scenarios]
-//
-// -----------------------------------------------------------------------------
+// Instantiation:
+//   1.  cp library.go /path/to/new/package/mypackage.go
+//   2.  Change pragma: #!omni template → //omni:code --go -library
+//   3.  Update meta.key, meta.from, meta.at for your package
+//   4.  Fill Pragma (I1-I4) with package identity
+//   5.  Fill Metadata (C1-C7) with package context
+//   6.  Replace [placeholder] markers with actual values
+//   7.  Implement types in SETUP, functions in BODY
+//   8.  Fill CLOSING zones (Cv-Cc with validation/usage, X1-X5 with guidance)
+//   9.  Remove X6 section and all [placeholder] markers
+//  10.  Remove //go:build ignore line
+//  11.  Run: go build ./... && go vet ./... && go test -v ./...
+
+// ──────────────────────────────────────────────────────────────────────────
 // CLOSING Omission Guide
-// -----------------------------------------------------------------------------
+// ──────────────────────────────────────────────────────────────────────────
 //
-// ALL thirteen sections MUST be present. Content may be reserved with reason:
+// All 9 zones should be present. Content may be minimal with reason:
 //
-// GROUP 1: CODING
-//   - Code Validation: Rarely reserved - all code needs verification
-//   - Code Execution: [Reserved: Library - imported and called, not executed]
-//   - Code Cleanup: Resource patterns for library consumers
+// Code Zones:
+//   - Cv (Validation): Rarely omitted — all code needs verification
+//   - Ce (Execution): Library: reserved (no entry point). Executable: main() flow.
+//   - Cc (Cleanup): Library: consumer patterns. Executable: signal handling.
 //
-// GROUP 2: FINAL DOCUMENTATION (mostly back-references)
-//   - Library Overview: Rarely reserved - always provides summary
-//   - Modification Policy: Rarely reserved - always guides maintainers
-//   - Ladder and Baton Flow: Back-reference to BODY org chart
-//   - Surgical Update Points: Back-reference to BODY extension points
-//   - Performance Considerations: Back-reference to SETUP/BODY notes
-//   - Troubleshooting Guide: Back-reference to function docstrings
-//   - Related Components: Back-reference to METADATA dependencies
-//   - Future Expansions: [Reserved: Feature-complete, no planned changes]
-//   - Contribution Guidelines: Rarely reserved - always guides contributors
-//   - Quick Reference: Rarely reserved - examples help users
+// Doc Sections:
+//   - X1 (Policy): Rarely omitted — always guides maintainers
+//   - X2 (Extension): Growth points + roadmap; [Reserved: if feature-complete]
+//   - X3 (Troubleshooting): Performance + common issues; back-ref to BODY docstrings
+//   - X4 (Reference): Dependencies + quick usage examples
+//   - X5 (Note): Summary + scripture anchor
+//   - X6 (Template Guide): Template-only — REMOVE when instantiating
 //
-// Unlike BODY (which uses [Reserved:] inline), CLOSING sections can be
-// entirely replaced with back-references to avoid duplication.
-//
-// The key principle: CLOSING synthesizes, METADATA/SETUP/BODY contain details.
-// Don't repeat - reference back to where the information lives.
+// Principle: CLOSING synthesizes. METADATA/SETUP/BODY contain details.
+// Don't repeat — reference back to where the information lives.
 
 // ============================================================================
 // END CLOSING

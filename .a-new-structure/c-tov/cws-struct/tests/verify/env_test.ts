@@ -30,17 +30,17 @@ import { verifyEnvironment } from "../../lib/verify/env.ts";
 // verifyEnvironment — contract tests
 // ---------------------------------------------------------------------------
 
-Deno.test("verifyEnvironment: returns boolean without crashing (non-verbose)", async () => {
+Deno.test("env/verifyEnvironment: returns boolean without crashing (non-verbose)", async () => {
   const result = await verifyEnvironment(false);
   assertEquals(typeof result, "boolean", "Should return a boolean");
 });
 
-Deno.test("verifyEnvironment: returns boolean without crashing (verbose)", async () => {
+Deno.test("env/verifyEnvironment: returns boolean without crashing (verbose)", async () => {
   const result = await verifyEnvironment(true);
   assertEquals(typeof result, "boolean", "Should return a boolean");
 });
 
-Deno.test("verifyEnvironment: non-verbose and verbose return same result", async () => {
+Deno.test("env/verifyEnvironment: non-verbose and verbose return same result", async () => {
   const normal = await verifyEnvironment(false);
   const verbose = await verifyEnvironment(true);
   assertEquals(normal, verbose, "Verbosity should not change pass/fail result");

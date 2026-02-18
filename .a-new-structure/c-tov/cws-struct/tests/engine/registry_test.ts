@@ -35,25 +35,25 @@ import {
 // getFormat
 // ---------------------------------------------------------------------------
 
-Deno.test("getFormat: returns handler for registered 'toml'", () => {
+Deno.test("registry/getFormat: returns handler for registered 'toml'", () => {
   const handler = getFormat("toml");
   assert(handler !== undefined, "TOML handler should be registered");
   assertEquals(handler!.name, "toml");
 });
 
-Deno.test("getFormat: returns handler for registered 'rust'", () => {
+Deno.test("registry/getFormat: returns handler for registered 'rust'", () => {
   const handler = getFormat("rust");
   assert(handler !== undefined, "Rust handler should be registered");
   assertEquals(handler!.name, "rust");
 });
 
-Deno.test("getFormat: returns handler for registered 'go'", () => {
+Deno.test("registry/getFormat: returns handler for registered 'go'", () => {
   const handler = getFormat("go");
   assert(handler !== undefined, "Go handler should be registered");
   assertEquals(handler!.name, "go");
 });
 
-Deno.test("getFormat: returns undefined for unknown format", () => {
+Deno.test("registry/getFormat: returns undefined for unknown format", () => {
   const handler = getFormat("nonexistent");
   assertEquals(handler, undefined);
 });
@@ -62,7 +62,7 @@ Deno.test("getFormat: returns undefined for unknown format", () => {
 // listFormats
 // ---------------------------------------------------------------------------
 
-Deno.test("listFormats: returns sorted array of format names", () => {
+Deno.test("registry/listFormats: returns sorted array of format names", () => {
   const formats = listFormats();
   assertGreater(formats.length, 0, "Should have at least one registered format");
   assert(formats.includes("toml"), "Should include 'toml'");
@@ -78,7 +78,7 @@ Deno.test("listFormats: returns sorted array of format names", () => {
 // listFormatDetails
 // ---------------------------------------------------------------------------
 
-Deno.test("listFormatDetails: returns array of {name, description, extensions}", () => {
+Deno.test("registry/listFormatDetails: returns array of {name, description, extensions}", () => {
   const details = listFormatDetails();
   assertGreater(details.length, 0, "Should have format details");
 
@@ -88,7 +88,7 @@ Deno.test("listFormatDetails: returns array of {name, description, extensions}",
   assert(toml!.extensions.includes(".toml"), "TOML should have .toml extension");
 });
 
-Deno.test("listFormatDetails: sorted by name", () => {
+Deno.test("registry/listFormatDetails: sorted by name", () => {
   const details = listFormatDetails();
   const names = details.map((d) => d.name);
   const sorted = [...names].sort();
@@ -99,34 +99,34 @@ Deno.test("listFormatDetails: sorted by name", () => {
 // detectFormat
 // ---------------------------------------------------------------------------
 
-Deno.test("detectFormat: detects TOML from extension", () => {
+Deno.test("registry/detectFormat: detects TOML from extension", () => {
   const result = detectFormat("/path/to/file.toml");
   assertEquals(result, "toml");
 });
 
-Deno.test("detectFormat: detects Rust from extension", () => {
+Deno.test("registry/detectFormat: detects Rust from extension", () => {
   const result = detectFormat("/path/to/file.rs");
   assertEquals(result, "rust");
 });
 
-Deno.test("detectFormat: detects Go from extension", () => {
+Deno.test("registry/detectFormat: detects Go from extension", () => {
   const result = detectFormat("/path/to/file.go");
   assertEquals(result, "go");
 });
 
-Deno.test("detectFormat: returns undefined for unknown extension", () => {
+Deno.test("registry/detectFormat: returns undefined for unknown extension", () => {
   const result = detectFormat("/path/to/file.xyz");
   assertEquals(result, undefined);
 });
 
-Deno.test("detectFormat: handles directory dots correctly", () => {
+Deno.test("registry/detectFormat: handles directory dots correctly", () => {
   // Directory has a dot, but file is a Makefile
   const result = detectFormat("/path/my.project/Makefile");
   // Should detect "makefile" if registered, or undefined. Either way, not "project"
   assert(result !== "project", "Should not confuse directory dot with file extension");
 });
 
-Deno.test("detectFormat: detects basename-matched files", () => {
+Deno.test("registry/detectFormat: detects basename-matched files", () => {
   // Makefile handler registers basename matching
   const makefile = getFormat("makefile");
   if (makefile?.basenames?.includes("Makefile")) {

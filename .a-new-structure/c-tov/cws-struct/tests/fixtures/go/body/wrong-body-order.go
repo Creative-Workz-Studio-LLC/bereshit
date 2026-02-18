@@ -1,34 +1,33 @@
-//omni:key B-test-fixture-valid-executable
-//omni:code --go -executable
+//omni:key B-test-fixture-wrong-body-order
+//omni:code --go -library
 //omni:version a-01.00
 
-package main
+package fixture
 
 // ============================================================================
 // METADATA
 // ============================================================================
 //
-// Key:     B-test-fixture-valid-executable
-// Purpose: Test fixture — valid Go executable with main() in CLOSING Ce.
+// Key:     B-test-fixture-wrong-body-order
+// Purpose: Test fixture — BODY subsections out of order (§5 before §2).
 //
 
 var Pragma = [][2]string{
-	{"I1.key", "B-test-fixture-valid-executable"},
+	{"I1.key", "B-test-fixture-wrong-body-order"},
 	{"I1.format", "go"},
-	{"I1.from", "b-word/seed/code/L0/go/executable.omni"},
+	{"I1.from", "b-word/seed/code/L0/go/library.omni"},
 	{"I1.at", "a-01.00"},
 	{"I2.type", "code"},
 	{"I2.structure", "4-block"},
-	{"I2.subtype", "executable"},
-	{"I3.file", "valid-executable.go"},
-	{"I3.title", "Valid Executable Fixture"},
+	{"I3.file", "wrong-body-order.go"},
+	{"I3.title", "Wrong Body Order Fixture"},
 }
 
 var Metadata = [][2]string{
 	{"C1.version", "a-01.00"},
 	{"C1.status", "draft"},
 	{"C2.organization", "CreativeWorkzStudio LLC"},
-	{"C3.scripture", "In the beginning God created the heaven and the earth. — Genesis 1:1"},
+	{"C3.scripture", "Genesis 1:1"},
 	{"C4.requires.stdlib", "fmt"},
 	{"C4.consumers", "tests/handlers/go_test.ts"},
 }
@@ -51,8 +50,20 @@ import "fmt"
 // BODY
 // ============================================================================
 
-func run() {
-	fmt.Println("running")
+// ──────────────────────────────────────────────────────────────────────────
+// 5. Public APIs (WRONG — should be after Helpers)
+// ──────────────────────────────────────────────────────────────────────────
+
+func PublicAPI() string {
+	return fmt.Sprintf("api")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 2. Helpers (WRONG — should be before Public APIs)
+// ──────────────────────────────────────────────────────────────────────────
+
+func helper() string {
+	return "help"
 }
 
 // ============================================================================
@@ -62,20 +73,6 @@ func run() {
 // ============================================================================
 // CLOSING
 // ============================================================================
-
-// ────────────────────────────────────────────────────────────────────────
-// Ce — Entry Point
-// ────────────────────────────────────────────────────────────────────────
-
-func main() {
-	run()
-}
-
-// ────────────────────────────────────────────────────────────────────────
-// X5: Note
-// ────────────────────────────────────────────────────────────────────────
-// Valid executable fixture — main() correctly placed in CLOSING Ce zone.
-
 // ============================================================================
 // END CLOSING
 // ============================================================================
