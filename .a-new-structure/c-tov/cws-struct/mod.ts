@@ -32,32 +32,32 @@
 // ============================================================================
 
 import { relative } from "@std/path";
-import type { CliOptions, LintSummary } from "./lib/types.ts";
-import { summarize } from "./lib/types.ts";
-import { discoverFiles } from "./lib/discovery.ts";
+import type { CliOptions, LintSummary } from "./lib/foundation/mod.ts";
+import { summarize } from "./lib/foundation/mod.ts";
+import { discoverFiles } from "./lib/engine/mod.ts";
 import {
   COLORS,
   printFileSummary,
   printTotals,
   printHeader,
-} from "./lib/output.ts";
+} from "./lib/engine/mod.ts";
 import {
   getFormat,
   listFormats,
   listFormatDetails,
   detectFormat,
-} from "./lib/formats/registry.ts";
+} from "./lib/engine/mod.ts";
 import { verifyEnvironment } from "./lib/verify/env.ts";
 
 // Register all format handlers (side-effect imports)
-import "./lib/formats/toml.ts";
-import "./lib/formats/omni.ts";
-import "./lib/formats/ofd.ts";
-import "./lib/formats/json.ts";
-import "./lib/formats/go.ts";
-import "./lib/formats/makefile.ts";
-import "./lib/formats/dotfiles.ts";
-import "./lib/formats/rust.ts";
+import "./lib/handlers/toml.ts";
+import "./lib/handlers/omni.ts";
+import "./lib/handlers/ofd.ts";
+import "./lib/handlers/json.ts";
+import "./lib/handlers/go.ts";
+import "./lib/handlers/makefile.ts";
+import "./lib/handlers/dotfiles.ts";
+import "./lib/handlers/rust.ts";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -197,7 +197,7 @@ function showFormats(): void {
  */
 async function lintWithHandler(
   opts: CliOptions,
-  handler: import("./lib/types.ts").FormatHandler,
+  handler: import("./lib/foundation/mod.ts").FormatHandler,
   files: string[],
 ): Promise<LintSummary[]> {
   const cwd = Deno.cwd();
@@ -301,7 +301,7 @@ async function runLint(opts: CliOptions): Promise<boolean> {
  */
 async function transformWithHandler(
   opts: CliOptions,
-  handler: import("./lib/types.ts").FormatHandler,
+  handler: import("./lib/foundation/mod.ts").FormatHandler,
   files: string[],
 ): Promise<LintSummary[]> {
   if (!handler.transform) return [];
@@ -394,46 +394,121 @@ async function runTransform(opts: CliOptions): Promise<boolean> {
 // ============================================================================
 
 // ---------------------------------------------------------------------------
-// Main — dispatch
+// Exit codes — consistent, documented
+// ---------------------------------------------------------------------------
+
+/** Exit code 0: Clean run, no structural errors found. */
+const EXIT_OK = 0;
+
+/** Exit code 1: Structural errors found in target files. */
+const EXIT_LINT_ERRORS = 1;
+
+/** Exit code 2: Tool error — CLI misuse, I/O failure, or unhandled exception. */
+const EXIT_TOOL_ERROR = 2;
+
+// ---------------------------------------------------------------------------
+// Input validation
+// ---------------------------------------------------------------------------
+
+/** Known CLI flags — anything else starting with "--" or "-" is suspicious. */
+const KNOWN_FLAGS = new Set([
+  "--verbose", "-v",
+  "--errors-only",
+  "--summary",
+  "--dry-run",
+  "--extensions",
+  "--help", "-h",
+  "--version",
+]);
+
+/**
+ * Validate CLI arguments. Returns an error message if invalid, undefined if clean.
+ * Guards against obvious misuse before dispatching to commands.
+ */
+function validateArgs(args: string[]): string | undefined {
+  for (const arg of args) {
+    // Reject excessively long arguments (path or otherwise) — 4096 is generous
+    if (arg.length > 4096) {
+      return `Argument too long (${arg.length} chars, max 4096)`;
+    }
+
+    // Warn on unknown flags (but don't block — could be future flags)
+    // The parseArgs function already ignores unknown flags, this is belt-and-suspenders
+    if ((arg.startsWith("--") || (arg.startsWith("-") && arg.length === 2)) && !KNOWN_FLAGS.has(arg)) {
+      // Check if it looks like a known flag with a typo
+      const command = args[0];
+      if (command !== "help" && command !== "version" && command !== "formats") {
+        console.error(
+          `${COLORS.yellow}Warning: Unknown flag "${arg}" — ignoring.${COLORS.reset}`,
+        );
+      }
+    }
+
+    // Reject null bytes in arguments — prevents path injection via null terminators
+    if (arg.includes("\0")) {
+      return `Invalid argument: contains null byte`;
+    }
+  }
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Main — dispatch with error boundary
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
+  // Input validation
+  const validationError = validateArgs(Deno.args);
+  if (validationError) {
+    console.error(`${COLORS.red}${TOOL_NAME}: ${validationError}${COLORS.reset}`);
+    Deno.exit(EXIT_TOOL_ERROR);
+  }
+
   const opts = parseArgs(Deno.args);
 
   switch (opts.command) {
     case "help":
       showHelp();
-      Deno.exit(0);
+      Deno.exit(EXIT_OK);
       break;
 
     case "version":
       console.log(`${TOOL_NAME} v${VERSION}`);
-      Deno.exit(0);
+      Deno.exit(EXIT_OK);
       break;
 
     case "lint": {
       const ok = await runLint(opts);
-      Deno.exit(ok ? 0 : 1);
+      Deno.exit(ok ? EXIT_OK : EXIT_LINT_ERRORS);
       break;
     }
 
     case "transform": {
       const ok = await runTransform(opts);
-      Deno.exit(ok ? 0 : 1);
+      Deno.exit(ok ? EXIT_OK : EXIT_LINT_ERRORS);
       break;
     }
 
     case "verify": {
       const ok = await verifyEnvironment(opts.verbose);
-      Deno.exit(ok ? 0 : 1);
+      Deno.exit(ok ? EXIT_OK : EXIT_LINT_ERRORS);
       break;
     }
 
     case "formats":
       showFormats();
-      Deno.exit(0);
+      Deno.exit(EXIT_OK);
       break;
   }
 }
 
-main();
+// Top-level error boundary — no unhandled exceptions crash the CLI
+main().catch((err: unknown) => {
+  console.error(
+    `${COLORS.red}${TOOL_NAME}: Unexpected error: ${err instanceof Error ? err.message : String(err)}${COLORS.reset}`,
+  );
+  if (err instanceof Error && err.stack) {
+    console.error(`${COLORS.dim}${err.stack}${COLORS.reset}`);
+  }
+  Deno.exit(EXIT_TOOL_ERROR);
+});

@@ -8,159 +8,169 @@
 // METADATA
 // ============================================================================
 //
-// TEMPLATE: Go Demo-Test (4-Block Structure)
-// See: standards/code/4-block/ for complete documentation
+// TEMPLATE: Go Demo-Test — 4-Block Structure
 //
-// DEPENDENCY CLASSIFICATION: [PURE/DEPENDED] ([deps if DEPENDED])
-//   - PURE: Standard library only - no internal project dependencies
-//   - DEPENDED: Needs internal packages - list them: (needs: pkg/config, pkg/health)
+// Usage:
+//   1. cp demo-test.go /path/to/new/package/mypackage_test.go
+//   2. Change pragma: #!omni template → //omni:code --go -demo-test
+//   3. Update meta.key, meta.from, meta.at for your test file
+//   4. Update Pragma and Metadata values to describe your tests
+//   5. Remove "//go:build ignore" line
+//   6. Rename package to match directory name + _test suffix
 //
-// USAGE: When creating a new Go demo-test from this template:
-//   1. Copy this file: cp demo-test.go /path/to/new/package_test.go
-//   2. Update pragma lines:
-//      - #!omni template → #!omni code --go -demo-test
-//      - meta.key = [your-project-path-key]
-//      - meta.from = b-word/seed/code/L0/go/demo-test.go
-//      - meta.at = [your-version, e.g., a-01.00]
-//   3. Remove "//go:build ignore" line
-//   4. Replace all [bracketed] placeholders with actual content
+// Go test organization (differs from Rust):
+//   - Go: separate _test.go files in same package (white-box, privates)
+//   - Go: external test packages with _test suffix (black-box, public only)
+//   - Rust inline: #[cfg(test)] mod tests in lib.rs (white-box, privates)
+//   - Rust integration: tests/ directory (black-box, public API only)
 //
 // derives_from: b-word/seed/code/L0/go/root.omni
 
-// Package [packagename]_test demonstrates [brief description of what this demo-test covers].
+// Package packagename_test is the root 4-block template for Go test files.
 //
-// [Demo-Test Name] Demo-Test - CPI-SI [Project/System Name]
+// All Go test files in the Bereshit project derive from this template.
 //
-// For METADATA structure explanation, see: standards/code/4-block/CWS-STD-004-CODE-metadata-block.md
+// # Design
 //
-// ────────────────────────────────────────────────────────────────
-// CORE IDENTITY (Required)
-// ────────────────────────────────────────────────────────────────
+// Tests prove correctness. Go provides two test modes: same-package tests
+// (white-box, access to unexported identifiers) and external tests
+// (black-box, _test suffix, public API only). This template covers both.
 //
-// # Biblical Foundation
+// Table-driven tests are the default pattern — each test case named,
+// each assertion traceable, each failure diagnosable.
 //
-// Scripture: [Relevant verse grounding this demo-test's purpose]
+// # Usage
 //
-// Principle: [Kingdom principle this demo-test demonstrates]
-//
-// Anchor: [Supporting verse reinforcing the principle]
-//
-// # CPI-SI Identity
-//
-// Component Type: [Ladder/Baton/Rails - see CWS-STD-004 for explanations]
-//
-// Role: [Specific responsibility in system architecture]
-//
-// Paradigm: CPI-SI framework component
-//
-// # Authorship & Lineage
-//
-//   - Architect: [Who designed the approach and requirements]
-//   - Implementation: [Who wrote the code and verified it works]
-//   - Created: [YYYY-MM-DD]
-//   - Version: [MAJOR.MINOR.PATCH]
-//   - Modified: [YYYY-MM-DD - what changed]
-//
-// Version History:
-//
-//   - [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
-//   - [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
-//
-// # Purpose & Function
-//
-// Purpose: [What does this demo-test verify/demonstrate?]
-//
-// Core Design: [Demo-test pattern - unit test, integration test, example-based]
-//
-// Key Features:
-//
-//   - [What it tests - major capabilities verified]
-//   - [What it demonstrates - usage patterns shown]
-//   - [What it validates - correctness criteria]
-//   - [Additional coverage]
-//
-// Philosophy: [Guiding principle for how this demo-test works]
-//
-// ────────────────────────────────────────────────────────────────
-// INTERFACE (Expected)
-// ────────────────────────────────────────────────────────────────
-//
-// # Dependencies
-//
-// What This Needs:
-//
-//   - Standard Library: [list standard packages]
-//   - External: [None | list external packages with versions]
-//   - Internal: [project packages this depends on]
-//
-// What Uses This:
-//
-//   - Commands: [list commands - typically go test]
-//   - CI/CD: [test runners, coverage tools]
-//   - Developers: [manual verification]
-//
-// Integration Points:
-//
-//   - [Package being tested]
-//   - [Test fixtures or data]
-//   - [Mock/stub dependencies if any]
-//
-// # Usage & Integration
-//
-// Run Tests:
+//	cp demo-test.go /path/to/new/package/mypackage_test.go
+//	# Change pragma: #!omni template → //omni:code --go -demo-test
+//	# Update Pragma and Metadata values for your test file
 //
 //	go test -v ./...                    # Run all tests
 //	go test -v -run TestSpecific        # Run specific test
 //	go test -v -cover                   # Run with coverage
 //
-// Integration Pattern:
+// # OmniCode Identity
 //
-//  1. [Test setup - fixtures, mocks]
-//  2. [Test execution - call function under test]
-//  3. [Assertion - verify expected behavior]
-//  4. [Cleanup - teardown resources]
-//
-// ────────────────────────────────────────────────────────────────
-// OPERATIONAL (Contextual)
-// ────────────────────────────────────────────────────────────────
-//
-// # Blocking Status
-//
-// [Blocking/Non-blocking]: [Brief explanation]
-//
-// Mitigation: [How blocking/failures handled]
-//
-// # Health Scoring
-//
-// [Brief description of how health is tracked for this component]
-//
-// [Operation Category 1]:
-//
-//   - [Specific operation]: ±X
-//   - [Another operation]: ±Y
-//
-// [Operation Category 2]:
-//
-//   - [Specific operation]: ±Z
-//
-// Note: Scores reflect TRUE impact. Health scorer normalizes to -100 to +100 scale.
-//
-// ────────────────────────────────────────────────────────────────
-// METADATA Omission Guide
-// ────────────────────────────────────────────────────────────────
-//
-// Tier 1 (CORE IDENTITY): Never omit - every file needs these.
-//
-// Tier 2 (INTERFACE): May omit with [OMIT: reason] notation.
-//   - Dependencies: [OMIT: Self-contained, no external requirements]
-//   - Usage & Integration: Rarely omitted, format adapts to file type
-//
-// Tier 3 (OPERATIONAL): Include when applicable to file type.
-//   - Blocking Status: [OMIT: Test file, not runtime executable]
-//   - Health Scoring: [OMIT: Test file, validates health rather than tracks it]
-//
-// Unlike SETUP (all sections required), METADATA omission signals component characteristics.
+//	Variable    Sections  Purpose                          Query
+//	Pragma      I1-I4     Identity — who this file is      PragmaGet
+//	Metadata    C1-C7     Context — when, where, why, how  MetadataGet
 package packagename_test
+
+// ──────────────────────────────────────────────────────────────────────────
+// Metadata Imports
+// ──────────────────────────────────────────────────────────────────────────
+//
+// Imports required by the METADATA block (Pragma/Metadata vars and accessors).
+// Kept separate from SETUP imports so METADATA is self-contained.
+// See SETUP > Imports for the full dependency set.
+
+import (
+	// [Reserved: [][2]string is built-in — no imports needed for metadata vars]
+	// Add imports here if PragmaGet/MetadataGet accessors move to METADATA.
+)
+
+// ──────────────────────────────────────────────────────────────────────────
+// Identity (I1-I4)
+// ──────────────────────────────────────────────────────────────────────────
+
+// Pragma carries the OmniCode identity sections (I1-I4) for this package.
+//
+// These fields establish WHO this file is in the project graph.
+// Initialized once at package load, read-only thereafter.
+//
+// # Sections
+//
+//	Section  Purpose       Required                 Defined
+//	I1       Core          key, format, from, at    —
+//	I2       Family        type, structure          subtype, role
+//	I3       Instance      file, title              component, path, provides, brief
+//	I4       Architecture  —                        layer, position, pattern
+//
+// # Example
+//
+//	key := PragmaGet("I1.key") // returns "B-seed-code-L0-go-demo-test"
+var Pragma = [][2]string{
+	// I1: Core
+	{"I1.key", "B-seed-code-L0-go-demo-test"},
+	{"I1.format", "go"},
+	{"I1.from", "b-word/seed/code/L0/go/root.omni"},
+	{"I1.at", "template"},
+	// I2: Family
+	{"I2.type", "code"},
+	{"I2.structure", "4-block"},
+	{"I2.subtype", "demo-test"},
+	{"I2.role", "seed"},
+	// I3: Instance
+	{"I3.file", "demo-test.go"},
+	{"I3.title", "Go Demo-Test Template"},
+	{"I3.component", "Root template for Go test files"},
+	{"I3.path", "seed/code/L0/go/demo-test.go"},
+	{"I3.provides", "GO_DEMO_TEST_TEMPLATE"},
+	{"I3.brief", "Root 4-block template for Go test files. Table-driven and demo patterns."},
+	// I4: Architecture
+	{"I4.layer", "L0"},
+	{"I4.position", "seed"},
+	{"I4.pattern", "cp demo-test.go pkg/mypackage/mypackage_test.go"},
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Context (C1-C7)
+// ──────────────────────────────────────────────────────────────────────────
+
+// Metadata carries the OmniCode context sections (C1-C7) for this package.
+//
+// These fields establish WHEN, WHERE, WHY, and HOW for this file.
+// Initialized once at package load, read-only thereafter.
+//
+// # Sections
+//
+//	Section  Purpose         Required             Defined
+//	C1       State           version, status      created, updated
+//	C2       Attribution     organization         architect, implementation, copyright
+//	C3       Grounding       scripture            principle, anchor
+//	C4       Dependencies    requires, consumers  integration, if_missing
+//	C5       Intent          —                    purpose, philosophy
+//	C6       Roadmap         —                    current, planned, limitations
+//	C7       Classification  —                    tags, category, domain, paradigm
+//
+// # Example
+//
+//	version := MetadataGet("C1.version") // returns "a-02.00"
+var Metadata = [][2]string{
+	// C1: State
+	{"C1.version", "a-02.00"},
+	{"C1.status", "Active"},
+	{"C1.created", "2026-02-17"},
+	{"C1.updated", "2026-02-17"},
+	// C2: Attribution
+	{"C2.organization", "CreativeWorkzStudio LLC"},
+	{"C2.architect", "Nova Dawn"},
+	{"C2.implementation", "Nova Dawn"},
+	{"C2.copyright", "CreativeWorkzStudio LLC"},
+	// C3: Grounding
+	{"C3.scripture", "1 Thessalonians 5:21 — Prove all things; hold fast that which is good"},
+	{"C3.principle", "Testing proves correctness — hold fast to what works"},
+	{"C3.anchor", "Genesis 1:1 — In the beginning God created the heaven and the earth"},
+	// C4: Dependencies
+	{"C4.requires.stdlib", "testing"},
+	{"C4.requires.external", "none"},
+	{"C4.requires.internal", "none"},
+	{"C4.consumers", "All Go test files in the project"},
+	{"C4.integration", "cp demo-test.go /path/to/package/mypackage_test.go"},
+	{"C4.if_missing", "Go tests lack standardized I/C metadata structure"},
+	// C5: Intent
+	{"C5.purpose", "Canonical 4-block structure for Go test files with I/C metadata"},
+	{"C5.philosophy", "Tests prove truth — structured validation over hope"},
+	// C6: Roadmap
+	{"C6.current", "a-02.00 — Metadata block production-grade"},
+	{"C6.planned", "Go 4-block linter, schema-driven validation"},
+	{"C6.limitations", "SETUP/BODY/CLOSING blocks pending alignment"},
+	// C7: Classification
+	{"C7.tags", "template, go, demo-test, 4-block, seed, omnicode"},
+	{"C7.category", "Foundation"},
+	{"C7.domain", "bereshit"},
+	{"C7.paradigm", "CPI-SI"},
+}
 
 // ============================================================================
 // END METADATA

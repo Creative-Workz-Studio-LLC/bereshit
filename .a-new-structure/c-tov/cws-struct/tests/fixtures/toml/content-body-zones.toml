@@ -1,0 +1,85 @@
+# #!omni data --toml
+# Test fixture: content body with all zone types (Cc, Co, Cv).
+# Should pass body zone ordering checks.
+
+[_metadata]
+
+[_metadata.I1_core]
+key = "B-test-fixture-content-body-zones"
+format = "@omni data --toml"
+from = "b-word/seed/data/L0/toml/config.toml"
+at = "a-01.00"
+
+[_metadata.I2_family]
+type = "data"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "content-body-zones.toml"
+title = "Content Body Zones Fixture"
+provides = ["TEST_CONTENT_BODY_ZONES"]
+
+[_metadata.C1_state]
+version = "a-01.00"
+status = "draft"
+created = "2026-02-17"
+updated = "2026-02-17"
+
+[_metadata.C2_attribution]
+organization = "CreativeWorkzStudio LLC"
+
+[_metadata.C3_grounding]
+scripture = "Genesis 1:1"
+
+[_metadata.C4_dependencies]
+requires = "none"
+consumers = "TOML linter test suite"
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = []
+
+[_content]
+Cc = "Content Configurations"
+Co = "Content Operations"
+Cv = "Content Validation"
+
+# Cc zone — configurations
+[identity]
+name = "test-fixture"
+version = "0.1.0"
+
+[settings]
+debug = false
+log_level = "info"
+
+# Co zone — operations
+[operations]
+commands = ["build", "test", "lint"]
+
+[operations.half_adder]
+a = "trit_a"
+b = "trit_b"
+sum = "result"
+
+# Cv zone — validation
+[_validation]
+commands = "deno test --allow-read"
+
+[_validation.schema]
+required = ["identity", "settings"]
+defined = ["operations"]
+
+[_closing]
+
+[_closing.X1_policy]
+scripture = "Test fixture"
+never = ["Remove zone structure"]
+careful = ["Zone ordering"]
+safe = ["Adding new zones"]
+
+[_closing.X5_note]
+note = "Content body zones test fixture."
+scripture = "Genesis 1:1"

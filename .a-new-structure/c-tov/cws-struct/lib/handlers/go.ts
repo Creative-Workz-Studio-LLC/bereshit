@@ -1,0 +1,2121 @@
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// file:    lib/handlers/go.ts
+// key:     B-tov-cws-struct-lib-handlers-go
+// title:   CWS Struct — Go Format Handler
+// type:    Code (Library)
+// version: a-03.00
+// created: 2026-02-13
+// updated: 2026-02-17
+// authors: Nova Dawn (CPI-SI)
+// purpose: Go 4-block alignment linter + transformer with I/C field validation.
+//          Validates Go source files for:
+//          - //omni: directives (key, version, pragma, metadata)
+//          - 4-block structure (METADATA → SETUP → BODY → CLOSING)
+//          - END markers for each block
+//          - Block order correctness
+//          - Pragma and Metadata identity vars ([][2]string I/C fields)
+//          - I/C field requirements (I1-I4 PRAGMA, C1-C7 METADATA)
+//          - Required/defined field validation per I/C section
+//          - Legacy _pragma/_metadata map detection + upgrade notice
+//          - Package declaration, import presence
+//          - Separator style (consistency + standard widths)
+//          - Template vs derived file classification
+//          - SETUP subsection order (I → T → TM → K → V → PS)
+//          - BODY subsection order (Org → Helpers → Core → Error → APIs)
+//          - //omni:code directive format validation
+//          - Content placement (right constructs in right blocks/subsections)
+//
+//          Line-based parser — reads .go files as text and checks structural
+//          markers via regex. Does NOT parse Go AST.
+//
+//          Schema triangle: go-4block-schema.jsonc defines, go.ts validates.
+//
+// biblical_foundation: "Let all things be done decently and in order."
+//   — 1 Corinthians 14:40
+//
+// ============================================================================
+
+// ============================================================================
+// SETUP
+// ============================================================================
+
+import type {
+  FormatHandler, LintResult, FixSuggestion, TransformOptions,
+  AtomicAction, HealthScore, ContainerScore, BlockScore,
+} from "../foundation/mod.ts";
+import {
+  error, warn, info,
+  computeContainerScore, computeBlockScore, computeHealthScore,
+} from "../foundation/mod.ts";
+import { registerFormat } from "../engine/mod.ts";
+
+// ---------------------------------------------------------------------------
+// Constants — what we expect in a 4-block Go file
+// ---------------------------------------------------------------------------
+
+/** Required //omni: directives at top of file. */
+const REQUIRED_DIRECTIVES = [
+  "//omni:key",
+] as const;
+
+/** Recommended //omni: directives. */
+const RECOMMENDED_DIRECTIVES = [
+  "//omni:code",
+  "//omni:version",
+] as const;
+
+/** The 4 blocks in required order. */
+const BLOCKS = ["METADATA", "SETUP", "BODY", "CLOSING"] as const;
+
+/** Patterns that identify a block boundary. */
+const BLOCK_PATTERNS: Record<string, RegExp> = {
+  METADATA: /^\/\/\s*={4,}\s*$|^\/\/\s+METADATA\s*$/,
+  SETUP:    /^\/\/\s+SETUP\s*$/,
+  BODY:     /^\/\/\s+BODY\s*$/,
+  CLOSING:  /^\/\/\s+CLOSING\s*$/,
+};
+
+/** END marker patterns. */
+const END_PATTERNS: Record<string, RegExp> = {
+  METADATA: /^\/\/\s+END METADATA\s*$/,
+  SETUP:    /^\/\/\s+END SETUP\s*$/,
+  BODY:     /^\/\/\s+END BODY\s*$/,
+  CLOSING:  /^\/\/\s+END CLOSING\s*$/,
+};
+
+/** SETUP subsection markers in required order. */
+const SETUP_SUBSECTIONS = [
+  { tag: "I",  label: "Imports",             pattern: /^\/\/---\s+I\.\d/ },
+  { tag: "T",  label: "Types",              pattern: /^\/\/---\s+T\.\d/ },
+  { tag: "TM", label: "Type Methods",       pattern: /^\/\/---\s+TM\s/ },
+  { tag: "K",  label: "Constants",           pattern: /^\/\/---\s+K\.\d/ },
+  { tag: "V",  label: "Variables",           pattern: /^\/\/---\s+V\.\d/ },
+  { tag: "PS", label: "Package-Level State", pattern: /^\/\/---\s+PS\.\d/ },
+] as const;
+
+/** BODY subsection labels in expected order (flexible — checks what's present). */
+const BODY_SUBSECTIONS = [
+  { label: "Org Chart",        pattern: /Org\s*Chart|APU\s*Inventory/i },
+  { label: "Helpers",          pattern: /^\/\/\s+Helpers|^\/\/\s+────.*Helpers/i },
+  { label: "Core Operations",  pattern: /Core\s*Operations/i },
+  { label: "Error Handling",   pattern: /Error\s*(?:Handling|Helpers)/i },
+  { label: "Public APIs",      pattern: /Public\s*APIs/i },
+] as const;
+
+/** Known //omni:code directive patterns. */
+const KNOWN_CODE_DIRECTIVES = [
+  "--go -library",
+  "--go -executable",
+  "--go -demo-test",
+] as const;
+
+/**
+ * I/C field requirements — mirrors the schema's field_requirements.
+ * PRAGMA carries Identity (I1-I4), METADATA carries Context (C1-C7).
+ * Keys match the section prefix used in vars (e.g., "I1" not "I1_core").
+ */
+export const PRAGMA_FIELD_REQUIREMENTS: Record<string, { required: string[]; defined: string[] }> = {
+  I1: { required: ["key", "format", "from", "at"], defined: [] },
+  I2: { required: ["type", "structure"], defined: ["subtype", "role"] },
+  I3: { required: ["file", "title"], defined: ["component", "path", "provides", "brief"] },
+  I4: { required: [], defined: ["layer", "position", "pattern"] },
+};
+
+export const METADATA_FIELD_REQUIREMENTS: Record<string, { required: string[]; defined: string[] }> = {
+  C1: { required: ["version", "status"], defined: ["created", "updated"] },
+  C2: { required: ["organization"], defined: ["architect", "implementation", "copyright"] },
+  C3: { required: ["scripture"], defined: ["principle", "anchor"] },
+  C4: { required: ["requires", "consumers"], defined: ["integration", "if_missing"] },
+  C5: { required: [], defined: ["purpose", "philosophy"] },
+  C6: { required: [], defined: ["current", "planned", "limitations"] },
+  C7: { required: [], defined: ["tags", "category", "domain", "paradigm"] },
+};
+
+/** Standard separator widths. */
+const BLOCK_SEPARATOR_WIDTH = 76;     // // ====...==== (76 = chars)
+const SUBSECTION_SEPARATOR_WIDTH = 64; // // ----...---- (64 - chars)
+
+// ---------------------------------------------------------------------------
+// Content Classification — what Go constructs are, where they belong
+// ---------------------------------------------------------------------------
+
+/**
+ * Content categories for Go source lines.
+ *
+ * Each top-level line of Go source can be classified into one of these
+ * categories. The classifier + placement maps are the foundation for:
+ *   1. Block-level placement checks (is this func in SETUP? → move to BODY)
+ *   2. Subsection-level placement checks (is this const in Types? → move to Constants)
+ *   3. Health scoring (how much of Types is actually type declarations?)
+ */
+export type GoContentKind =
+  | "package_decl" | "import_decl" | "const_decl" | "var_decl"
+  | "type_decl" | "func_decl" | "method_decl" | "init_func"
+  | "comment" | "blank" | "other";
+
+/**
+ * Which BLOCK a top-level construct belongs in.
+ *
+ * Schema source: go-4block-schema.jsonc → placement_rules
+ *   must_be_in_setup → these map to "SETUP"
+ *   must_not_be_in_setup (func, method) → these map to "BODY"
+ *
+ * Missing entries (comment, blank, other) → can appear in any block.
+ * init_func → "BODY" — init() is execution logic, not setup.
+ * package_decl → no placement constraint (appears before blocks).
+ */
+const BLOCK_PLACEMENT: Partial<Record<GoContentKind, string>> = {
+  import_decl: "SETUP",
+  const_decl:  "SETUP",
+  var_decl:    "SETUP",
+  type_decl:   "SETUP",
+  func_decl:   "BODY",
+  method_decl: "BODY",
+  init_func:   "BODY",
+};
+
+/**
+ * Which SUBSECTION within SETUP a construct belongs in.
+ *
+ * Schema source: go-4block-schema.jsonc → subsection_order → S1-S6
+ * Maps content kinds to the canonical subsection tag where they should live.
+ * Used for subsection-level scoring (health scoring foundation).
+ *
+ * Note: method_decl maps to TM (Type Methods) when in SETUP context —
+ * receiver methods closely tied to type definitions belong in SETUP.TM.
+ * Standalone methods implementing business logic belong in BODY.
+ */
+const SUBSECTION_PLACEMENT: Partial<Record<GoContentKind, string>> = {
+  import_decl: "I",
+  type_decl:   "T",
+  method_decl: "TM",
+  const_decl:  "K",
+  var_decl:    "V",
+};
+
+/**
+ * Content kinds that are NEVER valid in the METADATA block.
+ *
+ * METADATA contains identity comments (Key:, Purpose:, Biblical:)
+ * and identity vars (Pragma, Metadata [][2]string). Code declarations
+ * leak here when someone adds content above SETUP by mistake.
+ */
+const METADATA_FORBIDDEN: Set<GoContentKind> = new Set([
+  "import_decl", "const_decl", "var_decl", "type_decl",
+  "func_decl", "method_decl", "init_func",
+]);
+
+// ============================================================================
+// BODY
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface BlockPosition {
+  name: string;
+  line: number;       // 1-based line number where the block header appears
+  endLine: number;    // 1-based line of END marker, 0 if absent
+}
+
+/** A directive found in the file, with its 1-based line number. */
+interface DirectiveInfo {
+  value: string;
+  line: number;
+}
+
+/** A parsed field from a Pragma or Metadata identity var. */
+interface IdentityField {
+  /** Section prefix: "I1", "I2", "C1", etc. */
+  section: string;
+  /** Field name: "key", "format", "requires.stdlib", etc. */
+  field: string;
+  /** The string value. */
+  value: string;
+  /** 1-based line number in the file where this field was found. */
+  line: number;
+}
+
+/** File-level context gathered once, passed to all check functions. */
+interface GoFileContext {
+  filePath: string;
+  lines: string[];
+  isTemplate: boolean;         // has #!omni template
+  isDocGo: boolean;            // filename is doc.go
+  hasAnyOmni: boolean;         // any //omni: directives present
+  hasAnyBlock: boolean;        // any block markers present
+  blocks: BlockPosition[];
+  directives: Map<string, DirectiveInfo>;
+  pkgHasIdentity: boolean;     // sibling file has Pragma/Metadata identity vars
+  subtype: string | null;      // "library" | "executable" | "demo-test" | null
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Scan lines for block boundaries.
+ * Returns positions of each block found, in order of appearance.
+ */
+function findBlocks(lines: string[]): BlockPosition[] {
+  const positions: BlockPosition[] = [];
+
+  for (const blockName of BLOCKS) {
+    let headerLine = 0;
+    let endLine = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i]!.trim();
+
+      // Look for block header: "// METADATA", "// SETUP", etc.
+      if (blockName === "METADATA") {
+        if (/^\/\/\s+METADATA\s*$/.test(trimmed) && headerLine === 0) {
+          headerLine = i + 1;
+        }
+      } else {
+        if (BLOCK_PATTERNS[blockName]!.test(trimmed) && headerLine === 0) {
+          headerLine = i + 1;
+        }
+      }
+
+      // Look for END marker
+      if (END_PATTERNS[blockName]!.test(trimmed) && endLine === 0) {
+        endLine = i + 1;
+      }
+    }
+
+    if (headerLine > 0) {
+      positions.push({ name: blockName, line: headerLine, endLine });
+    }
+  }
+
+  // Sort by file position so block order reflects actual file layout
+  positions.sort((a, b) => a.line - b.line);
+
+  return positions;
+}
+
+/**
+ * Find all //omni: directives at the top of the file.
+ * Also checks for #!omni directives in comments (templates use // #!omni).
+ * Returns map of directive name → { value, line }.
+ */
+function findOmniDirectives(lines: string[]): Map<string, DirectiveInfo> {
+  const directives = new Map<string, DirectiveInfo>();
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i]!.trim();
+    const lineNum = i + 1;
+
+    // //omni: directives are at the top, before or near `package`
+    if (trimmed.startsWith("package ")) break;
+    // Also stop at block markers
+    if (/^\/\/\s+(METADATA|SETUP|BODY|CLOSING)\s*$/.test(trimmed)) break;
+
+    // Standard //omni: directive
+    const omniMatch = trimmed.match(/^\/\/omni:(\S+)\s*(.*)?$/);
+    if (omniMatch) {
+      directives.set(`//omni:${omniMatch[1]}`, { value: omniMatch[2]?.trim() ?? "", line: lineNum });
+    }
+
+    // Template-style // #!omni directive (used in template files)
+    const shebangMatch = trimmed.match(/^\/\/\s+#!omni\s+(.+)$/);
+    if (shebangMatch) {
+      const parts = shebangMatch[1]!.trim();
+      if (parts.startsWith("template")) {
+        directives.set("#!omni:template", { value: parts.replace(/^template\s*/, "").trim(), line: lineNum });
+      } else if (parts.startsWith("code")) {
+        directives.set("#!omni:code", { value: parts.replace(/^code\s*/, "").trim(), line: lineNum });
+      } else if (parts.startsWith("meta.")) {
+        const metaMatch = parts.match(/^meta\.(\S+)\s*=\s*(.+)$/);
+        if (metaMatch) {
+          directives.set(`#!omni:meta.${metaMatch[1]!}`, { value: metaMatch[2]!.trim(), line: lineNum });
+        }
+      }
+    }
+  }
+
+  return directives;
+}
+
+/**
+ * Extract lines belonging to a specific block (between header and END/next block).
+ */
+function getBlockLines(
+  lines: string[],
+  blocks: BlockPosition[],
+  blockName: string,
+): string[] {
+  const block = blocks.find((b) => b.name === blockName);
+  if (!block) return [];
+
+  const startIdx = block.line; // 1-based, block header line — content starts after
+  let endIdx: number;
+
+  if (block.endLine > 0) {
+    endIdx = block.endLine - 1; // 1-based, exclude END marker
+  } else {
+    // Find next block start
+    const blockIdx = blocks.indexOf(block);
+    const nextBlock = blocks[blockIdx + 1];
+    endIdx = nextBlock ? nextBlock.line - 2 : lines.length;
+  }
+
+  return lines.slice(startIdx, endIdx);
+}
+
+/**
+ * Convert a block-relative line index to a 1-based file line number.
+ * blockLines[i] came from getBlockLines(), which slices at block.line (1-based).
+ * So the file line for blockLines[i] is block.line + 1 + i.
+ */
+function blockLineToFile(blocks: BlockPosition[], blockName: string, relIdx: number): number {
+  const block = blocks.find((b) => b.name === blockName);
+  if (!block) return 0;
+  return block.line + 1 + relIdx;
+}
+
+// ---------------------------------------------------------------------------
+// Content classifier — what's on this line?
+// ---------------------------------------------------------------------------
+
+/**
+ * Classify a single Go source line into a content category.
+ *
+ * Works on trimmed lines. Handles comment prefixes, blank lines,
+ * and all top-level Go declaration forms. Returns the semantic
+ * category, not the syntactic form.
+ *
+ * Foundation for content placement checks and health scoring.
+ */
+export function classifyGoLine(rawLine: string): GoContentKind {
+  const trimmed = rawLine.trim();
+
+  if (trimmed === "") return "blank";
+  if (trimmed.startsWith("//")) return "comment";
+
+  // Package declaration
+  if (trimmed.startsWith("package ")) return "package_decl";
+
+  // Import — single-line `import "path"` or block `import (`
+  if (trimmed.startsWith("import ") || trimmed === "import (") return "import_decl";
+
+  // func init() — special: execution logic, belongs in BODY
+  if (/^func\s+init\s*\(/.test(trimmed)) return "init_func";
+
+  // Method declaration: func (r Receiver) Method(...)
+  if (/^func\s+\([^)]+\)\s+\w+/.test(trimmed)) return "method_decl";
+
+  // Function declaration: func Name(...)
+  if (/^func\s+\w+/.test(trimmed)) return "func_decl";
+
+  // Type declaration: type Name ...
+  if (/^type\s+\w/.test(trimmed) || trimmed === "type (") return "type_decl";
+
+  // Const declaration: const Name = ... or const (
+  if (/^const\s+\w/.test(trimmed) || trimmed === "const (") return "const_decl";
+
+  // Var declaration: var Name ... or var (
+  if (/^var\s+\w/.test(trimmed) || trimmed === "var (") return "var_decl";
+
+  return "other";
+}
+
+/**
+ * Subsection boundary within a block's lines.
+ */
+interface SubsectionRange {
+  tag: string;
+  /** Index within the block's line array where this subsection starts. */
+  startIdx: number;
+  /** Index (exclusive) where this subsection ends — next subsection or block end. */
+  endIdx: number;
+}
+
+/**
+ * Find subsection boundaries within a block's lines.
+ *
+ * Uses SETUP_SUBSECTIONS patterns to find where each subsection starts.
+ * Returns ranges so content within each subsection can be classified.
+ */
+export function getSubsectionRanges(blockLines: string[]): SubsectionRange[] {
+  const ranges: SubsectionRange[] = [];
+
+  for (let i = 0; i < blockLines.length; i++) {
+    const trimmed = blockLines[i]!.trim();
+    // Skip separator-only lines
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
+    for (const sub of SETUP_SUBSECTIONS) {
+      if (sub.pattern.test(trimmed)) {
+        if (!ranges.some((r) => r.tag === sub.tag)) {
+          ranges.push({ tag: sub.tag, startIdx: i, endIdx: blockLines.length });
+        }
+        break;
+      }
+    }
+  }
+
+  // Fix endIdx for each range — next range's startIdx
+  for (let i = 0; i < ranges.length - 1; i++) {
+    ranges[i]!.endIdx = ranges[i + 1]!.startIdx;
+  }
+
+  return ranges;
+}
+
+/**
+ * Classify top-level declarations in a line array.
+ *
+ * Tracks brace depth to skip nested content — a `const` inside a
+ * function body is NOT a top-level const_decl. Only declarations at
+ * brace depth 0 are returned.
+ */
+export function getTopLevelDeclarations(
+  lines: string[],
+): Array<{ lineIdx: number; kind: GoContentKind }> {
+  const results: Array<{ lineIdx: number; kind: GoContentKind }> = [];
+  let braceDepth = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i]!.trim();
+
+    // At top level, classify the line
+    if (braceDepth === 0) {
+      const kind = classifyGoLine(trimmed);
+      // Only track actual declarations, not noise
+      if (kind !== "blank" && kind !== "comment" && kind !== "other") {
+        results.push({ lineIdx: i, kind });
+      }
+    }
+
+    // Update brace depth AFTER classification
+    // Simple brace counting — handles 95%+ of Go code.
+    // Edge cases (braces in strings/raw strings) are rare at top-level.
+    for (const ch of trimmed) {
+      if (ch === '{') braceDepth++;
+      if (ch === '}') braceDepth = Math.max(0, braceDepth - 1);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Parse a Go identity var to extract I/C field key-value pairs.
+ *
+ * Input format:
+ *   var Pragma = [][2]string{
+ *       // comments are skipped
+ *       {"I1.key", "value"},
+ *   }
+ *
+ * Returns fields with section (e.g., "I1"), field (e.g., "key"), and value.
+ */
+export function parseSliceFields(lines: string[], varName: string): IdentityField[] {
+  const fields: IdentityField[] = [];
+  let inSlice = false;
+  const startPattern = new RegExp(
+    `^var\\s+${varName}\\s*=\\s*\\[\\]\\[2\\]string\\s*\\{`,
+  );
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i]!.trim();
+    const lineNum = i + 1;
+
+    if (!inSlice) {
+      if (startPattern.test(trimmed)) {
+        inSlice = true;
+        // Single-line: ends with } on same line after the opening {
+        if (/\}\s*$/.test(trimmed) && trimmed.indexOf("{") < trimmed.lastIndexOf("}")) {
+          for (const pair of trimmed.matchAll(/\{"([^"]+)",\s*"([^"]*)"\}/g)) {
+            const fullKey = pair[1]!;
+            const value = pair[2] ?? "";
+            const dotIdx = fullKey.indexOf(".");
+            if (dotIdx > 0) {
+              fields.push({
+                section: fullKey.substring(0, dotIdx),
+                field: fullKey.substring(dotIdx + 1),
+                value,
+                line: lineNum,
+              });
+            }
+          }
+          break;
+        }
+      }
+      continue;
+    }
+
+    // End of slice literal
+    if (trimmed === "}" || trimmed.startsWith("}")) break;
+
+    // Skip comment-only lines
+    if (trimmed.startsWith("//")) continue;
+
+    // Extract {"key", "value"} pair — supports double-quoted and backtick strings.
+    // Double:   {"I1.key", "value"}
+    // Backtick: {"I1.key", `value with "quotes"`}
+    const match = trimmed.match(/\{"([^"]+)",\s*"([^"]*)"\}/)
+      ?? trimmed.match(/\{"([^"]+)",\s*`([^`]*)`\}/);
+    if (match) {
+      const fullKey = match[1]!;
+      const dotIdx = fullKey.indexOf(".");
+      if (dotIdx > 0) {
+        fields.push({
+          section: fullKey.substring(0, dotIdx),
+          field: fullKey.substring(dotIdx + 1),
+          value: match[2]!,
+          line: lineNum,
+        });
+      }
+    }
+  }
+
+  return fields;
+}
+
+/**
+ * Validate parsed I/C fields against field requirements.
+ * Required fields produce warnings; defined fields produce info.
+ * Handles nested keys (e.g., "C4.requires.stdlib" counts as "requires" present).
+ */
+export function validateICFields(
+  file: string,
+  fields: IdentityField[],
+  requirements: Record<string, { required: string[]; defined: string[] }>,
+  varName: string,
+): LintResult[] {
+  const results: LintResult[] = [];
+
+  // Group fields by section, tracking base field names
+  const presentFields = new Map<string, Set<string>>();
+  for (const f of fields) {
+    if (!presentFields.has(f.section)) {
+      presentFields.set(f.section, new Set());
+    }
+    // For nested fields like "requires.stdlib", the base field "requires" counts as present
+    const baseField = f.field.split(".")[0]!;
+    presentFields.get(f.section)!.add(baseField);
+  }
+
+  // Check required fields in each section
+  for (const [section, req] of Object.entries(requirements)) {
+    const sectionFields = presentFields.get(section);
+
+    for (const field of req.required) {
+      if (!sectionFields?.has(field)) {
+        results.push(warn(file, `identity/${varName}/${section}.${field}`,
+          `Missing required field ${section}.${field} in ${varName} var`, {
+            description: `Add ${section}.${field} to ${varName}`,
+            toml: `\t{"${section}.${field}", ""},`,
+            location: `in ${varName}`,
+          }));
+      }
+    }
+
+    for (const field of req.defined) {
+      if (!sectionFields?.has(field)) {
+        results.push(info(file, `identity/${varName}/${section}.${field}`,
+          `Missing defined field ${section}.${field} in ${varName} var`, {
+            description: `Add ${section}.${field} to ${varName}`,
+            toml: `\t{"${section}.${field}", ""},`,
+            location: `in ${varName}`,
+          }));
+      }
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Check if any sibling .go file in the same package has identity vars.
+ *
+ * Detects both new (var Pragma = [][2]string{}) and old (var _pragma =) patterns.
+ * L0 uses doc.go for package identity. L1 uses the primary file.
+ * Either pattern is valid — the package has identity if ANY sibling declares it.
+ */
+async function packageHasIdentityVars(filePath: string): Promise<boolean> {
+  const filename = filePath.split("/").pop() ?? "";
+  const dir = filePath.substring(0, filePath.lastIndexOf("/"));
+  if (!dir) return false;
+
+  try {
+    for await (const entry of Deno.readDir(dir)) {
+      if (!entry.isFile || !entry.name.endsWith(".go")) continue;
+      if (entry.name === filename) continue; // skip self
+      if (entry.name.endsWith("_test.go")) continue; // skip test files
+
+      const siblingText = await Deno.readTextFile(`${dir}/${entry.name}`);
+      // New pattern: var Pragma = [][2]string{
+      const hasNewPragma = /^var\s+Pragma\s*=\s*\[\]\[2\]string\s*\{/m.test(siblingText);
+      const hasNewMetadata = /^var\s+Metadata\s*=\s*\[\]\[2\]string\s*\{/m.test(siblingText);
+      if (hasNewPragma && hasNewMetadata) return true;
+      // Old pattern: var _pragma = map[string]string{
+      const hasOldPragma = /^var\s+_pragma\s*=/m.test(siblingText);
+      const hasOldMetadata = /^var\s+_metadata\s*=/m.test(siblingText);
+      if (hasOldPragma && hasOldMetadata) return true;
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
+}
+
+/**
+ * Build file-level context — gathered once, passed to all checks.
+ */
+async function buildContext(filePath: string): Promise<GoFileContext | null> {
+  let text: string;
+  try {
+    text = await Deno.readTextFile(filePath);
+  } catch {
+    return null;
+  }
+
+  const lines = text.split("\n");
+  const filename = filePath.split("/").pop() ?? "";
+  const directives = findOmniDirectives(lines);
+
+  const isTemplate = directives.has("#!omni:template") ||
+    lines.some((l) => /^\/\/\s+#!omni\s+template\b/.test(l.trim())) ||
+    // Old-format templates: //go:build ignore + // TEMPLATE: header
+    (lines.some((l) => l.trim() === "//go:build ignore") &&
+     lines.some((l) => /^\/\/\s+TEMPLATE:\s/.test(l.trim())));
+
+  const hasAnyOmni = lines.some((l) => l.trim().startsWith("//omni:")) ||
+    lines.some((l) => /^\/\/\s+#!omni\s/.test(l.trim()));
+
+  const hasAnyBlock = lines.some((l) =>
+    /^\/\/\s+(METADATA|SETUP|BODY|CLOSING)\s*$/.test(l.trim())
+  );
+
+  // Detect subtype from directives, then PRAGMA I2.subtype if not found.
+  // Sources (priority order):
+  //   1. //omni:code --go -<subtype>
+  //   2. #!omni template --go -<subtype>
+  //   3. PRAGMA I2.subtype field
+  let subtype: string | null = null;
+  const KNOWN_SUBTYPES = ["library", "executable", "demo-test"];
+
+  const codeDirective = directives.get("//omni:code")?.value ?? directives.get("#!omni:code")?.value ?? "";
+  const templateDirective = directives.get("#!omni:template")?.value ?? "";
+
+  for (const directive of [codeDirective, templateDirective]) {
+    if (!directive) continue;
+    const subtypeMatch = directive.match(/-(\w[\w-]*)$/);
+    if (subtypeMatch && KNOWN_SUBTYPES.includes(subtypeMatch[1]!)) {
+      subtype = subtypeMatch[1]!;
+      break;
+    }
+  }
+
+  // Fallback: parse I2.subtype from Pragma var
+  if (!subtype) {
+    const pragmaFields = parseSliceFields(lines, "Pragma");
+    const subtypeField = pragmaFields.find((f) => f.section === "I2" && f.field === "subtype");
+    if (subtypeField && KNOWN_SUBTYPES.includes(subtypeField.value)) {
+      subtype = subtypeField.value;
+    }
+  }
+
+  return {
+    filePath,
+    lines,
+    isTemplate,
+    isDocGo: filename === "doc.go",
+    hasAnyOmni,
+    hasAnyBlock,
+    blocks: findBlocks(lines),
+    directives,
+    pkgHasIdentity: await packageHasIdentityVars(filePath),
+    subtype,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Checks (original 6)
+// ---------------------------------------------------------------------------
+
+function checkDirectives(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  // Templates use #!omni meta.key or old-format // Key: header
+  if (ctx.isTemplate) {
+    if (!ctx.directives.has("#!omni:meta.key")) {
+      const hasKeyComment = ctx.lines.some((l) => /^\/\/\s+Key:\s/.test(l.trim()));
+      if (!hasKeyComment) {
+        results.push(warn(file, "directive/meta.key",
+          "Template missing key identifier (#!omni meta.key or // Key:)"));
+      }
+    }
+    return results;
+  }
+
+  // Derived files: check standard //omni: directives
+  for (const directive of REQUIRED_DIRECTIVES) {
+    if (!ctx.directives.has(directive)) {
+      results.push(error(file, `directive/${directive}`, `Missing ${directive} — REQUIRED`));
+    }
+  }
+
+  for (const directive of RECOMMENDED_DIRECTIVES) {
+    if (!ctx.directives.has(directive)) {
+      results.push(warn(file, `directive/${directive}`, `Missing ${directive} — recommended`));
+    }
+  }
+
+  return results;
+}
+
+function checkBlockStructure(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+  const foundNames = ctx.blocks.map((b) => b.name);
+
+  // Check all 4 blocks present (warn for templates — old-format may omit markers)
+  for (const blockName of BLOCKS) {
+    if (!foundNames.includes(blockName)) {
+      const level = ctx.isTemplate ? warn : error;
+      results.push(level(file, `block/${blockName}`,
+        ctx.isTemplate
+          ? `Missing ${blockName} block marker (template may use alternative format)`
+          : `Missing ${blockName} block`));
+    }
+  }
+
+  // Check block order
+  const blockOrder = BLOCKS.filter((b) => foundNames.includes(b));
+  const actualOrder = ctx.blocks.map((b) => b.name);
+
+  for (let i = 0; i < blockOrder.length; i++) {
+    if (i < actualOrder.length && blockOrder[i] !== actualOrder[i]) {
+      results.push(
+        error(
+          file,
+          "block/order",
+          `Block order wrong: found ${actualOrder.join(" → ")}, expected ${BLOCKS.join(" → ")}`,
+        ),
+      );
+      break;
+    }
+  }
+
+  // Check END markers
+  for (const block of ctx.blocks) {
+    if (block.endLine === 0) {
+      results.push(
+        warn(file, `block/end-${block.name}`, `Missing END ${block.name} marker`,
+          { line: block.line }),
+      );
+    }
+  }
+
+  return results;
+}
+
+function checkPackageAndImports(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+  let hasPackage = false;
+  let hasImport = false;
+
+  for (const line of ctx.lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("package ")) hasPackage = true;
+    if (trimmed.startsWith("import ") || trimmed === "import (") hasImport = true;
+  }
+
+  // Templates have commented-out package declarations
+  if (!hasPackage && !ctx.isTemplate) {
+    results.push(error(file, "go/package", "Missing package declaration"));
+  }
+
+  if (!hasImport && !ctx.isTemplate) {
+    results.push(info(file, "go/import", "No import statement found"));
+  }
+
+  return results;
+}
+
+/**
+ * Detect bracketed placeholder values in I/C fields (e.g. "[YOUR-KEY-HERE]", "[template-path]").
+ * These indicate unfilled template values that need real content.
+ */
+function detectPlaceholders(file: string, fields: IdentityField[], varName: string): LintResult[] {
+  const results: LintResult[] = [];
+  const PLACEHOLDER_RE = /^\[.+\]$/;
+
+  for (const f of fields) {
+    if (PLACEHOLDER_RE.test(f.value)) {
+      results.push(
+        warn(file, `identity/${varName}/placeholder`,
+          `${varName}.${f.field} has placeholder value "${f.value}" — replace with actual content`,
+          { line: f.line }),
+      );
+    }
+  }
+
+  return results;
+}
+
+function checkPragmaMetadata(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  // Templates don't need runtime identity vars
+  if (ctx.isTemplate) return results;
+
+  // --- Detect new pattern: var Pragma = [][2]string{ ---
+  let hasNewPragma = false;
+  let hasNewMetadata = false;
+  // --- Detect old pattern: var _pragma = map[string]string{ ---
+  let hasOldPragma = false;
+  let hasOldMetadata = false;
+
+  for (const line of ctx.lines) {
+    const trimmed = line.trim();
+    if (/^var\s+Pragma\s*=\s*\[\]\[2\]string\s*\{/.test(trimmed)) hasNewPragma = true;
+    if (/^var\s+Metadata\s*=\s*\[\]\[2\]string\s*\{/.test(trimmed)) hasNewMetadata = true;
+    if (/^var\s+_pragma\s*=/.test(trimmed)) hasOldPragma = true;
+    if (/^var\s+_metadata\s*=/.test(trimmed)) hasOldMetadata = true;
+  }
+
+  // Old pattern → upgrade notice
+  if (hasOldPragma || hasOldMetadata) {
+    results.push(info(file, "identity/upgrade",
+      "Legacy _pragma/_metadata maps detected — migrate to var Pragma/Metadata = [][2]string{} with I/C fields"));
+  }
+
+  // New pattern → parse and validate I/C fields
+  if (hasNewPragma) {
+    const pragmaFields = parseSliceFields(ctx.lines, "Pragma");
+    if (pragmaFields.length === 0) {
+      results.push(warn(file, "identity/Pragma/empty",
+        "var Pragma declared but no I/C fields parsed"));
+    } else {
+      results.push(...validateICFields(file, pragmaFields, PRAGMA_FIELD_REQUIREMENTS, "Pragma"));
+      results.push(...detectPlaceholders(file, pragmaFields, "Pragma"));
+    }
+  }
+
+  if (hasNewMetadata) {
+    const metadataFields = parseSliceFields(ctx.lines, "Metadata");
+    if (metadataFields.length === 0) {
+      results.push(warn(file, "identity/Metadata/empty",
+        "var Metadata declared but no I/C fields parsed"));
+    } else {
+      results.push(...validateICFields(file, metadataFields, METADATA_FIELD_REQUIREMENTS, "Metadata"));
+      results.push(...detectPlaceholders(file, metadataFields, "Metadata"));
+    }
+  }
+
+  // Neither old nor new → warn/info based on package context
+  if (!hasNewPragma && !hasOldPragma) {
+    const level = ctx.pkgHasIdentity ? info : warn;
+    const msg = ctx.pkgHasIdentity
+      ? "No Pragma var (package identity in sibling file)"
+      : "Missing var Pragma = [][2]string{} — recommended for runtime identity";
+    results.push(level(file, "identity/pragma-var", msg));
+  }
+
+  if (!hasNewMetadata && !hasOldMetadata) {
+    const level = ctx.pkgHasIdentity ? info : warn;
+    const msg = ctx.pkgHasIdentity
+      ? "No Metadata var (package identity in sibling file)"
+      : "Missing var Metadata = [][2]string{} — recommended for runtime identity";
+    results.push(level(file, "identity/metadata-var", msg));
+  }
+
+  return results;
+}
+
+function checkCommentMetadata(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  const hasPragmaVar = ctx.lines.some((l) =>
+    /^var\s+(Pragma\s*=\s*\[\]\[2\]string|_pragma\s*=)/.test(l.trim()));
+  const hasMetadataVar = ctx.lines.some((l) =>
+    /^var\s+(Metadata\s*=\s*\[\]\[2\]string|_metadata\s*=)/.test(l.trim()));
+  const hasVars = hasPragmaVar && hasMetadataVar;
+
+  let inMetadata = false;
+  let hasKey = false;
+  let hasPurpose = false;
+  let hasBiblical = false;
+  let hasVersion = false;
+
+  for (const line of ctx.lines) {
+    const trimmed = line.trim();
+
+    if (/^\/\/\s+METADATA\s*$/.test(trimmed)) {
+      inMetadata = true;
+      continue;
+    }
+    if (inMetadata && /^\/\/\s+(SETUP|END METADATA)\s*$/.test(trimmed)) {
+      break;
+    }
+
+    if (inMetadata) {
+      if (/^\/\/\s+Key:/.test(trimmed)) hasKey = true;
+      if (/^\/\/\s+Purpose:/.test(trimmed)) hasPurpose = true;
+      if (/^\/\/\s+(Biblical|Scripture):/.test(trimmed)) hasBiblical = true;
+      if (/^\/\/\s+Version:/.test(trimmed)) hasVersion = true;
+    }
+  }
+
+  if (inMetadata && !ctx.isTemplate) {
+    const level = hasVars ? info : warn;
+
+    if (!hasKey) {
+      results.push(level(file, "comment-meta/key", "Missing Key: in METADATA comment block"));
+    }
+    if (!hasPurpose) {
+      results.push(level(file, "comment-meta/purpose", "Missing Purpose: in METADATA comment block"));
+    }
+    if (!hasBiblical) {
+      results.push(info(file, "comment-meta/biblical", "Missing Biblical:/Scripture: in METADATA comment block — recommended"));
+    }
+    if (!hasVersion) {
+      results.push(info(file, "comment-meta/version", "Missing Version: in METADATA comment block"));
+    }
+  }
+
+  return results;
+}
+
+function checkSeparatorConsistency(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  const eqSeparators: Array<{ line: number; width: number }> = [];
+  const dashSeparators: Array<{ line: number; width: number }> = [];
+
+  for (let i = 0; i < ctx.lines.length; i++) {
+    const trimmed = ctx.lines[i]!.trim();
+
+    // Block separators (=)
+    const eqMatch = trimmed.match(/^\/\/\s+(={4,})\s*$/);
+    if (eqMatch) {
+      eqSeparators.push({ line: i + 1, width: eqMatch[1]!.length });
+    }
+
+    // Subsection separators (-)
+    const dashMatch = trimmed.match(/^\/\/\s+(-{4,})\s*$/);
+    if (dashMatch) {
+      dashSeparators.push({ line: i + 1, width: dashMatch[1]!.length });
+    }
+  }
+
+  // Check block separator consistency
+  if (eqSeparators.length >= 2) {
+    const widths = new Set(eqSeparators.map((s) => s.width));
+    if (widths.size > 1) {
+      const widthList = [...widths].sort().join(", ");
+      results.push(
+        warn(file, "style/eq-separator-width",
+          `Inconsistent block separator widths: ${widthList} chars — pick one`),
+      );
+    }
+    // Standard-aware: check against expected width
+    const dominant = eqSeparators[0]!.width;
+    if (dominant !== BLOCK_SEPARATOR_WIDTH) {
+      results.push(
+        info(file, "style/eq-separator-standard",
+          `Block separators are ${dominant} chars wide (standard: ${BLOCK_SEPARATOR_WIDTH})`),
+      );
+    }
+  }
+
+  // Check subsection separator consistency
+  if (dashSeparators.length >= 2) {
+    const widths = new Set(dashSeparators.map((s) => s.width));
+    if (widths.size > 1) {
+      const widthList = [...widths].sort().join(", ");
+      results.push(
+        warn(file, "style/dash-separator-width",
+          `Inconsistent subsection separator widths: ${widthList} chars — pick one`),
+      );
+    }
+    const dominant = dashSeparators[0]!.width;
+    if (dominant !== SUBSECTION_SEPARATOR_WIDTH) {
+      results.push(
+        info(file, "style/dash-separator-standard",
+          `Subsection separators are ${dominant} chars wide (standard: ${SUBSECTION_SEPARATOR_WIDTH})`),
+      );
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Checks (new — a-02.00)
+// ---------------------------------------------------------------------------
+
+/** Check 7: Template vs derived file classification. */
+function checkTemplateVsDerived(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  const hasBuildIgnore = ctx.lines.some((l) =>
+    l.trim() === "//go:build ignore"
+  );
+
+  if (ctx.isTemplate) {
+    if (!hasBuildIgnore) {
+      results.push(
+        error(file, "template/build-ignore",
+          "Template file missing //go:build ignore — will fail compilation"),
+      );
+    }
+  } else {
+    if (hasBuildIgnore) {
+      results.push(
+        warn(file, "derived/build-ignore",
+          "Derived file has //go:build ignore — won't compile"),
+      );
+    }
+  }
+
+  return results;
+}
+
+/** Check 8: SETUP subsection order (I → T → TM → K → V → PS). */
+function checkSetupSubsectionOrder(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  // Templates mention subsection names in overview comments — skip order check
+  if (ctx.isTemplate) return results;
+
+  const setupLines = getBlockLines(ctx.lines, ctx.blocks, "SETUP");
+  if (setupLines.length === 0) return results;
+
+  // Find which subsections are present and their positions
+  const found: Array<{ tag: string; label: string; lineIdx: number }> = [];
+
+  for (let i = 0; i < setupLines.length; i++) {
+    const trimmed = setupLines[i]!.trim();
+    for (const sub of SETUP_SUBSECTIONS) {
+      if (sub.pattern.test(trimmed)) {
+        found.push({ tag: sub.tag, label: sub.label, lineIdx: i });
+        break;
+      }
+    }
+  }
+
+  if (found.length < 2) return results; // Nothing to check ordering on
+
+  // Check ordering against the canonical sequence
+  const canonicalOrder: string[] = SETUP_SUBSECTIONS.map((s) => s.tag);
+  const foundTags = found.map((f) => f.tag);
+
+  let lastCanonIdx = -1;
+  for (const f of found) {
+    const canonIdx = canonicalOrder.indexOf(f.tag);
+    if (canonIdx < lastCanonIdx) {
+      results.push(
+        warn(file, "setup/subsection-order",
+          `SETUP subsection ${f.tag} (${f.label}) appears after a later subsection — expected: ${foundTags.join(" → ")}, canonical: I → T → TM → K → V → PS`),
+      );
+      break;
+    }
+    lastCanonIdx = canonIdx;
+  }
+
+  return results;
+}
+
+/** Check 9: BODY subsection order. */
+function checkBodySubsectionOrder(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  // Templates mention subsection names in overview comments — skip order check
+  if (ctx.isTemplate) return results;
+
+  const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
+  if (bodyLines.length === 0) return results;
+
+  // Find which subsections are present
+  const found: Array<{ label: string; lineIdx: number }> = [];
+
+  for (let i = 0; i < bodyLines.length; i++) {
+    const trimmed = bodyLines[i]!.trim();
+    for (const sub of BODY_SUBSECTIONS) {
+      if (sub.pattern.test(trimmed)) {
+        // Only take first occurrence of each
+        if (!found.some((f) => f.label === sub.label)) {
+          found.push({ label: sub.label, lineIdx: i });
+        }
+        break;
+      }
+    }
+  }
+
+  if (found.length < 2) return results;
+
+  // Check ordering
+  const canonicalOrder: string[] = BODY_SUBSECTIONS.map((s) => s.label);
+
+  let lastCanonIdx = -1;
+  for (const f of found) {
+    const canonIdx = canonicalOrder.indexOf(f.label);
+    if (canonIdx < lastCanonIdx) {
+      const foundLabels = found.map((x) => x.label).join(" → ");
+      results.push(
+        warn(file, "body/subsection-order",
+          `BODY subsection "${f.label}" appears after a later subsection — found: ${foundLabels}`),
+      );
+      break;
+    }
+    lastCanonIdx = canonIdx;
+  }
+
+  return results;
+}
+
+/** Check 10: //omni:code directive format. */
+function checkDirectiveFormat(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  // Check //omni:code value for derived files
+  const codeInfo = ctx.directives.get("//omni:code");
+  if (codeInfo !== undefined && codeInfo.value !== "") {
+    const isKnown = KNOWN_CODE_DIRECTIVES.some((k) => codeInfo.value === k);
+    if (!isKnown) {
+      results.push(
+        info(file, "directive/code-format",
+          `//omni:code value "${codeInfo.value}" — not a recognized pattern (known: ${KNOWN_CODE_DIRECTIVES.join(", ")})`,
+          { line: codeInfo.line }),
+      );
+    }
+  }
+
+  // Check #!omni template value for template files
+  const templateInfo = ctx.directives.get("#!omni:template");
+  if (templateInfo !== undefined && templateInfo.value !== "") {
+    const isKnown = KNOWN_CODE_DIRECTIVES.some((k) => templateInfo.value === k);
+    if (!isKnown) {
+      results.push(
+        info(file, "directive/template-format",
+          `#!omni template value "${templateInfo.value}" — not a recognized pattern`,
+          { line: templateInfo.line }),
+      );
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// CLOSING zones — canonical order for code and documentation sections
+// ---------------------------------------------------------------------------
+
+/**
+ * CLOSING block zones in canonical order.
+ *
+ * Two tiers:
+ *   1. Code zones (Cv, Ce, Cc) — validation, execution, cleanup
+ *   2. Documentation sections (X1-X5) — policy, testing, changelog, reference, note
+ *
+ * Code zones MUST precede documentation sections.
+ * Within each tier, zones appear in canonical order.
+ *
+ * Same pattern as Go/Rust schemas:
+ *   go-4block-schema.jsonc → closing_subsections → order
+ */
+const CLOSING_ZONES = [
+  // Code zones (must come first)
+  { tag: "Cv", kind: "code" as const, pattern: /^\/\/\s+Cv\s+[—–-]/ },
+  { tag: "Ce", kind: "code" as const, pattern: /^\/\/\s+Ce\s+[—–-]/ },
+  { tag: "Cc", kind: "code" as const, pattern: /^\/\/\s+Cc\s+[—–-]/ },
+  // Documentation sections (must come after all code zones)
+  { tag: "X1", kind: "doc" as const, pattern: /^\/\/\s+X1[:\s]/ },
+  { tag: "X2", kind: "doc" as const, pattern: /^\/\/\s+X2[:\s]/ },
+  { tag: "X3", kind: "doc" as const, pattern: /^\/\/\s+X3[:\s]/ },
+  { tag: "X4", kind: "doc" as const, pattern: /^\/\/\s+X4[:\s]/ },
+  { tag: "X5", kind: "doc" as const, pattern: /^\/\/\s+X5[:\s]/ },
+] as const;
+
+// ---------------------------------------------------------------------------
+// Check 11: Content placement — right constructs in right blocks
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate that Go constructs appear in the correct block and subsection.
+ *
+ * Three levels of checking:
+ *   1. METADATA block — no code declarations allowed (func, type, var, etc.)
+ *   2. SETUP vs BODY — declarations in SETUP, logic in BODY
+ *   3. Subsection placement — import in Imports, type in Types, etc.
+ *
+ * Only checks TOP-LEVEL declarations (brace depth 0). Nested content
+ * (e.g., a var inside a func body) is not flagged — it belongs to
+ * the enclosing construct.
+ *
+ * Foundation for health scoring: once we know WHAT is WHERE, scoring is
+ * just counting + weighting.
+ */
+function checkContentPlacement(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  // Templates use instructional placeholders — skip content checks
+  if (ctx.isTemplate) return results;
+
+  // Need at least 2 blocks to reason about placement
+  if (ctx.blocks.length < 2) return results;
+
+  // ---- Level 1: METADATA block — no code declarations ----
+  const metaLines = getBlockLines(ctx.lines, ctx.blocks, "METADATA");
+  if (metaLines.length > 0) {
+    const metaBlock = ctx.blocks.find((b) => b.name === "METADATA");
+    const metaStart = metaBlock?.line ?? 0;
+
+    for (const decl of getTopLevelDeclarations(metaLines)) {
+      if (METADATA_FORBIDDEN.has(decl.kind)) {
+        // Exempt identity vars — Pragma and Metadata [][2]string belong in METADATA
+        if (decl.kind === "var_decl") {
+          const line = metaLines[decl.lineIdx]?.trim() ?? "";
+          if (/^var\s+(Pragma|Metadata)\s*=\s*\[\]\[2\]string/.test(line)) {
+            continue;
+          }
+        }
+        const fileLine = metaStart + 1 + decl.lineIdx;
+        results.push(
+          warn(file, "content/metadata-leak",
+            `${decl.kind} in METADATA block (line ${fileLine}) — code declarations belong in SETUP or BODY`,
+            { line: fileLine }),
+        );
+      }
+    }
+  }
+
+  // ---- Level 2: SETUP vs BODY — declarations vs logic ----
+  for (const blockName of ["SETUP", "BODY"] as const) {
+    const blockLines = getBlockLines(ctx.lines, ctx.blocks, blockName);
+    if (blockLines.length === 0) continue;
+
+    const block = ctx.blocks.find((b) => b.name === blockName);
+    const blockStart = block?.line ?? 0;
+
+    for (const decl of getTopLevelDeclarations(blockLines)) {
+      const expectedBlock = BLOCK_PLACEMENT[decl.kind];
+      // Skip kinds that can appear anywhere (comments, blanks, package_decl)
+      if (!expectedBlock) continue;
+
+      if (expectedBlock !== blockName) {
+        const fileLine = blockStart + 1 + decl.lineIdx;
+        results.push(
+          warn(file, "content/block-placement",
+            `${decl.kind} in ${blockName} block (line ${fileLine}) — expected in ${expectedBlock}`,
+            { line: fileLine }),
+        );
+      }
+    }
+  }
+
+  // ---- Level 3: Subsection placement within SETUP ----
+  const setupLines = getBlockLines(ctx.lines, ctx.blocks, "SETUP");
+  if (setupLines.length > 0) {
+    const subsections = getSubsectionRanges(setupLines);
+    const setupBlock = ctx.blocks.find((b) => b.name === "SETUP");
+    const setupStart = setupBlock?.line ?? 0;
+
+    for (const sub of subsections) {
+      const subLines = setupLines.slice(sub.startIdx, sub.endIdx);
+
+      for (const decl of getTopLevelDeclarations(subLines)) {
+        const expectedSub = SUBSECTION_PLACEMENT[decl.kind];
+        if (!expectedSub) continue;
+
+        if (expectedSub !== sub.tag) {
+          const fileLine = setupStart + 1 + sub.startIdx + decl.lineIdx;
+          results.push(
+            info(file, "content/subsection-placement",
+              `${decl.kind} in ${sub.tag} subsection (line ${fileLine}) — expected in ${expectedSub}`,
+              { line: fileLine }),
+          );
+        }
+      }
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Check 12: CLOSING zone order
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate CLOSING zone ordering.
+ *
+ * Two-tier check:
+ *   1. Code zones (Cv, Ce, Cc) must all appear before documentation (X1-X5)
+ *   2. Within each tier, zones must appear in canonical order
+ *
+ * Only checks zones that ARE present — missing zones are valid
+ * (not all files need all zones).
+ */
+function checkClosingZoneOrder(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  // Templates have instructional markers — skip
+  if (ctx.isTemplate) return results;
+
+  const closingLines = getBlockLines(ctx.lines, ctx.blocks, "CLOSING");
+  if (closingLines.length === 0) return results;
+
+  // Find which zones are present and their positions
+  const found: Array<{ tag: string; kind: "code" | "doc"; lineIdx: number }> = [];
+
+  for (let i = 0; i < closingLines.length; i++) {
+    const trimmed = closingLines[i]!.trim();
+    // Skip separator-only lines
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
+    for (const zone of CLOSING_ZONES) {
+      if (zone.pattern.test(trimmed)) {
+        if (!found.some((f) => f.tag === zone.tag)) {
+          found.push({ tag: zone.tag, kind: zone.kind, lineIdx: i });
+        }
+        break;
+      }
+    }
+  }
+
+  if (found.length < 2) return results;
+
+  // Check 1: Code zones must come before documentation sections
+  const lastCode = found.filter((f) => f.kind === "code").pop();
+  const firstDoc = found.find((f) => f.kind === "doc");
+
+  if (lastCode && firstDoc && lastCode.lineIdx > firstDoc.lineIdx) {
+    const fileLine = blockLineToFile(ctx.blocks, "CLOSING", lastCode.lineIdx);
+    results.push(
+      warn(file, "closing/zone-order",
+        `Code zone ${lastCode.tag} appears after documentation section ${firstDoc.tag} — code zones (Cv/Ce/Cc) must precede documentation (X1-X5)`,
+        { line: fileLine }),
+    );
+  }
+
+  // Check 2: Within code zones, verify canonical order (Cv → Ce → Cc)
+  const codeZones = found.filter((f) => f.kind === "code");
+  const codeOrder: string[] = CLOSING_ZONES.filter((z) => z.kind === "code").map((z) => z.tag);
+
+  for (let i = 1; i < codeZones.length; i++) {
+    const prev = codeZones[i - 1]!;
+    const curr = codeZones[i]!;
+    const prevIdx = codeOrder.indexOf(prev.tag);
+    const currIdx = codeOrder.indexOf(curr.tag);
+
+    if (currIdx < prevIdx) {
+      const foundOrder = codeZones.map((z) => z.tag).join(" → ");
+      const fileLine = blockLineToFile(ctx.blocks, "CLOSING", curr.lineIdx);
+      results.push(
+        warn(file, "closing/code-zone-order",
+          `Code zone ${curr.tag} appears after ${prev.tag} — expected Cv → Ce → Cc, found: ${foundOrder}`,
+          { line: fileLine }),
+      );
+      break;
+    }
+  }
+
+  // Check 3: Within documentation sections, verify canonical order (X1 → ... → X5)
+  const docZones = found.filter((f) => f.kind === "doc");
+  const docOrder: string[] = CLOSING_ZONES.filter((z) => z.kind === "doc").map((z) => z.tag);
+
+  for (let i = 1; i < docZones.length; i++) {
+    const prev = docZones[i - 1]!;
+    const curr = docZones[i]!;
+    const prevIdx = docOrder.indexOf(prev.tag);
+    const currIdx = docOrder.indexOf(curr.tag);
+
+    if (currIdx < prevIdx) {
+      const foundOrder = docZones.map((z) => z.tag).join(" → ");
+      const fileLine = blockLineToFile(ctx.blocks, "CLOSING", curr.lineIdx);
+      results.push(
+        warn(file, "closing/doc-section-order",
+          `Documentation section ${curr.tag} appears after ${prev.tag} — expected X1 → X2 → ... → X5, found: ${foundOrder}`,
+          { line: fileLine }),
+      );
+      break;
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Check 13: Identity registration
+// ---------------------------------------------------------------------------
+
+/**
+ * Check if a Go package with identity vars registers them at init() or startup.
+ *
+ * Go equivalent of Rust's checkIdentityRegistration. In Go, the pattern is:
+ *   - File has Pragma/Metadata identity vars
+ *   - File should have some form of registration (init() or explicit call)
+ *
+ * This is informational — not all packages need runtime identity registration,
+ * but it's a good practice for packages that declare identity.
+ */
+function checkIdentityRegistration(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  // Skip templates and doc.go
+  if (ctx.isTemplate || ctx.isDocGo) return results;
+
+  // Only check files that have identity vars
+  const hasPragma = ctx.lines.some((l) =>
+    /^var\s+Pragma\s*=\s*\[\]\[2\]string\s*\{/.test(l.trim()));
+
+  if (!hasPragma) return results;
+
+  // Check for init() function — common Go pattern for self-registration
+  const hasInit = ctx.lines.some((l) =>
+    /^func\s+init\s*\(\s*\)/.test(l.trim()));
+
+  // Check for explicit registration call
+  const hasRegisterCall = ctx.lines.some((l) =>
+    /identity\.Register\(|RegisterIdentity\(/.test(l));
+
+  if (!hasInit && !hasRegisterCall) {
+    results.push(info(file, "identity/register",
+      "File has Pragma identity var but no init() or registration call — consider adding for runtime identity"));
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Check 14: CLOSING content placement — tests and main() belong in CLOSING
+// ---------------------------------------------------------------------------
+
+/**
+ * Detect content that belongs in CLOSING zones but was placed in BODY.
+ *
+ * Two specific patterns for Go:
+ *   1. func TestXxx(...) in BODY → belongs in CLOSING Cv zone
+ *   2. func main() in BODY → belongs in CLOSING Ce zone (executables only)
+ *
+ * These are more specific than checkContentPlacement's generic check.
+ * The generic check catches func_decl in BODY (which is correct for most),
+ * but these specific patterns deserve CLOSING-specific guidance.
+ */
+function checkClosingContentPlacement(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  if (ctx.isTemplate) return results;
+
+  const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
+  if (bodyLines.length === 0) return results;
+
+  const bodyBlock = ctx.blocks.find((b) => b.name === "BODY");
+  const bodyStart = bodyBlock?.line ?? 0;
+
+  // --- Check 1: Test functions in BODY ---
+  for (let i = 0; i < bodyLines.length; i++) {
+    const trimmed = bodyLines[i]!.trim();
+
+    if (/^func\s+Test\w+\s*\(\s*\w+\s+\*testing\.T\s*\)/.test(trimmed)) {
+      const fileLine = bodyStart + 1 + i;
+      results.push(
+        warn(file, "closing/test-placement",
+          `Test function in BODY block (line ${fileLine}) — tests belong in CLOSING Cv zone`,
+          { line: fileLine }),
+      );
+    }
+  }
+
+  // --- Check 2: func main() in BODY (executable subtype) ---
+  for (let i = 0; i < bodyLines.length; i++) {
+    const trimmed = bodyLines[i]!.trim();
+
+    if (/^func\s+main\s*\(\s*\)/.test(trimmed)) {
+      const fileLine = bodyStart + 1 + i;
+      results.push(
+        warn(file, "closing/main-placement",
+          `func main() in BODY block (line ${fileLine}) — entry point belongs in CLOSING Ce zone`,
+          { line: fileLine }),
+      );
+      break; // Only one main per file
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Lint orchestrator
+// ---------------------------------------------------------------------------
+
+async function lintGoFile(filePath: string): Promise<LintResult[]> {
+  const ctx = await buildContext(filePath);
+  if (!ctx) {
+    return [error(filePath, "io/read", "Cannot read file")];
+  }
+
+  // Quick check: is this a Go file with any structural markers?
+  if (!ctx.hasAnyOmni && !ctx.hasAnyBlock) {
+    return [
+      info(filePath, "structure/skip",
+        "No //omni: directives or block markers — not a 4-block file"),
+    ];
+  }
+
+  return [
+    ...checkDirectives(ctx),
+    ...checkBlockStructure(ctx),
+    ...checkPackageAndImports(ctx),
+    ...checkPragmaMetadata(ctx),
+    ...checkCommentMetadata(ctx),
+    ...checkSeparatorConsistency(ctx),
+    ...checkTemplateVsDerived(ctx),
+    ...checkSetupSubsectionOrder(ctx),
+    ...checkIdentityRegistration(ctx),
+    ...checkDirectiveFormat(ctx),
+    ...checkContentPlacement(ctx),
+    ...checkBodySubsectionOrder(ctx),
+    ...checkClosingZoneOrder(ctx),
+    ...checkClosingContentPlacement(ctx),
+  ];
+}
+
+// ---------------------------------------------------------------------------
+// Transformer helpers — identity field scaffolding
+// ---------------------------------------------------------------------------
+
+/**
+ * Find the closing line index of a [][2]string var declaration.
+ *
+ *   var Pragma = [][2]string{
+ *       ...
+ *   }   // ← returns this line index (0-based)
+ *
+ * Returns -1 if the var is not found or has no closing brace.
+ */
+function findVarClosingLine(lines: string[], varName: string): number {
+  const startPattern = new RegExp(
+    `^var\\s+${varName}\\s*=\\s*\\[\\]\\[2\\]string\\s*\\{`,
+  );
+  let inVar = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i]!.trim();
+
+    if (!inVar) {
+      if (startPattern.test(trimmed)) {
+        inVar = true;
+        // Single-line var: var Pragma = [][2]string{{"I1.key","v"}}
+        if (/\}\s*$/.test(trimmed) && trimmed.indexOf("{") < trimmed.lastIndexOf("}")) {
+          return i;
+        }
+      }
+      continue;
+    }
+
+    if (trimmed === "}" || trimmed.startsWith("}")) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+// ---------------------------------------------------------------------------
+// Transformer
+// ---------------------------------------------------------------------------
+
+/**
+ * Transform a Go file to fix structural issues.
+ *
+ * Capabilities:
+ *   1. Fix separator widths (= → 76, - → 64)
+ *   2. Add //go:build ignore to template files
+ *   3. Scaffold missing identity fields in Pragma/Metadata vars
+ *
+ * Identity scaffolding:
+ *   - Lints the file to discover missing I/C fields (via FixSuggestion)
+ *   - Required fields always scaffolded; defined fields with --extensions
+ *   - Inserts {"section.field", ""} before closing } of the var
+ *   - Processes Metadata before Pragma (bottom-up line preservation)
+ *
+ * Does NOT inject missing block boundaries (too risky for arbitrary positions).
+ * Lint first, fix structure manually, then transform for cleanup.
+ */
+async function transformGoFile(
+  filePath: string,
+  opts: TransformOptions,
+): Promise<LintResult[]> {
+  const { dryRun, extensions } = opts;
+  const results: LintResult[] = [];
+
+  let text: string;
+  try {
+    text = await Deno.readTextFile(filePath);
+  } catch (e) {
+    return [error(filePath, "io/read", `Cannot read file: ${e}`)];
+  }
+
+  const lines = text.split("\n");
+  let modified = false;
+  let wouldModify = false;
+
+  // --- Transform 1: Fix block separator widths (= chars) ---
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i]!.trim();
+    const eqMatch = trimmed.match(/^(\/\/\s+)(={4,})(\s*)$/);
+    if (eqMatch && eqMatch[2]!.length !== BLOCK_SEPARATOR_WIDTH) {
+      const newLine = `${eqMatch[1]!}${"=".repeat(BLOCK_SEPARATOR_WIDTH)}`;
+      if (dryRun) {
+        wouldModify = true;
+        results.push(info(filePath, "transform/eq-width",
+          `Line ${i + 1}: would fix block separator ${eqMatch[2]!.length} → ${BLOCK_SEPARATOR_WIDTH} chars`));
+      } else {
+        lines[i] = newLine;
+        modified = true;
+        results.push(info(filePath, "transform/eq-width",
+          `Line ${i + 1}: fixed block separator ${eqMatch[2]!.length} → ${BLOCK_SEPARATOR_WIDTH} chars`));
+      }
+    }
+  }
+
+  // --- Transform 2: Fix subsection separator widths (- chars) ---
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i]!.trim();
+    const dashMatch = trimmed.match(/^(\/\/\s+)(-{4,})(\s*)$/);
+    if (dashMatch && dashMatch[2]!.length !== SUBSECTION_SEPARATOR_WIDTH) {
+      const newLine = `${dashMatch[1]!}${"-".repeat(SUBSECTION_SEPARATOR_WIDTH)}`;
+      if (dryRun) {
+        wouldModify = true;
+        results.push(info(filePath, "transform/dash-width",
+          `Line ${i + 1}: would fix subsection separator ${dashMatch[2]!.length} → ${SUBSECTION_SEPARATOR_WIDTH} chars`));
+      } else {
+        lines[i] = newLine;
+        modified = true;
+        results.push(info(filePath, "transform/dash-width",
+          `Line ${i + 1}: fixed subsection separator ${dashMatch[2]!.length} → ${SUBSECTION_SEPARATOR_WIDTH} chars`));
+      }
+    }
+  }
+
+  // --- Transform 3: Add //go:build ignore to template files ---
+  const isTemplate = lines.some((l) => /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
+  const hasBuildIgnore = lines.some((l) => l.trim() === "//go:build ignore");
+
+  if (isTemplate && !hasBuildIgnore) {
+    if (dryRun) {
+      wouldModify = true;
+      results.push(info(filePath, "transform/build-ignore",
+        "Would add //go:build ignore at line 1"));
+    } else {
+      lines.unshift("//go:build ignore", "");
+      modified = true;
+      results.push(info(filePath, "transform/build-ignore",
+        "Added //go:build ignore at line 1"));
+    }
+  }
+
+  // --- Transform 4: Scaffold missing identity fields ---
+  //
+  // Pipeline: parse existing fields → compare against requirements → insert missing.
+  // Required fields (warn-level) always scaffold. Defined fields (info-level)
+  // only scaffold with --extensions. Same k-factor pattern as TOML.
+  //
+  // Process Metadata BEFORE Pragma (bottom-up) so line indices stay valid.
+  if (!isTemplate) {
+    // Process each var: Metadata first (later in file), then Pragma
+    for (const varConfig of [
+      { varName: "Metadata", reqs: METADATA_FIELD_REQUIREMENTS },
+      { varName: "Pragma", reqs: PRAGMA_FIELD_REQUIREMENTS },
+    ] as const) {
+      const fields = parseSliceFields(lines, varConfig.varName);
+      if (fields.length === 0) continue; // var not present or empty — linter handles
+
+      // Find missing fields
+      const presentFields = new Map<string, Set<string>>();
+      for (const f of fields) {
+        if (!presentFields.has(f.section)) presentFields.set(f.section, new Set());
+        presentFields.get(f.section)!.add(f.field.split(".")[0]!);
+      }
+
+      const snippets: string[] = [];
+      for (const [section, req] of Object.entries(varConfig.reqs)) {
+        const sectionSet = presentFields.get(section);
+        // Required fields always scaffold
+        for (const field of req.required) {
+          if (!sectionSet?.has(field)) {
+            snippets.push(`\t{"${section}.${field}", ""},`);
+          }
+        }
+        // Defined fields only with --extensions
+        if (extensions) {
+          for (const field of req.defined) {
+            if (!sectionSet?.has(field)) {
+              snippets.push(`\t{"${section}.${field}", ""},`);
+            }
+          }
+        }
+      }
+
+      if (snippets.length === 0) continue;
+
+      const closingIdx = findVarClosingLine(lines, varConfig.varName);
+      if (closingIdx < 0) continue;
+
+      if (dryRun) {
+        wouldModify = true;
+        for (const s of snippets) {
+          results.push(info(filePath, "transform/identity-scaffold",
+            `Would add to ${varConfig.varName}: ${s.trim()}`));
+        }
+      } else {
+        lines.splice(closingIdx, 0, ...snippets);
+        modified = true;
+        results.push(info(filePath, "transform/identity-scaffold",
+          `Added ${snippets.length} field(s) to ${varConfig.varName}`));
+      }
+    }
+  }
+
+  // --- Write if modified ---
+  if (modified && !dryRun) {
+    await Deno.writeTextFile(filePath, lines.join("\n"));
+    results.push(info(filePath, "transform/written", "File updated"));
+  } else if (!modified && !wouldModify) {
+    results.push(info(filePath, "transform/clean", "No changes needed"));
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Health scoring — atomic action mapping for Go files
+// ---------------------------------------------------------------------------
+//
+// Every lint check becomes an atomic action: pass or fail.
+// Actions are grouped into containers → blocks → file health.
+// Mirrors the Rust handler's scoring structure — same algorithm, Go rules.
+
+/**
+ * Compute health score for a Go file from its lint results.
+ *
+ * Maps each lint rule to an AtomicAction within a container and block.
+ * Uses cascading failure: if a parent check fails (e.g., missing METADATA
+ * block), all child checks within that block also fail.
+ *
+ * The scoring formula is asymmetric — errors cost 2×, warnings 1×,
+ * infos 0.25×. One error in 10 checks → 70%, not 90%.
+ * Truth in measurement.
+ */
+async function computeGoHealth(
+  filePath: string,
+  results: LintResult[],
+): Promise<HealthScore> {
+  // ── Skip non-structural files ──────────────────────────────────
+  const hasStructuralChecks = results.some((r) =>
+    !r.rule.startsWith("structure/") && !r.rule.startsWith("io/"));
+  if (!hasStructuralChecks) {
+    return computeHealthScore([]);
+  }
+
+  // ── File type detection ────────────────────────────────────────
+  const basename = filePath.split("/").pop() ?? "";
+  const isDocGo = basename === "doc.go";
+  let isTemplate = false;
+  try {
+    const content = await Deno.readTextFile(filePath);
+    const firstLines = content.split("\n").slice(0, 15);
+    isTemplate = firstLines.some((l) =>
+      /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
+  } catch { /* best-effort — defaults to non-template */ }
+
+  // ── Build failure index ────────────────────────────────────────
+  const failuresByRule = new Map<string, LintResult[]>();
+  for (const r of results) {
+    if (r.rule.startsWith("structure/") || r.rule.startsWith("io/")) continue;
+    if (!failuresByRule.has(r.rule)) failuresByRule.set(r.rule, []);
+    failuresByRule.get(r.rule)!.push(r);
+  }
+
+  // ── Action helpers ─────────────────────────────────────────────
+
+  /** Create atomic actions: 1 pass if no failure, N fails if N results. */
+  function acts(check: string, container: string, block: string): AtomicAction[] {
+    const failures = failuresByRule.get(check);
+    if (failures && failures.length > 0) {
+      return failures.map((f) => ({
+        check, container, block,
+        passed: false,
+        severity: f.severity,
+        reason: f.message,
+      }));
+    }
+    return [{ check, container, block, passed: true }];
+  }
+
+  /** Cascade all passed actions to failed with error severity. */
+  function cascade(groups: AtomicAction[][], reason: string): void {
+    for (const group of groups) {
+      for (const a of group) {
+        if (a.passed) {
+          a.passed = false;
+          a.severity = "error";
+          a.reason = reason;
+        }
+      }
+    }
+  }
+
+  // ── STRUCTURAL block ──────────────────────────────────────────
+  const blockActions: AtomicAction[] = [];
+  for (const name of BLOCKS) {
+    blockActions.push(...acts(`block/${name}`, "blocks", "structural"));
+    blockActions.push(...acts(`block/end-${name}`, "blocks", "structural"));
+  }
+  blockActions.push(...acts("block/order", "blocks", "structural"));
+
+  const sepActions: AtomicAction[] = [
+    ...acts("style/eq-separator-width", "separators", "structural"),
+    ...acts("style/eq-separator-standard", "separators", "structural"),
+    ...acts("style/dash-separator-width", "separators", "structural"),
+    ...acts("style/dash-separator-standard", "separators", "structural"),
+  ];
+
+  const goActions: AtomicAction[] = [];
+  if (!isTemplate) {
+    goActions.push(...acts("go/package", "go-specific", "structural"));
+    goActions.push(...acts("go/import", "go-specific", "structural"));
+  }
+
+  // ── METADATA block ────────────────────────────────────────────
+  const directiveActions: AtomicAction[] = [];
+  if (isTemplate) {
+    directiveActions.push(...acts("directive/meta.key", "directives", "metadata"));
+    directiveActions.push(...acts("directive/template-format", "directives", "metadata"));
+  } else if (!isDocGo) {
+    for (const d of REQUIRED_DIRECTIVES) {
+      directiveActions.push(...acts(`directive/${d}`, "directives", "metadata"));
+    }
+    for (const d of RECOMMENDED_DIRECTIVES) {
+      directiveActions.push(...acts(`directive/${d}`, "directives", "metadata"));
+    }
+    directiveActions.push(...acts("directive/code-format", "directives", "metadata"));
+  }
+
+  const identityActions: AtomicAction[] = [];
+  if (!isDocGo) {
+    identityActions.push(...acts("identity/Pragma/empty", "identity", "metadata"));
+    identityActions.push(...acts("identity/Metadata/empty", "identity", "metadata"));
+    identityActions.push(...acts("identity/upgrade", "identity", "metadata"));
+
+    // PRAGMA field checks (I1-I4)
+    for (const [section, req] of Object.entries(PRAGMA_FIELD_REQUIREMENTS)) {
+      for (const field of [...req.required, ...req.defined]) {
+        identityActions.push(
+          ...acts(`identity/Pragma/${section}.${field}`, "identity", "metadata"));
+      }
+    }
+
+    // METADATA field checks (C1-C7)
+    for (const [section, req] of Object.entries(METADATA_FIELD_REQUIREMENTS)) {
+      for (const field of [...req.required, ...req.defined]) {
+        identityActions.push(
+          ...acts(`identity/Metadata/${section}.${field}`, "identity", "metadata"));
+      }
+    }
+  }
+
+  const commentActions: AtomicAction[] = [];
+  if (!isTemplate && !isDocGo) {
+    commentActions.push(...acts("comment-meta/biblical", "comment-meta", "metadata"));
+    commentActions.push(...acts("comment-meta/version", "comment-meta", "metadata"));
+  }
+
+  const templateDerivedActions: AtomicAction[] = [];
+  if (isTemplate) {
+    templateDerivedActions.push(...acts("template/build-ignore", "template", "metadata"));
+  } else if (!isDocGo) {
+    templateDerivedActions.push(...acts("derived/build-ignore", "derived", "metadata"));
+  }
+
+  // ── SETUP block ───────────────────────────────────────────────
+  const setupActions: AtomicAction[] = [];
+  if (!isTemplate) {
+    setupActions.push(...acts("setup/subsection-order", "ordering", "setup"));
+  }
+
+  // ── Content placement (spans METADATA, SETUP, BODY) ─────────
+  const contentActions: AtomicAction[] = [];
+  if (!isTemplate) {
+    contentActions.push(...acts("content/metadata-leak", "placement", "metadata"));
+    contentActions.push(...acts("content/block-placement", "placement", "setup"));
+    contentActions.push(...acts("content/subsection-placement", "placement", "setup"));
+  }
+
+  // ── BODY block ────────────────────────────────────────────────
+  const bodyOrderActions: AtomicAction[] = [];
+  if (!isTemplate) {
+    bodyOrderActions.push(...acts("body/subsection-order", "ordering", "body"));
+  }
+
+  // ── CLOSING block ─────────────────────────────────────────────
+  const closingActions: AtomicAction[] = [];
+  if (!isTemplate) {
+    closingActions.push(...acts("closing/zone-order", "zone-ordering", "closing"));
+    closingActions.push(...acts("closing/code-zone-order", "zone-ordering", "closing"));
+    closingActions.push(...acts("closing/doc-section-order", "zone-ordering", "closing"));
+    closingActions.push(...acts("closing/test-placement", "content-placement", "closing"));
+    closingActions.push(...acts("closing/main-placement", "content-placement", "closing"));
+  }
+
+  // ── CASCADE: missing blocks → all children fail ───────────────
+  const blockMissing = (name: string) => failuresByRule.has(`block/${name}`);
+
+  if (blockMissing("METADATA")) {
+    cascade(
+      [directiveActions, identityActions, commentActions, templateDerivedActions],
+      "METADATA block missing — all metadata checks fail",
+    );
+  }
+  if (blockMissing("SETUP")) {
+    cascade([setupActions, contentActions], "SETUP block missing — all setup checks fail");
+  }
+  if (blockMissing("BODY")) {
+    cascade([bodyOrderActions], "BODY block missing — all body checks fail");
+  }
+  if (blockMissing("CLOSING")) {
+    cascade([closingActions], "CLOSING block missing — all closing checks fail");
+  }
+
+  // ── SUB-CASCADE: empty identity vars → field checks fail ──────
+  if (failuresByRule.has("identity/Pragma/empty")) {
+    for (const a of identityActions) {
+      if (a.passed && a.check.startsWith("identity/Pragma/I")) {
+        a.passed = false;
+        a.severity = "warn";
+        a.reason = "Pragma var empty — field check cannot run";
+      }
+    }
+  }
+  if (failuresByRule.has("identity/Metadata/empty")) {
+    for (const a of identityActions) {
+      if (a.passed && a.check.startsWith("identity/Metadata/C")) {
+        a.passed = false;
+        a.severity = "warn";
+        a.reason = "Metadata var empty — field check cannot run";
+      }
+    }
+  }
+
+  // ── Collect all actions ───────────────────────────────────────
+  const allActions = [
+    ...blockActions, ...sepActions, ...goActions,
+    ...directiveActions, ...identityActions, ...commentActions,
+    ...templateDerivedActions,
+    ...setupActions, ...contentActions, ...bodyOrderActions,
+    ...closingActions,
+  ];
+
+  if (allActions.length === 0) {
+    return computeHealthScore([]);
+  }
+
+  // ── Group by container and compute scores ─────────────────────
+  const containerMap = new Map<string, AtomicAction[]>();
+  for (const a of allActions) {
+    const key = `${a.block}/${a.container}`;
+    if (!containerMap.has(key)) containerMap.set(key, []);
+    containerMap.get(key)!.push(a);
+  }
+
+  const containerScores: ContainerScore[] = [];
+  for (const [, actionList] of containerMap) {
+    if (actionList.length === 0) continue;
+    const first = actionList[0]!;
+    containerScores.push(
+      computeContainerScore(first.container, first.block, actionList));
+  }
+
+  // Group container scores by block
+  const blockMap = new Map<string, ContainerScore[]>();
+  for (const cs of containerScores) {
+    if (!blockMap.has(cs.block)) blockMap.set(cs.block, []);
+    blockMap.get(cs.block)!.push(cs);
+  }
+
+  const blockScores: BlockScore[] = [];
+  for (const [block, containers] of blockMap) {
+    blockScores.push(computeBlockScore(block, containers));
+  }
+
+  return computeHealthScore(blockScores);
+}
+
+// ============================================================================
+// CLOSING
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// Registration — plug into the registry
+// ---------------------------------------------------------------------------
+
+const goHandler: FormatHandler = {
+  name: "go",
+  description: "Go 4-block alignment (//omni: directives, METADATA → SETUP → BODY → CLOSING, identity vars, subsection order)",
+  extensions: [".go"],
+  maxDepth: 10,
+  lint: lintGoFile,
+  computeHealth: computeGoHealth,
+  transform: transformGoFile,
+};
+
+registerFormat(goHandler);
+
+export default goHandler;
+
+//
+// Go files express structure through comments — the //omni: pragma directives
+// and block boundary markers — and through identity vars (Pragma/Metadata as
+// [][2]string with I/C fields). This handler reads markers, parses identity,
+// and verifies the skeleton is sound before anyone fills in the flesh.
+//
+// a-03.00: I/C identity parsing + field validation + transformer scaffolding.
+//   Linter:
+//   - parseSliceFields: parse [][2]string{"key","value"} tuples
+//   - validateICFields: check I1-I4 (PRAGMA) and C1-C7 (METADATA)
+//   - PRAGMA/METADATA_FIELD_REQUIREMENTS: schema-driven contracts
+//   - Legacy _pragma/_metadata detection → upgrade notice
+//   - Severity downgrade: comment metadata → info when vars present
+//   Transformer (Transform 4):
+//   - Scaffold missing identity fields into Pragma/Metadata vars
+//   - Required fields always scaffold; defined fields with --extensions
+//   - Bottom-up insertion (Metadata before Pragma) for line stability
+//   - findVarClosingLine: locate closing } of [][2]string vars
+//   - wouldModify tracking: accurate dry-run reporting
+//
+// a-02.00: 11 checks (6 original + 5 new) + transformer.
+//   - Template vs derived classification
+//   - SETUP/BODY subsection order validation
+//   - Directive format validation, separator widths (76= / 64-)
+//   - Transformer: fix separators, add build tags
+//
+// "Let all things be done decently and in order." — 1 Corinthians 14:40
+// ============================================================================

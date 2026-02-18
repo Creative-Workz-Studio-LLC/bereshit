@@ -18,14 +18,15 @@
 // SETUP
 // ============================================================================
 
-import type { LintResult, Severity } from "../lib/types.ts";
+import type { LintResult, Severity } from "../lib/foundation/mod.ts";
 
 // Side-effect imports — register all format handlers before tests run.
-import "../lib/formats/rust.ts";
-import "../lib/formats/toml.ts";
+import "../lib/handlers/go.ts";
+import "../lib/handlers/rust.ts";
+import "../lib/handlers/toml.ts";
 
 // Re-export registry for test files.
-export { getFormat } from "../lib/formats/registry.ts";
+export { getFormat } from "../lib/engine/mod.ts";
 
 // ============================================================================
 // BODY

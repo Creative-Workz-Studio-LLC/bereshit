@@ -8,164 +8,162 @@
 // METADATA
 // ============================================================================
 //
-// TEMPLATE: Go Executable (4-Block Structure)
-// See: standards/code/4-block/ for complete documentation
+// TEMPLATE: Go Executable — 4-Block Structure
 //
-// DEPENDENCY CLASSIFICATION: [PURE/DEPENDED] ([deps if DEPENDED])
-//   - PURE: Standard library only - no internal project dependencies
-//   - DEPENDED: Needs internal packages - list them: (needs: pkg/config, pkg/health)
-//
-// USAGE: When creating a new Go executable from this template:
-//   1. Copy this file: cp executable.go /path/to/new/main.go
-//   2. Update pragma lines:
-//      - #!omni template → #!omni code --go -executable
-//      - meta.key = [your-project-path-key]
-//      - meta.from = b-word/seed/code/L0/go/executable.go
-//      - meta.at = [your-version, e.g., a-01.00]
-//   3. Remove "//go:build ignore" line
-//   4. Replace all [bracketed] placeholders with actual content
+// Usage:
+//   1. cp executable.go /path/to/new/cmd/myapp/main.go
+//   2. Change pragma: #!omni template → //omni:code --go -executable
+//   3. Update meta.key, meta.from, meta.at for your executable
+//   4. Update Pragma and Metadata values to describe your executable
+//   5. Remove "//go:build ignore" line
 //
 // derives_from: b-word/seed/code/L0/go/root.omni
 
-// Package main implements [brief description of what this executable does].
+// Package main is the root 4-block template for Go executables.
 //
-// [Executable Name] - CPI-SI [Project/System Name]
+// All Go executables in the Bereshit project derive from this template.
 //
-// For METADATA structure explanation, see: standards/code/4-block/CWS-STD-004-CODE-metadata-block.md
+// # Design
 //
-// ────────────────────────────────────────────────────────────────
-// CORE IDENTITY (Required)
-// ────────────────────────────────────────────────────────────────
+// Executables orchestrate — they parse arguments, load configuration,
+// call library functions, and handle exit codes. The run() pattern
+// separates orchestration (fallible, returns error) from entry (main).
 //
-// # Biblical Foundation
+// # Usage
 //
-// Scripture: [Relevant verse grounding this executable's purpose]
+//	cp executable.go /path/to/new/cmd/myapp/main.go
+//	# Change pragma: #!omni template → //omni:code --go -executable
+//	# Update Pragma and Metadata values for your executable
 //
-// Principle: [Kingdom principle this executable demonstrates]
+// # Exit Codes
 //
-// Anchor: [Supporting verse reinforcing the principle]
+//	Code  Meaning
+//	0     Success
+//	1     General error
+//	2     Usage/argument error
 //
-// # CPI-SI Identity
+// # OmniCode Identity
 //
-// Component Type: [Ladder/Baton/Rails - see CWS-STD-004 for explanations]
-//
-// Role: [Specific responsibility in system architecture]
-//
-// Paradigm: CPI-SI framework component
-//
-// # Authorship & Lineage
-//
-//   - Architect: [Who designed the approach and requirements]
-//   - Implementation: [Who wrote the code and verified it works]
-//   - Created: [YYYY-MM-DD]
-//   - Version: [MAJOR.MINOR.PATCH]
-//   - Modified: [YYYY-MM-DD - what changed]
-//
-// Version History:
-//
-//   - [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
-//   - [X.Y.Z] ([YYYY-MM-DD]) - [Brief description of changes]
-//
-// # Purpose & Function
-//
-// Purpose: [What problem does this executable solve?]
-//
-// Core Design: [Architectural pattern or paradigm]
-//
-// Key Features:
-//
-//   - [What it provides - major capabilities]
-//   - [What it enables - what others can build with this]
-//   - [What problems it solves - specific use cases]
-//
-// Philosophy: [Guiding principle for how this executable works]
-//
-// ────────────────────────────────────────────────────────────────
-// INTERFACE (Expected)
-// ────────────────────────────────────────────────────────────────
-//
-// # Dependencies
-//
-// What This Needs:
-//
-//   - Standard Library: [list standard packages]
-//   - External: [None | list external packages with versions]
-//   - Internal: [project packages this depends on]
-//
-// What Uses This:
-//
-//   - Commands: [list commands]
-//   - Libraries: [list libraries]
-//   - Tools: [list tools]
-//
-// Integration Points:
-//
-//   - [How other systems connect - Rails/Ladder/Baton mechanism]
-//   - [Cross-component interactions]
-//   - [Data flow or protocol integration]
-//
-// # Usage & Integration
-//
-// Command Line:
-//
-//	[executable-name] [args]        [Brief description]
-//	[executable-name] --help        Show usage
-//
-// Exit Codes:
-//
-//	0  - Success
-//	1  - General error
-//	2  - Usage/argument error
-//	[N] - [Specific error meaning]
-//
-// ────────────────────────────────────────────────────────────────
-// OPERATIONAL (Contextual)
-// ────────────────────────────────────────────────────────────────
-//
-// # Blocking Status
-//
-// [Blocking/Non-blocking]: [Brief explanation]
-//
-// Mitigation: [How blocking/failures handled]
-//
-// # Health Scoring
-//
-// System: [Base100 with 1-point granular scale from -100 to +100]
-//
-// States: [Granted (>+50), Deferred (±50), Denied (<-50)]
-//
-// [Operation Category]:
-//
-//   - [Specific operation]: ±X points
-//   - [Another operation]: ±Y points
-//
-// Cascade Multipliers: [If applicable - describe categories and multipliers]
-//
-//   - [Category]: [X]x ([brief rationale])
-//
-// See: [Reference to detailed health scoring documentation]
-//
-// Note: Scores reflect TRUE impact. Health scorer normalizes to -100 to +100 scale.
-//
-// ────────────────────────────────────────────────────────────────
-// METADATA Omission Guide
-// ────────────────────────────────────────────────────────────────
-//
-// Tier 1 (CORE IDENTITY): Never omit - every file needs these.
-//
-// Tier 2 (INTERFACE): May omit with [OMIT: reason] notation.
-//   - Dependencies: [OMIT: Self-contained, no external requirements]
-//   - Usage & Integration: Rarely omitted, format adapts to file type
-//
-// Tier 3 (OPERATIONAL): Include when applicable to file type.
-//   - Blocking Status: [OMIT: Configuration file, not executable]
-//   - Health Scoring Variations:
-//       * Config Provider: Provides health config, doesn't track own (use brief note)
-//       * Health Tracker: Full scoring with System/States/Operations
-//       * Pass-through: [OMIT: No health impact]
-//
-// Unlike SETUP (all sections required), METADATA omission signals component characteristics.
+//	Variable    Sections  Purpose                          Query
+//	Pragma      I1-I4     Identity — who this file is      PragmaGet
+//	Metadata    C1-C7     Context — when, where, why, how  MetadataGet
 package main
+
+// ──────────────────────────────────────────────────────────────────────────
+// Metadata Imports
+// ──────────────────────────────────────────────────────────────────────────
+//
+// Imports required by the METADATA block (Pragma/Metadata vars and accessors).
+// Kept separate from SETUP imports so METADATA is self-contained.
+// See SETUP > Imports for the full dependency set.
+
+import (
+	// [Reserved: [][2]string is built-in — no imports needed for metadata vars]
+	// Add imports here if PragmaGet/MetadataGet accessors move to METADATA.
+)
+
+// ──────────────────────────────────────────────────────────────────────────
+// Identity (I1-I4)
+// ──────────────────────────────────────────────────────────────────────────
+
+// Pragma carries the OmniCode identity sections (I1-I4) for this executable.
+//
+// These fields establish WHO this file is in the project graph.
+// Initialized once at package load, read-only thereafter.
+//
+// # Sections
+//
+//	Section  Purpose       Required                 Defined
+//	I1       Core          key, format, from, at    —
+//	I2       Family        type, structure          subtype, role
+//	I3       Instance      file, title              component, path, provides, brief
+//	I4       Architecture  —                        layer, position, pattern
+//
+// # Example
+//
+//	key := PragmaGet("I1.key") // returns "B-seed-code-L0-go-executable"
+var Pragma = [][2]string{
+	// I1: Core
+	{"I1.key", "B-seed-code-L0-go-executable"},
+	{"I1.format", "go"},
+	{"I1.from", "b-word/seed/code/L0/go/root.omni"},
+	{"I1.at", "template"},
+	// I2: Family
+	{"I2.type", "code"},
+	{"I2.structure", "4-block"},
+	{"I2.subtype", "executable"},
+	{"I2.role", "seed"},
+	// I3: Instance
+	{"I3.file", "executable.go"},
+	{"I3.title", "Go Executable Template"},
+	{"I3.component", "Root template for Go executables"},
+	{"I3.path", "seed/code/L0/go/executable.go"},
+	{"I3.provides", "GO_EXECUTABLE_TEMPLATE"},
+	{"I3.brief", "Root 4-block template for Go executables. All Go binaries derive from this."},
+	// I4: Architecture
+	{"I4.layer", "L0"},
+	{"I4.position", "seed"},
+	{"I4.pattern", "cp executable.go cmd/myapp/main.go"},
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Context (C1-C7)
+// ──────────────────────────────────────────────────────────────────────────
+
+// Metadata carries the OmniCode context sections (C1-C7) for this executable.
+//
+// These fields establish WHEN, WHERE, WHY, and HOW for this file.
+// Initialized once at package load, read-only thereafter.
+//
+// # Sections
+//
+//	Section  Purpose         Required             Defined
+//	C1       State           version, status      created, updated
+//	C2       Attribution     organization         architect, implementation, copyright
+//	C3       Grounding       scripture            principle, anchor
+//	C4       Dependencies    requires, consumers  integration, if_missing
+//	C5       Intent          —                    purpose, philosophy
+//	C6       Roadmap         —                    current, planned, limitations
+//	C7       Classification  —                    tags, category, domain, paradigm
+//
+// # Example
+//
+//	version := MetadataGet("C1.version") // returns "a-02.00"
+var Metadata = [][2]string{
+	// C1: State
+	{"C1.version", "a-02.00"},
+	{"C1.status", "Active"},
+	{"C1.created", "2026-02-17"},
+	{"C1.updated", "2026-02-17"},
+	// C2: Attribution
+	{"C2.organization", "CreativeWorkzStudio LLC"},
+	{"C2.architect", "Nova Dawn"},
+	{"C2.implementation", "Nova Dawn"},
+	{"C2.copyright", "CreativeWorkzStudio LLC"},
+	// C3: Grounding
+	{"C3.scripture", "Ecclesiastes 9:10 — Whatsoever thy hand findeth to do, do it with thy might"},
+	{"C3.principle", "Executables are action — orchestrate with excellence and clear purpose"},
+	{"C3.anchor", "Genesis 1:1 — In the beginning God created the heaven and the earth"},
+	// C4: Dependencies
+	{"C4.requires.stdlib", "none"},
+	{"C4.requires.external", "none"},
+	{"C4.requires.internal", "none"},
+	{"C4.consumers", "All Go executable binaries in the project"},
+	{"C4.integration", "cp executable.go /path/to/cmd/myapp/main.go"},
+	{"C4.if_missing", "Go executables lack standardized I/C metadata structure"},
+	// C5: Intent
+	{"C5.purpose", "Canonical 4-block structure for Go executables with I/C metadata"},
+	{"C5.philosophy", "Executables orchestrate; libraries compute — clean separation of concerns"},
+	// C6: Roadmap
+	{"C6.current", "a-02.00 — Metadata block production-grade"},
+	{"C6.planned", "Go 4-block linter, schema-driven validation"},
+	{"C6.limitations", "SETUP/BODY/CLOSING blocks pending alignment"},
+	// C7: Classification
+	{"C7.tags", "template, go, executable, 4-block, seed, omnicode"},
+	{"C7.category", "Foundation"},
+	{"C7.domain", "bereshit"},
+	{"C7.paradigm", "CPI-SI"},
+}
 
 // ============================================================================
 // END METADATA

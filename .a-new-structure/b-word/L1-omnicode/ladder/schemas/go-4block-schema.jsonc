@@ -19,7 +19,7 @@
     "_P1_tag": "P.1 CORE — Identity [CORE]",
     "_P1_key": "B-L1-schemas-go-4block-schema",
     "_P1_from": "b-word/seed/data/L0/json/config.jsonc",
-    "_P1_at": "a-01.00",
+    "_P1_at": "a-02.00",
 
     // P.2 FAMILY — Classification
     "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
@@ -47,7 +47,7 @@
     "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
     "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
     "_P5_title": "Go 4-Block Schema",
-    "_P5_brief": "Defines how Go source files implement OmniCode 4-block structure using // comments. Block boundaries, //omni: directives, pragma/metadata maps, and SETUP/BODY subsection ordering — all validated by the go.ts linter.",
+    "_P5_brief": "Defines how Go source files implement OmniCode 4-block structure using // comments. Block boundaries, //omni: directives, Pragma/Metadata [][2]string identity vars (I1-I4, C1-C7), Go doc comments, three-tier comment discipline, and SETUP/BODY subsection ordering — all validated by the go.ts linter.",
 
     // ═══════════════════════════════════════════════════════════════
     // END PRAGMA [END]
@@ -75,10 +75,10 @@
 
     // M.2 STATE
     "_M2_state": {
-        "version": "a-01.00",
+        "version": "a-02.00",
         "status": "Active",
         "created": "2026-02-15",
-        "updated": "2026-02-15"
+        "updated": "2026-02-17"
     },
 
     // M.3 ATTRIBUTION
@@ -95,7 +95,7 @@
 
     // M.5 DEPENDENCIES
     "_M5_dependencies": {
-        "requires": "base-3block-schema.jsonc — shared $defs for format-independent concepts",
+        "requires": "base-4block-schema.jsonc — shared 4-block $defs; base-3block-schema.jsonc — shared I/C metadata $defs",
         "consumers": "c-tov/cws-struct/lib/formats/go.ts — runtime linter implements these rules",
         "cross_format": {
             "makefile_sibling": "b-word/L1-omnicode/ladder/schemas/makefile-4block-schema.jsonc — Makefile 4-block (also comment-based)",
@@ -156,6 +156,8 @@
     "format_mapping": {
         "note": "How OmniCode concepts map to Go syntax",
         "identity_directives": "//omni:key, //omni:code, //omni:version — before package declaration",
+        "doc_comments": "// before exported declarations (Go 1.19+ format) — go doc/godoc parseable",
+        "identity_vars": "var Pragma = [][2]string{...} and var Metadata = [][2]string{...} — I/C identity",
         "block_boundaries": "// ====...==== (76 =) separator + // BLOCK_NAME label",
         "end_markers": "// END BLOCK_NAME — marks block end",
         "subsection_markers": "//--- TAG.N Label — within SETUP; // ────...Label — within BODY",
@@ -178,15 +180,17 @@
     "file_classification": {
         "template": {
             "markers": ["// #!omni template", "//go:build ignore"],
-            "identity": "#!omni meta.key or // Key: comment",
-            "package": "Commented out (// package [name])",
-            "note": "Template files are not compiled — they are seeds for new files"
+            "identity": "#!omni pragma + Pragma/Metadata [][2]string vars with self-describing I/C values",
+            "subtypes": ["--go -library", "--go -executable", "--go -demo-test"],
+            "package": "package packagename (or package main for executable, package packagename_test for demo-test)",
+            "note": "Templates use 'usable schema' pattern — all values describe the template ITSELF (no [bracketed] placeholders). When copied, values are changed to describe the new file."
         },
         "derived": {
             "markers": ["//omni:key", "//omni:code"],
-            "identity": "//omni:key directive + var _pragma/_metadata in doc.go",
+            "identity": "//omni:key directive + var Pragma/Metadata [][2]string in doc.go (package identity)",
+            "doc_comments": "// package doc, // Pragma doc, // Metadata doc recommended",
             "package": "Standard package declaration",
-            "note": "Derived files are compiled Go code with structural markers"
+            "note": "Derived files are compiled Go code with structural markers. Doc.go holds package identity; other files inherit."
         }
     },
 
@@ -235,38 +239,132 @@
         },
 
         // ═══════════════════════════════════════════════════════
-        // METADATA BLOCK — // comment headers
+        // METADATA BLOCK — Identity/Context via Pragma/Metadata vars
         // ═══════════════════════════════════════════════════════
 
         "METADATA": {
-            "purpose": "File identity and context in // comments",
+            "purpose": "File identity and context — OmniCode I/C sections in Go doc comments and Pragma/Metadata vars",
             "boundary": "// ============================================================================",
             "label": "// METADATA",
             "end_marker": "// END METADATA",
             "required": true,
             "severity": "error",
 
-            "comment_fields": {
-                "Key": { "required": true, "severity": "warn", "note": "Downgraded to info if doc.go has var _pragma map" },
-                "Purpose": { "required": true, "severity": "warn", "note": "Downgraded to info if doc.go has var _pragma map" },
-                "Biblical/Scripture": { "recommended": true, "severity": "info" },
-                "Version": { "recommended": true, "severity": "info" }
+            "doc_comments": {
+                "note": "Go doc comments (// before exported declarations) serve as portable API documentation via go doc and godoc. Three-tier comment discipline applies.",
+
+                "package_doc": {
+                    "purpose": "Package-level documentation — first // comment block before package declaration",
+                    "format": "Go 1.19+ doc comment format: # Heading, tab-indented preformatted text, [Name] for doc links",
+                    "contains": "Design summary, Usage examples, OmniCode Identity table (Pragma I1-I4, Metadata C1-C7)",
+                    "severity": "warn"
+                },
+                "pragma_doc": {
+                    "purpose": "Doc comment on var Pragma — describes I1-I4 sections with Required/Defined columns",
+                    "format": "// Pragma carries the OmniCode identity sections (I1-I4)...",
+                    "contains": "Section purpose table with Required/Defined columns, # Example with PragmaGet() usage",
+                    "severity": "warn"
+                },
+                "metadata_doc": {
+                    "purpose": "Doc comment on var Metadata — describes C1-C7 sections with Required/Defined columns",
+                    "format": "// Metadata carries the OmniCode context sections (C1-C7)...",
+                    "contains": "Section purpose table with Required/Defined columns, # Example with MetadataGet() usage",
+                    "severity": "warn"
+                },
+
+                "three_tier_discipline": {
+                    "doc_comments": "// before exported declarations — go doc/godoc parseable (first sentence = summary)",
+                    "organizational_comments": "// section dividers — blank line separates from declarations so NOT parsed as doc comments",
+                    "inline_comments": "// within code for navigation and clarification"
+                }
             },
 
-            "identity_maps": {
-                "var _pragma": {
-                    "purpose": "Runtime-queryable pragma identity (P1-P5 fields)",
-                    "pattern": "var _pragma = map[string]string{...}",
-                    "location": "Typically in doc.go for package-level identity",
-                    "severity": "warn"
+            "comment_fields": {
+                "note": "Comment fields are SECONDARY to Pragma/Metadata vars. When I/C vars exist, these are informational only.",
+                "Key": { "required": true, "severity": "warn", "note": "Downgraded to info if file has Pragma var with I1.key" },
+                "Purpose": { "required": true, "severity": "warn", "note": "Downgraded to info if file has Metadata var with C5.purpose" },
+                "Biblical/Scripture": { "recommended": true, "severity": "info", "note": "Downgraded to info if file has Metadata var with C3.scripture" },
+                "Version": { "recommended": true, "severity": "info", "note": "Downgraded to info if file has Metadata var with C1.version" }
+            },
+
+            "identity_statics": {
+                "note": "Pragma carries Identity (I1-I4), Metadata carries Context (C1-C7). Both are [][2]string slices — lightweight, zero-allocation, Go-idiomatic.",
+
+                "pragma_sections": {
+                    "I1_core": { "required": ["key", "format", "from", "at"], "purpose": "WHO — unique identity" },
+                    "I2_family": { "required": ["type", "structure"], "defined": ["subtype", "role"], "purpose": "WHAT — classification" },
+                    "I3_instance": { "required": ["file", "title"], "defined": ["component", "path", "provides", "brief"], "purpose": "THIS — file-specific" },
+                    "I4_architecture": { "defined": ["layer", "position", "pattern"], "purpose": "WHERE — structural context" }
                 },
-                "var _metadata": {
-                    "purpose": "Runtime-queryable metadata (M1-M10 fields)",
-                    "pattern": "var _metadata = map[string]string{...}",
-                    "location": "Typically in doc.go alongside _pragma",
-                    "severity": "warn"
+
+                "metadata_sections": {
+                    "C1_state": { "required": ["version", "status"], "defined": ["created", "updated"], "purpose": "WHEN — lifecycle" },
+                    "C2_attribution": { "required": ["organization"], "defined": ["architect", "implementation", "copyright"], "purpose": "WHO MADE — credit" },
+                    "C3_grounding": { "required": ["scripture"], "defined": ["principle", "anchor"], "purpose": "WHY — biblical foundation" },
+                    "C4_dependencies": { "required": ["requires", "consumers"], "defined": ["integration", "if_missing"], "purpose": "NEEDS — dependency graph" },
+                    "C5_intent": { "defined": ["purpose", "philosophy"], "purpose": "GOAL — design intent" },
+                    "C6_roadmap": { "defined": ["current", "planned", "limitations"], "purpose": "NEXT — trajectory" },
+                    "C7_classification": { "defined": ["tags", "category", "domain", "paradigm"], "purpose": "TAGS — discovery" }
                 },
-                "package_delegation": "If doc.go in the same package has _pragma and _metadata, severity drops to info for other files"
+
+                "field_format": {
+                    "pragma_keys": "I{section}.{field} — e.g., I1.key, I2.type, I3.file, I4.layer",
+                    "metadata_keys": "C{section}.{field} — e.g., C1.version, C2.organization, C3.scripture",
+                    "nested_keys": "C4.requires.{category} — e.g., C4.requires.stdlib, C4.requires.external, C4.requires.internal"
+                },
+
+                "slice_pattern": {
+                    "pragma": "var Pragma = [][2]string{{\"I1.key\", \"...\"}, {\"I1.format\", \"...\"}, ...}",
+                    "metadata": "var Metadata = [][2]string{{\"C1.version\", \"...\"}, {\"C1.status\", \"...\"}, ...}",
+                    "accessor": "func PragmaGet(key string) string — linear scan over Pragma slice, returns value or empty string",
+                    "note": "Slice pattern chosen for zero-allocation, compile-time-known identity. Go templates use exported Pragma/Metadata."
+                },
+
+                "delegated_identity": {
+                    "pattern": "doc.go holds Pragma and Metadata — other package files inherit",
+                    "note": "Go package identity convention — doc.go is the identity file. Other files in the package don't need their own Pragma/Metadata.",
+                    "severity": "info"
+                },
+
+                "double_import_declare": {
+                    "note": "Go requires imports before other declarations. Templates use a minimal import() block in METADATA area to satisfy syntax, with the full import block in SETUP. When instantiated, both merge or METADATA import is removed.",
+                    "severity": "info"
+                },
+
+                "severity_package_root": "warn",
+                "severity_other_files": "not checked (identity delegated to doc.go)"
+            },
+
+            "subtypes": {
+                "note": "Three template subtypes — same I/C structure, different valid values for I2.subtype and file patterns",
+
+                "library": {
+                    "I2_subtype": "library",
+                    "file_pattern": "*.go (any package file, doc.go for identity)",
+                    "pragma_directive": "//omni:code --go -library",
+                    "template_directive": "// #!omni template --go -library",
+                    "package": "package packagename",
+                    "has_public_api": true,
+                    "purpose": "Library package — exposes public API, holds package identity"
+                },
+                "executable": {
+                    "I2_subtype": "executable",
+                    "file_pattern": "main.go",
+                    "pragma_directive": "//omni:code --go -executable",
+                    "template_directive": "// #!omni template --go -executable",
+                    "package": "package main",
+                    "has_public_api": false,
+                    "purpose": "Binary — orchestrates via main() → run() → error pattern"
+                },
+                "demo_test": {
+                    "I2_subtype": "demo-test",
+                    "file_pattern": "*_test.go",
+                    "pragma_directive": "//omni:code --go -demo-test",
+                    "template_directive": "// #!omni template --go -demo-test",
+                    "package": "package packagename_test (external) or package packagename (internal)",
+                    "has_public_api": false,
+                    "purpose": "Test file — validates package behavior, proves claims"
+                }
             }
         },
 
@@ -400,8 +498,8 @@
                 "1. checkDirectives — //omni:key (required), //omni:code + //omni:version (recommended)",
                 "2. checkBlockStructure — 4 blocks present, correct order, END markers",
                 "3. checkPackageAndImports — package declaration, import statement",
-                "4. checkPragmaMetadataMaps — var _pragma and var _metadata in doc.go",
-                "5. checkCommentMetadata — Key:, Purpose:, Biblical:, Version: in METADATA comments",
+                "4. checkPragmaMetadata — var Pragma (I1-I4) and var Metadata (C1-C7) [][2]string identity vars",
+                "5. checkCommentMetadata — Key:, Purpose:, Biblical:, Version: in METADATA comments (secondary to Pragma/Metadata vars)",
                 "6. checkSeparatorConsistency — = widths consistent (standard: 76), - widths consistent (standard: 64)",
                 "7. checkTemplateVsDerived — //go:build ignore for templates, not for derived",
                 "8. checkSetupSubsectionOrder — I → T → TM → K → V → PS",
@@ -414,7 +512,7 @@
         "directives": {
             "required_directives": ["//omni:key"],
             "recommended_directives": ["//omni:code", "//omni:version"],
-            "template_directive": "#!omni meta.key or // Key: comment"
+            "template_directive": "// #!omni template --go -{subtype} + Pragma/Metadata vars with self-describing I/C values"
         },
 
         "blocks": {
@@ -435,18 +533,38 @@
         },
 
         "identity": {
-            "pragma_map": "var _pragma = map[string]string{...}",
-            "metadata_map": "var _metadata = map[string]string{...}",
+            "patterns": [
+                "var Pragma = [][2]string{...} — Identity sections I1-I4",
+                "var Metadata = [][2]string{...} — Context sections C1-C7"
+            ],
+            "field_requirements": {
+                "I1_core": { "required": ["key", "format", "from", "at"] },
+                "I2_family": { "required": ["type", "structure"], "defined": ["subtype", "role"] },
+                "I3_instance": { "required": ["file", "title"], "defined": ["component", "path", "provides", "brief"] },
+                "I4_architecture": { "defined": ["layer", "position", "pattern"] },
+                "C1_state": { "required": ["version", "status"], "defined": ["created", "updated"] },
+                "C2_attribution": { "required": ["organization"], "defined": ["architect", "implementation", "copyright"] },
+                "C3_grounding": { "required": ["scripture"], "defined": ["principle", "anchor"] },
+                "C4_dependencies": { "required": ["requires", "consumers"], "defined": ["integration", "if_missing"] },
+                "C5_intent": { "defined": ["purpose", "philosophy"] },
+                "C6_roadmap": { "defined": ["current", "planned", "limitations"] },
+                "C7_classification": { "defined": ["tags", "category", "domain", "paradigm"] }
+            },
             "delegation": "doc.go holds package-level identity — other files inherit",
             "severity_with_delegation": "info",
-            "severity_without_delegation": "warn"
+            "severity_without_delegation": "warn",
+            "subtype_awareness": "I2.subtype determines valid file pattern, API surface, and block expectations — see subtypes in METADATA section"
         },
 
         "template_rules": {
+            "pattern": "usable schema — template values describe the template itself, not placeholders",
             "build_ignore_required": true,
             "build_ignore_severity": "error",
             "derived_with_build_ignore_severity": "warn",
-            "placeholder_format": "[bracketed] values"
+            "template_has_pragma_directive": "// #!omni template --go -{subtype}",
+            "derived_has_omni_directive": "//omni:code --go -{subtype}",
+            "identity_fields_self_describing": "I1.key = 'B-seed-code-L0-go-{subtype}', I3.file = '{subtype}.go', etc.",
+            "copy_workflow": "cp template.go dest.go → change pragma → update I/C values for new file"
         },
 
         "transformer": {
@@ -513,10 +631,12 @@
     "_X4_tag": "X.4 REFERENCE — Quick Lookup [REFERENCE]",
     "_X4_related_files": [
         "b-word/L1-omnicode/ladder/schemas/base-3block-schema.jsonc — Base concepts (shared $defs)",
+        "b-word/L1-omnicode/ladder/schemas/base-4block-schema.jsonc — Base 4-block concepts (SETUP/BODY/CLOSING $defs)",
         "b-word/L1-omnicode/ladder/schemas/makefile-4block-schema.jsonc — Makefile 4-block sibling",
         "b-word/L1-omnicode/ladder/schemas/rust-4block-schema.jsonc — Rust 4-block sibling",
-        "b-word/seed/code/L0/go/library.go — Go seed template (canonical example)",
+        "b-word/seed/code/L0/go/library.go — Go library seed template",
         "b-word/seed/code/L0/go/executable.go — Go executable seed template",
+        "b-word/seed/code/L0/go/demo-test.go — Go demo-test seed template",
         "c-tov/cws-struct/lib/formats/go.ts — Runtime linter (implements these rules)"
     ],
 

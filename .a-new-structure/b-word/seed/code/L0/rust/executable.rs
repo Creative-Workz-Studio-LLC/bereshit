@@ -127,7 +127,7 @@ pub static PRAGMA: &[(&str, &str)] = &[
 ///
 /// ```rust
 /// let version = metadata_get("C1.version").unwrap_or("unknown");
-/// assert_eq!(version, "a-01.00");
+/// assert_eq!(version, "a-02.00");
 /// ```
 pub static METADATA: &[(&str, &str)] = &[
     // C1: State

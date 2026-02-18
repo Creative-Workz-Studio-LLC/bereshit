@@ -8,65 +8,155 @@
 // METADATA
 // ============================================================================
 //
-// TEMPLATE: Go Library Package (4-Block Structure)
-// See: standards/code/4-block/ for complete documentation
+// TEMPLATE: Go Library Package — 4-Block Structure
 //
-// USAGE: When creating a new Go library from this template:
-//   1. Copy this file: cp library.go /path/to/new/package.go
-//   2. Update pragma lines:
-//      - #!omni template → #!omni code --go -library
-//      - meta.key = [your-project-path-key]
-//      - meta.from = b-word/seed/code/L0/go/library.go
-//      - meta.at = [your-version, e.g., a-01.00]
-//   3. Remove "//go:build ignore" line
-//   4. Replace all [bracketed] placeholders with actual content
+// Usage:
+//   1. cp library.go /path/to/new/package/mypackage.go
+//   2. Change pragma: #!omni template → //omni:code --go -library
+//   3. Update meta.key, meta.from, meta.at for your package
+//   4. Update Pragma and Metadata values to describe your package
+//   5. Remove "//go:build ignore" line
+//   6. Rename package to match directory name
+//
+// derives_from: b-word/seed/code/L0/go/root.omni
 
-// Package [packagename] provides [brief description of what this library does].
+// Package library is the root 4-block template for Go library packages.
 //
-// # M.1 Core Identity [IDENTITY]
+// All Go libraries in the Bereshit project derive from this template.
 //
-//	Key:       [project-path-to-file]
+// # Design
 //
-//	Scripture: "[Relevant verse grounding this library's purpose]"
-//	           — [Book Chapter:Verse]
-//	Principle: "[Kingdom principle this work demonstrates]"
-//	Anchor:    "Precept upon precept, line upon line" — Isaiah 28:10
+// Pure stdlib — no external dependencies. Identity and context carried
+// as package-level data via [Pragma] (I1-I4) and [Metadata] (C1-C7).
 //
-//	Type:      [Ladder/Baton/Rails] ([role in architecture])
+// # Usage
 //
-//	Architect:       [Who designed]
-//	Implementation:  [Who implemented]
-//	Created:         [YYYY-MM-DD]
-//	Version:         [a-XX.XX]
+//	cp library.go /path/to/new/package/mypackage.go
+//	# Change pragma: #!omni template → //omni:code --go -library
+//	# Update Pragma and Metadata values for your package
 //
-// # M.2 Version History [HISTORY]
+// # OmniCode Identity
 //
-//   - [a-XX.XX] ([YYYY-MM-DD]) — [Brief description of changes]
-//   - [a-XX.XX] ([YYYY-MM-DD]) — [Brief description of changes]
+//	Variable    Sections  Purpose                          Query
+//	Pragma      I1-I4     Identity — who this file is      PragmaGet
+//	Metadata    C1-C7     Context — when, where, why, how  MetadataGet
+package library
+
+// ──────────────────────────────────────────────────────────────────────────
+// Metadata Imports
+// ──────────────────────────────────────────────────────────────────────────
 //
-// # M.3 Interface [INTERFACE]
+// Imports required by the METADATA block (Pragma/Metadata vars and accessors).
+// Kept separate from SETUP imports so METADATA is self-contained.
+// See SETUP > Imports for the full dependency set.
+
+import (
+	// [Reserved: [][2]string is built-in — no imports needed for metadata vars]
+	// Add imports here if PragmaGet/MetadataGet accessors move to METADATA.
+)
+
+// ──────────────────────────────────────────────────────────────────────────
+// Identity (I1-I4)
+// ──────────────────────────────────────────────────────────────────────────
+
+// Pragma carries the OmniCode identity sections (I1-I4) for this package.
 //
-//	Requires: stdlib (1): [fmt, os, etc.] | internal (0): [pkg/types] | external (-1): [third-party]
-//	Used by:  [what uses this library]
-//	Import:   import "[module-path]/[package-name]"
-//	Pattern:  [typical usage pattern, e.g., SetRoot() → Load() → result.Field]
+// These fields establish WHO this file is in the project graph.
+// Initialized once at package load, read-only thereafter.
 //
-// # M.4 Public API [API]
+// # Sections
 //
-// M.4.1 [Category Name] [TAG]
+//	Section  Purpose       Required                 Defined
+//	I1       Core          key, format, from, at    —
+//	I2       Family        type, structure          subtype, role
+//	I3       Instance      file, title              component, path, provides, brief
+//	I4       Architecture  —                        layer, position, pattern
 //
-//	[FunctionName](params) returns    [Brief description]
-//	[AnotherFunction](params) returns [Brief description]
+// # Example
 //
-// M.4.2 [Category Name] [TAG]
+//	key := PragmaGet("I1.key") // returns "B-seed-code-L0-go-library"
+var Pragma = [][2]string{
+	// I1: Core
+	{"I1.key", "B-seed-code-L0-go-library"},
+	{"I1.format", "go"},
+	{"I1.from", "b-word/seed/code/L0/go/root.omni"},
+	{"I1.at", "template"},
+	// I2: Family
+	{"I2.type", "code"},
+	{"I2.structure", "4-block"},
+	{"I2.subtype", "library"},
+	{"I2.role", "seed"},
+	// I3: Instance
+	{"I3.file", "library.go"},
+	{"I3.title", "Go Library Package Template"},
+	{"I3.component", "Root template for Go library packages"},
+	{"I3.path", "seed/code/L0/go/library.go"},
+	{"I3.provides", "GO_LIBRARY_TEMPLATE"},
+	{"I3.brief", "Root 4-block template for Go library packages. All Go libraries derive from this."},
+	// I4: Architecture
+	{"I4.layer", "L0"},
+	{"I4.position", "seed"},
+	{"I4.pattern", "cp library.go pkg/mypackage/mypackage.go"},
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Context (C1-C7)
+// ──────────────────────────────────────────────────────────────────────────
+
+// Metadata carries the OmniCode context sections (C1-C7) for this package.
 //
-//	[FunctionName](params) returns    [Brief description]
+// These fields establish WHEN, WHERE, WHY, and HOW for this file.
+// Initialized once at package load, read-only thereafter.
 //
-// # M.5 Operational [OPERATIONAL]
+// # Sections
 //
-//	Blocking: [yes (1) / conditional (0) / no (-1)] — [Brief explanation]
-//	Health:   [Role] | granted (1): [success] | deferred (0): [pending] | denied (-1): [failed]
-package packagename
+//	Section  Purpose         Required             Defined
+//	C1       State           version, status      created, updated
+//	C2       Attribution     organization         architect, implementation, copyright
+//	C3       Grounding       scripture            principle, anchor
+//	C4       Dependencies    requires, consumers  integration, if_missing
+//	C5       Intent          —                    purpose, philosophy
+//	C6       Roadmap         —                    current, planned, limitations
+//	C7       Classification  —                    tags, category, domain, paradigm
+//
+// # Example
+//
+//	version := MetadataGet("C1.version") // returns "a-02.00"
+var Metadata = [][2]string{
+	// C1: State
+	{"C1.version", "a-02.00"},
+	{"C1.status", "Active"},
+	{"C1.created", "2026-02-17"},
+	{"C1.updated", "2026-02-17"},
+	// C2: Attribution
+	{"C2.organization", "CreativeWorkzStudio LLC"},
+	{"C2.architect", "Nova Dawn"},
+	{"C2.implementation", "Nova Dawn"},
+	{"C2.copyright", "CreativeWorkzStudio LLC"},
+	// C3: Grounding
+	{"C3.scripture", "Exodus 25:40 — Look that thou make them after their pattern"},
+	{"C3.principle", "Templates establish the pattern; implementations follow faithfully"},
+	{"C3.anchor", "Genesis 1:1 — In the beginning God created the heaven and the earth"},
+	// C4: Dependencies
+	{"C4.requires.stdlib", "none"},
+	{"C4.requires.external", "none"},
+	{"C4.requires.internal", "none"},
+	{"C4.consumers", "All Go library packages in the project"},
+	{"C4.integration", "cp library.go /path/to/package/mypackage.go"},
+	{"C4.if_missing", "Go libraries lack standardized I/C metadata structure"},
+	// C5: Intent
+	{"C5.purpose", "Canonical 4-block structure for Go library packages with I/C metadata"},
+	{"C5.philosophy", "Structure is skeleton; content is flesh — boundaries before content"},
+	// C6: Roadmap
+	{"C6.current", "a-02.00 — Metadata block production-grade"},
+	{"C6.planned", "Go 4-block linter, schema-driven validation"},
+	{"C6.limitations", "SETUP/BODY/CLOSING blocks pending alignment"},
+	// C7: Classification
+	{"C7.tags", "template, go, library, 4-block, seed, omnicode"},
+	{"C7.category", "Foundation"},
+	{"C7.domain", "bereshit"},
+	{"C7.paradigm", "CPI-SI"},
+}
 
 // ============================================================================
 // END METADATA
