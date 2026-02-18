@@ -32,9 +32,10 @@
 // ============================================================================
 
 import { relative } from "@std/path";
+import { pooledMap } from "@std/async/pool";
 import type { CliOptions, LintSummary } from "./lib/foundation/mod.ts";
 import { summarize } from "./lib/foundation/mod.ts";
-import { discoverFiles } from "./lib/engine/mod.ts";
+import { discoverFiles, discoverAllFiles } from "./lib/engine/mod.ts";
 import {
   COLORS,
   printFileSummary,
@@ -43,9 +44,7 @@ import {
 } from "./lib/engine/mod.ts";
 import {
   getFormat,
-  listFormats,
   listFormatDetails,
-  detectFormat,
 } from "./lib/engine/mod.ts";
 import { verifyEnvironment } from "./lib/verify/env.ts";
 
@@ -66,6 +65,9 @@ import "./lib/handlers/rust.ts";
 const VERSION = "0.1.0";
 const TOOL_NAME = "cws-struct";
 
+/** Bounded concurrency for parallel file linting/transform. */
+const LINT_CONCURRENCY = 8;
+
 // ============================================================================
 // BODY
 // ============================================================================
@@ -84,6 +86,8 @@ function parseArgs(args: string[]): CliOptions {
       summaryOnly: false,
       dryRun: false,
       extensions: false,
+      json: false,
+      failFast: false,
     };
   }
 
@@ -96,6 +100,8 @@ function parseArgs(args: string[]): CliOptions {
       summaryOnly: false,
       dryRun: false,
       extensions: false,
+      json: false,
+      failFast: false,
     };
   }
 
@@ -109,6 +115,10 @@ function parseArgs(args: string[]): CliOptions {
     // Try to match first non-flag as format name
     const candidate = nonFlags[0]!;
     if (getFormat(candidate)) {
+      format = candidate;
+    } else if (!candidate.includes("/") && !candidate.includes("\\") && !candidate.includes(".")) {
+      // Looks like a format name (no path separators or extensions) but isn't registered.
+      // Treat as unknown format so runLint/runTransform can report the error.
       format = candidate;
     }
   }
@@ -124,6 +134,8 @@ function parseArgs(args: string[]): CliOptions {
     summaryOnly: rest.includes("--summary"),
     dryRun: rest.includes("--dry-run"),
     extensions: rest.includes("--extensions"),
+    json: rest.includes("--json"),
+    failFast: rest.includes("--fail-fast"),
   };
 }
 
@@ -157,6 +169,8 @@ ${COLORS.bold}Options:${COLORS.reset}
   --verbose, -v     Show all results (including info)
   --errors-only     Show only errors
   --summary         Show only file-level summary
+  --json            Machine-readable JSON output (suppresses human output)
+  --fail-fast       Stop on first file with errors
   --dry-run         Preview transforms without writing
   --extensions      Also scaffold extension sections (I4, C5-C7, X2-X4, etc.)
   --help, -h        Show this help
@@ -174,6 +188,8 @@ ${COLORS.bold}Examples:${COLORS.reset}
   ${TOOL_NAME} lint rust src/                ${COLORS.dim}# lint only Rust files${COLORS.reset}
   ${TOOL_NAME} lint toml word/core/types/    ${COLORS.dim}# lint only TOML files${COLORS.reset}
   ${TOOL_NAME} lint toml . --summary         ${COLORS.dim}# summary view${COLORS.reset}
+  ${TOOL_NAME} lint . --json                 ${COLORS.dim}# machine-readable JSON output${COLORS.reset}
+  ${TOOL_NAME} lint . --fail-fast            ${COLORS.dim}# stop on first error${COLORS.reset}
   ${TOOL_NAME} transform .                   ${COLORS.dim}# auto-fix all formats${COLORS.reset}
   ${TOOL_NAME} transform rust src/ --dry-run ${COLORS.dim}# preview Rust fixes${COLORS.reset}
   ${TOOL_NAME} verify env                    ${COLORS.dim}# check dev tools${COLORS.reset}
@@ -194,6 +210,14 @@ function showFormats(): void {
 /**
  * Lint files for a single format handler.
  * Extracted so both explicit-format and auto-detect paths share the same logic.
+ *
+ * Uses bounded concurrency (LINT_CONCURRENCY) to lint files in parallel while
+ * capping open file handles. Results stream in order via pooledMap.
+ *
+ * Supports:
+ * - --json: Suppress human output (caller handles JSON serialization)
+ * - --fail-fast: Stop after first file with errors (current batch completes)
+ * - Progress counter: [N/total] when stdout is a TTY (not in json/piped mode)
  */
 async function lintWithHandler(
   opts: CliOptions,
@@ -202,25 +226,50 @@ async function lintWithHandler(
 ): Promise<LintSummary[]> {
   const cwd = Deno.cwd();
   const summaries: LintSummary[] = [];
+  const showHuman = !opts.json;
+  const isTTY = showHuman && Deno.stdout.isTerminal();
+  const encoder = new TextEncoder();
+  let hitFailFast = false;
 
-  for (const file of files) {
+  const pool = pooledMap(LINT_CONCURRENCY, files, async (file) => {
     const results = await handler.lint(file);
     const health = handler.computeHealth
       ? await handler.computeHealth(file, results)
       : undefined;
-    const summary = summarize(relative(cwd, file), results, health);
+    return summarize(relative(cwd, file), results, health);
+  });
+
+  for await (const summary of pool) {
     summaries.push(summary);
 
-    if (!opts.summaryOnly) {
+    // Progress counter — TTY only, cleared before each result
+    if (isTTY) {
+      Deno.stdout.writeSync(encoder.encode(
+        `\r\x1b[K[${summaries.length}/${files.length}] `,
+      ));
+    }
+
+    if (showHuman && !opts.summaryOnly) {
       if (opts.errorsOnly) {
         if (summary.errors > 0) printFileSummary(summary, opts.verbose);
       } else {
         printFileSummary(summary, opts.verbose);
       }
     }
+
+    // Fail-fast: stop accepting new results after first error file
+    if (opts.failFast && summary.errors > 0) {
+      hitFailFast = true;
+      break;
+    }
   }
 
-  if (opts.summaryOnly) {
+  // Clear progress line if we wrote one
+  if (isTTY) {
+    Deno.stdout.writeSync(encoder.encode("\r\x1b[K"));
+  }
+
+  if (showHuman && opts.summaryOnly) {
     for (const s of summaries) {
       const status =
         s.errors === 0
@@ -230,7 +279,53 @@ async function lintWithHandler(
     }
   }
 
+  if (showHuman && hitFailFast) {
+    console.log(
+      `\n${COLORS.yellow}Stopped early (--fail-fast): ${files.length - summaries.length} file(s) skipped.${COLORS.reset}`,
+    );
+  }
+
   return summaries;
+}
+
+/**
+ * Emit lint results as structured JSON to stdout.
+ * Machine-readable output for CI/CD pipelines and tooling integration.
+ */
+function emitJson(summaries: LintSummary[]): void {
+  let totalErrors = 0, totalWarnings = 0, totalInfos = 0;
+  for (const s of summaries) {
+    totalErrors += s.errors;
+    totalWarnings += s.warnings;
+    totalInfos += s.infos;
+  }
+
+  const output = {
+    tool: TOOL_NAME,
+    version: VERSION,
+    files: summaries.map((s) => ({
+      file: s.file,
+      errors: s.errors,
+      warnings: s.warnings,
+      infos: s.infos,
+      health: s.health ?? null,
+      results: s.results.map((r) => ({
+        severity: r.severity,
+        rule: r.rule,
+        message: r.message,
+        line: r.line ?? null,
+        fix: r.fix ?? null,
+      })),
+    })),
+    totals: {
+      files: summaries.length,
+      errors: totalErrors,
+      warnings: totalWarnings,
+      infos: totalInfos,
+    },
+  };
+
+  console.log(JSON.stringify(output, null, 2));
 }
 
 async function runLint(opts: CliOptions): Promise<boolean> {
@@ -240,6 +335,8 @@ async function runLint(opts: CliOptions): Promise<boolean> {
     );
     return false;
   }
+
+  const showHuman = !opts.json;
 
   // ── Explicit format: lint with that handler ────────────────────
   if (opts.format) {
@@ -258,26 +355,27 @@ async function runLint(opts: CliOptions): Promise<boolean> {
       return false;
     }
 
-    printHeader(TOOL_NAME, VERSION, files.length, handler.description);
+    if (showHuman) printHeader(TOOL_NAME, VERSION, files.length, handler.description);
     const summaries = await lintWithHandler(opts, handler, files);
-    printTotals(summaries);
+    if (showHuman) printTotals(summaries);
+    if (opts.json) emitJson(summaries);
     return summaries.every((s) => s.errors === 0);
   }
 
-  // ── No format: auto-detect — lint is the operation, format is discovered ──
-  const allFormats = listFormats();
+  // ── No format: auto-detect — single walk, dispatch by extension ──
+  const filesByFormat = await discoverAllFiles(opts.targets);
   const allSummaries: LintSummary[] = [];
   let totalFiles = 0;
 
-  for (const formatName of allFormats) {
+  for (const [formatName, files] of filesByFormat) {
     const handler = getFormat(formatName)!;
-    const files = await discoverFiles(opts.targets, handler);
-    if (files.length === 0) continue;
-
     totalFiles += files.length;
-    console.log(
-      `\n${COLORS.bold}── ${handler.name}${COLORS.reset} (${files.length} file${files.length > 1 ? "s" : ""}) — ${handler.description}`,
-    );
+
+    if (showHuman) {
+      console.log(
+        `\n${COLORS.bold}── ${handler.name}${COLORS.reset} (${files.length} file${files.length > 1 ? "s" : ""}) — ${handler.description}`,
+      );
+    }
 
     const summaries = await lintWithHandler(opts, handler, files);
     allSummaries.push(...summaries);
@@ -291,13 +389,18 @@ async function runLint(opts: CliOptions): Promise<boolean> {
     return false;
   }
 
-  printTotals(allSummaries);
+  if (showHuman) printTotals(allSummaries);
+  if (opts.json) emitJson(allSummaries);
   return allSummaries.every((s) => s.errors === 0);
 }
 
 /**
  * Transform files for a single format handler.
  * Extracted so both explicit-format and auto-detect paths share the same logic.
+ *
+ * Uses bounded concurrency — same pattern as lintWithHandler.
+ * Note: transforms write files, so concurrency is safe per-file (each file independent)
+ * but shouldn't be too high on slow I/O.
  */
 async function transformWithHandler(
   opts: CliOptions,
@@ -308,13 +411,17 @@ async function transformWithHandler(
 
   const cwd = Deno.cwd();
   const summaries: LintSummary[] = [];
+  const transformFn = handler.transform.bind(handler);
 
-  for (const file of files) {
-    const results = await handler.transform(file, {
+  const pool = pooledMap(LINT_CONCURRENCY, files, async (file) => {
+    const results = await transformFn(file, {
       dryRun: opts.dryRun,
       extensions: opts.extensions,
     });
-    const summary = summarize(relative(cwd, file), results);
+    return summarize(relative(cwd, file), results);
+  });
+
+  for await (const summary of pool) {
     summaries.push(summary);
     printFileSummary(summary, opts.verbose);
   }
@@ -356,17 +463,14 @@ async function runTransform(opts: CliOptions): Promise<boolean> {
     return summaries.every((s) => s.errors === 0);
   }
 
-  // ── No format: auto-detect — transform is the operation, format is discovered ──
-  const allFormats = listFormats();
+  // ── No format: auto-detect — single walk, dispatch by extension ──
+  const filesByFormat = await discoverAllFiles(opts.targets);
   const allSummaries: LintSummary[] = [];
   let totalFiles = 0;
 
-  for (const formatName of allFormats) {
+  for (const [formatName, files] of filesByFormat) {
     const handler = getFormat(formatName)!;
     if (!handler.transform) continue;
-
-    const files = await discoverFiles(opts.targets, handler);
-    if (files.length === 0) continue;
 
     totalFiles += files.length;
     console.log(
@@ -417,6 +521,8 @@ const KNOWN_FLAGS = new Set([
   "--summary",
   "--dry-run",
   "--extensions",
+  "--json",
+  "--fail-fast",
   "--help", "-h",
   "--version",
 ]);

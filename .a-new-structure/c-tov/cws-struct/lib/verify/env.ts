@@ -343,11 +343,8 @@ export async function verifyEnvironment(verbose: boolean): Promise<boolean> {
     `${COLORS.dim}"Prove all things; hold fast that which is good." — 1 Thess 5:21${COLORS.reset}\n`,
   );
 
-  const results: ToolResult[] = [];
-
-  for (const spec of TOOLS) {
-    results.push(await checkTool(spec));
-  }
+  // All tool checks run concurrently — each spawns an independent subprocess
+  const results = await Promise.all(TOOLS.map((spec) => checkTool(spec)));
 
   // Group by category and print
   const categories = [...new Set(TOOLS.map((t) => t.category))];

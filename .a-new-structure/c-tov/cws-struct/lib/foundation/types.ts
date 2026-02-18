@@ -127,6 +127,8 @@ export interface CliOptions {
   summaryOnly: boolean;
   dryRun: boolean;
   extensions: boolean;
+  json: boolean;
+  failFast: boolean;
 }
 
 // ============================================================================
@@ -178,20 +180,21 @@ function normalizeOpts(opts?: ResultOpts | FixSuggestion): Partial<LintResult> {
   return result;
 }
 
-/** Tally a results array into a summary. */
+/** Tally a results array into a summary. Single-pass counting. */
 export function summarize(
   file: string,
   results: LintResult[],
   health?: HealthScore,
 ): LintSummary {
-  return {
-    file,
-    errors: results.filter((r) => r.severity === "error").length,
-    warnings: results.filter((r) => r.severity === "warn").length,
-    infos: results.filter((r) => r.severity === "info").length,
-    results,
-    ...(health ? { health } : {}),
-  };
+  let errors = 0, warnings = 0, infos = 0;
+  for (const r of results) {
+    switch (r.severity) {
+      case "error": errors++; break;
+      case "warn": warnings++; break;
+      case "info": infos++; break;
+    }
+  }
+  return { file, errors, warnings, infos, results, ...(health ? { health } : {}) };
 }
 
 // ============================================================================

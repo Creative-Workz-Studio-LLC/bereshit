@@ -52,39 +52,24 @@ import {
 } from "../foundation/mod.ts";
 import { registerFormat } from "../engine/mod.ts";
 
+// Shared 4-block types, constants, and functions
+import type { BlockPosition, DirectiveInfo, SubsectionRange, IdentityField } from "./shared/mod.ts";
+import {
+  BLOCKS, REQUIRED_DIRECTIVES, RECOMMENDED_DIRECTIVES,
+  PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS,
+  BLOCK_SEPARATOR_WIDTH, SUBSECTION_SEPARATOR_WIDTH,
+  BODY_SUBSECTION_PATTERN, BODY_SUBSECTION_LEGACY, CLOSING_ZONES,
+  findBlocks, getBlockLines, blockLineToFile, findBlockRange,
+  getSubsectionRanges as _getSubsectionRanges,
+  checkSeparatorConsistency, checkClosingZoneOrder,
+} from "./shared/mod.ts";
+
+// Re-export for tests
+export { PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS };
+
 // ---------------------------------------------------------------------------
-// Constants — what we expect in a 4-block Go file
+// Constants — Go-specific (shared constants imported from ./shared/mod.ts)
 // ---------------------------------------------------------------------------
-
-/** Required //omni: directives at top of file. */
-const REQUIRED_DIRECTIVES = [
-  "//omni:key",
-] as const;
-
-/** Recommended //omni: directives. */
-const RECOMMENDED_DIRECTIVES = [
-  "//omni:code",
-  "//omni:version",
-] as const;
-
-/** The 4 blocks in required order. */
-const BLOCKS = ["METADATA", "SETUP", "BODY", "CLOSING"] as const;
-
-/** Patterns that identify a block boundary. */
-const BLOCK_PATTERNS: Record<string, RegExp> = {
-  METADATA: /^\/\/\s*={4,}\s*$|^\/\/\s+METADATA\s*$/,
-  SETUP:    /^\/\/\s+SETUP\s*$/,
-  BODY:     /^\/\/\s+BODY\s*$/,
-  CLOSING:  /^\/\/\s+CLOSING\s*$/,
-};
-
-/** END marker patterns. */
-const END_PATTERNS: Record<string, RegExp> = {
-  METADATA: /^\/\/\s+END METADATA\s*$/,
-  SETUP:    /^\/\/\s+END SETUP\s*$/,
-  BODY:     /^\/\/\s+END BODY\s*$/,
-  CLOSING:  /^\/\/\s+END CLOSING\s*$/,
-};
 
 /**
  * SETUP section markers in canonical dependency-chain order.
@@ -115,46 +100,12 @@ const SETUP_SUBSECTIONS = [
   { tag: "BuildTags",     pattern: /^\/\/\s+(?:\d+\.\s+)?Build\s*Tags\b/i },
 ] as const;
 
-/**
- * BODY subsection pattern — matches `// N. Name` format (same as Rust).
- * Also handles legacy `§N — Name` format for backward compatibility.
- * The handler checks ascending numeric order only — subtype-agnostic.
- */
-const BODY_SUBSECTION_PATTERN = /^\/\/\s+(\d+)\.?\s+(.+)/;
-const BODY_SUBSECTION_LEGACY  = /^\/\/\s+§(\d+)\s*[—–-]\s*(.+)/;
-
 /** Known //omni:code directive patterns. */
 const KNOWN_CODE_DIRECTIVES = [
   "--go -library",
   "--go -executable",
   "--go -demo-test",
 ] as const;
-
-/**
- * I/C field requirements — mirrors the schema's field_requirements.
- * PRAGMA carries Identity (I1-I4), METADATA carries Context (C1-C7).
- * Keys match the section prefix used in vars (e.g., "I1" not "I1_core").
- */
-export const PRAGMA_FIELD_REQUIREMENTS: Record<string, { required: string[]; defined: string[] }> = {
-  I1: { required: ["key", "format", "from", "at"], defined: [] },
-  I2: { required: ["type", "structure"], defined: ["subtype", "role"] },
-  I3: { required: ["file", "title"], defined: ["component", "path", "provides", "brief"] },
-  I4: { required: [], defined: ["layer", "position", "pattern"] },
-};
-
-export const METADATA_FIELD_REQUIREMENTS: Record<string, { required: string[]; defined: string[] }> = {
-  C1: { required: ["version", "status"], defined: ["created", "updated"] },
-  C2: { required: ["organization"], defined: ["architect", "implementation", "copyright"] },
-  C3: { required: ["scripture"], defined: ["principle", "anchor"] },
-  C4: { required: ["requires", "consumers"], defined: ["integration", "if_missing"] },
-  C5: { required: [], defined: ["purpose", "philosophy"] },
-  C6: { required: [], defined: ["current", "planned", "limitations"] },
-  C7: { required: [], defined: ["tags", "category", "domain", "paradigm"] },
-};
-
-/** Standard separator widths. */
-const BLOCK_SEPARATOR_WIDTH = 76;         // // ====...==== (76 = chars)
-const SUBSECTION_SEPARATOR_WIDTH = 74;    // // ────...──── (74 ─ chars)
 
 // ---------------------------------------------------------------------------
 // Content Classification — what Go constructs are, where they belong
@@ -235,32 +186,8 @@ const METADATA_FORBIDDEN: Set<GoContentKind> = new Set([
 // ============================================================================
 
 // ---------------------------------------------------------------------------
-// Types
+// Types — Go-specific (shared types imported from ./shared/mod.ts)
 // ---------------------------------------------------------------------------
-
-interface BlockPosition {
-  name: string;
-  line: number;       // 1-based line number where the block header appears
-  endLine: number;    // 1-based line of END marker, 0 if absent
-}
-
-/** A directive found in the file, with its 1-based line number. */
-interface DirectiveInfo {
-  value: string;
-  line: number;
-}
-
-/** A parsed field from a Pragma or Metadata identity var. */
-interface IdentityField {
-  /** Section prefix: "I1", "I2", "C1", etc. */
-  section: string;
-  /** Field name: "key", "format", "requires.stdlib", etc. */
-  field: string;
-  /** The string value. */
-  value: string;
-  /** 1-based line number in the file where this field was found. */
-  line: number;
-}
 
 /** File-level context gathered once, passed to all check functions. */
 interface GoFileContext {
@@ -279,48 +206,6 @@ interface GoFileContext {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Scan lines for block boundaries.
- * Returns positions of each block found, in order of appearance.
- */
-function findBlocks(lines: string[]): BlockPosition[] {
-  const positions: BlockPosition[] = [];
-
-  for (const blockName of BLOCKS) {
-    let headerLine = 0;
-    let endLine = 0;
-
-    for (let i = 0; i < lines.length; i++) {
-      const trimmed = lines[i]!.trim();
-
-      // Look for block header: "// METADATA", "// SETUP", etc.
-      if (blockName === "METADATA") {
-        if (/^\/\/\s+METADATA\s*$/.test(trimmed) && headerLine === 0) {
-          headerLine = i + 1;
-        }
-      } else {
-        if (BLOCK_PATTERNS[blockName]!.test(trimmed) && headerLine === 0) {
-          headerLine = i + 1;
-        }
-      }
-
-      // Look for END marker
-      if (END_PATTERNS[blockName]!.test(trimmed) && endLine === 0) {
-        endLine = i + 1;
-      }
-    }
-
-    if (headerLine > 0) {
-      positions.push({ name: blockName, line: headerLine, endLine });
-    }
-  }
-
-  // Sort by file position so block order reflects actual file layout
-  positions.sort((a, b) => a.line - b.line);
-
-  return positions;
-}
 
 /**
  * Find all //omni: directives at the top of the file.
@@ -363,43 +248,6 @@ function findOmniDirectives(lines: string[]): Map<string, DirectiveInfo> {
   }
 
   return directives;
-}
-
-/**
- * Extract lines belonging to a specific block (between header and END/next block).
- */
-function getBlockLines(
-  lines: string[],
-  blocks: BlockPosition[],
-  blockName: string,
-): string[] {
-  const block = blocks.find((b) => b.name === blockName);
-  if (!block) return [];
-
-  const startIdx = block.line; // 1-based, block header line — content starts after
-  let endIdx: number;
-
-  if (block.endLine > 0) {
-    endIdx = block.endLine - 1; // 1-based, exclude END marker
-  } else {
-    // Find next block start
-    const blockIdx = blocks.indexOf(block);
-    const nextBlock = blocks[blockIdx + 1];
-    endIdx = nextBlock ? nextBlock.line - 2 : lines.length;
-  }
-
-  return lines.slice(startIdx, endIdx);
-}
-
-/**
- * Convert a block-relative line index to a 1-based file line number.
- * blockLines[i] came from getBlockLines(), which slices at block.line (1-based).
- * So the file line for blockLines[i] is block.line + 1 + i.
- */
-function blockLineToFile(blocks: BlockPosition[], blockName: string, relIdx: number): number {
-  const block = blocks.find((b) => b.name === blockName);
-  if (!block) return 0;
-  return block.line + 1 + relIdx;
 }
 
 // ---------------------------------------------------------------------------
@@ -449,46 +297,11 @@ export function classifyGoLine(rawLine: string): GoContentKind {
 }
 
 /**
- * Subsection boundary within a block's lines.
- */
-interface SubsectionRange {
-  tag: string;
-  /** Index within the block's line array where this subsection starts. */
-  startIdx: number;
-  /** Index (exclusive) where this subsection ends — next subsection or block end. */
-  endIdx: number;
-}
-
-/**
- * Find subsection boundaries within a block's lines.
- *
- * Uses SETUP_SUBSECTIONS patterns to find where each subsection starts.
- * Returns ranges so content within each subsection can be classified.
+ * Go-specific wrapper: binds SETUP_SUBSECTIONS to the shared function.
+ * Tests import this — signature stays the same.
  */
 export function getSubsectionRanges(blockLines: string[]): SubsectionRange[] {
-  const ranges: SubsectionRange[] = [];
-
-  for (let i = 0; i < blockLines.length; i++) {
-    const trimmed = blockLines[i]!.trim();
-    // Skip separator-only lines
-    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
-
-    for (const sub of SETUP_SUBSECTIONS) {
-      if (sub.pattern.test(trimmed)) {
-        if (!ranges.some((r) => r.tag === sub.tag)) {
-          ranges.push({ tag: sub.tag, startIdx: i, endIdx: blockLines.length });
-        }
-        break;
-      }
-    }
-  }
-
-  // Fix endIdx for each range — next range's startIdx
-  for (let i = 0; i < ranges.length - 1; i++) {
-    ranges[i]!.endIdx = ranges[i + 1]!.startIdx;
-  }
-
-  return ranges;
+  return _getSubsectionRanges(blockLines, SETUP_SUBSECTIONS);
 }
 
 /**
@@ -662,11 +475,26 @@ export function validateICFields(
  * Detects both new (var Pragma = [][2]string{}) and old (var _pragma =) patterns.
  * L0 uses doc.go for package identity. L1 uses the primary file.
  * Either pattern is valid — the package has identity if ANY sibling declares it.
+ *
+ * Results are cached per directory — when linting N files in the same directory,
+ * the directory scan only happens once.
  */
+const _goSiblingCache = new Map<string, boolean>();
+
+/** Clear the sibling cache. Exported for test isolation. */
+export function clearGoSiblingCache(): void {
+  _goSiblingCache.clear();
+}
+
 async function packageHasIdentityVars(filePath: string): Promise<boolean> {
   const filename = filePath.split("/").pop() ?? "";
   const dir = filePath.substring(0, filePath.lastIndexOf("/"));
   if (!dir) return false;
+
+  // Cache hit — avoid redundant directory scans
+  const cacheKey = dir;
+  const cached = _goSiblingCache.get(cacheKey);
+  if (cached !== undefined) return cached;
 
   try {
     for await (const entry of Deno.readDir(dir)) {
@@ -678,29 +506,33 @@ async function packageHasIdentityVars(filePath: string): Promise<boolean> {
       // New pattern: var Pragma = [][2]string{
       const hasNewPragma = /^var\s+Pragma\s*=\s*\[\]\[2\]string\s*\{/m.test(siblingText);
       const hasNewMetadata = /^var\s+Metadata\s*=\s*\[\]\[2\]string\s*\{/m.test(siblingText);
-      if (hasNewPragma && hasNewMetadata) return true;
+      if (hasNewPragma && hasNewMetadata) {
+        _goSiblingCache.set(cacheKey, true);
+        return true;
+      }
       // Old pattern: var _pragma = map[string]string{
       const hasOldPragma = /^var\s+_pragma\s*=/m.test(siblingText);
       const hasOldMetadata = /^var\s+_metadata\s*=/m.test(siblingText);
-      if (hasOldPragma && hasOldMetadata) return true;
+      if (hasOldPragma && hasOldMetadata) {
+        _goSiblingCache.set(cacheKey, true);
+        return true;
+      }
     }
   } catch {
+    _goSiblingCache.set(cacheKey, false);
     return false;
   }
 
+  _goSiblingCache.set(cacheKey, false);
   return false;
 }
 
 /**
  * Build file-level context — gathered once, passed to all checks.
  */
-async function buildContext(filePath: string): Promise<GoFileContext | null> {
-  let text: string;
-  try {
-    text = await Deno.readTextFile(filePath);
-  } catch {
-    return null;
-  }
+async function buildContext(filePath: string): Promise<GoFileContext> {
+  // Let read errors propagate — caller handles with full context
+  const text = await Deno.readTextFile(filePath);
 
   const lines = text.split("\n");
   const filename = filePath.split("/").pop() ?? "";
@@ -1015,96 +847,7 @@ function checkCommentMetadata(ctx: GoFileContext): LintResult[] {
   return results;
 }
 
-function checkSeparatorConsistency(ctx: GoFileContext): LintResult[] {
-  const results: LintResult[] = [];
-  const file = ctx.filePath;
-
-  const eqSeparators: Array<{ line: number; width: number }> = [];
-  const boxSeparators: Array<{ line: number; width: number }> = [];
-  const dashSeparators: Array<{ line: number; width: number }> = [];
-
-  for (let i = 0; i < ctx.lines.length; i++) {
-    const trimmed = ctx.lines[i]!.trim();
-
-    // Block separators (=)
-    const eqMatch = trimmed.match(/^\/\/\s+(={4,})\s*$/);
-    if (eqMatch) {
-      eqSeparators.push({ line: i + 1, width: eqMatch[1]!.length });
-    }
-
-    // Subsection separators — Unicode box-drawing (─) full-width only
-    const boxMatch = trimmed.match(/^\/\/\s+(─{4,})\s*$/);
-    if (boxMatch) {
-      boxSeparators.push({ line: i + 1, width: boxMatch[1]!.length });
-    }
-
-    // Subsection separators — ASCII dash (-) full-width only
-    const dashMatch = trimmed.match(/^\/\/\s+(-{4,})\s*$/);
-    if (dashMatch) {
-      dashSeparators.push({ line: i + 1, width: dashMatch[1]!.length });
-    }
-  }
-
-  // Check block separator consistency
-  if (eqSeparators.length >= 2) {
-    const widths = new Set(eqSeparators.map((s) => s.width));
-    if (widths.size > 1) {
-      const widthList = [...widths].sort().join(", ");
-      const firstBad = eqSeparators.find((s) => s.width !== eqSeparators[0]!.width);
-      results.push(
-        warn(file, "style/eq-separator-width",
-          `Inconsistent block separator widths: ${widthList} chars — pick one`,
-          { line: firstBad?.line ?? eqSeparators[0]!.line }),
-      );
-    }
-    const dominant = eqSeparators[0]!.width;
-    if (dominant !== BLOCK_SEPARATOR_WIDTH) {
-      results.push(
-        info(file, "style/eq-separator-standard",
-          `Block separators are ${dominant} chars wide (standard: ${BLOCK_SEPARATOR_WIDTH})`,
-          { line: eqSeparators[0]!.line }),
-      );
-    }
-  }
-
-  // Check Unicode box-drawing separator consistency
-  if (boxSeparators.length >= 2) {
-    const widths = new Set(boxSeparators.map((s) => s.width));
-    if (widths.size > 1) {
-      const widthList = [...widths].sort().join(", ");
-      const firstBad = boxSeparators.find((s) => s.width !== boxSeparators[0]!.width);
-      results.push(
-        warn(file, "style/box-separator-width",
-          `Inconsistent subsection separator widths: ${widthList} ─ chars — pick one`,
-          { line: firstBad?.line ?? boxSeparators[0]!.line }),
-      );
-    }
-    const dominant = boxSeparators[0]!.width;
-    if (dominant !== SUBSECTION_SEPARATOR_WIDTH) {
-      results.push(
-        info(file, "style/box-separator-standard",
-          `Subsection separators are ${dominant} ─ chars wide (standard: ${SUBSECTION_SEPARATOR_WIDTH})`,
-          { line: boxSeparators[0]!.line }),
-      );
-    }
-  }
-
-  // Check ASCII dash separator consistency (fallback / legacy style)
-  if (dashSeparators.length >= 2) {
-    const widths = new Set(dashSeparators.map((s) => s.width));
-    if (widths.size > 1) {
-      const widthList = [...widths].sort().join(", ");
-      const firstBad = dashSeparators.find((s) => s.width !== dashSeparators[0]!.width);
-      results.push(
-        warn(file, "style/dash-separator-width",
-          `Inconsistent dash separator widths: ${widthList} chars — pick one`,
-          { line: firstBad?.line ?? dashSeparators[0]!.line }),
-      );
-    }
-  }
-
-  return results;
-}
+// checkSeparatorConsistency — imported from ./shared/mod.ts
 
 // ---------------------------------------------------------------------------
 // Checks (new — a-02.00)
@@ -1279,36 +1022,9 @@ function checkDirectiveFormat(ctx: GoFileContext): LintResult[] {
   return results;
 }
 
-// ---------------------------------------------------------------------------
-// CLOSING zones — canonical order for code and documentation sections
-// ---------------------------------------------------------------------------
+// checkClosingZoneOrder + CLOSING_ZONES — imported from ./shared/mod.ts
 
-/**
- * CLOSING block zones in canonical order.
- *
- * Two tiers:
- *   1. Code zones (Cv, Ce, Cc) — validation, execution, cleanup
- *   2. Documentation sections (X1-X6) — policy, extension, troubleshooting, reference, note, template guide
- *
- * Code zones MUST precede documentation sections.
- * Within each tier, zones appear in canonical order.
- *
- * Same pattern as Go/Rust schemas:
- *   go-4block-schema.jsonc → closing_subsections → order
- */
-const CLOSING_ZONES = [
-  // Code zones (must come first)
-  { tag: "Cv", kind: "code" as const, pattern: /^\/\/\s+Cv\s+[—–-]/ },
-  { tag: "Ce", kind: "code" as const, pattern: /^\/\/\s+Ce\s+[—–-]/ },
-  { tag: "Cc", kind: "code" as const, pattern: /^\/\/\s+Cc\s+[—–-]/ },
-  // Documentation sections (must come after all code zones)
-  { tag: "X1", kind: "doc" as const, pattern: /^\/\/\s+X1[:\s]/ },
-  { tag: "X2", kind: "doc" as const, pattern: /^\/\/\s+X2[:\s]/ },
-  { tag: "X3", kind: "doc" as const, pattern: /^\/\/\s+X3[:\s]/ },
-  { tag: "X4", kind: "doc" as const, pattern: /^\/\/\s+X4[:\s]/ },
-  { tag: "X5", kind: "doc" as const, pattern: /^\/\/\s+X5[:\s]/ },
-  { tag: "X6", kind: "doc" as const, pattern: /^\/\/\s+X6[:\s]/ },
-] as const;
+// (CLOSING_ZONES constant moved to shared/code-4block.ts)
 
 // ---------------------------------------------------------------------------
 // Check 11: Content placement — right constructs in right blocks
@@ -1418,108 +1134,7 @@ function checkContentPlacement(ctx: GoFileContext): LintResult[] {
 }
 
 // ---------------------------------------------------------------------------
-// Check 12: CLOSING zone order
-// ---------------------------------------------------------------------------
-
-/**
- * Validate CLOSING zone ordering.
- *
- * Two-tier check:
- *   1. Code zones (Cv, Ce, Cc) must all appear before documentation (X1-X6)
- *   2. Within each tier, zones must appear in canonical order
- *
- * Only checks zones that ARE present — missing zones are valid
- * (not all files need all zones).
- */
-function checkClosingZoneOrder(ctx: GoFileContext): LintResult[] {
-  const results: LintResult[] = [];
-  const file = ctx.filePath;
-
-  // Templates have instructional markers — skip
-  if (ctx.isTemplate) return results;
-
-  const closingLines = getBlockLines(ctx.lines, ctx.blocks, "CLOSING");
-  if (closingLines.length === 0) return results;
-
-  // Find which zones are present and their positions
-  const found: Array<{ tag: string; kind: "code" | "doc"; lineIdx: number }> = [];
-
-  for (let i = 0; i < closingLines.length; i++) {
-    const trimmed = closingLines[i]!.trim();
-    // Skip separator-only lines
-    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
-
-    for (const zone of CLOSING_ZONES) {
-      if (zone.pattern.test(trimmed)) {
-        if (!found.some((f) => f.tag === zone.tag)) {
-          found.push({ tag: zone.tag, kind: zone.kind, lineIdx: i });
-        }
-        break;
-      }
-    }
-  }
-
-  if (found.length < 2) return results;
-
-  // Check 1: Code zones must come before documentation sections
-  const lastCode = found.filter((f) => f.kind === "code").pop();
-  const firstDoc = found.find((f) => f.kind === "doc");
-
-  if (lastCode && firstDoc && lastCode.lineIdx > firstDoc.lineIdx) {
-    const fileLine = blockLineToFile(ctx.blocks, "CLOSING", lastCode.lineIdx);
-    results.push(
-      warn(file, "closing/zone-order",
-        `Code zone ${lastCode.tag} appears after documentation section ${firstDoc.tag} — code zones (Cv/Ce/Cc) must precede documentation (X1-X6)`,
-        { line: fileLine }),
-    );
-  }
-
-  // Check 2: Within code zones, verify canonical order (Cv → Ce → Cc)
-  const codeZones = found.filter((f) => f.kind === "code");
-  const codeOrder: string[] = CLOSING_ZONES.filter((z) => z.kind === "code").map((z) => z.tag);
-
-  for (let i = 1; i < codeZones.length; i++) {
-    const prev = codeZones[i - 1]!;
-    const curr = codeZones[i]!;
-    const prevIdx = codeOrder.indexOf(prev.tag);
-    const currIdx = codeOrder.indexOf(curr.tag);
-
-    if (currIdx < prevIdx) {
-      const foundOrder = codeZones.map((z) => z.tag).join(" → ");
-      const fileLine = blockLineToFile(ctx.blocks, "CLOSING", curr.lineIdx);
-      results.push(
-        warn(file, "closing/code-zone-order",
-          `Code zone ${curr.tag} appears after ${prev.tag} — expected Cv → Ce → Cc, found: ${foundOrder}`,
-          { line: fileLine }),
-      );
-      break;
-    }
-  }
-
-  // Check 3: Within documentation sections, verify canonical order (X1 → ... → X5)
-  const docZones = found.filter((f) => f.kind === "doc");
-  const docOrder: string[] = CLOSING_ZONES.filter((z) => z.kind === "doc").map((z) => z.tag);
-
-  for (let i = 1; i < docZones.length; i++) {
-    const prev = docZones[i - 1]!;
-    const curr = docZones[i]!;
-    const prevIdx = docOrder.indexOf(prev.tag);
-    const currIdx = docOrder.indexOf(curr.tag);
-
-    if (currIdx < prevIdx) {
-      const foundOrder = docZones.map((z) => z.tag).join(" → ");
-      const fileLine = blockLineToFile(ctx.blocks, "CLOSING", curr.lineIdx);
-      results.push(
-        warn(file, "closing/doc-section-order",
-          `Documentation section ${curr.tag} appears after ${prev.tag} — expected X1 → X2 → ... → X6, found: ${foundOrder}`,
-          { line: fileLine }),
-      );
-      break;
-    }
-  }
-
-  return results;
-}
+// Check 12: CLOSING zone order — imported from ./shared/mod.ts
 
 // ---------------------------------------------------------------------------
 // Check 13: Identity registration
@@ -1628,9 +1243,12 @@ function checkClosingContentPlacement(ctx: GoFileContext): LintResult[] {
 // ---------------------------------------------------------------------------
 
 async function lintGoFile(filePath: string): Promise<LintResult[]> {
-  const ctx = await buildContext(filePath);
-  if (!ctx) {
-    return [error(filePath, "io/read", "Cannot read file")];
+  let ctx: GoFileContext;
+  try {
+    ctx = await buildContext(filePath);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return [error(filePath, "io/read", `Cannot read file: ${msg}`)];
   }
 
   // Quick check: is this a Go file with any structural markers?
@@ -1663,63 +1281,7 @@ async function lintGoFile(filePath: string): Promise<LintResult[]> {
 // Transformer helpers — block range detection, content moves
 // ---------------------------------------------------------------------------
 
-/** Line range within a block (0-based indices into the file's lines array). */
-interface BlockRange {
-  contentStart: number;
-  contentEnd: number;
-}
-
-/**
- * Find the content range of a named block in the file.
- *
- * Returns the line indices (0-based) of the content area — after the header's
- * closing separator and before the END marker's opening separator. Returns null
- * if the block isn't found.
- */
-function findBlockRange(lines: string[], blockName: string): BlockRange | null {
-  let headerLine = -1;
-  let endLine = -1;
-
-  for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i]!.trim();
-
-    // Block header: `// BLOCKNAME` between separators
-    if (trimmed === `// ${blockName}` && headerLine < 0) {
-      const above = i > 0 ? lines[i - 1]!.trim() : "";
-      if (/^\/\/\s+={10,}$/.test(above)) {
-        headerLine = i;
-        continue;
-      }
-    }
-
-    // END marker: `// END BLOCKNAME`
-    if (trimmed === `// END ${blockName}` && headerLine >= 0 && endLine < 0) {
-      endLine = i;
-      break;
-    }
-  }
-
-  if (headerLine < 0) return null;
-
-  // Content starts after the closing = separator of the header
-  let contentStart = headerLine + 1;
-  if (contentStart < lines.length && /^\/\/\s+={10,}$/.test(lines[contentStart]!.trim())) {
-    contentStart++;
-  }
-
-  // Content ends at the = separator before END marker (or at endLine if present)
-  let contentEnd: number;
-  if (endLine >= 0) {
-    contentEnd = endLine;
-    if (contentEnd > 0 && /^\/\/\s+={10,}$/.test(lines[contentEnd - 1]!.trim())) {
-      contentEnd--;
-    }
-  } else {
-    contentEnd = lines.length;
-  }
-
-  return { contentStart, contentEnd };
-}
+// BlockRange + findBlockRange — imported from ./shared/mod.ts
 
 /**
  * Find Test functions (func TestXxx(*testing.T)) in a line range.

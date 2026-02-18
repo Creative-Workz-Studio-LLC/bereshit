@@ -15,7 +15,7 @@
 // ============================================================================
 
 // Discovery
-export { discoverFiles, relativePaths } from "./discovery.ts";
+export { discoverFiles, discoverAllFiles, relativePaths } from "./discovery.ts";
 
 // Output
 export {

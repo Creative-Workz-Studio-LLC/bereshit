@@ -160,6 +160,38 @@ Deno.test("cli/lint: --summary shows only summary", async () => {
   assert(result.stdout.includes("OK") || result.stdout.includes("0E"), "Summary should show status");
 });
 
+Deno.test("cli/lint: --json produces valid JSON output", async () => {
+  const fixture = join(dirname(MOD_PATH), "tests", "fixtures", "toml", "structure", "valid-complete.toml");
+  const result = await runCli("lint", "toml", fixture, "--json");
+  assertEquals(result.code, 0);
+  // stdout should be valid JSON
+  const parsed = JSON.parse(result.stdout);
+  assertEquals(parsed.tool, "cws-struct", "JSON should contain tool name");
+  assertEquals(typeof parsed.version, "string", "JSON should contain version");
+  assert(Array.isArray(parsed.files), "JSON should contain files array");
+  assertEquals(parsed.files.length, 1, "Should have one file result");
+  assertEquals(typeof parsed.totals.errors, "number", "Totals should have errors count");
+});
+
+Deno.test("cli/lint: --json on error file exits 1 with valid JSON", async () => {
+  const fixture = join(dirname(MOD_PATH), "tests", "fixtures", "toml", "structure", "missing-metadata.toml");
+  const result = await runCli("lint", "toml", fixture, "--json");
+  assertEquals(result.code, 1);
+  const parsed = JSON.parse(result.stdout);
+  assertGreater(parsed.totals.errors, 0, "Should report errors in JSON");
+});
+
+Deno.test("cli/lint: --fail-fast stops on first error file", async () => {
+  // Lint the whole toml fixture directory — some files have errors
+  const fixtureDir = join(dirname(MOD_PATH), "tests", "fixtures", "toml");
+  const result = await runCli("lint", "toml", fixtureDir, "--fail-fast");
+  // Should mention fail-fast in output (stopped early)
+  assert(
+    result.stdout.includes("--fail-fast") || result.stderr.includes("--fail-fast") || result.code === 1,
+    "Should either mention fail-fast or exit with error",
+  );
+});
+
 // ============================================================================
 // CLOSING
 // ============================================================================

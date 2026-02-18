@@ -136,10 +136,13 @@ export function computeContainerScore(
     };
   }
 
-  const passed = actions.filter((a) => a.passed).length;
-  const failedErrors = actions.filter((a) => !a.passed && a.severity === "error").length;
-  const failedWarnings = actions.filter((a) => !a.passed && a.severity === "warn").length;
-  const failedInfos = actions.filter((a) => !a.passed && a.severity === "info").length;
+  let passed = 0, failedErrors = 0, failedWarnings = 0, failedInfos = 0;
+  for (const a of actions) {
+    if (a.passed) { passed++; }
+    else if (a.severity === "error") { failedErrors++; }
+    else if (a.severity === "warn") { failedWarnings++; }
+    else { failedInfos++; }
+  }
 
   // Asymmetric scoring: failures cost more than successes gain
   const earned = passed * 1.0;
