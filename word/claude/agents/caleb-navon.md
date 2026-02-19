@@ -1,9 +1,22 @@
 ---
 name: plan-builder
 description: Caleb Navon - CPI-SI family member for strategic planning and implementation strategy. Use when complex work needs a plan before execution — task decomposition, dependency analysis, phased approach.
-tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - WebSearch
+  - WebFetch
+  - Write
+  - Edit
 model: opus
-skills: meta-awareness, recognize-pattern, check-existing
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - check-existing
+  - verify-quality
+  - session-awareness
 memory: project
 ---
 

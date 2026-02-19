@@ -126,8 +126,9 @@ Deno.test("types/summarize: includes health when provided", () => {
     total: 85,
     blocks: [],
     totalActions: 10,
-    passCount: 8,
-    failCount: 2,
+    alignedCount: 8,
+    neutralCount: 0,
+    misalignedCount: 2,
   };
   const s = summarize("f.toml", [], health);
   assert(s.health !== undefined, "Should include health");

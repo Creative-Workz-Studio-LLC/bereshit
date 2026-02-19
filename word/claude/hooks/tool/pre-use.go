@@ -205,9 +205,13 @@ func inferIntendedKey(input PreUseInput) int {
 	case "ExitPlanMode", "KillShell":
 		return -1
 
-	// Context-dependent: TodoWrite
-	case "TodoWrite":
-		return inferKeyFromTodos(input)
+	// Context-dependent: Task management (v2.1.16+)
+	case "TaskCreate":
+		return 1 // Creating tasks = expansion
+	case "TaskUpdate":
+		return inferKeyFromTaskUpdate(input)
+	case "TaskList", "TaskGet":
+		return 0 // Reading tasks = lateral
 
 	// Context-dependent: Edit
 	case "Edit":
@@ -231,50 +235,20 @@ func inferIntendedKey(input PreUseInput) int {
 	}
 }
 
-// inferKeyFromTodos determines key from TodoWrite content
-// Completing todos = completion, adding todos = expansion
-func inferKeyFromTodos(input PreUseInput) int {
-	todos, ok := input.ToolInput["todos"].([]interface{})
-	if !ok {
-		return 0 // Can't determine
+// inferKeyFromTaskUpdate determines key from TaskUpdate content (v2.1.16+)
+// Completing tasks = completion, starting tasks = expansion
+func inferKeyFromTaskUpdate(input PreUseInput) int {
+	status, _ := input.ToolInput["status"].(string)
+	switch status {
+	case "completed":
+		return -1 // Finishing work
+	case "in_progress":
+		return 1 // Starting work
+	case "deleted":
+		return -1 // Cleanup
+	default:
+		return 0 // Lateral (updating details, dependencies)
 	}
-
-	completed := 0
-	pending := 0
-	inProgress := 0
-
-	for _, t := range todos {
-		if todo, ok := t.(map[string]interface{}); ok {
-			status, _ := todo["status"].(string)
-			switch status {
-			case "completed":
-				completed++
-			case "pending":
-				pending++
-			case "in_progress":
-				inProgress++
-			}
-		}
-	}
-
-	// Ratio of completed to total
-	total := completed + pending + inProgress
-	if total == 0 {
-		return 0
-	}
-
-	completionRatio := float64(completed) / float64(total)
-
-	// All or mostly complete = completion key
-	if completionRatio >= 0.8 {
-		return -1 // Wrapping up
-	}
-	// Mostly pending = expansion key
-	if pending > completed+inProgress {
-		return 1 // Setting up work
-	}
-	// Mixed = lateral
-	return 0
 }
 
 // inferKeyFromBash determines key from bash command type
@@ -541,12 +515,20 @@ func checkRecoveryAnchor(log *logging.Logger, cwd string) bool {
 
 // CPI-SI family member agent types (subagent_type in Task tool input)
 var familyMembers = map[string]string{
-	"research-agent":         "Tabitha Shiloh",
-	"architecture-analyzer":  "Ezra Matthan",
-	"pattern-finder":         "Joanna Elara",
-	"format-bridge":          "Phoebe Karis",
+	"research-agent":          "Tabitha Shiloh",
+	"architecture-analyzer":   "Ezra Matthan",
+	"pattern-finder":          "Joanna Elara",
+	"format-bridge":           "Phoebe Karis",
 	"template-chain-analyzer": "Selah Adair",
-	"family-member":          "Family Template",
+	"content-reviewer":        "Micah Toren",
+	"test-validator":          "Nathan Emet",
+	"plan-builder":            "Caleb Navon",
+	"documentation-creator":   "Deborah Saphar",
+	"infrastructure-steward":  "Nehemiah Shamar",
+	"creative-director":       "Bezalel Yofi",
+	"community-builder":       "Lydia Chesed",
+	"game-designer":           "Asa Mishchaq",
+	"family-member":           "Family Template",
 }
 
 // trackFamilyMemberInvocation records when a family member is invoked

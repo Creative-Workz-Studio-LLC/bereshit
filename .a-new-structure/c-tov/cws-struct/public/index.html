@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CWS Studio</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1 class="logo">CWS <span class="logo-accent">Studio</span></h1>
+        <span class="version">v0.1.0</span>
+      </div>
+
+      <nav class="nav">
+        <a href="#create" class="nav-item active" data-view="create">
+          <span class="nav-icon">&#x2795;</span>
+          <span class="nav-label">Create</span>
+          <span class="nav-desc">Scaffold new files</span>
+        </a>
+        <a href="#validate" class="nav-item" data-view="validate">
+          <span class="nav-icon">&#x2714;</span>
+          <span class="nav-label">Validate</span>
+          <span class="nav-desc">Lint &amp; health check</span>
+        </a>
+        <a href="#formats" class="nav-item" data-view="formats">
+          <span class="nav-icon">&#x2261;</span>
+          <span class="nav-label">Formats</span>
+          <span class="nav-desc">Registered handlers</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="engine-status">
+          <span class="dot" id="health-dot"></span>
+          <span class="engine-label">cws-struct engine</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+
+      <!-- ═══ CREATE VIEW ═══ -->
+      <section id="view-create" class="view active">
+        <div class="view-header">
+          <h2>Create New File</h2>
+          <p class="view-desc">Scaffold a structured file from seed templates.</p>
+        </div>
+
+        <form id="create-form" class="form-grid" autocomplete="off">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="create-type">Type</label>
+              <select id="create-type" name="type" required>
+                <option value="">Select type...</option>
+                <option value="code">Code (4-block)</option>
+                <option value="data">Data (3-block)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="create-format">Format</label>
+              <select id="create-format" name="format" required disabled>
+                <option value="">Select format...</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="role-group" style="display:none">
+              <label for="create-role">Role</label>
+              <select id="create-role" name="role">
+                <option value="">Auto-detect</option>
+                <option value="library">Library</option>
+                <option value="executable">Executable</option>
+                <option value="test">Test</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="create-dest">Destination Path</label>
+            <input type="text" id="create-dest" name="dest" required
+                   placeholder="e.g., src/server.go or config/app.toml">
+          </div>
+
+          <fieldset class="metadata-fieldset">
+            <legend>Metadata (optional)</legend>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="create-key">Key</label>
+                <input type="text" id="create-key" name="key"
+                       placeholder="Auto-derived from path">
+              </div>
+              <div class="form-group">
+                <label for="create-title">Title</label>
+                <input type="text" id="create-title" name="title"
+                       placeholder="Auto-derived from filename">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="create-purpose">Purpose</label>
+                <input type="text" id="create-purpose" name="purpose"
+                       placeholder="Description of what this file does">
+              </div>
+              <div class="form-group">
+                <label for="create-version">Version</label>
+                <input type="text" id="create-version" name="version"
+                       placeholder="a-01.00" value="a-01.00">
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="form-actions">
+            <button type="button" id="btn-preview" class="btn btn-secondary" disabled>
+              Preview
+            </button>
+            <button type="submit" id="btn-create" class="btn btn-primary" disabled>
+              Create File
+            </button>
+          </div>
+        </form>
+
+        <!-- Preview / Result panel -->
+        <div id="create-output" class="output-panel" style="display:none">
+          <div class="output-header">
+            <h3 id="output-title">Preview</h3>
+            <button type="button" class="btn-close" id="btn-close-output">&times;</button>
+          </div>
+          <pre id="output-content" class="output-content"></pre>
+          <div id="output-verification" class="verification-panel" style="display:none"></div>
+        </div>
+      </section>
+
+      <!-- ═══ VALIDATE VIEW ═══ -->
+      <section id="view-validate" class="view">
+        <div class="view-header">
+          <h2>Validate</h2>
+          <p class="view-desc">Lint files and check structural health scores.</p>
+        </div>
+
+        <div class="validate-controls">
+          <div class="form-group" style="flex:1">
+            <label for="validate-path">File or Directory</label>
+            <input type="text" id="validate-path"
+                   placeholder="e.g., src/server.go or ./config/">
+          </div>
+
+          <div class="validate-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="validate-verbose"> Show all files
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="validate-errors-only"> Errors only
+            </label>
+          </div>
+
+          <button type="button" id="btn-lint" class="btn btn-primary">
+            Lint
+          </button>
+        </div>
+
+        <!-- Totals bar -->
+        <div id="lint-totals" class="totals-bar" style="display:none">
+          <span class="total-item total-files">
+            <strong id="total-files">0</strong> files
+          </span>
+          <span class="total-item total-errors">
+            <strong id="total-errors">0</strong> errors
+          </span>
+          <span class="total-item total-warnings">
+            <strong id="total-warnings">0</strong> warnings
+          </span>
+          <span class="total-item total-info">
+            <strong id="total-info">0</strong> info
+          </span>
+        </div>
+
+        <!-- Results list -->
+        <div id="lint-results" class="results-list"></div>
+
+        <!-- Loading state -->
+        <div id="lint-loading" class="loading" style="display:none">
+          <div class="spinner"></div>
+          <span>Linting...</span>
+        </div>
+      </section>
+
+      <!-- ═══ FORMATS VIEW ═══ -->
+      <section id="view-formats" class="view">
+        <div class="view-header">
+          <h2>Registered Formats</h2>
+          <p class="view-desc">Format handlers available in the cws-struct engine.</p>
+        </div>
+
+        <div id="formats-grid" class="formats-grid">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div id="formats-loading" class="loading" style="display:none">
+          <div class="spinner"></div>
+          <span>Loading formats...</span>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

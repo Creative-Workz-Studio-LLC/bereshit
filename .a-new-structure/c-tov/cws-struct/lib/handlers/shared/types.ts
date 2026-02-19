@@ -196,6 +196,102 @@ export const METADATA_FIELD_REQUIREMENTS: Record<string, { required: string[]; d
 };
 
 // ---------------------------------------------------------------------------
+// Content validation — field value patterns and known values
+// ---------------------------------------------------------------------------
+//
+// Structure → Existence → Content. Each layer stands on the previous.
+// Existence checks ask "is the field present?" (validateICFields).
+// Content checks ask "is the value valid?" (validateICFieldContent).
+//
+
+/** Living versioning format: stage-phase.completion (e.g., a-01.00, b-02.50) or "template". */
+export const VERSION_PATTERN = /^([abc]-\d{2}\.\d{2}|template)$/;
+
+/** Key format: capital letter, dash, then identifier segments (e.g., B-my-project). */
+export const KEY_PATTERN = /^[A-Z]-[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
+
+/** Date format: YYYY-MM-DD. */
+export const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Known format identifiers (stored lowercase for case-insensitive comparison). */
+export const KNOWN_FORMATS = new Set([
+  "go", "rust", "c", "typescript", "python", "bash",
+  "toml", "json", "jsonc", "yaml",
+  "adoc", "asciidoc", "md", "markdown",
+  "makefile", "dockerfile",
+  "editorconfig", "gitignore", "gitmessage", "env",
+]);
+
+/** Known type values (stored lowercase). */
+export const KNOWN_TYPES = new Set(["code", "data", "documentation"]);
+
+/** Known structure values (stored lowercase). */
+export const KNOWN_STRUCTURES = new Set(["3-block", "4-block", "5-block"]);
+
+/** Known status values (stored lowercase). */
+export const KNOWN_STATUSES = new Set([
+  "active", "draft", "deprecated", "archived", "planned", "template",
+]);
+
+/** A content validation rule: what field, what check, what severity. */
+export interface FieldContentRule {
+  /** Section.field path (e.g., "I1.key", "C1.version"). */
+  field: string;
+  /** Validation type. */
+  check: "pattern" | "enum" | "non-empty" | "path-like";
+  /** For pattern checks: the regex to match. */
+  pattern?: RegExp;
+  /** For enum checks: the set of known valid values (lowercase). */
+  values?: ReadonlySet<string>;
+  /** Severity when validation fails. */
+  severity: "error" | "warn" | "info";
+  /** Human-readable message describing what the field should be. */
+  message: string;
+}
+
+/**
+ * Content validation rules for PRAGMA (Identity I1-I4) fields.
+ * Applied only to fields that exist and aren't placeholders.
+ */
+export const PRAGMA_CONTENT_RULES: readonly FieldContentRule[] = [
+  { field: "I1.key", check: "pattern", pattern: KEY_PATTERN, severity: "warn",
+    message: "should match pattern B-{identifier} (e.g., B-my-project-name)" },
+  { field: "I1.format", check: "enum", values: KNOWN_FORMATS, severity: "warn",
+    message: "should be a known format (go, rust, c, toml, etc.)" },
+  { field: "I1.from", check: "path-like", severity: "info",
+    message: "should be a path containing /" },
+  { field: "I1.at", check: "pattern", pattern: VERSION_PATTERN, severity: "warn",
+    message: "should follow living versioning: a-01.00, b-02.50, c-01.00" },
+  { field: "I2.type", check: "enum", values: KNOWN_TYPES, severity: "warn",
+    message: "should be: code, data, or documentation" },
+  { field: "I2.structure", check: "enum", values: KNOWN_STRUCTURES, severity: "warn",
+    message: "should be: 3-block, 4-block, or 5-block" },
+  { field: "I3.file", check: "non-empty", severity: "warn",
+    message: "should not be empty" },
+  { field: "I3.title", check: "non-empty", severity: "warn",
+    message: "should not be empty" },
+];
+
+/**
+ * Content validation rules for METADATA (Context C1-C7) fields.
+ * Applied only to fields that exist and aren't placeholders.
+ */
+export const METADATA_CONTENT_RULES: readonly FieldContentRule[] = [
+  { field: "C1.version", check: "pattern", pattern: VERSION_PATTERN, severity: "warn",
+    message: "should follow living versioning: a-01.00, b-02.50, c-01.00" },
+  { field: "C1.status", check: "enum", values: KNOWN_STATUSES, severity: "warn",
+    message: "should be: Active, Draft, Deprecated, Archived, Planned, or Template" },
+  { field: "C1.created", check: "pattern", pattern: DATE_PATTERN, severity: "info",
+    message: "should be a date: YYYY-MM-DD" },
+  { field: "C1.updated", check: "pattern", pattern: DATE_PATTERN, severity: "info",
+    message: "should be a date: YYYY-MM-DD" },
+  { field: "C2.organization", check: "non-empty", severity: "warn",
+    message: "should not be empty" },
+  { field: "C3.scripture", check: "non-empty", severity: "info",
+    message: "should contain a scripture reference" },
+];
+
+// ---------------------------------------------------------------------------
 // BODY subsection patterns
 // ---------------------------------------------------------------------------
 
@@ -227,6 +323,64 @@ export const CLOSING_ZONES: readonly ClosingZoneDef[] = [
   { tag: "X5", kind: "doc", pattern: /^\/\/\s+X5[:\s]/ },
   { tag: "X6", kind: "doc", pattern: /^\/\/\s+X6[:\s]/ },
 ];
+
+// ---------------------------------------------------------------------------
+// CLOSING documentation requirements — X1-X6 zone structure
+// ---------------------------------------------------------------------------
+
+/** Required fields within a CLOSING documentation section. */
+export interface ClosingDocRequirement {
+  tag: string;
+  required: boolean;
+  fields?: { required: string[]; defined: string[] };
+}
+
+/**
+ * CLOSING documentation section requirements.
+ * Source: base-4block-schema.jsonc $defs.closing_documentation
+ *
+ * X1 (Policy) and X5 (Note) are required. Others are optional.
+ * X6 (Template) is template-only — derived files should not have it.
+ */
+export const CLOSING_DOC_REQUIREMENTS: readonly ClosingDocRequirement[] = [
+  { tag: "X1", required: true, fields: { required: ["never", "careful", "safe"], defined: ["scripture"] } },
+  { tag: "X2", required: false },
+  { tag: "X3", required: false },
+  { tag: "X4", required: false },
+  { tag: "X5", required: true, fields: { required: ["note", "scripture"], defined: ["anchor"] } },
+  { tag: "X6", required: false },
+];
+
+// ---------------------------------------------------------------------------
+// CLOSING zone content detection patterns
+// ---------------------------------------------------------------------------
+
+/** Patterns to detect X1 policy fields in CLOSING comments. */
+export const X1_FIELD_PATTERNS: Record<string, RegExp> = {
+  never:   /^\/\/\s*(?:Never|NEVER)\s*:/i,
+  careful: /^\/\/\s*(?:Careful|CAREFUL)\s*:/i,
+  safe:    /^\/\/\s*(?:Safe|SAFE)\s*:/i,
+};
+
+/** Patterns to detect X5 note fields in CLOSING comments. */
+export const X5_FIELD_PATTERNS: Record<string, RegExp> = {
+  note:      /^\/\/\s*(?:Note|NOTE)\s*:/i,
+  scripture: /^\/\/\s*(?:Scripture|SCRIPTURE)\s*:/i,
+};
+
+// ---------------------------------------------------------------------------
+// Scaling thresholds — block size warnings
+// ---------------------------------------------------------------------------
+
+/**
+ * Lines-of-code thresholds per block.
+ * Source: base-4block-schema.jsonc $defs.setup_subsections.production_design.scaling_signal
+ * and $defs.body_zones.production_design.scaling_signal
+ */
+export const SCALING_THRESHOLDS = {
+  SETUP: 200,
+  BODY: 500,
+} as const;
 
 // ============================================================================
 // CLOSING

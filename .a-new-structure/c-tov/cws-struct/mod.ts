@@ -47,6 +47,7 @@ import {
   listFormatDetails,
 } from "./lib/engine/mod.ts";
 import { verifyEnvironment } from "./lib/verify/env.ts";
+import { startStudio } from "./lib/studio/serve.ts";
 
 // Register all format handlers (side-effect imports)
 import "./lib/handlers/toml.ts";
@@ -67,6 +68,36 @@ const TOOL_NAME = "cws-struct";
 
 /** Bounded concurrency for parallel file linting/transform. */
 const LINT_CONCURRENCY = 8;
+
+// ---------------------------------------------------------------------------
+// Explicit file detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Identify which CLI targets are explicit files (not directories).
+ *
+ * When a user runs `cws-struct lint go path/to/file.go`, they explicitly
+ * chose that file. If it has no structural markers, that's a warning — not
+ * just a silent skip. Discovery (directory walks) can silently skip; explicit
+ * targets should not.
+ *
+ * Returns resolved absolute paths so they match what discovery returns.
+ */
+async function identifyExplicitFiles(targets: string[]): Promise<Set<string>> {
+  const explicit = new Set<string>();
+  for (const target of targets) {
+    try {
+      const resolved = await Deno.realPath(target);
+      const stat = await Deno.stat(resolved);
+      if (stat.isFile) {
+        explicit.add(resolved);
+      }
+    } catch {
+      // If we can't stat/resolve, discovery will report the error
+    }
+  }
+  return explicit;
+}
 
 // ============================================================================
 // BODY
@@ -126,7 +157,7 @@ function parseArgs(args: string[]): CliOptions {
   const targets = nonFlags.filter((a) => a !== format);
 
   return {
-    command: (command === "lint" || command === "transform" || command === "formats" || command === "verify") ? command : "help",
+    command: (command === "lint" || command === "transform" || command === "formats" || command === "verify" || command === "studio") ? command : "help",
     format,
     targets,
     verbose: rest.includes("--verbose") || rest.includes("-v"),
@@ -160,6 +191,7 @@ ${COLORS.bold}Operations:${COLORS.reset}
   transform   Transform files to aligned structure
   verify env  Check development environment tools and versions
   formats     List registered format handlers
+  studio      Launch CWS Studio web interface
   help        Show this help
 
   ${COLORS.dim}Format is optional — omit it to auto-detect from file extensions.${COLORS.reset}
@@ -173,6 +205,7 @@ ${COLORS.bold}Options:${COLORS.reset}
   --fail-fast       Stop on first file with errors
   --dry-run         Preview transforms without writing
   --extensions      Also scaffold extension sections (I4, C5-C7, X2-X4, etc.)
+  --port <N>        Studio port (default: 4200)
   --help, -h        Show this help
   --version         Show version
 
@@ -194,6 +227,8 @@ ${COLORS.bold}Examples:${COLORS.reset}
   ${TOOL_NAME} transform rust src/ --dry-run ${COLORS.dim}# preview Rust fixes${COLORS.reset}
   ${TOOL_NAME} verify env                    ${COLORS.dim}# check dev tools${COLORS.reset}
   ${TOOL_NAME} verify env --verbose          ${COLORS.dim}# include optional tools${COLORS.reset}
+  ${TOOL_NAME} studio                        ${COLORS.dim}# launch web UI on :4200${COLORS.reset}
+  ${TOOL_NAME} studio --port 3000            ${COLORS.dim}# custom port${COLORS.reset}
 `);
 }
 
@@ -223,6 +258,7 @@ async function lintWithHandler(
   opts: CliOptions,
   handler: import("./lib/foundation/mod.ts").FormatHandler,
   files: string[],
+  explicitFiles?: Set<string>,
 ): Promise<LintSummary[]> {
   const cwd = Deno.cwd();
   const summaries: LintSummary[] = [];
@@ -233,10 +269,39 @@ async function lintWithHandler(
 
   const pool = pooledMap(LINT_CONCURRENCY, files, async (file) => {
     const results = await handler.lint(file);
+
+    // ── Explicit-target upgrade ──────────────────────────────────
+    // When a user explicitly passes a file (not discovered via directory
+    // walk), a silent info-level skip is misleading — the user pointed at
+    // this file and expects feedback. Upgrade to warn.
+    //
+    // Applies to all handlers that emit these skip rules:
+    //   structure/skip   — Go, Rust (no omni directives or block markers)
+    //   structure/module — Rust (module file, identity in lib.rs)
+    if (explicitFiles?.has(file)) {
+      for (const r of results) {
+        if ((r.rule === "structure/skip" || r.rule === "structure/module") && r.severity === "info") {
+          r.severity = "warn";
+          r.message += " — file was explicitly targeted";
+        }
+      }
+    }
+
     const health = handler.computeHealth
       ? await handler.computeHealth(file, results)
       : undefined;
-    return summarize(relative(cwd, file), results, health);
+    const summary = summarize(relative(cwd, file), results, health);
+
+    // Extract pragma from line 1 for display
+    try {
+      const text = await Deno.readTextFile(file);
+      const firstLine = text.split("\n")[0]?.trim();
+      if (firstLine?.startsWith("//omni:") || firstLine?.startsWith("#!omni")) {
+        summary.pragma = firstLine;
+      }
+    } catch { /* file already reported errors if unreadable */ }
+
+    return summary;
   });
 
   for await (const summary of pool) {
@@ -338,6 +403,10 @@ async function runLint(opts: CliOptions): Promise<boolean> {
 
   const showHuman = !opts.json;
 
+  // Identify explicit file targets (not directories) for skip-upgrade logic.
+  // When a user points at a specific file, structure/skip becomes a warning.
+  const explicitFiles = await identifyExplicitFiles(opts.targets);
+
   // ── Explicit format: lint with that handler ────────────────────
   if (opts.format) {
     const handler = getFormat(opts.format);
@@ -356,7 +425,7 @@ async function runLint(opts: CliOptions): Promise<boolean> {
     }
 
     if (showHuman) printHeader(TOOL_NAME, VERSION, files.length, handler.description);
-    const summaries = await lintWithHandler(opts, handler, files);
+    const summaries = await lintWithHandler(opts, handler, files, explicitFiles);
     if (showHuman) printTotals(summaries);
     if (opts.json) emitJson(summaries);
     return summaries.every((s) => s.errors === 0);
@@ -377,7 +446,7 @@ async function runLint(opts: CliOptions): Promise<boolean> {
       );
     }
 
-    const summaries = await lintWithHandler(opts, handler, files);
+    const summaries = await lintWithHandler(opts, handler, files, explicitFiles);
     allSummaries.push(...summaries);
   }
 
@@ -406,6 +475,7 @@ async function transformWithHandler(
   opts: CliOptions,
   handler: import("./lib/foundation/mod.ts").FormatHandler,
   files: string[],
+  explicitFiles?: Set<string>,
 ): Promise<LintSummary[]> {
   if (!handler.transform) return [];
 
@@ -418,7 +488,30 @@ async function transformWithHandler(
       dryRun: opts.dryRun,
       extensions: opts.extensions,
     });
-    return summarize(relative(cwd, file), results);
+
+    // Same explicit-target upgrade as lint — if transform skips an
+    // explicitly targeted file, user should know via warning.
+    if (explicitFiles?.has(file)) {
+      for (const r of results) {
+        if ((r.rule === "structure/skip" || r.rule === "structure/module") && r.severity === "info") {
+          r.severity = "warn";
+          r.message += " — file was explicitly targeted";
+        }
+      }
+    }
+
+    const summary = summarize(relative(cwd, file), results);
+
+    // Extract pragma from line 1 for display
+    try {
+      const text = await Deno.readTextFile(file);
+      const firstLine = text.split("\n")[0]?.trim();
+      if (firstLine?.startsWith("//omni:") || firstLine?.startsWith("#!omni")) {
+        summary.pragma = firstLine;
+      }
+    } catch { /* file already reported errors if unreadable */ }
+
+    return summary;
   });
 
   for await (const summary of pool) {
@@ -436,6 +529,9 @@ async function runTransform(opts: CliOptions): Promise<boolean> {
     );
     return false;
   }
+
+  // Same explicit-file detection as lint
+  const explicitFiles = await identifyExplicitFiles(opts.targets);
 
   // ── Explicit format: transform with that handler ────────────────
   if (opts.format) {
@@ -458,7 +554,7 @@ async function runTransform(opts: CliOptions): Promise<boolean> {
     console.log(
       `${COLORS.bold}Transforming ${files.length} file(s)${opts.dryRun ? " (dry run)" : ""}...${COLORS.reset}\n`,
     );
-    const summaries = await transformWithHandler(opts, handler, files);
+    const summaries = await transformWithHandler(opts, handler, files, explicitFiles);
     printTotals(summaries);
     return summaries.every((s) => s.errors === 0);
   }
@@ -477,7 +573,7 @@ async function runTransform(opts: CliOptions): Promise<boolean> {
       `\n${COLORS.bold}── ${handler.name}${COLORS.reset} (${files.length} file${files.length > 1 ? "s" : ""})${opts.dryRun ? " (dry run)" : ""}`,
     );
 
-    const summaries = await transformWithHandler(opts, handler, files);
+    const summaries = await transformWithHandler(opts, handler, files, explicitFiles);
     allSummaries.push(...summaries);
   }
 
@@ -523,6 +619,7 @@ const KNOWN_FLAGS = new Set([
   "--extensions",
   "--json",
   "--fail-fast",
+  "--port",
   "--help", "-h",
   "--version",
 ]);
@@ -605,6 +702,16 @@ async function main(): Promise<void> {
       showFormats();
       Deno.exit(EXIT_OK);
       break;
+
+    case "studio": {
+      const portIdx = Deno.args.indexOf("--port");
+      const port = portIdx >= 0 && Deno.args[portIdx + 1]
+        ? parseInt(Deno.args[portIdx + 1]!, 10)
+        : 4200;
+      startStudio(port);
+      // Studio runs indefinitely — Deno.serve keeps the process alive
+      break;
+    }
   }
 }
 

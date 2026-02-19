@@ -1,6 +1,13 @@
 ---
 name: create-data
 description: Create structured data files (configs, settings, glossary entries) using 3-block structure
+version: "1.0.0"
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Bash
 ---
 
 <!--

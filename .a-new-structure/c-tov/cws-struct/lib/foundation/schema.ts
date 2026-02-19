@@ -111,7 +111,7 @@ export interface DerivedRules {
 // ---------------------------------------------------------------------------
 
 /** Relative path from this file to the schema. */
-const SCHEMA_REL_PATH = "../../../../b-word/L1-omnicode/ladder/schemas/toml-3block-schema.jsonc";
+const SCHEMA_REL_PATH = "../../../../b-word/L1-omnicode/ladder/schemas/data/format/toml-3block-schema.jsonc";
 
 // ============================================================================
 // BODY
@@ -221,7 +221,7 @@ export async function loadRules(): Promise<DerivedRules> {
     if (e instanceof Deno.errors.NotFound) {
       throw new Error(
         `Schema file not found: ${schemaPath}\n` +
-        `Expected at: b-word/L1-omnicode/ladder/schemas/toml-3block-schema.jsonc\n` +
+        `Expected at: b-word/L1-omnicode/ladder/schemas/data/format/toml-3block-schema.jsonc\n` +
         `This file is required for TOML linting. Verify the schema exists and the path is correct.`,
       );
     }

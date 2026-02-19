@@ -2,7 +2,11 @@
 name: check-existing
 description: Check what exists before creating new files, templates, or patterns. Implements the use-existing-first workflow - find, copy, follow patterns before writing from scratch.
 version: "1.0.0"
-allowed-tools: "Read,Glob,Grep,Bash"
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
 ---
 
 <!--

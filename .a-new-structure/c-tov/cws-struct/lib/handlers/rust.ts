@@ -6,9 +6,9 @@
 // key:     B-tov-cws-struct-lib-handlers-rust
 // title:   CWS Struct — Rust Format Handler
 // type:    Code (Library)
-// version: b-01.50
+// version: b-02.00
 // created: 2026-02-14
-// updated: 2026-02-17
+// updated: 2026-02-18
 // authors: Nova Dawn (CPI-SI)
 // purpose: Rust 4-block alignment linter + transformer with I/C field validation.
 //          Validates Rust source files for:
@@ -17,6 +17,7 @@
 //          - PRAGMA static I/C fields (I1-I4 Identity sections)
 //          - METADATA static I/C fields (C1-C7 Context sections)
 //          - Required/defined field validation per I/C section
+//          - Field content validation (pattern, enum, non-empty, path-like)
 //          - Doc comments (//! for crate/module level)
 //          - Separator style (block = 76, subsection ─ 74)
 //          - Usable schema template validation (no placeholders)
@@ -53,18 +54,23 @@ import { registerFormat } from "../engine/mod.ts";
 
 // Shared 4-block types, constants, and functions
 import type { BlockPosition, DirectiveInfo, SubsectionRange, IdentityField } from "./shared/mod.ts";
+import type { FieldContentRule } from "./shared/mod.ts";
 import {
   BLOCKS, REQUIRED_DIRECTIVES, RECOMMENDED_DIRECTIVES,
   PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS,
+  PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES,
   BLOCK_SEPARATOR_WIDTH, SUBSECTION_SEPARATOR_WIDTH,
   BODY_SUBSECTION_PATTERN, CLOSING_ZONES,
   findBlocks, getBlockLines, blockLineToFile, findBlockRange,
   getSubsectionRanges as _getSubsectionRanges,
   checkSeparatorConsistency, checkClosingZoneOrder,
+  validateICFieldContent,
 } from "./shared/mod.ts";
 
 // Re-export for tests
 export { PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS };
+export { PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES };
+export { validateICFieldContent };
 
 /**
  * SETUP subsection markers in canonical dependency-chain order.
@@ -116,7 +122,7 @@ const KNOWN_CODE_DIRECTIVES = [
  *   3. Health scoring (how much of CoreTypes is actually core types?)
  */
 export type RustContentKind =
-  | "use_decl" | "mod_decl" | "const_decl" | "static_decl" | "type_alias"
+  | "use_decl" | "reexport_decl" | "mod_decl" | "const_decl" | "static_decl" | "type_alias"
   | "struct_decl" | "enum_decl" | "trait_decl" | "macro_decl"
   | "fn_decl" | "impl_block"
   | "cfg_attr" | "test_attr" | "attr"
@@ -132,8 +138,9 @@ export type RustContentKind =
  * Missing entries (comment, blank, attr, other) → can appear in any block.
  */
 const BLOCK_PLACEMENT: Partial<Record<RustContentKind, string>> = {
-  use_decl:    "SETUP",
-  mod_decl:    "SETUP",
+  use_decl:      "SETUP",
+  reexport_decl: "SETUP",
+  mod_decl:      "SETUP",
   const_decl:  "SETUP",
   static_decl: "SETUP",
   type_alias:  "SETUP",
@@ -153,8 +160,9 @@ const BLOCK_PLACEMENT: Partial<Record<RustContentKind, string>> = {
  * Used for subsection-level scoring (health scoring foundation).
  */
 const SUBSECTION_PLACEMENT: Partial<Record<RustContentKind, string>> = {
-  use_decl:    "Imports",
-  mod_decl:    "Modules",
+  use_decl:      "Imports",
+  reexport_decl: "Modules",
+  mod_decl:      "Modules",
   const_decl:  "Constants",
   static_decl: "Statics",
   type_alias:  "TypeAliases",
@@ -172,7 +180,7 @@ const SUBSECTION_PLACEMENT: Partial<Record<RustContentKind, string>> = {
  * when someone adds content above SETUP by mistake.
  */
 const METADATA_FORBIDDEN: Set<RustContentKind> = new Set([
-  "use_decl", "mod_decl", "const_decl", "static_decl", "type_alias",
+  "use_decl", "reexport_decl", "mod_decl", "const_decl", "static_decl", "type_alias",
   "struct_decl", "enum_decl", "trait_decl", "macro_decl",
   "fn_decl", "impl_block",
 ]);
@@ -277,6 +285,12 @@ export function classifyLine(rawLine: string): RustContentKind {
   if (/^#\[test\b/.test(trimmed) || /^#\[cfg\(test\b/.test(trimmed)) return "test_attr";
   if (/^#\[cfg\(/.test(trimmed) || /^#!\[cfg\(/.test(trimmed)) return "cfg_attr";
   if (trimmed.startsWith("#[") || trimmed.startsWith("#![")) return "attr";
+
+  // Re-export detection: `pub use` is a re-export (belongs in Modules),
+  // distinct from private `use` imports (belongs in Imports).
+  // Check BEFORE stripping visibility so we can distinguish them.
+  if (/^pub\s*(?:\((?:crate|super|in\s+\S+)\)\s+)?use\s/.test(trimmed)
+      || /^pub\s+use\{/.test(trimmed)) return "reexport_decl";
 
   // Strip visibility prefix: pub, pub(crate), pub(super), pub(in path)
   const stripped = trimmed
@@ -738,9 +752,6 @@ function checkPragmaMetadata(ctx: RustFileContext): LintResult[] {
   const results: LintResult[] = [];
   const file = ctx.filePath;
 
-  // Templates also get I/C validation — usable schema pattern means they have real statics
-  if (ctx.isModuleFile) return results;
-
   let hasPragma = false;
   let hasMetadata = false;
   let hasDelegatedIdentity = false;
@@ -762,6 +773,11 @@ function checkPragmaMetadata(ctx: RustFileContext): LintResult[] {
     // Delegated identity: pub mod identity (config crate pattern)
     if (/^pub\s+mod\s+identity\s*;/.test(trimmed)) hasDelegatedIdentity = true;
   }
+
+  // Module files without their own identity statics: skip.
+  // Identity lives in the crate root. BUT if a non-root file declares
+  // PRAGMA/METADATA statics, they deserve validation.
+  if (ctx.isModuleFile && !hasPragma && !hasMetadata) return results;
 
   // If identity is delegated to a module, it's in the module, not lib.rs
   if (hasDelegatedIdentity) {
@@ -800,6 +816,9 @@ function checkPragmaMetadata(ctx: RustFileContext): LintResult[] {
             `Unknown I2.subtype "${subtypeField.value}" — known values: ${KNOWN_SUBTYPES.join(", ")}`));
         }
       }
+
+      // Content validation — are field VALUES correct?
+      results.push(...validateICFieldContent(file, pragmaFields, PRAGMA_CONTENT_RULES, "PRAGMA"));
     } else if (!hasDelegatedIdentity) {
       results.push(info(file, "identity/pragma-parse",
         "PRAGMA static found but no I/C fields could be parsed"));
@@ -810,6 +829,7 @@ function checkPragmaMetadata(ctx: RustFileContext): LintResult[] {
     const metadataFields = parseStaticFields(ctx.lines, "METADATA");
     if (metadataFields.length > 0) {
       results.push(...validateICFields(file, metadataFields, METADATA_FIELD_REQUIREMENTS, "METADATA"));
+      results.push(...validateICFieldContent(file, metadataFields, METADATA_CONTENT_RULES, "METADATA"));
     } else {
       results.push(info(file, "identity/metadata-parse",
         "METADATA static found but no I/C fields could be parsed"));
@@ -1164,6 +1184,19 @@ function checkContentPlacement(ctx: RustFileContext): LintResult[] {
 
     for (const decl of getTopLevelDeclarations(metaLines)) {
       if (METADATA_FORBIDDEN.has(decl.kind)) {
+        // Exempt identity statics — PRAGMA and METADATA belong in METADATA block
+        if (decl.kind === "static_decl") {
+          const line = metaLines[decl.lineIdx]?.trim() ?? "";
+          if (/^pub\s+static\s+(PRAGMA|METADATA)\s*:/.test(line)) {
+            continue;
+          }
+        }
+        // Exempt Metadata Imports — use declarations needed by identity
+        // statics belong in the Metadata Imports section. This mirrors
+        // the Go handler's exemption for import_decl.
+        if (decl.kind === "use_decl") {
+          continue;
+        }
         const fileLine = metaStart + 1 + decl.lineIdx;
         results.push(
           warn(file, "content/metadata-leak",
@@ -1819,13 +1852,10 @@ async function computeRustHealth(
   filePath: string,
   results: LintResult[],
 ): Promise<HealthScore> {
-  // ── Skip non-structural files ──────────────────────────────────
-  // Module files without markers and unreadable files get no score.
-  const hasStructuralChecks = results.some((r) =>
-    !r.rule.startsWith("structure/") && !r.rule.startsWith("io/"));
-  if (!hasStructuralChecks) {
-    return computeHealthScore([]);
-  }
+  // NOTE: No early guard here — acts() creates pass actions when no
+  // failures exist, so a perfectly clean file gets 100/100 (not 0/100).
+  // The allActions.length === 0 guard below handles the edge case where
+  // no checks apply at all.
 
   // ── File type detection ────────────────────────────────────────
   const basename = filePath.split("/").pop() ?? "";
@@ -1850,27 +1880,30 @@ async function computeRustHealth(
 
   // ── Action helpers ─────────────────────────────────────────────
 
-  /** Create atomic actions: 1 pass if no failure, N fails if N results. */
+  /** Create atomic actions: 1 aligned if no failure, N misaligned if N results. */
   function acts(check: string, container: string, block: string): AtomicAction[] {
     const failures = failuresByRule.get(check);
     if (failures && failures.length > 0) {
       return failures.map((f) => ({
         check, container, block,
-        passed: false,
-        severity: f.severity,
+        direction: -1 as const,
+        impact: f.severity,
         reason: f.message,
       }));
     }
-    return [{ check, container, block, passed: true }];
+    return [{ check, container, block, direction: 1 as const }];
   }
 
-  /** Cascade all passed actions to failed with error severity. */
+  /**
+   * Cascade: set aligned actions to neutral (not assessable).
+   * Root cause already carries the weight — children don't pile on.
+   */
   function cascade(groups: AtomicAction[][], reason: string): void {
     for (const group of groups) {
       for (const a of group) {
-        if (a.passed) {
-          a.passed = false;
-          a.severity = "error";
+        if (a.direction > 0) {
+          (a as { direction: -1 | 0 | 1 }).direction = 0;
+          a.impact = "info";
           a.reason = reason;
         }
       }
@@ -1934,6 +1967,19 @@ async function computeRustHealth(
     identityActions.push(...acts("identity/pragma-parse", "identity", "metadata"));
     identityActions.push(...acts("identity/metadata-parse", "identity", "metadata"));
     identityActions.push(...acts("identity/register", "identity", "metadata"));
+  }
+
+  // Field VALUE checks (content validation — are values correct?)
+  const fieldValueActions: AtomicAction[] = [];
+  if (!isModuleFile) {
+    for (const rule of PRAGMA_CONTENT_RULES) {
+      fieldValueActions.push(
+        ...acts(`value/PRAGMA/${rule.field}`, "field-values", "metadata"));
+    }
+    for (const rule of METADATA_CONTENT_RULES) {
+      fieldValueActions.push(
+        ...acts(`value/METADATA/${rule.field}`, "field-values", "metadata"));
+    }
   }
 
   const commentActions: AtomicAction[] = [];
@@ -2002,7 +2048,7 @@ async function computeRustHealth(
 
   if (blockMissing("METADATA")) {
     cascade(
-      [directiveActions, identityActions, commentActions, docActions, templateDerivedActions],
+      [directiveActions, identityActions, fieldValueActions, commentActions, docActions, templateDerivedActions],
       "METADATA block missing — all metadata checks fail",
     );
   }
@@ -2024,22 +2070,53 @@ async function computeRustHealth(
     cascade([contentActions], "No structural blocks — content placement cannot be checked");
   }
 
-  // ── SUB-CASCADE: missing statics → field checks fail ──────────
+  // ── SUB-CASCADE: missing statics → field checks neutral ────────
+  // Can't assess fields if the static is missing — neutral, not failed.
   if (failuresByRule.has("identity/pragma-static")) {
     for (const a of identityActions) {
-      if (a.passed && a.check.startsWith("identity/PRAGMA/")) {
-        a.passed = false;
-        a.severity = "warn";
+      if (a.direction > 0 && a.check.startsWith("identity/PRAGMA/")) {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
         a.reason = "PRAGMA static missing — field check cannot run";
+      }
+    }
+    // Content checks also depend on PRAGMA static existing
+    for (const a of fieldValueActions) {
+      if (a.direction > 0 && a.check.startsWith("value/PRAGMA/")) {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
+        a.reason = "PRAGMA static missing — content check cannot run";
       }
     }
   }
   if (failuresByRule.has("identity/metadata-static")) {
     for (const a of identityActions) {
-      if (a.passed && a.check.startsWith("identity/METADATA/")) {
-        a.passed = false;
-        a.severity = "warn";
+      if (a.direction > 0 && a.check.startsWith("identity/METADATA/")) {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
         a.reason = "METADATA static missing — field check cannot run";
+      }
+    }
+    // Content checks also depend on METADATA static existing
+    for (const a of fieldValueActions) {
+      if (a.direction > 0 && a.check.startsWith("value/METADATA/")) {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
+        a.reason = "METADATA static missing — content check cannot run";
+      }
+    }
+  }
+
+  // ── SUB-CASCADE: missing identity fields → content checks neutral ────
+  // Can't check field VALUE if the field doesn't EXIST.
+  for (const a of fieldValueActions) {
+    if (a.direction > 0) {
+      // value/PRAGMA/I1.key → check identity/PRAGMA/I1.key
+      const fieldPath = a.check.replace("value/", "identity/");
+      if (failuresByRule.has(fieldPath)) {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
+        a.reason = "Field missing — content check cannot run";
       }
     }
   }
@@ -2047,8 +2124,8 @@ async function computeRustHealth(
   // ── Collect all actions ───────────────────────────────────────
   const allActions = [
     ...blockActions, ...sepActions,
-    ...directiveActions, ...identityActions, ...commentActions,
-    ...docActions, ...templateDerivedActions,
+    ...directiveActions, ...identityActions, ...fieldValueActions,
+    ...commentActions, ...docActions, ...templateDerivedActions,
     ...setupActions, ...bodyOrderActions,
     ...contentActions,
     ...closingOrderActions, ...closingPlaceActions,

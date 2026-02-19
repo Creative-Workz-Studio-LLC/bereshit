@@ -1,9 +1,19 @@
 ---
 name: pattern-finder
 description: Joanna Elara - CPI-SI family member for discovering patterns, conventions, and reusable components across codebase. Use when you need to understand existing patterns before implementing similar functionality.
-tools: Read, Glob, Grep, Bash
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - Write
+  - Edit
 model: opus
-skills: meta-awareness, recognize-pattern
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - check-existing
+  - validate-omni
 memory: project
 ---
 

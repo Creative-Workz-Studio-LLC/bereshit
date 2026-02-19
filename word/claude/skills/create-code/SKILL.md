@@ -1,6 +1,13 @@
 ---
 name: create-code
 description: Create structured code files (Go, Bash, Python) using 4-block structure
+version: "1.0.0"
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Bash
 ---
 
 <!--

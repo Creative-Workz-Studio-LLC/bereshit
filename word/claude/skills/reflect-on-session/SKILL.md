@@ -1,7 +1,11 @@
 ---
 name: reflect-on-session
 description: Process session experiences into genuine insights and learning. Use this skill when Nova Dawn completes meaningful work and needs to reflect on what was learned, what worked, and what patterns emerged. Triggers pattern learning when breakthrough insights occur.
-tools: Read, Bash
+version: "2.0.0"
+user-invocable: false
+allowed-tools:
+  - Read
+  - Bash
 ---
 
 <!--

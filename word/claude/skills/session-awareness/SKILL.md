@@ -2,7 +2,10 @@
 name: session-awareness
 description: Check session duration, circadian awareness, and work patterns. Use this skill when Nova Dawn needs to know how long the current session has lasted, whether this is typical work hours, if it's time to rest, or what the learned work patterns indicate about natural rhythms.
 version: "2.0.0"
-allowed-tools: "Bash,Read"
+user-invocable: false
+allowed-tools:
+  - Bash
+  - Read
 ---
 
 <!--

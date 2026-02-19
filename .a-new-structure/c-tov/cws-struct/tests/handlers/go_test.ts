@@ -26,8 +26,9 @@
 import { assertEquals, assert, assertGreater } from "jsr:@std/assert";
 import { fixture, getFormat, errors, warnings, infos, byRule, hasRule, hasMessage } from "../helpers.ts";
 import {
-  parseSliceFields, validateICFields,
+  parseSliceFields, validateICFields, validateICFieldContent,
   PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS,
+  PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES,
   classifyGoLine, getSubsectionRanges, getTopLevelDeclarations,
 } from "../../lib/handlers/go.ts";
 import type { GoContentKind } from "../../lib/handlers/go.ts";
@@ -181,6 +182,89 @@ Deno.test("metadata/valid-library: identity registration info (has Pragma, no in
 });
 
 // ---------------------------------------------------------------------------
+// metadata/ — Content validation (field VALUES, not just existence)
+// ---------------------------------------------------------------------------
+
+Deno.test("metadata/bad-content-values: detects invalid Pragma field values", async () => {
+  const results = await go.lint(fixture("go/metadata/bad-content-values.go"));
+  const valueWarns = byRule(results, "value/Pragma/");
+  assertGreater(valueWarns.length, 0, "Should detect bad Pragma content values");
+
+  // I1.key — bad pattern
+  assert(hasRule(results, "value/Pragma/I1.key"), "Should flag bad I1.key pattern");
+  // I1.format — unknown format
+  assert(hasRule(results, "value/Pragma/I1.format"), "Should flag unknown I1.format");
+  // I1.at — bad version
+  assert(hasRule(results, "value/Pragma/I1.at"), "Should flag bad I1.at version");
+  // I2.type — unknown type
+  assert(hasRule(results, "value/Pragma/I2.type"), "Should flag unknown I2.type");
+  // I2.structure — unknown structure
+  assert(hasRule(results, "value/Pragma/I2.structure"), "Should flag unknown I2.structure");
+  // I3.file — empty
+  assert(hasRule(results, "value/Pragma/I3.file"), "Should flag empty I3.file");
+  // I3.title — empty
+  assert(hasRule(results, "value/Pragma/I3.title"), "Should flag empty I3.title");
+});
+
+Deno.test("metadata/bad-content-values: detects invalid Metadata field values", async () => {
+  const results = await go.lint(fixture("go/metadata/bad-content-values.go"));
+  const valueWarns = byRule(results, "value/Metadata/");
+  assertGreater(valueWarns.length, 0, "Should detect bad Metadata content values");
+
+  // C1.version — bad version format
+  assert(hasRule(results, "value/Metadata/C1.version"), "Should flag bad C1.version");
+  // C1.status — unknown status
+  assert(hasRule(results, "value/Metadata/C1.status"), "Should flag unknown C1.status");
+  // C2.organization — empty
+  assert(hasRule(results, "value/Metadata/C2.organization"), "Should flag empty C2.organization");
+});
+
+Deno.test("metadata/bad-content-values: info-level checks for dates and paths", async () => {
+  const results = await go.lint(fixture("go/metadata/bad-content-values.go"));
+
+  // I1.from — not a path (info-level)
+  assert(hasRule(results, "value/Pragma/I1.from"), "Should flag non-path I1.from");
+  const fromResult = byRule(results, "value/Pragma/I1.from");
+  assertEquals(fromResult[0]!.severity, "info", "I1.from check should be info-level");
+
+  // C1.created — bad date format (info-level)
+  assert(hasRule(results, "value/Metadata/C1.created"), "Should flag bad C1.created date");
+  const createdResult = byRule(results, "value/Metadata/C1.created");
+  assertEquals(createdResult[0]!.severity, "info", "C1.created check should be info-level");
+
+  // C1.updated — bad date format (info-level)
+  assert(hasRule(results, "value/Metadata/C1.updated"), "Should flag bad C1.updated date");
+
+  // C3.scripture — empty (info-level)
+  assert(hasRule(results, "value/Metadata/C3.scripture"), "Should flag empty C3.scripture");
+  const scriptureResult = byRule(results, "value/Metadata/C3.scripture");
+  assertEquals(scriptureResult[0]!.severity, "info", "C3.scripture check should be info-level");
+});
+
+Deno.test("metadata/valid-library: zero content value warnings", async () => {
+  const results = await go.lint(fixture("go/structure/valid-library.go"));
+  const valueWarns = warnings(results).filter((r) => r.rule.startsWith("value/"));
+  assertEquals(valueWarns.length, 0,
+    `Valid library should have zero value warnings: ${valueWarns.map((w) => w.rule).join(", ")}`);
+});
+
+Deno.test("metadata/placeholder-values: content checks skip placeholders", async () => {
+  const results = await go.lint(fixture("go/metadata/placeholder-values.go"));
+  // Placeholders are handled by detectPlaceholders, not validateICFieldContent
+  // Content checks should NOT fire for placeholder values like [YOUR-KEY-HERE]
+  const valueResults = byRule(results, "value/Pragma/I1.key");
+  assertEquals(valueResults.length, 0,
+    "Content check should skip placeholder values (detectPlaceholders handles those)");
+});
+
+Deno.test("metadata/bad-content-values: total of 14 content check results", async () => {
+  const results = await go.lint(fixture("go/metadata/bad-content-values.go"));
+  const valueResults = byRule(results, "value/");
+  assertEquals(valueResults.length, 14,
+    `Should produce exactly 14 content value results (8 Pragma + 6 Metadata), got: ${valueResults.map((r) => r.rule).join(", ")}`);
+});
+
+// ---------------------------------------------------------------------------
 // setup/ — SETUP block
 // ---------------------------------------------------------------------------
 
@@ -241,8 +325,8 @@ Deno.test("closing/wrong-closing-order: detects code zone after documentation se
 
 Deno.test("closing/valid-library: zero closing zone order warnings", async () => {
   const results = await go.lint(fixture("go/structure/valid-library.go"));
-  const zoneWarns = byRule(results, "closing/");
-  assertEquals(zoneWarns.length, 0, `Expected 0 closing zone warnings: ${JSON.stringify(zoneWarns, null, 2)}`);
+  const zoneWarns = byRule(results, "closing/zone-order");
+  assertEquals(zoneWarns.length, 0, `Expected 0 closing/zone-order warnings: ${JSON.stringify(zoneWarns, null, 2)}`);
 });
 
 Deno.test("closing/tests-in-body: detects Test func in BODY — should be CLOSING Cv", async () => {
@@ -532,6 +616,76 @@ Deno.test("unit/validateICFields: missing defined fields produce info, not warn"
   assertEquals(infoResults.length, 2, "Should produce info for each missing defined field");
 });
 
+Deno.test("unit/validateICFieldContent: valid values produce no results", () => {
+  const fields = [
+    { section: "I1", field: "key", value: "B-my-project", line: 1 },
+    { section: "I1", field: "format", value: "go", line: 2 },
+    { section: "I1", field: "from", value: "b-word/seed/code/L0/go/library.omni", line: 3 },
+    { section: "I1", field: "at", value: "a-01.00", line: 4 },
+    { section: "I2", field: "type", value: "code", line: 5 },
+    { section: "I2", field: "structure", value: "4-block", line: 6 },
+    { section: "I3", field: "file", value: "test.go", line: 7 },
+    { section: "I3", field: "title", value: "Test File", line: 8 },
+  ];
+  const results = validateICFieldContent("test.go", fields, PRAGMA_CONTENT_RULES, "Pragma");
+  assertEquals(results.length, 0, `Valid values should produce no results: ${results.map((r) => r.rule).join(", ")}`);
+});
+
+Deno.test("unit/validateICFieldContent: bad patterns produce warnings", () => {
+  const fields = [
+    { section: "I1", field: "key", value: "bad key", line: 1 },
+    { section: "I1", field: "at", value: "1.0.0", line: 2 },
+    { section: "C1", field: "version", value: "xyz", line: 3 },
+  ];
+  const allRules = [...PRAGMA_CONTENT_RULES, ...METADATA_CONTENT_RULES];
+  const results = validateICFieldContent("test.go", fields, allRules, "Pragma");
+  assertEquals(results.length, 3, "Should flag all 3 bad patterns");
+  assert(results.every((r) => r.severity === "warn"), "Pattern failures should be warn-level");
+});
+
+Deno.test("unit/validateICFieldContent: enum checks are case-insensitive", () => {
+  const fields = [
+    { section: "I2", field: "type", value: "Code", line: 1 },      // uppercase
+    { section: "I2", field: "structure", value: "4-BLOCK", line: 2 }, // all caps
+    { section: "C1", field: "status", value: "DRAFT", line: 3 },    // all caps
+  ];
+  const allRules = [...PRAGMA_CONTENT_RULES, ...METADATA_CONTENT_RULES];
+  const results = validateICFieldContent("test.go", fields, allRules, "Test");
+  assertEquals(results.length, 0, "Enum checks should accept any case: " +
+    results.map((r) => `${r.rule}: ${r.message}`).join(", "));
+});
+
+Deno.test("unit/validateICFieldContent: skips placeholder values", () => {
+  const fields = [
+    { section: "I1", field: "key", value: "[YOUR-KEY-HERE]", line: 1 },
+    { section: "I1", field: "format", value: "[format]", line: 2 },
+    { section: "C1", field: "version", value: "[version]", line: 3 },
+  ];
+  const allRules = [...PRAGMA_CONTENT_RULES, ...METADATA_CONTENT_RULES];
+  const results = validateICFieldContent("test.go", fields, allRules, "Pragma");
+  assertEquals(results.length, 0, "Should skip placeholder values entirely");
+});
+
+Deno.test("unit/validateICFieldContent: skips missing fields", () => {
+  // Only I1.key present — rules for other fields should not fire
+  const fields = [
+    { section: "I1", field: "key", value: "B-valid-key", line: 1 },
+  ];
+  const results = validateICFieldContent("test.go", fields, PRAGMA_CONTENT_RULES, "Pragma");
+  assertEquals(results.length, 0, "Should only check fields that exist");
+});
+
+Deno.test("unit/validateICFieldContent: empty required content produces warning", () => {
+  const fields = [
+    { section: "I3", field: "file", value: "", line: 1 },
+    { section: "I3", field: "title", value: "  ", line: 2 },   // whitespace-only
+    { section: "C2", field: "organization", value: "", line: 3 },
+  ];
+  const allRules = [...PRAGMA_CONTENT_RULES, ...METADATA_CONTENT_RULES];
+  const results = validateICFieldContent("test.go", fields, allRules, "Test");
+  assertEquals(results.length, 3, "Empty and whitespace-only should trigger non-empty check");
+});
+
 // ---------------------------------------------------------------------------
 // transform/ — Transformer tests
 // ---------------------------------------------------------------------------
@@ -631,6 +785,114 @@ Deno.test("transform/reorder-closing: actual transform fixes zone order", async 
   }
 });
 
+// ---------------------------------------------------------------------------
+// closing/ — CLOSING content validation (new: required zones + zone content)
+// ---------------------------------------------------------------------------
+
+Deno.test("closing/missing-required-zones: detects missing X1 and X5", async () => {
+  const results = await go.lint(fixture("go/closing/missing-required-zones.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  assert(hasRule(results, "closing/required-X1"), "Should detect missing X1 zone");
+  assert(hasRule(results, "closing/required-X5"), "Should detect missing X5 zone");
+
+  // Both should be info-level
+  const x1 = byRule(results, "closing/required-X1");
+  const x5 = byRule(results, "closing/required-X5");
+  assertEquals(x1[0]!.severity, "info", "Missing X1 should be info-level");
+  assertEquals(x5[0]!.severity, "info", "Missing X5 should be info-level");
+});
+
+Deno.test("closing/x1-missing-fields: detects missing Careful: field in X1", async () => {
+  const results = await go.lint(fixture("go/closing/x1-missing-fields.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  assert(hasRule(results, "closing/X1-content"), "Should detect missing X1 content fields");
+
+  // Should NOT trigger required-X1 (zone is present)
+  const reqX1 = byRule(results, "closing/required-X1");
+  assertEquals(reqX1.length, 0, "Should not flag X1 as missing when it's present");
+
+  const x1Content = byRule(results, "closing/X1-content");
+  assertEquals(x1Content[0]!.severity, "info", "X1 content check should be info-level");
+  assert(hasMessage(results, "careful"), "Should specifically mention missing 'careful' field");
+});
+
+Deno.test("closing/x5-missing-scripture: detects missing Scripture: field in X5", async () => {
+  const results = await go.lint(fixture("go/closing/x5-missing-scripture.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  assert(hasRule(results, "closing/X5-content"), "Should detect missing X5 content fields");
+
+  // Should NOT trigger required-X5 (zone is present)
+  const reqX5 = byRule(results, "closing/required-X5");
+  assertEquals(reqX5.length, 0, "Should not flag X5 as missing when it's present");
+
+  const x5Content = byRule(results, "closing/X5-content");
+  assertEquals(x5Content[0]!.severity, "info", "X5 content check should be info-level");
+  assert(hasMessage(results, "scripture"), "Should specifically mention missing 'scripture' field");
+});
+
+Deno.test("closing/valid-library: no required-zone or zone-content warnings", async () => {
+  // The valid-library has a minimal CLOSING — if it has X1/X5, no content warnings.
+  // If it lacks X1/X5, the required checks fire but that's separate from zone-content.
+  const results = await go.lint(fixture("go/structure/valid-library.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, "Valid library should produce no errors");
+});
+
+// ---------------------------------------------------------------------------
+// setup/ — SETUP content validation (new: header documentation)
+// ---------------------------------------------------------------------------
+
+Deno.test("setup/no-header-doc: detects SETUP without header documentation", async () => {
+  const results = await go.lint(fixture("go/setup/no-header-doc.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  assert(hasRule(results, "setup/header-doc"), "Should detect missing SETUP header documentation");
+
+  const headerDoc = byRule(results, "setup/header-doc");
+  assertEquals(headerDoc[0]!.severity, "info", "Header-doc check should be info-level");
+});
+
+// ---------------------------------------------------------------------------
+// body/ — BODY content validation (new: subtype subsection names)
+// ---------------------------------------------------------------------------
+
+Deno.test("body/wrong-subtype-subsections: detects library with demo-test subsection names", async () => {
+  const results = await go.lint(fixture("go/body/wrong-subtype-subsections.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  assert(hasRule(results, "body/subtype-subsections"), "Should detect wrong subsection names for library subtype");
+
+  const subtypeResults = byRule(results, "body/subtype-subsections");
+  assertEquals(subtypeResults[0]!.severity, "info", "Subtype subsection check should be info-level");
+  assert(hasMessage(results, "Public APIs"), "Should mention missing 'Public APIs' canonical subsection");
+});
+
+// ---------------------------------------------------------------------------
+// regression/ — Existing fixtures still pass after new checks
+// ---------------------------------------------------------------------------
+
+Deno.test("regression/valid-library: still zero errors after content validation additions", async () => {
+  const results = await go.lint(fixture("go/structure/valid-library.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, "Valid library should still have zero errors");
+  const warns = warnings(results);
+  assertEquals(warns.length, 0, "Valid library should still have zero warnings");
+});
+
+Deno.test("regression/valid-executable: still zero errors after content validation additions", async () => {
+  const results = await go.lint(fixture("go/structure/valid-executable.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, "Valid executable should still have zero errors");
+});
+
 // ============================================================================
 // CLOSING
 // ============================================================================
@@ -640,7 +902,8 @@ Deno.test("transform/reorder-closing: actual transform fixes zone order", async 
 // and getSubsectionRanges target the parser directly with synthetic data.
 // Mirrors the Rust test suite structure for handler parity.
 //
-// Categories: structure/, metadata/, setup/, body/, closing/, format/, unit/, transform/
+// Categories: structure/, metadata/, setup/, body/, closing/, format/, unit/,
+//             transform/, regression/
 // Filter: deno test --filter "category/" tests/handlers/go_test.ts
 //
 // "Prove all things; hold fast that which is good." — 1 Thessalonians 5:21

@@ -1,7 +1,13 @@
 ---
 name: create-from-template
 description: Create new code files faithfully following established templates. Guides disciplined block-by-block creation that prevents throwing code at the wall.
-tools: Read, Glob, Grep, Write, Bash
+version: "2.1.0"
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Bash
 ---
 
 <!--

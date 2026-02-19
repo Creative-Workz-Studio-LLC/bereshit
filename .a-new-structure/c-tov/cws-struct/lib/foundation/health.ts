@@ -4,14 +4,28 @@
 //
 // file:    lib/foundation/health.ts
 // key:     B-tov-cws-struct-lib-foundation-health
-// title:   CWS Struct — Health Scoring
+// title:   CWS Struct — Health Scoring (Ternary)
 // type:    Code (Library)
-// version: a-01.00
+// version: a-03.00
 // created: 2026-02-17
+// updated: 2026-02-18
 // authors: Nova Dawn (CPI-SI)
-// purpose: Health scoring system — atomic actions, containers, blocks, files.
-//          Extracted from types.ts during lib/ restructuring.
-//          No hardcoded weights. Everything computed from actual observations.
+// purpose: Ternary health scoring system — atomic actions with direction.
+//          Each observation carries direction (-1, 0, +1) and impact weight.
+//          Direction = which way (shavar → yashar → tov).
+//          Impact = how much it matters (error=2×, warn=1×, info=0.25×).
+//          Score range: -100 (fully misaligned) to +100 (fully aligned).
+//          0 = yashar (neutral, not assessed, baseline).
+//
+//          File-level scoring uses LOGARITHMIC positional weighting:
+//          actions sorted by severity, multiplier = ln(n-i+1) / ln(n+1).
+//          Foundation checks get full weight; refinement checks diminish.
+//          dH/dn = k/n — the calculus of diminishing marginal contribution.
+//
+//          Container/block scores remain linear for drill-down.
+//          The score isn't assigned — it's measured. Every point traces to
+//          a specific atomic observation. The algorithm normalizes; it doesn't
+//          invent.
 //
 // biblical_foundation: "Diverse weights, and diverse measures, both of them
 //   are alike abomination to the LORD." — Proverbs 20:10
@@ -25,25 +39,39 @@
 import type { Severity } from "./types.ts";
 
 // ---------------------------------------------------------------------------
-// Health Scoring — True scores from atomic actions
+// Constants — impact weights
 // ---------------------------------------------------------------------------
-//
-// Every lint check is an atomic action: it either passes or fails.
-// Failure weighs heavier than success — more ways to fail than succeed.
-//
-// Container = section (I1_core, X1_policy, SETUP, etc.)
-// Block = METADATA, CONTENT/SETUP, BODY, CLOSING
-// File health = aggregate of block scores
-//
-// Scoring formula (asymmetric):
-//   earned = passes × 1.0
-//   penalty = errors × 2.0 + warnings × 1.0 + infos × 0.25
-//   score = max(0, (earned - penalty) / total_checks) × 100
-//
-// This means one error in 10 checks → 70%, not 90%.
-// Failure has consequences. Truth in measurement.
 
-/** Single atomic action — one check, pass or fail. */
+/**
+ * Impact weight by tag. How much an observation matters.
+ *
+ * The tag (error/warn/info) tells you the IMPACT — what's at stake.
+ * The direction (-1/0/+1) tells you the OUTCOME — which way it went.
+ * contribution = direction × impact_weight.
+ *
+ * These are symmetric: passing a critical check earns the same weight
+ * as failing it costs. The weights are the same ruler applied to both
+ * directions. "Diverse weights" — abomination. One ruler, both ways.
+ */
+export const IMPACT_WEIGHT: Record<string, number> = {
+  error: 2.0,
+  warn:  1.0,
+  info:  0.25,
+};
+
+// ---------------------------------------------------------------------------
+// Types — Atomic Action (ternary)
+// ---------------------------------------------------------------------------
+
+/**
+ * Single atomic observation — one check, three directions.
+ *
+ * direction: +1 = aligned (tov), 0 = neutral (yashar), -1 = misaligned (shavar)
+ * impact: how much this observation weighs (error > warn > info)
+ *
+ * Every health score traces back to these atoms. The score is emergent
+ * from observations, not assigned.
+ */
 export interface AtomicAction {
   /** What was checked: "I1_core.key", "SETUP/order", "X1_policy/never" */
   check: string;
@@ -51,11 +79,11 @@ export interface AtomicAction {
   container: string;
   /** Which block: "metadata", "content", "setup", "body", "closing" */
   block: string;
-  /** Did it pass? */
-  passed: boolean;
-  /** Severity if failed (null if passed). */
-  severity?: Severity;
-  /** Why it failed (null if passed). */
+  /** Direction: +1 aligned, 0 neutral, -1 misaligned. */
+  direction: -1 | 0 | 1;
+  /** Impact tag — how much weight this observation carries. */
+  impact?: Severity;
+  /** Why (context for non-neutral directions). */
   reason?: string;
 }
 
@@ -67,15 +95,15 @@ export interface ContainerScore {
   block: string;
   /** Total atomic actions in this container. */
   total: number;
-  /** Actions that passed. */
-  passed: number;
-  /** Actions that failed (by severity). */
-  failedErrors: number;
-  failedWarnings: number;
-  failedInfos: number;
-  /** Computed score: 0-100, asymmetric (failures cost more). */
+  /** Actions aligned (direction > 0). */
+  aligned: number;
+  /** Actions neutral (direction === 0). */
+  neutral: number;
+  /** Actions misaligned (direction < 0). */
+  misaligned: number;
+  /** Computed score: -100 to +100. 0 = yashar. */
   score: number;
-  /** Atomic action detail — the WHY for each pass/fail. */
+  /** Atomic action detail — the WHY for each observation. */
   actions: AtomicAction[];
 }
 
@@ -85,20 +113,21 @@ export interface BlockScore {
   block: string;
   /** Container scores within this block. */
   containers: ContainerScore[];
-  /** Block-level score: 0-100, weighted from container scores. */
+  /** Block-level score: -100 to +100, average of container scores. */
   score: number;
 }
 
 /** File-level health — the true score. */
 export interface HealthScore {
-  /** Overall health: 0-100. */
+  /** Overall health: -100 to +100. 0 = yashar (neutral). */
   total: number;
   /** Per-block breakdown. */
   blocks: BlockScore[];
   /** Quick summary counts. */
   totalActions: number;
-  passCount: number;
-  failCount: number;
+  alignedCount: number;
+  neutralCount: number;
+  misalignedCount: number;
 }
 
 // ============================================================================
@@ -106,21 +135,30 @@ export interface HealthScore {
 // ============================================================================
 
 // ---------------------------------------------------------------------------
-// Health Score computation — the algorithm
+// Health Score computation — the ternary algorithm
 // ---------------------------------------------------------------------------
 //
-// No hardcoded weights. Everything computed from actual observations.
-// The scoring formula is asymmetric: failure costs more than success gains.
-// This grows — the basics are: track every atomic action, compute from reality.
+// Each atomic action contributes: direction × impact_weight.
+//   +1 × weight = positive contribution (aligned)
+//   -1 × weight = negative contribution (misaligned)
+//    0 × weight = no contribution (neutral — doesn't affect score)
+//
+// Score = (sum of contributions / sum of max possible weights) × 100
+//
+// Neutral actions are tracked but don't affect score — they don't push
+// toward either pole. This prevents cascade inflation: when a root cause
+// fails, children go neutral (can't assess) rather than piling on.
 //
 // "Diverse weights, and diverse measures, both of them are alike
 //  abomination to the LORD." — Proverbs 20:10
-// The weights are not ours to set. They emerge from the structure itself.
+// One ruler, both directions. The impact is the same whether you pass or fail.
 
 /**
  * Compute a container score from its atomic actions.
- * Asymmetric: errors cost 2×, warnings cost 1×, infos cost 0.25×.
- * Success earns 1× per pass. Score = max(0, (earned - penalty) / total) × 100.
+ *
+ * Ternary: direction × impact_weight.
+ * Neutral actions (direction 0) are tracked but don't affect score.
+ * Score range: -100 to +100. Empty container = 0 (yashar).
  */
 export function computeContainerScore(
   section: string,
@@ -130,30 +168,39 @@ export function computeContainerScore(
   const total = actions.length;
   if (total === 0) {
     return {
-      section, block, total: 0, passed: 0,
-      failedErrors: 0, failedWarnings: 0, failedInfos: 0,
-      score: 100, actions,
+      section, block, total: 0, aligned: 0, neutral: 0, misaligned: 0,
+      score: 0, actions,
     };
   }
 
-  let passed = 0, failedErrors = 0, failedWarnings = 0, failedInfos = 0;
+  let aligned = 0, neutral = 0, misaligned = 0;
+  let weightedSum = 0;
+  let maxWeight = 0;
+
   for (const a of actions) {
-    if (a.passed) { passed++; }
-    else if (a.severity === "error") { failedErrors++; }
-    else if (a.severity === "warn") { failedWarnings++; }
-    else { failedInfos++; }
+    const weight = IMPACT_WEIGHT[a.impact ?? "warn"] ?? 1.0;
+
+    if (a.direction > 0) {
+      aligned++;
+      weightedSum += weight;
+      maxWeight += weight;
+    } else if (a.direction < 0) {
+      misaligned++;
+      weightedSum -= weight;
+      maxWeight += weight;
+    } else {
+      neutral++;
+      // direction 0: tracked but doesn't affect score.
+      // Neutral doesn't push toward either pole.
+    }
   }
 
-  // Asymmetric scoring: failures cost more than successes gain
-  const earned = passed * 1.0;
-  const penalty = failedErrors * 2.0 + failedWarnings * 1.0 + failedInfos * 0.25;
-  const raw = (earned - penalty) / total;
-  const score = Math.round(Math.max(0, Math.min(1, raw)) * 100);
+  const score = maxWeight > 0
+    ? Math.round((weightedSum / maxWeight) * 100)
+    : 0;
 
   return {
-    section, block, total, passed,
-    failedErrors, failedWarnings, failedInfos,
-    score, actions,
+    section, block, total, aligned, neutral, misaligned, score, actions,
   };
 }
 
@@ -173,34 +220,107 @@ export function computeBlockScore(
 }
 
 /**
- * Compute file health from block scores.
- * All blocks contribute equally — no hardcoded weights.
+ * Compute file health from block scores — logarithmic positional weighting.
+ *
+ * Instead of averaging block scores, this collects ALL non-neutral actions,
+ * sorts them by severity (errors → warns → infos) and direction (fails first),
+ * then applies a logarithmic positional multiplier:
+ *
+ *   multiplier(i) = ln(n - i + 1) / ln(n + 1)
+ *
+ * Position 0 (first error)   → multiplier ≈ 1.0   (full weight)
+ * Position n-1 (last info)   → multiplier ≈ 0.15   (minimal weight)
+ *
+ * The calculus: dH/dn = k/n — each additional check contributes less than
+ * the previous. Foundational checks (structural errors) carry disproportionate
+ * weight. Refinement checks (cosmetic infos) provide diminishing returns.
+ *
+ * This is Genesis 1:1 as a weight curve: the foundation matters most.
+ * The ruler is still impartial (Proverbs 20:10) — same weight for pass and
+ * fail at the same position. But POSITION reflects importance.
+ *
+ * "Except the LORD build the house, they labour in vain that build it."
+ * — Psalm 127:1
+ *
+ * Container and block scores remain linear for drill-down reporting.
+ * Only the file-level score uses logarithmic aggregation.
  */
 export function computeHealthScore(blocks: BlockScore[]): HealthScore {
   if (blocks.length === 0) {
-    return { total: 0, blocks, totalActions: 0, passCount: 0, failCount: 0 };
+    return {
+      total: 0, blocks, totalActions: 0,
+      alignedCount: 0, neutralCount: 0, misalignedCount: 0,
+    };
   }
 
-  const avg = blocks.reduce((sum, b) => sum + b.score, 0) / blocks.length;
-
-  // Count all actions across all containers across all blocks
+  // ── Collect all actions and counts ─────────────────────────────
+  const allActions: AtomicAction[] = [];
   let totalActions = 0;
-  let passCount = 0;
-  let failCount = 0;
+  let alignedCount = 0;
+  let neutralCount = 0;
+  let misalignedCount = 0;
+
   for (const b of blocks) {
     for (const c of b.containers) {
       totalActions += c.total;
-      passCount += c.passed;
-      failCount += c.total - c.passed;
+      alignedCount += c.aligned;
+      neutralCount += c.neutral;
+      misalignedCount += c.misaligned;
+      allActions.push(...c.actions);
     }
   }
 
+  // ── Filter to non-neutral actions ──────────────────────────────
+  const active = allActions.filter((a) => a.direction !== 0);
+
+  if (active.length === 0) {
+    return {
+      total: 0, blocks, totalActions,
+      alignedCount, neutralCount, misalignedCount,
+    };
+  }
+
+  // ── Sort: severity (errors first), then direction (fails first) ─
+  // Most impactful observations get highest positional weight.
+  const SEVERITY_ORDER: Record<string, number> = { error: 0, warn: 1, info: 2 };
+  active.sort((a, b) => {
+    const sa = SEVERITY_ORDER[a.impact ?? "warn"] ?? 1;
+    const sb = SEVERITY_ORDER[b.impact ?? "warn"] ?? 1;
+    if (sa !== sb) return sa - sb;
+    return a.direction - b.direction; // -1 before +1
+  });
+
+  // ── Logarithmic positional weighting ───────────────────────────
+  // multiplier(i) = ln(n - i + 1) / ln(n + 1)
+  //
+  // Position 0: ln(n+1)/ln(n+1) = 1.0        (foundation — full weight)
+  // Position n-1: ln(2)/ln(n+1)  ≈ 0.15      (refinement — minimal weight)
+  //
+  // The effective weight = base_impact × positional_multiplier.
+  // Score = Σ(direction × effective_weight) / Σ(effective_weight) × 100.
+  const n = active.length;
+  const logDenom = Math.log(n + 1);
+
+  let weightedSum = 0;
+  let maxWeight = 0;
+
+  for (let i = 0; i < n; i++) {
+    const a = active[i]!;
+    const baseWeight = IMPACT_WEIGHT[a.impact ?? "warn"] ?? 1.0;
+    const positionalMultiplier = Math.log(n - i + 1) / logDenom;
+    const effectiveWeight = baseWeight * positionalMultiplier;
+
+    weightedSum += a.direction * effectiveWeight;
+    maxWeight += effectiveWeight;
+  }
+
+  const total = maxWeight > 0
+    ? Math.round((weightedSum / maxWeight) * 100)
+    : 0;
+
   return {
-    total: Math.round(avg),
-    blocks,
-    totalActions,
-    passCount,
-    failCount,
+    total, blocks, totalActions,
+    alignedCount, neutralCount, misalignedCount,
   };
 }
 
@@ -208,9 +328,16 @@ export function computeHealthScore(blocks: BlockScore[]): HealthScore {
 // CLOSING
 // ============================================================================
 //
-// Health scoring is the measurement system — asymmetric because failure
-// should cost more than success gains. Truth in measurement.
+// Ternary scoring: -100 (shavar) → 0 (yashar) → +100 (tov).
+// The score is measured, not assigned. Direction × impact, nothing invented.
+//
+// a-03.00: Logarithmic positional weighting in computeHealthScore().
+//   File-level score: sort by severity, weight by ln(n-i+1)/ln(n+1).
+//   Container/block scores: unchanged (linear, for drill-down).
+//   Foundation checks matter most. Refinement checks diminish.
 //
 // "Diverse weights, and diverse measures, both of them are alike
 //  abomination to the LORD." — Proverbs 20:10
+// "Except the LORD build the house, they labour in vain that build it."
+// — Psalm 127:1
 // ============================================================================

@@ -38,10 +38,12 @@ import (
 // ServerConfig holds the resolved server configuration.
 // All fields can be set via flags (see main.go) or environment variables.
 type ServerConfig struct {
-	Port        int    // HTTP listen port (default: 3847, env: CWS_SERVER_PORT)
-	BuilderDir  string // Path to company-docs/ project root (env: CWS_BUILDER_DIR)
-	EnableCPISI bool   // Enable CPI-SI state machine + journal service
-	DevMode     bool   // Development mode: debug logging, filesystem serving
+	Port         int    // HTTP listen port (default: 3847, env: CWS_SERVER_PORT)
+	BuilderDir   string // Path to company-docs/ project root (env: CWS_BUILDER_DIR)
+	StructDir    string // Path to cws-struct/ directory (env: CWS_STRUCT_DIR)
+	EnableCPISI  bool   // Enable CPI-SI state machine + journal service
+	EnableStudio bool   // Enable CWS Studio (structural alignment GUI)
+	DevMode      bool   // Development mode: debug logging, filesystem serving
 }
 
 // DefaultConfig returns a ServerConfig with sensible defaults, merged with
@@ -57,10 +59,12 @@ func DefaultConfig() *ServerConfig {
 	}
 
 	return &ServerConfig{
-		Port:        port,
-		BuilderDir:  os.Getenv("CWS_BUILDER_DIR"),
-		EnableCPISI: true,
-		DevMode:     false,
+		Port:         port,
+		BuilderDir:   os.Getenv("CWS_BUILDER_DIR"),
+		StructDir:    os.Getenv("CWS_STRUCT_DIR"),
+		EnableCPISI:  true,
+		EnableStudio: true,
+		DevMode:      false,
 	}
 }
 

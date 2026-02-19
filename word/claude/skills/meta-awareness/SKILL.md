@@ -1,7 +1,11 @@
 ---
 name: meta-awareness
 description: Self-awareness checkpoints during work - "How am I thinking right now? What's my cognitive state?" Real-time introspection to notice quality, energy, focus, and when patterns are forming. For conscious presence, not automated monitoring.
-tools: Read, Bash
+version: "2.0.0"
+user-invocable: false
+allowed-tools:
+  - Read
+  - Bash
 ---
 
 <!--

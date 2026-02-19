@@ -54,18 +54,25 @@ import { registerFormat } from "../engine/mod.ts";
 
 // Shared 4-block types, constants, and functions
 import type { BlockPosition, DirectiveInfo, SubsectionRange, IdentityField } from "./shared/mod.ts";
+import type { FieldContentRule } from "./shared/mod.ts";
 import {
   BLOCKS, REQUIRED_DIRECTIVES, RECOMMENDED_DIRECTIVES,
   PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS,
+  PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES,
   BLOCK_SEPARATOR_WIDTH, SUBSECTION_SEPARATOR_WIDTH,
   BODY_SUBSECTION_PATTERN, BODY_SUBSECTION_LEGACY, CLOSING_ZONES,
+  SCALING_THRESHOLDS,
   findBlocks, getBlockLines, blockLineToFile, findBlockRange,
   getSubsectionRanges as _getSubsectionRanges,
   checkSeparatorConsistency, checkClosingZoneOrder,
+  checkClosingRequiredZones, checkClosingZoneContent,
+  validateICFieldContent,
 } from "./shared/mod.ts";
 
 // Re-export for tests
 export { PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS };
+export { PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES };
+export { validateICFieldContent };
 
 // ---------------------------------------------------------------------------
 // Constants — Go-specific (shared constants imported from ./shared/mod.ts)
@@ -106,6 +113,19 @@ const KNOWN_CODE_DIRECTIVES = [
   "--go -executable",
   "--go -demo-test",
 ] as const;
+
+/**
+ * Canonical BODY subsection names per subtype.
+ * Source: go-4block-schema.jsonc → BODY.subsection_order
+ *
+ * Used by checkBodySubtypeContent to verify that BODY subsection names
+ * match the file's subtype. Comparison is case-insensitive.
+ */
+const BODY_CANONICAL_SUBSECTIONS: Record<string, readonly string[]> = {
+  library:    ["Org Chart", "Helpers", "Core Operations", "Error Handling", "Public APIs"],
+  executable: ["Org Chart", "Helpers", "Core Operations", "Error Handling", "Public APIs"],
+  "demo-test": ["Org Chart", "Helpers", "Core Operations", "Error Handling", "Test Functions"],
+} as const;
 
 // ---------------------------------------------------------------------------
 // Content Classification — what Go constructs are, where they belong
@@ -758,6 +778,7 @@ function checkPragmaMetadata(ctx: GoFileContext): LintResult[] {
     } else {
       results.push(...validateICFields(file, pragmaFields, PRAGMA_FIELD_REQUIREMENTS, "Pragma"));
       results.push(...detectPlaceholders(file, pragmaFields, "Pragma"));
+      results.push(...validateICFieldContent(file, pragmaFields, PRAGMA_CONTENT_RULES, "Pragma"));
     }
   }
 
@@ -769,6 +790,7 @@ function checkPragmaMetadata(ctx: GoFileContext): LintResult[] {
     } else {
       results.push(...validateICFields(file, metadataFields, METADATA_FIELD_REQUIREMENTS, "Metadata"));
       results.push(...detectPlaceholders(file, metadataFields, "Metadata"));
+      results.push(...validateICFieldContent(file, metadataFields, METADATA_CONTENT_RULES, "Metadata"));
     }
   }
 
@@ -1063,12 +1085,27 @@ function checkContentPlacement(ctx: GoFileContext): LintResult[] {
 
     for (const decl of getTopLevelDeclarations(metaLines)) {
       if (METADATA_FORBIDDEN.has(decl.kind)) {
-        // Exempt identity vars — Pragma and Metadata [][2]string belong in METADATA
+        // Exempt identity vars — Pragma and Metadata [][2]string belong in METADATA.
+        // Default names are "Pragma" and "Metadata", but //omni:pragma and
+        // //omni:metadata directives can override to alternate names (e.g.
+        // "TestFilePragma" in same-package test files that can't redeclare).
         if (decl.kind === "var_decl") {
           const line = metaLines[decl.lineIdx]?.trim() ?? "";
-          if (/^var\s+(Pragma|Metadata)\s*=\s*\[\]\[2\]string/.test(line)) {
+          const pragmaName = ctx.directives.get("//omni:pragma")?.value || "Pragma";
+          const metadataName = ctx.directives.get("//omni:metadata")?.value || "Metadata";
+          const identityPattern = new RegExp(
+            `^var\\s+(${pragmaName}|${metadataName})\\s*=\\s*\\[\\]\\[2\\]string`
+          );
+          if (identityPattern.test(line)) {
             continue;
           }
+        }
+        // Exempt Metadata Imports — Go requires ALL imports before any
+        // declarations. Since Pragma/Metadata vars live in METADATA,
+        // the import block must precede them. This is a Go language
+        // constraint, not a structural error.
+        if (decl.kind === "import_decl") {
+          continue;
         }
         const fileLine = metaStart + 1 + decl.lineIdx;
         results.push(
@@ -1200,6 +1237,11 @@ function checkClosingContentPlacement(ctx: GoFileContext): LintResult[] {
 
   if (ctx.isTemplate) return results;
 
+  // Demo-test files ARE test files — Test*/Benchmark*/Example* in BODY
+  // section 5 is correct by design. Only flag test functions in library
+  // or executable source files where they don't belong.
+  if (ctx.subtype === "demo-test") return results;
+
   const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
   if (bodyLines.length === 0) return results;
 
@@ -1239,6 +1281,188 @@ function checkClosingContentPlacement(ctx: GoFileContext): LintResult[] {
 }
 
 // ---------------------------------------------------------------------------
+// Check 15: SETUP header documentation
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that the SETUP block has header documentation before the first
+ * subsection marker. Production SETUP blocks should explain the section
+ * ordering principle and provide a TOC.
+ *
+ * Looks for at least 3 non-blank, non-separator comment lines before the
+ * first subsection header. Why 3: even a minimal header has a purpose line,
+ * a blank separator, and an ordering reference.
+ */
+function checkSetupHeaderDoc(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  if (ctx.isTemplate) return results;
+
+  const setupLines = getBlockLines(ctx.lines, ctx.blocks, "SETUP");
+  if (setupLines.length === 0) return results;
+
+  // Find the first subsection marker
+  let firstSubIdx = -1;
+  for (let i = 0; i < setupLines.length; i++) {
+    const trimmed = setupLines[i]!.trim();
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+    for (const sub of SETUP_SUBSECTIONS) {
+      if (sub.pattern.test(trimmed)) {
+        firstSubIdx = i;
+        break;
+      }
+    }
+    if (firstSubIdx >= 0) break;
+  }
+
+  // No subsections found — skip (subsection-order check handles that)
+  if (firstSubIdx < 0) return results;
+
+  // Count substantive comment lines before the first subsection
+  let docLines = 0;
+  for (let i = 0; i < firstSubIdx; i++) {
+    const trimmed = setupLines[i]!.trim();
+    // Skip blanks, separator lines, and the block header itself
+    if (trimmed === "" || /^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+    if (/^\/\/\s*$/.test(trimmed)) continue; // empty comment
+    docLines++;
+  }
+
+  if (docLines < 3) {
+    const setupBlock = ctx.blocks.find((b) => b.name === "SETUP");
+    results.push(
+      info(file, "setup/header-doc",
+        `SETUP block has ${docLines} header documentation line(s) before first subsection — consider adding section-order overview (3+ lines)`,
+        { line: setupBlock?.line ?? 0 }),
+    );
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Check 16: BODY subtype-specific subsection names
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that BODY subsection names match the file's declared subtype.
+ *
+ * Libraries should have: Org Chart, Helpers, Core Operations, Error Handling, Public APIs
+ * Executables should have: same (different content, same structure)
+ * Demo-tests should have: ...Error Handling, Test Functions (not Public APIs)
+ *
+ * Only checks if:
+ * - File has a known subtype (from //omni:code directive)
+ * - BODY has numbered subsections
+ *
+ * Uses case-insensitive comparison with leading/trailing whitespace ignored.
+ */
+function checkBodySubtypeContent(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  if (ctx.isTemplate) return results;
+  if (!ctx.subtype) return results;
+
+  const canonical = BODY_CANONICAL_SUBSECTIONS[ctx.subtype];
+  if (!canonical) return results;
+
+  const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
+  if (bodyLines.length === 0) return results;
+
+  // Collect subsection names from BODY
+  const found: Array<{ num: number; name: string; lineIdx: number }> = [];
+  for (let i = 0; i < bodyLines.length; i++) {
+    const trimmed = bodyLines[i]!.trim();
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
+    const match = BODY_SUBSECTION_PATTERN.exec(trimmed) ??
+                  BODY_SUBSECTION_LEGACY.exec(trimmed);
+    if (match) {
+      const num = parseInt(match[1]!, 10);
+      const name = match[2]!.trim();
+      if (!found.some((f) => f.num === num)) {
+        found.push({ num, name, lineIdx: i });
+      }
+    }
+  }
+
+  if (found.length === 0) return results;
+
+  // Compare found names against canonical (case-insensitive)
+  const foundNames = found.map((f) => f.name.toLowerCase());
+
+  const missing = canonical.filter((c) =>
+    !foundNames.some((f) => f.includes(c.toLowerCase())));
+
+  if (missing.length > 0) {
+    const bodyBlock = ctx.blocks.find((b) => b.name === "BODY");
+    results.push(
+      info(file, "body/subtype-subsections",
+        `BODY for ${ctx.subtype} subtype missing canonical subsection(s): ${missing.join(", ")} — expected: ${canonical.join(", ")}`,
+        { line: bodyBlock?.line ?? 0 }),
+    );
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Check 17: Scaling signals — block size thresholds
+// ---------------------------------------------------------------------------
+
+/**
+ * Check block line counts against scaling thresholds.
+ *
+ * SETUP > 200 lines or BODY > 500 lines indicates the file is doing
+ * too much. These are informational — not errors, but signals for
+ * future refactoring.
+ *
+ * Counts only content lines (excluding block markers and separators).
+ */
+function checkScalingSignals(ctx: GoFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  if (ctx.isTemplate) return results;
+
+  // SETUP size
+  const setupLines = getBlockLines(ctx.lines, ctx.blocks, "SETUP");
+  const setupContent = setupLines.filter((l) => {
+    const t = l.trim();
+    return t !== "" && !/^\/\/\s*[─=\-]{4,}\s*$/.test(t);
+  });
+
+  if (setupContent.length > SCALING_THRESHOLDS.SETUP) {
+    const setupBlock = ctx.blocks.find((b) => b.name === "SETUP");
+    results.push(
+      info(file, "scaling/setup-size",
+        `SETUP block has ${setupContent.length} content lines (threshold: ${SCALING_THRESHOLDS.SETUP}) — consider extracting types/constants into separate files`,
+        { line: setupBlock?.line ?? 0 }),
+    );
+  }
+
+  // BODY size
+  const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
+  const bodyContent = bodyLines.filter((l) => {
+    const t = l.trim();
+    return t !== "" && !/^\/\/\s*[─=\-]{4,}\s*$/.test(t);
+  });
+
+  if (bodyContent.length > SCALING_THRESHOLDS.BODY) {
+    const bodyBlock = ctx.blocks.find((b) => b.name === "BODY");
+    results.push(
+      info(file, "scaling/body-size",
+        `BODY block has ${bodyContent.length} content lines (threshold: ${SCALING_THRESHOLDS.BODY}) — consider extracting logic into submodules`,
+        { line: bodyBlock?.line ?? 0 }),
+    );
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
 // Lint orchestrator
 // ---------------------------------------------------------------------------
 
@@ -1268,12 +1492,17 @@ async function lintGoFile(filePath: string): Promise<LintResult[]> {
     ...checkSeparatorConsistency(ctx),
     ...checkTemplateVsDerived(ctx),
     ...checkSetupSubsectionOrder(ctx),
+    ...checkSetupHeaderDoc(ctx),
     ...checkIdentityRegistration(ctx),
     ...checkDirectiveFormat(ctx),
     ...checkContentPlacement(ctx),
     ...checkBodySubsectionOrder(ctx),
+    ...checkBodySubtypeContent(ctx),
     ...checkClosingZoneOrder(ctx),
     ...checkClosingContentPlacement(ctx),
+    ...checkClosingRequiredZones(ctx),
+    ...checkClosingZoneContent(ctx),
+    ...checkScalingSignals(ctx),
   ];
 }
 
@@ -1851,13 +2080,6 @@ async function computeGoHealth(
   filePath: string,
   results: LintResult[],
 ): Promise<HealthScore> {
-  // ── Skip non-structural files ──────────────────────────────────
-  const hasStructuralChecks = results.some((r) =>
-    !r.rule.startsWith("structure/") && !r.rule.startsWith("io/"));
-  if (!hasStructuralChecks) {
-    return computeHealthScore([]);
-  }
-
   // ── File type detection ────────────────────────────────────────
   const basename = filePath.split("/").pop() ?? "";
   const isDocGo = basename === "doc.go";
@@ -1879,27 +2101,31 @@ async function computeGoHealth(
 
   // ── Action helpers ─────────────────────────────────────────────
 
-  /** Create atomic actions: 1 pass if no failure, N fails if N results. */
+  /** Create atomic actions: 1 aligned if no failure, N misaligned if N results. */
   function acts(check: string, container: string, block: string): AtomicAction[] {
     const failures = failuresByRule.get(check);
     if (failures && failures.length > 0) {
       return failures.map((f) => ({
         check, container, block,
-        passed: false,
-        severity: f.severity,
+        direction: -1 as const,
+        impact: f.severity,
         reason: f.message,
       }));
     }
-    return [{ check, container, block, passed: true }];
+    return [{ check, container, block, direction: 1 as const }];
   }
 
-  /** Cascade all passed actions to failed with error severity. */
+  /**
+   * Cascade: set aligned actions to neutral (not assessable).
+   * Root cause already carries the weight — children don't pile on.
+   * The 0 balances things out: one root failure, not 30 cascaded failures.
+   */
   function cascade(groups: AtomicAction[][], reason: string): void {
     for (const group of groups) {
       for (const a of group) {
-        if (a.passed) {
-          a.passed = false;
-          a.severity = "error";
+        if (a.direction > 0) {
+          (a as { direction: -1 | 0 | 1 }).direction = 0;
+          a.impact = "info";
           a.reason = reason;
         }
       }
@@ -1966,6 +2192,19 @@ async function computeGoHealth(
     }
   }
 
+  // Field VALUE checks — content validation (is the value valid?)
+  const fieldValueActions: AtomicAction[] = [];
+  if (!isDocGo && !isTemplate) {
+    for (const rule of PRAGMA_CONTENT_RULES) {
+      fieldValueActions.push(
+        ...acts(`value/Pragma/${rule.field}`, "field-values", "metadata"));
+    }
+    for (const rule of METADATA_CONTENT_RULES) {
+      fieldValueActions.push(
+        ...acts(`value/Metadata/${rule.field}`, "field-values", "metadata"));
+    }
+  }
+
   const commentActions: AtomicAction[] = [];
   if (!isTemplate && !isDocGo) {
     commentActions.push(...acts("comment-meta/biblical", "comment-meta", "metadata"));
@@ -1985,6 +2224,11 @@ async function computeGoHealth(
     setupActions.push(...acts("setup/subsection-order", "ordering", "setup"));
   }
 
+  const setupContentActions: AtomicAction[] = [];
+  if (!isTemplate) {
+    setupContentActions.push(...acts("setup/header-doc", "content", "setup"));
+  }
+
   // ── Content placement (spans METADATA, SETUP, BODY) ─────────
   const contentActions: AtomicAction[] = [];
   if (!isTemplate) {
@@ -1999,6 +2243,11 @@ async function computeGoHealth(
     bodyOrderActions.push(...acts("body/subsection-order", "ordering", "body"));
   }
 
+  const bodyContentActions: AtomicAction[] = [];
+  if (!isTemplate) {
+    bodyContentActions.push(...acts("body/subtype-subsections", "content", "body"));
+  }
+
   // ── CLOSING block ─────────────────────────────────────────────
   const closingActions: AtomicAction[] = [];
   if (!isTemplate) {
@@ -2009,41 +2258,115 @@ async function computeGoHealth(
     closingActions.push(...acts("closing/main-placement", "content-placement", "closing"));
   }
 
+  const closingContentActions: AtomicAction[] = [];
+  if (!isTemplate) {
+    closingContentActions.push(...acts("closing/required-X1", "required-zones", "closing"));
+    closingContentActions.push(...acts("closing/required-X5", "required-zones", "closing"));
+    closingContentActions.push(...acts("closing/X1-content", "zone-content", "closing"));
+    closingContentActions.push(...acts("closing/X5-content", "zone-content", "closing"));
+  }
+
+  // ── Scaling signals (spans setup + body) ───────────────────────
+  const scalingActions: AtomicAction[] = [];
+  if (!isTemplate) {
+    scalingActions.push(...acts("scaling/setup-size", "scaling", "setup"));
+    scalingActions.push(...acts("scaling/body-size", "scaling", "body"));
+  }
+
   // ── CASCADE: missing blocks → all children fail ───────────────
   const blockMissing = (name: string) => failuresByRule.has(`block/${name}`);
 
   if (blockMissing("METADATA")) {
     cascade(
-      [directiveActions, identityActions, commentActions, templateDerivedActions],
+      [directiveActions, identityActions, fieldValueActions, commentActions, templateDerivedActions],
       "METADATA block missing — all metadata checks fail",
     );
   }
   if (blockMissing("SETUP")) {
-    cascade([setupActions, contentActions], "SETUP block missing — all setup checks fail");
+    cascade(
+      [setupActions, setupContentActions, contentActions,
+       scalingActions.filter((a) => a.check === "scaling/setup-size")],
+      "SETUP block missing — all setup checks fail",
+    );
   }
   if (blockMissing("BODY")) {
-    cascade([bodyOrderActions], "BODY block missing — all body checks fail");
+    cascade(
+      [bodyOrderActions, bodyContentActions,
+       scalingActions.filter((a) => a.check === "scaling/body-size")],
+      "BODY block missing — all body checks fail",
+    );
   }
   if (blockMissing("CLOSING")) {
-    cascade([closingActions], "CLOSING block missing — all closing checks fail");
+    cascade([closingActions, closingContentActions], "CLOSING block missing — all closing checks fail");
   }
 
-  // ── SUB-CASCADE: empty identity vars → field checks fail ──────
+  // ── SUB-CASCADE: empty identity vars → field + value checks neutral ──
+  // Can't assess fields if the var is empty — neutral, not failed.
   if (failuresByRule.has("identity/Pragma/empty")) {
     for (const a of identityActions) {
-      if (a.passed && a.check.startsWith("identity/Pragma/I")) {
-        a.passed = false;
-        a.severity = "warn";
+      if (a.direction > 0 && a.check.startsWith("identity/Pragma/I")) {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
         a.reason = "Pragma var empty — field check cannot run";
+      }
+    }
+    for (const a of fieldValueActions) {
+      if (a.direction > 0 && a.check.startsWith("value/Pragma/")) {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
+        a.reason = "Pragma var empty — content check cannot run";
       }
     }
   }
   if (failuresByRule.has("identity/Metadata/empty")) {
     for (const a of identityActions) {
-      if (a.passed && a.check.startsWith("identity/Metadata/C")) {
-        a.passed = false;
-        a.severity = "warn";
+      if (a.direction > 0 && a.check.startsWith("identity/Metadata/C")) {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
         a.reason = "Metadata var empty — field check cannot run";
+      }
+    }
+    for (const a of fieldValueActions) {
+      if (a.direction > 0 && a.check.startsWith("value/Metadata/")) {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
+        a.reason = "Metadata var empty — content check cannot run";
+      }
+    }
+  }
+
+  // ── SUB-CASCADE: missing identity fields → content value checks neutral ──
+  // Can't assess content if the field doesn't exist.
+  for (const a of fieldValueActions) {
+    if (a.direction <= 0) continue; // already cascaded or failed
+    const match = a.check.match(/^value\/(Pragma|Metadata)\/(.+)$/);
+    if (match) {
+      const [, vn, fieldPath] = match;
+      if (failuresByRule.has(`identity/${vn}/${fieldPath}`)) {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
+        a.reason = `${fieldPath} missing — cannot assess content`;
+      }
+    }
+  }
+
+  // ── SUB-CASCADE: missing CLOSING zone → zone content checks neutral ──
+  // Can't assess X1 content if X1 zone is missing (and same for X5).
+  if (failuresByRule.has("closing/required-X1")) {
+    for (const a of closingContentActions) {
+      if (a.check === "closing/X1-content") {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
+        a.reason = "X1 zone missing — cannot assess X1 content";
+      }
+    }
+  }
+  if (failuresByRule.has("closing/required-X5")) {
+    for (const a of closingContentActions) {
+      if (a.check === "closing/X5-content") {
+        (a as { direction: -1 | 0 | 1 }).direction = 0;
+        a.impact = "info";
+        a.reason = "X5 zone missing — cannot assess X5 content";
       }
     }
   }
@@ -2051,10 +2374,13 @@ async function computeGoHealth(
   // ── Collect all actions ───────────────────────────────────────
   const allActions = [
     ...blockActions, ...sepActions, ...goActions,
-    ...directiveActions, ...identityActions, ...commentActions,
-    ...templateDerivedActions,
-    ...setupActions, ...contentActions, ...bodyOrderActions,
-    ...closingActions,
+    ...directiveActions, ...identityActions, ...fieldValueActions,
+    ...commentActions, ...templateDerivedActions,
+    ...setupActions, ...setupContentActions,
+    ...contentActions,
+    ...bodyOrderActions, ...bodyContentActions,
+    ...closingActions, ...closingContentActions,
+    ...scalingActions,
   ];
 
   if (allActions.length === 0) {

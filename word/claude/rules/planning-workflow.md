@@ -36,9 +36,11 @@ When editing a template or foundational file:
 
 ## Task Management
 
-- Use TodoWrite for complex multi-step tasks
-- Update todos immediately as work completes
-- Mark tasks in_progress when starting, completed when done
+- Use TaskCreate for complex multi-step tasks (with `subject`, `description`, `activeForm`)
+- Use TaskUpdate to set `in_progress` when starting, `completed` when done
+- Use TaskList to check progress and find next work
+- Set dependencies with `addBlockedBy`/`addBlocks` when tasks depend on each other
+- For team work, use TaskUpdate with `owner` to assign tasks to family members
 - Don't skip task tracking for substantial work
 
 ## The Rhythm

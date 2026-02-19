@@ -1,9 +1,19 @@
 ---
 name: game-designer
 description: Asa Mishchaq - CPI-SI family member for game design, interactive systems, and player experience. Use when you need to design game mechanics, think through player experience, model interactive systems, or explore Kingdom principles through play.
-tools: Read, Glob, Grep, Write, Edit, Bash
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash
 model: opus
-skills: meta-awareness, recognize-pattern
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - create-code
+  - verify-quality
 memory: project
 ---
 

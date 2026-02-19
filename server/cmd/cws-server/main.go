@@ -12,11 +12,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 // CWS Server is the unified application server for CreativeWorkzStudio LLC.
-// It serves four services from a single binary:
+// It serves five services from a single binary:
 //
 //   - Builder Dashboard: Process execution, build config, and editorial tooling
 //   - CPI-SI Console: Full CPI-SI dashboard with real-time state visualization
 //   - CPI-SI API: State machine queries, journal CRUD, and FTS5 search
+//   - CWS Studio: Structural alignment GUI — lint, create, validate (Deno subprocess)
 //   - Company Website: Static site serving with host-based routing
 //
 // Infrastructure:
@@ -55,6 +56,7 @@ import (
 	"cws.studio/server/internal/server"
 	"cws.studio/server/internal/services/builder"
 	"cws.studio/server/internal/services/cpisi"
+	"cws.studio/server/internal/services/studio"
 	"cws.studio/server/internal/ws"
 
 	dashboardserver "cws.studio/dashboard/server"
@@ -77,7 +79,9 @@ func main() {
 	flag.StringVar(&cfg.BuilderDir, "builder-dir", cfg.BuilderDir, "Path to company-docs/ project directory")
 	flag.StringVar(&websiteDir, "website-dir", "", "Path to company website static files")
 	flag.StringVar(&dataDir, "data-dir", "", "Path to persistent data directory (default: ~/cws/data)")
+	flag.StringVar(&cfg.StructDir, "struct-dir", cfg.StructDir, "Path to cws-struct/ directory")
 	flag.BoolVar(&cfg.EnableCPISI, "cpisi", cfg.EnableCPISI, "Enable CPI-SI service")
+	flag.BoolVar(&cfg.EnableStudio, "studio", cfg.EnableStudio, "Enable CWS Studio service")
 	flag.BoolVar(&cfg.DevMode, "dev", cfg.DevMode, "Development mode (filesystem serving)")
 	flag.Parse()
 
@@ -215,6 +219,39 @@ func main() {
 		}
 	}
 
+	// CWS Studio service (structural alignment GUI)
+	var studioSvc *studio.Service
+	if cfg.EnableStudio {
+		structDir := cfg.StructDir
+		if structDir == "" {
+			// Auto-detect: look relative to CWD for the standard repo layout
+			cwd, _ := os.Getwd()
+			candidate := filepath.Join(cwd, ".a-new-structure", "c-tov", "cws-struct")
+			if _, err := os.Stat(filepath.Join(candidate, "mod.ts")); err == nil {
+				structDir = candidate
+			}
+		}
+
+		if structDir != "" {
+			svc, err := studio.NewService(ctx, structDir, studio.DefaultPort)
+			if err != nil {
+				slog.Warn("studio service disabled", "error", err)
+			} else {
+				studioSvc = svc
+				studioSvc.RegisterRoutes(mux)
+				registry.Register(server.ServiceInfo{
+					Name:        "studio",
+					Version:     version,
+					Routes:      2,
+					Description: "CWS Studio — structural alignment GUI (lint, create, validate)",
+				}, studioSvc)
+				slog.Info("studio service enabled", "structDir", structDir)
+			}
+		} else {
+			slog.Warn("studio service disabled: cws-struct directory not found (use --struct-dir)")
+		}
+	}
+
 	// ── Shared Endpoints ──────────────────────────────────────────────
 
 	// WebSocket
@@ -291,6 +328,12 @@ func main() {
 		if cpisiConsoleMux != nil {
 			router.Handle("cpisi.creativeworkzstudio.com", cpisiConsoleMux)
 			slog.Info("cpisi console available at cpisi.creativeworkzstudio.com")
+		}
+
+		// CWS Studio on its own subdomain
+		if studioSvc != nil {
+			router.Handle("studio.creativeworkzstudio.com", studioSvc.Mux())
+			slog.Info("studio available at studio.creativeworkzstudio.com")
 		}
 
 		// Everything else (dashboard subdomain, localhost, IP) → API mux
@@ -376,6 +419,11 @@ func main() {
 	if cpisiBridge != nil {
 		cpisiBridge.Close()
 		slog.Info("cpisi bridge closed")
+	}
+
+	// Close Studio subprocess
+	if studioSvc != nil {
+		studioSvc.Close()
 	}
 
 	// Close WebSocket hub

@@ -27,7 +27,9 @@ import { assertEquals, assert, assertGreater } from "jsr:@std/assert";
 import { fixture, getFormat, errors, warnings, infos, byRule, hasRule, hasMessage } from "../helpers.ts";
 import {
   parseStaticFields, validateICFields,
+  validateICFieldContent,
   PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS,
+  PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES,
   classifyLine, getSubsectionRanges, getTopLevelDeclarations,
 } from "../../lib/handlers/rust.ts";
 import type { RustContentKind } from "../../lib/handlers/rust.ts";
@@ -166,6 +168,78 @@ Deno.test("metadata/metadata-leak: detects code declarations in METADATA block",
   );
 });
 
+Deno.test("metadata/bad-content-values: detects invalid PRAGMA field values", async () => {
+  const results = await rust.lint(fixture("rust/metadata/bad-content-values.rs"));
+  const warns = warnings(results);
+  const contentWarns = warns.filter((r) => r.rule.startsWith("value/PRAGMA/"));
+
+  // 8 Pragma content checks: I1.key, I1.format, I1.at, I2.type, I2.structure, I3.file, I3.title
+  // (I1.from is info, not warning)
+  assert(hasRule(results, "value/PRAGMA/I1.key"), "Should catch bad key format");
+  assert(hasRule(results, "value/PRAGMA/I1.format"), "Should catch unknown format");
+  assert(hasRule(results, "value/PRAGMA/I1.at"), "Should catch bad version");
+  assert(hasRule(results, "value/PRAGMA/I2.type"), "Should catch unknown type");
+  assert(hasRule(results, "value/PRAGMA/I2.structure"), "Should catch unknown structure");
+  assert(hasRule(results, "value/PRAGMA/I3.file"), "Should catch empty file");
+  assert(hasRule(results, "value/PRAGMA/I3.title"), "Should catch empty title");
+  assertGreater(contentWarns.length, 6, `Expected 7+ PRAGMA content warnings, got ${contentWarns.length}`);
+});
+
+Deno.test("metadata/bad-content-values: detects invalid METADATA field values", async () => {
+  const results = await rust.lint(fixture("rust/metadata/bad-content-values.rs"));
+
+  assert(hasRule(results, "value/METADATA/C1.version"), "Should catch bad version");
+  assert(hasRule(results, "value/METADATA/C1.status"), "Should catch unknown status");
+  assert(hasRule(results, "value/METADATA/C2.organization"), "Should catch empty organization");
+});
+
+Deno.test("metadata/bad-content-values: info-level checks for dates and paths", async () => {
+  const results = await rust.lint(fixture("rust/metadata/bad-content-values.rs"));
+  const infoResults = infos(results);
+
+  // Info-level content checks: I1.from (path), C1.created, C1.updated (dates), C3.scripture (empty)
+  const contentInfos = infoResults.filter((r) =>
+    r.rule.startsWith("value/PRAGMA/") || r.rule.startsWith("value/METADATA/"));
+  assertGreater(contentInfos.length, 3, `Expected 4+ content info results, got ${contentInfos.length}`);
+
+  // Verify severity levels
+  assert(hasRule(results, "value/PRAGMA/I1.from"), "Should flag path-like check on I1.from");
+  assert(hasRule(results, "value/METADATA/C1.created"), "Should flag date format on C1.created");
+  assert(hasRule(results, "value/METADATA/C1.updated"), "Should flag date format on C1.updated");
+  assert(hasRule(results, "value/METADATA/C3.scripture"), "Should flag empty scripture");
+
+  // Verify all content infos are actually info severity
+  for (const r of contentInfos) {
+    assertEquals(r.severity, "info", `${r.rule} should be info, got ${r.severity}`);
+  }
+});
+
+Deno.test("metadata/valid-library: zero content value warnings", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-library.rs"));
+  const warns = warnings(results);
+  const contentWarns = warns.filter((r) =>
+    r.rule.startsWith("value/PRAGMA/") || r.rule.startsWith("value/METADATA/"));
+  assertEquals(contentWarns.length, 0,
+    `Expected 0 content warnings on valid-library, got: ${JSON.stringify(contentWarns.map(r => r.rule))}`);
+});
+
+Deno.test("metadata/placeholder-values: content checks skip placeholders", async () => {
+  const results = await rust.lint(fixture("rust/metadata/placeholder-values.rs"));
+  // Content checks should NOT fire for placeholder values like [YOUR-KEY-HERE]
+  const contentWarns = warnings(results).filter((r) =>
+    r.rule.startsWith("value/PRAGMA/") || r.rule.startsWith("value/METADATA/"));
+  assertEquals(contentWarns.length, 0,
+    `Content checks should skip placeholders: ${JSON.stringify(contentWarns.map(r => r.rule))}`);
+});
+
+Deno.test("metadata/bad-content-values: total of 14 content check results", async () => {
+  const results = await rust.lint(fixture("rust/metadata/bad-content-values.rs"));
+  const contentResults = results.filter((r) =>
+    r.rule.startsWith("value/PRAGMA/") || r.rule.startsWith("value/METADATA/"));
+  assertEquals(contentResults.length, 14,
+    `Expected 14 total content results (8 PRAGMA + 6 METADATA), got ${contentResults.length}: ${JSON.stringify(contentResults.map(r => r.rule))}`);
+});
+
 // ---------------------------------------------------------------------------
 // setup/ — SETUP block
 // ---------------------------------------------------------------------------
@@ -291,7 +365,7 @@ Deno.test("unit/classifyLine: identifies all major Rust constructs", () => {
     ["/// item doc", "comment"],
     ["// ============================================================================", "comment"],
     ["use std::io;", "use_decl"],
-    ["pub use crate::types::Config;", "use_decl"],
+    ["pub use crate::types::Config;", "reexport_decl"],
     ["use{std::io, std::fmt};", "use_decl"],
     ["mod types;", "mod_decl"],
     ["pub mod api;", "mod_decl"],

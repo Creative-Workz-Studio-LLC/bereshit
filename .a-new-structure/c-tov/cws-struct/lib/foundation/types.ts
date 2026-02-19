@@ -66,6 +66,8 @@ export interface LintSummary {
   results: LintResult[];
   /** Computed health score — sections as containers, atomic action scoring. */
   health?: HealthScore;
+  /** The //omni: pragma directive from line 1 (e.g. "//omni:code --go -library"). */
+  pragma?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -119,7 +121,7 @@ export interface FormatHandler {
 // ---------------------------------------------------------------------------
 
 export interface CliOptions {
-  command: "lint" | "transform" | "formats" | "verify" | "help" | "version";
+  command: "lint" | "transform" | "formats" | "verify" | "studio" | "help" | "version";
   format?: string;
   targets: string[];
   verbose: boolean;

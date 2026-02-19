@@ -73,12 +73,12 @@ export function severityIcon(s: Severity): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Color a health score value based on threshold.
- * 80+ = green, 50-79 = yellow, <50 = red.
+ * Color a health score value — ternary range (-100 to +100).
+ * 50+ = green (aligned), 0-49 = yellow (mixed), <0 = red (misaligned).
  */
 function healthColor(score: number): string {
-  if (score >= 80) return COLORS.green;
-  if (score >= 50) return COLORS.yellow;
+  if (score >= 50) return COLORS.green;
+  if (score >= 0) return COLORS.yellow;
   return COLORS.red;
 }
 
@@ -93,11 +93,16 @@ export function printFileSummary(
 
   // Health score on the status line (if computed)
   const healthStr = summary.health
-    ? `  ${healthColor(summary.health.total)}health: ${summary.health.total}/100${COLORS.reset}`
+    ? `  ${healthColor(summary.health.total)}health: ${summary.health.total}/\u00b1100${COLORS.reset}`
+    : "";
+
+  // Pragma directive shown dimmed after health score
+  const pragmaStr = summary.pragma
+    ? `  ${COLORS.dim}[${summary.pragma}]${COLORS.reset}`
     : "";
 
   console.log(
-    `${status}  ${summary.file}  (${summary.errors}E ${summary.warnings}W ${summary.infos}I)${healthStr}`,
+    `${status}  ${summary.file}  (${summary.errors}E ${summary.warnings}W ${summary.infos}I)${healthStr}${pragmaStr}`,
   );
 
   // Show individual results based on verbosity
@@ -125,8 +130,12 @@ export function printFileSummary(
  * Shows which sections are healthy and which need attention.
  */
 function printHealthBreakdown(health: HealthScore): void {
+  const parts = [`${health.alignedCount} aligned`];
+  if (health.neutralCount > 0) parts.push(`${health.neutralCount} neutral`);
+  if (health.misalignedCount > 0) parts.push(`${health.misalignedCount} misaligned`);
+
   console.log(
-    `  ${COLORS.dim}── health: ${health.passCount} pass, ${health.failCount} fail ` +
+    `  ${COLORS.dim}── health: ${parts.join(", ")} ` +
     `(${health.totalActions} actions) ──${COLORS.reset}`,
   );
 
@@ -139,11 +148,10 @@ function printHealthBreakdown(health: HealthScore): void {
     for (const container of block.containers) {
       if (container.total === 0) continue;
       const cColor = healthColor(container.score);
-      const fails = container.failedErrors + container.failedWarnings + container.failedInfos;
-      const detail = fails > 0
-        ? ` ${COLORS.dim}(${container.passed}/${container.total} pass, ` +
-          `${container.failedErrors}E ${container.failedWarnings}W ${container.failedInfos}I)${COLORS.reset}`
-        : ` ${COLORS.dim}(${container.total}/${container.total})${COLORS.reset}`;
+      const detail = container.misaligned > 0
+        ? ` ${COLORS.dim}(${container.aligned}/${container.aligned + container.misaligned}` +
+          `${container.neutral > 0 ? `, ${container.neutral} neutral` : ""})${COLORS.reset}`
+        : ` ${COLORS.dim}(${container.aligned}/${container.aligned})${COLORS.reset}`;
       console.log(
         `    ${cColor}${container.score}${COLORS.reset} ${container.section}${detail}`,
       );
@@ -181,7 +189,7 @@ export function printTotals(summaries: LintSummary[]): void {
   if (avgHealth !== undefined) {
     const hColor = healthColor(avgHealth);
     console.log(
-      `  ${hColor}avg health: ${avgHealth}/100${COLORS.reset}` +
+      `  ${hColor}avg health: ${avgHealth}/\u00b1100${COLORS.reset}` +
         ` ${COLORS.dim}(${healthFiles.length} scored)${COLORS.reset}`,
     );
   }

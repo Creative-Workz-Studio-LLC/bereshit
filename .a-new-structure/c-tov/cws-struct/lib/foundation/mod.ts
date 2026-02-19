@@ -41,6 +41,7 @@ export type {
 } from "./health.ts";
 
 export {
+  IMPACT_WEIGHT,
   computeContainerScore,
   computeBlockScore,
   computeHealthScore,

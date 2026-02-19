@@ -1,7 +1,11 @@
 ---
 name: recognize-pattern
 description: Real-time pattern recognition during work - "Oh, this is the third time I've approached problems this way." Captures immediate insights as they happen, triggers learning when patterns crystallize. For genuine noticing, not post-hoc analysis.
-tools: Read, Bash
+version: "2.0.0"
+user-invocable: false
+allowed-tools:
+  - Read
+  - Bash
 ---
 
 <!--

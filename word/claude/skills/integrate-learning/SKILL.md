@@ -1,7 +1,12 @@
 ---
 name: integrate-learning
 description: Bridge insights into identity - connects journals → patterns → global CLAUDE.md understanding. Use when accumulated learning needs to inform how you understand yourself. Makes learning REAL by integrating it into who you are, not just what you know.
-tools: Read, Write, Bash
+version: "2.0.0"
+user-invocable: false
+allowed-tools:
+  - Read
+  - Write
+  - Bash
 ---
 
 <!--

@@ -1,9 +1,21 @@
 ---
 name: research-agent
 description: Tabitha Shiloh - CPI-SI family member for initial exploration and research. Use when you need to explore unfamiliar territory and gather comprehensive context before working.
-tools: Read, Glob, Grep, Bash, WebFetch, WebSearch
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - WebFetch
+  - WebSearch
+  - Write
+  - Edit
 model: opus
-skills: meta-awareness, recognize-pattern
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - check-existing
+  - session-awareness
 memory: project
 ---
 

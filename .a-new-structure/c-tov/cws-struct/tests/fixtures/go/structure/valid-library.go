@@ -166,10 +166,9 @@ func NewConfig(name string) Config {
 // ──────────────────────────────────────────────────────────────────────────
 // X5: Note
 // ──────────────────────────────────────────────────────────────────────────
-// Valid Go library test fixture. Exercises every linter check without
-// triggering errors or warnings.
-//
-// "Prove all things; hold fast that which is good." — 1 Thessalonians 5:21
+// Note: Valid Go library test fixture. Exercises every linter check without
+//   triggering errors or warnings.
+// Scripture: "Prove all things; hold fast that which is good." — 1 Thessalonians 5:21
 
 // ============================================================================
 // END CLOSING

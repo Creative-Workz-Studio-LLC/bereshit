@@ -2,7 +2,10 @@
 name: format-lookup
 description: Quick lookup of OmniCode format mappings - how OmniCode sections translate to specific formats (AsciiDoc, Go, C, etc.). Use this skill when Nova Dawn needs to know how an OmniCode element maps to a target format.
 version: "2.0.0"
-allowed-tools: "Read,Grep,Bash"
+allowed-tools:
+  - Read
+  - Grep
+  - Bash
 ---
 
 <!--

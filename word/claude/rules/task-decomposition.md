@@ -45,8 +45,10 @@ TaskCreate:
 
 ### 4. Track Progress
 
+- Use `TaskGet` to read full task details before starting work
 - Mark task `in_progress` when starting
 - Mark task `completed` when done
+- Use `TaskUpdate` with `status: "deleted"` to remove stale or superseded tasks
 - Create new tasks if scope expands
 
 ## Task Granularity

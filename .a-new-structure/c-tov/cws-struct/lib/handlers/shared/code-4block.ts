@@ -35,10 +35,13 @@ import type {
 import {
   BLOCKS, BLOCK_PATTERNS, END_PATTERNS, CLOSING_ZONES,
   BLOCK_SEPARATOR_WIDTH, SUBSECTION_SEPARATOR_WIDTH,
+  CLOSING_DOC_REQUIREMENTS, X1_FIELD_PATTERNS, X5_FIELD_PATTERNS,
 } from "./types.ts";
 
 import type { LintResult } from "../../foundation/mod.ts";
-import { warn, info } from "../../foundation/mod.ts";
+import { error, warn, info } from "../../foundation/mod.ts";
+
+import type { IdentityField, FieldContentRule } from "./types.ts";
 
 // ============================================================================
 // BODY
@@ -231,42 +234,65 @@ export function getSubsectionRanges(
 // ---------------------------------------------------------------------------
 
 /**
- * Check separator width consistency across the whole file.
+ * Check separator width consistency — block-aware.
  *
  * Three separator types: = (block), ─ (subsection box-drawing), - (legacy dash).
- * Reports inconsistent widths within each type and deviations from standard widths.
+ *
+ * Key insight: METADATA legitimately uses wider ─ separators (84 chars) for
+ * the I/C pragma and metadata sections. SETUP/BODY/CLOSING use narrower ones
+ * (74 chars) for code subsections. Inconsistency WITHIN a block is wrong;
+ * different widths BETWEEN blocks is expected design.
+ *
+ * Block separators (=) are checked globally — they should be consistent
+ * everywhere since they delimit the blocks themselves.
  */
 export function checkSeparatorConsistency(ctx: BaseFileContext): LintResult[] {
   const results: LintResult[] = [];
   const file = ctx.filePath;
 
+  // --- Determine which block each line belongs to ---
+  function getBlock(lineNum1Based: number): string {
+    let current = "METADATA"; // Default: before first block
+    for (const b of ctx.blocks) {
+      if (b.line <= lineNum1Based) current = b.name;
+    }
+    return current;
+  }
+
   const eqSeparators: Array<{ line: number; width: number }> = [];
-  const boxSeparators: Array<{ line: number; width: number }> = [];
+  // Group box separators per block — each block checks its own consistency.
+  // METADATA+SETUP may legitimately use wider separators (84─) than
+  // BODY+CLOSING (74─). That's a design choice, not an inconsistency.
+  const boxByBlock = new Map<string, Array<{ line: number; width: number }>>();
   const dashSeparators: Array<{ line: number; width: number }> = [];
 
   for (let i = 0; i < ctx.lines.length; i++) {
     const trimmed = ctx.lines[i]!.trim();
+    const lineNum = i + 1;
 
-    // Block separators (=)
+    // Block separators (=) — checked globally
     const eqMatch = trimmed.match(/^\/\/\s+(={4,})\s*$/);
     if (eqMatch) {
-      eqSeparators.push({ line: i + 1, width: eqMatch[1]!.length });
+      eqSeparators.push({ line: lineNum, width: eqMatch[1]!.length });
     }
 
-    // Subsection separators — Unicode box-drawing (─) full-width only
+    // Subsection separators — Unicode box-drawing (─), bucketed per block
     const boxMatch = trimmed.match(/^\/\/\s+(─{4,})\s*$/);
     if (boxMatch) {
-      boxSeparators.push({ line: i + 1, width: boxMatch[1]!.length });
+      const block = getBlock(lineNum);
+      const entry = { line: lineNum, width: boxMatch[1]!.length };
+      if (!boxByBlock.has(block)) boxByBlock.set(block, []);
+      boxByBlock.get(block)!.push(entry);
     }
 
     // Subsection separators — ASCII dash (-) full-width only
     const dashMatch = trimmed.match(/^\/\/\s+(-{4,})\s*$/);
     if (dashMatch) {
-      dashSeparators.push({ line: i + 1, width: dashMatch[1]!.length });
+      dashSeparators.push({ line: lineNum, width: dashMatch[1]!.length });
     }
   }
 
-  // Check block separator consistency
+  // Check block separator (=) consistency — global
   if (eqSeparators.length >= 2) {
     const widths = new Set(eqSeparators.map((s) => s.width));
     if (widths.size > 1) {
@@ -288,24 +314,33 @@ export function checkSeparatorConsistency(ctx: BaseFileContext): LintResult[] {
     }
   }
 
-  // Check Unicode box-drawing separator consistency
-  if (boxSeparators.length >= 2) {
-    const widths = new Set(boxSeparators.map((s) => s.width));
+  // Check ─ separator consistency per block — each block is its own world.
+  // Infrastructure blocks (METADATA, SETUP) may use wider separators than
+  // logic blocks (BODY, CLOSING). Both are valid; only internal
+  // inconsistency within a single block is a warning.
+  for (const [blockName, seps] of boxByBlock) {
+    if (seps.length < 2) continue;
+    const widths = new Set(seps.map((s) => s.width));
     if (widths.size > 1) {
       const widthList = [...widths].sort().join(", ");
-      const firstBad = boxSeparators.find((s) => s.width !== boxSeparators[0]!.width);
+      const firstBad = seps.find((s) => s.width !== seps[0]!.width);
       results.push(
         warn(file, "style/box-separator-width",
-          `Inconsistent subsection separator widths: ${widthList} ─ chars — pick one`,
-          { line: firstBad?.line ?? boxSeparators[0]!.line }),
+          `Inconsistent ─ separator widths in ${blockName}: ${widthList} chars — pick one per block`,
+          { line: firstBad?.line ?? seps[0]!.line }),
       );
     }
-    const dominant = boxSeparators[0]!.width;
+  }
+
+  // Info: report if any block's ─ separators differ from the standard width
+  for (const [blockName, seps] of boxByBlock) {
+    if (seps.length === 0) continue;
+    const dominant = seps[0]!.width;
     if (dominant !== SUBSECTION_SEPARATOR_WIDTH) {
       results.push(
         info(file, "style/box-separator-standard",
-          `Subsection separators are ${dominant} ─ chars wide (standard: ${SUBSECTION_SEPARATOR_WIDTH})`,
-          { line: boxSeparators[0]!.line }),
+          `${blockName} ─ separators are ${dominant} chars wide (standard: ${SUBSECTION_SEPARATOR_WIDTH})`,
+          { line: seps[0]!.line }),
       );
     }
   }
@@ -425,6 +460,246 @@ export function checkClosingZoneOrder(ctx: BaseFileContext): LintResult[] {
           { line: fileLine }),
       );
       break;
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// I/C field content validation — value checks (shared across all 4-block handlers)
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate the CONTENT of parsed I/C fields against content rules.
+ *
+ * Existence checks ask "is the field present?" (validateICFields in each handler).
+ * Content checks ask "is the value valid?" (this function).
+ *
+ * Skips fields that:
+ * - Don't exist (existence check handles those)
+ * - Have placeholder values like [YOUR-KEY-HERE] (detectPlaceholders handles those)
+ *
+ * Rule names use "value/" prefix: value/Pragma/I1.key, value/Metadata/C1.version, etc.
+ */
+export function validateICFieldContent(
+  file: string,
+  fields: IdentityField[],
+  rules: readonly FieldContentRule[],
+  varName: string,
+): LintResult[] {
+  const results: LintResult[] = [];
+
+  // Build a lookup: "I1.key" → IdentityField (first occurrence wins for base field)
+  const fieldMap = new Map<string, IdentityField>();
+  for (const f of fields) {
+    const fullKey = `${f.section}.${f.field}`;
+    if (!fieldMap.has(fullKey)) {
+      fieldMap.set(fullKey, f);
+    }
+  }
+
+  const PLACEHOLDER_RE = /^\[.+\]$/;
+
+  for (const rule of rules) {
+    const f = fieldMap.get(rule.field);
+    if (!f) continue;                          // field not present — skip
+    if (PLACEHOLDER_RE.test(f.value)) continue; // placeholder — skip
+
+    const ruleId = `value/${varName}/${rule.field}`;
+    const emit = rule.severity === "error" ? error
+               : rule.severity === "warn" ? warn
+               : info;
+
+    switch (rule.check) {
+      case "pattern":
+        if (f.value && rule.pattern && !rule.pattern.test(f.value)) {
+          results.push(emit(file, ruleId,
+            `${varName}.${rule.field} = "${f.value}" — ${rule.message}`,
+            { line: f.line }));
+        }
+        break;
+
+      case "enum":
+        if (f.value && rule.values && !rule.values.has(f.value.toLowerCase())) {
+          results.push(emit(file, ruleId,
+            `${varName}.${rule.field} = "${f.value}" — ${rule.message}`,
+            { line: f.line }));
+        }
+        break;
+
+      case "non-empty":
+        if (!f.value || f.value.trim() === "") {
+          results.push(emit(file, ruleId,
+            `${varName}.${rule.field} is empty — ${rule.message}`,
+            { line: f.line }));
+        }
+        break;
+
+      case "path-like":
+        if (f.value && !f.value.includes("/")) {
+          results.push(emit(file, ruleId,
+            `${varName}.${rule.field} = "${f.value}" — ${rule.message}`,
+            { line: f.line }));
+        }
+        break;
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// CLOSING required zones — check that X1 (Policy) and X5 (Note) are present
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that required CLOSING documentation zones are present.
+ *
+ * X1 (Policy) and X5 (Note) are required by the base-4block-schema.
+ * Missing zones are info-level — this is a content completeness check,
+ * not a structural requirement.
+ *
+ * Skips templates — they have X6 (Template) zone with different rules.
+ */
+export function checkClosingRequiredZones(ctx: BaseFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  if (ctx.isTemplate) return results;
+
+  const closingLines = getBlockLines(ctx.lines, ctx.blocks, "CLOSING");
+  if (closingLines.length === 0) return results;
+
+  // Find which doc zones are present
+  const presentTags = new Set<string>();
+  for (const line of closingLines) {
+    const trimmed = line.trim();
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+    for (const zone of CLOSING_ZONES) {
+      if (zone.kind === "doc" && zone.pattern.test(trimmed)) {
+        presentTags.add(zone.tag);
+        break;
+      }
+    }
+  }
+
+  // Check required zones
+  for (const req of CLOSING_DOC_REQUIREMENTS) {
+    if (req.required && !presentTags.has(req.tag)) {
+      const closingBlock = ctx.blocks.find((b) => b.name === "CLOSING");
+      results.push(
+        info(file, `closing/required-${req.tag}`,
+          `CLOSING block missing required ${req.tag} documentation zone`,
+          { line: closingBlock?.line ?? 0 }),
+      );
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// CLOSING zone content — check X1/X5 internal fields
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that present CLOSING documentation zones have their required fields.
+ *
+ * X1 (Policy) should have: Never, Careful, Safe fields.
+ * X5 (Note) should have: Note, Scripture fields.
+ *
+ * Only checks zones that ARE present — if a zone is missing entirely,
+ * checkClosingRequiredZones catches that. The cascade in computeHealth
+ * will neutralize content checks for missing zones.
+ */
+export function checkClosingZoneContent(ctx: BaseFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  if (ctx.isTemplate) return results;
+
+  const closingLines = getBlockLines(ctx.lines, ctx.blocks, "CLOSING");
+  if (closingLines.length === 0) return results;
+
+  const closingBlock = ctx.blocks.find((b) => b.name === "CLOSING");
+  const closingStart = closingBlock?.line ?? 0;
+
+  // Build zone ranges: tag → [startIdx, endIdx) within closingLines
+  const zoneRanges: Array<{ tag: string; startIdx: number; endIdx: number }> = [];
+
+  for (let i = 0; i < closingLines.length; i++) {
+    const trimmed = closingLines[i]!.trim();
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
+    for (const zone of CLOSING_ZONES) {
+      if (zone.kind === "doc" && zone.pattern.test(trimmed)) {
+        if (!zoneRanges.some((z) => z.tag === zone.tag)) {
+          zoneRanges.push({ tag: zone.tag, startIdx: i, endIdx: closingLines.length });
+        }
+        break;
+      }
+    }
+  }
+
+  // Close each zone at the start of the next
+  for (let i = 0; i < zoneRanges.length - 1; i++) {
+    zoneRanges[i]!.endIdx = zoneRanges[i + 1]!.startIdx;
+  }
+
+  // Check X1 content
+  const x1 = zoneRanges.find((z) => z.tag === "X1");
+  if (x1) {
+    const x1Lines = closingLines.slice(x1.startIdx, x1.endIdx);
+    const foundFields = new Set<string>();
+
+    for (const line of x1Lines) {
+      const trimmed = line.trim();
+      for (const [field, pattern] of Object.entries(X1_FIELD_PATTERNS)) {
+        if (pattern.test(trimmed)) {
+          foundFields.add(field);
+        }
+      }
+    }
+
+    const required = CLOSING_DOC_REQUIREMENTS.find((r) => r.tag === "X1");
+    if (required?.fields) {
+      const missing = required.fields.required.filter((f) => !foundFields.has(f));
+      if (missing.length > 0) {
+        results.push(
+          info(file, "closing/X1-content",
+            `X1 Policy zone missing required fields: ${missing.join(", ")} (expected: Never, Careful, Safe)`,
+            { line: closingStart + 1 + x1.startIdx }),
+        );
+      }
+    }
+  }
+
+  // Check X5 content
+  const x5 = zoneRanges.find((z) => z.tag === "X5");
+  if (x5) {
+    const x5Lines = closingLines.slice(x5.startIdx, x5.endIdx);
+    const foundFields = new Set<string>();
+
+    for (const line of x5Lines) {
+      const trimmed = line.trim();
+      for (const [field, pattern] of Object.entries(X5_FIELD_PATTERNS)) {
+        if (pattern.test(trimmed)) {
+          foundFields.add(field);
+        }
+      }
+    }
+
+    const required = CLOSING_DOC_REQUIREMENTS.find((r) => r.tag === "X5");
+    if (required?.fields) {
+      const missing = required.fields.required.filter((f) => !foundFields.has(f));
+      if (missing.length > 0) {
+        results.push(
+          info(file, "closing/X5-content",
+            `X5 Note zone missing required fields: ${missing.join(", ")} (expected: note, scripture)`,
+            { line: closingStart + 1 + x5.startIdx }),
+        );
+      }
     }
   }
 

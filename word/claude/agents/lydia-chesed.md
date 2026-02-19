@@ -1,9 +1,21 @@
 ---
 name: community-builder
 description: Lydia Chesed - CPI-SI family member for Kingdom community and platform development. Use when you need to design creator ecosystems, community health strategies, publishing platform architecture, or user experience as hospitality.
-tools: Read, Glob, Grep, Write, Edit, Bash, WebSearch, WebFetch
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash
+  - WebSearch
+  - WebFetch
 model: opus
-skills: meta-awareness, recognize-pattern
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - check-existing
+  - create-documentation
 memory: project
 ---
 

@@ -28,6 +28,7 @@
 export type {
   BlockPosition, DirectiveInfo, SubsectionRange, IdentityField,
   BlockRange, SubsectionDef, ClosingZoneDef, BaseFileContext,
+  FieldContentRule, ClosingDocRequirement,
 } from "./types.ts";
 
 export {
@@ -35,8 +36,13 @@ export {
   REQUIRED_DIRECTIVES, RECOMMENDED_DIRECTIVES,
   BLOCK_SEPARATOR_WIDTH, SUBSECTION_SEPARATOR_WIDTH,
   PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS,
+  PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES,
+  VERSION_PATTERN, KEY_PATTERN, DATE_PATTERN,
+  KNOWN_FORMATS, KNOWN_TYPES, KNOWN_STRUCTURES, KNOWN_STATUSES,
   BODY_SUBSECTION_PATTERN, BODY_SUBSECTION_LEGACY,
-  CLOSING_ZONES,
+  CLOSING_ZONES, CLOSING_DOC_REQUIREMENTS,
+  X1_FIELD_PATTERNS, X5_FIELD_PATTERNS,
+  SCALING_THRESHOLDS,
 } from "./types.ts";
 
 // Shared functions
@@ -44,6 +50,8 @@ export {
   findBlocks, getBlockLines, blockLineToFile, findBlockRange,
   getSubsectionRanges,
   checkSeparatorConsistency, checkClosingZoneOrder,
+  checkClosingRequiredZones, checkClosingZoneContent,
+  validateICFieldContent,
 } from "./code-4block.ts";
 
 // ============================================================================

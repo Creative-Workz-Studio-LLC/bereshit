@@ -1,6 +1,13 @@
 ---
 name: create-documentation
 description: Create PhD-level documentation with Bible-level accessibility using AsciiDoc
+version: "1.0.0"
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Bash
 ---
 
 <!--

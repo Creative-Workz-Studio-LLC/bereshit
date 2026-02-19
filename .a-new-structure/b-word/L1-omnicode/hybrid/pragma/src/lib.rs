@@ -68,9 +68,6 @@ pub mod extensions;
 pub mod reader;
 pub mod types;
 
-use std::collections::BTreeMap;
-use std::sync::LazyLock;
-
 // Re-export core public API
 pub use cache::{invalidate as invalidate_pragma, invalidate_all as invalidate_pragma_cache};
 pub use dispatch::{
@@ -103,12 +100,8 @@ pub use types::*;
 ///
 /// Also registers all OmniCode file extensions with L0's format registry.
 pub fn register_identity() {
-    // Register self with L0 identity
-    bereshit_l0_identity::register(
-        &OWN_PRAGMA["P1.key"],
-        (*OWN_PRAGMA).clone(),
-        (*OWN_METADATA).clone(),
-    );
+    let key = pragma_get("I1.key").expect("I1.key must exist in OWN_PRAGMA");
+    bereshit_l0_identity::register(key, OWN_PRAGMA, OWN_METADATA);
 
     // Register all OmniCode extensions with L0 format registry
     extensions::register_all_with_l0();
@@ -118,167 +111,85 @@ pub fn register_identity() {
 // Self — Identity Data
 // ────────────────────────────────────────────────────────────────
 
-/// This crate's OmniCode pragma identity (P1-P5).
-pub fn own_pragma() -> &'static BTreeMap<String, String> {
-    &OWN_PRAGMA
+/// This crate's OmniCode pragma identity (I1-I4).
+pub fn own_pragma() -> &'static [(&'static str, &'static str)] {
+    OWN_PRAGMA
 }
 
-/// This crate's OmniCode metadata (M1-M10).
-pub fn own_metadata() -> &'static BTreeMap<String, String> {
-    &OWN_METADATA
+/// Look up a single pragma value by key.
+pub fn pragma_get(key: &str) -> Option<&'static str> {
+    OWN_PRAGMA.iter().find(|(k, _)| *k == key).map(|(_, v)| *v)
 }
 
-static OWN_PRAGMA: LazyLock<BTreeMap<String, String>> = LazyLock::new(build_pragma);
-static OWN_METADATA: LazyLock<BTreeMap<String, String>> = LazyLock::new(build_metadata);
-
-fn build_pragma() -> BTreeMap<String, String> {
-    BTreeMap::from([
-        // P1: Core Identity
-        ("P1.key".into(), "B-L1-omnicode-hybrid-pragma".into()),
-        ("P1.type".into(), "code".into()),
-        ("P1.format".into(), "rust".into()),
-        ("P1.style".into(), "library".into()),
-        // P2: Structure
-        ("P2.blocks".into(), "4-block".into()),
-        // P3: Derivation
-        (
-            "P3.from".into(),
-            "b-word/L1-omnicode/hybrid/pragma/pragma.go".into(),
-        ),
-        ("P3.derives".into(), "B-L1-omnicode-hybrid-pragma-go".into()),
-        // P4: Version
-        ("P4.at".into(), "a-01.00".into()),
-        // P5: Summary
-        ("P5.title".into(), "OmniCode Pragma Reader".into()),
-        (
-            "P5.summary".into(),
-            "Parse #!omni pragma lines from any file format — identity before content".into(),
-        ),
-    ])
+/// This crate's OmniCode metadata (C1-C7).
+pub fn own_metadata() -> &'static [(&'static str, &'static str)] {
+    OWN_METADATA
 }
 
-fn build_metadata() -> BTreeMap<String, String> {
-    BTreeMap::from([
-        // M1: Core Identity
-        ("M1.key".into(), "B-L1-omnicode-hybrid-pragma".into()),
-        ("M1.component_type".into(), "Hybrid".into()),
-        ("M1.architect".into(), "Seanje Lenox-Wise".into()),
-        ("M1.implementation".into(), "Nova Dawn".into()),
-        ("M1.created".into(), "2026-02-14".into()),
-        // M2: Version History
-        (
-            "M2.a-01.00".into(),
-            "2026-02-14 — Initial Rust crate: types, reader, extensions, dispatch, identity".into(),
-        ),
-        // M3: Interface
-        (
-            "M3.requires.external".into(),
-            "serde, serde_json".into(),
-        ),
-        (
-            "M3.requires.internal".into(),
-            "bereshit-l0-config (format loaders, format registry), bereshit-l0-identity (registration)".into(),
-        ),
-        (
-            "M3.used_by".into(),
-            "L2-platform/substrates, L3-cpisi/orchestration, L5-applications".into(),
-        ),
-        ("M3.import".into(), "bereshit-l1-pragma".into()),
-        (
-            "M3.pattern".into(),
-            "pragma::parse(path) → Pragma; pragma::load_config::<T>(path) → (Pragma, T)".into(),
-        ),
-        // M4: Public API
-        ("M4.reader".into(), "parse, parse_reader, parse_str".into()),
-        (
-            "M4.extensions".into(),
-            "lookup, is_registered, by_category, by_phase, by_state, all".into(),
-        ),
-        (
-            "M4.dispatch".into(),
-            "load_config, load_config_map, load_folder, is_omnicode_file".into(),
-        ),
-        (
-            "M4.format_bridge".into(),
-            "internal_format, block_pattern, default_type".into(),
-        ),
-        ("M4.identity".into(), "register_identity, own_pragma, own_metadata".into()),
-        // M5: Operational
-        (
-            "M5.blocking".into(),
-            "file I/O for parse() and load_config() — otherwise in-memory".into(),
-        ),
-        (
-            "M5.health".into(),
-            "Provider | granted: registered | deferred: init pending | denied: n/a".into(),
-        ),
-        // M6: Classification
-        (
-            "M6.tags".into(),
-            "pragma, identity, parser, omnicode, format-dispatch, extensions".into(),
-        ),
-        ("M6.category".into(), "Hybrid".into()),
-        ("M6.domain".into(), "pragma".into()),
-        ("M6.layer".into(), "L1-omnicode".into()),
-        ("M6.paradigm".into(), "CPI-SI".into()),
-        // M7: Intent
-        (
-            "M7.purpose".into(),
-            "The first thing read in any OmniCode file — identity before content".into(),
-        ),
-        (
-            "M7.philosophy".into(),
-            "Identity declares existence. Pragma precedes processing. Genesis 1:3 before Genesis 1:4.".into(),
-        ),
-        (
-            "M7.provides".into(),
-            "Pragma parsing, 15-extension registry, format dispatch to L0 loaders, identity registration".into(),
-        ),
-        // M8: Grounding
-        (
-            "M8.scripture".into(),
-            "Genesis 1:3 — And God said, Let there be light".into(),
-        ),
-        (
-            "M8.principle".into(),
-            "The pragma is the first word spoken — identity before content".into(),
-        ),
-        (
-            "M8.anchor".into(),
-            "Genesis 1:1 — In the beginning God created the heaven and the earth".into(),
-        ),
-        // M9: Dependencies
-        (
-            "M9.needs.external".into(),
-            "serde (derive), serde_json".into(),
-        ),
-        (
-            "M9.needs.internal".into(),
-            "bereshit-l0-config (load_toml_file, load_jsonc_file, register_format), bereshit-l0-identity (register)".into(),
-        ),
-        (
-            "M9.used_by".into(),
-            "L2-platform, L3-cpisi, L5-applications — any code that reads OmniCode files".into(),
-        ),
-        (
-            "M9.layer_deps".into(),
-            "L0 only — no lateral or upward dependencies".into(),
-        ),
-        // M10: Roadmap
-        (
-            "M10.current".into(),
-            "a-01.00 — Core pragma reader, extension registry, format dispatch".into(),
-        ),
-        (
-            "M10.planned".into(),
-            "Native OmniCode parser (FormatOmni dispatch), block validator, derivation checker".into(),
-        ),
-        (
-            "M10.limitations".into(),
-            "Native OmniCode format not yet parseable, block validation not yet implemented".into(),
-        ),
-    ])
+/// Look up a single metadata value by key.
+pub fn metadata_get(key: &str) -> Option<&'static str> {
+    OWN_METADATA.iter().find(|(k, _)| *k == key).map(|(_, v)| *v)
 }
+
+static OWN_PRAGMA: &[(&str, &str)] = &[
+    // I1: Core
+    ("I1.key",       "B-L1-omnicode-hybrid-pragma"),
+    ("I1.format",    "rust"),
+    ("I1.from",      "b-word/L1-omnicode/hybrid/pragma/pragma.go"),
+    ("I1.at",        "a-01.50"),
+    // I2: Family
+    ("I2.type",      "code"),
+    ("I2.structure", "4-block"),
+    ("I2.subtype",   "library"),
+    ("I2.role",      "hybrid"),
+    // I3: Instance
+    ("I3.file",      "lib.rs"),
+    ("I3.title",     "OmniCode Pragma Reader"),
+    ("I3.component", "hybrid/pragma"),
+    ("I3.path",      "L1-omnicode/hybrid/pragma/src/lib.rs"),
+    ("I3.provides",  "PRAGMA_PARSING"),
+    ("I3.brief",     "Parse #!omni pragma lines from any file format — identity before content"),
+    // I4: Architecture
+    ("I4.layer",     "L1"),
+    ("I4.position",  "hybrid/pragma"),
+    ("I4.pattern",   "L1 bridges OmniCode identity (pragma) with L0 format parsing"),
+];
+
+static OWN_METADATA: &[(&str, &str)] = &[
+    // C1: State
+    ("C1.version",           "a-01.50"),
+    ("C1.status",            "Active"),
+    ("C1.created",           "2026-02-14"),
+    ("C1.updated",           "2026-02-19"),
+    // C2: Attribution
+    ("C2.organization",      "CreativeWorkzStudio LLC"),
+    ("C2.architect",         "Seanje Lenox-Wise"),
+    ("C2.implementation",    "Nova Dawn"),
+    ("C2.copyright",         "CreativeWorkzStudio LLC"),
+    // C3: Grounding
+    ("C3.scripture",         "Genesis 1:3 — And God said, Let there be light"),
+    ("C3.principle",         "The pragma is the first word spoken — identity before content"),
+    ("C3.anchor",            "Genesis 1:1 — In the beginning God created the heaven and the earth"),
+    // C4: Dependencies
+    ("C4.requires.stdlib",   "std::collections, std::io, std::path, std::sync"),
+    ("C4.requires.external", "serde (derive), serde_json"),
+    ("C4.requires.internal", "bereshit-l0-config (loaders, registry), bereshit-l0-identity (registration)"),
+    ("C4.consumers",         "L2-platform/substrates, L3-cpisi/orchestration, L5-applications"),
+    ("C4.integration",       "use bereshit_l1_pragma::{parse, load_config, register_identity}"),
+    ("C4.if_missing",        "no OmniCode file identity — files become opaque data without pragma parsing"),
+    // C5: Intent
+    ("C5.purpose",           "The first thing read in any OmniCode file — identity before content"),
+    ("C5.philosophy",        "Identity declares existence. Pragma precedes processing. Genesis 1:3 before 1:4."),
+    // C6: Roadmap
+    ("C6.current",           "a-01.50 — Pragma reader, 16-extension registry, format dispatch, I/C metadata"),
+    ("C6.planned",           "Native OmniCode parser (FormatOmni dispatch), block validator, derivation checker"),
+    ("C6.limitations",       "Native OmniCode format not yet parseable, block validation not yet implemented"),
+    // C7: Classification
+    ("C7.tags",              "pragma, identity, parser, omnicode, format-dispatch, extensions"),
+    ("C7.category",          "Hybrid"),
+    ("C7.domain",            "pragma"),
+    ("C7.paradigm",          "CPI-SI"),
+];
 
 // ============================================================================
 // END BODY
@@ -318,42 +229,34 @@ mod tests {
 
     #[test]
     fn test_own_pragma_identity() {
-        let p = own_pragma();
-        assert_eq!(p["P1.key"], "B-L1-omnicode-hybrid-pragma");
-        assert_eq!(p["P1.format"], "rust");
-        assert_eq!(p["P1.style"], "library");
-        assert_eq!(p["P5.title"], "OmniCode Pragma Reader");
+        assert_eq!(pragma_get("I1.key"), Some("B-L1-omnicode-hybrid-pragma"));
+        assert_eq!(pragma_get("I1.format"), Some("rust"));
+        assert_eq!(pragma_get("I2.subtype"), Some("library"));
+        assert_eq!(pragma_get("I3.title"), Some("OmniCode Pragma Reader"));
     }
 
     #[test]
     fn test_own_metadata_identity() {
-        let m = own_metadata();
-        assert_eq!(m["M1.key"], "B-L1-omnicode-hybrid-pragma");
-        assert_eq!(m["M6.layer"], "L1-omnicode");
-        assert_eq!(m["M6.domain"], "pragma");
-        assert_eq!(m["M6.paradigm"], "CPI-SI");
+        assert_eq!(metadata_get("C7.domain"), Some("pragma"));
+        assert_eq!(metadata_get("C7.paradigm"), Some("CPI-SI"));
         assert_eq!(
-            m["M8.anchor"],
-            "Genesis 1:1 — In the beginning God created the heaven and the earth"
+            metadata_get("C3.anchor"),
+            Some("Genesis 1:1 — In the beginning God created the heaven and the earth"),
         );
     }
 
     #[test]
     fn test_identity_completeness() {
-        let p = own_pragma();
-        for prefix in ["P1.", "P2.", "P3.", "P4.", "P5."] {
+        for prefix in ["I1.", "I2.", "I3.", "I4."] {
             assert!(
-                p.keys().any(|k| k.starts_with(prefix)),
+                OWN_PRAGMA.iter().any(|(k, _)| k.starts_with(prefix)),
                 "missing pragma section {prefix}"
             );
         }
 
-        let m = own_metadata();
-        for prefix in [
-            "M1.", "M2.", "M3.", "M4.", "M5.", "M6.", "M7.", "M8.", "M9.", "M10.",
-        ] {
+        for prefix in ["C1.", "C2.", "C3.", "C4.", "C5.", "C6.", "C7."] {
             assert!(
-                m.keys().any(|k| k.starts_with(prefix)),
+                OWN_METADATA.iter().any(|(k, _)| k.starts_with(prefix)),
                 "missing metadata section {prefix}"
             );
         }
@@ -371,16 +274,16 @@ mod tests {
         );
 
         let pkg = pkg.unwrap();
-        assert_eq!(pkg.pragma["P1.format"], "rust");
-        assert_eq!(pkg.metadata["M6.layer"], "L1-omnicode");
+        assert_eq!(pkg.pragma["I1.format"], "rust");
+        assert_eq!(pkg.pragma["I4.layer"], "L1");
 
         // L1 packages should appear in L0's layer query
-        let l1_pkgs = bereshit_l0_identity::by_layer("L1-omnicode");
+        let l1_pkgs = bereshit_l0_identity::by_layer("L1");
         assert!(
             l1_pkgs
                 .iter()
                 .any(|p| p.key == "B-L1-omnicode-hybrid-pragma"),
-            "L1 pragma should appear in by_layer(\"L1-omnicode\")"
+            "L1 pragma should appear in by_layer(\"L1\")"
         );
 
         // OmniCode extensions should be registered with L0 format registry

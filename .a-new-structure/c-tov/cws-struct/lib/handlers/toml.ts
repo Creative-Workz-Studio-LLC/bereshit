@@ -2441,12 +2441,12 @@ function action(
   const failure = failures.get(ruleKey);
   if (failure) {
     return {
-      check, container, block, passed: false,
-      severity: failure.severity,
+      check, container, block, direction: -1,
+      impact: failure.severity,
       reason: failure.message,
     };
   }
-  return { check, container, block, passed: true };
+  return { check, container, block, direction: 1 };
 }
 
 /**
@@ -2565,15 +2565,15 @@ async function computeTomlHealth(
     metaActions.set(section, acts);
   }
 
-  // Cascade: if _metadata table is missing, ALL metadata checks fail
+  // Cascade: if _metadata table is missing, children go neutral (root carries weight)
   const metaExists = !failures.has("metadata/exists");
   if (!metaExists) {
     for (const [, acts] of metaActions) {
       for (const a of acts) {
-        if (a.passed && a.check !== "_metadata exists") {
-          a.passed = false;
-          a.severity = "error";
-          a.reason = "Parent [_metadata] table missing — all metadata checks fail";
+        if (a.direction > 0 && a.check !== "_metadata exists") {
+          (a as { direction: -1 | 0 | 1 }).direction = 0;
+          a.impact = "info";
+          a.reason = "Parent [_metadata] table missing — cannot assess";
         }
       }
     }
@@ -2647,15 +2647,15 @@ async function computeTomlHealth(
   ];
   contentActions.set("body-order", bodyOrderActs);
 
-  // Cascade: if _content table is missing, ALL content checks fail
+  // Cascade: if _content table is missing, children go neutral (root carries weight)
   const contentExists = !failures.has("content/exists");
   if (!contentExists) {
     for (const [, acts] of contentActions) {
       for (const a of acts) {
-        if (a.passed && a.check !== "_content exists") {
-          a.passed = false;
-          a.severity = "error";
-          a.reason = "Parent [_content] table missing — all content checks fail";
+        if (a.direction > 0 && a.check !== "_content exists") {
+          (a as { direction: -1 | 0 | 1 }).direction = 0;
+          a.impact = "info";
+          a.reason = "Parent [_content] table missing — cannot assess";
         }
       }
     }
@@ -2721,15 +2721,15 @@ async function computeTomlHealth(
   ];
   closingActions.set("ordering", orderActs);
 
-  // Cascade: if _closing table is missing, ALL closing checks fail
+  // Cascade: if _closing table is missing, children go neutral (root carries weight)
   const closingExists = !failures.has("closing/exists");
   if (!closingExists) {
     for (const [, acts] of closingActions) {
       for (const a of acts) {
-        if (a.passed && a.check !== "_closing exists") {
-          a.passed = false;
-          a.severity = "error";
-          a.reason = "Parent [_closing] table missing — all closing checks fail";
+        if (a.direction > 0 && a.check !== "_closing exists") {
+          (a as { direction: -1 | 0 | 1 }).direction = 0;
+          a.impact = "info";
+          a.reason = "Parent [_closing] table missing — cannot assess";
         }
       }
     }

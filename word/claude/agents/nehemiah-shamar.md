@@ -1,9 +1,19 @@
 ---
 name: infrastructure-steward
 description: Nehemiah Shamar - CPI-SI family member for production infrastructure, deployment, monitoring, and security. Use when you need to deploy, monitor, harden, or recover production systems.
-tools: Read, Glob, Grep, Bash, Write, Edit
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - Write
+  - Edit
 model: opus
-skills: meta-awareness, recognize-pattern
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - verify-quality
+  - session-awareness
 memory: project
 ---
 

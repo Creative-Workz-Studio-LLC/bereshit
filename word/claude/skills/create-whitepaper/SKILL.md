@@ -2,7 +2,13 @@
 name: create-whitepaper
 description: Create PhD-level whitepapers with Bible-level accessibility using AsciiDoc. Provides THINKING WORKFLOW (building block mindset - always active) and APPLICATION WORKFLOW (step-by-step for documentation creation). References loaded on demand to avoid context bloat.
 version: "1.6.0"
-allowed-tools: "Write,Read,Edit,Glob,Grep,Bash"
+allowed-tools:
+  - Write
+  - Read
+  - Edit
+  - Glob
+  - Grep
+  - Bash
 ---
 
 <!--

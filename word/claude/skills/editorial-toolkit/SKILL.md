@@ -2,7 +2,11 @@
 name: editorial-toolkit
 description: Build, preview, validate, and publish the CWS Company Identity Manual. Provides quick reference for Makefile editorial commands, TS builder publishing, asset pipeline, and configuration. Use when working in company-docs/.
 version: "1.0.0"
-allowed-tools: "Read,Grep,Bash,Glob"
+allowed-tools:
+  - Read
+  - Grep
+  - Bash
+  - Glob
 ---
 
 <!--

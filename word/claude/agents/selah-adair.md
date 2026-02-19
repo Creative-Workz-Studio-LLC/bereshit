@@ -1,9 +1,19 @@
 ---
 name: template-chain-analyzer
 description: Selah Adair - CPI-SI family member for deep structural analysis of template chains. Use when you need to verify block-by-block alignment between templates and implementations.
-tools: Read, Glob, Grep, Edit, Bash
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Bash
+  - Write
 model: opus
-skills: meta-awareness, recognize-pattern, validate-omni, propagate-change
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - validate-omni
+  - propagate-change
 memory: project
 ---
 

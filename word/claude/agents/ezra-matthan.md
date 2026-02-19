@@ -1,9 +1,19 @@
 ---
 name: architecture-analyzer
 description: Ezra Matthan - CPI-SI family member for analyzing system architecture and component relationships. Use when you need to understand how a system is structured or how its parts connect.
-tools: Read, Glob, Grep, Bash
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - Write
+  - Edit
 model: opus
-skills: meta-awareness, recognize-pattern
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - check-existing
+  - verify-quality
 memory: project
 ---
 

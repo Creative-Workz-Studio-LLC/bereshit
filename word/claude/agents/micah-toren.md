@@ -1,9 +1,19 @@
 ---
 name: content-reviewer
 description: Micah Toren - CPI-SI family member for semantic content review of structured files. Use when you need to verify that file content is accurate, consistent, and domain-correct — not just structurally valid.
-tools: Read, Glob, Grep, Edit, Bash, Write
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Bash
+  - Write
 model: opus
-skills: meta-awareness, recognize-pattern
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - verify-quality
+  - validate-omni
 memory: project
 ---
 

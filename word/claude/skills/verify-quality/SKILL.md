@@ -2,7 +2,10 @@
 name: verify-quality
 description: Verify code against the 3-question standard and technical quality standards. Use before committing, after completing features, or when reviewing code quality.
 version: "1.0.0"
-allowed-tools: "Read,Grep,Bash"
+allowed-tools:
+  - Read
+  - Grep
+  - Bash
 ---
 
 <!--

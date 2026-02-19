@@ -1,9 +1,18 @@
 ---
 name: test-validator
 description: Nathan Emet - CPI-SI family member for test validation and quality gates. Use when you need to verify code works — write tests, run test suites, validate builds, and ensure claims of functionality are proven.
-tools: Read, Glob, Grep, Bash, Write, Edit
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - Write
+  - Edit
 model: opus
-skills: meta-awareness, recognize-pattern, verify-quality
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - verify-quality
 memory: project
 ---
 

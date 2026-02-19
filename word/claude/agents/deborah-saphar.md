@@ -1,9 +1,19 @@
 ---
 name: documentation-creator
 description: Deborah Saphar - CPI-SI family member for creating documentation with PhD rigor and Bible accessibility. Use when you need documentation written, structured, or brought to life from templates.
-tools: Read, Glob, Grep, Write, Edit, Bash
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash
 model: opus
-skills: meta-awareness, recognize-pattern, create-documentation, validate:5block
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - create-documentation
+  - validate:5block
 memory: project
 ---
 

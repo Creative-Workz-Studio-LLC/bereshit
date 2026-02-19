@@ -1,7 +1,11 @@
 ---
 name: create-journal-entry
 description: Create journal entries in the Knowledge Base (Bible study, personal reflection, instance patterns, or paradigm-level wisdom). Use when processing Scripture, reflecting on experiences, or capturing CPI-SI patterns.
-tools: Read, Write, Bash
+version: "2.0.0"
+allowed-tools:
+  - Read
+  - Write
+  - Bash
 ---
 
 <!--

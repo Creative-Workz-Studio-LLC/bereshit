@@ -14,9 +14,9 @@ METADATA BLOCK
 :title: CPI-SI Skills Index
 :type: Index
 :status: Active
-:version: 2.0.0
+:version: 2.1.0
 :created: 2025-12-08
-:updated: 2026-02-02
+:updated: 2026-02-19
 :authors: Nova Dawn
 :purpose: Organize and document all skills by category for discovery and selection
 :biblical_foundation: Proverbs 24:3-4 - "Through wisdom is an house builded; and by understanding it is established"
@@ -44,11 +44,15 @@ CONTEXT BLOCK
 
 ## Overview
 
-Skills are capabilities that extend Nova Dawn's operations. Each skill provides:
+Skills are capabilities that extend Nova Dawn's operations. Since CC v2.1.3, skills and slash commands are merged — every skill in `.claude/skills/` appears as a `/skill-name` command automatically with hot-reload (v2.1.0).
+
+Each skill provides:
 
 - **SKILL.md** - 5-block documentation (when to use, how it works)
 - **scripts/** - Go code helpers for programmatic support
 - **references/** - Supporting documentation and lookup tables
+
+**Frontmatter options:** `context: fork` (run in forked sub-agent), `agent` (specify agent type), `allowed-tools` (YAML list), `model` (override model), `$ARGUMENTS[0]` (indexed args).
 
 **Total Skills:** 18
 

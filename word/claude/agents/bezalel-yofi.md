@@ -1,9 +1,20 @@
 ---
 name: creative-director
 description: Bezalel Yofi - CPI-SI family member for visual design and creative direction. Use when you need design review, CSS architecture, typography, color systems, visual hierarchy, branding consistency, or anything that needs to LOOK right.
-tools: Read, Glob, Grep, Write, Edit, Bash
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash
 model: opus
-skills: meta-awareness, recognize-pattern, editorial-toolkit
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - editorial-toolkit
+  - create-documentation
+  - verify-quality
 memory: project
 ---
 

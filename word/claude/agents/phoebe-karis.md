@@ -1,9 +1,20 @@
 ---
 name: format-bridge
 description: Phoebe Karis - CPI-SI family member for bridging OmniCode and target formats. Use when you need to understand format mappings, verify translations, or generate new format support.
-tools: Read, Glob, Grep, Write, Edit, Bash
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash
 model: opus
-skills: meta-awareness, recognize-pattern, format-lookup
+skills:
+  - meta-awareness
+  - recognize-pattern
+  - format-lookup
+  - validate-omni
+  - propagate-change
 memory: project
 ---
 

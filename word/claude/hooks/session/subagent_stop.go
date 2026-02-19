@@ -22,6 +22,7 @@ import (
 
 	"cws.studio/pkg/orchestration/logging"
 	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/util/pure/hookoutput"
 )
 
 // ============================================================================
@@ -29,19 +30,19 @@ import (
 // ============================================================================
 
 // SubagentStopInput from Claude Code
+// Updated for CC v2.1.47: added agent_id, agent_transcript_path, last_assistant_message
 type SubagentStopInput struct {
-	SessionID      string `json:"session_id"`
-	TranscriptPath string `json:"transcript_path,omitempty"`
-	PermissionMode string `json:"permission_mode,omitempty"`
-	HookEventName  string `json:"hook_event_name,omitempty"`
-	StopHookActive bool   `json:"stop_hook_active"`
+	SessionID            string `json:"session_id"`
+	TranscriptPath       string `json:"transcript_path,omitempty"`
+	PermissionMode       string `json:"permission_mode,omitempty"`
+	HookEventName        string `json:"hook_event_name,omitempty"`
+	StopHookActive       bool   `json:"stop_hook_active"`
+	AgentID              string `json:"agent_id,omitempty"`              // v2.0.42: which agent stopped
+	AgentTranscriptPath  string `json:"agent_transcript_path,omitempty"` // v2.0.42: agent's transcript file
+	LastAssistantMessage string `json:"last_assistant_message,omitempty"` // v2.1.47: final response text
 }
 
-// SubagentStopOutput to control behavior
-type SubagentStopOutput struct {
-	Decision string `json:"decision"` // allow, block
-	Reason   string `json:"reason,omitempty"`
-}
+// Output: use hookoutput.StopResponse (shared with Stop hook)
 
 // ============================================================================
 // BODY
@@ -95,15 +96,18 @@ func SubagentStop() {
 	log.Debug("Subagent complete", map[string]string{
 		"session_id": input.SessionID,
 		"trajectory": currentSection,
+		"agent_id":   input.AgentID,
 	})
 	if catLog != nil {
 		catLog.Success("delegation_complete", "Subagent task finished", map[string]string{
-			"trajectory": currentSection,
+			"trajectory":       currentSection,
+			"agent_id":         input.AgentID,
+			"transcript_path":  input.AgentTranscriptPath,
 		})
 	}
 
-	// Default: allow stop
-	output := SubagentStopOutput{Decision: "allow"}
+	// Default: allow stop (use hookoutput.StopResponse for correct schema)
+	output := hookoutput.NewStopAllow()
 	json.NewEncoder(os.Stdout).Encode(output)
 }
 

@@ -2,7 +2,11 @@
 name: validate-omni
 description: Quick validation of OmniCode file structure against its parent template. Use this skill when Nova Dawn needs to verify an OmniCode file follows its template correctly - checks block presence, section completeness, and structural alignment.
 version: "2.0.0"
-allowed-tools: "Read,Glob,Grep,Bash"
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
 ---
 
 <!--

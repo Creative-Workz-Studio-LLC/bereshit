@@ -2,7 +2,11 @@
 name: propagate-change
 description: Find all files affected by a template change and show what needs updating. Use this skill when Nova Dawn has edited a template and needs to know what downstream files need corresponding updates - traces derives_from chains and format mappings.
 version: "2.0.0"
-allowed-tools: "Read,Glob,Grep,Bash"
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
 ---
 
 <!--

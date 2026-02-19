@@ -1,0 +1,252 @@
+# #!omni code --toml --cargo
+
+# ===================================================================
+# Cargo.toml -- 3-Block (METADATA + CONTENT + CLOSING)
+# ===================================================================
+#
+# Structure: 3-block (METADATA + CONTENT + CLOSING)
+#
+# TOML constraint: [package] must come before [package.metadata.*]
+# sub-tables. So the physical order is:
+#
+#   [package]                        <- Cc.1 identity (CONTENT)
+#   [package.metadata.omni.*]        <- I/C metadata (METADATA)
+#   [package.metadata.omni._closing] <- X closing (CLOSING)
+#   [dependencies] etc.              <- Co sections (CONTENT continued)
+#
+# Logical structure is still: METADATA -> CONTENT -> CLOSING
+# Physical ordering respects TOML's sub-table rule.
+
+# -------------------------------------------------------------------
+# [package] -- MUST come first (TOML sub-table ordering rule)
+# -------------------------------------------------------------------
+#
+# Cc.1 PACKAGE -- Crate Identity [REQUIRED]
+#
+# Pure value formatting — durations, paths, numbers, strings, model names.
+# All functions are pure (no side effects except shorten_path reads $HOME).
+# No external dependencies beyond identity registration.
+[package]
+name = "bereshit-l0-format"
+version = "0.3.0"
+description = "Pure value formatting — durations, paths, numbers, strings, model names"
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+
+# ===================================================================
+# METADATA BLOCK [METADATA]
+# ===================================================================
+#
+# OmniCode metadata lives in [package.metadata.omni] -- Cargo's
+# sanctioned extension point. Cargo ignores everything under
+# package.metadata.
+
+# -------------------------------------------------------------------
+# I -- Identity: What IS This File
+# -------------------------------------------------------------------
+
+[package.metadata.omni.I1_core]
+key = "B-L0-hybrid-format-cargo"
+format = "@omni code --toml --cargo"
+from = "b-word/seed/code/L0/toml/cargo/Cargo.toml"
+at = "b-03.00"
+
+[package.metadata.omni.I2_family]
+type = "code"
+subtype = "crate-manifest"
+role = "derived"
+structure = "3-block"
+
+[package.metadata.omni.I3_instance]
+file = "Cargo.toml"
+title = "Format Utilities Crate Manifest"
+component = "Build manifest for pure value formatting — std + identity only"
+path = "L0-universal/c-hybrid/services/format/Cargo.toml"
+provides = ["FORMAT_UTILITIES_CRATE_MANIFEST"]
+brief = "Pure std crate manifest. Workspace inheritance for shared settings. Only dependency: identity registration."
+
+[package.metadata.omni.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+# -------------------------------------------------------------------
+# C -- Context: What Do I Need to KNOW
+# -------------------------------------------------------------------
+
+[package.metadata.omni.C1_state]
+version = "b-03.00"
+status = "Active"
+created = "2025-12-10"
+updated = "2026-02-18"
+
+[package.metadata.omni.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+# "A word fitly spoken is like apples of gold in pictures of silver."
+[package.metadata.omni.C3_grounding]
+scripture = "Proverbs 25:11 (KJV) -- A word fitly spoken is like apples of gold in pictures of silver."
+principle = "Format data so humans can ponder it. Clarity in presentation honors the reader."
+anchor = "Genesis 1:1 -- In the beginning God created the heaven and the earth."
+
+[package.metadata.omni.C4_dependencies]
+requires = "Rust toolchain (rustc, cargo), workspace Cargo.toml for shared settings, bereshit-l0-identity for registration"
+consumers = "statusline, session skills, all CPI-SI CLI commands, output crate"
+integration = "Part of Cargo workspace. Workspace settings inherited via .workspace = true."
+if_missing = "Crate cannot be built -- cargo has no manifest. Tools lose consistent formatting."
+
+[package.metadata.omni.C4_dependencies.related]
+parent = "seed/code/L0/toml/cargo/Cargo.toml -- Cargo.toml template"
+children = []
+
+[package.metadata.omni.C4_dependencies.cross_format]
+role = "Cargo.toml is TOML-native -- Cargo's manifest format."
+note = "Pairs with src/lib.rs (Rust source) and go/format.go (Go counterpart)."
+
+[package.metadata.omni.C5_intent]
+purpose = "Build manifest for pure value formatting -- std + identity, zero external deps"
+core_design = "Workspace inheritance -> identity dep only -> library target"
+philosophy = "Format values, never print them. Pure functions, no side effects."
+
+[package.metadata.omni.C5_intent.key_features]
+identity = "Crate name, version, edition from workspace"
+pure_std = "std only -- time, env. No external dependencies."
+identity_dep = "bereshit-l0-identity for global component registry"
+library = "Library target only -- no binary"
+lints = "Workspace-level lint rules for consistency"
+
+[package.metadata.omni.C6_roadmap]
+history = ["0.1.0 (2025-12-10) -- Initial creation (Go)", "0.2.0 (2026-02-14) -- Rust rewrite, pure functions", "0.3.0 (2026-02-18) -- I/C metadata, byte_size, count, comprehensive tests"]
+current = "b-03.00 -- 15 pure functions, 61 unit tests + 18 doc tests, I/C metadata aligned."
+planned = ["Color/ANSI formatting (feature-gated)", "Locale-aware number formatting", "Char-aware truncation (Unicode grapheme boundaries)"]
+
+[package.metadata.omni.C7_classification]
+tags = ["format", "duration", "path", "number", "string", "pure", "no-deps", "service", "omnicode", "cpi-si"]
+domain = "L0-universal/services/format"
+
+[package.metadata.omni._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C5_intent", "C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = ["X2_extension", "X3_troubleshooting", "X4_reference"]
+valid_patterns = ["I{N}_{name}", "C{N}_{name}", "X{N}_{name}", "_{name}"]
+rule = "Metadata in package.metadata.omni. Standard Cargo sections for content."
+
+# ===================================================================
+# END METADATA [END]
+# ===================================================================
+
+
+# ===================================================================
+# CONTENT BLOCK [CONTENT] (continued)
+# ===================================================================
+#
+# [package] is above (TOML ordering constraint). Remaining
+# content sections follow here.
+#
+# Zones:
+#   Cc -- Configurations  Crate identity [package] and targets [lib]/[[bin]]
+#   Co -- Operations      Dependencies, features, lints
+#   Cv -- Validation      Build verification (comments only)
+#
+# Ordering: cargo_convention (package -> targets -> deps -> features -> lints)
+
+# -------------------------------------------------------------------
+# Cc.2 TARGETS -- Library Configuration [DEFAULT]
+# -------------------------------------------------------------------
+#
+# Library crate -- default target. No [lib] section needed because
+# Cargo infers lib from src/lib.rs. No [[bin]] because this is a
+# library, not an executable.
+
+# -------------------------------------------------------------------
+# Co -- Content Operations
+# -------------------------------------------------------------------
+
+# Co.1 DEPENDENCIES -- Crate Dependencies [MINIMAL]
+#
+# Pure std + identity only. No external dependencies.
+# The identity crate enables register_identity() for the global
+# component registry. Everything else is std::{time, env}.
+[dependencies]
+bereshit-l0-identity = { workspace = true }
+
+[dev-dependencies]
+
+# Co.2 FEATURES -- Optional Capabilities [DEFINED]
+#
+# Future: color/ANSI, locale awareness, number grouping.
+# Currently empty because pure formatting covers all current use cases.
+[features]
+default = []
+
+# Co.3 LINTS -- Code Quality Rules [WORKSPACE]
+#
+# Workspace-level lints keep all crates consistent.
+[lints]
+workspace = true
+
+# -------------------------------------------------------------------
+# Cv -- Content Validation (comments only)
+# -------------------------------------------------------------------
+#
+#   cargo check  -p bereshit-l0-format    -- Type-check
+#   cargo build  -p bereshit-l0-format    -- Full build
+#   cargo test   -p bereshit-l0-format    -- Run tests (61 unit + 18 doc)
+#   cargo clippy -p bereshit-l0-format    -- Lint check
+#   cargo fmt --check                     -- Format check
+
+# ===================================================================
+# END CONTENT [END]
+# ===================================================================
+
+
+# ===================================================================
+# CLOSING BLOCK [CLOSING]
+# ===================================================================
+
+# X.1 POLICY -- Modification Guidelines [REQUIRED]
+[package.metadata.omni._closing.X1_policy]
+scripture = "Proverbs 22:28 (WEB) -- Don't move the ancient boundary stone."
+never = ["Add heavy dependencies (networking, database, filesystem)", "Remove workspace inheritance", "Add binary targets to this library crate", "Remove bereshit-l0-identity dependency (breaks registration)"]
+careful = ["Version bumps (public API contract)", "Output format strings (downstream may parse them)", "Model name mappings (statusline depends on consistent short names)"]
+safe = ["Adding new formatting functions", "Adding new model name mappings", "Documentation updates", "Dev-dependency additions for testing"]
+
+# X.2 EXTENSION -- Future Ideas [DEFINED]
+[package.metadata.omni._closing.X2_extension]
+planned = ["Color/ANSI formatting (feature-gated)", "Locale-aware number formatting (1,234 vs 1.234)", "Char-aware truncation (Unicode grapheme boundaries)", "Center-pad function"]
+
+# X.3 TROUBLESHOOTING [DEFINED]
+[package.metadata.omni._closing.X3_troubleshooting]
+scripture = "James 1:5 (WEB) -- If any lacks wisdom, let him ask of God."
+workspace_not_found = "Ensure b-word/Cargo.toml exists with [workspace] section and this crate in members"
+path_mismatch = "Workspace member path must match: L0-universal/c-hybrid/services/format"
+identity_not_found = "bereshit-l0-identity must be in workspace.dependencies"
+doc_tests_fail = "Doc tests use crate name bereshit_l0_format. Ensure Cargo.toml name matches."
+
+# X.4 REFERENCE [DEFINED]
+[package.metadata.omni._closing.X4_reference]
+related_files = [
+    "src/lib.rs -- Crate root, 15 pure formatting functions",
+    "go/format.go -- Go counterpart",
+    "seed/code/L0/toml/cargo/Cargo.toml -- Template this derives from",
+    "services/output/Cargo.toml -- Output crate manifest (consumer)",
+]
+required_sections = ["package"]
+validate = "cargo check -p bereshit-l0-format && cargo clippy -p bereshit-l0-format && cargo test -p bereshit-l0-format"
+
+# X.5 NOTE -- Final Anchor [REQUIRED]
+[package.metadata.omni._closing.X5_note]
+note = "Pure value formatting. Take values in, return strings out. Format data so humans can ponder it."
+scripture = "Proverbs 25:11 (KJV) -- A word fitly spoken is like apples of gold in pictures of silver."
+anchor = "Fitly spoken — not just spoken, but formatted for the setting. Clarity in presentation honors the reader."
+
+# ===================================================================
+# END CLOSING [END]
+# ===================================================================

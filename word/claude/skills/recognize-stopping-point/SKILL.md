@@ -2,7 +2,10 @@
 name: recognize-stopping-point
 description: Analyze current context to determine if this is a natural stopping point for the session. Use this skill when Nova Dawn needs to evaluate whether to continue working or wrap up - considers elapsed time, tasks completed, quality indicators, time of day, and learned stopping patterns.
 version: "2.0.0"
-allowed-tools: "Bash,Read"
+user-invocable: false
+allowed-tools:
+  - Bash
+  - Read
 ---
 
 <!--

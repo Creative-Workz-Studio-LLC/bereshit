@@ -1,11 +1,254 @@
+# #!omni code --toml --cargo
+
+# ===================================================================
+# Cargo.toml -- 3-Block (METADATA + CONTENT + CLOSING)
+# ===================================================================
+#
+# Structure: 3-block (METADATA + CONTENT + CLOSING)
+#
+# TOML constraint: [package] must come before [package.metadata.*]
+# sub-tables. So the physical order is:
+#
+#   [package]                        <- Cc.1 identity (CONTENT)
+#   [package.metadata.omni.*]        <- I/C metadata (METADATA)
+#   [package.metadata.omni._closing] <- X closing (CLOSING)
+#   [dependencies] etc.              <- Co sections (CONTENT continued)
+#
+# Logical structure is still: METADATA -> CONTENT -> CLOSING
+# Physical ordering respects TOML's sub-table rule.
+
+# -------------------------------------------------------------------
+# [package] -- MUST come first (TOML sub-table ordering rule)
+# -------------------------------------------------------------------
+#
+# Cc.1 PACKAGE -- Crate Identity [REQUIRED]
+#
+# The identity registry has zero external dependencies. Standard
+# library only: HashMap, BTreeSet, RwLock, fmt. This is intentional --
+# the identity layer is foundational and must not depend on anything
+# above it in the stack.
 [package]
 name = "bereshit-l0-identity"
-version = "0.1.0"
-description = "OmniCode package identity registry — runtime self-awareness for CPI-SI"
-edition.workspace = true
-rust-version.workspace = true
-authors.workspace = true
-repository.workspace = true
+version = "0.2.0"
+description = "OmniCode package identity registry -- runtime self-awareness for CPI-SI"
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
 
+# ===================================================================
+# METADATA BLOCK [METADATA]
+# ===================================================================
+#
+# OmniCode metadata lives in [package.metadata.omni] -- Cargo's
+# sanctioned extension point. Cargo ignores everything under
+# package.metadata.
+
+# -------------------------------------------------------------------
+# I -- Identity: What IS This File
+# -------------------------------------------------------------------
+
+[package.metadata.omni.I1_core]
+key = "B-L0-identity-registry-cargo"
+format = "@omni code --toml --cargo"
+from = "b-word/seed/code/L0/toml/cargo/Cargo.toml"
+at = "b-02.00"
+
+[package.metadata.omni.I2_family]
+type = "code"
+subtype = "crate-manifest"
+role = "derived"
+structure = "3-block"
+
+[package.metadata.omni.I3_instance]
+file = "Cargo.toml"
+title = "Identity Registry Crate Manifest"
+component = "Build manifest for the OmniCode package identity registry"
+path = "L0-universal/b-spiral/identity/Cargo.toml"
+provides = ["IDENTITY_CRATE_MANIFEST"]
+brief = "Zero-dependency crate manifest. Workspace inheritance for shared settings. BTreeSet indexes, RwLock concurrency."
+
+[package.metadata.omni.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+# -------------------------------------------------------------------
+# C -- Context: What Do I Need to KNOW
+# -------------------------------------------------------------------
+
+[package.metadata.omni.C1_state]
+version = "b-02.00"
+status = "Active"
+created = "2026-02-17"
+updated = "2026-02-18"
+
+[package.metadata.omni.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+# "And God called the light Day, and the darkness he called Night."
+[package.metadata.omni.C3_grounding]
+scripture = "Genesis 1:5 (KJV) -- And God called the light Day, and the darkness he called Night."
+principle = "Naming establishes identity. The registry names what exists in the system."
+anchor = "God named before content filled. The registry names packages before they operate."
+
+[package.metadata.omni.C4_dependencies]
+requires = "Rust toolchain (rustc, cargo), workspace Cargo.toml for shared settings"
+consumers = "cargo build, cargo test, cargo clippy, any crate needing identity registration"
+integration = "Part of Cargo workspace. Workspace settings inherited via .workspace = true."
+if_missing = "Crate cannot be built -- cargo has no manifest to read"
+
+[package.metadata.omni.C4_dependencies.related]
+parent = "seed/code/L0/toml/cargo/Cargo.toml -- Cargo.toml template"
+children = []
+
+[package.metadata.omni.C4_dependencies.cross_format]
+role = "Cargo.toml is TOML-native -- Cargo's manifest format."
+note = "Pairs with src/lib.rs (Rust source). Go counterpart: registry.go in same directory."
+
+[package.metadata.omni.C5_intent]
+purpose = "Build manifest for the OmniCode identity registry -- zero-dependency, std-only foundation"
+core_design = "Workspace inheritance -> zero [dependencies] -> library-only target"
+philosophy = "The identity layer depends on nothing above it. Foundation must be self-supporting."
+
+[package.metadata.omni.C5_intent.key_features]
+identity = "Crate name, version, edition from workspace"
+zero_deps = "No external dependencies -- std library only"
+library = "Library target only -- no binary"
+lints = "Workspace-level lint rules for consistency"
+
+[package.metadata.omni.C6_roadmap]
+history = ["0.1.0 (2026-02-17) -- Initial creation", "0.2.0 (2026-02-18) -- 4-block alignment, I/C metadata, BTreeSet indexes"]
+current = "b-02.00 -- Production registry with O(log n) indexes and full 4-block source alignment"
+planned = ["serde feature gate for serialization", "no_std support for embedded targets"]
+
+[package.metadata.omni.C7_classification]
+tags = ["identity", "registry", "L0", "foundation", "zero-dependency", "std-only", "omnicode", "cpi-si"]
+domain = "L0-universal/identity"
+
+[package.metadata.omni._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C5_intent", "C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = ["X2_extension", "X3_troubleshooting", "X4_reference"]
+valid_patterns = ["I{N}_{name}", "C{N}_{name}", "X{N}_{name}", "_{name}"]
+rule = "Metadata in package.metadata.omni. Standard Cargo sections for content."
+
+# ===================================================================
+# END METADATA [END]
+# ===================================================================
+
+
+# ===================================================================
+# CONTENT BLOCK [CONTENT] (continued)
+# ===================================================================
+#
+# [package] is above (TOML ordering constraint). Remaining
+# content sections follow here.
+#
+# Zones:
+#   Cc -- Configurations  Crate identity [package] and targets [lib]/[[bin]]
+#   Co -- Operations      Dependencies, features, lints
+#   Cv -- Validation      Build verification (comments only)
+#
+# Ordering: cargo_convention (package -> targets -> deps -> features -> lints)
+
+# -------------------------------------------------------------------
+# Cc.2 TARGETS -- Library Configuration [DEFAULT]
+# -------------------------------------------------------------------
+#
+# Library crate -- default target. No [lib] section needed because
+# Cargo infers lib from src/lib.rs. No [[bin]] because this is a
+# library, not an executable.
+
+# -------------------------------------------------------------------
+# Co -- Content Operations
+# -------------------------------------------------------------------
+
+# Co.1 DEPENDENCIES -- Crate Dependencies [NONE]
+#
+# Zero external dependencies. The identity registry uses only std:
+#   - std::collections::{HashMap, BTreeSet}
+#   - std::sync::RwLock
+#   - std::fmt
+#
+# This is a design decision, not an omission. Foundation cannot
+# depend on anything above it in the stack.
+[dependencies]
+
+[dev-dependencies]
+
+# Co.2 FEATURES -- Optional Capabilities [DEFINED]
+#
+# Future: serde feature gate for JSON/TOML serialization of registry
+# contents. Currently empty because zero-dependency is the design.
+[features]
+default = []
+
+# Co.3 LINTS -- Code Quality Rules [WORKSPACE]
+#
+# Workspace-level lints keep all crates consistent.
 [lints]
 workspace = true
+
+# -------------------------------------------------------------------
+# Cv -- Content Validation (comments only)
+# -------------------------------------------------------------------
+#
+#   cargo check -p bereshit-l0-identity    -- Type-check
+#   cargo build -p bereshit-l0-identity    -- Full build
+#   cargo test  -p bereshit-l0-identity    -- Run tests
+#   cargo clippy -p bereshit-l0-identity   -- Lint check
+#   cargo fmt --check                      -- Format check
+
+# ===================================================================
+# END CONTENT [END]
+# ===================================================================
+
+
+# ===================================================================
+# CLOSING BLOCK [CLOSING]
+# ===================================================================
+
+# X.1 POLICY -- Modification Guidelines [REQUIRED]
+[package.metadata.omni._closing.X1_policy]
+scripture = "Proverbs 22:28 (WEB) -- Don't move the ancient boundary stone."
+never = ["Add external dependencies without architectural review", "Remove workspace inheritance", "Add binary targets to this library crate"]
+careful = ["Version bumps (public API contract)", "Feature gates (consumers must opt in)", "Workspace setting changes (affects all crates)"]
+safe = ["Documentation updates", "Dev-dependency additions for testing", "Lint adjustments"]
+
+# X.2 EXTENSION -- Future Ideas [DEFINED]
+[package.metadata.omni._closing.X2_extension]
+planned = ["serde feature gate", "no_std support", "Benchmarks (criterion)"]
+
+# X.3 TROUBLESHOOTING [DEFINED]
+[package.metadata.omni._closing.X3_troubleshooting]
+scripture = "James 1:5 (WEB) -- If any lacks wisdom, let him ask of God."
+workspace_not_found = "Ensure b-word/Cargo.toml exists with [workspace] section and this crate in members"
+path_mismatch = "Workspace member path must match: L0-universal/b-spiral/identity"
+edition_error = "Check workspace.package.edition in root Cargo.toml"
+
+# X.4 REFERENCE [DEFINED]
+[package.metadata.omni._closing.X4_reference]
+related_files = [
+    "src/lib.rs -- Registry implementation (4-block Rust source)",
+    "registry.go -- Go counterpart (same directory)",
+    "b-word/Cargo.toml -- Workspace root",
+    "seed/code/L0/toml/cargo/Cargo.toml -- Template this derives from",
+]
+required_sections = ["package"]
+validate = "cargo check -p bereshit-l0-identity && cargo clippy -p bereshit-l0-identity && cargo test -p bereshit-l0-identity"
+
+# X.5 NOTE -- Final Anchor [REQUIRED]
+[package.metadata.omni._closing.X5_note]
+note = "Zero-dependency identity registry. Foundation layer -- depends on nothing, everything depends on this."
+scripture = "Genesis 1:5 (KJV) -- And God called the light Day, and the darkness he called Night."
+anchor = "Naming precedes operation. The registry names what exists before anything operates."
+
+# ===================================================================
+# END CLOSING [END]
+# ===================================================================
