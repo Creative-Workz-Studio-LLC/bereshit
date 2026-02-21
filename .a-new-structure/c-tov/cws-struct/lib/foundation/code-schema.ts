@@ -134,7 +134,7 @@ export interface SchemaIdentitySyntax {
   close: string;
 }
 
-/** Default values for placeholder substitution. */
+/** Default values for placeholder substitution. Core fields are typed; additional schema-defined defaults are captured by the index signature. */
 export interface SchemaFillDefaults {
   version: string;
   status: string;
@@ -143,11 +143,62 @@ export interface SchemaFillDefaults {
   scripture_text: string;
   type: string;
   structure: string;
+  /** Additional defaults (architect, role, layer, etc.) defined in the schema. */
+  [key: string]: string;
 }
 
 /** Default field values for CLOSING documentation zones. */
 export interface SchemaClosingDefaults {
   [tag: string]: Record<string, string>;
+}
+
+/** A single identity group (e.g., I1 → Core, C3 → Grounding). */
+export interface IdentityGroup {
+  /** Range prefix matching field keys (e.g., "I1", "C3"). */
+  range: string;
+  /** Display label for inline group comment (e.g., "Core", "Grounding"). */
+  label: string;
+  /** Optional docstring emitted before the static declaration. */
+  docstring?: string;
+}
+
+/** Complete identity grouping — pragma groups, metadata groups, and section headers. */
+export interface IdentityGrouping {
+  /** Pragma groups (I1-I4) with range/label/docstring. */
+  pragma: IdentityGroup[];
+  /** Metadata groups (C1-C7) with range/label/docstring. */
+  metadata: IdentityGroup[];
+  /** Section header comments emitted before each static block. */
+  sectionHeaders: { pragma: string; metadata: string };
+}
+
+/** A single transformer mode — defines which formatting features are enabled. */
+export interface TransformerMode {
+  /** Target linter result (e.g., "0E 0W 0I", "0E 0W", "0E"). */
+  linterTarget: string;
+  /** Emit identity statics with formatting (headers, groups, alignment). */
+  identityFormatting: boolean;
+  /** Emit section headers (e.g., "// Identity (I1-I4)"). */
+  sectionHeaders: boolean;
+  /** Emit inline group comments (e.g., "// I2: Family"). */
+  groupComments: boolean;
+  /** Emit docstrings before static declarations. */
+  docstrings: boolean;
+  /** Column-align field entries within statics. */
+  columnAlignment: boolean;
+  /** Emit block overviews (purpose + section order). */
+  blockOverviews: boolean;
+  /** Emit Reserved Omission with Available/Reserved groups. */
+  roGrouped: boolean;
+  /** Emit all CLOSING zones with complete field content. */
+  closingComplete: boolean;
+}
+
+/** Named transformer modes from schema — strict/balance/growth leniency scale. */
+export interface TransformerModes {
+  strict: TransformerMode;
+  balance: TransformerMode;
+  growth: TransformerMode;
 }
 
 /**
@@ -178,6 +229,10 @@ export interface SchemaFillContent {
   metadataComment: string[];
   /** Default field values for CLOSING doc zones (X1, X5). */
   closingDefaults: SchemaClosingDefaults;
+  /** Identity group definitions for structured METADATA formatting. */
+  identityGroups?: IdentityGrouping;
+  /** Named transformer leniency modes (strict/balance/growth). */
+  transformerModes?: TransformerModes;
 }
 
 /**
@@ -211,6 +266,10 @@ export interface FormReservedSection {
   tag: string;
   whyReserved: string;
   activeIn: string;
+  /** Canonical position in the section ordering (e.g., 2 for S2_Modules).
+   *  Extracted from the schema key prefix. Used by the transform to show
+   *  reserved sections inline at their correct position. */
+  position?: number;
 }
 
 /** Per-container CAN/CANNOT constraint set. */
@@ -352,9 +411,12 @@ function buildSubsectionPattern(
 
   // Match: // optional-S. optional-N. Name
   // - (?:S\.)? handles Rust's "S.1 Imports" prefix
-  // - (?:\d+\.\s+)? handles "3. Constants" numbering
+  // - (?:\d+\.?\s+)? handles "3. Constants" numbering
+  // - \\s{1,2} limits whitespace after // to 1-2 spaces, so block overview
+  //   TOC lines (//   1. Imports  — desc) with 3+ spaces DON'T match.
+  //   This distinguishes subsection headers from overview index lines.
   return new RegExp(
-    `^\\/\\/\\s+(?:S\\.)?(?:\\d+\\.?\\s+)?${nameGroup}\\b`,
+    `^\\/\\/\\s{1,2}(?:S\\.)?(?:\\d+\\.?\\s+)?${nameGroup}\\b`,
     "i",
   );
 }
@@ -372,7 +434,7 @@ function buildAliasPattern(altNames: string[]): RegExp | undefined {
     : `(?:${fragments.join("|")})`;
 
   return new RegExp(
-    `^\\/\\/\\s+(?:S\\.)?(?:\\d+\\.?\\s+)?${nameGroup}\\b`,
+    `^\\/\\/\\s{1,2}(?:S\\.)?(?:\\d+\\.?\\s+)?${nameGroup}\\b`,
     "i",
   );
 }
@@ -812,9 +874,13 @@ function extractSubtypeDefs(
  */
 function buildZonePattern(tag: string, kind: "code" | "doc"): RegExp {
   if (kind === "code") {
-    return new RegExp(`^\\/\\/\\s+${tag}\\s+[—–-]`);
+    // Accept both descriptive format (// Cv — Validation) and bare subsection
+    // header format (// Cv). The subsection header is what the transform emits;
+    // the descriptive format is what humans may add. Both are valid zone markers.
+    return new RegExp(`^\\/\\/\\s+${tag}(\\s+[—–-]|\\s*$)`);
   }
-  return new RegExp(`^\\/\\/\\s+${tag}[:\\s]`);
+  // Accept: // X1: description, // X1 description, or bare // X1 (subsection header)
+  return new RegExp(`^\\/\\/\\s+${tag}([:\\s]|$)`);
 }
 
 /**
@@ -982,7 +1048,7 @@ function extractFillContent(
   const fc = structure["fill_content"] as Record<string, any> | undefined;
   if (!fc) return undefined;
 
-  // Defaults
+  // Defaults — capture core fields + any additional schema-defined defaults
   // deno-lint-ignore no-explicit-any
   const rawDefaults = (fc["defaults"] ?? {}) as Record<string, any>;
   const defaults: SchemaFillDefaults = {
@@ -994,6 +1060,12 @@ function extractFillContent(
     type: String(rawDefaults["type"] ?? "code"),
     structure: String(rawDefaults["structure"] ?? "4-block"),
   };
+  // Capture extra defaults (architect, role, layer, domain, paradigm, etc.)
+  for (const [key, value] of Object.entries(rawDefaults)) {
+    if (!(key in defaults) && typeof value === "string") {
+      defaults[key] = value;
+    }
+  }
 
   // Directives
   const directives: string[] = Array.isArray(fc["directives"])
@@ -1039,6 +1111,12 @@ function extractFillContent(
     }
   }
 
+  // Identity groups — structured METADATA formatting data
+  const identityGroups = extractIdentityGroups(fc);
+
+  // Transformer modes — strict/balance/growth leniency scale
+  const transformerModes = extractTransformerModes(fc);
+
   return {
     defaults,
     directives,
@@ -1049,6 +1127,8 @@ function extractFillContent(
     metadataEntries,
     metadataComment,
     closingDefaults,
+    identityGroups,
+    transformerModes,
   };
 }
 
@@ -1074,6 +1154,90 @@ function extractEntryPairs(
   return raw
     .filter((item) => Array.isArray(item) && item.length >= 2)
     .map((item) => [String(item[0]), String(item[1])]);
+}
+
+/**
+ * Extract identity groups from fill_content.identity_groups.
+ *
+ * Returns undefined if not present (forward-compatible with older schemas).
+ */
+function extractIdentityGroups(
+  // deno-lint-ignore no-explicit-any
+  fc: Record<string, any>,
+): IdentityGrouping | undefined {
+  // deno-lint-ignore no-explicit-any
+  const raw = fc["identity_groups"] as Record<string, any> | undefined;
+  if (!raw || typeof raw !== "object") return undefined;
+
+  function parseGroups(arr: unknown): IdentityGroup[] {
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter((item) => item && typeof item === "object" && "range" in item)
+      .map((item) => ({
+        range: String(item.range),
+        label: String(item.label ?? ""),
+        ...(typeof item.docstring === "string" ? { docstring: item.docstring } : {}),
+      }));
+  }
+
+  const pragma = parseGroups(raw["pragma"]);
+  const metadata = parseGroups(raw["metadata"]);
+
+  // deno-lint-ignore no-explicit-any
+  const headers = (raw["section_headers"] ?? {}) as Record<string, any>;
+  const sectionHeaders = {
+    pragma: typeof headers["pragma"] === "string" ? headers["pragma"] : "",
+    metadata: typeof headers["metadata"] === "string" ? headers["metadata"] : "",
+  };
+
+  return { pragma, metadata, sectionHeaders };
+}
+
+/**
+ * Extract transformer modes from fill_content.transformer_modes.
+ *
+ * Returns undefined if not present (forward-compatible with older schemas).
+ */
+function extractTransformerModes(
+  // deno-lint-ignore no-explicit-any
+  fc: Record<string, any>,
+): TransformerModes | undefined {
+  // deno-lint-ignore no-explicit-any
+  const raw = fc["transformer_modes"] as Record<string, any> | undefined;
+  if (!raw || typeof raw !== "object") return undefined;
+
+  function parseMode(
+    // deno-lint-ignore no-explicit-any
+    obj: Record<string, any> | undefined,
+  ): TransformerMode {
+    if (!obj) {
+      return {
+        linterTarget: "0E", identityFormatting: false, sectionHeaders: false,
+        groupComments: false, docstrings: false, columnAlignment: false,
+        blockOverviews: false, roGrouped: false, closingComplete: false,
+      };
+    }
+    return {
+      linterTarget: typeof obj["linter_target"] === "string" ? obj["linter_target"] : "0E",
+      identityFormatting: obj["identity_formatting"] === true,
+      sectionHeaders: obj["section_headers"] === true,
+      groupComments: obj["group_comments"] === true,
+      docstrings: obj["docstrings"] === true,
+      columnAlignment: obj["column_alignment"] === true,
+      blockOverviews: obj["block_overviews"] === true,
+      roGrouped: obj["ro_grouped"] === true,
+      closingComplete: obj["closing_complete"] === true,
+    };
+  }
+
+  // deno-lint-ignore no-explicit-any
+  const strict = parseMode(raw["strict"] as Record<string, any> | undefined);
+  // deno-lint-ignore no-explicit-any
+  const balance = parseMode(raw["balance"] as Record<string, any> | undefined);
+  // deno-lint-ignore no-explicit-any
+  const growth = parseMode(raw["growth"] as Record<string, any> | undefined);
+
+  return { strict, balance, growth };
 }
 
 // ---------------------------------------------------------------------------
@@ -1359,6 +1523,10 @@ export function parseFormSchema(jsonText: string): FormConstraints | null {
         const whyReserved = typeof value["why_reserved"] === "string" ? value["why_reserved"] : "";
         const activeIn = typeof value["active_in"] === "string" ? value["active_in"] : "";
 
+        // Extract canonical position from key prefix: "S2_Modules" → 2, "B6_Output" → 6
+        const posMatch = _key.match(/^[A-Z](\d+)_/);
+        const position = posMatch ? parseInt(posMatch[1]!, 10) : undefined;
+
         // Pattern 2: grouped entry with sections array — expand each section
         if (Array.isArray(value["sections"])) {
           for (const section of value["sections"]) {
@@ -1374,7 +1542,7 @@ export function parseFormSchema(jsonText: string): FormConstraints | null {
           ? value["tag"]
           // Infer tag from key: "S2_Modules" → "Modules", "B6_Output" → "Output"
           : _key.replace(/^[A-Z]\d+_/, "");
-        cannotSections.push({ tag, whyReserved, activeIn });
+        cannotSections.push({ tag, whyReserved, activeIn, position });
       }
     }
 

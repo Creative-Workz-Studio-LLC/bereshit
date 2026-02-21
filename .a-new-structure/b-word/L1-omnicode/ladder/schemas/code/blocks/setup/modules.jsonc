@@ -1,0 +1,94 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-setup-modules",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "SETUP Section 2: Modules — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Modules IS, not how it manifests in any language. See format/blocks/{lang}/setup/modules.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "Modules",
+        "position": 2,
+        "label": "Modules",
+        "block": "SETUP",
+        "overview_text": "Submodule declarations",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "child declarations",
+                "description": "Declaring that subordinate modules exist within this file's scope",
+                "distinguisher": "The tree structure. This file is a branch; modules are its leaves."
+            },
+            {
+                "concept": "re-exports",
+                "description": "Making child items visible at this level",
+                "distinguisher": "Curating the public surface. Decide what the outside sees."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "implementation code",
+                "reason": "Module declarations establish structure, not behavior",
+                "defer_to": "BODY.*"
+            },
+            {
+                "concept": "type definitions",
+                "reason": "Types belong in their own section, not interleaved with module declarations",
+                "defer_to": "SETUP.CoreTypes"
+            },
+            {
+                "concept": "imports from children",
+                "reason": "Importing is S1's job; S2 declares, S1 consumes",
+                "defer_to": "SETUP.Imports"
+            }
+        ],
+
+        "defer": [
+            {
+                "signal": "file is not a tree root (not lib.rs, not mod.rs equivalent)",
+                "to": "RESERVED — this section should not be active",
+                "why": "Only module tree roots declare children. Leaf files don't."
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "RESERVED",
+            "library": "REQUIRED",
+            "executable": "AVAILABLE",
+            "demo-test": "RESERVED"
+        },
+
+        "ro": {
+            "available_label": "Modules",
+            "reserved_reason": "Submodule declarations belong in crate root or parent, not leaf modules",
+            "reserved_explanation": "Only tree roots (lib.rs, mod.rs) declare children. Individual modules are leaves."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Modules are the tree structure. S2 says 'these children exist under me.' Only roots and branches declare — leaves do not.",
+    "_X5_scripture": "Psalm 1:3 — And he shall be like a tree planted by the rivers of water, that bringeth forth his fruit in his season."
+}

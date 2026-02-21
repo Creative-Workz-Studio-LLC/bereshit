@@ -32,6 +32,71 @@ import type { HealthScore } from "./health.ts";
 export type Severity = "error" | "warn" | "info";
 
 // ---------------------------------------------------------------------------
+// Lint Policy — ternary threshold (-1 / 0 / +1)
+// ---------------------------------------------------------------------------
+//
+// Maps to CPI-SI's 3 keys:
+//   -1 (strict)   → toward anchor — production standard, tighten severity
+//    0 (balanced)  → maintain — development default, severity as-declared
+//   +1 (growth)    → toward fullness — scaffold/learning, loosen severity
+//
+// Policy shifts severity one step per level:
+//   strict:   info → warn,  warn → error,  error → error
+//   balanced: info → info,  warn → warn,   error → error  (identity)
+//   growth:   info → info,  warn → info,   error → warn
+//
+
+/** Ternary lint policy — controls how form-aware checks map base severity. */
+export type LintPolicy = "strict" | "balanced" | "growth";
+
+/**
+ * Map a base severity through a policy lens.
+ *
+ * The policy shifts severity by one step on the ternary scale:
+ * - strict (-1): tighten (warn → error, info → warn)
+ * - balanced (0): identity (no change)
+ * - growth (+1): loosen (error → warn, warn → info)
+ *
+ * Floor: info never becomes nothing. Ceiling: error stays error under strict.
+ * This only applies to form-aware checks — structural checks bypass policy.
+ */
+export function policySeverity(base: Severity, policy: LintPolicy): Severity {
+  if (policy === "balanced") return base;
+
+  if (policy === "strict") {
+    // Tighten: one step toward error
+    switch (base) {
+      case "info": return "warn";
+      case "warn": return "error";
+      case "error": return "error";
+    }
+  }
+
+  // growth: one step toward info
+  switch (base) {
+    case "error": return "warn";
+    case "warn": return "info";
+    case "info": return "info";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Global Policy State — set by CLI, read by handlers
+// ---------------------------------------------------------------------------
+//
+// The FormatHandler.lint() contract takes only (filePath) — no options bag.
+// Until the interface evolves, policy flows through module-level state.
+// One policy per session. CLI sets it before dispatching to handlers.
+
+let _globalPolicy: LintPolicy = "balanced";
+
+/** Set the session-wide ternary lint policy. Call before dispatching to handlers. */
+export function setGlobalPolicy(p: LintPolicy): void { _globalPolicy = p; }
+
+/** Get the session-wide ternary lint policy. Handlers call this in form-aware checks. */
+export function getGlobalPolicy(): LintPolicy { return _globalPolicy; }
+
+// ---------------------------------------------------------------------------
 // Lint Results
 // ---------------------------------------------------------------------------
 
@@ -95,6 +160,10 @@ export interface TransformOptions {
   dryRun: boolean;
   /** Scaffold extension sections (I4, C5-C7, _contract, X2-X4, etc.). */
   extensions: boolean;
+  /** Force re-scaffold even if file already has block structure. */
+  force: boolean;
+  /** Step-by-step mode — write each build phase to a .steps/ directory. */
+  steps: boolean;
 }
 
 /** Every format registers a handler that satisfies this interface. */
@@ -146,6 +215,12 @@ export interface CliOptions {
   extensions: boolean;
   json: boolean;
   failFast: boolean;
+  /** Force re-scaffold even if file already has block structure. */
+  force: boolean;
+  /** Step-by-step mode — write each scaffold phase to a .steps/ directory. */
+  steps: boolean;
+  /** Ternary lint policy: strict (-1) | balanced (0) | growth (+1). Default: balanced. */
+  policy: LintPolicy;
   /** Create command: subtype for code generation. */
   subtype?: string;
   /** Create command: OmniCode key. */

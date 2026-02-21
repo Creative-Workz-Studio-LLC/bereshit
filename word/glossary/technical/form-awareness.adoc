@@ -1,0 +1,74 @@
+// #!omni data --adoc
+// ===========================================================================
+// METADATA BLOCK
+// ===========================================================================
+// :key: GLOSS-TECH-008
+// :term: form-awareness
+// :category: technical
+// :status: Active
+// :created: 2026-02-20
+// :authors: Nova Dawn, Seanje Lenox-Wise
+// :biblical_foundation: 1 Corinthians 12:18-20
+// :companion_data: form-awareness.jsonc
+// ===========================================================================
+
+// ===========================================================================
+// CONTENT BLOCK
+// ===========================================================================
+
+= Form Awareness
+
+*Validation & Generation Pattern*
+
+*Definition:* A system's ability to adjust validation and generation based on the declared form (module, library, executable, demo-test) — the pragma is the claim, the form schema is the contract.
+
+[quote, 1 Corinthians 12:18-20 KJV]
+____
+But now hath God set the members every one of them in the body, as it hath pleased him. And if they were all one member, where were the body? But now are they many members, yet but one body.
+____
+
+== How It Works
+
+. File declares its form: `// #!omni code --rust -module`
+. Schema defines what that form *requires*, what's *available*, and what's *reserved*
+. Linter validates against the form contract — not a generic standard
+. Transformer generates form-appropriate output
+
+== Form Contracts
+
+Each form defines three section categories:
+
+[cols="1,2,2"]
+|===
+|Category |Meaning |Example (module form)
+
+|*REQUIRED*
+|Must be present
+|Imports (every module depends on something)
+
+|*AVAILABLE*
+|Valid but optional
+|Constants, Statics, Core Types
+
+|*RESERVED*
+|Structurally prohibited
+|Modules (belong in lib.rs), Feature Gates (crate-level)
+|===
+
+== Why Forms Matter
+
+A module that declares `Modules` as a subsection isn't just wrong — it's *structurally confused*. The form contract catches this before it becomes a bug. Different forms have different shapes. A library isn't a module isn't an executable. Each has a purpose, and the structure follows the purpose.
+
+== Biblical Connection
+
+"God set the members every one of them in the body" — each member has its form and function. An eye doesn't try to be a hand. A module doesn't try to be a library. Form awareness is knowing what you are and operating within that calling.
+
+// ===========================================================================
+// CLOSING BLOCK
+// ===========================================================================
+
+'''
+
+*See also:* <<reserved-omission.adoc#,Reserved Omission>>, <<schema-template-linter-triangle.adoc#,Schema-Template-Linter Triangle>>
+
+*Data:* `form-awareness.jsonc`

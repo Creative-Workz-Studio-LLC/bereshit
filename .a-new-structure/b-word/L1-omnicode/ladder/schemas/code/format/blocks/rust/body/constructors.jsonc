@@ -1,0 +1,146 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-body-constructors",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 3: Constructors & Builders — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Constructors. How instances come into existence — new(), try_new(), from_*, builders. Extends the base structure at blocks/body/constructors.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/body/constructors.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "impl {TypeName} { pub fn new(...) -> Self }",
+                "description": "Infallible construction — valid by construction, no validation needed",
+                "patterns": [
+                    "impl Config {\n    pub fn new(path: PathBuf) -> Self {\n        Self { path, values: HashMap::new(), loaded: false }\n    }\n}"
+                ],
+                "visibility": "pub for library API, pub(crate) for module-internal"
+            },
+            {
+                "construct": "impl {TypeName} { pub fn try_new(...) -> Result<Self, Error> }",
+                "description": "Fallible construction with validation — returns error if inputs are invalid",
+                "patterns": [
+                    "impl Config {\n    pub fn try_new(path: PathBuf) -> Result<Self, ConfigError> {\n        if !path.exists() {\n            return Err(ConfigError::NotFound { path });\n        }\n        Ok(Self { path, values: HashMap::new(), loaded: false })\n    }\n}"
+                ],
+                "visibility": "pub for library API, pub(crate) for module-internal"
+            },
+            {
+                "construct": "impl {TypeName} { pub fn from_{source}(...) -> Result<Self, Error> }",
+                "description": "Named constructors from specific sources — explicit about what's being parsed/loaded",
+                "patterns": [
+                    "impl Config {\n    pub fn from_file(path: &Path) -> Result<Self, ConfigError> { ... }\n    pub fn from_str(toml: &str) -> Result<Self, ConfigError> { ... }\n    pub fn from_env() -> Result<Self, ConfigError> { ... }\n}"
+                ],
+                "visibility": "pub typically"
+            },
+            {
+                "construct": "builder pattern",
+                "description": "Multi-step construction for types with many optional parameters",
+                "patterns": [
+                    "pub struct ServerBuilder {\n    port: u16,\n    host: String,\n    workers: Option<usize>,\n}\n\nimpl ServerBuilder {\n    pub fn new(port: u16) -> Self { ... }\n    pub fn host(mut self, host: impl Into<String>) -> Self { ... }\n    pub fn workers(mut self, n: usize) -> Self { ... }\n    pub fn build(self) -> Result<Server, Error> { ... }\n}"
+                ],
+                "visibility": "pub"
+            },
+            {
+                "construct": "/// doc comments: when to use which constructor",
+                "description": "Each constructor documents what it validates and when to prefer it over alternatives",
+                "patterns": [
+                    "/// Creates a config from a file path.\n///\n/// Use `from_str` when you already have TOML content.\n/// Use `from_env` for environment-variable-based configuration."
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "simple new() that just assigns fields",
+                "reason": "Field-only assignment stays in SETUP S7 CoreTypes. Constructors section is for construction with LOGIC.",
+                "defer_to": "SETUP.CoreTypes",
+                "rust_signal": "fn\\s+new\\(.*\\)\\s*->\\s*Self\\s*\\{\\s*Self\\s*\\{.*\\}\\s*\\}"
+            },
+            {
+                "construct": "methods operating on existing instances (&self, &mut self)",
+                "reason": "Instance methods that operate on already-constructed values belong in BODY B4 CoreLogic",
+                "defer_to": "BODY.CoreLogic",
+                "rust_signal": "fn\\s+\\w+\\(&(mut\\s+)?self"
+            },
+            {
+                "construct": "query methods (&self -> read-only)",
+                "reason": "Read-only observation belongs in BODY B5 Queries",
+                "defer_to": "BODY.Queries",
+                "rust_signal": "fn\\s+\\w+\\(&self\\)\\s*->\\s*(?:&|Option<|bool)"
+            },
+            {
+                "construct": "test fixture constructors",
+                "reason": "Constructors for test fixtures go in #[cfg(test)] or test_utils, not production constructors",
+                "defer_to": "CLOSING.Cv or test_utils module",
+                "rust_signal": "#\\[cfg\\(test\\)\\]"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific Defer Signals
+        // ─────────────────────────────────────
+
+        "defer_signals": [
+            {
+                "pattern": "fn\\s+\\w+\\(&self\\)",
+                "to": "BODY.Queries or BODY.CoreLogic",
+                "confidence": "high",
+                "why": "Instance method — not construction"
+            },
+            {
+                "pattern": "fn\\s+\\w+\\(&mut\\s+self\\)",
+                "to": "BODY.CoreLogic",
+                "confidence": "high",
+                "why": "Mutable instance method — operation, not construction"
+            },
+            {
+                "pattern": "^(pub\\s+)?(struct|enum)\\s+(?!.*Builder)",
+                "to": "SETUP.CoreTypes",
+                "confidence": "medium",
+                "why": "Non-builder type definition — belongs in SETUP S7"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+
+        "scaffold": {
+            "empty_module": "impl {{type_name}} {\n    /// Creates a new {{type_name}}.\n    pub(crate) fn new(/* params */) -> Self {\n        todo!()\n    }\n\n    /// Creates a {{type_name}} from the given source.\n    pub(crate) fn try_new(/* params */) -> Result<Self, {{error_type}}> {\n        todo!()\n    }\n}",
+            "empty_library": "impl {{type_name}} {\n    /// Creates a new {{type_name}}.\n    pub fn new(/* params */) -> Self {\n        todo!()\n    }\n\n    /// Creates a {{type_name}} from the given source.\n    pub fn try_new(/* params */) -> Result<Self, {{error_type}}> {\n        todo!()\n    }\n}",
+            "comment_skeleton": "// impl {{type_name}} {\n//     pub fn new(/* params */) -> Self { todo!() }\n//     pub fn try_new(/* params */) -> Result<Self, Error> { todo!() }\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Constructors: the BIRTH of a type. Order by complexity: simple new() → fallible try_new() → named from_* → builder pattern. Every constructor documents what it validates and when to use it over alternatives.",
+    "_X5_scripture": "Psalm 139:14 — I will praise thee; for I am fearfully and wonderfully made."
+}

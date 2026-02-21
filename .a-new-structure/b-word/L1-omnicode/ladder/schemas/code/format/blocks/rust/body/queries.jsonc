@@ -1,0 +1,167 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-body-queries",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 5: Queries & Accessors — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Queries. Read-only observation — pure &self methods that reveal state. Extends the base structure at blocks/body/queries.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/body/queries.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "pub fn field(&self) -> &FieldType",
+                "description": "Field accessors — direct state exposure via reference",
+                "patterns": [
+                    "pub fn path(&self) -> &Path { &self.path }",
+                    "pub fn name(&self) -> &str { &self.name }",
+                    "pub fn config(&self) -> &Config { &self.config }"
+                ],
+                "visibility": "pub for library API, pub(crate) for module-internal"
+            },
+            {
+                "construct": "pub fn is_something(&self) -> bool",
+                "description": "Boolean state checks — predicate methods",
+                "patterns": [
+                    "pub fn is_empty(&self) -> bool { self.items.is_empty() }",
+                    "pub fn is_valid(&self) -> bool { self.validate().is_ok() }",
+                    "pub fn has_errors(&self) -> bool { !self.errors.is_empty() }"
+                ],
+                "visibility": "pub typically"
+            },
+            {
+                "construct": "pub fn count(&self) -> usize",
+                "description": "Computed scalar values from state",
+                "patterns": [
+                    "pub fn len(&self) -> usize { self.items.len() }",
+                    "pub fn error_count(&self) -> usize { self.errors.len() }"
+                ],
+                "visibility": "pub"
+            },
+            {
+                "construct": "pub fn get_something(&self, key: &K) -> Option<&V>",
+                "description": "Lookup operations — key-based access into collections",
+                "patterns": [
+                    "pub fn get(&self, key: &str) -> Option<&Value> { self.map.get(key) }",
+                    "pub fn find_by_name(&self, name: &str) -> Option<&Item> { ... }"
+                ],
+                "visibility": "pub"
+            },
+            {
+                "construct": "pub fn iter(&self) -> impl Iterator<Item = &T>",
+                "description": "Iteration over internal collections — lazy, non-consuming",
+                "patterns": [
+                    "pub fn iter(&self) -> impl Iterator<Item = &Item> { self.items.iter() }",
+                    "pub fn errors(&self) -> impl Iterator<Item = &Error> { self.errors.iter() }"
+                ],
+                "visibility": "pub"
+            },
+            {
+                "construct": "pub fn contains(&self, item: &T) -> bool",
+                "description": "Containment checks — membership testing",
+                "patterns": [
+                    "pub fn contains(&self, key: &str) -> bool { self.map.contains_key(key) }"
+                ],
+                "visibility": "pub"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "methods taking &mut self",
+                "reason": "If it mutates, it's CoreLogic (B4), not a query. Queries are pure observation.",
+                "defer_to": "BODY.CoreLogic",
+                "rust_signal": "fn\\s+\\w+\\(&mut\\s+self"
+            },
+            {
+                "construct": "methods with side effects (file I/O, network, logging)",
+                "reason": "Queries are pure — no observable effects beyond returning a value",
+                "defer_to": "BODY.CoreLogic",
+                "rust_signal": "File::|TcpStream|log::|println!"
+            },
+            {
+                "construct": "methods returning Result where error is operational",
+                "reason": "Queries that can fail due to operations (I/O, network) are CoreLogic, not queries",
+                "defer_to": "BODY.CoreLogic",
+                "rust_signal": "fn\\s+\\w+\\(&self.*->\\s*Result<.*io::Error|NetworkError"
+            },
+            {
+                "construct": "constructors (new, from_*)",
+                "reason": "Type creation belongs in BODY B3 Constructors",
+                "defer_to": "BODY.Constructors",
+                "rust_signal": "fn\\s+(new|from_|try_new|build)\\s*\\("
+            },
+            {
+                "construct": "Display/formatting implementations",
+                "reason": "Output formatting belongs in BODY B6 Output (library) or is RESERVED (module)",
+                "defer_to": "BODY.Output",
+                "rust_signal": "impl\\s+fmt::(Display|Debug)"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific Defer Signals
+        // ─────────────────────────────────────
+
+        "defer_signals": [
+            {
+                "pattern": "fn\\s+\\w+\\(&mut\\s+self\\)",
+                "to": "BODY.CoreLogic",
+                "confidence": "high",
+                "why": "&mut self means mutation — not a query"
+            },
+            {
+                "pattern": "fn\\s+(?:new|from_|try_new|build)\\s*\\(",
+                "to": "BODY.Constructors",
+                "confidence": "high",
+                "why": "Constructor naming convention"
+            },
+            {
+                "pattern": "fn\\s+(?:set_|update_|remove_|add_|push_|insert_)",
+                "to": "BODY.CoreLogic",
+                "confidence": "high",
+                "why": "Mutation naming convention — not a query"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+
+        "scaffold": {
+            "empty_module": "impl {{type_name}} {\n    /// TODO: Primary accessor.\n    pub(crate) fn value(&self) -> &{{field_type}} {\n        &self.value\n    }\n\n    /// Whether this {{type_name}} is in a valid state.\n    pub(crate) fn is_valid(&self) -> bool {\n        todo!()\n    }\n}",
+            "empty_library": "impl {{type_name}} {\n    /// TODO: Primary accessor.\n    pub fn value(&self) -> &{{field_type}} {\n        &self.value\n    }\n\n    /// Whether this {{type_name}} is in a valid state.\n    pub fn is_valid(&self) -> bool {\n        todo!()\n    }\n}",
+            "comment_skeleton": "// impl {{type_name}} {\n//     pub fn value(&self) -> &T { &self.value }\n//     pub fn is_valid(&self) -> bool { todo!() }\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Queries: the ADJECTIVES — they describe what IS without changing it. Pure &self methods. Calling any B5 method is always safe — it won't change anything. Command-Query Separation applied to section organization.",
+    "_X5_scripture": "Psalm 139:1 — O LORD, thou hast searched me, and known me."
+}

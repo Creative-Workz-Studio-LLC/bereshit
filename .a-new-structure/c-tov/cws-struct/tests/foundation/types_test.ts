@@ -20,10 +20,11 @@
 
 import { assertEquals, assert } from "jsr:@std/assert";
 import {
-  error, warn, info, summarize,
+  error, warn, info, summarize, policySeverity,
+  setGlobalPolicy, getGlobalPolicy,
 } from "../../lib/foundation/mod.ts";
 import type {
-  LintResult, FixSuggestion, LintSummary,
+  LintResult, FixSuggestion, LintSummary, Severity, LintPolicy,
 } from "../../lib/foundation/mod.ts";
 
 // ============================================================================
@@ -140,6 +141,69 @@ Deno.test("types/summarize: omits health when undefined", () => {
   assertEquals(s.health, undefined);
   // Verify health key doesn't exist in the object
   assert(!("health" in s), "Should not have health key");
+});
+
+// ---------------------------------------------------------------------------
+// policySeverity — ternary policy severity mapping
+// ---------------------------------------------------------------------------
+
+Deno.test("types/policySeverity: balanced is identity — no change", () => {
+  assertEquals(policySeverity("error", "balanced"), "error");
+  assertEquals(policySeverity("warn", "balanced"), "warn");
+  assertEquals(policySeverity("info", "balanced"), "info");
+});
+
+Deno.test("types/policySeverity: strict tightens one step", () => {
+  assertEquals(policySeverity("info", "strict"), "warn");
+  assertEquals(policySeverity("warn", "strict"), "error");
+  assertEquals(policySeverity("error", "strict"), "error");  // ceiling
+});
+
+Deno.test("types/policySeverity: growth loosens one step", () => {
+  assertEquals(policySeverity("error", "growth"), "warn");
+  assertEquals(policySeverity("warn", "growth"), "info");
+  assertEquals(policySeverity("info", "growth"), "info");  // floor
+});
+
+Deno.test("types/policySeverity: all 9 combinations", () => {
+  // Exhaustive truth table: 3 severities × 3 policies = 9 combinations
+  const expected: [Severity, LintPolicy, Severity][] = [
+    ["error", "strict",   "error"],
+    ["error", "balanced", "error"],
+    ["error", "growth",   "warn"],
+    ["warn",  "strict",   "error"],
+    ["warn",  "balanced", "warn"],
+    ["warn",  "growth",   "info"],
+    ["info",  "strict",   "warn"],
+    ["info",  "balanced", "info"],
+    ["info",  "growth",   "info"],
+  ];
+  for (const [base, policy, result] of expected) {
+    assertEquals(policySeverity(base, policy), result,
+      `policySeverity("${base}", "${policy}") should be "${result}"`);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// setGlobalPolicy / getGlobalPolicy — session-wide state
+// ---------------------------------------------------------------------------
+
+Deno.test("types/globalPolicy: defaults to balanced", () => {
+  // Reset to known state
+  setGlobalPolicy("balanced");
+  assertEquals(getGlobalPolicy(), "balanced");
+});
+
+Deno.test("types/globalPolicy: set and get strict", () => {
+  setGlobalPolicy("strict");
+  assertEquals(getGlobalPolicy(), "strict");
+  setGlobalPolicy("balanced");  // cleanup
+});
+
+Deno.test("types/globalPolicy: set and get growth", () => {
+  setGlobalPolicy("growth");
+  assertEquals(getGlobalPolicy(), "growth");
+  setGlobalPolicy("balanced");  // cleanup
 });
 
 // ============================================================================

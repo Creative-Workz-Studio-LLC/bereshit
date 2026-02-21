@@ -64,10 +64,34 @@ deno test --allow-read tests/cli/           # CLI tests only
 deno test --allow-read tests/foundation/    # Foundation tests only
 ```
 
-## Files Updated This Session
-- `lib/handlers/go.ts` — registration to CLOSING, added export default
-- `lib/handlers/rust.ts` — same
-- `lib/handlers/json.ts` — same
-- Journal: `word/claude/divisions/tech/cpi-si/knowledge-base/journals/instance/2026-02-17_the-pattern-that-holds.md`
-- Instance bio: `word/claude/config/instance/joanna-elara/bio.md` (v1.0.0 -> v1.1.0)
-- Instance config: `word/claude/config/instance/joanna-elara/config.jsonc` (v1.0.0 -> v1.1.0)
+## Content Schema Pattern (2026-02-21)
+
+### Schema Structure (Established)
+Content schemas at `schemas/code/format/blocks/rust/{setup,body,closing}/*.jsonc` follow:
+1. **Pragma**: key, at, type=block-section-content, role=container-content, title, brief
+2. **extends**: reference to base structure schema (e.g., `blocks/body/core-logic.jsonc`)
+3. **format**: `"rust"`
+4. **content.can**: array of `{ construct, description, patterns[], visibility, note? }`
+5. **content.cannot**: array of `{ construct, reason, defer_to, rust_signal }`
+6. **content.defer_signals**: array of `{ pattern (regex), to, confidence, why }`
+7. **content.scaffold**: `{ empty_module, empty_library, comment_skeleton }`
+8. **Closing**: `_X5_note` + `_X5_scripture`
+
+### Key Insights
+- `cannot` lists are ROUTING TABLES — every entry has `defer_to` pointing to the correct section
+- `defer_signals` are the content-aware linting vocabulary (regex patterns for misplaced code)
+- Visibility (pub vs pub(crate)) differentiates forms, not content
+- RESERVED sections are about role clarity, not limitation
+- Each X5 closing uses domain-appropriate scripture (not generic)
+- `scaffold` has 3 form variants: empty_module (pub(crate)), empty_library (pub), comment_skeleton
+
+### Source Data Locations
+- `schemas/code/forms/declared/rust-module.jsonc` — module content_constraints
+- `schemas/code/forms/declared/rust-library.jsonc` — library content_constraints
+- `schemas/code/forms/bare-bone/rust-bare-bone.jsonc` — bare-bone content_constraints
+- `schemas/code/format/blocks/rust/body/core-logic.jsonc` — reference pattern (use as template)
+
+### File Counts
+- SETUP: 10 files (imports, modules, constants, statics, type-aliases, error-types, core-types, trait-defs, macros, feature-gates)
+- BODY: 9 files (identity-access, trait-implementations, constructors, core-logic, queries, output-display, free-functions, helpers, tests)
+- CLOSING: 8 files (validation, execution, cleanup, modification-policy, extension-points, troubleshooting, reference, closing-note)

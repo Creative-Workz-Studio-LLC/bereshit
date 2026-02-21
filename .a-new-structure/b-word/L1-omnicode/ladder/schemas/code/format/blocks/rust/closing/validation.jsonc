@@ -1,0 +1,143 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-closing-validation",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section Cv: Validation (Tests) — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Cv (Validation/Tests). Comprehensive tests organized by BODY section. Extends the base structure at blocks/closing/validation.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/closing/validation.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "#[cfg(test)] mod tests { use super::*; ... }",
+                "description": "Exactly one test module — white-box tests with full access to parent module",
+                "patterns": [
+                    "#[cfg(test)]\nmod tests {\n    use super::*;\n\n    // -- B1 Identity Access ----\n    #[test]\n    fn test_pragma_returns_slice() { ... }\n}"
+                ],
+                "visibility": "N/A — test module"
+            },
+            {
+                "construct": "#[test] fn test_name() { ... }",
+                "description": "Individual test functions — one logical assertion per test",
+                "patterns": [
+                    "#[test]\nfn test_new_creates_valid_instance() {\n    let config = Config::new(PathBuf::from(\"test.toml\"));\n    assert!(!config.path().as_os_str().is_empty());\n}",
+                    "#[test]\nfn test_try_new_rejects_invalid_input() {\n    let result = Config::try_new(PathBuf::from(\"\"));\n    assert!(result.is_err());\n}"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// -- B{N} Section Name ---- organized by BODY section",
+                "description": "Test groups organized by the BODY section they verify",
+                "patterns": [
+                    "// -- B1 Identity Access ----",
+                    "// -- B2 Trait Implementations ----",
+                    "// -- B3 Constructors ----",
+                    "// -- B4 Core Logic ----",
+                    "// -- B5 Queries ----",
+                    "// -- B6 Output ---- (library only, skip for module)",
+                    "// -- B7 Free Functions ----"
+                ],
+                "note": "Skip B6 header for module form (B6 is reserved — no output to test)."
+            },
+            {
+                "construct": "assert!(), assert_eq!(), assert_ne!(), assert!(matches!())",
+                "description": "Standard assertion macros",
+                "patterns": [
+                    "assert_eq!(config.path(), Path::new(\"test.toml\"));",
+                    "assert!(result.is_ok());",
+                    "assert!(matches!(err, ConfigError::NotFound { .. }));"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "#[should_panic(expected = \"msg\")]",
+                "description": "Panic verification for functions that should panic on bad input",
+                "patterns": [
+                    "#[test]\n#[should_panic(expected = \"poisoned\")]\nfn test_poisoned_lock_panics() { ... }"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "integration tests",
+                "reason": "Integration tests go in tests/ directory (separate compilation unit), not inline",
+                "defer_to": "tests/ directory",
+                "rust_signal": "N/A — architecture decision"
+            },
+            {
+                "construct": "shared mutable state between tests",
+                "reason": "Tests run in parallel by default. Shared mutable state causes race conditions.",
+                "defer_to": "N/A — use fresh state per test",
+                "rust_signal": "static\\s+mut|lazy_static.*Mutex"
+            },
+            {
+                "construct": "tests with ordering dependencies",
+                "reason": "Test execution order is not guaranteed. Each test must be self-contained.",
+                "defer_to": "N/A — make tests independent",
+                "rust_signal": "N/A"
+            },
+            {
+                "construct": "B6 Output tests in module form",
+                "reason": "B6 is RESERVED in module form — no output to test",
+                "defer_to": "N/A — module form doesn't have output",
+                "rust_signal": "N/A"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific Defer Signals
+        // ─────────────────────────────────────
+
+        "defer_signals": [
+            {
+                "pattern": "^(pub\\s+)?fn\\s+(?!test_)\\w+\\(",
+                "to": "BODY section (based on function signature)",
+                "confidence": "medium",
+                "why": "Non-test function in Cv — likely production code that wandered into tests"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+
+        "scaffold": {
+            "empty_module": "#[cfg(test)]\nmod tests {\n    use super::*;\n\n    // -- B1 Identity Access ----\n\n    #[test]\n    fn test_pragma_returns_slice() {\n        let p = pragma();\n        assert!(!p.is_empty());\n    }\n\n    // -- B2 Trait Implementations ----\n\n    // -- B3 Constructors ----\n\n    // -- B4 Core Logic ----\n\n    // -- B5 Queries ----\n\n    // -- B7 Free Functions ----\n}",
+            "empty_library": "#[cfg(test)]\nmod tests {\n    use super::*;\n\n    // -- B1 Identity Access ----\n\n    #[test]\n    fn test_pragma_returns_slice() {\n        let p = pragma();\n        assert!(!p.is_empty());\n    }\n\n    // -- B2 Trait Implementations ----\n\n    // -- B3 Constructors ----\n\n    // -- B4 Core Logic ----\n\n    // -- B5 Queries ----\n\n    // -- B6 Output ----\n\n    // -- B7 Free Functions ----\n}",
+            "comment_skeleton": "// #[cfg(test)]\n// mod tests {\n//     use super::*;\n//     #[test]\n//     fn test_placeholder() { assert!(true); }\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Cv (Validation): comprehensive white-box tests organized by BODY section. use super::* for full access. One test module, multiple test functions. Tests are the code's testimony — they prove the logic holds under scrutiny.",
+    "_X5_scripture": "Proverbs 17:3 — The fining pot is for silver, and the furnace for gold: but the LORD trieth the hearts."
+}

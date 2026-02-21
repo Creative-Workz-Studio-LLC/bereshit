@@ -1,0 +1,870 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-manifest",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "schema-manifest",
+    "_P2_role": "engine-root",
+    "_P5_title": "Block Section Engine — Two-Sided Schema Manifest",
+    "_P5_brief": "The schema for the schema engine. Defines the two-sided architecture: STRUCTURE (format-agnostic shapes) and CONTENT (language-specific fills). Like Scratch blocks: shape defines where things snap together, fill defines what each slot contains. This manifest IS the engine's source of truth.",
+
+    // ===================================================================
+    // METADATA BLOCK [METADATA]
+    // ===================================================================
+
+    "_M1_identity": {
+        "file": "manifest.jsonc",
+        "key": "B-L1-schemas-blocks-manifest",
+        "title": "Block Section Engine Manifest",
+        "type": "Data (Schema Manifest)",
+        "component": "Ladder — Schema Engine",
+        "role": "Root manifest defining all sections, composition rules, and the structure/content separation"
+    },
+
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-21",
+        "updated": "2026-02-21"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Ezra Matthan (CPI-SI)"
+    },
+
+    "_M4_grounding": {
+        "scripture": "Genesis 1:4 — And God divided the light from the darkness.",
+        "principle": "Separation before filling. God separated light from darkness (structure) before filling each domain with life (content). The schema engine mirrors this: define the SHAPE of each section (what belongs, what doesn't, where it connects) independently of the FILL (how Rust, Go, or C express that shape). Structure is the skeleton. Content is the flesh. Neither works alone. Together they produce a living file."
+    },
+
+    "_M5_dependencies": {
+        "requires": [
+            "code/base/base-4block-schema.jsonc — block skeleton, form registry, health scoring",
+            "code/format/{lang}-4block-schema.jsonc — language-specific syntax rules"
+        ],
+        "consumers": [
+            "c-tov/cws-struct/lib/handlers/rust.ts — Rust linter reads structure for placement validation",
+            "c-tov/cws-struct/lib/handlers/go.ts — Go linter reads structure for placement validation",
+            "code/format/blocks/{lang}/{block}/{section}.jsonc — content schemas extend structure schemas",
+            "code/forms/{type}/{lang}-{form}.jsonc — forms compose structure + content into complete files"
+        ]
+    },
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    // ─────────────────────────────────────
+    // 1. THE TWO-SIDED ARCHITECTURE
+    // ─────────────────────────────────────
+    //
+    // Like Scratch: blocks have SHAPE (where they snap)
+    // and FILL (what goes inside). Separate concerns.
+    //
+    // Structure defines: position, label, can/cannot/defer,
+    //   form availability, header generation rules.
+    //   → Format-agnostic. A CoreLogic section is position 4
+    //     whether Rust, Go, or C.
+    //
+    // Content defines: language constructs, syntax patterns,
+    //   defer signals (regex), scaffold templates.
+    //   → Format-specific. Rust CoreLogic uses impl blocks;
+    //     Go uses receiver methods; C uses function pointers.
+    //
+    // Composition: Form says WHICH sections. Structure says
+    //   WHAT each section IS. Content says HOW each section
+    //   LOOKS in this language. Engine merges all three.
+
+    "architecture": {
+
+        "principle": "Separate structure from content — like Scratch blocks",
+
+        "sides": {
+            "structure": {
+                "description": "Format-agnostic block SHAPES. What a section IS conceptually — position, label, contracts (can/cannot/defer), form availability, header generation. The skeleton.",
+                "location": "blocks/{block}/{section}.jsonc",
+                "example": "blocks/body/core-logic.jsonc",
+                "role_key": "container-structure",
+                "answers": "WHAT belongs here? WHERE does it snap? WHAT can't go here?"
+            },
+            "content": {
+                "description": "Language-specific block FILLS. How a section manifests in a particular language — syntax patterns, constructs, regex signals, scaffold templates. The flesh.",
+                "location": "format/blocks/{lang}/{block}/{section}.jsonc",
+                "example": "format/blocks/rust/body/core-logic.jsonc",
+                "role_key": "container-content",
+                "answers": "HOW does Rust express this? WHAT syntax patterns match? WHAT does scaffolded code look like?"
+            }
+        },
+
+        "composition": {
+            "description": "Forms compose structure + content into a real file specification.",
+            "formula": "Form(sections) + Structure(shapes) + Content(fills) = File Spec",
+            "location": "forms/{type}/{lang}-{form}.jsonc",
+            "example": "forms/declared/rust-module.jsonc",
+            "role_key": "form-constraint",
+            "answers": "WHICH sections are active? In WHAT order? With WHAT status (required/available/reserved)?"
+        },
+
+        "extends_relationship": {
+            "description": "Content schemas extend structure schemas. The 'extends' field in content points to the structure it fills.",
+            "mechanism": "Content file has 'extends': 'blocks/{block}/{section}.jsonc' and 'format': '{lang}'",
+            "contract": "Content MUST NOT contradict structure's 'can' list (it can only add language-specific detail). Content MUST NOT weaken structure's 'cannot' list (it can only add language-specific prohibitions). Content adds 'defer_signals' (regex patterns) and 'scaffold' (templates) that structure doesn't have.",
+            "example": {
+                "structure_says": "CoreLogic CAN contain 'primary operations' (concept)",
+                "content_adds": "Rust expresses this as 'impl TypeName { pub(crate) fn method(&self, ...) -> ... }' (construct)"
+            }
+        },
+
+        "biblical_parallel": {
+            "genesis_1": "Days 1-3: SEPARATION (structure). Light/dark, waters/sky, land/sea — boundaries that define domains. Days 4-6: FILLING (content). Stars fill the sky, fish fill the sea, animals fill the land. Structure then content. Shape then fill. Badal then bara.",
+            "exodus_25_40": "The PATTERN shown on the mountain (structure) and the MATERIALS used to build (content) are both required. Neither the blueprint nor the gold alone makes the tabernacle."
+        }
+    },
+
+    // ─────────────────────────────────────
+    // 2. ENGINE OPERATIONS
+    // ─────────────────────────────────────
+    //
+    // How the linter and transformer USE this manifest.
+
+    "engine": {
+
+        "linter_reads": {
+            "description": "How cws-struct reads the schema engine to validate placement",
+            "flow": [
+                "1. Parse file → identify format (rust/go/makefile) and form (library/module/executable)",
+                "2. Load form schema → get list of active/reserved sections per block",
+                "3. For each code construct found in the file:",
+                "   a. Load structure schema for the section it's in → check 'cannot' list",
+                "   b. Load content schema for the format → check 'cannot' constructs and 'defer_signals'",
+                "   c. If construct matches a 'cannot', emit placement error with defer_to",
+                "   d. If construct matches a 'defer_signal', emit placement warning with suggested section",
+                "4. Verify section ordering matches form's declared ordering principle",
+                "5. Verify completeness: active + reserved = form total (from structure)"
+            ],
+            "reads_from": {
+                "manifest": "Section catalog (positions, tags, blocks)",
+                "structure": "can/cannot/defer contracts per section",
+                "content": "Language-specific cannot constructs and defer_signals (regex)",
+                "form": "Active/reserved section lists, ordering principle"
+            }
+        },
+
+        "transformer_reads": {
+            "description": "How a future transformer reads the schema engine to generate code",
+            "flow": [
+                "1. User requests scaffold → specify format and form",
+                "2. Load form schema → get ordered list of active sections",
+                "3. For each active section:",
+                "   a. Load structure schema → get header generation rules (section_comment, bracket_format, separator_style)",
+                "   b. Load content schema → get scaffold templates for the form variant",
+                "   c. Emit: separator + section_comment + bracket + scaffold template",
+                "4. Emit Reserved Omission block listing reserved sections",
+                "5. Emit CLOSING documentation sections (X1-X5) from structure"
+            ],
+            "reads_from": {
+                "manifest": "Section catalog (positions, labels, overview text for headers)",
+                "structure": "Header generation rules, form availability, RO labels",
+                "content": "Scaffold templates per form variant (empty_module, empty_library, etc.)",
+                "form": "Which sections to generate, in what order"
+            }
+        }
+    },
+
+    // ─────────────────────────────────────
+    // 3. SECTION CATALOG
+    // ─────────────────────────────────────
+    //
+    // EVERY section across all three blocks.
+    // This is the master list. Structure schemas
+    // elaborate each one. Content schemas fill
+    // each one per language.
+
+    "sections": {
+
+        // ═════════════════════════════════════
+        // SETUP — 10 sections
+        // ═════════════════════════════════════
+        //
+        // SETUP makes things EXIST.
+        // Ordering: dependency chain — each section
+        // can reference only what came before it.
+
+        "SETUP": {
+            "block": "SETUP",
+            "count": 10,
+            "ordering_principle": "dependency_chain",
+            "principle": "SETUP makes things EXIST. BODY makes things HAPPEN.",
+
+            "items": [
+                {
+                    "position": 1,
+                    "tag": "Imports",
+                    "label": "Imports",
+                    "overview": "What this file depends on",
+                    "structure_schema": "blocks/setup/imports.jsonc",
+                    "bare_bone_status": "required",
+                    "dependency_chain": "Imports come first — everything else may reference imported items"
+                },
+                {
+                    "position": 2,
+                    "tag": "Modules",
+                    "label": "Modules",
+                    "overview": "Submodule declarations",
+                    "structure_schema": "blocks/setup/modules.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "executable", "demo-test"],
+                    "reserved_in": ["module", "bare-bone"],
+                    "dependency_chain": "Module tree defines structure before content declarations"
+                },
+                {
+                    "position": 3,
+                    "tag": "Constants",
+                    "label": "Constants",
+                    "overview": "Compile-time fixed values",
+                    "structure_schema": "blocks/setup/constants.jsonc",
+                    "bare_bone_status": "required",
+                    "dependency_chain": "Constants are available to all subsequent sections"
+                },
+                {
+                    "position": 4,
+                    "tag": "Statics",
+                    "label": "Statics",
+                    "overview": "Runtime-initialized fixed values",
+                    "structure_schema": "blocks/setup/statics.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "executable", "module", "demo-test"],
+                    "dependency_chain": "Statics may reference constants and imported items"
+                },
+                {
+                    "position": 5,
+                    "tag": "TypeAliases",
+                    "label": "Type Aliases",
+                    "overview": "Shorthand for complex signatures",
+                    "structure_schema": "blocks/setup/type-aliases.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "executable", "module", "demo-test"],
+                    "dependency_chain": "Aliases reference imported types and constants"
+                },
+                {
+                    "position": 6,
+                    "tag": "ErrorTypes",
+                    "label": "Error Types",
+                    "overview": "enum + Display + Error + From impls",
+                    "structure_schema": "blocks/setup/error-types.jsonc",
+                    "bare_bone_status": "required",
+                    "dependency_chain": "Error types reference imported types, constants, and aliases"
+                },
+                {
+                    "position": 7,
+                    "tag": "CoreTypes",
+                    "label": "Core Types",
+                    "overview": "struct/enum + derives + trait impls",
+                    "structure_schema": "blocks/setup/core-types.jsonc",
+                    "bare_bone_status": "required",
+                    "dependency_chain": "Core types reference error types, aliases, imports"
+                },
+                {
+                    "position": 8,
+                    "tag": "TraitDefs",
+                    "label": "Trait Defs",
+                    "overview": "Behavioral contracts",
+                    "structure_schema": "blocks/setup/trait-defs.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "module", "demo-test"],
+                    "dependency_chain": "Traits reference core types and error types"
+                },
+                {
+                    "position": 9,
+                    "tag": "Macros",
+                    "label": "Macros",
+                    "overview": "Macro definitions",
+                    "structure_schema": "blocks/setup/macros.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "demo-test"],
+                    "reserved_in": ["module"],
+                    "dependency_chain": "Macros may reference all prior declarations"
+                },
+                {
+                    "position": 10,
+                    "tag": "FeatureGates",
+                    "label": "Feature Gates",
+                    "overview": "Feature gate configuration",
+                    "structure_schema": "blocks/setup/feature-gates.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "executable", "demo-test"],
+                    "reserved_in": ["module"],
+                    "dependency_chain": "Feature gates wrap any prior declaration — must come last"
+                }
+            ]
+        },
+
+        // ═════════════════════════════════════
+        // BODY — 17 sections
+        // ═════════════════════════════════════
+        //
+        // BODY makes things HAPPEN.
+        // Ordering varies by form:
+        //   library/module: type_lifecycle (B1-B7)
+        //   executable: execution_flow (B1-B3)
+        //   demo-test: concern_coverage (B1-B9)
+
+        "BODY": {
+            "block": "BODY",
+            "count": 17,
+            "ordering_principle": "varies_by_form",
+            "principle": "BODY makes things HAPPEN. SETUP is the schema; BODY is the queries.",
+
+            "ordering_by_form": {
+                "library":    { "principle": "type_lifecycle",    "sequence": ["B1", "B2", "B3", "B4", "B5", "B6", "B7"] },
+                "module":     { "principle": "type_lifecycle",    "sequence": ["B1", "B2", "B3", "B4", "B5", "B7"], "note": "B6 reserved" },
+                "executable": { "principle": "execution_flow",    "sequence": ["B1", "B8", "B4"], "note": "Renamed: B8=Helpers, B4=CoreLogic as run()" },
+                "demo-test":  { "principle": "concern_coverage",  "sequence": ["B9", "B10", "B11", "B12", "B13", "B14", "B15", "B16", "B17"] },
+                "bare-bone":  { "principle": "foundation_minimum", "sequence": ["B1", "B4", "B7"], "note": "Unpositioned in bare-bone" }
+            },
+
+            "items": [
+                {
+                    "position": 1,
+                    "tag": "IdentityAccess",
+                    "label": "Identity Access",
+                    "overview": "OmniCode static accessor functions",
+                    "structure_schema": "blocks/body/identity-access.jsonc",
+                    "bare_bone_status": "required",
+                    "note": "Present in ALL forms — every file with identity statics exposes these"
+                },
+                {
+                    "position": 2,
+                    "tag": "TraitImplementations",
+                    "label": "Trait Implementations",
+                    "overview": "Fulfilling contracts from SETUP",
+                    "structure_schema": "blocks/body/trait-implementations.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "module"]
+                },
+                {
+                    "position": 3,
+                    "tag": "Constructors",
+                    "label": "Constructors & Builders",
+                    "overview": "new(), builders, typestate transitions",
+                    "structure_schema": "blocks/body/constructors.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "module"]
+                },
+                {
+                    "position": 4,
+                    "tag": "CoreLogic",
+                    "label": "Core Logic",
+                    "overview": "Primary operations, state transforms",
+                    "structure_schema": "blocks/body/core-logic.jsonc",
+                    "bare_bone_status": "required",
+                    "note": "The engine room. Present in ALL forms."
+                },
+                {
+                    "position": 5,
+                    "tag": "Queries",
+                    "label": "Queries & Accessors",
+                    "overview": "Read-only &self methods",
+                    "structure_schema": "blocks/body/queries.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "module"]
+                },
+                {
+                    "position": 6,
+                    "tag": "OutputDisplay",
+                    "label": "Output & Display",
+                    "overview": "Formatting and display output",
+                    "structure_schema": "blocks/body/output-display.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library"],
+                    "reserved_in": ["module"],
+                    "note": "Modules return data; the crate output layer formats it"
+                },
+                {
+                    "position": 7,
+                    "tag": "FreeFunctions",
+                    "label": "Free Functions",
+                    "overview": "Module-level public utilities",
+                    "structure_schema": "blocks/body/free-functions.jsonc",
+                    "bare_bone_status": "required",
+                    "note": "Not attached to any type. Top-level API."
+                },
+                {
+                    "position": 8,
+                    "tag": "Helpers",
+                    "label": "Helpers",
+                    "overview": "Executable helpers (run support)",
+                    "structure_schema": "blocks/body/helpers.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["executable"],
+                    "note": "Argument parsing, config loading, output formatting for executables"
+                },
+                {
+                    "position": 9,
+                    "tag": "ConstructorTests",
+                    "label": "Constructor Tests",
+                    "overview": "Verify construction creates correct default state",
+                    "structure_schema": "blocks/body/tests.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["demo-test"]
+                },
+                {
+                    "position": 10,
+                    "tag": "BuilderTests",
+                    "label": "Builder Tests",
+                    "overview": "Verify builder/configuration methods",
+                    "structure_schema": "blocks/body/tests.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["demo-test"]
+                },
+                {
+                    "position": 11,
+                    "tag": "TransitionTests",
+                    "label": "Transition Tests",
+                    "overview": "Verify state transitions and validation logic",
+                    "structure_schema": "blocks/body/tests.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["demo-test"]
+                },
+                {
+                    "position": 12,
+                    "tag": "QueryTests",
+                    "label": "Query Tests",
+                    "overview": "Verify post-transition accessors return correct values",
+                    "structure_schema": "blocks/body/tests.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["demo-test"]
+                },
+                {
+                    "position": 13,
+                    "tag": "IdentityTests",
+                    "label": "Identity Tests",
+                    "overview": "Verify PRAGMA/METADATA static data integrity",
+                    "structure_schema": "blocks/body/tests.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["demo-test"]
+                },
+                {
+                    "position": 14,
+                    "tag": "ErrorTests",
+                    "label": "Error Tests",
+                    "overview": "Verify error formatting and error conditions",
+                    "structure_schema": "blocks/body/tests.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["demo-test"]
+                },
+                {
+                    "position": 15,
+                    "tag": "EdgeCaseTests",
+                    "label": "Edge Case Tests",
+                    "overview": "Boundary conditions — Unicode, empty, long, special chars",
+                    "structure_schema": "blocks/body/tests.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["demo-test"]
+                },
+                {
+                    "position": 16,
+                    "tag": "TableDrivenTests",
+                    "label": "Table-Driven Tests",
+                    "overview": "Systematic input/output validation using test case collections",
+                    "structure_schema": "blocks/body/tests.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["demo-test"]
+                },
+                {
+                    "position": 17,
+                    "tag": "IntegrationTests",
+                    "label": "Integration Tests",
+                    "overview": "End-to-end workflows — full construct-configure-transition-query",
+                    "structure_schema": "blocks/body/tests.jsonc",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["demo-test"]
+                }
+            ]
+        },
+
+        // ═════════════════════════════════════
+        // CLOSING — 8 sections (3 code + 5 doc)
+        // ═════════════════════════════════════
+        //
+        // CLOSING proves the code works and
+        // guides the humans who maintain it.
+        // Code zones precede documentation.
+
+        "CLOSING": {
+            "block": "CLOSING",
+            "count": 8,
+            "ordering_principle": "prove_then_document",
+            "principle": "CLOSING is the accountability block. Tests prove claims. Docs guide maintainers.",
+
+            "canonical_order": ["Cv", "Ce", "Cc", "X1", "X2", "X3", "X4", "X5"],
+            "note": "X6 (Template Guide) is template-only — removed during instantiation. Not counted in the 8 because it doesn't appear in derived files.",
+
+            "zones": {
+                "code": {
+                    "description": "Actual executable code — always precede documentation",
+                    "sections": ["Cv", "Ce", "Cc"]
+                },
+                "documentation": {
+                    "description": "Guidance for humans — always follow code zones",
+                    "sections": ["X1", "X2", "X3", "X4", "X5"]
+                }
+            },
+
+            "items": [
+                {
+                    "position": "Cv",
+                    "tag": "Validation",
+                    "label": "Closing Validation",
+                    "overview": "Tests and correctness checks",
+                    "structure_schema": "blocks/closing/validation.jsonc",
+                    "zone": "code",
+                    "bare_bone_status": "required",
+                    "note": "Tests organized by BODY section — proves every claim"
+                },
+                {
+                    "position": "Ce",
+                    "tag": "Execution",
+                    "label": "Closing Execution",
+                    "overview": "Entry point or absence",
+                    "structure_schema": "blocks/closing/execution.jsonc",
+                    "zone": "code",
+                    "bare_bone_status": "required",
+                    "note": "main() for executables, empty for libraries/modules"
+                },
+                {
+                    "position": "Cc",
+                    "tag": "Cleanup",
+                    "label": "Closing Cleanup",
+                    "overview": "Resource teardown",
+                    "structure_schema": "blocks/closing/cleanup.jsonc",
+                    "zone": "code",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "executable", "module", "demo-test"]
+                },
+                {
+                    "position": "X1",
+                    "tag": "ModificationPolicy",
+                    "label": "Modification Policy",
+                    "overview": "What to never/carefully/safely change",
+                    "structure_schema": "blocks/closing/modification-policy.jsonc",
+                    "zone": "documentation",
+                    "bare_bone_status": "required",
+                    "fields": ["never", "careful", "safe", "scripture"]
+                },
+                {
+                    "position": "X2",
+                    "tag": "ExtensionPoints",
+                    "label": "Extension Points",
+                    "overview": "Where and how to extend",
+                    "structure_schema": "blocks/closing/extension-points.jsonc",
+                    "zone": "documentation",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "executable", "module", "demo-test"]
+                },
+                {
+                    "position": "X3",
+                    "tag": "Troubleshooting",
+                    "label": "Troubleshooting",
+                    "overview": "Common issues and solutions",
+                    "structure_schema": "blocks/closing/troubleshooting.jsonc",
+                    "zone": "documentation",
+                    "bare_bone_status": "reserved",
+                    "promoted_by": ["library", "executable", "module", "demo-test"]
+                },
+                {
+                    "position": "X4",
+                    "tag": "Reference",
+                    "label": "Reference",
+                    "overview": "Related files and commands",
+                    "structure_schema": "blocks/closing/reference.jsonc",
+                    "zone": "documentation",
+                    "bare_bone_status": "required",
+                    "fields": ["dependencies", "dependents", "template", "schema", "validation"]
+                },
+                {
+                    "position": "X5",
+                    "tag": "ClosingNote",
+                    "label": "Closing Note",
+                    "overview": "Anchoring scripture and summary",
+                    "structure_schema": "blocks/closing/closing-note.jsonc",
+                    "zone": "documentation",
+                    "bare_bone_status": "required",
+                    "fields": ["note", "scripture", "anchor"]
+                }
+            ]
+        }
+    },
+
+    // ─────────────────────────────────────
+    // 4. COMPOSITION RULES
+    // ─────────────────────────────────────
+    //
+    // How forms, structure, and content compose
+    // into a complete file specification.
+
+    "composition": {
+
+        "three_layers": {
+            "structure": {
+                "provides": ["position", "tag", "label", "overview", "can", "cannot", "defer", "forms", "ro", "header"],
+                "format_agnostic": true,
+                "one_per_section": true,
+                "location": "blocks/{block}/{section}.jsonc"
+            },
+            "content": {
+                "provides": ["can (constructs)", "cannot (constructs)", "defer_signals (regex)", "scaffold (templates)"],
+                "format_specific": true,
+                "one_per_language_per_section": true,
+                "location": "format/blocks/{lang}/{block}/{section}.jsonc",
+                "extends": "blocks/{block}/{section}.jsonc"
+            },
+            "form": {
+                "provides": ["active sections", "reserved sections", "ordering principle", "status per section", "content_constraints"],
+                "format_specific": true,
+                "one_per_language_per_form": true,
+                "location": "forms/{type}/{lang}-{form}.jsonc",
+                "references_both": "structure (for section catalog) and content (for scaffold)"
+            }
+        },
+
+        "resolution_order": {
+            "description": "When the engine needs to validate or scaffold a section, it resolves in this order",
+            "steps": [
+                "1. FORM — Which sections are active? What ordering? What status?",
+                "2. STRUCTURE — For each active section: what are the abstract can/cannot/defer contracts?",
+                "3. CONTENT — For this language: what constructs, signals, and templates apply?",
+                "4. MERGE — Structure contracts + Content specifics = complete validation/scaffold rules"
+            ]
+        },
+
+        "merge_rules": {
+            "can": "Content 'can' items map to structure 'can' concepts. Content adds language-specific detail.",
+            "cannot": "Content 'cannot' inherits all structure 'cannot' + adds language-specific prohibitions. Union, not intersection.",
+            "defer": "Content 'defer_signals' are regex implementations of structure 'defer' entries. Content signals add confidence and regex patterns.",
+            "scaffold": "Content-only. Structure has no scaffold — it doesn't know what language to emit.",
+            "header": "Structure provides the template: '{position}. {label}', bracket format, separator style. Content doesn't override headers.",
+            "forms": "Structure declares which forms the section is available in. Content doesn't change form availability.",
+            "ro": "Structure provides Reserved Omission labels. Content doesn't change RO."
+        },
+
+        "validation_contract": {
+            "description": "The contract that composition must satisfy",
+            "rules": [
+                "Every active section in a form MUST have a structure schema",
+                "Every active section in a form SHOULD have a content schema for the form's language",
+                "Content 'extends' MUST point to the correct structure schema",
+                "Content 'format' MUST match the language directory it's in",
+                "Content MUST NOT contradict structure 'can' (only elaborate)",
+                "Content MUST NOT weaken structure 'cannot' (only strengthen)",
+                "Form active + reserved MUST equal the block's total section count"
+            ]
+        }
+    },
+
+    // ─────────────────────────────────────
+    // 5. DIRECTORY LAYOUT
+    // ─────────────────────────────────────
+
+    "layout": {
+        "root": "schemas/code/",
+
+        "structure_tree": {
+            "description": "One file per section, organized by block",
+            "pattern": "blocks/{block}/{section}.jsonc",
+            "directories": {
+                "blocks/setup/": "10 structure schemas (S1-S10)",
+                "blocks/body/": "17 structure schemas (B1-B17)",
+                "blocks/closing/": "8 structure schemas (Cv, Ce, Cc, X1-X5)"
+            },
+            "total_files": 27,
+            "note": "10 SETUP + 9 BODY (tests consolidated into one file) + 8 CLOSING. Plus this manifest at blocks/manifest.jsonc."
+        },
+
+        "content_tree": {
+            "description": "One file per language per section, organized by language then block",
+            "pattern": "format/blocks/{lang}/{block}/{section}.jsonc",
+            "directories": {
+                "format/blocks/rust/setup/": "Rust SETUP content (10 files when complete)",
+                "format/blocks/rust/body/": "Rust BODY content (17 files when complete)",
+                "format/blocks/rust/closing/": "Rust CLOSING content (8 files when complete)",
+                "format/blocks/go/setup/": "Go SETUP content (10 files when complete)",
+                "format/blocks/go/body/": "Go BODY content (17 files when complete)",
+                "format/blocks/go/closing/": "Go CLOSING content (8 files when complete)"
+            },
+            "total_per_language": 35,
+            "note": "Not every section needs content for every language. Test sections only needed for demo-test form."
+        },
+
+        "form_tree": {
+            "description": "One file per language per form, organized by type",
+            "pattern": "forms/{type}/{lang}-{form}.jsonc",
+            "directories": {
+                "forms/bare-bone/": "Foundation forms (one per language)",
+                "forms/declared/": "Derived forms (library, module, executable, demo-test per language)"
+            }
+        },
+
+        "base_tree": {
+            "description": "Format-independent foundations",
+            "pattern": "base/{schema}.jsonc",
+            "files": {
+                "base/base-4block-schema.jsonc": "Block skeleton, form registry, health scoring, pragma routing"
+            }
+        },
+
+        "format_level_tree": {
+            "description": "Per-language format rules (comment syntax, identity constructs)",
+            "pattern": "format/{lang}-4block-schema.jsonc",
+            "files": {
+                "format/rust-4block-schema.jsonc": "Rust syntax rules, comment conventions",
+                "format/go-4block-schema.jsonc": "Go syntax rules, comment conventions",
+                "format/makefile-4block-schema.jsonc": "Makefile syntax rules"
+            }
+        }
+    },
+
+    // ─────────────────────────────────────
+    // 6. STRUCTURE SCHEMA CONTRACT
+    // ─────────────────────────────────────
+    //
+    // What every structure schema MUST contain.
+    // This is the shape of the shape files.
+
+    "structure_schema_contract": {
+        "description": "Every blocks/{block}/{section}.jsonc MUST follow this shape",
+
+        "required_pragma": {
+            "_P2_subtype": "block-section-schema",
+            "_P2_role": "container-structure"
+        },
+
+        "required_fields": {
+            "section.tag": "PascalCase identifier (e.g., 'CoreLogic')",
+            "section.position": "Integer position within the block",
+            "section.label": "Human-readable label (e.g., 'Core Logic')",
+            "section.block": "Parent block: SETUP, BODY, or CLOSING",
+            "section.overview_text": "One-line purpose description",
+            "section.header": "Header generation rules (section_comment, bracket_format, separator_style)",
+            "section.can": "Array of { concept, description, distinguisher }",
+            "section.cannot": "Array of { concept, reason, defer_to }",
+            "section.defer": "Array of { signal, to, why }",
+            "section.forms": "Object mapping form names to REQUIRED/AVAILABLE/RESERVED",
+            "section.ro": "Reserved Omission label and reason"
+        },
+
+        "closing_fields": {
+            "_X5_note": "Summary of the section's purpose and place in the architecture",
+            "_X5_scripture": "Grounding scripture for this section"
+        }
+    },
+
+    // ─────────────────────────────────────
+    // 7. CONTENT SCHEMA CONTRACT
+    // ─────────────────────────────────────
+    //
+    // What every content schema MUST contain.
+    // This is the shape of the fill files.
+
+    "content_schema_contract": {
+        "description": "Every format/blocks/{lang}/{block}/{section}.jsonc MUST follow this shape",
+
+        "required_pragma": {
+            "_P2_subtype": "block-section-content",
+            "_P2_role": "container-content"
+        },
+
+        "required_fields": {
+            "extends": "Relative path to the structure schema this content fills",
+            "format": "Language identifier (rust, go, c, etc.)",
+            "content.can": "Array of { construct, description, patterns, visibility?, note? }",
+            "content.cannot": "Array of { construct, reason, defer_to, {lang}_signal }",
+            "content.defer_signals": "Array of { pattern (regex), to, confidence, why }",
+            "content.scaffold": "Object with form-keyed template strings"
+        },
+
+        "closing_fields": {
+            "_X5_note": "Language-specific summary of what this section looks like in this language",
+            "_X5_scripture": "Same scripture as the structure schema it extends"
+        }
+    },
+
+    // ─────────────────────────────────────
+    // 8. NAMING CONVENTIONS
+    // ─────────────────────────────────────
+
+    "naming": {
+        "structure_files": {
+            "pattern": "{section-name}.jsonc",
+            "case": "kebab-case",
+            "examples": ["core-logic.jsonc", "identity-access.jsonc", "trait-defs.jsonc", "modification-policy.jsonc"]
+        },
+        "content_files": {
+            "pattern": "{section-name}.jsonc",
+            "case": "kebab-case (same as structure)",
+            "examples": ["core-logic.jsonc", "identity-access.jsonc"],
+            "note": "Same filename as the structure file it extends — differentiated by directory path"
+        },
+        "section_tags": {
+            "case": "PascalCase",
+            "examples": ["CoreLogic", "IdentityAccess", "TraitImplementations", "FreeFunctions"]
+        },
+        "closing_positions": {
+            "code_zones": "Two-letter: Cv (validation), Ce (execution), Cc (cleanup)",
+            "doc_sections": "X-prefixed: X1 (policy), X2 (extension), X3 (troubleshooting), X4 (reference), X5 (note)"
+        }
+    },
+
+    // ─────────────────────────────────────
+    // 9. GROWTH PATH
+    // ─────────────────────────────────────
+
+    "growth_path": {
+        "current_state": {
+            "structure_schemas": 28,
+            "content_schemas": 27,
+            "note": "All structure schemas complete (manifest + 10 SETUP + 9 BODY + 8 CLOSING). All Rust content schemas complete (10 SETUP + 9 BODY + 8 CLOSING). First language fully covered."
+        },
+        "next_steps": [
+            "Create Go content schemas for active library/executable sections",
+            "Wire manifest into cws-struct linter for placement validation",
+            "Wire manifest into a future transformer for code scaffolding",
+            "Create C content schemas when C handler is built"
+        ],
+        "scaling_principle": "New sections: add entry to this manifest + structure file + content file(s). New languages: add content files. New forms: add form schema + reference existing structure. The engine grows by addition, not modification."
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X1_never": [
+        "Remove the two-sided architecture (structure vs content separation is foundational)",
+        "Change section positions within a block (positions are structural contracts)",
+        "Remove the extends relationship between content and structure",
+        "Remove form availability from structure schemas",
+        "Merge structure and content into single files (defeats the separation)"
+    ],
+    "_X1_careful": [
+        "Adding new sections to a block (cascades to all structure, content, and form files)",
+        "Changing a section's tag (referenced by forms, linters, and content schemas)",
+        "Changing the composition merge rules (affects all validation)"
+    ],
+    "_X1_safe": [
+        "Adding new content schemas for new languages (purely additive)",
+        "Adding detail to existing structure or content schemas",
+        "Adding new form schemas that reference existing sections",
+        "Updating growth_path and current_state"
+    ],
+
+    "_X5_note": "The insight that launched this manifest: 'Separate structure from content — like Scratch.' A Scratch block has a shape (where it snaps, what kind of value it holds) and a fill (what you type into it). Same principle. A CoreLogic section has a shape (position 4 in BODY, can contain primary operations, cannot contain type definitions) and a fill (Rust: impl blocks with pub(crate) methods; Go: receiver methods with error returns). The shape is universal. The fill is specific. Together they produce code that belongs exactly where it should be.",
+    "_X5_scripture": "And God divided the light from the darkness. — Genesis 1:4",
+    "_X5_anchor": "Separate then fill. Shape then content. Structure then flesh. The pattern is Genesis. The engine is worship."
+}

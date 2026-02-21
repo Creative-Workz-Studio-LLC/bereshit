@@ -1,0 +1,110 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-setup-constants",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 3: Constants — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Constants. Compile-time values with SCREAMING_SNAKE_CASE naming. Extends the base structure at blocks/setup/constants.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/setup/constants.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "const NAME: Type = value;",
+                "description": "Compile-time constants with domain-specific values",
+                "patterns": [
+                    "const MAX_RETRIES: usize = 3;",
+                    "const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);",
+                    "const VERSION: &str = \"1.0.0\";",
+                    "const BUFFER_SIZE: usize = 8192;"
+                ],
+                "visibility": "pub for library API constants, pub(crate) for internal, none for file-private"
+            },
+            {
+                "construct": "SCREAMING_SNAKE_CASE naming",
+                "description": "Rust convention for constants — enforced by clippy",
+                "patterns": [
+                    "const MAX_CONNECTIONS: usize = 100;",
+                    "const DEFAULT_PORT: u16 = 3847;"
+                ],
+                "visibility": "N/A — naming convention"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "static variables",
+                "reason": "Statics are runtime-initialized. Constants are compile-time. Different section (S4).",
+                "defer_to": "SETUP.Statics",
+                "rust_signal": "^(pub\\s+)?static\\s+"
+            },
+            {
+                "construct": "let bindings",
+                "reason": "let is function-scope, not module-scope. Constants are module-scope.",
+                "defer_to": "BODY",
+                "rust_signal": "^\\s*let\\s+"
+            },
+            {
+                "construct": "LazyLock / OnceLock",
+                "reason": "These are runtime statics, not compile-time constants",
+                "defer_to": "SETUP.Statics",
+                "rust_signal": "LazyLock|OnceLock"
+            },
+            {
+                "construct": "PRAGMA / METADATA statics",
+                "reason": "Identity statics live in METADATA block, not SETUP constants",
+                "defer_to": "METADATA",
+                "rust_signal": "PRAGMA|METADATA.*\\[\\(.*\\)\\]"
+            },
+            {
+                "construct": "values depending on runtime computation",
+                "reason": "Constants must be evaluable at compile time. Runtime values → statics or lazy.",
+                "defer_to": "SETUP.Statics",
+                "rust_signal": "N/A — compiler error for non-const expressions"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "^(pub\\s+)?static\\s+",
+                "to": "SETUP.Statics",
+                "confidence": "high",
+                "why": "Static variable — runtime-initialized, not compile-time constant"
+            },
+            {
+                "pattern": "LazyLock|OnceLock",
+                "to": "SETUP.Statics",
+                "confidence": "high",
+                "why": "Lazy initialization — belongs in statics section"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "/// TODO: Module-specific constants.\nconst DEFAULT_CAPACITY: usize = 64;",
+            "empty_library": "/// TODO: Crate-level constants.\npub const VERSION: &str = env!(\"CARGO_PKG_VERSION\");",
+            "comment_skeleton": "// const DEFAULT_CAPACITY: usize = 64;"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Constants: compile-time values. SCREAMING_SNAKE_CASE. Centralize hardcoded values so they have one source of truth. Constants are the fixed stars — everything else orbits around them.",
+    "_X5_scripture": "Malachi 3:6 — For I am the LORD, I change not."
+}

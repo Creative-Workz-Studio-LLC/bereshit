@@ -1,0 +1,79 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-body-tests",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Sections 9-17: Test Subsections — Rust Content",
+    "_P5_brief": "Rust-specific content rules for BODY test subsections (B9-B17). Dedicated test sections for demo-test form ONLY. RESERVED in library, module, and executable forms.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/body/tests.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "#[test] fn test_name() { ... }",
+                "description": "Test functions organized by category (demo-test form only)",
+                "patterns": [
+                    "// -- B9 Constructor Tests ----\n#[test]\nfn test_new_creates_valid_instance() { ... }",
+                    "// -- B10 Builder Tests ----\n#[test]\nfn test_builder_chain() { ... }",
+                    "// -- B11 Transition Tests ----\n#[test]\nfn test_state_transition() { ... }"
+                ],
+                "visibility": "N/A — test functions",
+                "note": "Demo-test form ONLY. All other forms put tests in CLOSING Cv."
+            },
+            {
+                "construct": "table-driven tests",
+                "description": "Test cases defined as arrays of (input, expected) pairs",
+                "patterns": [
+                    "let cases = vec![\n    (\"input1\", expected1),\n    (\"input2\", expected2),\n];\nfor (input, expected) in cases {\n    assert_eq!(process(input), expected);\n}"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "any test code in library/module/executable form",
+                "reason": "Non-demo-test forms put ALL tests in CLOSING Cv. BODY test sections are RESERVED.",
+                "defer_to": "CLOSING.Cv",
+                "rust_signal": "#\\[test\\]|#\\[cfg\\(test\\)\\]"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "#\\[test\\]",
+                "to": "CLOSING.Cv (for non-demo-test forms)",
+                "confidence": "high",
+                "why": "Test function in BODY — belongs in CLOSING Cv unless demo-test form"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// RESERVED — tests belong in CLOSING Cv for module form",
+            "empty_library": "// RESERVED — tests belong in CLOSING Cv for library form",
+            "comment_skeleton": "// B9-B17 test subsections are demo-test form only"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust BODY Test Sections: dedicated test subsections for demo-test form only. Constructor, builder, transition, query, identity, error, edge case, table-driven, and integration tests — each in their own subsection for educational clarity.",
+    "_X5_scripture": "Proverbs 27:17 — Iron sharpeneth iron; so a man sharpeneth the countenance of his friend."
+}

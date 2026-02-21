@@ -1,0 +1,105 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-setup-feature-gates",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 10: Feature Gates — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Feature Gates. Conditional compilation via #[cfg(feature)]. AVAILABLE in library form, RESERVED in module form.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/setup/feature-gates.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "#[cfg(feature = \"name\")] items",
+                "description": "Feature-gated items — optional capabilities controlled at build time",
+                "patterns": [
+                    "#[cfg(feature = \"serde\")]\nmod serde_impls;",
+                    "#[cfg(feature = \"async\")]\npub mod async_api;"
+                ],
+                "visibility": "varies — the feature gates, not the items' visibility"
+            },
+            {
+                "construct": "#[cfg(test)] items",
+                "description": "Test-only items — always available, not strictly a feature gate",
+                "patterns": [
+                    "#[cfg(test)]\nmod test_helpers;"
+                ],
+                "visibility": "N/A — test-only"
+            },
+            {
+                "construct": "#[cfg(target_os = \"...\")] items",
+                "description": "Platform-specific items — OS or architecture gating",
+                "patterns": [
+                    "#[cfg(target_os = \"linux\")]\nmod linux_specific;"
+                ],
+                "visibility": "varies"
+            },
+            {
+                "construct": "// Comment explaining what each feature enables",
+                "description": "Every feature documents what it adds and why it's optional",
+                "patterns": [
+                    "// Feature: serde — enables Serialize/Deserialize for all public types"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "feature gates on core functionality",
+                "reason": "If needed for the basic API, it shouldn't be optional. Core functionality must work without enabling any features.",
+                "defer_to": "N/A — make it unconditional",
+                "rust_signal": "N/A — design judgment"
+            },
+            {
+                "construct": "undocumented features",
+                "reason": "Every feature must be documented in Cargo.toml [features] and in code",
+                "defer_to": "N/A — document the feature",
+                "rust_signal": "N/A"
+            },
+            {
+                "construct": "#[cfg(feature)] without Cargo.toml definition",
+                "reason": "Feature must exist in Cargo.toml [features] section — otherwise it's always false",
+                "defer_to": "N/A — add to Cargo.toml",
+                "rust_signal": "N/A — dead code"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "#\\[cfg\\(feature\\s*=",
+                "to": "N/A — verify Cargo.toml has the feature defined",
+                "confidence": "medium",
+                "why": "Feature gate without Cargo.toml definition is dead code"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// RESERVED — module form does not organize feature gates",
+            "empty_library": "// No feature-gated items needed.",
+            "comment_skeleton": "// #[cfg(feature = \"name\")]\n// mod feature_module;"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Feature Gates: conditional compilation for optional capabilities. Core API must work without features. Every feature documents what it adds. Lean defaults, optional richness.",
+    "_X5_scripture": "1 Corinthians 9:22 — I am made all things to all men, that I might by all means save some."
+}

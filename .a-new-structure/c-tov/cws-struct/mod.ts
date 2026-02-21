@@ -33,8 +33,8 @@
 
 import { relative } from "@std/path";
 import { pooledMap } from "@std/async/pool";
-import type { CliOptions, LintSummary } from "./lib/foundation/mod.ts";
-import { summarize } from "./lib/foundation/mod.ts";
+import type { CliOptions, LintPolicy, LintSummary } from "./lib/foundation/mod.ts";
+import { summarize, setGlobalPolicy } from "./lib/foundation/mod.ts";
 import { discoverFiles, discoverAllFiles } from "./lib/engine/mod.ts";
 import {
   COLORS,
@@ -122,6 +122,9 @@ function parseArgs(args: string[]): CliOptions {
       extensions: false,
       json: false,
       failFast: false,
+      force: false,
+      steps: false,
+      policy: "balanced",
     };
   }
 
@@ -136,6 +139,9 @@ function parseArgs(args: string[]): CliOptions {
       extensions: false,
       json: false,
       failFast: false,
+      force: false,
+      steps: false,
+      policy: "balanced",
     };
   }
 
@@ -144,7 +150,17 @@ function parseArgs(args: string[]): CliOptions {
 
   // Check if second arg is a format name
   let format: string | undefined;
-  const nonFlags = rest.filter((a) => !a.startsWith("-"));
+
+  // Identify indices consumed as values of value-taking flags (--key X, --policy X, etc.)
+  // so they don't leak into nonFlags → targets.
+  const valueTakingFlags = new Set(["--key", "--title", "--purpose", "--policy", "--port"]);
+  const consumedIndices = new Set<number>();
+  for (let i = 0; i < rest.length; i++) {
+    if (valueTakingFlags.has(rest[i]!) && i + 1 < rest.length) {
+      consumedIndices.add(i + 1);
+    }
+  }
+  const nonFlags = rest.filter((a, i) => !a.startsWith("-") && !consumedIndices.has(i));
   if (nonFlags.length > 0) {
     // Try to match first non-flag as format name
     const candidate = nonFlags[0]!;
@@ -159,14 +175,19 @@ function parseArgs(args: string[]): CliOptions {
 
   const targets = nonFlags.filter((a) => a !== format);
 
-  // Extract --key, --title, --purpose values for create command
+  // Extract --key, --title, --purpose, --policy values
   const keyIdx = rest.indexOf("--key");
   const titleIdx = rest.indexOf("--title");
   const purposeIdx = rest.indexOf("--purpose");
+  const policyIdx = rest.indexOf("--policy");
 
   const keyVal = keyIdx >= 0 ? rest[keyIdx + 1] : undefined;
   const titleVal = titleIdx >= 0 ? rest[titleIdx + 1] : undefined;
   const purposeVal = purposeIdx >= 0 ? rest[purposeIdx + 1] : undefined;
+  const policyRaw = policyIdx >= 0 ? rest[policyIdx + 1] : undefined;
+  const policy: LintPolicy = policyRaw === "strict" || policyRaw === "growth"
+    ? policyRaw
+    : "balanced";
 
   // For create command: args are `create <format> <subtype> <dest>`
   // format is already extracted above; subtype is the next non-flag after format
@@ -198,6 +219,9 @@ function parseArgs(args: string[]): CliOptions {
     extensions: rest.includes("--extensions"),
     json: rest.includes("--json"),
     failFast: rest.includes("--fail-fast"),
+    force: rest.includes("--force"),
+    steps: rest.includes("--steps"),
+    policy,
     subtype,
     key: keyVal,
     title: titleVal,
@@ -241,6 +265,9 @@ ${COLORS.bold}Options:${COLORS.reset}
   --fail-fast       Stop on first file with errors
   --dry-run         Preview transforms / create output without writing
   --extensions      Also scaffold extension sections (I4, C5-C7, X2-X4, etc.)
+  --force           Re-scaffold even if file already has block structure
+  --steps           Step-by-step scaffold — write each phase to .steps/ directory
+  --policy <P>      Ternary lint policy: strict (-1), balanced (0, default), growth (+1)
   --key <K>         OmniCode key for create (default: derived from path)
   --title <T>       File title for create (default: derived from filename)
   --purpose <P>     File purpose for create (default: placeholder)
@@ -529,6 +556,8 @@ async function transformWithHandler(
     const results = await transformFn(file, {
       dryRun: opts.dryRun,
       extensions: opts.extensions,
+      force: opts.force,
+      steps: opts.steps,
     });
 
     // Same explicit-target upgrade as lint — if transform skips an
@@ -745,6 +774,9 @@ const KNOWN_FLAGS = new Set([
   "--extensions",
   "--json",
   "--fail-fast",
+  "--force",
+  "--steps",
+  "--policy",
   "--port",
   "--key",
   "--title",
@@ -797,6 +829,9 @@ async function main(): Promise<void> {
   }
 
   const opts = parseArgs(Deno.args);
+
+  // Set session-wide ternary policy before dispatching to handlers.
+  setGlobalPolicy(opts.policy);
 
   switch (opts.command) {
     case "help":

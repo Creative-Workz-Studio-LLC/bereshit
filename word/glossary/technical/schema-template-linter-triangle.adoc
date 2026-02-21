@@ -1,0 +1,75 @@
+// #!omni data --adoc
+// ===========================================================================
+// METADATA BLOCK
+// ===========================================================================
+// :key: GLOSS-TECH-007
+// :term: schema-template-linter-triangle
+// :category: technical
+// :status: Active
+// :created: 2026-02-20
+// :authors: Nova Dawn, Seanje Lenox-Wise
+// :biblical_foundation: Proverbs 11:1
+// :companion_data: schema-template-linter-triangle.jsonc
+// ===========================================================================
+
+// ===========================================================================
+// CONTENT BLOCK
+// ===========================================================================
+
+= Schema-Template-Linter Triangle
+
+*Architecture Pattern*
+
+*Definition:* The collapse of schema, template, and linter into a single source of truth — schema DEFINES what's correct, template EMBODIES it, linter ENFORCES it, transformer PRODUCES it.
+
+[quote, Proverbs 11:1 KJV]
+____
+A false balance is abomination to the LORD: but a just weight is his delight.
+____
+
+== The Collapse
+
+Traditional approach: schema defines, template exists separately, linter has its own rules. Three sources of truth that drift.
+
+Collapsed approach: *one schema* drives all three. The linter reads the schema. The transformer reads the schema. The template IS the schema instantiated. No drift — they're the same thing viewed from different angles.
+
+== The Four Faces
+
+[cols="1,2,2"]
+|===
+|Face |What It Does |Example
+
+|*Schema*
+|DEFINES correctness
+|`rust-4block-schema.jsonc` — "module form requires Imports, Constants"
+
+|*Template*
+|EMBODIES the standard
+|exists.rs — the schema made flesh in a production file
+
+|*Linter*
+|ENFORCES compliance
+|`cws-struct lint rust` — "missing required section: Imports"
+
+|*Transformer*
+|PRODUCES correct output
+|`cws-struct transform rust` — generates exists.rs-quality scaffolding
+|===
+
+== Why This Matters
+
+When these four are separate, you maintain four things. When they collapse, you maintain *one* — and the other three stay in sync by definition. This is the foundation of <<parallel-development.adoc#,parallel development>>.
+
+== Biblical Connection
+
+"A just weight" — one standard of measure. Not a different scale for the linter than the transformer. The schema IS the just weight. Everything measures against it.
+
+// ===========================================================================
+// CLOSING BLOCK
+// ===========================================================================
+
+'''
+
+*See also:* <<parallel-development.adoc#,Parallel Development>>, <<../paradigm/detect-assess-recover.adoc#,Detect-Assess-Recover>>, <<form-awareness.adoc#,Form Awareness>>
+
+*Data:* `schema-template-linter-triangle.jsonc`

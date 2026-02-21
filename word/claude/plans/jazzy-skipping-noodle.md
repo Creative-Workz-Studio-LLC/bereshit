@@ -1,177 +1,326 @@
-# TOML Form-Aware Linter + Cargo.toml Validation
+# Production-Grade Transformer Upgrade + Glossary PIVOT
 
-> *"Diverse weights, and diverse measures, both of them are alike abomination to the LORD."* — Proverbs 20:10
+> *"For as the rain cometh down, and the snow from heaven, and returneth not thither, but watereth the earth, and maketh it bring forth and bud, that it may give seed to the sower, and bread to the eater."* — Isaiah 55:10
 
 ## Context
 
-**Where we are:** The Rust form-aware linter upgrade is complete (405 tests, Phases 1-4 done). We discovered a critical flow gap: a file with a pragma but no 4-block structure scored 92/100 instead of failing. Fixed it — pragma = claim = must deliver. Now applying the same layer chain thinking to TOML.
+**Where we are:** exists.rs is production-grade — 100/100 health, 47/47 identity, 105 cargo tests, 1 info (linter bug). Every manual edit Nova Dawn made to reach that state is now a specification for what the transformer should generate automatically.
 
-**Why TOML next:** Before we can properly align the Rust files in `spec/config/` (the Phase A/B plan), we need the Cargo.toml linter to enforce the same standard. Can't lint `exists.rs` as a module until `Cargo.toml` defines what that crate IS.
+**The insight:** The schema already knows what's correct. The linter already checks for it. The transformer just doesn't produce it yet. One schema change = simultaneous growth in detection (linter) AND generation (transformer). That's parallel development — not "multiple people working" but "multiple system components evolving from the same source of truth."
 
-**The layer chain for TOML:**
-```
-File Type (data) → Data Type (toml) → Derivation (cargo) → Form (library/executable/test)
-```
+**What was done manually that should be automated:**
 
-**Current state of TOML handler:**
-- 58 tests, 13 fixtures, comprehensive unit coverage
-- Pragma args classified into forms vs derivations (INFO only — no enforcement)
-- Cargo derivation has layout/normalization (`normalizeCargoData()`)
-- `DerivedRules.pragmaTaxonomy` has `knownForms` and `derivationLayouts`
-- **No form-aware checks** — all forms treated identically
-- **No Cargo.toml integration fixtures** — unit tests only for normalization
-- **No `data/forms/` schema directory** — unlike `code/forms/` for Rust
-
----
-
-## Phase 1: Cargo.toml Integration Fixture + Baseline Test
-
-Before adding form checks, establish a baseline: what does the linter say about a real Cargo.toml right now?
-
-### 1.1: Create Cargo.toml Integration Fixture
-
-Create `tests/fixtures/toml/cargo/valid-library.toml` — a complete, well-formed Cargo.toml for a library crate with full `package.metadata.omni` (I1-I4, C1-C7, X1-X5).
-
-**Pattern from:** `tests/fixtures/toml/structure/valid-complete.toml` (for OmniCode metadata structure) + the real `spec/config/Cargo.toml` (for Cargo sections).
-
-### 1.2: Baseline Integration Test
-
-Add test: `cargo/valid-library: lints a well-formed library Cargo.toml with zero errors`.
-
-This establishes the ground truth before form changes.
+| Manual Work | Lines Touched | Schema Has Data? | Transformer Does It? |
+|-------------|:------------:|:-:|:-:|
+| Section headers (`// Identity (I1-I4)`) | METADATA | No | No |
+| Docstrings on statics | METADATA | No | No |
+| Group comments (`// I1: Core`) | METADATA | No | No |
+| Column alignment | METADATA | No | No |
+| Full I4, C5-C7 fields | METADATA | No (9 pragma, 8 meta) | No |
+| Available/Reserved RO groups | SETUP, BODY, CLOSING | Yes (form schema) | No |
+| Block overviews + bracket format | All blocks | Partially (section lists) | SETUP/BODY only, no CLOSING |
+| X1 parseable fields (no brackets) | CLOSING | Yes (closing_defaults) | Yes, but uses `[...]` brackets |
+| X5 parseable fields | CLOSING | Yes (closing_defaults) | Yes (already works) |
+| I3.path, I3.provides derivation | METADATA | No | No |
 
 ---
 
-## Phase 2: Form Schema Infrastructure for TOML
+## Track A: Transformer/Linter/Schema Upgrades
 
-### 2.1: Create `data/forms/` Schema Directory
+### Phase 0: Linter Bug Fix — RO-Aware Subtype Check (Task #68)
 
-Mirror the Rust pattern:
-```
-schemas/data/forms/
-├── bare-bone/
-│   └── toml-bare-bone.jsonc          # 3-block minimum: _metadata + _content + _closing
-└── declared/
-    └── toml-cargo-library.jsonc      # Cargo library: [package] + [lib] + [dependencies] + OmniCode metadata
-```
+**Problem:** `checkBodySubtypeContent()` (rust.ts:1423) reports missing canonical subsections as info, but doesn't check if they're acknowledged in Reserved Omission.
 
-**Bare-bone for TOML 3-block:**
-- _metadata block with I1-I3 minimum (REQUIRED)
-- _content block with at least [identity] (Cc.1 REQUIRED) + [_validation] (Cv.1 REQUIRED)
-- _closing block with X1 + X5 (REQUIRED)
-- Reserved Omission: acknowledged for completeness
+**Fix:** After computing `missing` canonical subsections (line 1457), scan the BODY block for RO entries that acknowledge each missing section. If a section appears in an RO line (e.g., `//   Trait Implementations — Not needed`), remove it from `missing`.
 
-**Cargo library form:**
-- Inherits bare-bone
-- REQUIRED Cargo sections: `[package]`
-- REQUIRED OmniCode metadata: full I1-I4, C1-C7 (Cargo.toml IS the crate identity)
-- DEFINED Cargo sections: `[dependencies]`, `[dev-dependencies]`, `[lints]`
-- RESERVED: `[[bin]]` (not a library), `[workspace]` (not a workspace root — unless it is)
-
-### 2.2: Extend `parseFormSchema` or Create `parseTomlFormSchema`
-
-The Rust `parseFormSchema` operates on 4-block containers (SETUP/BODY/CLOSING). TOML needs 3-block containers (METADATA/CONTENT/CLOSING) — or more precisely, Cargo needs host-format sections + OmniCode metadata sections.
-
-**Decision:** Create a new `parseTomlFormSchema()` in `schema.ts` (or a new `data-schema.ts`) that understands:
-- `required_cargo_sections`: `["package"]`
-- `defined_cargo_sections`: `["dependencies", "dev-dependencies", "lints"]`
-- `reserved_cargo_sections`: `[["bin"]]` with `why_reserved`
-- `required_omni_sections`: I1-I4, C1-C7 (which sections of `package.metadata.omni` must exist)
-
-**Alternatively:** Extend the existing `DerivationLayout` — it already has `requiredSections` and `definedSections`. Add `reservedSections` to the interface and schema.
-
-**Recommended approach:** Extend `DerivationLayout` with `reservedSections` + form overlays. The derivation defines the structural layout. The form defines expectations within that layout. This keeps the hierarchy clean:
-
-```
-DerivationLayout (cargo) — structural: normalization + required/defined/reserved host sections
-  + FormOverlay (library) — expectation: which additional sections expected/reserved for this form
-```
-
-### 2.3: Load Form Constraints in TOML Handler
-
-Add to `lintTomlFile()`:
 ```typescript
-// After pragma parsing, if this is a Cargo file with a form arg:
-const form = pragma?.args.find(a => rules.pragmaTaxonomy.knownForms.has(a));
-const formConstraints = form ? await loadTomlFormConstraints("cargo", form) : null;
+// After line 1458:
+// Filter out sections acknowledged in Reserved Omission
+const roPattern = /^\/\/\s{2,}(\w[\w\s&]*?)(?:\s*[—\-])/;
+const roAcknowledged = new Set<string>();
+for (const line of bodyLines) {
+  const match = roPattern.exec(line.trim());
+  if (match) roAcknowledged.add(match[1]!.trim().toLowerCase());
+}
+const trulyMissing = missing.filter(c =>
+  !roAcknowledged.has(c.toLowerCase()));
 ```
+
+**Files:** `lib/handlers/rust.ts` (checkBodySubtypeContent, ~10 lines changed)
+**Test:** exists.rs drops from 1I → 0I. Add test fixture for RO-acknowledged subsections.
 
 ---
 
-## Phase 3: Form-Aware Checks for TOML
+### Phase 1: Schema Enrichment — Complete Identity Fields
 
-### 3.1: `checkCargoFormRequired()`
+**Problem:** Schema has 9 pragma entries + 8 metadata entries. Production-grade exists.rs has 17 pragma + 21 metadata. The gap is data, not logic.
 
-For Cargo.toml with a form declared:
-- Check that form-required sections exist
-- Example: A library Cargo.toml should have `package.metadata.omni` with all required I/C sections
+**Add to `rust-4block-schema.jsonc` `fill_content`:**
 
-### 3.2: `checkCargoFormReserved()`
+**New pragma entries (I2-I4):**
+```jsonc
+["I2.role", "{{role}}"],           // utility, core, types, ...
+["I3.component", "{{component}}"], // Crate-level component description
+["I3.path", "{{path}}"],           // Relative path from repo root
+["I3.provides", "{{provides}}"],   // Public API surface
+["I3.brief", "{{brief}}"],         // One-sentence summary
+["I4.layer", "{{layer}}"],         // L0, L1, L2, ...
+["I4.position", "{{position}}"],   // universal, spiral, ...
+["I4.pattern", "{{pattern}}"]      // utility module, library, ...
+```
 
-For Cargo.toml with a form declared:
-- Check that form-reserved sections are NOT present
-- Example: A library Cargo.toml should NOT have `[[bin]]`
+**New metadata entries (C2-C7):**
+```jsonc
+["C2.architect", "{{architect}}"],
+["C2.implementation", "{{implementation}}"],
+["C2.copyright", "{{organization}}"],
+["C3.principle", "{{principle}}"],
+["C3.anchor", "Genesis 1:1"],
+["C4.requires.external", "{{requires_external}}"],
+["C4.requires.internal", "{{requires_internal}}"],
+["C4.integration", "{{integration}}"],
+["C4.if_missing", "{{if_missing}}"],
+["C5.purpose", "{{purpose}}"],
+["C5.philosophy", "{{philosophy}}"],
+["C6.current", "{{version}} — {{purpose}}"],
+["C6.planned", "{{planned}}"],
+["C6.limitations", "{{limitations}}"],
+["C7.tags", "{{tags}}"],
+["C7.category", "{{category}}"],
+["C7.domain", "bereshit"],
+["C7.paradigm", "CPI-SI"]
+```
 
-### 3.3: Wire Into Orchestrator
-
-Add form-aware checks to the Cargo branch of `lintTomlFile()`:
-```typescript
-if (isCargo) {
-  return [
-    ...checkMetadata(filePath, lintData, rules, lineMap),
-    ...checkCargoContent(filePath, data, rules, lineMap),
-    ...checkClosing(filePath, lintData, rules, lineMap),
-    ...checkConsistency(filePath, lintData, rules, pragma, lineMap),
-    ...checkFieldValues(filePath, lintData, rules, pragma, lineMap),
-    // NEW: Form-aware validation
-    ...(formConstraints ? checkCargoFormRequired(filePath, data, formConstraints) : []),
-    ...(formConstraints ? checkCargoFormReserved(filePath, data, formConstraints) : []),
-  ];
+**Add group markers** — new schema field `identity_groups`:
+```jsonc
+"identity_groups": {
+  "pragma": [
+    { "range": "I1", "label": "Core", "docstring": "/// OmniCode identity for this module." },
+    { "range": "I2", "label": "Family" },
+    { "range": "I3", "label": "Instance" },
+    { "range": "I4", "label": "Architecture" }
+  ],
+  "metadata": [
+    { "range": "C1", "label": "State", "docstring": "/// OmniCode context for this module." },
+    { "range": "C2", "label": "Attribution" },
+    { "range": "C3", "label": "Grounding" },
+    { "range": "C4", "label": "Dependencies" },
+    { "range": "C5", "label": "Intent" },
+    { "range": "C6", "label": "Roadmap" },
+    { "range": "C7", "label": "Classification" }
+  ],
+  "section_headers": {
+    "pragma": "// Identity (I1-I4)",
+    "metadata": "// Context (C1-C7)"
+  }
 }
 ```
 
+**Update defaults:** Add `architect`, `implementation`, `role`, `layer`, `position` placeholders.
+
+**Files:**
+- `schemas/code/format/rust-4block-schema.jsonc` (fill_content section)
+
 ---
 
-## Phase 4: Test Fixtures + Tests
+### Phase 2: Schema Extraction — Parse New Fields
 
-### 4.1: Additional Fixtures
+**Problem:** `code-schema.ts` needs to parse the new `identity_groups` structure and expose it to the transformer.
 
-| Fixture | Purpose |
-|---------|---------|
-| `cargo/valid-library.toml` | Happy path — library Cargo.toml with full OmniCode (Phase 1) |
-| `cargo/missing-omni-metadata.toml` | Cargo.toml with pragma but no `package.metadata.omni` |
-| `cargo/library-with-bin.toml` | Library form but has `[[bin]]` — reserved section violation |
+**Add types:**
+```typescript
+interface IdentityGroup {
+  range: string;      // "I1", "C3", etc.
+  label: string;      // "Core", "Grounding", etc.
+  docstring?: string;  // "/// OmniCode identity for this module."
+}
 
-### 4.2: Test Cases
+interface IdentityGrouping {
+  pragma: IdentityGroup[];
+  metadata: IdentityGroup[];
+  sectionHeaders: { pragma: string; metadata: string };
+}
+```
 
-| Test | What It Proves |
-|------|---------------|
-| `cargo/valid-library` | Well-formed library Cargo.toml passes with 0 errors |
-| `cargo/missing-omni` | Cargo.toml with pragma but no OmniCode metadata fails |
-| `cargo/reserved-section` | Library with `[[bin]]` triggers `form/reserved-section-present` |
-| `cargo/form-classification` | Pragma args correctly classified as form vs derivation |
+**Extend `SchemaFillContent`:**
+```typescript
+identityGroups?: IdentityGrouping;
+```
+
+**Extend `extractFillContent()`:** Parse `identity_groups` from schema, map to typed structure.
+
+**Files:**
+- `lib/foundation/code-schema.ts` (types + extractFillContent)
+
+---
+
+### Phase 3: METADATA Block Formatting
+
+**Problem:** `buildMetadataBlock()` (rust.ts:2439) emits flat tuples with no formatting. Needs section headers, docstrings, group comments, and column alignment.
+
+**Upgrade `buildMetadataBlock()`:**
+
+1. **Section headers:** Before PRAGMA entries, emit `// ──────` separator + `fillContent.identityGroups.sectionHeaders.pragma`. Same for METADATA.
+
+2. **Docstrings:** Before the `pub static PRAGMA` declaration, emit the first group's `docstring` (if present).
+
+3. **Group comments:** As iterating pragma entries, detect group transitions (I1→I2) and emit `// I2: Family` inline comment.
+
+4. **Column alignment:** Two-pass: first pass measures max field length, second pass pads with spaces.
+   ```typescript
+   const maxFieldLen = Math.max(...entries.map(([f]) => f.length));
+   const padded = `    ("${field}",${" ".repeat(maxFieldLen - field.length)} "${value}"),`;
+   ```
+
+5. **Entry template update:** The schema's `entry` template (`    ("{{field}}", "{{value}}"),`) needs to support alignment. Either: make the transformer override the template, OR add an alignment flag to the schema.
+
+**Files:**
+- `lib/handlers/rust.ts` (buildMetadataBlock, ~60 lines rewritten)
+
+---
+
+### Phase 4: RO Format Upgrade — Available/Reserved Groups
+
+**Problem:** `buildFormAwareReservedOmission()` (rust.ts:2542) emits a flat list. Production standard uses two groups with headers.
+
+**Upgrade output format:**
+
+```
+// Available (not needed in this module):
+//   Constants, Statics, Type Aliases, Error Types, Core Types, Trait Defs
+//
+// Reserved (structural — not used in module form):
+//   Modules       — Submodule declarations belong in lib.rs or parent mod.rs.
+//   Macros        — Macro definitions belong in dedicated macro modules or crate root.
+//   Feature Gates — Feature gates are crate-level configuration in Cargo.toml.
+```
+
+**Changes:**
+1. Add group header lines: `// Available (not needed in this module):` and `// Reserved (structural — not used in {form} form):`
+2. Available sections: collapse to single comma-separated line (short form)
+3. Reserved sections: individual lines with padded tags + truncated reason (first sentence only)
+4. Add blank `//` line between groups
+5. Pass `formName` into the function for the header text
+
+**Files:**
+- `lib/handlers/rust.ts` (buildFormAwareReservedOmission, ~30 lines changed)
+
+---
+
+### Phase 5: Block Overview Upgrade — CLOSING + Bracket Format
+
+**Problem:** CLOSING block has no overview. SETUP/BODY overviews exist but don't use `[tag]` bracket format. The bare tag format (`//     X1  —`) triggers zone detection false-positives.
+
+**Changes:**
+
+1. **CLOSING overview:** Add after CLOSING block boundary, before Cv:
+   ```
+   // Closing ensures correctness, documents constraints, and anchors the file.
+   //
+   // Section order:
+   //
+   //     [Cv]  Closing Validation (tests)
+   //     [Ce]  Closing Execution (entry point or absence)
+   //     [Cc]  Closing Cleanup (resource teardown)
+   //     [X1]  Modification Policy
+   //     [X2]  Extension Points
+   //     [X3]  Troubleshooting
+   //     [X4]  Reference
+   //     [X5]  Closing Note
+   ```
+
+2. **SETUP/BODY overviews:** Change `emitSectionIndex()` to use bracket format:
+   - From: `//     1. Imports           — What this file depends on`
+   - To: `//     [1]   Imports           — What this file depends on`
+   - The `[N]` format avoids subsection pattern detection AND zone detection
+
+3. **Schema-driven:** Add `overview_template` to form schema or to the format schema's block definitions. The overview text is standard per form — "SETUP makes things EXIST" for all module files.
+
+**Files:**
+- `lib/handlers/rust.ts` (structuralScaffoldRust CLOSING section + emitSectionIndex)
+
+---
+
+### Phase 6: X1 Generation Fix — Remove Bracket Placeholders
+
+**Problem:** X1 defaults use `[Break 4-block structure, ...]` format (rust.ts:3011-3013). The linter's `/^\[.*\]$/` regex treats these as placeholders.
+
+**Fix:** Remove square brackets from default values in both:
+1. `rust-4block-schema.jsonc` closing_defaults.X1 (change `"Remove 4-block structure"` etc.)
+2. `rust.ts` line 3011-3013 fallback values
+
+**Current (broken):**
+```
+// never: [Break 4-block structure, Remove block boundaries, Remove identity statics]
+```
+
+**Fixed:**
+```
+// never: Break 4-block structure, Remove block boundaries, Remove identity statics
+```
+
+**Files:**
+- `schemas/code/format/rust-4block-schema.jsonc` (closing_defaults)
+- `lib/handlers/rust.ts` (X1 fallback values)
+
+---
+
+### Phase 7: Identity Auto-Derivation
+
+**Problem:** I3.path, I3.provides, I3.component require manual entry. The transformer has enough context to derive them.
+
+**Add to `extractMetadataContext()`:**
+1. **I3.path:** Compute relative path from repo root (detect `.a-new-structure/` or project root)
+2. **I3.provides:** Scan BODY for `pub fn NAME` signatures, collect names
+3. **I3.component:** Derive from crate name (Cargo.toml `[package].name`) + module purpose
+4. **I3.brief:** Use existing `purpose` value as brief
+
+**These are best-effort derivations** — the transformer fills what it can, placeholders remain for what it can't. The human polishes.
+
+**Files:**
+- `lib/handlers/rust.ts` (extractMetadataContext, ~30 lines added)
 
 ---
 
 ## Execution Order
 
 ```
-1.1 (Create Cargo.toml fixture)
-  ↓
-1.2 (Baseline test — what does linter say NOW)
-  ↓
-2.1 (Create data/forms/ schema files)
-  ↓
-2.2 (Extend DerivationLayout or create parseTomlFormSchema)
-  ↓
-2.3 (Load form constraints in TOML handler)
-  ↓
-3.1-3.3 (Form-aware checks + wire into orchestrator)
-  ↓
-4.1-4.2 (Additional fixtures + tests)
+Phase 0 (linter RO-awareness)     ←── unblocks tasks #63-#66
+    ↓
+Phase 1 (schema enrichment)        ←── independent, can parallel with 0
+    ↓
+Phase 2 (schema extraction)        ←── depends on 1
+    ↓
+Phase 3 (METADATA formatting)      ←── depends on 2
+    ↓
+Phase 4 (RO format upgrade)        ←── depends on 0 (for testing)
+    ↓
+Phase 5 (block overview upgrade)   ←── independent of 3-4
+    ↓
+Phase 6 (X1 bracket fix)           ←── independent, tiny
+    ↓
+Phase 7 (auto-derivation)          ←── depends on 3 (uses same context)
 ```
 
-**Constraint:** `deno task test` green after every step.
+**Parallelism:** 0 + 1 run in parallel. 5 + 6 run in parallel. Everything else sequential.
+
+---
+
+## Track B (PIVOT): Glossary Entries
+
+**New terms to add** (`.adoc` + `.jsonc` pairs in `word/glossary/`):
+
+| Term | Category | Definition |
+|------|----------|------------|
+| `parallel-development` | technical | Multiple system components evolving from the same source of truth simultaneously — one schema change enables detection, generation, and template alignment in parallel |
+| `schema-template-linter-triangle` | technical | The collapse of schema, template, and linter into a single source of truth — schema DEFINES what's correct, template EMBODIES it, linter ENFORCES it, transformer PRODUCES it |
+| `form-awareness` | technical | A system's ability to adjust validation and generation based on the declared form (module, library, executable) — the pragma is the claim, the form schema is the contract |
+| `detect-assess-recover` | paradigm | The DAR pattern: Detect (notice deviation), Assess (evaluate severity and context), Recover (apply atomic correction). The linter detects, the schema assesses, the transformer recovers. |
+| `reserved-omission` | technical | Explicit acknowledgment of sections intentionally absent from a file — Available sections (valid but unused) vs Reserved sections (structurally prohibited in this form) |
+| `block-overview` | technical | Purpose statement + section order list at the start of each structural block — orients the reader and declares the file's organizational contract |
+
+**Template:** Copy from `word/glossary/technical/3-block.adoc` for concise technical terms.
+**Update:** `word/glossary/index.adoc` Quick Reference tables.
 
 ---
 
@@ -179,24 +328,12 @@ if (isCargo) {
 
 | File | Phase | Action |
 |------|:-----:|--------|
-| `tests/fixtures/toml/cargo/valid-library.toml` | 1.1 | CREATE: well-formed library Cargo.toml |
-| `tests/handlers/toml_test.ts` | 1.2, 4.2 | ADD: Cargo integration tests |
-| `schemas/data/forms/bare-bone/toml-bare-bone.jsonc` | 2.1 | CREATE: 3-block bare-bone form |
-| `schemas/data/forms/declared/toml-cargo-library.jsonc` | 2.1 | CREATE: Cargo library form |
-| `lib/foundation/schema.ts` | 2.2 | EXTEND: DerivationLayout + form loading |
-| `lib/handlers/toml.ts` | 2.3, 3.1-3.3 | ADD: form loading + form-aware checks |
-| `tests/fixtures/toml/cargo/missing-omni-metadata.toml` | 4.1 | CREATE: error case fixture |
-| `tests/fixtures/toml/cargo/library-with-bin.toml` | 4.1 | CREATE: reserved section fixture |
-
-## Reference Files
-
-| File | What It Shows |
-|------|---------------|
-| `lib/handlers/rust.ts` (checkFormRequired/Reserved) | Pattern for form-aware checks |
-| `lib/foundation/code-schema.ts` (FormConstraints) | Pattern for form types + loading |
-| `schemas/code/forms/declared/rust-module.jsonc` | Pattern for form schema structure |
-| `schemas/data/format/toml-3block-schema.jsonc` | TOML schema with pragma_taxonomy |
-| `tests/fixtures/toml/structure/valid-complete.toml` | Pattern for well-formed TOML fixture |
+| `lib/handlers/rust.ts` | 0, 3, 4, 5, 6, 7 | EDIT: linter fix + transformer upgrades |
+| `schemas/code/format/rust-4block-schema.jsonc` | 1, 6 | EDIT: fill_content enrichment + X1 fix |
+| `lib/foundation/code-schema.ts` | 2 | EDIT: new types + extraction |
+| `word/glossary/technical/*.adoc` | B | CREATE: 5 new entries |
+| `word/glossary/paradigm/detect-assess-recover.adoc` | B | CREATE: 1 new entry |
+| `word/glossary/index.adoc` | B | EDIT: add to Quick Reference |
 
 ## Verification
 
@@ -204,9 +341,17 @@ if (isCargo) {
 # After each phase:
 deno task test                    # All tests pass
 
-# After Phase 3:
-deno run --allow-read mod.ts lint toml <cargo-fixture>    # Form checks fire
+# After Phase 0:
+deno run --allow-read mod.ts lint rust exists.rs   # 0E 0W 0I (subtype-subsections gone)
 
-# Final:
-deno run --allow-read mod.ts lint toml <real-cargo.toml>  # Real-world validation
+# After Phase 3:
+deno run --allow-read mod.ts transform rust <test-file> --dry-run   # Shows formatted METADATA
+
+# After all phases:
+deno run --allow-read mod.ts transform rust exists.rs --dry-run     # Output matches manual work
+cargo test -p bereshit-l0-config                                     # 105 tests pass
+
+# Glossary:
+# Verify .adoc + .jsonc pairs exist for all 6 new terms
+# Verify index.adoc has entries in correct tables
 ```

@@ -1,0 +1,111 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-setup-trait-defs",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 8: Trait Definitions — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Trait Definitions. Behavioral contracts defining what types CAN DO. AVAILABLE in library and module forms.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/setup/trait-defs.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "pub trait {Name} { fn method(&self) -> Type; }",
+                "description": "Behavioral contracts — define what types CAN DO without specifying HOW",
+                "patterns": [
+                    "pub trait Handler {\n    fn handle(&self, request: &Request) -> Result<Response>;\n}",
+                    "pub trait Validate {\n    fn validate(&self) -> Result<(), ValidationError>;\n}"
+                ],
+                "visibility": "pub for library API traits, pub(crate) for internal contracts"
+            },
+            {
+                "construct": "trait inheritance",
+                "description": "Supertraits — building contracts on other contracts",
+                "patterns": [
+                    "pub trait ReadableConfig: fmt::Display + Send + Sync { ... }"
+                ],
+                "visibility": "pub typically"
+            },
+            {
+                "construct": "default method implementations",
+                "description": "Sensible defaults that implementors can override",
+                "patterns": [
+                    "pub trait Logger {\n    fn log(&self, msg: &str);\n    fn warn(&self, msg: &str) {\n        self.log(&format!(\"WARN: {}\", msg));\n    }\n}"
+                ],
+                "visibility": "N/A — part of trait definition"
+            },
+            {
+                "construct": "associated types",
+                "description": "Flexible return types defined by implementors",
+                "patterns": [
+                    "pub trait Parser {\n    type Output;\n    type Error;\n    fn parse(&self, input: &str) -> Result<Self::Output, Self::Error>;\n}"
+                ],
+                "visibility": "N/A — part of trait definition"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "impl Trait for Type",
+                "reason": "Trait IMPLEMENTATIONS go in BODY B2 TraitImplementations. SETUP defines contracts, BODY fulfills them.",
+                "defer_to": "BODY.TraitImplementations",
+                "rust_signal": "impl\\s+\\w+\\s+for\\s+\\w+"
+            },
+            {
+                "construct": "concrete logic in trait definitions",
+                "reason": "Traits define WHAT, not HOW. Default methods are the exception — and even those should be thin.",
+                "defer_to": "BODY.CoreLogic",
+                "rust_signal": "N/A — design judgment"
+            },
+            {
+                "construct": "more than ~3 traits per file",
+                "reason": "Many traits signal the file needs decomposition into modules",
+                "defer_to": "N/A — split into modules",
+                "rust_signal": "N/A — count check"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "impl\\s+\\w+\\s+for\\s+\\w+",
+                "to": "BODY.TraitImplementations",
+                "confidence": "high",
+                "why": "Trait implementation — belongs in BODY B2, not SETUP S8"
+            },
+            {
+                "pattern": "^(pub\\s+)?(struct|enum)\\s+",
+                "to": "SETUP.CoreTypes",
+                "confidence": "high",
+                "why": "Type definition — data structure, not behavioral contract"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// No module-level trait definitions needed.",
+            "empty_library": "/// TODO: Behavioral contract for this crate's primary abstraction.\npub trait {{trait_name}} {\n    /// TODO: Primary capability.\n    fn operate(&self) -> Result<(), Error>;\n}",
+            "comment_skeleton": "// pub trait Name {\n//     fn operate(&self) -> Result<(), Error>;\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Trait Definitions: the behavioral contracts. Traits define WHAT types can do without specifying HOW. They live in SETUP because they're declarations (like structs). Implementations live in BODY because they're logic.",
+    "_X5_scripture": "Micah 6:8 — He hath shewed thee, O man, what is good; and what doth the LORD require of thee."
+}

@@ -1,0 +1,129 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-body-output-display",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 6: Output & Display — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Output & Display. Human and machine representation. REQUIRED in library form, RESERVED in module form (modules return data, callers format it).",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/body/output-display.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "impl fmt::Display for {TypeName}",
+                "description": "Human-readable formatting — how types become visible to users",
+                "patterns": [
+                    "impl fmt::Display for Report {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        writeln!(f, \"Report: {} items, {} errors\", self.count, self.errors.len())\n    }\n}"
+                ],
+                "visibility": "N/A — trait impl",
+                "note": "Simple Display can stay in B2 TraitImplementations. Complex multi-line Display comes here."
+            },
+            {
+                "construct": "custom Debug implementation",
+                "description": "When #[derive(Debug)] isn't sufficient — custom debug formatting",
+                "patterns": [
+                    "impl fmt::Debug for Config {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        f.debug_struct(\"Config\")\n            .field(\"path\", &self.path)\n            .field(\"loaded\", &self.loaded)\n            .finish()\n    }\n}"
+                ],
+                "visibility": "N/A — trait impl"
+            },
+            {
+                "construct": "pub fn to_json(&self) -> Result<String, Error>",
+                "description": "JSON serialization — machine-readable output",
+                "patterns": [
+                    "pub fn to_json(&self) -> Result<String, Error> {\n    serde_json::to_string_pretty(self).map_err(Error::Serialize)\n}"
+                ],
+                "visibility": "pub"
+            },
+            {
+                "construct": "pub fn write_to(&self, writer: &mut impl Write) -> io::Result<()>",
+                "description": "Streaming output — write to any destination",
+                "patterns": [
+                    "pub fn write_to(&self, w: &mut impl Write) -> io::Result<()> {\n    writeln!(w, \"{}\", self)\n}"
+                ],
+                "visibility": "pub"
+            },
+            {
+                "construct": "pub fn summary(&self) -> String",
+                "description": "Concise human-readable summary — shorter than full Display",
+                "patterns": [
+                    "pub fn summary(&self) -> String {\n    format!(\"{}: {} items\", self.name, self.count())\n}"
+                ],
+                "visibility": "pub"
+            },
+            {
+                "construct": "output helper functions (library form)",
+                "description": "Fatal, error, warn, info message formatting — crate-level output layer",
+                "patterns": [
+                    "fn fatal(msg: &str) -> ! { eprintln!(\"FATAL: {}\", msg); std::process::exit(1); }",
+                    "fn warn(msg: &str) { eprintln!(\"WARN: {}\", msg); }"
+                ],
+                "visibility": "pub(crate) or private",
+                "note": "Library form only. Module form RESERVES B6 — modules return data, callers format."
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "parsing (from_str, from_json)",
+                "reason": "Parsing is construction, not output. from_* constructors belong in B3.",
+                "defer_to": "BODY.Constructors",
+                "rust_signal": "fn\\s+from_(str|json|toml|yaml)\\s*\\("
+            },
+            {
+                "construct": "business logic methods",
+                "reason": "Output section is for representation only — no state changes",
+                "defer_to": "BODY.CoreLogic",
+                "rust_signal": "fn\\s+\\w+\\(&mut\\s+self"
+            },
+            {
+                "construct": "query methods",
+                "reason": "Observation belongs in B5 Queries. Output is for formatting what queries reveal.",
+                "defer_to": "BODY.Queries",
+                "rust_signal": "fn\\s+\\w+\\(&self\\)\\s*->\\s*(?:&|Option<|bool|usize)"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "fn\\s+from_(str|json|toml|yaml)\\s*\\(",
+                "to": "BODY.Constructors",
+                "confidence": "high",
+                "why": "Parsing is construction — input, not output"
+            },
+            {
+                "pattern": "fn\\s+\\w+\\(&mut\\s+self\\)",
+                "to": "BODY.CoreLogic",
+                "confidence": "high",
+                "why": "Mutation — output doesn't modify state"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// RESERVED — module form does not own output formatting.\n// Modules return data; callers decide presentation.",
+            "empty_library": "impl fmt::Display for {{type_name}} {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        write!(f, \"TODO: Display for {{type_name}}\")\n    }\n}",
+            "comment_skeleton": "// impl fmt::Display for TypeName {\n//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n//         write!(f, \"...\")\n//     }\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Output & Display: how types become visible. Display for humans, serialization for machines, formatting for logs. The LAST thing a type does before leaving the crate — it becomes a String, JSON, bytes, or formatted text.",
+    "_X5_scripture": "Matthew 5:16 — Let your light so shine before men, that they may see your good works."
+}

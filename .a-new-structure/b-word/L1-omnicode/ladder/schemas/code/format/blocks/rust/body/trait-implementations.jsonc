@@ -1,0 +1,145 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-body-trait-implementations",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 2: Trait Implementations — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Trait Implementations. Making SETUP types honor behavioral contracts. Extends the base structure at blocks/body/trait-implementations.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/body/trait-implementations.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "impl {TraitName} for {TypeName} { ... }",
+                "description": "Trait implementation blocks — fulfilling behavioral contracts",
+                "patterns": [
+                    "impl Handler for RequestProcessor {\n    fn handle(&self, req: &Request) -> Result<Response> { ... }\n}"
+                ],
+                "visibility": "N/A — impl visibility follows trait and type visibility"
+            },
+            {
+                "construct": "impl fmt::Display for {TypeName}",
+                "description": "Display formatting — human-readable representation",
+                "patterns": [
+                    "impl fmt::Display for Config {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        write!(f, \"Config({})\", self.path.display())\n    }\n}"
+                ],
+                "note": "Also valid in B6 Output if complex. Simple Display stays in B2."
+            },
+            {
+                "construct": "impl From<{Source}> for {TypeName}",
+                "description": "Type conversion implementations — enabling the ? operator and Into<>",
+                "patterns": [
+                    "impl From<String> for Name {\n    fn from(s: String) -> Self { Self(s) }\n}",
+                    "impl TryFrom<&str> for Config {\n    type Error = ConfigError;\n    fn try_from(s: &str) -> Result<Self, Self::Error> { ... }\n}"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "impl Default for {TypeName}",
+                "description": "Default construction when not in S7 directly",
+                "patterns": [
+                    "impl Default for Settings {\n    fn default() -> Self { Self { verbose: false, output: PathBuf::from(\".\") } }\n}"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "impl Iterator / IntoIterator / etc.",
+                "description": "Standard library trait implementations",
+                "patterns": [
+                    "impl Iterator for ItemIter {\n    type Item = Item;\n    fn next(&mut self) -> Option<Self::Item> { ... }\n}"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "impl crate-defined traits",
+                "description": "Honoring contracts from SETUP S8 TraitDefs",
+                "patterns": [
+                    "impl Validate for Config {\n    fn validate(&self) -> Result<(), ValidationError> { ... }\n}"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "trait DEFINITIONS (pub trait ...)",
+                "reason": "Definitions belong in SETUP S8 TraitDefs. B2 implements, S8 defines.",
+                "defer_to": "SETUP.TraitDefs",
+                "rust_signal": "^(pub\\s+)?trait\\s+\\w+\\s*[{:]"
+            },
+            {
+                "construct": "constructors (new, build)",
+                "reason": "Type creation belongs in BODY B3 Constructors",
+                "defer_to": "BODY.Constructors",
+                "rust_signal": "fn\\s+(new|build|try_new|from_\\w+)\\s*\\((?!.*&self)"
+            },
+            {
+                "construct": "business logic methods (impl Type { ... } without a trait)",
+                "reason": "Inherent impl blocks with business logic belong in B4 CoreLogic",
+                "defer_to": "BODY.CoreLogic",
+                "rust_signal": "impl\\s+\\w+\\s*\\{(?!.*fn\\s+fmt)"
+            },
+            {
+                "construct": "test-only trait impls",
+                "reason": "Test-specific implementations go in CLOSING Cv under #[cfg(test)]",
+                "defer_to": "CLOSING.Cv",
+                "rust_signal": "#\\[cfg\\(test\\)\\]"
+            },
+            {
+                "construct": "orphan implementations",
+                "reason": "Rust orphan rule: trait and type both from external crates cannot be implemented here",
+                "defer_to": "N/A — use newtype pattern",
+                "rust_signal": "N/A — compiler error"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "^(pub\\s+)?trait\\s+",
+                "to": "SETUP.TraitDefs",
+                "confidence": "high",
+                "why": "Trait definition — belongs in SETUP S8, not BODY B2"
+            },
+            {
+                "pattern": "impl\\s+\\w+\\s*\\{\\s*(?:pub\\s+)?fn\\s+new\\s*\\(",
+                "to": "BODY.Constructors",
+                "confidence": "high",
+                "why": "Constructor in impl block — belongs in B3"
+            },
+            {
+                "pattern": "impl\\s+\\w+\\s*\\{\\s*(?:pub\\s+)?fn\\s+\\w+\\(&mut\\s+self",
+                "to": "BODY.CoreLogic",
+                "confidence": "medium",
+                "why": "Inherent method with &mut self — likely CoreLogic, not trait impl"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// impl fmt::Display for {{type_name}} {\n//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n//         write!(f, \"{{type_name}}(...)\")\n//     }\n// }",
+            "empty_library": "impl fmt::Display for {{type_name}} {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        write!(f, \"{{type_name}}(...)\")\n    }\n}",
+            "comment_skeleton": "// impl fmt::Display for TypeName { ... }\n// impl From<Source> for TypeName { ... }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Trait Implementations: connecting structure (types) to behavior (contracts). Group by TYPE, not by TRAIT — see all of a type's behaviors in one place. std traits first (Display, From, Default), then crate-specific.",
+    "_X5_scripture": "Romans 12:6 — Having then gifts differing according to the grace that is given to us."
+}

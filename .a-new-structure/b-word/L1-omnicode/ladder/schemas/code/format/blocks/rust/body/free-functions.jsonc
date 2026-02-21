@@ -1,0 +1,146 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-body-free-functions",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 7: Free Functions — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Free Functions. Module-level public functions that don't belong to a type. Extends the base structure at blocks/body/free-functions.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/body/free-functions.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "pub fn function_name(args) -> ReturnType",
+                "description": "Module-level public functions — standalone operations not tied to a type",
+                "patterns": [
+                    "pub fn load_config(path: &Path) -> Result<Config, Error> { ... }",
+                    "pub fn parse_toml(input: &str) -> Result<Value, Error> { ... }"
+                ],
+                "visibility": "pub for library API, pub(crate) for module convenience"
+            },
+            {
+                "construct": "convenience wrappers",
+                "description": "Functions combining multiple types or operations for ergonomic API",
+                "patterns": [
+                    "pub fn quick_validate(path: &Path) -> Result<bool, Error> {\n    let config = Config::from_file(path)?;\n    Ok(config.validate().is_ok())\n}"
+                ],
+                "visibility": "pub"
+            },
+            {
+                "construct": "register_identity() (library form only)",
+                "description": "Identity registration function — bridges METADATA to runtime in crate root",
+                "patterns": [
+                    "pub fn register_identity() -> (&'static str, &'static str) {\n    (pragma_get(\"key\").unwrap_or(\"unknown\"), pragma_get(\"at\").unwrap_or(\"0.0.0\"))\n}"
+                ],
+                "visibility": "pub",
+                "note": "Library form ONLY. Modules do NOT register independently — the crate root handles identity registration."
+            },
+            {
+                "construct": "/// doc comments on every public function",
+                "description": "What the function does, parameters, return value, errors, examples",
+                "patterns": [
+                    "/// Loads configuration from the given TOML file.\n///\n/// # Errors\n/// Returns `ConfigError::NotFound` if the file doesn't exist.\n/// Returns `ConfigError::ParseFailed` if the TOML is malformed."
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "methods that should be on a type",
+                "reason": "If it takes &self or &mut self, it belongs in an impl block (B3/B4/B5), not as a free function",
+                "defer_to": "BODY.CoreLogic or BODY.Queries",
+                "rust_signal": "fn\\s+\\w+\\(&(mut\\s+)?self"
+            },
+            {
+                "construct": "main() or entry points",
+                "reason": "Entry points belong in CLOSING Ce (Execution)",
+                "defer_to": "CLOSING.Execution",
+                "rust_signal": "fn\\s+main\\s*\\("
+            },
+            {
+                "construct": "test functions",
+                "reason": "Tests belong in CLOSING Cv (Validation)",
+                "defer_to": "CLOSING.Cv",
+                "rust_signal": "#\\[test\\]|#\\[cfg\\(test\\)\\]"
+            },
+            {
+                "construct": "register_identity() in module form",
+                "reason": "Modules don't register independently — the crate root handles identity registration",
+                "defer_to": "N/A — only in library form",
+                "rust_signal": "fn\\s+register_identity"
+            },
+            {
+                "construct": "output formatting functions (module form)",
+                "reason": "Output helpers (fatal, error, warn) are crate-level concerns, not module concerns",
+                "defer_to": "BODY.Output (library form only)",
+                "rust_signal": "fn\\s+(fatal|error_msg|warn_msg|info_msg)\\s*\\("
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific Defer Signals
+        // ─────────────────────────────────────
+
+        "defer_signals": [
+            {
+                "pattern": "fn\\s+\\w+\\(&(mut\\s+)?self",
+                "to": "BODY.CoreLogic or BODY.Queries",
+                "confidence": "high",
+                "why": "Has self parameter — should be a method, not a free function"
+            },
+            {
+                "pattern": "fn\\s+main\\s*\\(",
+                "to": "CLOSING.Execution",
+                "confidence": "high",
+                "why": "Entry point — belongs in CLOSING Ce"
+            },
+            {
+                "pattern": "#\\[test\\]",
+                "to": "CLOSING.Cv",
+                "confidence": "high",
+                "why": "Test function — belongs in CLOSING Cv"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+
+        "scaffold": {
+            "empty_module": "/// TODO: Module-level convenience function.\npub(crate) fn process(input: &str) -> Result<(), {{error_type}}> {\n    todo!()\n}",
+            "empty_library": "/// Registers this crate's identity.\npub fn register_identity() -> (&'static str, &'static str) {\n    (pragma_get(\"key\").unwrap_or(\"unknown\"), pragma_get(\"at\").unwrap_or(\"0.0.0\"))\n}",
+            "comment_skeleton": "// pub fn process(input: &str) -> Result<(), Error> {\n//     todo!()\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Free Functions: supplementary module-level API. Most logic lives in type methods (B3-B5). Free functions are for operations that don't naturally belong to a type — convenience wrappers, identity registration, one-shot utilities.",
+    "_X5_scripture": "Colossians 3:23 — And whatsoever ye do, do it heartily, as to the Lord, and not unto men."
+}

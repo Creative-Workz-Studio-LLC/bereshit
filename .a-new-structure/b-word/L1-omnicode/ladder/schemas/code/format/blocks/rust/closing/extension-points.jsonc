@@ -1,0 +1,90 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-closing-extension-points",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section X2: Extension Points — Rust Content",
+    "_P5_brief": "Rust-specific content rules for X2 (Extension Points). Designed growth points — where the file SHOULD grow. AVAILABLE in library and module forms.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/closing/extension-points.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "// Planned Features",
+                "description": "Features that are designed for but not yet implemented",
+                "patterns": [
+                    "// X2 — Extension Points\n//\n// Planned Features:\n//   - Async variant of load() using tokio::fs\n//   - Caching layer for repeated config reads\n//   - Hot-reload support via file watching"
+                ],
+                "visibility": "N/A — documentation"
+            },
+            {
+                "construct": "// Extension Points",
+                "description": "Where the architecture is designed to accept new functionality",
+                "patterns": [
+                    "// Extension Points:\n//   - New handlers: implement Handler trait (S8), register in handler_map (B4)\n//   - New formats: add variant to Format enum (S7), impl Parser for it (B2)"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// Known Limitations",
+                "description": "Honest about what the current implementation doesn't handle",
+                "patterns": [
+                    "// Known Limitations:\n//   - No recursive config includes (single file only)\n//   - String interpolation not supported\n//   - Max file size: 10MB (panics above)"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "executable Rust code",
+                "reason": "X2 is documentation — roadmap, not implementation",
+                "defer_to": "BODY or CLOSING Cv/Ce",
+                "rust_signal": "^(pub\\s+)?(fn|impl|struct|enum|trait|const|static|type|use|mod)\\s+"
+            },
+            {
+                "construct": "stale items",
+                "reason": "Extension points must be current — remove completed items, update planned ones",
+                "defer_to": "N/A — maintain currency",
+                "rust_signal": "N/A"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "^(pub\\s+)?(fn|impl|struct|enum)\\s+",
+                "to": "BODY",
+                "confidence": "high",
+                "why": "Executable code in documentation section"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// X2 — Extension Points\n//\n// Planned: (none currently)\n// Extension Points: (describe where this module should grow)",
+            "empty_library": "// X2 — Extension Points\n//\n// Planned: (none currently)\n// Extension Points: (describe where this crate should grow)\n// Known Limitations: (honest about what's not handled)",
+            "comment_skeleton": "// X2 — Extension Points (document growth roadmap)"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust X2 (Extension Points): where the code SHOULD grow. Planned features, designed extension points, known limitations. Serves future developers — including yourself six months from now.",
+    "_X5_scripture": "Habakkuk 2:3 — For the vision is yet for an appointed time, but at the end it shall speak, and not lie."
+}

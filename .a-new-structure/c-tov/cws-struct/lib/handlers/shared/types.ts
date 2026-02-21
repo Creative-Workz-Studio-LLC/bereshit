@@ -122,20 +122,25 @@ export interface BaseFileContext {
 /** The 4 blocks in required order. */
 export const BLOCKS = ["METADATA", "SETUP", "BODY", "CLOSING"] as const;
 
-/** Patterns that identify a block boundary (comment-based, language-agnostic). */
+/** Patterns that identify a block boundary (comment-based, language-agnostic).
+ *  Accepts both bare format (// SETUP) and tagged format (// SETUP BLOCK [SETUP]).
+ *  Tags are identity markers — the block declaring what it IS. Machine-parseable,
+ *  grep-friendly, self-documenting. Tagged format is preferred; bare is accepted
+ *  for backwards compatibility. */
 export const BLOCK_PATTERNS: Record<string, RegExp> = {
-  METADATA: /^\/\/\s*={4,}\s*$|^\/\/\s+METADATA\s*$/,
-  SETUP:    /^\/\/\s+SETUP\s*$/,
-  BODY:     /^\/\/\s+BODY\s*$/,
-  CLOSING:  /^\/\/\s+CLOSING\s*$/,
+  METADATA: /^\/\/\s*={4,}\s*$|^\/\/\s+METADATA(\s+BLOCK\s+\[METADATA\])?\s*$/,
+  SETUP:    /^\/\/\s+SETUP(\s+BLOCK\s+\[SETUP\])?\s*$/,
+  BODY:     /^\/\/\s+BODY(\s+BLOCK\s+\[BODY\])?\s*$/,
+  CLOSING:  /^\/\/\s+CLOSING(\s+BLOCK\s+\[CLOSING\])?\s*$/,
 };
 
-/** END marker patterns for each block. */
+/** END marker patterns for each block.
+ *  Accepts both bare format (// END SETUP) and tagged format (// END SETUP [END]). */
 export const END_PATTERNS: Record<string, RegExp> = {
-  METADATA: /^\/\/\s+END METADATA\s*$/,
-  SETUP:    /^\/\/\s+END SETUP\s*$/,
-  BODY:     /^\/\/\s+END BODY\s*$/,
-  CLOSING:  /^\/\/\s+END CLOSING\s*$/,
+  METADATA: /^\/\/\s+END METADATA(\s+\[END\])?\s*$/,
+  SETUP:    /^\/\/\s+END SETUP(\s+\[END\])?\s*$/,
+  BODY:     /^\/\/\s+END BODY(\s+\[END\])?\s*$/,
+  CLOSING:  /^\/\/\s+END CLOSING(\s+\[END\])?\s*$/,
 };
 
 // ---------------------------------------------------------------------------
@@ -274,11 +279,12 @@ export const METADATA_CONTENT_RULES: readonly FieldContentRule[] = [
 // BODY subsection patterns
 // ---------------------------------------------------------------------------
 
-/** Numeric subsection pattern: `// 1. Name` or `// 1 Name`. */
-export const BODY_SUBSECTION_PATTERN = /^\/\/\s+(\d+)\.?\s+(.+)/;
+/** Numeric subsection pattern: `// 1. Name` or `// 1 Name`.
+ *  Uses \s{1,2} to match headers (1-2 spaces) but NOT overview TOC lines (3+ spaces). */
+export const BODY_SUBSECTION_PATTERN = /^\/\/\s{1,2}(\d+)\.?\s+(.+)/;
 
-/** Legacy subsection pattern: `// 1 -- Name`. */
-export const BODY_SUBSECTION_LEGACY = /^\/\/\s+§(\d+)\s*[—–-]\s*(.+)/;
+/** Legacy subsection pattern: `// §1 — Name`. */
+export const BODY_SUBSECTION_LEGACY = /^\/\/\s{1,2}§(\d+)\s*[—–-]\s*(.+)/;
 
 // ---------------------------------------------------------------------------
 // Scaling thresholds — block size warnings

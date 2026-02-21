@@ -1070,7 +1070,7 @@
         // {{name}} syntax — engine substitutes with context values.
 
         "fill_content": {
-            "_description": "Templates for schema-driven file generation. Placeholders: {{key}}, {{title}}, {{format}}, {{subtype}}, {{version}}, {{date}}, {{organization}}, {{scripture}}, {{purpose}}, {{filename}}, {{crate_name}}, {{consumers}}, {{from}}.",
+            "_description": "Templates for schema-driven file generation. Identity groups enable section headers, docstrings, and group comments. Column alignment is computed at generation time from the longest field name.",
 
             "defaults": {
                 "version": "a-01.00",
@@ -1079,7 +1079,15 @@
                 "scripture": "Genesis 1:1",
                 "scripture_text": "In the beginning God created the heaven and the earth.",
                 "type": "code",
-                "structure": "4-block"
+                "structure": "4-block",
+                "architect": "Seanje Lenox-Wise",
+                "implementation": "Nova Dawn (CPI-SI)",
+                "role": "[role]",
+                "layer": "[layer]",
+                "position": "[position]",
+                "pattern": "[pattern]",
+                "domain": "bereshit",
+                "paradigm": "CPI-SI"
             },
 
             "directives": [
@@ -1104,27 +1112,113 @@
             },
 
             "pragma_entries": [
-                ["I1.key", "{{key}}"],
-                ["I1.format", "rust"],
-                ["I1.from", "{{from}}"],
-                ["I1.at", "{{version}}"],
-                ["I2.type", "code"],
+                ["I1.key",       "{{key}}"],
+                ["I1.format",    "rust"],
+                ["I1.from",      "{{from}}"],
+                ["I1.at",        "{{version}}"],
+                ["I2.type",      "code"],
                 ["I2.structure", "4-block"],
-                ["I2.subtype", "{{subtype}}"],
-                ["I3.file", "{{filename}}"],
-                ["I3.title", "{{title}}"]
+                ["I2.subtype",   "{{subtype}}"],
+                ["I2.role",      "{{role}}"],
+                ["I3.file",      "{{filename}}"],
+                ["I3.title",     "{{title}}"],
+                ["I3.component", "{{component}}"],
+                ["I3.path",      "{{path}}"],
+                ["I3.provides",  "{{provides}}"],
+                ["I3.brief",     "{{brief}}"],
+                ["I4.layer",     "{{layer}}"],
+                ["I4.position",  "{{position}}"],
+                ["I4.pattern",   "{{pattern}}"]
             ],
 
             "metadata_entries": [
-                ["C1.version", "{{version}}"],
-                ["C1.status", "{{status}}"],
-                ["C1.created", "{{date}}"],
-                ["C1.updated", "{{date}}"],
-                ["C2.organization", "{{organization}}"],
-                ["C3.scripture", "{{scripture}}"],
-                ["C4.requires.stdlib", "none"],
-                ["C4.consumers", "{{consumers}}"]
+                ["C1.version",           "{{version}}"],
+                ["C1.status",            "{{status}}"],
+                ["C1.created",           "{{date}}"],
+                ["C1.updated",           "{{date}}"],
+                ["C2.architect",         "{{architect}}"],
+                ["C2.implementation",    "{{implementation}}"],
+                ["C2.organization",      "{{organization}}"],
+                ["C2.copyright",         "{{organization}}"],
+                ["C3.scripture",         "{{scripture}}"],
+                ["C3.principle",         "{{principle}}"],
+                ["C3.anchor",            "Genesis 1:1"],
+                ["C4.requires.stdlib",   "none"],
+                ["C4.requires.external", "{{requires_external}}"],
+                ["C4.requires.internal", "{{requires_internal}}"],
+                ["C4.consumers",         "{{consumers}}"],
+                ["C4.integration",       "{{integration}}"],
+                ["C4.if_missing",        "{{if_missing}}"],
+                ["C5.purpose",           "{{purpose}}"],
+                ["C5.philosophy",        "{{philosophy}}"],
+                ["C6.current",           "{{version}} — {{purpose}}"],
+                ["C6.planned",           "{{planned}}"],
+                ["C6.limitations",       "{{limitations}}"],
+                ["C7.tags",              "{{tags}}"],
+                ["C7.category",          "{{category}}"],
+                ["C7.domain",            "{{domain}}"],
+                ["C7.paradigm",          "{{paradigm}}"]
             ],
+
+            "identity_groups": {
+                "_description": "Group markers for structured METADATA block formatting. Each group defines a range prefix, label for inline comments, and optional docstring for the static declaration.",
+                "pragma": [
+                    { "range": "I1", "label": "Core",         "docstring": "/// OmniCode identity for this module." },
+                    { "range": "I2", "label": "Family" },
+                    { "range": "I3", "label": "Instance" },
+                    { "range": "I4", "label": "Architecture" }
+                ],
+                "metadata": [
+                    { "range": "C1", "label": "State",         "docstring": "/// OmniCode context for this module." },
+                    { "range": "C2", "label": "Attribution" },
+                    { "range": "C3", "label": "Grounding" },
+                    { "range": "C4", "label": "Dependencies" },
+                    { "range": "C5", "label": "Intent" },
+                    { "range": "C6", "label": "Roadmap" },
+                    { "range": "C7", "label": "Classification" }
+                ],
+                "section_headers": {
+                    "pragma": "// Identity (I1-I4)",
+                    "metadata": "// Context (C1-C7)"
+                }
+            },
+
+            "transformer_modes": {
+                "_description": "Named leniency levels for transformer output. strict = exists.rs production standard (0E 0W 0I). balance = correct structure, reasonable formatting (0E 0W). growth = minimal scaffolding that compiles (0E).",
+                "strict": {
+                    "linter_target": "0E 0W 0I",
+                    "identity_formatting": true,
+                    "section_headers": true,
+                    "group_comments": true,
+                    "docstrings": true,
+                    "column_alignment": true,
+                    "block_overviews": true,
+                    "ro_grouped": true,
+                    "closing_complete": true
+                },
+                "balance": {
+                    "linter_target": "0E 0W",
+                    "identity_formatting": true,
+                    "section_headers": false,
+                    "group_comments": false,
+                    "docstrings": false,
+                    "column_alignment": false,
+                    "block_overviews": true,
+                    "ro_grouped": false,
+                    "closing_complete": true
+                },
+                "growth": {
+                    "linter_target": "0E",
+                    "identity_formatting": false,
+                    "section_headers": false,
+                    "group_comments": false,
+                    "docstrings": false,
+                    "column_alignment": false,
+                    "block_overviews": false,
+                    "ro_grouped": false,
+                    "closing_complete": false
+                }
+            },
 
             "metadata_comment": [
                 "// Key:     {{key}}",
@@ -1133,9 +1227,9 @@
 
             "closing_defaults": {
                 "X1": {
-                    "never": "Remove 4-block structure",
-                    "careful": "Change public API signatures",
-                    "safe": "Add new functions, types, constants"
+                    "never": "Break 4-block structure, Remove block boundaries, Remove identity statics",
+                    "careful": "Function signatures (breaks callers), Error types (breaks match arms)",
+                    "safe": "Function bodies, New functions, Comments, Tests"
                 },
                 "X5": {
                     "note": "{{purpose}}",

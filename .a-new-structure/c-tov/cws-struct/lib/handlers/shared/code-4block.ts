@@ -67,9 +67,9 @@ export function findBlocks(lines: string[]): BlockPosition[] {
     for (let i = 0; i < lines.length; i++) {
       const trimmed = lines[i]!.trim();
 
-      // Look for block header: "// METADATA", "// SETUP", etc.
+      // Look for block header: "// METADATA", "// METADATA BLOCK [METADATA]", etc.
       if (blockName === "METADATA") {
-        if (/^\/\/\s+METADATA\s*$/.test(trimmed) && headerLine === 0) {
+        if (/^\/\/\s+METADATA(\s+BLOCK\s+\[METADATA\])?\s*$/.test(trimmed) && headerLine === 0) {
           headerLine = i + 1;
         }
       } else {
@@ -148,11 +148,15 @@ export function findBlockRange(lines: string[], blockName: string): BlockRange |
   let headerLine = -1;
   let endLine = -1;
 
+  // Pre-build regexes outside the loop (accepts bare and tagged formats)
+  const headerRe = new RegExp(`^//\\s+${blockName}(\\s+BLOCK\\s+\\[${blockName}\\])?\\s*$`);
+  const endRe = new RegExp(`^//\\s+END\\s+${blockName}(\\s+\\[END\\])?\\s*$`);
+
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i]!.trim();
 
-    // Block header: `// BLOCKNAME` between separators
-    if (trimmed === `// ${blockName}` && headerLine < 0) {
+    // Block header: `// BLOCKNAME` or `// BLOCKNAME BLOCK [BLOCKNAME]` between separators
+    if (headerRe.test(trimmed) && headerLine < 0) {
       const above = i > 0 ? lines[i - 1]!.trim() : "";
       if (/^\/\/\s+={10,}$/.test(above)) {
         headerLine = i;
@@ -160,8 +164,8 @@ export function findBlockRange(lines: string[], blockName: string): BlockRange |
       }
     }
 
-    // END marker: `// END BLOCKNAME`
-    if (trimmed === `// END ${blockName}` && headerLine >= 0 && endLine < 0) {
+    // END marker: `// END BLOCKNAME` or `// END BLOCKNAME [END]`
+    if (endRe.test(trimmed) && headerLine >= 0 && endLine < 0) {
       endLine = i;
       break;
     }
@@ -212,6 +216,8 @@ export function getSubsectionRanges(
     const trimmed = blockLines[i]!.trim();
     // Skip separator-only lines
     if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+    // Skip Reserved Omission entries (indented references, not section headers)
+    if (/^\/\/\s{3,}\S/.test(trimmed)) continue;
 
     for (const sub of subsections) {
       if (sub.pattern.test(trimmed)) {
@@ -990,6 +996,10 @@ export function checkSetupSubsectionOrder(
     const trimmed = setupLines[i]!.trim();
     // Skip separator-only lines
     if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+    // Skip Reserved Omission entries — indented references (//   Name — ...),
+    // not section headers. Section headers use `// Name` (1 space after //).
+    // Reserved Omission entries are an index, not boundaries.
+    if (/^\/\/\s{3,}\S/.test(trimmed)) continue;
 
     for (const sub of subsections) {
       if (sub.pattern.test(trimmed)) {
@@ -1070,6 +1080,8 @@ export function checkBodySubsectionOrder(
     const trimmed = bodyLines[i]!.trim();
     // Skip separator-only lines
     if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+    // Skip Reserved Omission entries (indented references, not section headers)
+    if (/^\/\/\s{3,}\S/.test(trimmed)) continue;
 
     const match = BODY_SUBSECTION_PATTERN.exec(trimmed) ??
                   (includeLegacy ? BODY_SUBSECTION_LEGACY.exec(trimmed) : null);

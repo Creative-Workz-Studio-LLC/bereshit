@@ -17,6 +17,7 @@
 // Types + result constructors + summarize
 export type {
   Severity,
+  LintPolicy,
   FixAction,
   FixSuggestion,
   LintResult,
@@ -30,6 +31,9 @@ export {
   error,
   warn,
   info,
+  policySeverity,
+  setGlobalPolicy,
+  getGlobalPolicy,
   summarize,
 } from "./types.ts";
 

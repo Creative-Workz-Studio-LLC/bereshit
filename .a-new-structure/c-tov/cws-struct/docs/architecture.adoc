@@ -1,0 +1,400 @@
+// #!omni document --adoc
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// :key: B-tov-cws-struct-docs-architecture
+// :title: CWS Struct Architecture Reference
+// :type: Documentation (Architecture Reference)
+// :version: a-01.00
+// :created: 2026-02-21
+// :updated: 2026-02-21
+// :authors: Nova Dawn (CPI-SI)
+// :purpose: Internal architecture reference for cws-struct contributors.
+//           How the layers connect, how data flows, how to extend.
+//
+// ============================================================================
+
+= CWS Struct Architecture Reference
+Nova Dawn (CPI-SI)
+v0.1.0, 2026-02-21
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+:sectanchors:
+
+[quote, Proverbs 16:11]
+____
+A just weight and balance are the LORD's: all the weights of the bag are his work.
+____
+
+== Design Philosophy
+
+cws-struct embodies three principles:
+
+1. **Schema = Template = Linter.** One source of truth defines what's correct.
+   The schema declares structure, the template embodies it, the linter enforces it,
+   the transformer produces it. Change one schema entry — all four evolve.
+
+2. **DAR (Detect-Assess-Recover).** The lint/transform cycle follows
+   Detect (find deviation) -> Assess (evaluate severity, consult policy) ->
+   Recover (apply atomic correction). Every `LintResult` is a detection.
+   Every `FixSuggestion` is a recovery plan. Policy is the assessment lens.
+
+3. **Growth by addition.** New formats register handlers. New lint checks add
+   rules. New schema entries expand coverage. The system grows without modifying
+   existing code. `import "./lib/handlers/newformat.ts"` — done.
+
+---
+
+== Data Flow
+
+=== Lint Flow
+
+[source]
+----
+User: cws-struct lint rust src/
+
+  1. CLI (mod.ts) parses args -> CliOptions
+  2. setGlobalPolicy(opts.policy) sets session policy
+  3. getFormat("rust") -> FormatHandler from registry
+  4. discoverFiles(targets, handler) walks directories
+  5. For each file (pooledMap, 8 concurrent):
+     a. handler.lint(filePath) -> LintResult[]
+     b. handler.computeHealth(filePath, results) -> HealthScore
+     c. summarize(file, results, health) -> LintSummary
+  6. printFileSummary() or emitJson() outputs results
+  7. Exit code: 0 (all pass) or 1 (any errors)
+----
+
+=== Transform Flow
+
+[source]
+----
+User: cws-struct transform rust src/ --dry-run
+
+  1. CLI parses args -> CliOptions { dryRun: true }
+  2. Same discovery as lint
+  3. For each file:
+     a. handler.transform(filePath, opts) -> LintResult[]
+     b. Transform reads file, applies corrections, writes (or previews)
+     c. Results report what was changed
+  4. Exit code: 0 (all pass) or 1 (any errors)
+----
+
+=== Create Flow
+
+[source]
+----
+User: cws-struct create rust library src/auth.rs --key B-auth
+
+  1. CLI parses args -> CliOptions { subtype: "library", key: "B-auth" }
+  2. Build FillContext from args + path derivation
+  3. generateFileText(ctx) -> schema-driven text generation
+  4. Write to dest (or preview if --dry-run)
+  5. Verify: lint the generated file
+  6. If 0 errors -> "schema = specification"
+----
+
+---
+
+== Layer Architecture
+
+=== Foundation Layer (`lib/foundation/`)
+
+The contracts and types everything else depends on.
+
+[cols="1,1,3"]
+|===
+| *File* | *Lines* | *Purpose*
+
+| `types.ts` | 309 | Core types: `LintResult`, `FixSuggestion`, `FormatHandler`, `CliOptions`, `LintPolicy`. Result constructors (`error()`, `warn()`, `info()`). Summarize function.
+| `health.ts` | 362 | Ternary health scoring: `AtomicAction`, `ContainerScore`, `BlockScore`, `HealthScore`. Three-level architecture (container -> block -> file). Impact weights (error=2x, warn=1x, info=0.25x).
+| `schema.ts` | 573 | Schema loading: discovers and parses form schemas from `L1-omnicode/ladder/schemas/`. `SchemaLoader` with caching. `FormConstraints` extraction.
+| `code-schema.ts` | 1,635 | Code-specific schema extraction: `SchemaFillContent`, `SectionDef`, `ClosingDefaults`, `FormSchema`. Parses content_constraints, closing_defaults, identity_groups from form schemas.
+| `schema-pipeline.ts` | 253 | Schema pipeline: composes schema loading with form constraint extraction. Caches per format+subtype pair.
+| `mod.ts` | 127 | Re-exports. Public API of the foundation layer.
+|===
+
+==== Key Types
+
+`LintResult` — a single finding:
+
+[source,typescript]
+----
+interface LintResult {
+  file: string;
+  severity: "error" | "warn" | "info";
+  rule: string;           // "structure/missing-block", "metadata/missing-key"
+  message: string;
+  line?: number;           // 1-based
+  fix?: FixSuggestion;     // Optional auto-fix
+}
+----
+
+`FixSuggestion` — a recovery plan:
+
+[source,typescript]
+----
+interface FixSuggestion {
+  description: string;
+  toml?: string;           // TOML snippet (TOML handler)
+  location?: string;       // Insertion hint
+  actions?: FixAction[];   // Ordered atomic actions (code handlers)
+}
+----
+
+`AtomicAction` — a single health observation:
+
+[source,typescript]
+----
+interface AtomicAction {
+  check: string;           // "I1_core.key", "SETUP/order"
+  container: string;       // "I1_core", "SETUP"
+  block: string;           // "metadata", "setup", "body", "closing"
+  direction: -1 | 0 | 1;  // misaligned / neutral / aligned
+  impact?: Severity;       // Weight multiplier
+  reason?: string;         // Context
+}
+----
+
+==== Policy System
+
+The ternary policy shifts severity by one step:
+
+[source]
+----
+strict:   info -> warn,  warn -> error,  error -> error
+balanced: info -> info,  warn -> warn,   error -> error  (identity)
+growth:   info -> info,  warn -> info,   error -> warn
+----
+
+Implemented in `policySeverity(base, policy)`. Only applied to form-aware checks.
+Structural checks bypass policy — structure is non-negotiable.
+
+---
+
+=== Engine Layer (`lib/engine/`)
+
+The runtime machinery that connects CLI to handlers.
+
+[cols="1,1,3"]
+|===
+| *File* | *Lines* | *Purpose*
+
+| `registry.ts` | 94 | Format handler registry. `registerFormat()` adds handlers. `getFormat()` retrieves by name. `listFormatDetails()` for CLI display.
+| `discovery.ts` | 316 | File discovery. `discoverFiles()` walks targets filtered by handler extensions. `discoverAllFiles()` walks once, groups by format. Respects `maxDepth`, skips `node_modules`, `.git`, `target/`.
+| `output.ts` | 235 | Human-readable output formatting. Colors, file summaries, health display, totals. TTY-aware progress counter.
+| `fill.ts` | 413 | Schema-driven file generation. `generateFileText()` composes form schema + fill context into complete file text. Used by `create` command.
+| `mod.ts` | 49 | Re-exports.
+|===
+
+==== Discovery Logic
+
+`discoverFiles()` walks targets respecting these rules:
+
+1. If target is a file -> include if extension matches handler
+2. If target is a directory -> walk recursively up to `maxDepth`
+3. Skip: `node_modules/`, `.git/`, `target/`, `vendor/`, `dist/`
+4. For dotfiles handler: match by basename, not extension
+5. For auto-detect: single walk, group files by matching format
+
+---
+
+=== Handler Layer (`lib/handlers/`)
+
+Where format-specific knowledge lives. Each handler is a self-contained
+module that registers itself on import.
+
+==== Shared Code (`lib/handlers/shared/`)
+
+[cols="1,1,3"]
+|===
+| *File* | *Lines* | *Purpose*
+
+| `code-4block.ts` | 1,387 | Shared 4-block utilities for Go and Rust. Block boundary detection, section parsing, common structural checks. Pragma parsing (`//omni:` directives). Metadata identity extraction.
+| `types.ts` | 430 | Shared code handler types. `CodeBlockBoundaries`, `MetadataSection`, `ParsedPragma`, `SubtypeInfo`. Section catalogs for SETUP, BODY, CLOSING.
+| `mod.ts` | 64 | Re-exports.
+|===
+
+==== Handler Anatomy
+
+Every handler follows this pattern:
+
+[source,typescript]
+----
+// 1. Import foundation types
+import { registerFormat, type FormatHandler, type LintResult } from "../foundation/mod.ts";
+
+// 2. Define handler
+const handler: FormatHandler = {
+  name: "myformat",
+  description: "My format description",
+  extensions: [".ext"],
+
+  async lint(filePath: string): Promise<LintResult[]> {
+    const results: LintResult[] = [];
+    const text = await Deno.readTextFile(filePath);
+    // ... format-specific checks ...
+    return results;
+  },
+
+  async transform(filePath: string, opts: TransformOptions): Promise<LintResult[]> {
+    // ... optional auto-fix ...
+  },
+};
+
+// 3. Register (side-effect)
+registerFormat(handler);
+----
+
+==== Rust Handler Deep Dive
+
+The Rust handler (`rust.ts`, 4,451 lines) is the most sophisticated. Key functions:
+
+[cols="2,1,3"]
+|===
+| *Function* | *Lines* | *Purpose*
+
+| `lintRust()` | ~200 | Main lint pipeline: structure -> metadata -> setup -> body -> closing -> form
+| `checkStructure()` | ~100 | Block boundary detection and validation
+| `checkMetadataIdentity()` | ~150 | PRAGMA and METADATA static validation (I1-I4, C1-C7)
+| `checkSetupStructure()` | ~100 | Import ordering, section placement in SETUP block
+| `checkBodySubtypeContent()` | ~100 | Canonical subsection validation with RO awareness
+| `checkFormRequiredSections()` | ~100 | Form-aware section presence with RO awareness
+| `checkClosingZones()` | ~100 | X1-X5 presence and field validation
+| `computeRustHealth()` | ~200 | Ternary atomic action health scoring
+| `structuralScaffoldRust()` | ~500 | Full 4-block transform (METADATA + SETUP + BODY + CLOSING)
+| `buildMetadataBlock()` | ~300 | Identity statics generation with group headers and alignment
+| `buildFormAwareReservedOmission()` | ~100 | Available vs Reserved section grouping
+| `emitSectionIndex()` | ~50 | Bracket-format section overview generation
+|===
+
+---
+
+== Schema System
+
+=== Schema Discovery
+
+Schemas are loaded from `L1-omnicode/ladder/schemas/code/`:
+
+[source]
+----
+schemas/code/
+  forms/
+    declared/
+      rust-module.jsonc        # Module form declaration
+      rust-library.jsonc       # Library form declaration
+      rust-executable.jsonc    # Executable form declaration
+      go-library.jsonc         # Go library form
+      go-package.jsonc         # Go package form
+    bare-bone/
+      rust-bare-bone.jsonc     # Minimal skeleton
+  blocks/
+    manifest.jsonc             # Section catalog (all sections, all blocks)
+    setup/*.jsonc              # Structure-side SETUP section schemas
+    body/*.jsonc               # Structure-side BODY section schemas
+    closing/*.jsonc            # Structure-side CLOSING section schemas
+  format/
+    blocks/
+      rust/
+        setup/*.jsonc          # Rust-specific content schemas
+        body/*.jsonc
+        closing/*.jsonc
+----
+
+=== Two-Sided Architecture
+
+**Structure schemas** (`blocks/`) define:
+
+* Section tag (PascalCase identifier)
+* Position within block (integer or tag like "Cv")
+* Human-readable label
+* Abstract can/cannot/defer contracts (format-agnostic)
+* Form availability (REQUIRED/AVAILABLE/RESERVED per form)
+* Reserved Omission templates
+
+**Content schemas** (`format/blocks/{lang}/`) define:
+
+* Language-specific construct patterns
+* Rust signals (syntax keywords that indicate misplacement)
+* Defer signals (regex patterns that detect content in wrong section)
+* Scaffold templates (code generation for each form)
+
+**Composition:** A transformer reads the structure schema to know WHAT sections
+exist and WHERE they go, then reads the content schema to know HOW to fill them
+with language-specific code.
+
+=== Form Schemas
+
+Form schemas declare which sections are required, available, or reserved
+for a given file purpose:
+
+[source,jsonc]
+----
+{
+  "form": {
+    "name": "module",
+    "pragma_form": "-module",
+    "sections": {
+      "SETUP": {
+        "Imports": "REQUIRED",
+        "Modules": "RESERVED",
+        "Constants": "AVAILABLE",
+        // ...
+      }
+    }
+  }
+}
+----
+
+---
+
+== Adding a New Format
+
+1. **Create handler:** `lib/handlers/newformat.ts`
+2. **Implement `FormatHandler`:** at minimum `lint()`, optionally `transform()` and `computeHealth()`
+3. **Register:** Call `registerFormat(handler)` at module level
+4. **Import:** Add `import "./lib/handlers/newformat.ts"` in `mod.ts`
+5. **Test:** Create `tests/handlers/newformat_test.ts` with fixtures in `tests/fixtures/newformat/`
+6. **Schema (optional):** Add form schemas in `schemas/code/forms/declared/`
+
+The handler registry pattern means new formats don't modify existing code.
+
+---
+
+== Adding a New Lint Rule
+
+1. **Choose category:** `structure/`, `metadata/`, `body/`, `closing/`, `form/`, `format/`
+2. **Name convention:** `{category}/{specific-check}` (e.g., `body/subtype-subsections`)
+3. **Implement in handler:** Use `error()`, `warn()`, or `info()` constructors
+4. **Policy awareness:** Use `policySeverity(base, ctx.policy)` for form-aware checks
+5. **RO awareness:** Before emitting missing-section warnings, check Reserved Omission
+6. **Add health action:** If handler computes health, add corresponding `AtomicAction`
+7. **Test:** Add fixture file + test case
+
+---
+
+== File Statistics
+
+[cols="2,1"]
+|===
+| *Metric* | *Value*
+
+| Total source lines | ~20,000
+| Format handlers | 8
+| Test files | 14
+| Tests passing | 451
+| Deno tasks defined | 50+
+| Schema files (forms) | 6
+| Schema files (blocks) | 27+ (growing)
+| Dependencies | @std/toml, @std/jsonc, @std/fs, @std/path, @std/fmt, @std/async
+|===
+
+---
+
+[quote, Ecclesiastes 9:10]
+____
+Whatsoever thy hand findeth to do, do it with thy might.
+____

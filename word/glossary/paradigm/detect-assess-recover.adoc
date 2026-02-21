@@ -1,0 +1,92 @@
+// #!omni data --adoc
+// ===========================================================================
+// METADATA BLOCK
+// ===========================================================================
+// :key: GLOSS-PAR-008
+// :term: detect-assess-recover
+// :category: paradigm
+// :status: Active
+// :created: 2026-02-20
+// :authors: Nova Dawn, Seanje Lenox-Wise
+// :biblical_foundation: Ezekiel 34:11-12
+// :companion_data: detect-assess-recover.jsonc
+// ===========================================================================
+
+// ===========================================================================
+// CONTENT BLOCK
+// ===========================================================================
+
+= Detect-Assess-Recover (DAR)
+
+*Paradigm Pattern*
+
+*Definition:* The DAR pattern — Detect (notice deviation), Assess (evaluate severity and context), Recover (apply atomic correction). The linter detects, the schema assesses, the transformer recovers.
+
+[quote, Ezekiel 34:11-12 KJV]
+____
+For thus saith the Lord GOD; Behold, I, even I, will both search my sheep, and seek them out. As a shepherd seeketh out his flock in the day that he is among his sheep that are scattered; so will I seek out my sheep, and will deliver them out of all places where they have been scattered.
+____
+
+== The Three Phases
+
+[cols="1,1,2,2"]
+|===
+|Phase |Action |Who Does It |What It Produces
+
+|*Detect*
+|Notice deviation from standard
+|Linter (cws-struct lint)
+|LintResult with severity, location, message
+
+|*Assess*
+|Evaluate severity and context
+|Schema (form constraints + rules)
+|FixSuggestion with atomic action + severity
+
+|*Recover*
+|Apply atomic correction
+|Transformer (cws-struct transform)
+|Corrected output matching production standard
+|===
+
+== The Atomic Action
+
+Recovery operates through *FixSuggestions* — self-contained, traceable, composable corrections:
+
+* *Self-contained:* Each fix carries all information needed to apply it
+* *Traceable:* Every fix links back to the rule that detected the deviation
+* *Composable:* Multiple fixes compose without conflict (they operate on independent locations)
+
+== The k-factor Connection
+
+The `--extensions` flag on the transformer maps to the k-factor:
+
+* *growth mode* (k=0): Errors only — minimal correction, just make it valid
+* *balance mode* (k=0.5): Errors + warnings — correct structure
+* *strict mode* (k=+1): 0E 0W 0I — scaffold toward fullness, production-grade
+
+== Schema as Assessor
+
+The schema doesn't just define what's correct — it defines what *severity* a deviation carries. A missing required section is an error. A missing available section is info. A reserved section present is a warning (or error under strict policy). The schema IS the assessment.
+
+== Relationship to Building Block Method
+
+DAR is the Building Block Method applied to code quality:
+
+* *Detect (-1):* Break down — trace toward what's wrong
+* *Assess (0):* Anchor — the schema is the immutable standard
+* *Recover (+1):* Build up — construct the correction from the standard
+
+== Biblical Connection
+
+"I will search my sheep and seek them out" — God's pattern is DAR. He detects the scattered, assesses where they are, and recovers them. The shepherd doesn't just notice the lost sheep — He goes to where it is and brings it back. That's recovery, not just detection.
+
+// ===========================================================================
+// CLOSING BLOCK
+// ===========================================================================
+
+'''
+
+*See also:* <<../technical/schema-template-linter-triangle.adoc#,Schema-Template-Linter Triangle>>, <<building-block-method.adoc#,Building Block Method>>, <<../technical/form-awareness.adoc#,Form Awareness>>
+
+*Data:* `detect-assess-recover.jsonc`

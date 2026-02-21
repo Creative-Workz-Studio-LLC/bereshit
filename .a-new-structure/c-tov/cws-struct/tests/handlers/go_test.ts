@@ -805,7 +805,7 @@ Deno.test("unit/validateICFieldContent: empty required content produces warning"
 
 Deno.test("transform/valid-library: no changes needed (dry-run)", async () => {
   const f = fixture("go/structure/valid-library.go");
-  const results = await go.transform!(f, { dryRun: true, extensions: false });
+  const results = await go.transform!(f, { dryRun: true, extensions: false, force: false, steps: false });
   const moves = byRule(results, "move-tests").concat(
     byRule(results, "move-main"),
     byRule(results, "reorder-closing"),
@@ -815,7 +815,7 @@ Deno.test("transform/valid-library: no changes needed (dry-run)", async () => {
 
 Deno.test("transform/valid-executable: no changes needed (dry-run)", async () => {
   const f = fixture("go/structure/valid-executable.go");
-  const results = await go.transform!(f, { dryRun: true, extensions: false });
+  const results = await go.transform!(f, { dryRun: true, extensions: false, force: false, steps: false });
   const moves = byRule(results, "move-tests").concat(
     byRule(results, "move-main"),
     byRule(results, "reorder-closing"),
@@ -825,7 +825,7 @@ Deno.test("transform/valid-executable: no changes needed (dry-run)", async () =>
 
 Deno.test("transform/move-tests: dry-run detects Test func in BODY", async () => {
   const f = fixture("go/closing/tests-in-body.go");
-  const results = await go.transform!(f, { dryRun: true, extensions: false });
+  const results = await go.transform!(f, { dryRun: true, extensions: false, force: false, steps: false });
   assert(hasRule(results, "move-tests"), "Should report move-tests for test func in BODY");
 });
 
@@ -835,7 +835,7 @@ Deno.test("transform/move-tests: actual transform moves test to CLOSING Cv", asy
   await Deno.copyFile(src, tmp);
 
   try {
-    const results = await go.transform!(tmp, { dryRun: false, extensions: false });
+    const results = await go.transform!(tmp, { dryRun: false, extensions: false, force: false, steps: false });
     assert(hasRule(results, "move-tests"), "Should report move-tests");
     assert(hasRule(results, "written"), "Should write file");
 
@@ -850,7 +850,7 @@ Deno.test("transform/move-tests: actual transform moves test to CLOSING Cv", asy
 
 Deno.test("transform/move-main: dry-run detects func main() in BODY", async () => {
   const f = fixture("go/closing/main-in-body.go");
-  const results = await go.transform!(f, { dryRun: true, extensions: false });
+  const results = await go.transform!(f, { dryRun: true, extensions: false, force: false, steps: false });
   assert(hasRule(results, "move-main"), "Should report move-main for func main() in BODY");
 });
 
@@ -860,7 +860,7 @@ Deno.test("transform/move-main: actual transform moves main to CLOSING Ce", asyn
   await Deno.copyFile(src, tmp);
 
   try {
-    const results = await go.transform!(tmp, { dryRun: false, extensions: false });
+    const results = await go.transform!(tmp, { dryRun: false, extensions: false, force: false, steps: false });
     assert(hasRule(results, "move-main"), "Should report move-main");
     assert(hasRule(results, "written"), "Should write file");
 
@@ -875,7 +875,7 @@ Deno.test("transform/move-main: actual transform moves main to CLOSING Ce", asyn
 
 Deno.test("transform/reorder-closing: dry-run detects out-of-order zones", async () => {
   const f = fixture("go/closing/wrong-closing-order.go");
-  const results = await go.transform!(f, { dryRun: true, extensions: false });
+  const results = await go.transform!(f, { dryRun: true, extensions: false, force: false, steps: false });
   assert(hasRule(results, "reorder-closing"), "Should detect out-of-order CLOSING zones");
 });
 
@@ -885,7 +885,7 @@ Deno.test("transform/reorder-closing: actual transform fixes zone order", async 
   await Deno.copyFile(src, tmp);
 
   try {
-    const results = await go.transform!(tmp, { dryRun: false, extensions: false });
+    const results = await go.transform!(tmp, { dryRun: false, extensions: false, force: false, steps: false });
     assert(hasRule(results, "reorder-closing"), "Should report reorder-closing");
     assert(hasRule(results, "written"), "Should write file");
 

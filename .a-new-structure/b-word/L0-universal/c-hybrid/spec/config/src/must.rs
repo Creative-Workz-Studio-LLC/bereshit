@@ -1,3 +1,7 @@
+// #!omni code --rust -module
+//omni:key B-L0-hybrid-config-must
+//omni:code --rust -module
+//omni:version b-03.00
 //! Generic panic-on-error wrappers — `MustExt` for config loading.
 //!
 //! Ported from Go `must.go`. Replaces 7 identical MustLoad* wrappers.
@@ -14,10 +18,6 @@
 //! let value: i32 = Ok::<i32, String>(42).must("should have a value");
 //! assert_eq!(value, 42);
 //! ```
-
-//omni:code --rust -library
-//omni:key B-L0-hybrid-config-must
-//omni:version b-03.00
 
 use std::fmt::Display;
 

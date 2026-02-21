@@ -1,0 +1,91 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-setup-imports",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "SETUP Section 1: Imports — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Imports IS, not how it manifests in any language. See format/blocks/{lang}/setup/imports.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "Imports",
+        "position": 1,
+        "label": "Imports",
+        "block": "SETUP",
+        "overview_text": "What this file depends on",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "external dependencies",
+                "description": "References to code outside this file — libraries, modules, packages",
+                "distinguisher": "The dependency graph edge. Declares what EXISTS elsewhere that this file needs."
+            },
+            {
+                "concept": "grouped by origin",
+                "description": "Standard library, internal/sibling, external — ordered by distance",
+                "distinguisher": "Near to far. Local first, then project, then world."
+            },
+            {
+                "concept": "selective naming",
+                "description": "Import only what you use, by name",
+                "distinguisher": "Explicit over wildcard. Name the dependency."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "executable code",
+                "reason": "Imports declare existence, they don't execute",
+                "defer_to": "BODY.*"
+            },
+            {
+                "concept": "constant definitions",
+                "reason": "Fixed values are existence declarations, not dependencies",
+                "defer_to": "SETUP.Constants"
+            },
+            {
+                "concept": "type definitions",
+                "reason": "Types are things that exist here, imports are things that exist elsewhere",
+                "defer_to": "SETUP.CoreTypes"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "REQUIRED",
+            "module": "REQUIRED",
+            "library": "REQUIRED",
+            "executable": "REQUIRED",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Imports",
+            "reserved_reason": null,
+            "note": "Imports is REQUIRED in all forms. Every file depends on something."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Imports are the dependency graph made visible. They declare relationship — this file needs THAT to exist.",
+    "_X5_scripture": "Ecclesiastes 4:9 — Two are better than one; because they have a good reward for their labour."
+}

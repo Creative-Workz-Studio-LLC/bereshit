@@ -695,6 +695,94 @@ Deno.test("code-schema/parity: Go and Rust fill content have same placeholder ke
   assertEquals(goClosingTags, rustClosingTags, "Go and Rust closing default tags should match");
 });
 
+// ---------------------------------------------------------------------------
+// Fill content — identity groups
+// ---------------------------------------------------------------------------
+
+Deno.test("code-schema/rust: fill content has identity groups", async () => {
+  clearCodeCache("rust");
+  const rules = await loadCodeRules("rust");
+  const fc = rules.fillContent!;
+
+  assert(fc.identityGroups !== undefined, "Rust should have identityGroups");
+  const ig = fc.identityGroups!;
+
+  // Pragma groups: I1-I4
+  assertEquals(ig.pragma.length, 4, "Should have 4 pragma groups (I1-I4)");
+  assertEquals(ig.pragma[0]!.range, "I1");
+  assertEquals(ig.pragma[0]!.label, "Core");
+  assert(ig.pragma[0]!.docstring !== undefined, "I1 should have a docstring");
+
+  // Metadata groups: C1-C7
+  assertEquals(ig.metadata.length, 7, "Should have 7 metadata groups (C1-C7)");
+  assertEquals(ig.metadata[0]!.range, "C1");
+  assertEquals(ig.metadata[0]!.label, "State");
+
+  // Section headers
+  assert(ig.sectionHeaders.pragma.includes("I1-I4"), "Pragma header should reference I1-I4");
+  assert(ig.sectionHeaders.metadata.includes("C1-C7"), "Metadata header should reference C1-C7");
+});
+
+Deno.test("code-schema/parity: Go and Rust identity groups match", async () => {
+  clearCodeCache("go");
+  clearCodeCache("rust");
+  const goRules = await loadCodeRules("go");
+  const rustRules = await loadCodeRules("rust");
+  const goIg = goRules.fillContent!.identityGroups!;
+  const rustIg = rustRules.fillContent!.identityGroups!;
+
+  // Same group ranges
+  const goPragmaRanges = goIg.pragma.map(g => g.range);
+  const rustPragmaRanges = rustIg.pragma.map(g => g.range);
+  assertEquals(goPragmaRanges, rustPragmaRanges, "Pragma group ranges should match");
+
+  const goMetaRanges = goIg.metadata.map(g => g.range);
+  const rustMetaRanges = rustIg.metadata.map(g => g.range);
+  assertEquals(goMetaRanges, rustMetaRanges, "Metadata group ranges should match");
+});
+
+// ---------------------------------------------------------------------------
+// Fill content — transformer modes
+// ---------------------------------------------------------------------------
+
+Deno.test("code-schema/rust: fill content has transformer modes", async () => {
+  clearCodeCache("rust");
+  const rules = await loadCodeRules("rust");
+  const fc = rules.fillContent!;
+
+  assert(fc.transformerModes !== undefined, "Rust should have transformerModes");
+  const tm = fc.transformerModes!;
+
+  // Strict mode — full production-grade
+  assertEquals(tm.strict.linterTarget, "0E 0W 0I");
+  assertEquals(tm.strict.identityFormatting, true);
+  assertEquals(tm.strict.sectionHeaders, true);
+  assertEquals(tm.strict.groupComments, true);
+  assertEquals(tm.strict.columnAlignment, true);
+
+  // Balance mode — correct but not polished
+  assertEquals(tm.balance.linterTarget, "0E 0W");
+  assertEquals(tm.balance.identityFormatting, true);
+  assertEquals(tm.balance.sectionHeaders, false);
+
+  // Growth mode — minimal scaffolding
+  assertEquals(tm.growth.linterTarget, "0E");
+  assertEquals(tm.growth.identityFormatting, false);
+  assertEquals(tm.growth.blockOverviews, false);
+});
+
+Deno.test("code-schema/rust: fill content extra defaults captured", async () => {
+  clearCodeCache("rust");
+  const rules = await loadCodeRules("rust");
+  const fc = rules.fillContent!;
+
+  // Extra defaults from schema enrichment
+  assertEquals(fc.defaults["architect"], "Seanje Lenox-Wise");
+  assertEquals(fc.defaults["implementation"], "Nova Dawn (CPI-SI)");
+  assertEquals(fc.defaults["domain"], "bereshit");
+  assertEquals(fc.defaults["paradigm"], "CPI-SI");
+});
+
 // ============================================================================
 // CLOSING
 // ============================================================================

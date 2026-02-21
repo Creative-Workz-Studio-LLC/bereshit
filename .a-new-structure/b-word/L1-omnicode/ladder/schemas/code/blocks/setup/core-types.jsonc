@@ -1,0 +1,104 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-setup-core-types",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "SETUP Section 7: Core Types — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Core Types IS, not how it manifests in any language. See format/blocks/{lang}/setup/core-types.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "CoreTypes",
+        "position": 7,
+        "label": "Core Types",
+        "block": "SETUP",
+        "overview_text": "Primary data structures and enumerations",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "primary structures",
+                "description": "The nouns of this file — data types that hold state",
+                "distinguisher": "What EXISTS. The things that BODY operates on."
+            },
+            {
+                "concept": "domain enumerations",
+                "description": "Named sets of variants representing domain concepts",
+                "distinguisher": "Finite choices. The possible states of a domain concept."
+            },
+            {
+                "concept": "simple constructors",
+                "description": "Trivial new() that just assigns fields — no validation, no fallibility",
+                "distinguisher": "If it can't fail and just sets fields, it stays here. Complex creation goes to BODY."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "complex constructors",
+                "reason": "Validation, fallible creation, builders — these are BODY operations",
+                "defer_to": "BODY.Constructors"
+            },
+            {
+                "concept": "behavioral contracts",
+                "reason": "Traits define what types CAN do. Types define what they ARE.",
+                "defer_to": "SETUP.TraitDefs"
+            },
+            {
+                "concept": "business logic methods",
+                "reason": "SETUP makes things EXIST. BODY makes things HAPPEN.",
+                "defer_to": "BODY.CoreLogic"
+            },
+            {
+                "concept": "error types",
+                "reason": "Errors have their own section with Display and conversion requirements",
+                "defer_to": "SETUP.ErrorTypes"
+            }
+        ],
+
+        "defer": [
+            {
+                "signal": "more than ~3 types in one file",
+                "to": "Consider splitting into a separate types module",
+                "why": "Too many nouns signals the file has multiple concerns"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "REQUIRED",
+            "module": "REQUIRED",
+            "library": "REQUIRED",
+            "executable": "REQUIRED",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Core Types",
+            "reserved_reason": null,
+            "note": "Core Types is REQUIRED in all forms. Every file defines the things it operates on."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Core Types are the nouns. SETUP declares what EXISTS. BODY declares what HAPPENS. Types are existence.",
+    "_X5_scripture": "Genesis 2:19 — And whatsoever Adam called every living creature, that was the name thereof."
+}

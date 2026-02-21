@@ -246,7 +246,7 @@ function findOmniDirectives(lines: string[]): Map<string, DirectiveInfo> {
     // //omni: directives are at the top, before or near `package`
     if (trimmed.startsWith("package ")) break;
     // Also stop at block markers
-    if (/^\/\/\s+(METADATA|SETUP|BODY|CLOSING)\s*$/.test(trimmed)) break;
+    if (/^\/\/\s+(METADATA|SETUP|BODY|CLOSING)(\s+BLOCK\s+\[\1\])?\s*$/.test(trimmed)) break;
 
     // Standard //omni: directive
     const omniMatch = trimmed.match(/^\/\/omni:(\S+)\s*(.*)?$/);
@@ -572,7 +572,7 @@ async function buildContext(filePath: string): Promise<GoFileContext> {
     lines.some((l) => /^\/\/\s+#!omni\s/.test(l.trim()));
 
   const hasAnyBlock = lines.some((l) =>
-    /^\/\/\s+(METADATA|SETUP|BODY|CLOSING)\s*$/.test(l.trim())
+    /^\/\/\s+(METADATA|SETUP|BODY|CLOSING)(\s+BLOCK\s+\[\1\])?\s*$/.test(l.trim())
   );
 
   // Detect subtype from directives, then PRAGMA I2.subtype if not found.
@@ -858,11 +858,11 @@ function checkCommentMetadata(ctx: GoFileContext): LintResult[] {
   for (const line of ctx.lines) {
     const trimmed = line.trim();
 
-    if (/^\/\/\s+METADATA\s*$/.test(trimmed)) {
+    if (/^\/\/\s+METADATA(\s+BLOCK\s+\[METADATA\])?\s*$/.test(trimmed)) {
       inMetadata = true;
       continue;
     }
-    if (inMetadata && /^\/\/\s+(SETUP|END METADATA)\s*$/.test(trimmed)) {
+    if (inMetadata && /^\/\/\s+(SETUP(\s+BLOCK\s+\[SETUP\])?|END METADATA(\s+\[END\])?)\s*$/.test(trimmed)) {
       break;
     }
 

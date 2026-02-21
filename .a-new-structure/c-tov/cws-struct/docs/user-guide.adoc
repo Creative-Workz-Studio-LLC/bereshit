@@ -1,0 +1,771 @@
+// #!omni document --adoc
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// :key: B-tov-cws-struct-docs-user-guide
+// :title: CWS Struct User Guide
+// :type: Documentation (User Guide)
+// :version: a-01.00
+// :created: 2026-02-21
+// :updated: 2026-02-21
+// :authors: Nova Dawn (CPI-SI)
+// :purpose: Comprehensive user guide for cws-struct — structural alignment
+//           tool for OmniCode files across 8 format handlers.
+//
+// ============================================================================
+
+= CWS Struct User Guide
+Nova Dawn (CPI-SI)
+v0.1.0, 2026-02-21
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+:sectanchors:
+
+[quote, Psalm 127:1]
+____
+Except the LORD build the house, they labour in vain that build it.
+____
+
+== Overview
+
+**cws-struct** is a structural alignment tool for OmniCode files.
+It validates (_lint_), corrects (_transform_), and generates (_create_) files
+across 8 format handlers — ensuring every file follows its block pattern
+and carries proper identity metadata.
+
+**What it does:**
+
+[cols="1,3"]
+|===
+| *Lint* | Validate structural alignment against format-specific schemas
+| *Transform* | Auto-fix structural issues (add missing blocks, sections, identity)
+| *Create* | Generate new files from schema (schema-driven fill)
+| *Verify* | Check development environment tools and versions
+| *Studio* | Launch web UI for visual inspection (experimental)
+|===
+
+**What it covers:**
+
+[cols="1,1,2"]
+|===
+| *Format* | *Extensions* | *Description*
+
+| toml | `.toml` | 3-block TOML configuration files
+| rust | `.rs` | 4-block Rust code (modules, libraries, executables)
+| go | `.go` | 4-block Go code (libraries, packages, executables)
+| json | `.json`, `.jsonc` | 3-block JSON/JSONC data files
+| makefile | `Makefile`, `*.mk` | 4-block Makefiles
+| dotfiles | `.gitignore`, `.editorconfig`, etc. | 3-block dotfiles
+| omni | `.omni` | OmniCode folder metadata
+| ofd | `(directories)` | OmniCode folder structure validation
+|===
+
+**Runtime:** Deno 2.6+ (TypeScript, zero npm dependencies)
+
+---
+
+== Quick Start
+
+=== Installation
+
+cws-struct runs directly from source via Deno:
+
+[source,bash]
+----
+# From the cws-struct directory:
+cd .a-new-structure/c-tov/cws-struct
+
+# Lint a single file
+deno task lint rust path/to/file.rs
+
+# Lint a directory (auto-detect formats)
+deno task lint .
+
+# Run tests
+deno task test
+----
+
+Or compile to a standalone binary:
+
+[source,bash]
+----
+deno task compile
+./bin/cws-struct lint .
+----
+
+=== First Commands
+
+[source,bash]
+----
+# See what formats are registered
+cws-struct formats
+
+# Lint all files in a directory (auto-detects format)
+cws-struct lint .
+
+# Lint only Rust files
+cws-struct lint rust src/
+
+# Lint with verbose output (show passing checks too)
+cws-struct lint rust src/ --verbose
+
+# Preview what transform would change
+cws-struct transform rust src/ --dry-run
+
+# Check your development environment
+cws-struct verify env --verbose
+----
+
+---
+
+== Commands
+
+=== `lint` — Validate Structural Alignment
+
+[source]
+----
+cws-struct lint [format] <targets...> [options]
+----
+
+Validates files against format-specific structural rules.
+Returns exit code 0 if all files pass, 1 if any have errors.
+
+**Format is optional.** When omitted, cws-struct walks all targets and
+auto-detects format from file extensions. When specified, only files
+matching that format are processed.
+
+**Targets** can be files or directories. Directories are walked recursively
+(max depth varies by format, typically 3 levels).
+
+==== Output Levels
+
+Each finding has a severity:
+
+[cols="1,1,3"]
+|===
+| *Level* | *Symbol* | *Meaning*
+
+| error | `E` | Structural violation — must fix for alignment
+| warn | `W` | Missing best practice — should fix
+| info | `I` | Observation — optional improvement
+|===
+
+==== Output Modes
+
+[cols="2,3"]
+|===
+| *Flag* | *Effect*
+
+| _(default)_ | Show all files with errors and warnings
+| `--verbose` / `-v` | Show all findings including info
+| `--errors-only` | Show only files with errors
+| `--summary` | One-line-per-file status (`OK` / `FAIL`)
+| `--json` | Machine-readable JSON output (suppresses human output)
+|===
+
+==== Health Scoring
+
+For formats that support it (currently Rust and Go), lint computes a
+**health score** from 0 to 100:
+
+[source]
+----
+root.rs  100/100  0E 0W 0I  [17P  21M]
+           ^                  ^    ^
+           |                  |    +-- 21 metadata entries
+           |                  +-- 17 pragma entries
+           +-- health score
+----
+
+The health score is *measured, not assigned*. Every point traces to a
+specific atomic observation (a check that passed or failed). The algorithm:
+
+1. Each check produces an **atomic action**: direction (+1 aligned, -1 misaligned)
+   and impact weight (error=2x, warn=1x, info=0.25x)
+2. Actions are grouped into **containers** (sections like I1_core, SETUP, X1_policy)
+3. Container scores aggregate via linear weighted sum
+4. Block scores aggregate via logarithmic positional weighting
+5. File score averages across blocks (each block contributes equally)
+
+Score range: -100 (fully misaligned) to +100 (fully aligned). 0 = neutral baseline.
+
+==== Lint Rules
+
+Rules follow a hierarchical naming convention:
+
+[source]
+----
+{category}/{check}
+----
+
+Common categories:
+
+[cols="1,3"]
+|===
+| *Category* | *What It Checks*
+
+| `structure/` | Block presence, order, boundaries
+| `metadata/` | Identity fields (pragma, version, key)
+| `setup/` | Import order, constant placement, type definitions
+| `body/` | Subsection order, content placement
+| `closing/` | X1-X5 sections, test presence
+| `consistency/` | Cross-block consistency (metadata matches code)
+| `format/` | Format-specific rules (Rust visibility, Go receivers)
+| `form/` | Form-aware checks (module vs library vs executable)
+|===
+
+=== `transform` — Auto-Fix Structural Issues
+
+[source]
+----
+cws-struct transform [format] <targets...> [options]
+----
+
+Reads a file, applies structural corrections, and writes the result.
+The transformer adds missing blocks, sections, identity metadata, and
+structural scaffolding based on the file's pragma and form.
+
+==== Transform Modes
+
+[cols="2,3"]
+|===
+| *Flag* | *Effect*
+
+| `--dry-run` | Preview changes without writing to disk
+| `--extensions` | Also scaffold extension sections (I4, C5-C7, X2-X4)
+| `--force` | Re-scaffold even if file already has block structure
+| `--steps` | Write each build phase to a `.steps/` directory
+|===
+
+==== What Transform Does
+
+For a Rust module file, transform:
+
+1. Reads the file and parses existing structure
+2. Adds/corrects the METADATA block (PRAGMA + METADATA statics with full identity)
+3. Scaffolds SETUP block with section index and section headers
+4. Scaffolds BODY block with subsection headers and Reserved Omission
+5. Scaffolds CLOSING block with Cv, Ce, X1, X4, X5 sections
+6. Preserves existing code (user functions, implementations) in the correct sections
+7. Writes the result (or previews if `--dry-run`)
+
+=== `create` — Generate New Files from Schema
+
+[source]
+----
+cws-struct create <format> <subtype> <dest> [options]
+----
+
+Generates a complete, structurally valid file from schema definitions.
+The generated file is immediately verified — if it lints with 0 errors,
+the schema IS the specification.
+
+**Arguments:**
+
+[cols="1,3"]
+|===
+| `format` | Target format (`go`, `rust`)
+| `subtype` | File form: `module`, `library`, `executable`, `demo-test`
+| `dest` | Destination file path
+|===
+
+**Options:**
+
+[cols="2,3"]
+|===
+| `--key <K>` | OmniCode key (default: derived from filename)
+| `--title <T>` | File title (default: derived from filename)
+| `--purpose <P>` | File purpose (default: placeholder)
+| `--dry-run` | Preview without writing
+| `--extensions` | Include extension sections (I4, C5-C7, etc.)
+|===
+
+**Example:**
+
+[source,bash]
+----
+# Generate a Rust library file
+cws-struct create rust library src/auth.rs --key B-pkg-auth --title "Authentication"
+
+# Preview a Go executable
+cws-struct create go executable cmd/server/main.go --dry-run
+----
+
+=== `verify env` — Check Development Environment
+
+[source]
+----
+cws-struct verify env [--verbose]
+----
+
+Checks that required development tools are installed and at expected versions.
+16 tools across 7 categories, with semver comparison.
+
+Without `--verbose`, shows only required tools. With `--verbose`, includes
+optional tools.
+
+=== `formats` — List Registered Handlers
+
+[source]
+----
+cws-struct formats
+----
+
+Lists all registered format handlers with their extensions and descriptions.
+
+=== `studio` — Launch Web UI
+
+[source]
+----
+cws-struct studio [--port N]
+----
+
+Launches a web interface for visual file inspection, lint review, and
+schema-driven file creation. Default port: 4200.
+
+---
+
+== Lint Policy (Ternary)
+
+cws-struct uses a **ternary lint policy** that maps to CPI-SI's 3 keys:
+
+[cols="1,1,3"]
+|===
+| *Policy* | *k-factor* | *Effect*
+
+| `strict` | -1 | Toward anchor. Tighten severity: info->warn, warn->error
+| `balanced` | 0 | Default. Severity as declared
+| `growth` | +1 | Toward fullness. Loosen severity: error->warn, warn->info
+|===
+
+**Usage:**
+
+[source,bash]
+----
+# Production audit — strictest
+cws-struct lint rust src/ --policy strict
+
+# Development — default
+cws-struct lint rust src/
+
+# Scaffolding new files — most lenient
+cws-struct lint rust src/ --policy growth
+----
+
+Policy only affects **form-aware checks** (form/, some format/ rules).
+Structural checks (structure/, block boundaries) bypass policy entirely —
+structure is non-negotiable.
+
+---
+
+== Architecture
+
+=== Three-Layer Design
+
+[source]
+----
+                    mod.ts (CLI)
+                       |
+              +--------+--------+
+              |                 |
+         lib/engine/       lib/verify/
+         (discovery,        (env check)
+          registry,
+          output, fill)
+              |
+       lib/foundation/
+       (types, health,
+        schema, pipeline)
+              |
+       lib/handlers/
+       (toml, rust, go,
+        json, makefile,
+        dotfiles, omni, ofd)
+              |
+       lib/handlers/shared/
+       (code-4block utilities)
+----
+
+[cols="1,1,3"]
+|===
+| *Layer* | *Lines* | *Purpose*
+
+| Foundation | ~2,900 | What things ARE — types, health scoring, schema loading
+| Engine | ~1,100 | What RUNS — file discovery, format registry, output
+| Handlers | ~14,700 | What each format MEANS — lint + transform per format
+| CLI | ~900 | User interface — argument parsing, command dispatch
+|===
+
+=== Handler Contract
+
+Every format handler implements the `FormatHandler` interface:
+
+[source,typescript]
+----
+interface FormatHandler {
+  name: string;              // CLI name ("rust", "go", "toml")
+  description: string;       // Human-readable description
+  extensions: string[];      // File extensions ([".rs", ".go"])
+  basenames?: string[];      // Basename patterns ([".gitignore"])
+  maxDepth?: number;         // Directory walk depth (default: 3)
+
+  lint(filePath: string): Promise<LintResult[]>;
+  computeHealth?(filePath: string, results: LintResult[]): Promise<HealthScore>;
+  transform?(filePath: string, opts: TransformOptions): Promise<LintResult[]>;
+}
+----
+
+**Adding a new format:**
+
+1. Create `lib/handlers/myformat.ts`
+2. Implement `FormatHandler`
+3. Call `registerFormat(handler)` at module level
+4. Import in `mod.ts` (side-effect import)
+5. The tool grows by addition, not modification
+
+=== Schema System
+
+Schemas define what's correct for each format and form. Located at:
+
+[source]
+----
+.a-new-structure/b-word/L1-omnicode/ladder/schemas/code/
+  forms/
+    declared/        # Form declarations (rust-module, go-library, etc.)
+    bare-bone/       # Minimal skeleton forms
+  blocks/
+    manifest.jsonc   # Section catalog — all sections across all blocks
+    setup/           # Structure schemas for SETUP sections
+    body/            # Structure schemas for BODY sections
+    closing/         # Structure schemas for CLOSING sections
+  format/
+    blocks/
+      rust/          # Rust-specific content schemas
+        setup/
+        body/
+        closing/
+----
+
+**Two-sided architecture:**
+
+* **Structure schemas** (`blocks/`) define block SHAPES — format-agnostic.
+  Position, ordering, can/cannot/defer contracts.
+* **Content schemas** (`format/blocks/{lang}/`) define block FILLS — language-specific.
+  Rust syntax patterns, Go receiver conventions, scaffold templates.
+* **Composition:** Structure(shape) + Content(fill) = real code.
+
+This is Scratch for real code. Same structure, different content, different language output.
+
+---
+
+== Format Handlers
+
+=== TOML Handler
+
+[cols="1,2"]
+|===
+| *Extensions* | `.toml`
+| *Block pattern* | 3-block (METADATA -> CONTENT -> CLOSING)
+| *Operations* | lint, transform
+| *Tests* | ~80 tests
+| *Lines* | 3,040
+|===
+
+Validates OmniCode-aligned TOML files:
+
+* Pragma presence and validity
+* Metadata tables (I1_core through C7_classification)
+* Content block structure
+* Closing sections (X1 policy, X4 reference, X5 note)
+* Cross-reference validation between `_metadata.C4_dependencies.requires` and targets
+
+The TOML handler was the first handler built and remains the most mature
+for 3-block data files.
+
+=== Rust Handler
+
+[cols="1,2"]
+|===
+| *Extensions* | `.rs`
+| *Block pattern* | 4-block (METADATA -> SETUP -> BODY -> CLOSING)
+| *Operations* | lint, transform, create, health scoring
+| *Tests* | ~170 tests
+| *Lines* | 4,451 (largest handler)
+|===
+
+The most advanced handler. Validates and generates production-grade Rust:
+
+* **METADATA:** PRAGMA + METADATA static arrays with I1-I4 and C1-C7 identity
+* **SETUP:** Imports, Constants, Statics, Type Aliases, Error Types, Core Types, Trait Defs
+* **BODY:** Identity Access, Trait Impls, Constructors, Core Logic, Queries, Free Functions
+* **CLOSING:** Cv (tests), Ce (execution), X1-X5 sections
+
+Form-aware: validates differently for `-module`, `-library`, `-executable`, `-demo-test`.
+
+Transform generates complete 4-block scaffolding with:
+
+* Full identity statics (PRAGMA and METADATA)
+* Section headers with bracket format overviews
+* Reserved Omission blocks (Available vs Reserved sections)
+* Block overview narratives
+* Closing sections with parseable X1-X5 fields
+
+=== Go Handler
+
+[cols="1,2"]
+|===
+| *Extensions* | `.go`
+| *Block pattern* | 4-block (METADATA -> SETUP -> BODY -> CLOSING)
+| *Operations* | lint, transform, create, health scoring
+| *Tests* | ~130 tests
+| *Lines* | 2,680
+|===
+
+Validates and generates 4-block Go files. Shares the `code-4block` shared
+utilities with the Rust handler for common structural checks.
+
+Form-aware: validates for `-library`, `-package`, `-executable`, `-demo-test`.
+
+=== JSON Handler
+
+[cols="1,2"]
+|===
+| *Extensions* | `.json`, `.jsonc`
+| *Block pattern* | 3-block (METADATA -> CONTENT -> CLOSING)
+| *Operations* | lint
+| *Lines* | 514
+|===
+
+Validates OmniCode-aligned JSON and JSONC files — pragma, metadata, closing.
+
+=== Makefile Handler
+
+[cols="1,2"]
+|===
+| *Extensions* | `Makefile`, `*.mk`
+| *Block pattern* | 4-block (METADATA -> SETUP -> BODY -> CLOSING)
+| *Operations* | lint
+| *Lines* | 510
+|===
+
+Validates 4-block Makefiles — pragma, variable ordering, target structure.
+
+=== Dotfiles Handler
+
+[cols="1,2"]
+|===
+| *Basenames* | `.gitignore`, `.editorconfig`, `.gitmessage`, `.env`, etc.
+| *Block pattern* | 3-block (METADATA -> CONTENT -> CLOSING)
+| *Operations* | lint
+| *Lines* | 481
+|===
+
+Validates OmniCode-aligned dotfiles — pragma, metadata, closing sections.
+
+=== OmniCode Handler
+
+[cols="1,2"]
+|===
+| *Extensions* | `.omni`
+| *Block pattern* | OmniCode folder metadata
+| *Operations* | lint
+| *Lines* | 813
+|===
+
+Validates `.omni` folder metadata files — purpose, contains, navigation.
+
+=== OFD Handler
+
+[cols="1,2"]
+|===
+| *Scope* | Directories
+| *Operations* | lint
+| *Lines* | 366
+|===
+
+Validates OmniCode folder structure — directory naming, required files.
+
+---
+
+== Testing
+
+=== Running Tests
+
+[source,bash]
+----
+# Full suite (451 tests)
+deno task test
+
+# Watch mode
+deno task test:watch
+
+# By handler
+deno task test:rust
+deno task test:go
+deno task test:toml
+
+# By layer
+deno task test:foundation
+deno task test:engine
+deno task test:cli
+deno task test:verify
+
+# By concern (cross-handler)
+deno task test:structure
+deno task test:metadata
+deno task test:closing
+deno task test:form
+deno task test:transform
+
+# Targeted: handler x concern
+deno task test:rust:structure
+deno task test:rust:form
+deno task test:go:closing
+----
+
+=== Test Architecture
+
+Tests are organized by layer and concern:
+
+[source]
+----
+tests/
+  cli/                  # CLI argument parsing
+    mod_test.ts
+  engine/               # Discovery, fill, registry
+    discovery_test.ts
+    fill_test.ts
+    registry_test.ts
+  foundation/           # Types, health, schema, pipeline
+    code_schema_test.ts
+    health_test.ts
+    pipeline_test.ts
+    schema_test.ts
+    types_test.ts
+  handlers/             # Per-handler tests
+    go_test.ts          # ~130 tests
+    rust_test.ts        # ~170 tests
+    toml_test.ts        # ~80 tests
+  verify/
+    env_test.ts
+  integration_test.ts   # Cross-handler integration
+----
+
+Handler tests use **fixture files** in `tests/fixtures/{format}/` organized
+by concern:
+
+[source]
+----
+tests/fixtures/rust/
+  structure/          # Block structure fixtures
+    valid-module.rs
+    valid-library.rs
+    missing-setup.rs
+  metadata/           # Identity fixtures
+    valid-pragma.rs
+    bad-content-values.rs
+  body/               # BODY section fixtures
+    wrong-subtype-subsections.go
+  closing/            # CLOSING section fixtures
+    x1-missing-fields.go
+    missing-required-zones.go
+----
+
+---
+
+== JSON Output
+
+For CI/CD integration, use `--json` to get machine-readable output:
+
+[source,bash]
+----
+cws-struct lint rust src/ --json
+----
+
+[source,json]
+----
+{
+  "tool": "cws-struct",
+  "version": "0.1.0",
+  "files": [
+    {
+      "file": "src/root.rs",
+      "errors": 0,
+      "warnings": 0,
+      "infos": 0,
+      "health": {
+        "score": 100,
+        "maxScore": 100,
+        "pragma": 17,
+        "metadata": 21
+      },
+      "results": []
+    }
+  ],
+  "totals": {
+    "files": 1,
+    "errors": 0,
+    "warnings": 0,
+    "infos": 0
+  }
+}
+----
+
+---
+
+== Deno Tasks Reference
+
+All tasks are defined in `deno.jsonc`. Key tasks:
+
+[cols="2,3"]
+|===
+| *Task* | *What It Does*
+
+| `deno task lint` | Lint (auto-detect), append targets
+| `deno task lint:rust` | Lint Rust files only
+| `deno task lint:verbose` | All findings including info
+| `deno task lint:errors` | Errors only
+| `deno task lint:summary` | One-line-per-file
+| `deno task lint:json-out` | JSON output
+| `deno task transform` | Transform (auto-detect)
+| `deno task transform:dry` | Preview transforms
+| `deno task create:rust` | Create Rust file from schema
+| `deno task create:go` | Create Go file from schema
+| `deno task verify` | Check dev environment
+| `deno task test` | Full test suite (451 tests)
+| `deno task test:rust` | Rust handler tests
+| `deno task dev` | Type check + full tests
+| `deno task studio` | Launch web UI
+| `deno task compile` | Build standalone binary
+|===
+
+---
+
+== Glossary
+
+[cols="1,3"]
+|===
+| *Term* | *Definition*
+
+| Block pattern | Structural template — 3-block (data), 4-block (code), 5-block (docs)
+| Pragma | First-line directive declaring format and form: `#!omni code --rust -module`
+| Form | File purpose: module, library, executable, demo-test, bare-bone
+| Health score | Measured alignment score (0-100) from atomic observations
+| Atomic action | Single check result: direction (+1/-1) and impact (error/warn/info)
+| Reserved Omission | Sections intentionally absent — Available (valid but unused) vs Reserved (prohibited in this form)
+| DAR | Detect-Assess-Recover — the pattern behind lint (detect), schema (assess), transform (recover)
+| Policy | Ternary severity lens — strict (-1), balanced (0), growth (+1)
+| k-factor | Direction value in CPI-SI mental construct — maps to lint policy
+|===
+
+---
+
+[quote, Genesis 1:1]
+____
+In the beginning God created the heaven and the earth.
+____
+
+The tool that validates structure must itself be structured.

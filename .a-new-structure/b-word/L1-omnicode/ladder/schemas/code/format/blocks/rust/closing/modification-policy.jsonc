@@ -1,0 +1,122 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-closing-modification-policy",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section X1: Modification Policy — Rust Content",
+    "_P5_brief": "Rust-specific content rules for X1 (Modification Policy). Three-tier guidance: Safe, Careful, Never. Extends the base structure at blocks/closing/modification-policy.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "blocks/closing/modification-policy.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "// Safe to Modify: — additive changes",
+                "description": "Changes that don't break existing callers or contracts",
+                "patterns": [
+                    "// Safe to Modify:\n//   - Add new pub fn (additive API growth)\n//   - Add new error variants (exhaustive match warning, not breaking)\n//   - Add new trait impls on existing types\n//   - Add new tests\n//   - Add new doc comments"
+                ],
+                "visibility": "N/A — documentation"
+            },
+            {
+                "construct": "// Modify with Care: — interface-affecting changes",
+                "description": "Changes that affect callers or contracts — require review",
+                "patterns": [
+                    "// Modify with Care:\n//   - Struct field changes (affects construction and pattern matching)\n//   - Method signature changes (affects all callers)\n//   - Visibility changes (pub(crate) -> pub or vice versa)\n//   - Error variant field changes (affects error handling)"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// Never Modify: — structural invariants",
+                "description": "The 4-block structure, identity layout, and fundamental contracts",
+                "patterns": [
+                    "// Never Modify:\n//   - 4-block structure (METADATA → SETUP → BODY → CLOSING)\n//   - PRAGMA/METADATA layout and required fields\n//   - Block boundary tags (// ═══ ... ═══)\n//   - Section ordering within blocks"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// opening scripture quote",
+                "description": "Scripture grounding the modification policy in wisdom",
+                "patterns": [
+                    "// X1 — Modification Policy\n//\n// \"Remove not the ancient landmark, which thy fathers have set.\"\n//   — Proverbs 22:28"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// visibility implications note (module form)",
+                "description": "Module X1 notes that pub(crate) changes affect the crate; pub changes affect consumers",
+                "patterns": [
+                    "// Visibility note: pub(crate) changes affect crate internals only.\n// pub changes affect external consumers — wider blast radius."
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "executable Rust code",
+                "reason": "X1 is documentation-only — no fn, impl, struct, or executable code",
+                "defer_to": "BODY or CLOSING Cv/Ce",
+                "rust_signal": "^(pub\\s+)?(fn|impl|struct|enum|trait|const|static|type|use|mod)\\s+"
+            },
+            {
+                "construct": "vague guidance",
+                "reason": "\"Be careful\" is not policy. Each tier must say WHAT changes and WHY they're in that tier.",
+                "defer_to": "N/A — be specific",
+                "rust_signal": "N/A"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific Defer Signals
+        // ─────────────────────────────────────
+
+        "defer_signals": [
+            {
+                "pattern": "^(pub\\s+)?(fn|impl|struct|enum|trait)\\s+",
+                "to": "BODY or CLOSING Cv",
+                "confidence": "high",
+                "why": "Executable code in documentation section"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+
+        "scaffold": {
+            "empty_module": "// X1 — Modification Policy\n//\n// Safe to Modify:\n//   - New pub(crate) functions, error variants, trait impls, tests\n//\n// Modify with Care:\n//   - Struct fields, method signatures, visibility changes\n//   - Affects: all callers within the crate\n//\n// Never Modify:\n//   - 4-block structure, PRAGMA/METADATA layout, block boundaries\n//   - Section ordering within blocks",
+            "empty_library": "// X1 — Modification Policy\n//\n// Safe to Modify:\n//   - New pub functions, error variants, trait impls, tests\n//\n// Modify with Care:\n//   - Struct fields, method signatures, visibility changes\n//   - Affects: all consumers of this crate's API\n//\n// Never Modify:\n//   - 4-block structure, PRAGMA/METADATA layout, block boundaries\n//   - Section ordering within blocks",
+            "comment_skeleton": "// X1 — Modification Policy\n// Safe / Careful / Never tiers"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust X1 (Modification Policy): three-tier guidance protecting the code's contracts. Safe = additive. Careful = interface-affecting. Never = structural. Module X1 is less conservative than library X1 — internal refactoring costs less than API changes.",
+    "_X5_scripture": "Proverbs 22:28 — Remove not the ancient landmark, which thy fathers have set."
+}
