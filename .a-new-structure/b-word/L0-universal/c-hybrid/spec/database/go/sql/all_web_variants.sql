@@ -1,0 +1,1 @@
+SELECT trite, book, chapter, verse, summary FROM web_variants ORDER BY trite

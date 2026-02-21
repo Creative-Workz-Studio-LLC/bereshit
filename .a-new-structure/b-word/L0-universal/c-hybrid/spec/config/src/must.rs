@@ -15,6 +15,10 @@
 //! assert_eq!(value, 42);
 //! ```
 
+//omni:code --rust -library
+//omni:key B-L0-hybrid-config-must
+//omni:version b-03.00
+
 use std::fmt::Display;
 
 // ────────────────────────────────────────────────────────────────
@@ -71,5 +75,34 @@ impl<T> MustValExt<T> for Option<T> {
             Some(val) => val,
             None => panic!("config: must: {msg}"),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_must_ext_success() {
+        let result: Result<i32, String> = Ok(42);
+        assert_eq!(result.must("should not panic"), 42);
+    }
+
+    #[test]
+    #[should_panic(expected = "config: must: boom")]
+    fn test_must_ext_panic() {
+        let result: Result<i32, String> = Err("kaboom".into());
+        let _ = result.must("boom");
+    }
+
+    #[test]
+    fn test_must_val_ext_success() {
+        assert_eq!(Some(42).must_val("should not panic"), 42);
+    }
+
+    #[test]
+    #[should_panic(expected = "config: must: not found")]
+    fn test_must_val_ext_panic() {
+        let _: i32 = None.must_val("not found");
     }
 }

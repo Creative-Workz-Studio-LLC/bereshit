@@ -107,6 +107,8 @@ interface WizardState {
   key: string | null;
   title: string | null;
   purpose: string | null;
+  component: string | null;
+  scripture: string | null;
   version: string;
 }
 
@@ -396,6 +398,8 @@ function buildScaffolderArgs(state: WizardState, dryRun: boolean): { script: str
   if (state.key) args.push("--key", state.key);
   if (state.title) args.push("--title", state.title);
   if (state.purpose) args.push("--purpose", state.purpose);
+  if (state.component) args.push("--component", state.component);
+  if (state.scripture) args.push("--scripture", state.scripture);
   if (state.version !== "a-01.00") args.push("--version", state.version);
   if (dryRun) args.push("--dry-run");
 
@@ -480,9 +484,32 @@ async function stepMetadata(
   }
   state.purpose = purposeResult;
 
+  // --- Component (optional — skip with Enter) ---
+  const componentResult = await textInput("Component (optional, enter to skip)", "", state, stepIdx, total);
+  if (componentResult === null) {
+    state.purpose = null;
+    state.title = null;
+    state.key = null;
+    return await stepMetadata(state, stepIdx, total); // Restart
+  }
+  state.component = componentResult || null;
+
+  // --- Scripture (optional — skip with Enter) ---
+  const scriptureResult = await textInput("Scripture reference (optional, enter to skip)", "", state, stepIdx, total);
+  if (scriptureResult === null) {
+    state.component = null;
+    state.purpose = null;
+    state.title = null;
+    state.key = null;
+    return await stepMetadata(state, stepIdx, total); // Restart
+  }
+  state.scripture = scriptureResult || null;
+
   // --- Version ---
   const versionResult = await textInput("Version", state.version, state, stepIdx, total);
   if (versionResult === null) {
+    state.scripture = null;
+    state.component = null;
     state.purpose = null;
     state.title = null;
     state.key = null;
@@ -523,7 +550,8 @@ function printEditGuidance(state: WizardState): void {
 async function runWizard(): Promise<void> {
   const state: WizardState = {
     type: null, format: null, role: null, dest: null,
-    key: null, title: null, purpose: null, version: "a-01.00",
+    key: null, title: null, purpose: null,
+    component: null, scripture: null, version: "a-01.00",
   };
 
   let stepIdx = 0;
@@ -628,6 +656,7 @@ async function runWizard(): Promise<void> {
         if (result === null) {
           // Back — clear metadata
           state.key = null; state.title = null; state.purpose = null;
+          state.component = null; state.scripture = null;
           stepIdx--;
           break;
         }

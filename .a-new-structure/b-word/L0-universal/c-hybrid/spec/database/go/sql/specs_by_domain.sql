@@ -1,0 +1,1 @@
+SELECT id, key, file, title, type, component, role, domain, layer, version, status, scripture, principle, tags, provides, created, updated FROM specs WHERE domain = ? ORDER BY key

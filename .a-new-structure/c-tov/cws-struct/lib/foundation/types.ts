@@ -35,14 +35,29 @@ export type Severity = "error" | "warn" | "info";
 // Lint Results
 // ---------------------------------------------------------------------------
 
+/** A single atomic action within a fix suggestion (for multi-step code fixes). */
+export interface FixAction {
+  type: "remove" | "insert";
+  /** For remove: first line to remove (1-based). */
+  startLine?: number;
+  /** For remove: last line to remove (1-based, inclusive). */
+  endLine?: number;
+  /** For insert: line number to insert after (1-based). */
+  afterLine?: number;
+  /** For insert: lines of code to add. */
+  content?: string[];
+}
+
 /** Suggested correction for a lint finding. */
 export interface FixSuggestion {
   /** Human description of the fix (e.g., "Add missing [_metadata.I1_core] table"). */
   description: string;
-  /** TOML snippet to insert or replace. */
-  toml: string;
+  /** TOML snippet to insert or replace (TOML handler). */
+  toml?: string;
   /** Insertion hint (e.g., "after [_metadata]", "in _metadata.I1_core"). */
   location?: string;
+  /** Ordered list of atomic actions for code fixes (Go/Rust handlers). */
+  actions?: FixAction[];
 }
 
 /** Single finding from a lint check. */
@@ -121,7 +136,7 @@ export interface FormatHandler {
 // ---------------------------------------------------------------------------
 
 export interface CliOptions {
-  command: "lint" | "transform" | "formats" | "verify" | "studio" | "help" | "version";
+  command: "lint" | "transform" | "create" | "formats" | "verify" | "studio" | "help" | "version";
   format?: string;
   targets: string[];
   verbose: boolean;
@@ -131,6 +146,14 @@ export interface CliOptions {
   extensions: boolean;
   json: boolean;
   failFast: boolean;
+  /** Create command: subtype for code generation. */
+  subtype?: string;
+  /** Create command: OmniCode key. */
+  key?: string;
+  /** Create command: file title. */
+  title?: string;
+  /** Create command: file purpose. */
+  purpose?: string;
 }
 
 // ============================================================================
@@ -171,8 +194,8 @@ export function info(
 /** Normalize opts: accept either ResultOpts or bare FixSuggestion for backward compat. */
 function normalizeOpts(opts?: ResultOpts | FixSuggestion): Partial<LintResult> {
   if (!opts) return {};
-  // Duck-type: FixSuggestion has 'description' and 'toml', ResultOpts has 'line' or 'fix'
-  if ("description" in opts && "toml" in opts) {
+  // Duck-type: FixSuggestion has 'description' + (toml | actions), ResultOpts has 'line' or 'fix'
+  if ("description" in opts && ("toml" in opts || "actions" in opts)) {
     return { fix: opts as FixSuggestion };
   }
   const result: Partial<LintResult> = {};

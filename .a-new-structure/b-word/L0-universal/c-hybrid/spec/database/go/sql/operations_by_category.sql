@@ -1,0 +1,1 @@
+SELECT id, name, category, description, input_size, table_data, properties FROM operations WHERE category = ? ORDER BY name

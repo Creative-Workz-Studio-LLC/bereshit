@@ -1,5 +1,9 @@
 //! Data types for the configuration system — manifests, specs, and results.
 
+//omni:code --rust -library
+//omni:key B-L0-hybrid-config-types
+//omni:version b-03.00
+
 use serde::Deserialize;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -127,4 +131,22 @@ pub struct DependencyNode {
     pub depends_on: Vec<String>,
     /// Tracking flag for load order validation.
     pub loaded: bool,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::TEST_INDEX;
+
+    #[test]
+    fn test_index_manifest_deserialize() {
+        let manifest: IndexManifest = toml::from_str(TEST_INDEX).unwrap();
+        assert_eq!(manifest.systems.len(), 2);
+        assert_eq!(manifest.systems[0].name, "math");
+        assert_eq!(manifest.systems[0].order, 0);
+        assert_eq!(manifest.systems[0].specs.len(), 1);
+        assert_eq!(manifest.systems[0].specs[0].file, "ternary.toml");
+        assert!(manifest.systems[0].specs[0].depends_on.is_empty());
+        assert_eq!(manifest.systems[1].specs[0].depends_on.len(), 1);
+    }
 }

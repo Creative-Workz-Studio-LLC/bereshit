@@ -1,0 +1,255 @@
+#!/usr/bin/env bash
+# ============================================================================
+# CWS Studio — Desktop Application Launcher
+# ============================================================================
+#
+# Starts the cws-struct studio server and opens the application window.
+# Designed to run as a desktop application via .desktop entry.
+#
+# Usage:
+#   cws-studio              # Start server + open app window
+#   cws-studio --server     # Server only (headless)
+#   cws-studio --port 8080  # Custom port
+#   cws-studio --stop       # Stop running instance
+#
+# ============================================================================
+
+set -euo pipefail
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+APP_NAME="CWS Studio"
+DEFAULT_PORT=4200
+PIDFILE="${XDG_RUNTIME_DIR:-/tmp}/cws-studio.pid"
+LOGFILE="${XDG_STATE_HOME:-$HOME/.local/state}/cws-studio/studio.log"
+
+# Resolve the cws-struct project root.
+# The launcher is symlinked from ~/.local/bin/ → project/scripts/cws-studio,
+# so readlink -f follows the symlink back to the project.
+# If not a symlink (direct copy), fall back to hardcoded path.
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+if [ -f "$SCRIPT_DIR/../mod.ts" ]; then
+  PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+else
+  # Fallback: installed copy, use the known project path
+  PROJECT_ROOT="/media/seanje-lenox-wise/Project/Bereshit/.a-new-structure/c-tov/cws-struct"
+fi
+
+# ---------------------------------------------------------------------------
+# Functions
+# ---------------------------------------------------------------------------
+
+log() {
+  echo "[$(date '+%H:%M:%S')] $*"
+}
+
+die() {
+  echo "ERROR: $*" >&2
+  exit 1
+}
+
+find_browser() {
+  # Prefer Chrome/Chromium for --app mode (frameless window = native feel)
+  for browser in google-chrome chromium-browser chromium brave-browser; do
+    if command -v "$browser" &>/dev/null; then
+      echo "$browser"
+      return 0
+    fi
+  done
+  # Fallback to xdg-open (opens in default browser with full chrome)
+  if command -v xdg-open &>/dev/null; then
+    echo "xdg-open"
+    return 0
+  fi
+  return 1
+}
+
+is_running() {
+  if [ -f "$PIDFILE" ]; then
+    local pid
+    pid=$(cat "$PIDFILE")
+    if kill -0 "$pid" 2>/dev/null; then
+      return 0
+    fi
+    # Stale pidfile
+    rm -f "$PIDFILE"
+  fi
+  return 1
+}
+
+wait_for_server() {
+  local port=$1
+  local max_wait=10
+  local waited=0
+  while [ $waited -lt $max_wait ]; do
+    if curl -sf "http://localhost:${port}/api/health" &>/dev/null; then
+      return 0
+    fi
+    sleep 0.5
+    waited=$((waited + 1))
+  done
+  return 1
+}
+
+start_server() {
+  local port=$1
+
+  # Ensure log directory exists
+  mkdir -p "$(dirname "$LOGFILE")"
+
+  # Check if Deno is available
+  command -v deno &>/dev/null || die "Deno not found. Install: https://deno.land"
+
+  # Check if port is already in use
+  if lsof -ti:"$port" &>/dev/null; then
+    # Check if it's our server
+    if is_running; then
+      log "Server already running on port $port (PID $(cat "$PIDFILE"))"
+      return 0
+    fi
+    die "Port $port is in use by another process"
+  fi
+
+  log "Starting $APP_NAME server on port $port..."
+
+  # Start the server in background
+  cd "$PROJECT_ROOT"
+  deno run -A mod.ts studio --port "$port" >> "$LOGFILE" 2>&1 &
+  local server_pid=$!
+  echo "$server_pid" > "$PIDFILE"
+
+  # Wait for server to be ready
+  if wait_for_server "$port"; then
+    log "Server ready (PID $server_pid)"
+    return 0
+  else
+    log "Server failed to start. Check log: $LOGFILE"
+    kill "$server_pid" 2>/dev/null
+    rm -f "$PIDFILE"
+    return 1
+  fi
+}
+
+open_window() {
+  local port=$1
+  local url="http://localhost:${port}"
+  local browser
+
+  browser=$(find_browser) || die "No browser found"
+
+  case "$browser" in
+    google-chrome|chromium-browser|chromium|brave-browser)
+      # --app mode: frameless window, looks like a native application
+      "$browser" \
+        --app="$url" \
+        --class="com.creativeworkzstudio.cws-studio" \
+        --window-size=1280,900 \
+        --disable-extensions \
+        &>/dev/null &
+      ;;
+    xdg-open)
+      xdg-open "$url" &>/dev/null &
+      ;;
+  esac
+
+  log "Opened $APP_NAME window"
+}
+
+stop_server() {
+  if is_running; then
+    local pid
+    pid=$(cat "$PIDFILE")
+    log "Stopping $APP_NAME (PID $pid)..."
+    kill "$pid" 2>/dev/null
+    rm -f "$PIDFILE"
+    log "Stopped"
+  else
+    log "No running instance found"
+  fi
+}
+
+show_help() {
+  cat <<EOF
+$APP_NAME — Structural Intelligence Studio
+
+Usage:
+  cws-studio              Start server and open application window
+  cws-studio --server     Start server only (headless mode)
+  cws-studio --port N     Use port N (default: $DEFAULT_PORT)
+  cws-studio --stop       Stop running instance
+  cws-studio --status     Check if running
+  cws-studio --help       Show this help
+
+Log: $LOGFILE
+PID: $PIDFILE
+EOF
+}
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+main() {
+  local port=$DEFAULT_PORT
+  local server_only=false
+  local action="start"
+
+  # Parse arguments
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --port)
+        port="${2:?--port requires a number}"
+        shift 2
+        ;;
+      --server)
+        server_only=true
+        shift
+        ;;
+      --stop)
+        action="stop"
+        shift
+        ;;
+      --status)
+        action="status"
+        shift
+        ;;
+      --help|-h)
+        show_help
+        exit 0
+        ;;
+      *)
+        die "Unknown option: $1 (try --help)"
+        ;;
+    esac
+  done
+
+  case "$action" in
+    stop)
+      stop_server
+      ;;
+    status)
+      if is_running; then
+        log "Running (PID $(cat "$PIDFILE"))"
+      else
+        log "Not running"
+      fi
+      ;;
+    start)
+      start_server "$port" || exit 1
+
+      if [ "$server_only" = true ]; then
+        log "Server mode — press Ctrl+C to stop"
+        # Wait for the server process
+        wait "$(cat "$PIDFILE")" 2>/dev/null
+      else
+        open_window "$port"
+      fi
+      ;;
+  esac
+}
+
+main "$@"
+
+# "Except the LORD build the house, they labour in vain." — Psalm 127:1

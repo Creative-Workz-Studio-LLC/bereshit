@@ -1,3 +1,7 @@
+// #!omni code --rust -module
+//omni:key B-L0-hybrid-config-exists
+//omni:code --rust -module
+//omni:version b-03.00
 //! Filesystem predicates — single source of truth for existence checks.
 //!
 //! Ported from Go `exists.go`. Replaces duplicated `file_exists()` across loaders.
@@ -49,5 +53,57 @@ pub fn ensure_dir(path: &Path) -> io::Result<()> {
             }
         }
         Err(_) => fs::create_dir_all(path),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::{test_dir, write_file};
+    use std::fs;
+
+    #[test]
+    fn test_file_exists_real_file() {
+        let dir = test_dir("exists-file");
+        write_file(&dir, "exists.txt", "hello");
+
+        assert!(file_exists(&dir.join("exists.txt")));
+        assert!(!file_exists(&dir.join("nope.txt")));
+        // Directory also returns true (existence check, not type check)
+        assert!(file_exists(&dir));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_is_file() {
+        let dir = test_dir("is-file");
+        write_file(&dir, "regular.txt", "data");
+
+        assert!(is_file(&dir.join("regular.txt")));
+        assert!(!is_file(&dir)); // directory -> false
+        assert!(!is_file(&dir.join("nope"))); // missing -> false
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_ensure_dir() {
+        let dir = test_dir("ensure-dir");
+
+        // Create nested directory
+        let nested = dir.join("a").join("b").join("c");
+        ensure_dir(&nested).unwrap();
+        assert!(dir_exists(&nested));
+
+        // No-op on existing directory
+        ensure_dir(&nested).unwrap();
+
+        // Error when path is a file
+        write_file(&dir, "file.txt", "x");
+        let err = ensure_dir(&dir.join("file.txt"));
+        assert!(err.is_err());
+
+        let _ = fs::remove_dir_all(&dir);
     }
 }

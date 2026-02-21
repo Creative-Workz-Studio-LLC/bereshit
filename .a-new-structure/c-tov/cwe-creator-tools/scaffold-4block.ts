@@ -90,6 +90,10 @@ interface ScaffoldOptions {
   title: string;
   purpose: string;
   version: string;
+  component?: string;
+  scripture?: string;
+  organization?: string;
+  path?: string;
   dryRun: boolean;
   verify: boolean;
 }
@@ -102,11 +106,42 @@ interface ScaffoldOptions {
 // Template Reading and Substitution
 // ---------------------------------------------------------------------------
 
+/** Escape special regex characters in a string. */
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Replace a value in Go's [][2]string slice literal: {"key", "value"} */
+function replaceGoField(content: string, key: string, value: string): string {
+  const pattern = new RegExp(
+    `(\\{"${escapeRegex(key)}",\\s*)"[^"]*"(\\})`,
+  );
+  return content.replace(pattern, `$1"${value}"$2`);
+}
+
+/** Replace a value in Rust's &[(&str, &str)] array: ("key",  "value") */
+function replaceRustField(content: string, key: string, value: string): string {
+  const pattern = new RegExp(
+    `(\\("${escapeRegex(key)}",\\s*)"[^"]*"(\\))`,
+  );
+  return content.replace(pattern, `$1"${value}"$2`);
+}
+
+/** Derive a PROVIDES constant from a key: B-my-server → MY_SERVER */
+function deriveProvides(key: string): string {
+  return key
+    .replace(/^B-/, "")
+    .replace(/-/g, "_")
+    .toUpperCase();
+}
+
 /**
  * Read a seed template and substitute metadata placeholders.
  *
- * Seed templates use a consistent set of placeholder values that mark
- * "this needs to be replaced." We find them and swap with user-provided values.
+ * Three layers of substitution:
+ *   1. Comment-block metadata (// key:, // title:, etc.)
+ *   2. Pragma directive transformation (template → code)
+ *   3. I/C field values in Pragma/Metadata vars
  */
 async function scaffoldFromTemplate(opts: ScaffoldOptions): Promise<string> {
   const templates = TEMPLATES[opts.language];
@@ -164,6 +199,58 @@ async function scaffoldFromTemplate(opts: ScaffoldOptions): Promise<string> {
     `$1${TODAY}`,
   );
 
+  // --- Pragma directive transformation (template → code) ---
+
+  // Remove //go:build ignore (Go templates have this to prevent compilation)
+  if (opts.language === "go") {
+    content = content.replace(/^\/\/go:build ignore\n\n?/, "");
+  }
+
+  // #!omni template --go -library → //omni:code --go -library
+  content = content.replace(
+    /^\/\/\s*#!omni\s+template\s+--(\w+)\s+-([\w-]+)/m,
+    "//omni:code --$1 -$2",
+  );
+
+  // #!omni meta.key = ... → //omni:key <key>
+  content = content.replace(
+    /^\/\/\s*#!omni\s+meta\.key\s*=\s*.*/m,
+    `//omni:key ${opts.key}`,
+  );
+
+  // #!omni meta.from stays (points to template origin — correct for derived files)
+
+  // #!omni meta.at = template → //omni:version <version>
+  content = content.replace(
+    /^\/\/\s*#!omni\s+meta\.at\s*=\s*.*/m,
+    `//omni:version ${opts.version}`,
+  );
+
+  // --- I/C field replacement in Pragma/Metadata vars ---
+  const rf = opts.language === "go" ? replaceGoField : replaceRustField;
+
+  // Always-replace fields (core identity for the new file)
+  content = rf(content, "I1.key", opts.key);
+  content = rf(content, "I1.at", opts.version);
+  content = rf(content, "I2.subtype", opts.role);
+  content = rf(content, "I3.file", destBasename);
+  content = rf(content, "I3.title", opts.title);
+  content = rf(content, "I3.path", opts.path || destBasename);
+  content = rf(content, "I3.provides", deriveProvides(opts.key));
+  content = rf(content, "C1.version", opts.version);
+  content = rf(content, "C1.status", "draft");
+  content = rf(content, "C1.created", TODAY);
+  content = rf(content, "C1.updated", TODAY);
+
+  // Optional fields (replace only if provided — otherwise keep template values)
+  if (opts.component) content = rf(content, "I3.component", opts.component);
+  if (opts.purpose) {
+    content = rf(content, "I3.brief", opts.purpose);
+    content = rf(content, "C5.purpose", opts.purpose);
+  }
+  if (opts.organization) content = rf(content, "C2.organization", opts.organization);
+  if (opts.scripture) content = rf(content, "C3.scripture", opts.scripture);
+
   return content;
 }
 
@@ -210,20 +297,25 @@ ${COLORS.bold}Usage:${COLORS.reset}
 ${COLORS.bold}Languages:${COLORS.reset}  ${supported}
 
 ${COLORS.bold}Options:${COLORS.reset}
-  --role <lib|exe|test>   Template role (default: auto-detect from filename)
-  --key <key>             OmniCode key (default: derived from path)
-  --title <title>         File title (default: derived from filename)
-  --purpose <text>        Purpose description
-  --version <ver>         Version (default: a-01.00)
-  --dry-run               Preview without writing
-  --no-verify             Skip post-scaffold lint verification
-  --help, -h              Show this help
+  --role <lib|exe|test>     Template role (default: auto-detect from filename)
+  --key <key>               OmniCode key (default: derived from path)
+  --title <title>           File title (default: derived from filename)
+  --purpose <text>          Purpose description (fills I3.brief + C5.purpose)
+  --version <ver>           Version (default: a-01.00)
+  --component <text>        Component description (fills I3.component)
+  --scripture <text>        Scripture grounding (fills C3.scripture)
+  --organization <name>     Organization name (fills C2.organization)
+  --path <relative-path>    Relative path in project (fills I3.path)
+  --dry-run                 Preview without writing
+  --no-verify               Skip post-scaffold lint verification
+  --help, -h                Show this help
 
 ${COLORS.bold}Examples:${COLORS.reset}
   ${TOOL_NAME} go   src/server.go     --key B-server --title "HTTP Server"
   ${TOOL_NAME} rust src/lib.rs        --key B-core-lib --title "Core Library"
   ${TOOL_NAME} go   pkg/auth/auth.go  --purpose "Authentication module"
   ${TOOL_NAME} rust main.rs           --role exe --dry-run
+  ${TOOL_NAME} go   pkg/trit/trit.go  --key B-trit --scripture "Genesis 1:1"
 `);
 }
 
@@ -289,6 +381,10 @@ function parseArgs(args: string[]): ScaffoldOptions | null {
     title: flagValue("--title") ?? deriveTitle(dest),
     purpose: flagValue("--purpose") ?? `Implementation for ${deriveTitle(dest)}`,
     version: flagValue("--version") ?? "a-01.00",
+    component: flagValue("--component"),
+    scripture: flagValue("--scripture"),
+    organization: flagValue("--organization"),
+    path: flagValue("--path"),
     dryRun,
     verify: !noVerify,
   };

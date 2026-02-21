@@ -19,7 +19,7 @@
     "_P1_tag": "P.1 CORE — Identity [CORE]",
     "_P1_key": "B-L1-schemas-base-4block-schema",
     "_P1_from": "b-word/seed/data/L0/json/config.jsonc",
-    "_P1_at": "a-01.00",
+    "_P1_at": "a-02.00",
 
     // P.2 FAMILY — Classification
     "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
@@ -35,7 +35,7 @@
     "_P3_component": "schemas",
     "_P3_layer": "b-word/L1-omnicode/ladder/schemas/code/base",
     "_P3_includes": "none",
-    "_P3_provides": ["BASE_4BLOCK_SCHEMA", "SHARED_CODE_DEFS"],
+    "_P3_provides": ["BASE_4BLOCK_SCHEMA", "SHARED_CODE_DEFS", "PRAGMA_ROUTING", "FORMAT_REGISTRY", "FORM_REGISTRY"],
 
     // P.4 ARCHITECTURE — Scaling Context
     "_P4_ARCH": "─────────────────────────────────────────────────────────────",
@@ -47,7 +47,7 @@
     "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
     "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
     "_P5_title": "Base 4-Block Schema",
-    "_P5_brief": "Format-independent foundation for OmniCode 4-block (code) structure. Defines shared $defs for block ordering, SETUP subsections (S1-S10), BODY subtype-specific zones, CLOSING code zones (Cv/Ce/Cc) + documentation sections (X1-X6), placement rules, and identity (shared with base-3block).",
+    "_P5_brief": "Format-independent foundation for OmniCode 4-block (code) structure. Organized by container: METADATA, SETUP, BODY, CLOSING. Declares required/optional per block (informed by bare-bone). Includes pragma routing, format registry (3 active), form registry (4 forms + planned), and health scoring.",
 
     // ═══════════════════════════════════════════════════════════════
     // END PRAGMA [END]
@@ -70,15 +70,15 @@
         "title": "Base 4-Block Schema",
         "type": "Data (Schema Foundation)",
         "component": "Ladder",
-        "role": "Define format-independent 4-block (code) structure with SETUP subsections, BODY zones, and CLOSING code zones + documentation"
+        "role": "Define format-independent 4-block (code) structure organized by container, with bare-bone-informed required/optional declarations, pragma routing, format and form registries"
     },
 
     // M.2 STATE
     "_M2_state": {
-        "version": "a-01.00",
+        "version": "a-02.00",
         "status": "Active",
         "created": "2026-02-17",
-        "updated": "2026-02-17"
+        "updated": "2026-02-19"
     },
 
     // M.3 ATTRIBUTION
@@ -90,14 +90,18 @@
     // M.4 GROUNDING
     "_M4_grounding": {
         "scripture": "Exodus 25:40 — Look that thou make them after their pattern, which was shewed thee in the mount.",
-        "principle": "The 4-block structure is the pattern shown on the mountain. METADATA declares identity. SETUP makes things EXIST. BODY makes things HAPPEN. CLOSING proves, runs, and cleans up. Every format expresses this differently, but the pattern is one."
+        "principle": "The 4-block structure is the pattern shown on the mountain. bare-bone is the blueprint — the minimum pattern. Form variants build the house. Format schemas express the materials. This schema is the architectural drawing that governs all three."
     },
 
     // M.5 DEPENDENCIES
     "_M5_dependencies": {
         "requires": "data/base/base-3block-schema.jsonc — shared $defs for I/C metadata (I1-I4, C1-C7) and closing docs (X1-X5)",
-        "consumers": "code/format/rust-4block-schema.jsonc, code/format/go-4block-schema.jsonc, code/format/makefile-4block-schema.jsonc",
-        "relationship": "Base provides shared code-specific $defs. Format schemas inherit concepts and map to format-specific syntax (// comments, # comments, etc.)."
+        "consumers": [
+            "code/format/rust-4block-schema.jsonc",
+            "code/format/go-4block-schema.jsonc",
+            "code/format/makefile-4block-schema.jsonc"
+        ],
+        "relationship": "Base provides shared code-specific $defs organized by container. Format schemas inherit concepts and map to format-specific syntax. Form templates (bare-bone, library, executable, module, demo-test) implement the structure."
     },
 
     // M.ext — Extension Contract
@@ -124,20 +128,11 @@
     //   BODY    — logic, implementations, operations (things HAPPEN)
     //   CLOSING — validation, execution, cleanup, documentation
     //
-    // Key difference from 3-block:
-    //   3-block: METADATA → CONTENT → CLOSING (data files)
-    //   4-block: METADATA → SETUP → BODY → CLOSING (code files)
-    //   CONTENT splits into SETUP + BODY for code, separating
-    //   declarations (schema) from logic (queries).
+    // Organization: BY CONTAINER. Each block is a primary entry point.
+    // Within each block: required/optional informed by bare-bone.
     //
-    // Each format expresses this differently:
-    //   Rust — // comments, //omni: directives, static PRAGMA/METADATA
-    //   Go   — // comments, //omni: directives, var Pragma/Metadata maps
-    //   Make — # comments, ##omni: directives
-    //   C    — /* */ comments (future)
-    //
-    // The $defs below define WHAT each block/zone contains.
-    // Format schemas define HOW to represent it.
+    // Routing: pragma_routing maps #!omni parameters → schema chain.
+    // Registries: format_registry and form_registry provide master lists.
 
     "_content_start": "═══════════════════════════════════════════════════════════════",
     "_content_tag": "CONTENT BLOCK [CONTENT]",
@@ -145,8 +140,6 @@
     // ───────────────────────────────────────────────────────────
     // Cc — Content Configurations [CONFIG]
     // ───────────────────────────────────────────────────────────
-    //
-    // Schema identity and structure overview.
 
     "_Cc": "─────────────────────────────────────────────────────────────",
     "_Cc_tag": "Cc — Content Configurations [CONFIG]",
@@ -154,14 +147,18 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://creativeworkzstudio.com/schemas/omnicode/base-4block.schema.json",
     "title": "OmniCode Base 4-Block Structure",
-    "description": "Format-independent definition of OmniCode 4-block (code) structure. Extends base-3block I/C metadata with code-specific concepts: SETUP subsection ordering (S1-S10), BODY subtype-specific zones, CLOSING code zones (Cv/Ce/Cc) + documentation sections (X1-X6), and placement rules.",
+    "description": "Format-independent definition of OmniCode 4-block (code) structure. Organized by container with bare-bone-informed required/optional. Includes pragma routing, format registry, form registry, and health scoring.",
 
     // ───────────────────────────────────────────────────────────
     // Co — Content Operations [OPS]
     // ───────────────────────────────────────────────────────────
     //
-    // Shared type definitions ($defs). Each definition describes
-    // WHAT a block/zone contains, independent of format.
+    // Shared type definitions ($defs). Organized by container:
+    //   1. ROUTING   — pragma → schema chain mapping
+    //   2. REGISTRIES — formats and forms master lists
+    //   3. SKELETON  — the 4 blocks
+    //   4. CONTAINERS — METADATA, SETUP, BODY, CLOSING (one entry each)
+    //   5. CROSS-CUTTING — placement rules, health scoring
 
     "_Co": "─────────────────────────────────────────────────────────────",
     "_Co_tag": "Co — Content Operations [OPS]",
@@ -169,126 +166,458 @@
     "$defs": {
 
         // ═══════════════════════════════════════════════════════
-        // BLOCK ORDERING — The 4-block skeleton
+        // 1. PRAGMA ROUTING — The inner pragma
+        // ═══════════════════════════════════════════════════════
+        //
+        // How #!omni parameters route to the correct schema chain.
+        // This IS the inner pragma — the routing table from file
+        // identity to validation rules.
+
+        "pragma_routing": {
+            "type": "object",
+            "description": "How the #!omni pragma line routes to the correct schema chain. The inner pragma — the routing table that maps file identity to validation.",
+
+            "syntax": "#!omni {type} --{format} -{form}",
+            "example_derived": "// #!omni code --rust -library",
+            "example_template": "// #!omni template --rust -bare-bone",
+
+            "parameters": {
+                "type": {
+                    "position": 1,
+                    "purpose": "Block structure selection — which architectural pattern",
+                    "values": {
+                        "code":     { "structure": "4-block", "base_schema": "code/base/base-4block-schema.jsonc" },
+                        "data":     { "structure": "3-block", "base_schema": "data/base/base-3block-schema.jsonc" },
+                        "document": { "structure": "5-block", "base_schema": "doc/base/base-5block-schema.jsonc" }
+                    }
+                },
+                "format": {
+                    "position": 2,
+                    "prefix": "--",
+                    "purpose": "Format-specific schema — which syntax rules and fill templates",
+                    "note": "Routes to format schema within the block type directory. See format_registry for available formats."
+                },
+                "form": {
+                    "position": 3,
+                    "prefix": "-",
+                    "purpose": "Subtype/variant — which sections are required, BODY ordering, CLOSING emphasis",
+                    "note": "Routes to form config within format. See form_registry for available forms."
+                }
+            },
+
+            "routing_chain": [
+                "1. type → block structure (3/4/5-block) → base schema",
+                "2. format → format-specific schema → syntax rules, fill templates, comment conventions",
+                "3. form → subtype config → required sections, BODY ordering, CLOSING emphasis"
+            ],
+
+            "template_variant": {
+                "keyword": "template",
+                "replaces": "type",
+                "syntax": "#!omni template --{format} -{form}",
+                "note": "Templates use 'template' instead of type. The form template is a usable schema — all values describe the template ITSELF."
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // 2. FORMAT REGISTRY — Master list of format schemas
+        // ═══════════════════════════════════════════════════════
+        //
+        // Every format schema that inherits from this base.
+        // Each format maps the same concepts to different syntax.
+
+        "format_registry": {
+            "type": "object",
+            "description": "Master register of all format schemas that inherit from this base. The base defines WHAT each block contains; format schemas define HOW to represent it.",
+
+            "formats": {
+                "rust": {
+                    "schema": "code/format/rust-4block-schema.jsonc",
+                    "linter": "c-tov/cws-struct/lib/handlers/rust.ts",
+                    "comment_syntax": "//",
+                    "directive_prefix": "//omni:",
+                    "identity_construct": "static PRAGMA/METADATA slices",
+                    "status": "active",
+                    "available_forms": ["bare-bone", "library", "executable", "demo-test"],
+                    "templates": "b-word/seed/code/L0/rust/"
+                },
+                "go": {
+                    "schema": "code/format/go-4block-schema.jsonc",
+                    "linter": "c-tov/cws-struct/lib/handlers/go.ts",
+                    "comment_syntax": "//",
+                    "directive_prefix": "//omni:",
+                    "identity_construct": "var Pragma/Metadata maps",
+                    "status": "active",
+                    "available_forms": ["library", "executable"],
+                    "templates": "b-word/seed/code/L0/go/"
+                },
+                "makefile": {
+                    "schema": "code/format/makefile-4block-schema.jsonc",
+                    "linter": null,
+                    "comment_syntax": "#",
+                    "directive_prefix": "##omni:",
+                    "identity_construct": "# comment blocks",
+                    "status": "active",
+                    "available_forms": ["project", "layer", "game-project"],
+                    "templates": "b-word/seed/code/L0/make/"
+                },
+                "c": {
+                    "schema": null,
+                    "comment_syntax": "/* */",
+                    "status": "planned"
+                },
+                "python": {
+                    "schema": null,
+                    "comment_syntax": "#",
+                    "status": "planned"
+                },
+                "typescript": {
+                    "schema": null,
+                    "comment_syntax": "//",
+                    "status": "planned"
+                }
+            },
+
+            "parent_schema": {
+                "path": "data/base/base-3block-schema.jsonc",
+                "shared": "I/C metadata definitions (I1-I4, C1-C7) and closing documentation (X1-X5)"
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // 3. FORM REGISTRY — Subtypes with bare-bone awareness
+        // ═══════════════════════════════════════════════════════
+        //
+        // All recognized 4-block form variants. bare-bone is the
+        // foundation — every other form is bare-bone plus promoted
+        // sections. The cheat code: cp bare-bone → change pragma →
+        // promote what you need → structurally complete day one.
+
+        "form_registry": {
+            "type": "object",
+            "description": "All 4-block form variants. bare-bone defines the absolute minimum. Forms build ON TOP by promoting Reserved Omission sections. Completeness check: active + reserved = bare-bone's full set.",
+
+            "derivation_principle": "bare-bone is the blueprint. Forms are the houses. cp bare-bone.rs → change pragma → promote sections → structurally complete.",
+
+            "forms": {
+
+                "bare_bone": {
+                    "purpose": "Absolute minimum valid file — foundation all forms derive from",
+                    "is_foundation": true,
+
+                    "setup": {
+                        "active": ["Imports", "Constants", "ErrorTypes", "CoreTypes"],
+                        "reserved": ["Modules", "Statics", "TypeAliases", "TraitDefs", "Macros", "FeatureGates"],
+                        "reserved_omission_required": true
+                    },
+                    "body": {
+                        "active": ["IdentityAccess", "CoreLogic", "FreeFunctions"],
+                        "reserved": ["Helpers", "TraitImplementations", "Constructors", "Queries", "Output", "ConstructorTests", "BuilderTests", "TransitionTests", "QueryTests", "IdentityTests", "ErrorTests", "EdgeCaseTests", "TableDrivenTests", "IntegrationTests"],
+                        "reserved_omission_required": true
+                    },
+                    "closing": {
+                        "active": ["Cv", "Ce", "X1", "X4", "X5", "X6"],
+                        "reserved": ["Cc", "TestCoverageSummary", "X2", "X3"],
+                        "reserved_omission_required": true
+                    },
+
+                    "note": "The cheat code — structurally complete before a single line of real code. Boundaries before content (badal)."
+                },
+
+                "library": {
+                    "purpose": "Library/package — exposes public API, holds crate/package identity",
+                    "body_ordering": "type_lifecycle",
+                    "body_count": 7,
+                    "closing_emphasis": { "heavy": ["Cv"], "light": ["Ce", "Cc"] },
+
+                    "promotes_from_bare_bone": {
+                        "setup": ["Modules", "Statics", "TypeAliases", "TraitDefs", "Macros", "FeatureGates"],
+                        "body": ["TraitImplementations", "Constructors", "Queries", "Output"],
+                        "closing": ["Cc", "X2", "X3"]
+                    }
+                },
+
+                "executable": {
+                    "purpose": "Binary — orchestrates via main() → run() → Result pattern",
+                    "body_ordering": "execution_flow",
+                    "body_count": 3,
+                    "closing_emphasis": { "heavy": ["Ce", "Cv"], "light": ["Cc"] },
+
+                    "promotes_from_bare_bone": {
+                        "setup": ["Modules", "Statics", "TypeAliases", "FeatureGates"],
+                        "body": ["Helpers"],
+                        "closing": ["Cc", "X2", "X3"]
+                    }
+                },
+
+                "demo_test": {
+                    "purpose": "Test file — validates behavior, proves claims",
+                    "body_ordering": "concern_coverage",
+                    "body_count": 9,
+                    "closing_emphasis": { "heavy": ["Cv", "Cc"], "light": ["Ce"] },
+
+                    "promotes_from_bare_bone": {
+                        "setup": ["Modules", "Statics", "TypeAliases", "TraitDefs", "Macros", "FeatureGates"],
+                        "body": ["ConstructorTests", "BuilderTests", "TransitionTests", "QueryTests", "IdentityTests", "ErrorTests", "EdgeCaseTests", "TableDrivenTests", "IntegrationTests"],
+                        "closing": ["Cc", "TestCoverageSummary", "X2", "X3"]
+                    }
+                },
+
+                "module": {
+                    "purpose": "Internal module — focused single-concern file within a crate (src/parser.rs, src/config.rs)",
+                    "body_ordering": "type_lifecycle",
+                    "body_count": 6,
+                    "closing_emphasis": { "heavy": ["Cv"], "light": ["Ce", "Cc"] },
+
+                    "promotes_from_bare_bone": {
+                        "setup": ["Statics", "TypeAliases", "TraitDefs"],
+                        "body": ["TraitImplementations", "Constructors", "Queries"],
+                        "closing": ["Cc", "X2", "X3"]
+                    },
+
+                    "reserves_from_library": {
+                        "setup": ["Modules", "Macros", "FeatureGates"],
+                        "body": ["Output"],
+                        "why": "Modules are members of the body (1 Cor 12:18), not the body itself. Crate-level concerns (S2 Modules, S9 Macros, S10 Feature Gates, B6 Output) stay at crate root."
+                    }
+                }
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // 4. BLOCK SKELETON — The 4-block structure
         // ═══════════════════════════════════════════════════════
 
-        "block_ordering": {
+        "block_skeleton": {
             "type": "object",
             "description": "The 4-block skeleton: METADATA → SETUP → BODY → CLOSING. Order is fixed. All four required for code files.",
-            "properties": {
-                "blocks": {
-                    "type": "array",
-                    "items": { "type": "string" },
-                    "const": ["METADATA", "SETUP", "BODY", "CLOSING"],
-                    "description": "Canonical block order — never changes"
-                }
+
+            "blocks": {
+                "type": "array",
+                "const": ["METADATA", "SETUP", "BODY", "CLOSING"],
+                "description": "Canonical block order — never changes"
             },
 
             "METADATA": {
                 "purpose": "Identity and context — WHO this file is, WHAT it needs",
                 "required": true,
-                "contains": "I/C sections (shared with base-3block), format-specific identity constructs",
-                "note": "References $defs from base-3block-schema.jsonc for I1-I4, C1-C7"
+                "minimum_container": "ALL sections — no Reserved Omission needed (every I/C section is always required)",
+                "contains": "I/C sections (shared with base-3block), format-specific identity constructs"
             },
             "SETUP": {
                 "purpose": "Declarations — everything BODY needs to EXIST before logic runs",
                 "required": true,
-                "contains": "Imports, constants, types, error types, trait/interface defs, macros",
-                "principle": "SETUP makes things EXIST. BODY makes things HAPPEN. If BODY is pure logic, hardcoded values have one address: SETUP."
+                "minimum_container": "Reserved Omission (1 section — the structural minimum even when empty)",
+                "bare_bone_active": ["Imports", "Constants", "ErrorTypes", "CoreTypes"],
+                "principle": "SETUP makes things EXIST. BODY makes things HAPPEN."
             },
             "BODY": {
                 "purpose": "Core logic — implementations, operations, the actual work",
                 "required": true,
-                "contains": "Function implementations, trait/interface impls, constructors, queries, tests (demo-test)",
+                "minimum_container": "Reserved Omission (1 section — the structural minimum even when empty)",
+                "bare_bone_active": ["IdentityAccess", "CoreLogic", "FreeFunctions"],
                 "principle": "BODY/SETUP mirrors behavior/data. SETUP is the schema; BODY is the queries."
             },
             "CLOSING": {
                 "purpose": "Accountability — prove it works, run it, clean up, document",
                 "required": true,
-                "contains": "Tests (Cv), entry points (Ce), cleanup (Cc), documentation (X1-X6)",
-                "principle": "CLOSING is the accountability block. Tests prove claims. Entry points handle OS interface. Cleanup prevents leaks. Docs guide maintainers."
+                "minimum_container": "Reserved Omission (1 section — the structural minimum even when empty)",
+                "bare_bone_active": ["Cv", "Ce", "X1", "X4", "X5", "X6"],
+                "principle": "CLOSING is the accountability block. Tests prove claims. Docs guide maintainers."
             }
         },
 
         // ═══════════════════════════════════════════════════════
-        // SETUP — Universal 10-subsection structure
+        // 5. RESERVED OMISSION — The structural contract
+        // ═══════════════════════════════════════════════════════
+
+        "reserved_omission": {
+            "type": "object",
+            "description": "Structural container required in every block except METADATA. Lists sections NOT present in this file. Nothing is silently absent.",
+
+            "required_in": ["SETUP", "BODY", "CLOSING"],
+            "not_required_in": "METADATA — all METADATA sections are always required, nothing to reserve",
+            "empty_valid": true,
+            "purpose": "Completeness contract. active_sections + reserved_sections = bare-bone master list. Linter validates nothing is silently missing.",
+
+            "content_when_populated": {
+                "format": "One line per reserved section: section name + brief note + form attribution",
+                "example": "Modules — Submodule tree + re-exports [library, executable, demo-test]"
+            },
+
+            "content_when_empty": {
+                "format": "Single none-note indicating all sections are active",
+                "example": "(none — all 10 SETUP sections active in library form)"
+            },
+
+            "promotion_workflow": [
+                "1. Copy full section definition from the appropriate form template",
+                "2. Insert it above the Reserved Omission container",
+                "3. Remove the entry from Reserved Omission list",
+                "4. Renumber sections if needed"
+            ],
+
+            "routing": "bare-bone has the master list with form attributions. Form templates have empty containers. Derived files populate as needed."
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // 6. METADATA CONTAINER — Identity block
         // ═══════════════════════════════════════════════════════
         //
+        // Everything about the METADATA block in one place.
+        // METADATA is fully required — bare-bone has complete
+        // I1-I4 and C1-C7. No Reserved Omission needed.
+
+        "metadata_block": {
+            "type": "object",
+            "description": "METADATA block — identity and context. Fully required. bare-bone has complete PRAGMA (I1-I4) and METADATA (C1-C7). No Reserved Omission because every section is always active.",
+
+            "required_level": "ALL — every section, every required field",
+
+            "directives": {
+                "description": "OmniCode identity directives — format-independent concept, format-specific syntax.",
+
+                "required": {
+                    "key": {
+                        "purpose": "Unique Bereshit identifier",
+                        "pattern_concept": "omni:key B-{path}",
+                        "severity_crate_root": "error",
+                        "severity_module": "warn"
+                    }
+                },
+
+                "recommended": {
+                    "code": {
+                        "purpose": "File type and format classification",
+                        "pattern_concept": "omni:code --{language} -{subtype}",
+                        "severity": "warn"
+                    },
+                    "version": {
+                        "purpose": "Living version",
+                        "pattern_concept": "omni:version {stage}-{phase}.{completion}",
+                        "severity": "warn"
+                    }
+                },
+
+                "template_directive": {
+                    "purpose": "Marks file as a seed template",
+                    "pattern_concept": "omni template --{language} -{subtype}",
+                    "note": "Templates use 'usable schema' pattern — all values describe the template ITSELF"
+                }
+            },
+
+            "identity": {
+                "description": "Code files use the same I/C metadata as data files. Shared with base-3block-schema.jsonc. Format schemas define HOW to represent it (Rust: static slices, Go: var maps, C: comment blocks).",
+
+                "pragma_sections": {
+                    "I1_core":         { "required": ["key", "format", "from", "at"], "purpose": "WHO — unique identity" },
+                    "I2_family":       { "required": ["type", "structure"], "defined": ["subtype", "role"], "purpose": "WHAT — classification" },
+                    "I3_instance":     { "required": ["file", "title"], "defined": ["component", "path", "provides", "brief"], "purpose": "THIS — file-specific" },
+                    "I4_architecture": { "defined": ["layer", "position", "pattern"], "purpose": "WHERE — structural context" }
+                },
+
+                "metadata_sections": {
+                    "C1_state":          { "required": ["version", "status"], "defined": ["created", "updated"], "purpose": "WHEN — lifecycle" },
+                    "C2_attribution":    { "required": ["organization"], "defined": ["architect", "implementation", "copyright"], "purpose": "WHO MADE — credit" },
+                    "C3_grounding":      { "required": ["scripture"], "defined": ["principle", "anchor"], "purpose": "WHY — biblical foundation" },
+                    "C4_dependencies":   { "required": ["requires", "consumers"], "defined": ["integration", "if_missing"], "purpose": "NEEDS — dependency graph" },
+                    "C5_intent":         { "defined": ["purpose", "philosophy"], "purpose": "GOAL — design intent" },
+                    "C6_roadmap":        { "defined": ["current", "planned", "limitations"], "purpose": "NEXT — trajectory" },
+                    "C7_classification": { "defined": ["tags", "category", "domain", "paradigm"], "purpose": "TAGS — discovery" }
+                }
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // 7. SETUP CONTAINER — Declarations block
+        // ═══════════════════════════════════════════════════════
+        //
+        // Everything about the SETUP block in one place.
         // The 10-subsection structure follows the dependency chain:
         // each subsection can reference only what came before it.
-        // Not all 10 are required — only those with content appear.
-        // The ordering is universal across all 4-block formats.
 
-        "setup_subsections": {
+        "setup_block": {
             "type": "object",
-            "description": "Universal SETUP subsection ordering. 10 positions following the dependency chain — each can reference only what came before it. Format-independent.",
+            "description": "SETUP block — declarations that make things EXIST. Universal 10-subsection structure following the dependency chain. bare-bone requires 4 + Reserved Omission.",
 
             "ordering_principle": "dependency_chain",
             "canonical_count": 10,
+
+            "bare_bone_required": {
+                "sections": ["S1_Imports", "S3_Constants", "S6_ErrorTypes", "S7_CoreTypes"],
+                "structural": "Reserved Omission container",
+                "note": "These 4 + Reserved Omission = bare-bone SETUP. Forms promote additional sections."
+            },
 
             "subsections": {
                 "S1_Imports": {
                     "position": 1,
                     "tag": "Imports",
                     "purpose": "External dependencies — bringing in what exists elsewhere",
-                    "universal": true
+                    "bare_bone": "required"
                 },
                 "S2_Modules": {
                     "position": 2,
                     "tag": "Modules",
                     "purpose": "Module declarations, re-exports — defining the public surface",
-                    "universal": true
+                    "bare_bone": "reserved",
+                    "promoted_by": ["library", "executable", "demo-test"]
                 },
                 "S3_Constants": {
                     "position": 3,
                     "tag": "Constants",
                     "purpose": "Compile-time known values — zero-cost, inlined",
-                    "universal": true
+                    "bare_bone": "required"
                 },
                 "S4_Statics": {
                     "position": 4,
                     "tag": "Statics",
                     "purpose": "Runtime-initialized singletons — process-wide shared state",
-                    "universal": true
+                    "bare_bone": "reserved",
+                    "promoted_by": ["library", "executable", "demo-test"]
                 },
                 "S5_TypeAliases": {
                     "position": 5,
                     "tag": "TypeAliases",
                     "purpose": "Type aliases — domain vocabulary without new types",
-                    "universal": true
+                    "bare_bone": "reserved",
+                    "promoted_by": ["library", "executable", "demo-test"]
                 },
                 "S6_ErrorTypes": {
                     "position": 6,
                     "tag": "ErrorTypes",
                     "purpose": "Error definitions — the crate/package failure vocabulary",
-                    "universal": true
+                    "bare_bone": "required"
                 },
                 "S7_CoreTypes": {
                     "position": 7,
                     "tag": "CoreTypes",
                     "purpose": "Primary structs/enums/interfaces — the data shapes logic operates on",
-                    "universal": true
+                    "bare_bone": "required"
                 },
                 "S8_TraitDefs": {
                     "position": 8,
                     "tag": "TraitDefs",
                     "purpose": "Trait/interface definitions — contracts that BODY fulfills",
                     "note": "Rust: trait, Go: interface, C: function pointer structs",
-                    "universal": true
+                    "bare_bone": "reserved",
+                    "promoted_by": ["library", "demo-test"]
                 },
                 "S9_Macros": {
                     "position": 9,
                     "tag": "Macros",
                     "purpose": "Code generation — compile-time patterns for repeated structures",
                     "note": "Rust: macro_rules!, Go: go generate, C: #define macros",
-                    "universal": true
+                    "bare_bone": "reserved",
+                    "promoted_by": ["library", "demo-test"]
                 },
                 "S10_FeatureGates": {
                     "position": 10,
                     "tag": "FeatureGates",
                     "purpose": "Conditional compilation — platform/feature-specific declarations",
                     "note": "Rust: cfg(feature), Go: //go:build, C: #ifdef",
-                    "universal": true
+                    "bare_bone": "reserved",
+                    "promoted_by": ["library", "executable", "demo-test"]
                 }
             },
 
@@ -300,20 +629,42 @@
         },
 
         // ═══════════════════════════════════════════════════════
-        // BODY — Subtype-specific subsection structures
+        // 8. BODY CONTAINER — Logic block
         // ═══════════════════════════════════════════════════════
         //
+        // Everything about the BODY block in one place.
         // Unlike SETUP's universal 10-subsection structure,
-        // BODY subsections vary by subtype. Each subtype has its
-        // own ordering principle reflecting the nature of its logic.
+        // BODY subsections vary by form. bare-bone defines the
+        // minimum (3 sections). Each form adds its own.
 
-        "body_zones": {
+        "body_block": {
             "type": "object",
-            "description": "BODY subsection structures vary by subtype. Each subtype defines its own ordering principle and subsection count.",
+            "description": "BODY block — core logic that makes things HAPPEN. Subsections vary by form. bare-bone requires 3 + Reserved Omission.",
 
-            "ordering_varies_by_subtype": true,
+            "bare_bone_required": {
+                "sections": ["IdentityAccess", "CoreLogic", "FreeFunctions"],
+                "structural": "Reserved Omission container",
+                "note": "These 3 + Reserved Omission = bare-bone BODY. Every form includes these; forms add more."
+            },
 
-            "subtypes": {
+            "ordering_varies_by_form": true,
+
+            "universal_sections": {
+                "B_IdentityAccess": {
+                    "purpose": "OmniCode static accessors — pragma(), metadata(), pragma_get(), metadata_get()",
+                    "note": "Present in ALL forms — every file with identity statics exposes these"
+                },
+                "B_CoreLogic": {
+                    "purpose": "Primary operations — state transitions, computations, business rules",
+                    "note": "The verbs of the system. What this file DOES."
+                },
+                "B_FreeFunctions": {
+                    "purpose": "Module-level public functions — convenience wrappers, facades, register_identity()",
+                    "note": "Not attached to any type. Top-level API."
+                }
+            },
+
+            "form_sections": {
 
                 "library": {
                     "canonical_count": 7,
@@ -367,29 +718,43 @@
         },
 
         // ═══════════════════════════════════════════════════════
-        // CLOSING — Code Zones + Documentation Sections
+        // 9. CLOSING CONTAINER — Accountability block
         // ═══════════════════════════════════════════════════════
         //
+        // Everything about the CLOSING block in one place.
         // CLOSING contains two kinds of content:
         //   1. Code zones (Cv, Ce, Cc) — actual executable code
         //   2. Documentation sections (X1-X6) — guidance for humans
         //
         // Code zones ALWAYS precede documentation sections.
-        // Within each category, order is fixed.
 
-        "closing_code_zones": {
+        "closing_block": {
             "type": "object",
-            "description": "CLOSING code zones — actual executable code for validation, execution, and cleanup. Code zones always precede documentation sections.",
+            "description": "CLOSING block — accountability. Code zones (prove/run/clean) + documentation sections (guide). bare-bone has 6 active + Reserved Omission.",
 
-            "ordering_principle": "prove_then_run_then_clean",
+            "ordering_principle": "prove_then_run_then_clean_then_document",
+            "canonical_order": ["Cv", "Ce", "Cc", "X1", "X2", "X3", "X4", "X5", "X6"],
 
-            "zones": {
+            "bare_bone_active": {
+                "code_zones": ["Cv", "Ce"],
+                "documentation": ["X1", "X4", "X5", "X6"],
+                "structural": "Reserved Omission container (between code zones and documentation)",
+                "note": "Cv + Ce + Reserved Omission + X1 + X4 + X5 + X6 = bare-bone CLOSING"
+            },
+
+            "bare_bone_reserved": ["Cc", "TestCoverageSummary", "X2", "X3"],
+
+            "code_zones": {
+                "description": "Actual executable code — always precede documentation sections.",
+                "order": ["Cv", "Ce", "Cc"],
+
                 "Cv_Validation": {
                     "position": 1,
                     "tag": "Cv",
                     "name": "Closing Validation",
                     "purpose": "Tests — prove code works",
-                    "subtype_content": {
+                    "bare_bone": "required",
+                    "form_content": {
                         "library": "Inline test module with white-box access to private internals",
                         "executable": "Exit code mapping tests, error display tests, identity verification",
                         "demo_test": "Meta-validation — tests verifying test infrastructure (fixtures, helpers)"
@@ -400,7 +765,8 @@
                     "tag": "Ce",
                     "name": "Closing Execution",
                     "purpose": "Entry point, init, registration — code that starts execution",
-                    "subtype_content": {
+                    "bare_bone": "required",
+                    "form_content": {
                         "library": "Empty — libraries have no entry point",
                         "executable": "main() + exit_code() — thin entry delegating to run() (BODY)",
                         "demo_test": "Empty — test harness is the entry point"
@@ -411,25 +777,25 @@
                     "tag": "Cc",
                     "name": "Closing Cleanup",
                     "purpose": "Resource deallocation, teardown, Drop impls",
-                    "subtype_content": {
+                    "bare_bone": "reserved",
+                    "promoted_by": ["library", "executable", "demo-test"],
+                    "form_content": {
                         "library": "Drop/Destructor implementations for resource cleanup",
                         "executable": "Process cleanup — temp files, buffer flushing, connections",
                         "demo_test": "Test fixture teardown — cleanup helpers, resource deallocation"
                     }
                 }
-            }
-        },
+            },
 
-        "closing_documentation": {
-            "type": "object",
-            "description": "CLOSING documentation sections — guidance for humans, not compilers. Always follow code zones.",
+            "documentation_sections": {
+                "description": "Guidance for humans — always follow code zones.",
 
-            "sections": {
                 "X1_Policy": {
                     "position": 1,
                     "tag": "X1",
                     "name": "Policy",
                     "required": true,
+                    "bare_bone": "required",
                     "purpose": "Modification guidelines — never/careful/safe classification",
                     "fields": {
                         "required": ["never", "careful", "safe"],
@@ -441,6 +807,8 @@
                     "tag": "X2",
                     "name": "Extension",
                     "required": false,
+                    "bare_bone": "reserved",
+                    "promoted_by": ["library", "executable", "demo-test"],
                     "purpose": "Designed growth points — planned features, expansion areas"
                 },
                 "X3_Troubleshooting": {
@@ -448,6 +816,8 @@
                     "tag": "X3",
                     "name": "Troubleshooting",
                     "required": false,
+                    "bare_bone": "reserved",
+                    "promoted_by": ["library", "executable", "demo-test"],
                     "purpose": "Common problems and solutions"
                 },
                 "X4_Reference": {
@@ -455,6 +825,7 @@
                     "tag": "X4",
                     "name": "Reference",
                     "required": false,
+                    "bare_bone": "required",
                     "purpose": "Related files, dependencies, validation commands"
                 },
                 "X5_Note": {
@@ -462,6 +833,7 @@
                     "tag": "X5",
                     "name": "Note",
                     "required": true,
+                    "bare_bone": "required",
                     "purpose": "Closing scripture anchor — grounds the file in eternal truth",
                     "fields": {
                         "required": ["note", "scripture"],
@@ -474,23 +846,14 @@
                     "name": "Template",
                     "required": false,
                     "template_only": true,
+                    "bare_bone": "required",
                     "purpose": "Instantiation guide — remove when copying from template"
                 }
             }
         },
 
-        "closing_zone_ordering": {
-            "type": "object",
-            "description": "Full CLOSING ordering: code zones first, then documentation sections. This is the canonical sequence.",
-            "ordering_principle": "prove_then_run_then_clean_then_document",
-            "canonical_order": ["Cv", "Ce", "Cc", "X1", "X2", "X3", "X4", "X5", "X6"],
-            "code_zones": ["Cv", "Ce", "Cc"],
-            "documentation_sections": ["X1", "X2", "X3", "X4", "X5", "X6"],
-            "rule": "Code zones precede documentation sections. Within each group, order is fixed."
-        },
-
         // ═══════════════════════════════════════════════════════
-        // PLACEMENT RULES — Universal categories
+        // 10. PLACEMENT RULES — Cross-block boundaries
         // ═══════════════════════════════════════════════════════
         //
         // Format-independent rules for what goes where.
@@ -570,105 +933,7 @@
         },
 
         // ═══════════════════════════════════════════════════════
-        // DIRECTIVES — OmniCode identity markers
-        // ═══════════════════════════════════════════════════════
-
-        "directives": {
-            "type": "object",
-            "description": "OmniCode identity directives — format-independent concept, format-specific syntax.",
-
-            "required": {
-                "key": {
-                    "purpose": "Unique Bereshit identifier",
-                    "pattern_concept": "omni:key B-{path}",
-                    "severity_crate_root": "error",
-                    "severity_module": "warn"
-                }
-            },
-
-            "recommended": {
-                "code": {
-                    "purpose": "File type and format classification",
-                    "pattern_concept": "omni:code --{language} -{subtype}",
-                    "severity": "warn"
-                },
-                "version": {
-                    "purpose": "Living version",
-                    "pattern_concept": "omni:version {stage}-{phase}.{completion}",
-                    "severity": "warn"
-                }
-            },
-
-            "template_directive": {
-                "purpose": "Marks file as a seed template",
-                "pattern_concept": "omni template --{language} -{subtype}",
-                "note": "Templates use 'usable schema' pattern — all values describe the template ITSELF"
-            }
-        },
-
-        // ═══════════════════════════════════════════════════════
-        // IDENTITY — I/C sections (references base-3block)
-        // ═══════════════════════════════════════════════════════
-
-        "identity": {
-            "type": "object",
-            "description": "Code files use the same I/C metadata as data files. I1-I4 Identity + C1-C7 Context. Shared with base-3block-schema.jsonc — format schemas $ref those $defs.",
-
-            "note": "4-block files express I/C through format-specific constructs: Rust uses static PRAGMA/METADATA slices or BTreeMaps; Go uses var Pragma/Metadata maps; C uses /* comment blocks */. The CONTENT of I/C is the same; the REPRESENTATION differs.",
-
-            "pragma_sections": {
-                "I1_core":         { "required": ["key", "format", "from", "at"], "purpose": "WHO — unique identity" },
-                "I2_family":       { "required": ["type", "structure"], "defined": ["subtype", "role"], "purpose": "WHAT — classification" },
-                "I3_instance":     { "required": ["file", "title"], "defined": ["component", "path", "provides", "brief"], "purpose": "THIS — file-specific" },
-                "I4_architecture": { "defined": ["layer", "position", "pattern"], "purpose": "WHERE — structural context" }
-            },
-
-            "metadata_sections": {
-                "C1_state":          { "required": ["version", "status"], "defined": ["created", "updated"], "purpose": "WHEN — lifecycle" },
-                "C2_attribution":    { "required": ["organization"], "defined": ["architect", "implementation", "copyright"], "purpose": "WHO MADE — credit" },
-                "C3_grounding":      { "required": ["scripture"], "defined": ["principle", "anchor"], "purpose": "WHY — biblical foundation" },
-                "C4_dependencies":   { "required": ["requires", "consumers"], "defined": ["integration", "if_missing"], "purpose": "NEEDS — dependency graph" },
-                "C5_intent":         { "defined": ["purpose", "philosophy"], "purpose": "GOAL — design intent" },
-                "C6_roadmap":        { "defined": ["current", "planned", "limitations"], "purpose": "NEXT — trajectory" },
-                "C7_classification": { "defined": ["tags", "category", "domain", "paradigm"], "purpose": "TAGS — discovery" }
-            }
-        },
-
-        // ═══════════════════════════════════════════════════════
-        // SUBTYPES — File classification
-        // ═══════════════════════════════════════════════════════
-
-        "subtypes": {
-            "type": "object",
-            "description": "4-block file subtypes — same block structure, different BODY ordering and CLOSING emphasis.",
-
-            "library": {
-                "purpose": "Library/package — exposes public API, holds crate/package identity",
-                "body_ordering": "type_lifecycle",
-                "body_count": 7,
-                "closing_emphasis": { "heavy": ["Cv"], "light": ["Ce", "Cc"] },
-                "setup_emphasis": { "heavy": ["Imports", "Modules", "ErrorTypes", "CoreTypes", "TraitDefs"], "light": ["Constants", "Statics", "Macros"] }
-            },
-
-            "executable": {
-                "purpose": "Binary — orchestrates via main() → run() → Result pattern",
-                "body_ordering": "execution_flow",
-                "body_count": 3,
-                "closing_emphasis": { "heavy": ["Ce", "Cv"], "light": ["Cc"] },
-                "setup_emphasis": { "heavy": ["Imports", "Constants", "Statics"], "light": ["Modules", "CoreTypes", "TraitDefs", "Macros"] }
-            },
-
-            "demo_test": {
-                "purpose": "Test file — validates behavior, proves claims",
-                "body_ordering": "concern_coverage",
-                "body_count": 9,
-                "closing_emphasis": { "heavy": ["Cv", "Cc"], "light": ["Ce"] },
-                "setup_emphasis": { "heavy": ["Imports", "Constants", "CoreTypes", "Macros"], "light": ["Modules", "Statics", "TraitDefs", "FeatureGates"] }
-            }
-        },
-
-        // ═══════════════════════════════════════════════════════
-        // HEALTH SCORING — Universal 4-block contract
+        // 11. HEALTH SCORING — Universal contract
         // ═══════════════════════════════════════════════════════
         //
         // Ternary scoring: -100 (shavar) → 0 (yashar) → +100 (tov).
@@ -711,7 +976,6 @@
                                 { "check": "block/end-{BLOCK}", "count": 4, "type": "atomic", "impact": "warn", "note": "END marker for each block" },
                                 { "check": "block/order", "count": 1, "type": "atomic", "impact": "error", "note": "Blocks appear in canonical order" }
                             ],
-                            // 9 atomic actions. Full pass: 9 × (+1 × 1.0) = +9 contribution
                             "expected_actions": 9,
                             "expected_pass_score_contribution": "+9.0"
                         },
@@ -725,13 +989,11 @@
                                 { "check": "style/box-separator-standard", "count": 1, "type": "atomic", "impact": "info" },
                                 { "check": "style/dash-separator-width", "count": 1, "type": "atomic", "impact": "warn" }
                             ],
-                            // 5 atomic actions. Full pass: 3×1.0 + 2×0.25 = +3.5
                             "expected_actions": 5,
                             "expected_pass_score_contribution": "+3.5"
                         }
                     },
 
-                    // Structural total: 14 base actions (format schemas add more)
                     "expected_base_actions": 14,
                     "note": "Format schemas add format-specific structural checks (e.g., Go: package + import = +2)"
                 },
@@ -747,8 +1009,6 @@
                                 { "check": "directive/{recommended}", "type": "atomic", "impact": "warn", "note": "1 per recommended directive" },
                                 { "check": "directive/code-format", "count": 1, "type": "atomic", "impact": "warn" }
                             ],
-                            // Derived non-template: 1 required + 2 recommended + 1 format = 4
-                            // Template: 2 (meta.key + template-format)
                             "expected_actions_derived": 4,
                             "expected_actions_template": 2,
                             "expected_pass_score_contribution_derived": "+3.25"
@@ -763,7 +1023,6 @@
                                 { "check": "identity/Pragma/{section}.{field}", "type": "compound", "impact": "warn/info", "note": "Expands to 1 action per I1-I4 field (required + defined)" },
                                 { "check": "identity/Metadata/{section}.{field}", "type": "compound", "impact": "warn/info", "note": "Expands to 1 action per C1-C7 field (required + defined)" }
                             ],
-                            // 3 base + 17 Pragma fields + 24 Metadata fields = 44
                             "expected_actions": 44,
                             "note": "Compound: Pragma has 17 fields (I1:4 + I2:4 + I3:6 + I4:3), Metadata has 24 (C1:4 + C2:4 + C3:3 + C4:4 + C5:2 + C6:3 + C7:4)"
                         },
@@ -786,12 +1045,10 @@
                                 { "check": "value/Metadata/C2.organization", "count": 1, "type": "atomic", "impact": "warn", "validation": "non-empty" },
                                 { "check": "value/Metadata/C3.scripture", "count": 1, "type": "atomic", "impact": "info", "validation": "non-empty" }
                             ],
-                            // 14 atomic actions: 10 warn-weight + 4 info-weight
-                            // Full pass: 10 × 1.0 + 4 × 0.25 = +11.0
                             "expected_actions": 14,
                             "expected_pass_score_contribution": "+11.0",
                             "cascade_from": "identity — if field doesn't exist, content check is neutral",
-                            "growth_path": "This is the first content scoring layer. Future: cross-field validation (I1.at == C1.version), filename consistency (I3.file matches actual), deeper semantic checks."
+                            "growth_path": "First content scoring layer. Future: cross-field validation (I1.at == C1.version), filename consistency (I3.file matches actual), deeper semantic checks."
                         },
 
                         "comment-meta": {
@@ -974,7 +1231,7 @@
     "_Cv": "─────────────────────────────────────────────────────────────",
     "_Cv_tag": "Cv — Content Validation [VALIDATE]",
     "_Cv_verify": "This schema provides $defs only. Validate format-specific schemas against their targets.",
-    "_Cv_expected_state": "All $defs present with correct structure: block ordering, SETUP 10 subsections, BODY 3 subtype variants, CLOSING code zones + docs, placement rules, directives, identity, subtypes.",
+    "_Cv_expected_state": "All $defs present with correct structure: pragma routing, format/form registries, block skeleton, 4 container blocks (metadata/setup/body/closing), reserved omission contract, placement rules, health scoring.",
 
     // ═══════════════════════════════════════════════════════════════
     // END CONTENT [END]
@@ -999,19 +1256,25 @@
         "Remove a $def that format schemas reference",
         "Change the 4-block ordering (METADATA → SETUP → BODY → CLOSING)",
         "Remove SETUP subsection ordering (S1-S10 dependency chain)",
-        "Remove CLOSING zone ordering (Cv → Ce → Cc → X1-X6)"
+        "Remove CLOSING zone ordering (Cv → Ce → Cc → X1-X6)",
+        "Remove pragma_routing, format_registry, or form_registry",
+        "Remove reserved_omission contract"
     ],
     "_X1_careful": [
-        "Adding new SETUP subsections (affects all 4-block formats)",
-        "Changing BODY subtype structures (cascades to format schemas and linters)",
+        "Adding new SETUP subsections (affects all 4-block formats and bare-bone)",
+        "Changing BODY form structures (cascades to format schemas, templates, and linters)",
         "Adding new required CLOSING documentation sections",
-        "Modifying placement rules (affects all format linters)"
+        "Modifying placement rules (affects all format linters)",
+        "Changing bare-bone required/optional declarations (affects all form derivations)",
+        "Adding new forms to form_registry (requires template creation)"
     ],
     "_X1_safe": [
         "Adding optional properties to existing $defs",
         "Adding description fields and production notes",
         "Adding new optional $defs that don't affect existing schemas",
-        "Adding new subtypes (extending, not changing)"
+        "Adding new formats to format_registry (extending, not changing)",
+        "Adding health scoring checks (additive)",
+        "Updating template paths and linter references"
     ],
 
     // X.2 EXTENSION [DEFINED]
@@ -1021,8 +1284,10 @@
         "C language 4-block schema (/* */ comment-based)",
         "Python 4-block schema (# comment-based)",
         "TypeScript 4-block schema (// comment-based)",
-        "Schema-driven Rust linter (load from rust-4block-schema.jsonc like TOML does)",
-        "Cross-format identity validation (key in code matches key in config)"
+        "Module form variant — DONE (see code/forms/declared/rust-module.jsonc)",
+        "Schema-driven bare-bone validation (linter checks active + reserved = complete)",
+        "Cross-format identity validation (key in code matches key in config)",
+        "Reserved Omission linter integration (validate completeness per form)"
     ],
 
     // X.3 TROUBLESHOOTING [DEFINED]
@@ -1033,8 +1298,10 @@
         "4block_vs_3block": "Use 4-block for code files (Go, Rust, C, Python). Use 3-block for data files (TOML, JSON). Use 5-block for documentation (AsciiDoc, Markdown).",
         "setup_vs_body": "If it DECLARES something (type, constant, import), it belongs in SETUP. If it DOES something (logic, computation, I/O), it belongs in BODY.",
         "closing_ordering": "Code zones (Cv/Ce/Cc) come FIRST, then documentation (X1-X6). Tests before entry points. Entry before cleanup.",
-        "body_subtypes": "Library = 7 subsections (type lifecycle). Executable = 3 (execution flow). Demo-test = 9 (concern coverage). Don't mix ordering principles.",
-        "which_schema": "This is the BASE — it doesn't validate files directly. Use rust-4block-schema.jsonc, go-4block-schema.jsonc, etc."
+        "body_subtypes": "Library = 7 subsections (type lifecycle). Module = 6 (type lifecycle, B6 reserved). Executable = 3 (execution flow). Demo-test = 9 (concern coverage). Don't mix ordering principles.",
+        "which_schema": "This is the BASE — it doesn't validate files directly. Use rust-4block-schema.jsonc, go-4block-schema.jsonc, etc. See format_registry for the full list.",
+        "bare_bone_vs_form": "bare-bone is the minimum valid file. Forms build on top by promoting reserved sections. If you're confused about what's required, start from bare-bone.",
+        "reserved_omission": "Reserved Omission is a CONTAINER that must exist in SETUP, BODY, and CLOSING blocks. It's structural — even when empty, it declares 'I have nothing reserved.' METADATA doesn't need it because all METADATA sections are always required."
     },
 
     // X.4 REFERENCE [DEFINED]
@@ -1048,13 +1315,20 @@
         "c-tov/cws-struct/lib/handlers/rust.ts — Runtime Rust linter",
         "c-tov/cws-struct/lib/handlers/go.ts — Runtime Go linter"
     ],
+    "_X4_templates": [
+        "b-word/seed/code/L0/rust/bare-bone.rs — Foundation (all Rust forms)",
+        "b-word/seed/code/L0/rust/library.rs — Library form",
+        "b-word/seed/code/L0/rust/executable.rs — Executable form",
+        "b-word/seed/code/L0/rust/module.rs — Module form",
+        "b-word/seed/code/L0/rust/demo-test.rs — Demo-test form"
+    ],
 
     // X.5 NOTE [REQUIRED]
     "_X5": "─────────────────────────────────────────────────────────────",
     "_X5_tag": "X.5 NOTE — Final Anchor [NOTE]",
-    "_X5_note": "Code has a unique problem data doesn't: it DOES things. Data sits and describes. Code acts and transforms. The 4-block structure tames this by separating existence (SETUP) from action (BODY) — the same separation Genesis made between forming (day 1-3) and filling (day 4-6). SETUP forms the landscape. BODY fills it with life. CLOSING proves the creation is good.",
+    "_X5_note": "Code has a unique problem data doesn't: it DOES things. Data sits and describes. Code acts and transforms. The 4-block structure tames this by separating existence (SETUP) from action (BODY) — the same separation Genesis made between forming (day 1-3) and filling (day 4-6). SETUP forms the landscape. BODY fills it with life. CLOSING declares it is good. bare-bone is the blueprint — the minimum pattern shown on the mountain. Forms build the house. The schema governs all three.",
     "_X5_scripture": "And God saw every thing that he had made, and, behold, it was very good. — Genesis 1:31",
-    "_X5_anchor": "SETUP forms. BODY fills. CLOSING declares 'it is good.' The pattern is Genesis. The structure is worship.",
+    "_X5_anchor": "SETUP forms. BODY fills. CLOSING declares 'it is good.' bare-bone is the blueprint. The pattern is Genesis. The structure is worship.",
 
     // ═══════════════════════════════════════════════════════════════
     // END CLOSING [END]

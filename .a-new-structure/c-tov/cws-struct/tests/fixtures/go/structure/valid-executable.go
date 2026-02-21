@@ -2,6 +2,7 @@
 //omni:code --go -executable
 //omni:version a-01.00
 
+// Package main provides a test fixture for Go executable validation.
 package main
 
 // ============================================================================
@@ -12,6 +13,7 @@ package main
 // Purpose: Test fixture — valid Go executable with main() in CLOSING Ce.
 //
 
+// Pragma carries OmniCode identity fields (I1-I4).
 var Pragma = [][2]string{
 	{"I1.key", "B-test-fixture-valid-executable"},
 	{"I1.format", "go"},
@@ -24,6 +26,7 @@ var Pragma = [][2]string{
 	{"I3.title", "Valid Executable Fixture"},
 }
 
+// Metadata carries OmniCode context fields (C1-C7).
 var Metadata = [][2]string{
 	{"C1.version", "a-01.00"},
 	{"C1.status", "draft"},

@@ -42,7 +42,7 @@ pub static PRAGMA: &[(&str, &str)] = &[
 
 pub static METADATA: &[(&str, &str)] = &[
     ("C1.version",           "a-01.00"),
-    ("C1.status",            "draft"),
+    ("C1.status",            "Template"),
     ("C1.created",           "2026-02-17"),
     ("C1.updated",           "2026-02-17"),
     ("C2.organization",      "CreativeWorkzStudio LLC"),

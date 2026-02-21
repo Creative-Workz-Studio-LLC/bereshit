@@ -1,0 +1,1 @@
+SELECT id, name, description, scripture, purpose, count FROM type_families WHERE name = ?

@@ -340,6 +340,18 @@ pub static METADATA: &[(&str, &str)] = &[
 //     // Tests for serialization/deserialization behavior...
 // }
 
+// ──────────────────────────────────────────────────────────────────────────
+// Reserved Omission
+// ──────────────────────────────────────────────────────────────────────────
+//
+// Sections not present in this template. Derived files that don't need
+// an active section move it here instead of deleting it.
+//
+// (none — all 10 SETUP sections active in demo-test form)
+//
+// To reserve a section: move its header and content here, replace the
+// content with a brief note, and reference bare-bone.rs for the master list.
+
 // ============================================================================
 // END SETUP
 // ============================================================================
@@ -697,6 +709,18 @@ pub static METADATA: &[(&str, &str)] = &[
 //     assert!(!helper.[fields].is_empty());
 // }
 
+// ──────────────────────────────────────────────────────────────────────────
+// Reserved Omission
+// ──────────────────────────────────────────────────────────────────────────
+//
+// Sections not present in this template. Derived files that don't need
+// an active section move it here instead of deleting it.
+//
+// (none — all 9 BODY sections active in demo-test form)
+//
+// To reserve a section: move its header and content here, replace the
+// content with a brief note, and reference bare-bone.rs for the master list.
+
 // ============================================================================
 // END BODY
 // ============================================================================
@@ -784,6 +808,18 @@ pub static METADATA: &[(&str, &str)] = &[
 //             .expect("test cleanup: failed to remove temp dir");
 //     }
 // }
+
+// ──────────────────────────────────────────────────────────────────────────
+// Reserved Omission
+// ──────────────────────────────────────────────────────────────────────────
+//
+// Sections not present in this template. Derived files that don't need
+// an active section move it here instead of deleting it.
+//
+// (none — all CLOSING code zones and doc sections active in demo-test form)
+//
+// To reserve a section: move its header and content here, replace the
+// content with a brief note, and reference bare-bone.rs for the master list.
 
 //
 // ──────────────────────────────────────────────────────────────────────────

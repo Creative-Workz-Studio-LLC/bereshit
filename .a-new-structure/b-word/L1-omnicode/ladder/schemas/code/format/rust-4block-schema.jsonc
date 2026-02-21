@@ -182,7 +182,7 @@
         "template": {
             "markers": ["// #!omni template"],
             "identity": "#!omni meta.key + PRAGMA/METADATA statics with self-describing values",
-            "subtypes": ["--rust -library", "--rust -executable", "--rust -demo-test"],
+            "subtypes": ["--rust -library", "--rust -executable", "--rust -module", "--rust -demo-test", "--rust -bare-bone"],
             "note": "Templates use 'usable schema' pattern — all values describe the template ITSELF (no [bracketed] placeholders). When copied, values are changed to describe the new file."
         },
         "crate_root": {
@@ -230,9 +230,9 @@
             "recommended": {
                 "//omni:code": {
                     "purpose": "File type and format classification",
-                    "pattern": "//omni:code --rust -library | --rust -executable | --rust -demo-test",
+                    "pattern": "//omni:code --rust -library | --rust -executable | --rust -module | --rust -demo-test | --rust -bare-bone",
                     "severity": "warn",
-                    "known_values": ["--rust -library", "--rust -executable", "--rust -demo-test"]
+                    "known_values": ["--rust -library", "--rust -executable", "--rust -module", "--rust -demo-test", "--rust -bare-bone"]
                 },
                 "//omni:version": {
                     "purpose": "Living version",
@@ -319,7 +319,7 @@
             },
 
             "subtypes": {
-                "note": "Three template subtypes — same I/C structure, different valid values for I2.subtype and file patterns",
+                "note": "Five form subtypes — same I/C structure, different valid values for I2.subtype and file patterns. bare_bone is the foundation; all others derive from it.",
 
                 "library": {
                     "I2_subtype": "library",
@@ -339,6 +339,15 @@
                     "has_tests_block": false,
                     "purpose": "Binary crate — orchestrates via main() → run() → Result pattern"
                 },
+                "module": {
+                    "I2_subtype": "module",
+                    "file_pattern": "src/*.rs (non-root module files)",
+                    "pragma_directive": "//omni:code --rust -module",
+                    "template_directive": "// #!omni template --rust -module",
+                    "has_public_api": false,
+                    "has_tests_block": true,
+                    "purpose": "Internal module — focused single-concern file within a crate (src/parser.rs, src/config.rs)"
+                },
                 "demo_test": {
                     "I2_subtype": "demo-test",
                     "file_pattern": "tests/*.rs or #[cfg(test)] mod tests",
@@ -347,6 +356,15 @@
                     "has_public_api": false,
                     "has_tests_block": true,
                     "purpose": "Test file — validates crate behavior, proves claims"
+                },
+                "bare_bone": {
+                    "I2_subtype": "bare-bone",
+                    "file_pattern": "bare-bone.rs (template only — foundation all forms derive from)",
+                    "pragma_directive": "//omni:code --rust -bare-bone",
+                    "template_directive": "// #!omni template --rust -bare-bone",
+                    "has_public_api": false,
+                    "has_tests_block": false,
+                    "purpose": "Foundation template — minimum valid file, all other forms derive from this"
                 }
             }
         },
@@ -390,6 +408,7 @@
                     "position": 3,
                     "tag": "Constants",
                     "pattern": "Constants",
+                    "alt_patterns": ["Consts"],
                     "purpose": "const values — compile-time known, zero-cost, inlined by compiler",
                     "production_note": "Every magic number in BODY should be a named constant here. Exit codes, buffer sizes, retry counts, version strings, default values — if it is hardcoded, it lives here. When the system scales, these migrate to config; BODY stays unchanged.",
                     "required_in": ["executable"]
@@ -414,6 +433,7 @@
                     "position": 6,
                     "tag": "ErrorTypes",
                     "pattern": "Error Types",
+                    "alt_patterns": ["Errors"],
                     "purpose": "Error enums, Display/Error impls, From conversions — the crate's failure vocabulary",
                     "production_note": "Error types define how your crate fails. In production: thiserror for library errors (callers handle them), anyhow for binary errors (humans read them). From impls go HERE, not in BODY — they are type conversions, not logic. A crate's error type is its most important API surface after its happy path.",
                     "required_in": ["library"]
@@ -422,6 +442,7 @@
                     "position": 7,
                     "tag": "CoreTypes",
                     "pattern": "Core Types",
+                    "alt_patterns": ["Types", "Structs", "Data Types"],
                     "purpose": "Primary structs and enums — the data shapes BODY logic operates on",
                     "production_note": "These are the nouns of your system. Structs carry state; enums model choices. In production: derive Debug always, Clone when safe, Serialize/Deserialize for boundaries. Keep types flat — deeply nested types are a sign of missing abstractions. Builder pattern for complex construction belongs in BODY, not here.",
                     "required_in": ["library"]
@@ -430,7 +451,7 @@
                     "position": 8,
                     "tag": "TraitDefs",
                     "pattern": "Trait Definitions",
-                    "alt_patterns": ["Trait Defs"],
+                    "alt_patterns": ["Trait Defs", "Traits"],
                     "purpose": "Trait definitions and blanket impls — the contracts BODY implementations fulfill",
                     "production_note": "Traits define the extension points of your system. In production: keep trait surfaces small (1-3 methods), use associated types for output types, provide default implementations where the default is obvious. Trait definitions are SETUP (they declare contracts); trait implementations are BODY (they fulfill contracts).",
                     "required_in": []
@@ -474,10 +495,20 @@
                     "light": ["Modules", "CoreTypes", "TraitDefs", "Macros"],
                     "note": "Executables are config-rich. Their SETUP defines the runtime parameters."
                 },
+                "module": {
+                    "heavy": ["Imports", "CoreTypes", "TraitDefs"],
+                    "light": ["Constants", "Statics", "TypeAliases"],
+                    "note": "Modules are focused. Their SETUP imports what they need and defines the types for their single concern. No Modules/Macros/FeatureGates (crate-level)."
+                },
                 "demo_test": {
                     "heavy": ["Imports", "Constants", "CoreTypes", "Macros"],
                     "light": ["Modules", "Statics", "TraitDefs", "FeatureGates"],
                     "note": "Tests are fixture-rich. Their SETUP defines expected values and assertion helpers."
+                },
+                "bare_bone": {
+                    "heavy": ["Imports"],
+                    "light": ["Constants", "CoreTypes"],
+                    "note": "Bare-bone is minimal. Most SETUP subsections are RESERVED (available for promotion in derived forms). Only Imports, Constants, CoreTypes are available."
                 }
             },
 
@@ -507,6 +538,41 @@
                     "from_impls": "From/Into conversions are type-level operations, not logic — SETUP is the right place",
                     "display_impls": "Display/Debug impls complete the type definition — SETUP"
                 }
+            },
+
+            "content_kind_mapping": {
+                "_description": "Maps Rust source-level content kinds to blocks and subsections. This is the machine-readable version of placement_rules — the linter reads this, not the human-readable lists above.",
+                "block_placement": {
+                    "use_decl": "SETUP",
+                    "reexport_decl": "SETUP",
+                    "mod_decl": "SETUP",
+                    "const_decl": "SETUP",
+                    "static_decl": "SETUP",
+                    "type_alias": "SETUP",
+                    "struct_decl": "SETUP",
+                    "enum_decl": "SETUP",
+                    "trait_decl": "SETUP",
+                    "macro_decl": "SETUP",
+                    "fn_decl": "BODY",
+                    "impl_block": "BODY"
+                },
+                "subsection_placement": {
+                    "use_decl": "Imports",
+                    "reexport_decl": "Modules",
+                    "mod_decl": "Modules",
+                    "const_decl": "Constants",
+                    "static_decl": "Statics",
+                    "type_alias": "TypeAliases",
+                    "struct_decl": "CoreTypes",
+                    "enum_decl": "CoreTypes",
+                    "trait_decl": "TraitDefs",
+                    "macro_decl": "Macros"
+                },
+                "metadata_forbidden": [
+                    "use_decl", "reexport_decl", "mod_decl", "const_decl", "static_decl", "type_alias",
+                    "struct_decl", "enum_decl", "trait_decl", "macro_decl",
+                    "fn_decl", "impl_block"
+                ]
             }
         },
 
@@ -634,6 +700,107 @@
                     }
                 },
 
+                // ─── Module: type lifecycle (B1-B5, B7) ───
+                //
+                // Module follows library's type_lifecycle ordering but RESERVES
+                // B6 (Output — crate-level concern). Modules are members of the
+                // body (1 Cor 12:18), not the body itself.
+
+                "module": {
+                    "canonical_count": 6,
+                    "ordering_principle": "type_lifecycle",
+                    "note": "Module BODY follows the same type lifecycle as library — identity, traits, construction, logic, queries, free functions — but RESERVES B6 Output (crate-level display/formatting belongs in lib.rs). Modules are focused single-concern files.",
+
+                    "B1_IdentityAccess": {
+                        "position": 1,
+                        "tag": "IdentityAccess",
+                        "pattern": "Identity Access",
+                        "purpose": "Optional — module-level identity accessors (rare, usually crate root only)",
+                        "production_note": "Most modules don't need this. Include only if the module exposes its own identity.",
+                        "required_in": []
+                    },
+                    "B2_TraitImplementations": {
+                        "position": 2,
+                        "tag": "TraitImplementations",
+                        "pattern": "Trait Implementations",
+                        "alt_patterns": ["Trait Impls"],
+                        "purpose": "Behavioral trait impls for types defined in this module's SETUP",
+                        "production_note": "Same SETUP/BODY split as library: completing impls (Display, From) stay in SETUP; behavioral impls (Iterator, custom traits) go here.",
+                        "required_in": []
+                    },
+                    "B3_Constructors": {
+                        "position": 3,
+                        "tag": "Constructors",
+                        "pattern": "Constructors & Builders",
+                        "alt_patterns": ["Constructors", "Builders"],
+                        "purpose": "new(), builders, typestate transitions for this module's types",
+                        "production_note": "Same patterns as library. Simple new() defensible in SETUP §7; complex construction with validation → BODY §3.",
+                        "required_in": []
+                    },
+                    "B4_CoreLogic": {
+                        "position": 4,
+                        "tag": "CoreLogic",
+                        "pattern": "Core Logic",
+                        "alt_patterns": ["Core Operations"],
+                        "purpose": "Primary operations — the module's single concern expressed as logic",
+                        "production_note": "This IS the module. If CoreLogic exceeds ~200 lines, the module may need splitting into sub-modules.",
+                        "required_in": []
+                    },
+                    "B5_Queries": {
+                        "position": 5,
+                        "tag": "Queries",
+                        "pattern": "Queries & Accessors",
+                        "alt_patterns": ["Queries", "Accessors"],
+                        "purpose": "Read-only &self methods for this module's types",
+                        "production_note": "Same conventions as library. Thin getters, predicates, computed properties.",
+                        "required_in": []
+                    },
+                    "B7_FreeFunctions": {
+                        "position": 6,
+                        "tag": "FreeFunctions",
+                        "pattern": "Free Functions",
+                        "purpose": "Module-level utility functions not attached to types",
+                        "production_note": "Convenience wrappers and helpers. If this grows large, consider whether the module needs splitting.",
+                        "required_in": []
+                    }
+                },
+
+                // ─── Bare-bone: universal (B1, B4, B7) ───
+                //
+                // The foundation all forms derive from. Only three BODY
+                // subsections — most are RESERVED for promotion in derived forms.
+
+                "bare_bone": {
+                    "canonical_count": 3,
+                    "ordering_principle": "universal",
+                    "note": "Bare-bone BODY is the minimum — identity, core logic, free functions. All other subsections are RESERVED, available for promotion in derived forms.",
+
+                    "B1_IdentityAccess": {
+                        "position": 1,
+                        "tag": "IdentityAccess",
+                        "pattern": "Identity Access",
+                        "purpose": "OmniCode static accessor functions",
+                        "production_note": "Universal across all forms. The one subsection every form inherits.",
+                        "required_in": []
+                    },
+                    "B4_CoreLogic": {
+                        "position": 2,
+                        "tag": "CoreLogic",
+                        "pattern": "Core Logic",
+                        "purpose": "Primary operations — the absolute minimum logic",
+                        "production_note": "Bare-bone keeps only the core. Trait impls, constructors, queries, output → promoted in derived forms.",
+                        "required_in": []
+                    },
+                    "B7_FreeFunctions": {
+                        "position": 3,
+                        "tag": "FreeFunctions",
+                        "pattern": "Free Functions",
+                        "purpose": "Module-level utilities",
+                        "production_note": "register_identity() and minimal utilities.",
+                        "required_in": []
+                    }
+                },
+
                 // ─── Demo-test: concern coverage (B1-B9) ───
 
                 "demo_test": {
@@ -737,10 +904,20 @@
                     "light": ["IdentityAccess"],
                     "note": "Executables are orchestration-rich. Their BODY wires library logic together. Entry point and exit code mapping live in CLOSING Ce."
                 },
+                "module": {
+                    "heavy": ["CoreLogic", "Constructors", "Queries"],
+                    "light": ["TraitImplementations", "FreeFunctions"],
+                    "note": "Modules are focused. Their BODY handles one concern well. No Output section (crate-level)."
+                },
                 "demo_test": {
                     "heavy": ["TransitionTests", "QueryTests", "EdgeCaseTests"],
                     "light": ["ConstructorTests", "IdentityTests", "TableDrivenTests"],
                     "note": "Tests are coverage-rich. Their BODY proves correctness across the type lifecycle."
+                },
+                "bare_bone": {
+                    "heavy": ["CoreLogic"],
+                    "light": ["IdentityAccess", "FreeFunctions"],
+                    "note": "Bare-bone is minimal. Most BODY subsections are RESERVED for promotion."
                 }
             },
 
@@ -803,7 +980,9 @@
                     "subtype_content": {
                         "library": "mod tests with use super::* — white-box access to private internals. Organize by BODY subsections.",
                         "executable": "Exit code mapping tests, error display tests, identity verification.",
-                        "demo_test": "Meta-validation — tests that verify test infrastructure (fixtures, helpers, assertions). BODY IS validation; Cv validates the validators."
+                        "module": "mod tests with use super::* — focused tests for the module's single concern. White-box access to private internals.",
+                        "demo_test": "Meta-validation — tests that verify test infrastructure (fixtures, helpers, assertions). BODY IS validation; Cv validates the validators.",
+                        "bare_bone": "Minimal smoke tests — prove the template compiles and PRAGMA/METADATA are accessible."
                     }
                 },
                 "Ce_Execution": {
@@ -814,7 +993,9 @@
                     "subtype_content": {
                         "library": "Empty — libraries have no entry point. register_identity() stays in BODY §7 (public API, consumer-invoked).",
                         "executable": "exit_code() + main() — thin entry delegating to run() (BODY §3). main() maps Result to exit code; it contains no business logic.",
-                        "demo_test": "Empty — cargo test is the harness. No main() needed."
+                        "module": "Empty — modules have no entry point. They are used by crate root, not invoked directly.",
+                        "demo_test": "Empty — cargo test is the harness. No main() needed.",
+                        "bare_bone": "Empty — foundation template has no entry point."
                     }
                 },
                 "Cc_Cleanup": {
@@ -825,18 +1006,20 @@
                     "subtype_content": {
                         "library": "Drop trait implementation — impl Drop for Type { fn drop(&mut self) { ... } }",
                         "executable": "Process cleanup — temp files, buffer flushing, DB connections.",
-                        "demo_test": "Test fixture teardown — cleanup_temp_dir(), test resource deallocation."
+                        "module": "Drop trait implementation for module-owned types, if applicable.",
+                        "demo_test": "Test fixture teardown — cleanup_temp_dir(), test resource deallocation.",
+                        "bare_bone": "Empty — bare-bone has no resources to clean up."
                     }
                 }
             },
 
             "documentation_sections": {
                 "note": "Documentation sections follow code zones. They guide maintainers, not compilers.",
-                "X1_Policy": { "tag": "X1", "pattern": "X.1 POLICY", "required": true, "purpose": "Modification guidelines — never/careful/safe" },
+                "X1_Policy": { "tag": "X1", "pattern": "X.1 POLICY", "required": true, "purpose": "Modification guidelines — never/careful/safe", "fields": { "required": ["never", "careful", "safe"], "defined": ["scripture"] } },
                 "X2_Extension": { "tag": "X2", "pattern": "X.2 EXTENSION", "required": false, "purpose": "Designed growth points" },
                 "X3_Troubleshooting": { "tag": "X3", "pattern": "X.3 TROUBLESHOOTING", "required": false, "purpose": "Common problems and solutions" },
                 "X4_Reference": { "tag": "X4", "pattern": "X.4 REFERENCE", "required": false, "purpose": "Related files, deps, validation" },
-                "X5_Note": { "tag": "X5", "pattern": "X.5 NOTE", "required": true, "purpose": "Closing scripture anchor" },
+                "X5_Note": { "tag": "X5", "pattern": "X.5 NOTE", "required": true, "purpose": "Closing scripture anchor", "fields": { "required": ["note", "scripture"], "defined": ["anchor"] } },
                 "X6_Template": { "tag": "X6", "pattern": "X.6 TEMPLATE", "required": false, "template_only": true, "purpose": "Remove when instantiating" }
             },
 
@@ -856,7 +1039,9 @@
             "subtype_emphasis": {
                 "library": { "heavy": ["Cv"], "light": ["Ce", "Cc"], "note": "Libraries are test-rich." },
                 "executable": { "heavy": ["Ce", "Cv"], "light": ["Cc"], "note": "Executables need entry points AND tests." },
-                "demo_test": { "heavy": ["Cv", "Cc"], "light": ["Ce"], "note": "Test files need meta-validation AND fixture cleanup." }
+                "module": { "heavy": ["Cv"], "light": ["Cc"], "note": "Modules are test-rich. No Ce (no entry point)." },
+                "demo_test": { "heavy": ["Cv", "Cc"], "light": ["Ce"], "note": "Test files need meta-validation AND fixture cleanup." },
+                "bare_bone": { "heavy": ["Cv"], "light": ["Ce", "Cc"], "note": "Bare-bone: minimal smoke tests only." }
             },
 
             "placement_rules": {
@@ -873,6 +1058,89 @@
                     "Type definitions (→ SETUP — declarations belong in SETUP)",
                     "register_identity() for libraries (→ BODY §7 — public API, consumer-invoked)"
                 ]
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // FILL CONTENT — Schema-driven file generation templates
+        // ═══════════════════════════════════════════════════════
+        //
+        // Used by `cws-struct create` and `cws-struct fill` to generate
+        // complete 4-block Rust files from schema alone. Placeholders use
+        // {{name}} syntax — engine substitutes with context values.
+
+        "fill_content": {
+            "_description": "Templates for schema-driven file generation. Placeholders: {{key}}, {{title}}, {{format}}, {{subtype}}, {{version}}, {{date}}, {{organization}}, {{scripture}}, {{purpose}}, {{filename}}, {{crate_name}}, {{consumers}}, {{from}}.",
+
+            "defaults": {
+                "version": "a-01.00",
+                "status": "Active",
+                "organization": "CreativeWorkzStudio LLC",
+                "scripture": "Genesis 1:1",
+                "scripture_text": "In the beginning God created the heaven and the earth.",
+                "type": "code",
+                "structure": "4-block"
+            },
+
+            "directives": [
+                "//omni:key {{key}}",
+                "//omni:code --rust -{{subtype}}",
+                "//omni:version {{version}}"
+            ],
+
+            "module_doc": "//! {{title}}",
+
+            "identity_syntax": {
+                "pragma": {
+                    "declaration": "pub static PRAGMA: &[(&str, &str)] = &[",
+                    "entry": "    (\"{{field}}\", \"{{value}}\"),",
+                    "close": "];"
+                },
+                "metadata": {
+                    "declaration": "pub static METADATA: &[(&str, &str)] = &[",
+                    "entry": "    (\"{{field}}\", \"{{value}}\"),",
+                    "close": "];"
+                }
+            },
+
+            "pragma_entries": [
+                ["I1.key", "{{key}}"],
+                ["I1.format", "rust"],
+                ["I1.from", "{{from}}"],
+                ["I1.at", "{{version}}"],
+                ["I2.type", "code"],
+                ["I2.structure", "4-block"],
+                ["I2.subtype", "{{subtype}}"],
+                ["I3.file", "{{filename}}"],
+                ["I3.title", "{{title}}"]
+            ],
+
+            "metadata_entries": [
+                ["C1.version", "{{version}}"],
+                ["C1.status", "{{status}}"],
+                ["C1.created", "{{date}}"],
+                ["C1.updated", "{{date}}"],
+                ["C2.organization", "{{organization}}"],
+                ["C3.scripture", "{{scripture}}"],
+                ["C4.requires.stdlib", "none"],
+                ["C4.consumers", "{{consumers}}"]
+            ],
+
+            "metadata_comment": [
+                "// Key:     {{key}}",
+                "// Purpose: {{purpose}}"
+            ],
+
+            "closing_defaults": {
+                "X1": {
+                    "never": "Remove 4-block structure",
+                    "careful": "Change public API signatures",
+                    "safe": "Add new functions, types, constants"
+                },
+                "X5": {
+                    "note": "{{purpose}}",
+                    "scripture": "\"{{scripture_text}}\" — {{scripture}}"
+                }
             }
         }
     },

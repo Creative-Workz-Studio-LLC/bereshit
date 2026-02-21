@@ -45,65 +45,104 @@
 import type {
   FormatHandler, LintResult, FixSuggestion, TransformOptions,
   AtomicAction, HealthScore, ContainerScore, BlockScore,
+  FormConstraints,
 } from "../foundation/mod.ts";
 import {
   error, warn, info,
   computeContainerScore, computeBlockScore, computeHealthScore,
+  loadCodeRules, loadFormConstraints,
 } from "../foundation/mod.ts";
 import { registerFormat } from "../engine/mod.ts";
 
 // Shared 4-block types, constants, and functions
-import type { BlockPosition, DirectiveInfo, SubsectionRange, IdentityField } from "./shared/mod.ts";
+import type { BlockPosition, DirectiveInfo, SubsectionRange, IdentityField, LanguageAdapter } from "./shared/mod.ts";
 import type { FieldContentRule } from "./shared/mod.ts";
 import {
   BLOCKS, REQUIRED_DIRECTIVES, RECOMMENDED_DIRECTIVES,
-  PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS,
   PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES,
   BLOCK_SEPARATOR_WIDTH, SUBSECTION_SEPARATOR_WIDTH,
-  BODY_SUBSECTION_PATTERN, CLOSING_ZONES,
-  findBlocks, getBlockLines, blockLineToFile, findBlockRange,
+  BODY_SUBSECTION_PATTERN,
+  findBlocks, getBlockLines, findBlockRange,
   getSubsectionRanges as _getSubsectionRanges,
   checkSeparatorConsistency, checkClosingZoneOrder,
+  checkClosingRequiredZones, checkClosingZoneContent,
+  checkClosingX6TemplateOnly, checkClosingDocFieldContent,
+  checkSetupSubsectionOrder as _sharedCheckSetupOrder,
+  checkBodySubsectionOrder as _sharedCheckBodyOrder,
+  checkScalingSignals as _sharedCheckScaling,
+  checkRequiredSetupSubsections as _sharedCheckRequiredSetup,
+  checkRequiredBodySubsections as _sharedCheckRequiredBody,
+  checkSubtypeEmphasis as _sharedCheckEmphasis,
   validateICFieldContent,
+  validateTemplateVsDerived, validateSubtypeConsistency, validateFormatConsistency,
 } from "./shared/mod.ts";
 
-// Re-export for tests
-export { PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS };
+// Re-export for tests and schema alignment verification
 export { PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES };
 export { validateICFieldContent };
+export { SETUP_SUBSECTIONS, BODY_CANONICAL_SUBSECTIONS };
+
+// ---------------------------------------------------------------------------
+// Constants — Rust-specific (schema-driven + lazy init)
+// ---------------------------------------------------------------------------
+//
+// LAZY INIT: Schema loads on first handler use (lint/transform/health), not
+// at import time. This means Rust schema failure only affects Rust — Go and
+// TOML continue working. Module registration (registerFormat) is synchronous
+// and schema-free.
+//
+
+import type { Code4BlockRules } from "../foundation/mod.ts";
+
+/** Lazily-loaded Rust rules. Populated by ensureRustRules(). */
+let _rustRules: Code4BlockRules | null = null;
+
+// Schema-driven constants — populated lazily by ensureRustRules().
+// Declared as `let` instead of `const` because they're filled on first use.
+// deno-lint-ignore prefer-const
+let PRAGMA_FIELD_REQUIREMENTS: Record<string, import("../foundation/code-schema.ts").SchemaFieldRequirement> = {};
+// deno-lint-ignore prefer-const
+let METADATA_FIELD_REQUIREMENTS: Record<string, import("../foundation/code-schema.ts").SchemaFieldRequirement> = {};
+
+// Re-export schema-driven requirements for tests and schema alignment verification
+export { PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS };
+
+// deno-lint-ignore prefer-const
+let SETUP_SUBSECTIONS: import("./shared/types.ts").SubsectionDef[] = [];
+// deno-lint-ignore prefer-const
+let BODY_CANONICAL_SUBSECTIONS: Record<string, readonly string[]> = {};
 
 /**
- * SETUP subsection markers in canonical dependency-chain order.
+ * Ensure Rust rules are loaded. Lazy init — first call loads from pipeline,
+ * subsequent calls are no-ops. All handler entry points (lint, transform,
+ * health) call this before doing anything.
  *
- * 10 subsections — each can reference only what came before it.
- * Not all must be present; linter only checks that PRESENT subsections
- * appear in this sequence. The ordering principle is the Rust dependency
- * chain: imports before types, types before traits, traits before macros.
- *
- * Patterns are ANCHORED to the start of the comment text — a line like
- * "// Core Types — wraps the Constants module" matches CoreTypes, NOT
- * Constants, because "Core Types" is at the start and "Constants" is
- * embedded in descriptive text. Optional "N. " prefix is allowed
- * (e.g., "// 3. Constants").
+ * Fault isolation: if Rust schema is missing, only Rust fails. Go and TOML
+ * handlers are unaffected because their schemas load independently.
  */
-const SETUP_SUBSECTIONS = [
-  { tag: "Imports",      pattern: /^\/\/\s+(?:\d+\.\s+)?Imports\b/i },
-  { tag: "Modules",      pattern: /^\/\/\s+(?:\d+\.\s+)?(?:Module\s*(?:Declarations|Re-?exports)?|Modules)\b/i },
-  { tag: "Constants",    pattern: /^\/\/\s+(?:\d+\.\s+)?Constants\b/i },
-  { tag: "Statics",      pattern: /^\/\/\s+(?:\d+\.\s+)?Statics\b/i },
-  { tag: "TypeAliases",  pattern: /^\/\/\s+(?:\d+\.\s+)?Type\s*Aliases\b/i },
-  { tag: "ErrorTypes",   pattern: /^\/\/\s+(?:\d+\.\s+)?Error\s*Types\b/i },
-  { tag: "CoreTypes",    pattern: /^\/\/\s+(?:\d+\.\s+)?Core\s*Types\b/i },
-  { tag: "TraitDefs",    pattern: /^\/\/\s+(?:\d+\.\s+)?Trait\s*(?:Def(?:inition)?s?|Impls?)\b/i },
-  { tag: "Macros",       pattern: /^\/\/\s+(?:\d+\.\s+)?(?:Macros|Assertion\s*Helpers)\b/i },
-  { tag: "FeatureGates", pattern: /^\/\/\s+(?:\d+\.\s+)?Feature\s*Gates\b/i },
-] as const;
+export async function ensureRustRules(): Promise<void> {
+  if (_rustRules) return;
+  _rustRules = await loadCodeRules("rust");
 
-/** Known //omni:code directive patterns for Rust. */
+  // Populate module-scope constants from loaded rules
+  PRAGMA_FIELD_REQUIREMENTS = _rustRules!.pragmaFieldRequirements;
+  METADATA_FIELD_REQUIREMENTS = _rustRules!.metadataFieldRequirements;
+  BODY_CANONICAL_SUBSECTIONS = _rustRules!.bodySubsections;
+  SETUP_SUBSECTIONS = _rustRules!.setupSubsections;
+
+  // Placement maps — content kind → block/subsection
+  BLOCK_PLACEMENT = _rustRules!.placementMaps.blockPlacement;
+  SUBSECTION_PLACEMENT = _rustRules!.placementMaps.subsectionPlacement;
+  METADATA_FORBIDDEN = new Set(_rustRules!.placementMaps.metadataForbidden);
+}
+
+/** Known //omni:code directive patterns for Rust (matches schema subtypes). */
 const KNOWN_CODE_DIRECTIVES = [
   "--rust -library",
   "--rust -executable",
+  "--rust -module",
   "--rust -demo-test",
+  "--rust -bare-bone",
 ] as const;
 
 // (Separator widths and I/C field requirements imported from shared module)
@@ -129,61 +168,21 @@ export type RustContentKind =
   | "comment" | "blank" | "other";
 
 /**
- * Which BLOCK a top-level construct belongs in.
+ * Content kind → block/subsection placement maps.
  *
- * Schema source: rust-4block-schema.jsonc → placement_rules
- *   must_be_in_setup  → these map to "SETUP"
- *   must_not_be_in_setup (fn, impl) → these map to "BODY"
+ * Schema-driven: loaded from rust-4block-schema.jsonc → SETUP.content_kind_mapping.
+ * Previously hardcoded — now the schema is the single source of truth.
  *
- * Missing entries (comment, blank, attr, other) → can appear in any block.
+ * BLOCK_PLACEMENT: kind → "SETUP" or "BODY". Missing = can appear anywhere.
+ * SUBSECTION_PLACEMENT: kind → subsection tag within SETUP.
+ * METADATA_FORBIDDEN: kinds that are never valid in the METADATA block.
  */
-const BLOCK_PLACEMENT: Partial<Record<RustContentKind, string>> = {
-  use_decl:      "SETUP",
-  reexport_decl: "SETUP",
-  mod_decl:      "SETUP",
-  const_decl:  "SETUP",
-  static_decl: "SETUP",
-  type_alias:  "SETUP",
-  struct_decl: "SETUP",
-  enum_decl:   "SETUP",
-  trait_decl:  "SETUP",
-  macro_decl:  "SETUP",
-  fn_decl:     "BODY",
-  impl_block:  "BODY",
-};
-
-/**
- * Which SUBSECTION within SETUP a construct belongs in.
- *
- * Schema source: rust-4block-schema.jsonc → subsection_order → S1-S10
- * Maps content kinds to the canonical subsection tag where they should live.
- * Used for subsection-level scoring (health scoring foundation).
- */
-const SUBSECTION_PLACEMENT: Partial<Record<RustContentKind, string>> = {
-  use_decl:      "Imports",
-  reexport_decl: "Modules",
-  mod_decl:      "Modules",
-  const_decl:  "Constants",
-  static_decl: "Statics",
-  type_alias:  "TypeAliases",
-  struct_decl: "CoreTypes",
-  enum_decl:   "CoreTypes",
-  trait_decl:  "TraitDefs",
-  macro_decl:  "Macros",
-};
-
-/**
- * Content kinds that are NEVER valid in the METADATA block.
- *
- * METADATA contains identity comments (Key:, Purpose:, Biblical:)
- * and identity statics (PRAGMA, METADATA). Code declarations leak here
- * when someone adds content above SETUP by mistake.
- */
-const METADATA_FORBIDDEN: Set<RustContentKind> = new Set([
-  "use_decl", "reexport_decl", "mod_decl", "const_decl", "static_decl", "type_alias",
-  "struct_decl", "enum_decl", "trait_decl", "macro_decl",
-  "fn_decl", "impl_block",
-]);
+// deno-lint-ignore prefer-const
+let BLOCK_PLACEMENT: Record<string, string> = {};
+// deno-lint-ignore prefer-const
+let SUBSECTION_PLACEMENT: Record<string, string> = {};
+// deno-lint-ignore prefer-const
+let METADATA_FORBIDDEN: Set<string> = new Set();
 
 // ============================================================================
 // BODY
@@ -207,7 +206,8 @@ interface RustFileContext {
   blocks: BlockPosition[];
   directives: Map<string, DirectiveInfo>;
   crateHasIdentity: boolean;     // sibling lib.rs has PRAGMA/METADATA
-  subtype: string | null;        // "library" | "executable" | "demo-test" | null
+  subtype: string | null;        // "library" | "executable" | "module" | "demo-test" | "bare-bone" | null
+  formConstraints: FormConstraints | null;  // loaded from form schema when subtype is known
 }
 
 // ---------------------------------------------------------------------------
@@ -257,7 +257,7 @@ function findOmniDirectives(lines: string[]): Map<string, DirectiveInfo> {
   return directives;
 }
 
-// (getBlockLines, blockLineToFile imported from shared module)
+// (getBlockLines imported from shared module)
 
 // ---------------------------------------------------------------------------
 // Content classifier — what's on this line?
@@ -439,7 +439,7 @@ async function buildContext(filePath: string): Promise<RustFileContext> {
   //   2. #!omni template --rust -<subtype>
   //   3. PRAGMA I2.subtype field
   let subtype: string | null = null;
-  const KNOWN_SUBTYPES = ["library", "executable", "demo-test"];
+  const KNOWN_SUBTYPES = Object.keys(_rustRules!.subtypeDefinitions);
 
   const codeDirective = directives.get("//omni:code")?.value ?? directives.get("#!omni:code")?.value ?? "";
   const templateDirective = directives.get("#!omni:template")?.value ?? "";
@@ -474,6 +474,9 @@ async function buildContext(filePath: string): Promise<RustFileContext> {
     directives,
     crateHasIdentity: await crateHasIdentityStatics(filePath),
     subtype,
+    // Bare-bone always loads — it's the format level, not a variant.
+    // Every 4-block Rust file gets form constraints. No subtype = bare-bone floor.
+    formConstraints: await loadFormConstraints("rust", subtype || "bare-bone"),
   };
 }
 
@@ -661,8 +664,10 @@ function checkBlockStructure(ctx: RustFileContext): LintResult[] {
   const file = ctx.filePath;
   const foundNames = ctx.blocks.map((b) => b.name);
 
-  // Module files without blocks are fine — blocks live in lib.rs
-  if (ctx.isModuleFile && !ctx.hasAnyBlock) {
+  // Module files without blocks AND without pragma are plain Rust —
+  // their identity lives in lib.rs. But if a pragma is present, the file
+  // is claiming 4-block structure and must deliver the blocks.
+  if (ctx.isModuleFile && !ctx.hasAnyBlock && !ctx.hasAnyOmni) {
     return results;
   }
 
@@ -713,17 +718,30 @@ function checkBlockStructure(ctx: RustFileContext): LintResult[] {
 function checkDocComments(ctx: RustFileContext): LintResult[] {
   const results: LintResult[] = [];
   const file = ctx.filePath;
+  const expectations = _rustRules!.docCommentExpectations;
 
-  // Doc comments (//!) belong in the pre-METADATA area — before any block
-  // markers or code statements. A //! in the BODY block should NOT satisfy
-  // the crate-level doc comment check.
-  const preMetadataEnd = ctx.blocks.length > 0
-    ? ctx.blocks[0]!.line - 1  // line before first block marker
-    : ctx.lines.length;        // no blocks → scan entire file
+  // Schema-driven severity: map string → result constructor
+  const emit = (sev: string, f: string, rule: string, msg: string, opts?: { line?: number }) =>
+    sev === "error" ? error(f, rule, msg, opts)
+    : sev === "warn"  ? warn(f, rule, msg, opts)
+    :                    info(f, rule, msg, opts);
+
+  // Doc comments (//!) belong in the METADATA area — before END METADATA.
+  // In our templates, //! appears inside the METADATA block (after the block
+  // marker but before END METADATA) because pragma directives come first.
+  // A //! in BODY or CLOSING should NOT satisfy the crate-level doc check.
+  //
+  // BlockPosition.line and endLine are 1-based; slice is 0-based.
+  const metadataBlock = ctx.blocks.find((b) => b.name === "METADATA");
+  const scanEnd = metadataBlock && metadataBlock.endLine > 0
+    ? metadataBlock.endLine       // 1-based endLine → scan through END METADATA
+    : ctx.blocks.length > 0
+      ? ctx.blocks[0]!.line - 1   // fallback: before first block (1-based)
+      : ctx.lines.length;         // no blocks → scan entire file
 
   const hasDocComments = ctx.lines
-    .slice(0, preMetadataEnd)
-    .some((l) => l.trim().startsWith("//!"));
+    .slice(0, scanEnd)
+    .some((l: string) => l.trim().startsWith("//!"));
 
   // Templates: check for //! placeholder
   if (ctx.isTemplate) {
@@ -733,11 +751,18 @@ function checkDocComments(ctx: RustFileContext): LintResult[] {
     return results;
   }
 
+  // Schema keys: "crate_root_docs" (severity from crate_root_severity)
+  //              "module_docs" (severity from module_severity)
+  const crateExp = expectations["crate_root_docs"];
+  const moduleExp = expectations["module_docs"];
+
   if (ctx.isCrateRoot && !hasDocComments) {
-    results.push(warn(file, "doc/crate-docs",
+    const sev = crateExp?.severity ?? "warn";
+    results.push(emit(sev, file, "doc/crate-docs",
       "Missing //! crate-level doc comments — recommended for lib.rs/main.rs"));
   } else if (ctx.isModuleFile && !hasDocComments) {
-    results.push(info(file, "doc/module-docs",
+    const sev = moduleExp?.severity ?? "info";
+    results.push(emit(sev, file, "doc/module-docs",
       "No //! module-level doc comments"));
   }
 
@@ -807,13 +832,13 @@ function checkPragmaMetadata(ctx: RustFileContext): LintResult[] {
     if (pragmaFields.length > 0) {
       results.push(...validateICFields(file, pragmaFields, PRAGMA_FIELD_REQUIREMENTS, "PRAGMA"));
 
-      // Subtype validation: if I2.subtype is present, check it's a known value
+      // Subtype validation: if I2.subtype is present, check it's a known value (from schema)
       const subtypeField = pragmaFields.find((f) => f.section === "I2" && f.field === "subtype");
       if (subtypeField) {
-        const KNOWN_SUBTYPES = ["library", "executable", "demo-test"];
-        if (!KNOWN_SUBTYPES.includes(subtypeField.value)) {
+        const knownSubtypes = Object.keys(_rustRules!.subtypeDefinitions);
+        if (!knownSubtypes.includes(subtypeField.value)) {
           results.push(warn(file, "identity/PRAGMA/I2.subtype-value",
-            `Unknown I2.subtype "${subtypeField.value}" — known values: ${KNOWN_SUBTYPES.join(", ")}`));
+            `Unknown I2.subtype "${subtypeField.value}" — known values: ${knownSubtypes.join(", ")}`));
         }
       }
 
@@ -833,6 +858,24 @@ function checkPragmaMetadata(ctx: RustFileContext): LintResult[] {
     } else {
       results.push(info(file, "identity/metadata-parse",
         "METADATA static found but no I/C fields could be parsed"));
+    }
+  }
+
+  // ── Content-aware checks — template/derived, subtype, format ──────
+  if (hasPragma && hasMetadata) {
+    const pragmaFields = parseStaticFields(ctx.lines, "PRAGMA");
+    const metadataFields = parseStaticFields(ctx.lines, "METADATA");
+    if (pragmaFields.length > 0 && metadataFields.length > 0) {
+      results.push(...validateTemplateVsDerived(
+        file, pragmaFields, metadataFields, ctx.isTemplate,
+        { pragma: "PRAGMA", metadata: "METADATA" },
+      ));
+      results.push(...validateSubtypeConsistency(
+        file, pragmaFields, ctx.subtype, "PRAGMA",
+      ));
+      results.push(...validateFormatConsistency(
+        file, pragmaFields, "rust", "PRAGMA",
+      ));
     }
   }
 
@@ -953,128 +996,56 @@ function checkTemplateVsDerived(ctx: RustFileContext): LintResult[] {
 // ---------------------------------------------------------------------------
 
 function checkSetupSubsectionOrder(ctx: RustFileContext): LintResult[] {
-  const results: LintResult[] = [];
-  const file = ctx.filePath;
-
-  // Templates mention subsection names in comments — skip order check
-  if (ctx.isTemplate) return results;
-
   const setupLines = getBlockLines(ctx.lines, ctx.blocks, "SETUP");
-  if (setupLines.length === 0) return results;
-
-  // Find which subsections are present and their positions
-  const found: Array<{ tag: string; lineIdx: number }> = [];
-
-  for (let i = 0; i < setupLines.length; i++) {
-    const trimmed = setupLines[i]!.trim();
-    // Skip separator-only lines
-    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
-
-    for (const sub of SETUP_SUBSECTIONS) {
-      if (sub.pattern.test(trimmed)) {
-        if (!found.some((f) => f.tag === sub.tag)) {
-          found.push({ tag: sub.tag, lineIdx: i });
-        }
-        break;
-      }
-    }
-  }
-
-  if (found.length < 2) return results;
-
-  // Check ordering against canonical sequence
-  const canonicalOrder: string[] = SETUP_SUBSECTIONS.map((s) => s.tag);
-
-  let lastCanonIdx = -1;
-  for (const f of found) {
-    const canonIdx = canonicalOrder.indexOf(f.tag);
-    if (canonIdx < lastCanonIdx) {
-      const foundTags = found.map((x) => x.tag).join(" → ");
-      const fileLine = blockLineToFile(ctx.blocks, "SETUP", f.lineIdx);
-      results.push(
-        warn(file, "setup/subsection-order",
-          `SETUP subsection ${f.tag} appears after a later subsection — found: ${foundTags}, expected: ${canonicalOrder.join(" → ")}`,
-          { line: fileLine }),
-      );
-      break;
-    }
-    lastCanonIdx = canonIdx;
-  }
-
-  return results;
+  return _sharedCheckSetupOrder(
+    setupLines, SETUP_SUBSECTIONS, ctx.blocks, ctx.filePath, ctx.isTemplate,
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Check 12: BODY subsection order
 // ---------------------------------------------------------------------------
 
-/**
- * BODY subsection marker pattern.
- *
- * BODY subsections use numbered markers: `// N. <Name>` where N is 1-N.
- * The number determines canonical order. Unlike SETUP (which uses name-based
- * matching), BODY uses numeric ordering — simpler and subtype-agnostic.
- *
- * Examples from seed templates:
- *   Library (7):      1. Identity Access → 2. Trait Impl → ... → 7. Free Functions
- *   Executable (3):   1. Argument Parsing → 2. Core Logic → 3. Output
- *   Demo-test (9):    1. Identity Access → ... → 9. Edge Cases
- */
-// (BODY_SUBSECTION_PATTERN imported from shared module)
-
 function checkBodySubsectionOrder(ctx: RustFileContext): LintResult[] {
-  const results: LintResult[] = [];
-  const file = ctx.filePath;
-
-  // Templates use numbered subsections in comments — skip order check
-  if (ctx.isTemplate) return results;
-
   const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
-  if (bodyLines.length === 0) return results;
-
-  // Find numbered subsection markers in BODY
-  const found: Array<{ num: number; name: string; lineIdx: number }> = [];
-
-  for (let i = 0; i < bodyLines.length; i++) {
-    const trimmed = bodyLines[i]!.trim();
-    // Skip separator-only lines
-    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
-
-    const match = BODY_SUBSECTION_PATTERN.exec(trimmed);
-    if (match) {
-      const num = parseInt(match[1]!, 10);
-      const name = match[2]!.trim();
-      // Only record first occurrence of each number
-      if (!found.some((f) => f.num === num)) {
-        found.push({ num, name, lineIdx: i });
-      }
-    }
-  }
-
-  // Need at least 2 subsections to check ordering
-  if (found.length < 2) return results;
-
-  // Check that numbers appear in ascending order
-  let lastNum = -1;
-  for (const f of found) {
-    if (f.num < lastNum) {
-      const foundOrder = found.map((x) => `${x.num}. ${x.name}`).join(" → ");
-      const fileLine = blockLineToFile(ctx.blocks, "BODY", f.lineIdx);
-      results.push(
-        warn(file, "body/subsection-order",
-          `BODY subsection §${f.num} (${f.name}) appears after §${lastNum} — found: ${foundOrder}`,
-          { line: fileLine }),
-      );
-      break;
-    }
-    lastNum = f.num;
-  }
-
-  return results;
+  return _sharedCheckBodyOrder(
+    bodyLines, ctx.blocks, ctx.filePath, ctx.isTemplate, false, // no legacy pattern for Rust
+  );
 }
 
-// Check 13: CLOSING zone ordering — imported from shared module
-// (CLOSING_ZONES constant and checkClosingZoneOrder function)
+// Check 8a: SETUP required subsections for detected subtype.
+function checkRequiredSetupSubsections(ctx: RustFileContext): LintResult[] {
+  const setupLines = getBlockLines(ctx.lines, ctx.blocks, "SETUP");
+  return _sharedCheckRequiredSetup(
+    setupLines, SETUP_SUBSECTIONS, _rustRules!.setupData, ctx.subtype,
+    ctx.blocks, ctx.filePath, ctx.isTemplate,
+  );
+}
+
+// Check 8b: BODY required subsections for detected subtype.
+function checkRequiredBodySubsections(ctx: RustFileContext): LintResult[] {
+  const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
+  const bodySubtype = ctx.subtype ? _rustRules!.bodyData[ctx.subtype] : undefined;
+  return _sharedCheckRequiredBody(
+    bodyLines, bodySubtype, ctx.subtype,
+    ctx.blocks, ctx.filePath, ctx.isTemplate, false, // no legacy for Rust
+  );
+}
+
+// Check 8c: SETUP subtype emphasis — heavy subsections should have content.
+function checkSubtypeEmphasis(ctx: RustFileContext): LintResult[] {
+  const emphasis = ctx.subtype
+    ? _rustRules!.subtypeEmphasis.setup[ctx.subtype]
+    : undefined;
+  return _sharedCheckEmphasis(
+    ctx.lines, ctx.blocks, SETUP_SUBSECTIONS, emphasis,
+    ctx.subtype, ctx.filePath, ctx.isTemplate,
+  );
+}
+
+// CLOSING checks — all use schema-driven closingData from code-schema.ts
+// checkClosingZoneOrder, checkClosingRequiredZones, checkClosingZoneContent,
+// checkClosingX6TemplateOnly, checkClosingDocFieldContent — imported from shared
 
 // ---------------------------------------------------------------------------
 // Check 9: Identity registration
@@ -1247,10 +1218,41 @@ function checkContentPlacement(ctx: RustFileContext): LintResult[] {
 
         if (expectedSub !== sub.tag) {
           const fileLine = setupStart + 1 + sub.startIdx + decl.lineIdx;
+
+          // Build auto-move suggestion: remove from current, insert at target
+          const targetRange = subsections.find((s) => s.tag === expectedSub);
+          const targetInsertLine = targetRange
+            ? setupStart + 1 + targetRange.endIdx  // insert at end of target subsection
+            : 0;
+
+          // Determine the extent of the declaration (single or multi-line block)
+          let declEndIdx = decl.lineIdx;
+          for (let d = decl.lineIdx + 1; d < subLines.length; d++) {
+            const t = subLines[d]!.trim();
+            // Stop at blank line, separator, or next subsection header
+            if (t === "" || /^\/\/\s*[─=\-]{4,}\s*$/.test(t) || /^\/\/\s+\d+\.?\s+/.test(t)) break;
+            // Stop at closing brace of block (struct/enum/impl end with "}")
+            if (t === "}") { declEndIdx = d; break; }
+            declEndIdx = d;
+          }
+
+          const removeStart = fileLine;
+          const removeEnd = setupStart + 1 + sub.startIdx + declEndIdx;
+          const declContent = subLines.slice(decl.lineIdx, declEndIdx + 1);
+
           results.push(
             info(file, "content/subsection-placement",
               `${decl.kind} in ${sub.tag} subsection (line ${fileLine}) — expected in ${expectedSub}`,
-              { line: fileLine }),
+              {
+                line: fileLine,
+                fix: targetRange ? {
+                  description: `Move ${decl.kind} from ${sub.tag} to ${expectedSub}`,
+                  actions: [
+                    { type: "remove", startLine: removeStart, endLine: removeEnd },
+                    { type: "insert", afterLine: targetInsertLine, content: declContent },
+                  ],
+                } : undefined,
+              }),
           );
         }
       }
@@ -1333,10 +1335,275 @@ function checkClosingContentPlacement(ctx: RustFileContext): LintResult[] {
 }
 
 // ---------------------------------------------------------------------------
+// Check 15: SETUP header documentation (Rust //! module-level doc)
+// ---------------------------------------------------------------------------
+
+/**
+ * Check for header documentation before the first SETUP subsection.
+ *
+ * Rust uses //! for module-level documentation. Good practice is to have
+ * at least 3 substantive comment lines before the first subsection marker,
+ * providing a section-order overview or module-level context.
+ *
+ * Mirrors Go's checkSetupHeaderDoc but checks for //! doc comments
+ * in addition to regular // comments.
+ */
+function checkSetupHeaderDoc(ctx: RustFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  if (ctx.isTemplate) return results;
+
+  const setupLines = getBlockLines(ctx.lines, ctx.blocks, "SETUP");
+  if (setupLines.length === 0) return results;
+
+  // Find the first subsection marker
+  let firstSubIdx = -1;
+  for (let i = 0; i < setupLines.length; i++) {
+    const trimmed = setupLines[i]!.trim();
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+    for (const sub of SETUP_SUBSECTIONS) {
+      if (sub.pattern.test(trimmed)) {
+        firstSubIdx = i;
+        break;
+      }
+    }
+    if (firstSubIdx >= 0) break;
+  }
+
+  // No subsections found — skip (subsection-order check handles that)
+  if (firstSubIdx < 0) return results;
+
+  // Count substantive comment lines before the first subsection
+  // Rust //! doc comments and regular // comments both count
+  let docLines = 0;
+  for (let i = 0; i < firstSubIdx; i++) {
+    const trimmed = setupLines[i]!.trim();
+    // Skip blanks, separator lines, and empty comments
+    if (trimmed === "" || /^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+    if (/^\/\/[!/]?\s*$/.test(trimmed)) continue; // empty comment (// or //! or ///)
+    docLines++;
+  }
+
+  if (docLines < 3) {
+    const setupBlock = ctx.blocks.find((b) => b.name === "SETUP");
+    results.push(
+      info(file, "setup/header-doc",
+        `SETUP block has ${docLines} header documentation line(s) before first subsection — consider adding section-order overview (3+ lines)`,
+        { line: setupBlock?.line ?? 0 }),
+    );
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Check 16: BODY subtype-specific subsection names
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that BODY subsection names match the file's declared subtype.
+ *
+ * Schema-driven: reads canonical subsection names from _rustRules!.bodySubsections.
+ * Only checks if the file has a known subtype and BODY has numbered subsections.
+ *
+ * Uses case-insensitive comparison. Rust uses only BODY_SUBSECTION_PATTERN
+ * (no legacy §N format).
+ */
+function checkBodySubtypeContent(ctx: RustFileContext): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  if (ctx.isTemplate) return results;
+  if (!ctx.subtype) return results;
+
+  const canonical = BODY_CANONICAL_SUBSECTIONS[ctx.subtype];
+  if (!canonical) return results;
+
+  const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
+  if (bodyLines.length === 0) return results;
+
+  // Collect subsection names from BODY (Rust: no legacy format)
+  const found: Array<{ num: number; name: string; lineIdx: number }> = [];
+  for (let i = 0; i < bodyLines.length; i++) {
+    const trimmed = bodyLines[i]!.trim();
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
+    const match = BODY_SUBSECTION_PATTERN.exec(trimmed);
+    if (match) {
+      const num = parseInt(match[1]!, 10);
+      const name = match[2]!.trim();
+      if (!found.some((f) => f.num === num)) {
+        found.push({ num, name, lineIdx: i });
+      }
+    }
+  }
+
+  if (found.length === 0) return results;
+
+  // Compare found names against canonical (case-insensitive)
+  const foundNames = found.map((f) => f.name.toLowerCase());
+
+  const missing = canonical.filter((c) =>
+    !foundNames.some((f) => f.includes(c.toLowerCase())));
+
+  if (missing.length > 0) {
+    const bodyBlock = ctx.blocks.find((b) => b.name === "BODY");
+    results.push(
+      info(file, "body/subtype-subsections",
+        `BODY for ${ctx.subtype} subtype missing canonical subsection(s): ${missing.join(", ")} — expected: ${canonical.join(", ")}`,
+        { line: bodyBlock?.line ?? 0 }),
+    );
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Check 17: Scaling signals — block size thresholds
+// ---------------------------------------------------------------------------
+
+/**
+ * Check block line counts against scaling thresholds.
+ *
+ * SETUP > 200 lines or BODY > 500 lines indicates the file is doing
+ * too much. Informational — not errors, but signals for future refactoring.
+ */
+function checkScalingSignals(ctx: RustFileContext): LintResult[] {
+  return _sharedCheckScaling(ctx.lines, ctx.blocks, ctx.filePath, ctx.isTemplate);
+}
+
+// ---------------------------------------------------------------------------
+// Form-aware checks — schema-driven validation from form constraint schemas
+// ---------------------------------------------------------------------------
+
+/**
+ * Check A: Required sections present for this form.
+ *
+ * For each container (SETUP, BODY, CLOSING): iterate formConstraints.can
+ * entries where status == "REQUIRED". Check if that section tag is present
+ * in the file's actual subsections.
+ */
+function checkFormRequiredSections(ctx: RustFileContext): LintResult[] {
+  if (!ctx.formConstraints || ctx.isTemplate) return [];
+
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  for (const containerName of ["SETUP", "BODY", "CLOSING"] as const) {
+    const container = ctx.formConstraints[containerName];
+    if (!container) continue;
+
+    const blockLines = getBlockLines(ctx.lines, ctx.blocks, containerName);
+    const blockText = blockLines.join("\n");
+
+    for (const section of container.can) {
+      if (section.status !== "REQUIRED") continue;
+
+      // Check if this section tag appears in the block content
+      // Look for subsection header patterns: "// ── Tag" or "// Tag" or section markers
+      const tagPattern = new RegExp(
+        `//\\s*[-─═]+\\s*${escapeRegex(section.tag)}|` +
+        `//\\s+(?:§\\d+\\s+)?${escapeRegex(section.tag)}`,
+        "i"
+      );
+
+      if (!tagPattern.test(blockText)) {
+        results.push(warn(file, `form/required-section-missing`,
+          `${ctx.formConstraints.name} form: ${containerName} requires "${section.tag}" (position ${section.position}) but it's absent`));
+      }
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Check B: Reserved sections should not be present for this form.
+ *
+ * For each container: iterate formConstraints.cannot entries. Check if that
+ * section tag appears in the file. If present, emit info with why_reserved.
+ */
+function checkFormReservedSections(ctx: RustFileContext): LintResult[] {
+  // Templates ARE live — they define canonical form structure.
+  // A module template with S2 Modules is wrong at the source.
+  // Reserved checks fire on templates. Only skip if no form loaded.
+  if (!ctx.formConstraints) return [];
+
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  for (const containerName of ["SETUP", "BODY", "CLOSING"] as const) {
+    const container = ctx.formConstraints[containerName];
+    if (!container) continue;
+
+    const blockLines = getBlockLines(ctx.lines, ctx.blocks, containerName);
+
+    for (const reserved of container.cannot) {
+      // Detect reserved section tag in three-line subsection header format:
+      //   // ──────────────────────────────────────────────────────────────
+      //   // Tag Name
+      //   // ──────────────────────────────────────────────────────────────
+      // The tag sits on its own line between separators.
+      const tagPattern = new RegExp(
+        `^\\s*\\/\\/\\s*${escapeRegex(reserved.tag)}\\s*$`,
+        "i"
+      );
+      const separatorLine = /^\/\/\s*[─=\-]{4,}\s*$/;
+
+      let tagLineIdx = -1;
+      for (let i = 0; i < blockLines.length; i++) {
+        const trimmed = blockLines[i]!.trim();
+        if (separatorLine.test(trimmed)) continue;       // skip separator-only lines
+        if (tagPattern.test(trimmed)) { tagLineIdx = i; break; }
+      }
+
+      if (tagLineIdx < 0) continue;  // tag not found in this block
+
+      // Scan past the closing separator of the three-line header,
+      // then look for real content below.
+      let hasContent = false;
+      let pastHeader = false;
+      for (let i = tagLineIdx + 1; i < blockLines.length; i++) {
+        const trimmed = blockLines[i]!.trim();
+
+        // First separator after the tag = closing line of header — skip it
+        if (!pastHeader && separatorLine.test(trimmed)) { pastHeader = true; continue; }
+
+        // Stop at next subsection header (separator) or block boundary (===)
+        if (pastHeader && (separatorLine.test(trimmed) || /^\/\/\s*={4,}/.test(trimmed))) break;
+
+        // Skip empty lines, bare comment markers, and "(none)" placeholders
+        if (trimmed === "" || trimmed === "//" || /^\s*\/\/\s*\(.*none.*\)/.test(blockLines[i]!)) continue;
+
+        // Real content found (actual code, not just a comment)
+        if (trimmed.length > 0 && !trimmed.startsWith("//")) {
+          hasContent = true;
+          break;
+        }
+      }
+
+      if (hasContent) {
+        results.push(warn(file, `form/reserved-section-present`,
+          `${ctx.formConstraints.name} form: "${reserved.tag}" is RESERVED in ${containerName} — ${reserved.whyReserved}`));
+      }
+    }
+  }
+
+  return results;
+}
+
+/** Escape special regex characters in a string. */
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// ---------------------------------------------------------------------------
 // Lint orchestrator
 // ---------------------------------------------------------------------------
 
 async function lintRustFile(filePath: string): Promise<LintResult[]> {
+  await ensureRustRules();
   let ctx: RustFileContext;
   try {
     ctx = await buildContext(filePath);
@@ -1369,12 +1636,26 @@ async function lintRustFile(filePath: string): Promise<LintResult[]> {
     ...checkSeparatorConsistency(ctx),
     ...checkTemplateVsDerived(ctx),
     ...checkSetupSubsectionOrder(ctx),
+    ...checkRequiredSetupSubsections(ctx),
+    ...checkSetupHeaderDoc(ctx),
     ...checkIdentityRegistration(ctx),
     ...checkDirectiveFormat(ctx),
     ...checkContentPlacement(ctx),
     ...checkBodySubsectionOrder(ctx),
-    ...checkClosingZoneOrder(ctx),
+    ...checkRequiredBodySubsections(ctx),
+    ...checkBodySubtypeContent(ctx),
+    ...checkSubtypeEmphasis(ctx),
+    ...checkClosingZoneOrder(ctx, _rustRules!.closingData),
     ...checkClosingContentPlacement(ctx),
+    ...checkClosingRequiredZones(ctx, _rustRules!.closingData),
+    ...checkClosingZoneContent(ctx, _rustRules!.closingData),
+    ...checkClosingX6TemplateOnly(ctx, _rustRules!.closingData),
+    ...checkClosingDocFieldContent(ctx, _rustRules!.closingData),
+    ...checkScalingSignals(ctx),
+    // Form-aware validation — bare-bone always loads (format level).
+    // Variant form overlays when subtype declared. Null guard for schema-load failure only.
+    ...(ctx.formConstraints ? checkFormRequiredSections(ctx) : []),
+    ...(ctx.formConstraints ? checkFormReservedSections(ctx) : []),
   ];
 }
 
@@ -1456,7 +1737,10 @@ function findFnMainInRange(
  * Canonical order: code zones (Cv, Ce, Cc) then documentation (X1-X6).
  * Within each tier, canonical order applies.
  */
-function reorderClosingZones(closingContent: string[]): string[] | null {
+function reorderClosingZones(
+  closingContent: string[],
+  schemaZones: ReadonlyArray<{ tag: string; kind: "code" | "doc"; pattern: RegExp }>,
+): string[] | null {
   // Parse into zone chunks. A zone starts with its subsection separator.
   interface ZoneChunk {
     tag: string;
@@ -1465,7 +1749,8 @@ function reorderClosingZones(closingContent: string[]): string[] | null {
     canonicalIdx: number;
   }
 
-  const canonicalOrder = ["Cv", "Ce", "Cc", "X1", "X2", "X3", "X4", "X5", "X6"];
+  // Canonical order derived from schema zone ordering
+  const canonicalOrder = schemaZones.map((z) => z.tag);
 
   // Find zone boundaries in the content
   const zones: ZoneChunk[] = [];
@@ -1477,7 +1762,7 @@ function reorderClosingZones(closingContent: string[]): string[] | null {
 
     // Check if this line starts a new zone (look for zone tag after a separator)
     let matchedZone: { tag: string; kind: "code" | "doc" } | null = null;
-    for (const zone of CLOSING_ZONES) {
+    for (const zone of schemaZones) {
       if (zone.pattern.test(trimmed)) {
         matchedZone = { tag: zone.tag, kind: zone.kind };
         break;
@@ -1579,7 +1864,8 @@ async function transformRustFile(
   filePath: string,
   opts: TransformOptions,
 ): Promise<LintResult[]> {
-  const { dryRun } = opts;
+  await ensureRustRules();
+  const { dryRun, extensions } = opts;
   const results: LintResult[] = [];
 
   let text: string;
@@ -1591,6 +1877,7 @@ async function transformRustFile(
 
   const lines = text.split("\n");
   let modified = false;
+  let wouldModify = false;
 
   // --- Transform 1: Fix block separator widths (= chars) ---
   for (let i = 0; i < lines.length; i++) {
@@ -1794,6 +2081,7 @@ async function transformRustFile(
     if (closingBlock) {
       const reordered = reorderClosingZones(
         lines.slice(closingBlock.contentStart, closingBlock.contentEnd),
+        _rustRules!.closingData.zones,
       );
       if (reordered) {
         if (dryRun) {
@@ -1813,11 +2101,77 @@ async function transformRustFile(
     }
   }
 
+  // --- Transform 8: Scaffold missing SETUP subsection headers ---
+  //
+  // When content exists in SETUP without a subsection header above it,
+  // scaffold the appropriate header. Only runs with --extensions (k-factor:
+  // errors only → scaffold toward fullness).
+  //
+  if (extensions) {
+    const blocks = findBlocks(lines);
+    const setupBlock = blocks.find((b) => b.name === "SETUP");
+    if (setupBlock) {
+      const setupRange = findBlockRange(lines, "SETUP");
+      if (setupRange) {
+        const setupLines = lines.slice(setupRange.contentStart, setupRange.contentEnd);
+        const subsections = getSubsectionRanges(setupLines);
+
+        // Find declarations that appear before the first subsection header
+        const firstSubIdx = subsections.length > 0 ? subsections[0]!.startIdx : setupLines.length;
+        const orphanedKinds = new Map<string, number>();
+
+        for (let i = 0; i < firstSubIdx; i++) {
+          const trimmed = setupLines[i]!.trim();
+          if (trimmed === "" || trimmed.startsWith("//")) continue;
+          const kind = classifyLine(trimmed);
+          const targetSub = SUBSECTION_PLACEMENT[kind];
+          if (targetSub && !orphanedKinds.has(targetSub)) {
+            orphanedKinds.set(targetSub, i);
+          }
+        }
+
+        if (orphanedKinds.size > 0) {
+          const canonicalOrder = SETUP_SUBSECTIONS.map((s) => s.tag);
+          const sorted = [...orphanedKinds.entries()]
+            .sort((a, b) => canonicalOrder.indexOf(a[0]) - canonicalOrder.indexOf(b[0]));
+
+          let insertCount = 0;
+          for (let si = sorted.length - 1; si >= 0; si--) {
+            const [tag] = sorted[si]!;
+            const num = canonicalOrder.indexOf(tag) + 1;
+            const header = [
+              "",
+              `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
+              `// ${num}. ${tag}`,
+              `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
+              "",
+            ];
+            const absoluteIdx = setupRange.contentStart + sorted[si]![1];
+
+            if (dryRun) {
+              wouldModify = true;
+              results.push(info(filePath, "transform/reserve-scaffold",
+                `Would scaffold "${tag}" subsection header before line ${absoluteIdx + 1}`));
+            } else {
+              lines.splice(absoluteIdx, 0, ...header);
+              modified = true;
+              insertCount++;
+            }
+          }
+          if (!dryRun && insertCount > 0) {
+            results.push(info(filePath, "transform/reserve-scaffold",
+              `Scaffolded ${insertCount} missing SETUP subsection header(s)`));
+          }
+        }
+      }
+    }
+  }
+
   // --- Write if modified ---
   if (modified && !dryRun) {
     await Deno.writeTextFile(filePath, lines.join("\n"));
     results.push(info(filePath, "transform/written", "File updated"));
-  } else if (!modified) {
+  } else if (!modified && !wouldModify) {
     results.push(info(filePath, "transform/clean", "No changes needed"));
   }
 
@@ -1852,6 +2206,7 @@ async function computeRustHealth(
   filePath: string,
   results: LintResult[],
 ): Promise<HealthScore> {
+  await ensureRustRules();
   // NOTE: No early guard here — acts() creates pass actions when no
   // failures exist, so a perfectly clean file gets 100/100 (not 0/100).
   // The allActions.length === 0 guard below handles the edge case where
@@ -1862,11 +2217,22 @@ async function computeRustHealth(
   const isModuleFile = basename === "mod.rs";
   const isCrateRoot = basename === "lib.rs" || basename === "main.rs";
   let isTemplate = false;
+  let hasForm = false;
   try {
     const content = await Deno.readTextFile(filePath);
     const firstLines = content.split("\n").slice(0, 15);
     isTemplate = firstLines.some((l) =>
       /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
+    // Check for form declaration in pragma (e.g., --library, --module)
+    // Form checks only run when a form is declared — health score should
+    // include form actions only when form validation actually fired.
+    const pragmaLine = firstLines.find((l) =>
+      /^\s*\/\/\s+#!omni\b/.test(l.trim()));
+    if (pragmaLine && _rustRules) {
+      const args = pragmaLine.replace(/^.*#!omni\s+/, "").trim().split(/\s+/)
+        .flatMap((a: string) => a.replace(/^-+/, "").split(",")).filter(Boolean);
+      hasForm = args.some((a: string) => a in _rustRules!.subtypeDefinitions);
+    }
   } catch { /* best-effort — defaults to non-template */ }
 
   // ── Build failure index ────────────────────────────────────────
@@ -2165,6 +2531,69 @@ async function computeRustHealth(
 
   return computeHealthScore(blockScores);
 }
+
+// ---------------------------------------------------------------------------
+// RustAdapter — language-specific adapter for future generic handler
+// ---------------------------------------------------------------------------
+//
+// Captures everything that differs between Rust and other languages.
+// A future GenericCode4BlockHandler takes a LanguageAdapter + Code4BlockRules
+// and produces a full handler. Today: the adapter packages Rust-specific
+// functions alongside the existing handler. Addition, not modification.
+//
+// new format = new LanguageAdapter + new schema. Not new engine code.
+//
+
+/**
+ * Rust language adapter — implements LanguageAdapter for 4-block Rust files.
+ *
+ * Wraps Rust-specific functions (classifier, identity parser, directive finder,
+ * zone finders, context builder) into the generalization interface. Rust has
+ * no legacy subsection patterns (unlike Go's //--- prefixes), so
+ * enrichSubsectionPatterns is not defined.
+ */
+export const rustAdapter: LanguageAdapter = {
+  format: "rust",
+  extensions: [".rs"],
+  knownCodeDirectives: KNOWN_CODE_DIRECTIVES,
+
+  classifyLine(rawLine: string): string {
+    return classifyLine(rawLine);
+  },
+
+  parseIdentityFields(lines: string[], varName: string): IdentityField[] {
+    return parseStaticFields(lines, varName);
+  },
+
+  findOmniDirectives(lines: string[]): Map<string, DirectiveInfo> {
+    return findOmniDirectives(lines);
+  },
+
+  findTestZone(
+    lines: string[], rangeStart: number, rangeEnd: number,
+  ): { start: number; end: number } | null {
+    return findCfgTestInRange(lines, rangeStart, rangeEnd);
+  },
+
+  findMainZone(
+    lines: string[], rangeStart: number, rangeEnd: number,
+  ): { start: number; end: number } | null {
+    return findFnMainInRange(lines, rangeStart, rangeEnd);
+  },
+
+  // No enrichSubsectionPatterns — Rust has no legacy //--- prefix patterns.
+  // Subsections are used directly from the schema.
+
+  buildContextExtras(filePath: string, lines: string[]): Record<string, unknown> {
+    const filename = filePath.split("/").pop() ?? "";
+    const isCrateRoot = filename === "lib.rs" || filename === "main.rs";
+    const isTemplate = lines.some((l) => /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
+    return {
+      isCrateRoot,
+      isModuleFile: !isCrateRoot && !isTemplate,
+    };
+  },
+};
 
 // ============================================================================
 // CLOSING

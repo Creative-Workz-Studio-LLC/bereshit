@@ -265,6 +265,86 @@ Deno.test("metadata/bad-content-values: total of 14 content check results", asyn
 });
 
 // ---------------------------------------------------------------------------
+// metadata/ — Content-aware validation (pragma-driven checks)
+// ---------------------------------------------------------------------------
+
+Deno.test("metadata/template-with-derived-values: detects wrong I1.at and C1.status for template", async () => {
+  const results = await go.lint(fixture("go/metadata/template-with-derived-values.go"));
+  const templateAt = byRule(results, "content/Pragma/template-at");
+  const templateStatus = byRule(results, "content/Metadata/template-status");
+  assertGreater(templateAt.length, 0,
+    `Template file with I1.at="a-01.00" should trigger content/Pragma/template-at`);
+  assertGreater(templateStatus.length, 0,
+    `Template file with C1.status="Active" should trigger content/Metadata/template-status`);
+});
+
+Deno.test("metadata/derived-with-template-values: detects template values in derived file", async () => {
+  const results = await go.lint(fixture("go/metadata/derived-with-template-values.go"));
+  const derivedAt = byRule(results, "content/Pragma/derived-at");
+  const derivedStatus = byRule(results, "content/Metadata/derived-status");
+  assertGreater(derivedAt.length, 0,
+    `Derived file with I1.at="template" should trigger content/Pragma/derived-at`);
+  assertGreater(derivedStatus.length, 0,
+    `Derived file with C1.status="Template" should trigger content/Metadata/derived-status`);
+});
+
+Deno.test("metadata/wrong-subtype: detects I2.subtype mismatch with pragma", async () => {
+  const results = await go.lint(fixture("go/metadata/wrong-subtype.go"));
+  const subtypeMismatch = byRule(results, "content/Pragma/subtype-mismatch");
+  assertGreater(subtypeMismatch.length, 0,
+    `Pragma says -library but I2.subtype="executable" should trigger content/Pragma/subtype-mismatch`);
+});
+
+Deno.test("metadata/valid-library: no content-aware false positives", async () => {
+  const results = await go.lint(fixture("go/structure/valid-library.go"));
+  const contentPragma = byRule(results, "content/Pragma/");
+  const contentMeta = byRule(results, "content/Metadata/");
+  assertEquals(contentPragma.length, 0,
+    `Valid library should have 0 content/Pragma infos: ${JSON.stringify(contentPragma.map(r => r.rule))}`);
+  assertEquals(contentMeta.length, 0,
+    `Valid library should have 0 content/Metadata infos: ${JSON.stringify(contentMeta.map(r => r.rule))}`);
+});
+
+// ---------------------------------------------------------------------------
+// doc/ — Doc comment quality checks (schema-driven)
+// ---------------------------------------------------------------------------
+
+Deno.test("doc/no-header-doc: warns about missing doc comments (package, pragma, metadata)", async () => {
+  const results = await go.lint(fixture("go/setup/no-header-doc.go"));
+  const docPackage = byRule(results, "doc/package");
+  const docPragma = byRule(results, "doc/pragma-var");
+  const docMetadata = byRule(results, "doc/metadata-var");
+  assertGreater(docPackage.length, 0,
+    "Should warn about missing package doc comment");
+  assertGreater(docPragma.length, 0,
+    "Should warn about missing Pragma doc comment");
+  assertGreater(docMetadata.length, 0,
+    "Should warn about missing Metadata doc comment");
+  // Schema says severity is "warn" for all three
+  assertEquals(docPackage[0]!.severity, "warn", "package doc severity from schema");
+  assertEquals(docPragma[0]!.severity, "warn", "pragma doc severity from schema");
+  assertEquals(docMetadata[0]!.severity, "warn", "metadata doc severity from schema");
+});
+
+Deno.test("doc/valid-library: no doc comment warnings (all comments present)", async () => {
+  const results = await go.lint(fixture("go/structure/valid-library.go"));
+  const docRules = byRule(results, "doc/");
+  assertEquals(docRules.length, 0,
+    `Valid library should have 0 doc warnings: ${JSON.stringify(docRules.map(r => r.rule))}`);
+});
+
+Deno.test("doc/schema-driven-severity: Go doc comment expectations loaded from schema", async () => {
+  const { loadCodeRules } = await import("../../lib/foundation/mod.ts");
+  const rules = await loadCodeRules("go");
+  const pkgDoc = rules.docCommentExpectations["package_doc"];
+  const pragmaDoc = rules.docCommentExpectations["pragma_doc"];
+  const metaDoc = rules.docCommentExpectations["metadata_doc"];
+  assertEquals(pkgDoc?.severity, "warn", "package_doc severity from schema");
+  assertEquals(pragmaDoc?.severity, "warn", "pragma_doc severity from schema");
+  assertEquals(metaDoc?.severity, "warn", "metadata_doc severity from schema");
+});
+
+// ---------------------------------------------------------------------------
 // setup/ — SETUP block
 // ---------------------------------------------------------------------------
 
@@ -282,6 +362,39 @@ Deno.test("setup/subsection-order-wrong: detects Core Types before Constants (wr
     hasRule(results, "setup/subsection-order"),
     `Should detect wrong SETUP subsection order, got rules: ${warnings(results).map((w) => w.rule).join(", ")}`,
   );
+});
+
+Deno.test("setup/alias-name: detects alias names and suggests canonical alternatives", async () => {
+  const results = await go.lint(fixture("go/setup/aliased-subsection-names.go"));
+  const aliasInfos = byRule(results, "setup/alias-name");
+  // Fixture uses: Consts (→Constants), Vars (→Variables), Types (→CoreTypes),
+  // Interfaces (→InterfaceDefs), Methods (→TypeMethods) = 5 aliases
+  assertGreater(aliasInfos.length, 0, `Expected alias info diagnostics, got: ${JSON.stringify(aliasInfos, null, 2)}`);
+  // Should NOT have order warnings — aliases are in correct order
+  const orderWarns = byRule(results, "setup/subsection-order");
+  assertEquals(orderWarns.length, 0, `Aliased names in correct order should produce 0 order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
+});
+
+Deno.test("content/subsection-placement: detects misplaced declarations within SETUP subsections", async () => {
+  const results = await go.lint(fixture("go/setup/misplaced-content.go"));
+  const placementInfos = byRule(results, "content/subsection-placement");
+  // Fixture has: type_decl in Constants (should be CoreTypes),
+  // const_decl in CoreTypes (should be Constants) = 2 misplacements
+  assertGreater(placementInfos.length, 0, `Expected subsection-placement infos, got: ${JSON.stringify(placementInfos, null, 2)}`);
+  // Verify it reports both directions of misplacement
+  const messages = placementInfos.map((r: { message: string }) => r.message).join(" | ");
+  assert(messages.includes("CoreTypes"), `Should suggest CoreTypes for type_decl: ${messages}`);
+  assert(messages.includes("Constants"), `Should suggest Constants for const_decl: ${messages}`);
+
+  // Phase 9: Auto-move suggestions — fix should contain remove+insert actions
+  const withFix = placementInfos.filter((r: { fix?: unknown }) => r.fix);
+  assertGreater(withFix.length, 0, "At least one placement info should include a fix suggestion");
+  // deno-lint-ignore no-explicit-any
+  const fix = (withFix[0] as any).fix;
+  assertEquals(fix.actions.length, 2, "Fix should have 2 actions (remove + insert)");
+  assertEquals(fix.actions[0].type, "remove", "First action should be remove");
+  assertEquals(fix.actions[1].type, "insert", "Second action should be insert");
+  assert(fix.actions[1].content.length > 0, "Insert action should have content lines");
 });
 
 // ---------------------------------------------------------------------------
@@ -845,6 +958,51 @@ Deno.test("closing/valid-library: no required-zone or zone-content warnings", as
 });
 
 // ---------------------------------------------------------------------------
+// closing/ — X6 template-only check
+// ---------------------------------------------------------------------------
+
+Deno.test("closing/X6-template-only: detects X6 section in non-template file", async () => {
+  const results = await go.lint(fixture("go/closing/x6-in-derived.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  assert(hasRule(results, "closing/X6-template-only"), "Should detect X6 in non-template file");
+
+  const x6 = byRule(results, "closing/X6-template-only");
+  assertEquals(x6[0]!.severity, "warn", "X6-template-only should be warn-level");
+  assert(hasMessage(x6, "Template Guide"), "Should mention Template Guide");
+});
+
+Deno.test("closing/X6-template-only: valid-library has no X6 warning", async () => {
+  const results = await go.lint(fixture("go/structure/valid-library.go"));
+  const x6 = byRule(results, "closing/X6-template-only");
+  assertEquals(x6.length, 0, "Valid library without X6 should produce no X6-template-only warning");
+});
+
+// ---------------------------------------------------------------------------
+// closing/ — Field content depth check
+// ---------------------------------------------------------------------------
+
+Deno.test("closing/X1-depth: detects empty and placeholder field values in X1", async () => {
+  const results = await go.lint(fixture("go/closing/x1-empty-fields.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  const depth = byRule(results, "closing/X1-depth");
+  assertGreater(depth.length, 0, "Should detect empty/placeholder X1 field values");
+  assertEquals(depth[0]!.severity, "info", "X1-depth should be info-level");
+  // "Never:" is empty, "Careful: [placeholder]" is placeholder
+  assert(hasMessage(depth, "never") || hasMessage(depth, "careful"),
+    "Should mention the field with empty/placeholder value");
+});
+
+Deno.test("closing/depth: valid-library has no depth warnings", async () => {
+  const results = await go.lint(fixture("go/structure/valid-library.go"));
+  const depth = results.filter((r) => r.rule.includes("-depth"));
+  assertEquals(depth.length, 0, "Valid library should produce no depth warnings");
+});
+
+// ---------------------------------------------------------------------------
 // setup/ — SETUP content validation (new: header documentation)
 // ---------------------------------------------------------------------------
 
@@ -876,6 +1034,65 @@ Deno.test("body/wrong-subtype-subsections: detects library with demo-test subsec
 });
 
 // ---------------------------------------------------------------------------
+// setup/required — Required SETUP subsections for subtype
+// ---------------------------------------------------------------------------
+
+Deno.test("setup/missing-required-subsections: library missing ErrorTypes and CoreTypes", async () => {
+  const results = await go.lint(fixture("go/setup/missing-required-subsections.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  const required = byRule(results, "setup/required-subsection");
+  assertGreater(required.length, 0, "Should detect missing required SETUP subsections");
+  assertEquals(required[0]!.severity, "warn", "Required subsection check should be warn-level");
+  assert(hasMessage(required, "ErrorTypes"), "Should mention missing ErrorTypes");
+  assert(hasMessage(required, "CoreTypes"), "Should mention missing CoreTypes");
+});
+
+Deno.test("setup/missing-required-subsections: reports count matches schema", async () => {
+  const results = await go.lint(fixture("go/setup/missing-required-subsections.go"));
+  const required = byRule(results, "setup/required-subsection");
+  // Go schema: library requires S1 Imports (present), S5 ErrorTypes (missing), S6 CoreTypes (missing)
+  assertEquals(required.length, 2, "Should report exactly 2 missing required subsections");
+});
+
+// ---------------------------------------------------------------------------
+// body/required — Required BODY subsections for subtype
+// ---------------------------------------------------------------------------
+
+Deno.test("body/missing-required-subsections: library missing Public APIs", async () => {
+  const results = await go.lint(fixture("go/body/missing-required-subsections.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  const required = byRule(results, "body/required-subsection");
+  assertGreater(required.length, 0, "Should detect missing required BODY subsections");
+  assertEquals(required[0]!.severity, "warn", "Required body subsection check should be warn-level");
+  assert(hasMessage(required, "PublicAPIs") || hasMessage(required, "Public"), "Should mention missing Public APIs");
+});
+
+// ---------------------------------------------------------------------------
+// emphasis/ — Subtype emphasis balance
+// ---------------------------------------------------------------------------
+
+Deno.test("setup/emphasis-inverted: library with empty heavy subs and full light subs", async () => {
+  const results = await go.lint(fixture("go/setup/emphasis-inverted.go"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  const emphasis = byRule(results, "emphasis/setup-inverted");
+  assertGreater(emphasis.length, 0, "Should detect inverted emphasis");
+  assertEquals(emphasis[0]!.severity, "info", "Emphasis check should be info-level");
+  assert(hasMessage(emphasis, "library"), "Should mention the subtype");
+});
+
+Deno.test("setup/emphasis-inverted: valid library has no emphasis inversion", async () => {
+  const results = await go.lint(fixture("go/structure/valid-library.go"));
+  const emphasis = byRule(results, "emphasis/setup-inverted");
+  assertEquals(emphasis.length, 0, "Valid library should have no emphasis inversion");
+});
+
+// ---------------------------------------------------------------------------
 // regression/ — Existing fixtures still pass after new checks
 // ---------------------------------------------------------------------------
 
@@ -891,6 +1108,108 @@ Deno.test("regression/valid-executable: still zero errors after content validati
   const results = await go.lint(fixture("go/structure/valid-executable.go"));
   const errs = errors(results);
   assertEquals(errs.length, 0, "Valid executable should still have zero errors");
+});
+
+// ---------------------------------------------------------------------------
+// adapter/ — GoAdapter implements LanguageAdapter
+// ---------------------------------------------------------------------------
+
+import { goAdapter } from "../../lib/handlers/go.ts";
+
+Deno.test("adapter/go: format is 'go'", () => {
+  assertEquals(goAdapter.format, "go");
+});
+
+Deno.test("adapter/go: extensions include .go", () => {
+  assert(goAdapter.extensions.includes(".go"));
+});
+
+Deno.test("adapter/go: classifyLine delegates to classifyGoLine", () => {
+  assertEquals(goAdapter.classifyLine("package main"), "package_decl");
+  assertEquals(goAdapter.classifyLine("import \"fmt\""), "import_decl");
+  assertEquals(goAdapter.classifyLine("func main() {"), "func_decl");
+  assertEquals(goAdapter.classifyLine("type Foo struct {"), "type_decl");
+  assertEquals(goAdapter.classifyLine("// comment"), "comment");
+  assertEquals(goAdapter.classifyLine(""), "blank");
+});
+
+Deno.test("adapter/go: parseIdentityFields delegates to parseSliceFields", () => {
+  const lines = [
+    'var Pragma = [][2]string{',
+    '  {"I1.key", "B-test"},',
+    '  {"I1.format", "go"},',
+    '}',
+  ];
+  const fields = goAdapter.parseIdentityFields(lines, "Pragma");
+  assertEquals(fields.length, 2);
+  assertEquals(fields[0]!.section, "I1");
+  assertEquals(fields[0]!.field, "key");
+  assertEquals(fields[0]!.value, "B-test");
+});
+
+Deno.test("adapter/go: findOmniDirectives finds directives", () => {
+  const lines = [
+    "//omni:key B-test",
+    "//omni:code --go -library",
+    "package foo",
+  ];
+  const directives = goAdapter.findOmniDirectives(lines);
+  assert(directives.has("//omni:key"));
+  assert(directives.has("//omni:code"));
+  assertEquals(directives.get("//omni:key")!.value, "B-test");
+});
+
+Deno.test("adapter/go: findTestZone finds func Test declarations", () => {
+  const lines = [
+    "// helper",
+    "func TestFoo(t *testing.T) {",
+    "  t.Run(\"sub\", func(t *testing.T) {})",
+    "}",
+    "// end",
+  ];
+  const zone = goAdapter.findTestZone(lines, 0, lines.length);
+  assert(zone !== null);
+  assertEquals(zone!.start, 1);
+  assertEquals(zone!.end, 3);
+});
+
+Deno.test("adapter/go: findMainZone finds func main", () => {
+  const lines = [
+    "// header",
+    "func main() {",
+    "  fmt.Println(\"hello\")",
+    "}",
+  ];
+  const zone = goAdapter.findMainZone(lines, 0, lines.length);
+  assert(zone !== null);
+  assertEquals(zone!.start, 1);
+  assertEquals(zone!.end, 3);
+});
+
+Deno.test("adapter/go: enrichSubsectionPatterns adds legacy patterns", () => {
+  const base = [{ tag: "Imports", pattern: /^\/\/\s+Imports\b/ }];
+  const enriched = goAdapter.enrichSubsectionPatterns!(base);
+  // Enriched pattern should match both canonical and legacy
+  assert(enriched[0]!.pattern.test("// Imports"), "Should match canonical");
+  assert(enriched[0]!.pattern.test("//--- I.1 standard library"), "Should match legacy");
+});
+
+Deno.test("adapter/go: buildContextExtras identifies doc.go", () => {
+  const extras = goAdapter.buildContextExtras("/path/to/doc.go", []);
+  assertEquals(extras.isDocGo, true);
+  assertEquals(extras.isTestFile, false);
+});
+
+Deno.test("adapter/go: buildContextExtras identifies test files", () => {
+  const extras = goAdapter.buildContextExtras("/path/to/foo_test.go", []);
+  assertEquals(extras.isDocGo, false);
+  assertEquals(extras.isTestFile, true);
+});
+
+Deno.test("adapter/go: buildContextExtras for regular file", () => {
+  const extras = goAdapter.buildContextExtras("/path/to/main.go", []);
+  assertEquals(extras.isDocGo, false);
+  assertEquals(extras.isTestFile, false);
 });
 
 // ============================================================================

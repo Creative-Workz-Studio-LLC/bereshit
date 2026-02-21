@@ -166,6 +166,79 @@
     },
 
     // ───────────────────────────────────────────────────────────
+    // Cc.ext — Pragma Taxonomy [TAXONOMY]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Valid pragma types, formats, and argument taxonomy for TOML files.
+    // Schema defines, code interprets. The linter reads these values.
+    //
+    // Pragma line:  # #!omni <type> --<format> [--<arg>...]
+    // Format field: @omni <type> --<format> [--<arg>...]
+    //
+    // Args are classified as derivations (parent-child template relationship)
+    // or forms (shape variants of same base). Both are --<arg> in syntax.
+    //
+    // Example: # #!omni data --toml --cargo
+    //   type = "data", format = "toml", args = ["cargo"]
+    //   "cargo" is a DERIVATION — remaps table paths.
+
+    "pragma_taxonomy": {
+        "note": "Valid pragma types, formats, and argument taxonomy for TOML files. The linter reads this — schema defines, code interprets.",
+
+        "pragma_line_pattern": "# #!omni <type> --<format> [--<arg>...]",
+        "format_field_pattern": "@omni <type> --<format> [--<arg>...]",
+
+        "valid_types": ["template", "data", "code"],
+        "base_type": "data",
+        "format": "toml",
+
+        "arg_taxonomy": {
+            "note": "Args are either derivations (parent-child template relationship that remaps structure) or forms (shape variants within same structure). --toml --cargo = format + derivation arg.",
+
+            "derivations": {
+                "purpose": "Templates derived from a parent — remap table paths, change content expectations",
+                "known": ["compiler", "cargo"],
+                "note": "Each derivation MAY define a normalization layout (see derivation_layouts)"
+            },
+            "forms": {
+                "purpose": "Shape variants of the same base template — same structure, different expectations",
+                "known": ["library", "executable", "test"],
+                "note": "Forms change field expectations within same table structure, not the structure itself"
+            }
+        },
+
+        "derivation_layouts": {
+            "note": "How derivations remap standard 3-block table paths. Standard TOML: _metadata, _content, _closing (direct top-level). Derivations may relocate these to host-format extension points.",
+
+            "cargo": {
+                "purpose": "Cargo.toml — Rust package manifest with OmniCode metadata in package.metadata.omni",
+                "pragma_example": "# #!omni code --toml --cargo",
+                "normalization": {
+                    "source": "package.metadata.omni",
+                    "metadata_from": "All keys in package.metadata.omni except _closing",
+                    "closing_from": "package.metadata.omni._closing",
+                    "content_skip": true,
+                    "note": "Standard [_content] check skipped — content IS standard Cargo sections ([dependencies], [features], etc.)"
+                },
+                "required_sections": {
+                    "package": { "severity": "error", "purpose": "Package identity — required for all Cargo.toml" }
+                },
+                "defined_sections": {
+                    "dependencies": { "severity": "info", "purpose": "Most crates need dependencies" },
+                    "features": { "severity": "info", "purpose": "Templates should include features scaffold" }
+                }
+            },
+
+            "compiler": {
+                "purpose": "Compiler configuration TOML with OmniCode metadata",
+                "pragma_example": "# #!omni data --toml --compiler",
+                "normalization": null,
+                "note": "Standard 3-block layout — no table remapping needed"
+            }
+        }
+    },
+
+    // ───────────────────────────────────────────────────────────
     // Co — Content Operations [OPS]
     // ───────────────────────────────────────────────────────────
     //

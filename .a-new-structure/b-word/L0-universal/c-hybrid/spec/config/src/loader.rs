@@ -4,6 +4,10 @@
 //! - **Primary (appointed time):** `index.toml` manifest drives loading order
 //! - **Watch (ramparts):** known filesystem positions when manifest is absent
 
+//omni:code --rust -library
+//omni:key B-L0-hybrid-config-loader
+//omni:version b-03.00
+
 use std::collections::BTreeMap;
 use std::fs;
 use std::io;
@@ -11,7 +15,7 @@ use std::path::Path;
 
 use crate::cache;
 use crate::discovery::compare_manifest_to_disk;
-use crate::error::ConfigError;
+use crate::error::{ConfigError, LoadOp};
 use crate::graph::{build_dependency_graph, validate_dependencies};
 use crate::types::{ConfigFile, IndexManifest, LoadResult};
 
@@ -106,20 +110,20 @@ pub(crate) fn load_index(root: &Path) -> Result<IndexManifest, ConfigError> {
     if !index_path.exists() {
         return Err(ConfigError::Load {
             file: INDEX_FILE.to_owned(),
-            op: "read".to_owned(),
+            op: LoadOp::Read,
             source: format!("not found: {}", index_path.display()),
         });
     }
 
     let content = fs::read_to_string(&index_path).map_err(|e| ConfigError::Load {
         file: INDEX_FILE.to_owned(),
-        op: "read".to_owned(),
+        op: LoadOp::Read,
         source: e.to_string(),
     })?;
 
     let mut manifest: IndexManifest = toml::from_str(&content).map_err(|e| ConfigError::Load {
         file: INDEX_FILE.to_owned(),
-        op: "parse".to_owned(),
+        op: LoadOp::Parse,
         source: e.to_string(),
     })?;
 
@@ -152,20 +156,20 @@ pub(crate) fn load_file(path: &Path) -> Result<ConfigFile, ConfigError> {
     if !path.exists() {
         return Err(ConfigError::Load {
             file: name,
-            op: "read".to_owned(),
+            op: LoadOp::Read,
             source: format!("not found: {}", path.display()),
         });
     }
 
     let content = fs::read_to_string(path).map_err(|e| ConfigError::Load {
         file: name.clone(),
-        op: "read".to_owned(),
+        op: LoadOp::Read,
         source: e.to_string(),
     })?;
 
     let data: toml::Table = toml::from_str(&content).map_err(|e| ConfigError::Load {
         file: name.clone(),
-        op: "parse".to_owned(),
+        op: LoadOp::Parse,
         source: e.to_string(),
     })?;
 
@@ -201,7 +205,7 @@ pub(crate) fn load_directory(dir: &Path) -> Result<Vec<ConfigFile>, ConfigError>
     if !dir.is_dir() {
         return Err(ConfigError::Load {
             file: name,
-            op: "read".to_owned(),
+            op: LoadOp::Read,
             source: format!("directory not found: {}", dir.display()),
         });
     }
@@ -209,7 +213,7 @@ pub(crate) fn load_directory(dir: &Path) -> Result<Vec<ConfigFile>, ConfigError>
     let mut entries: Vec<_> = fs::read_dir(dir)
         .map_err(|e| ConfigError::Load {
             file: name.clone(),
-            op: "read".to_owned(),
+            op: LoadOp::Read,
             source: e.to_string(),
         })?
         .filter_map(|entry| entry.ok())
@@ -264,7 +268,7 @@ pub(crate) fn load_all_from_index(root: &Path, w: &mut dyn io::Write) -> LoadRes
         for missing in &discovery.missing {
             result.errors.push(ConfigError::Load {
                 file: missing.clone(),
-                op: "read".to_owned(),
+                op: LoadOp::Read,
                 source: "declared in manifest but not on disk".to_owned(),
             });
         }
@@ -317,7 +321,7 @@ pub(crate) fn do_load_all(root: &Path, w: &mut dyn io::Write) -> LoadResult {
 
     // Check if specifically an index.toml issue
     let is_index_missing = index_result.errors.iter().any(
-        |e| matches!(e, ConfigError::Load { file, op, .. } if file == INDEX_FILE && op == "read"),
+        |e| matches!(e, ConfigError::Load { file, op, .. } if file == INDEX_FILE && *op == LoadOp::Read),
     );
 
     if is_index_missing {
@@ -367,7 +371,7 @@ pub(crate) fn do_load_system(root: &Path, system: &str) -> Result<Vec<ConfigFile
         }
         return Err(ConfigError::Load {
             file: system.to_owned(),
-            op: "lookup".to_owned(),
+            op: LoadOp::Lookup,
             source: "system not found in index.toml".to_owned(),
         });
     }
@@ -379,7 +383,7 @@ pub(crate) fn do_load_system(root: &Path, system: &str) -> Result<Vec<ConfigFile
         .map(|(_, path)| root.join(path))
         .ok_or_else(|| ConfigError::Load {
             file: system.to_owned(),
-            op: "lookup".to_owned(),
+            op: LoadOp::Lookup,
             source: "not found in manifest and no watch path defined".to_owned(),
         })
         .and_then(|dir| load_directory(&dir))
@@ -403,14 +407,14 @@ pub(crate) fn do_load_spec(
                 }
                 return Err(ConfigError::Load {
                     file: format!("{system}/{spec}"),
-                    op: "lookup".to_owned(),
+                    op: LoadOp::Lookup,
                     source: "spec not found in system".to_owned(),
                 });
             }
         }
         return Err(ConfigError::Load {
             file: system.to_owned(),
-            op: "lookup".to_owned(),
+            op: LoadOp::Lookup,
             source: "system not found in index.toml".to_owned(),
         });
     }
@@ -422,8 +426,245 @@ pub(crate) fn do_load_spec(
         .map(|(_, path)| root.join(path).join(spec))
         .ok_or_else(|| ConfigError::Load {
             file: format!("{system}/{spec}"),
-            op: "lookup".to_owned(),
+            op: LoadOp::Lookup,
             source: "not found in manifest and no watch path defined".to_owned(),
         })
         .and_then(|path| load_file(&path))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::{
+        TEST_INDEX, TEST_SPEC_PLAIN, TEST_SPEC_WITH_IDENTITY, test_dir, write_file,
+    };
+    use std::fs;
+    use std::path::Path;
+
+    // ── Helpers ──────────────────────────────────────────────
+
+    #[test]
+    fn test_extract_string_map_present() {
+        let toml_str = r#"
+[_pragma]
+"P1.key" = "test-key"
+"P1.type" = "data"
+"#;
+        let data: toml::Table = toml::from_str(toml_str).unwrap();
+        let map = extract_string_map(&data, "_pragma").unwrap();
+        assert_eq!(map["P1.key"], "test-key");
+        assert_eq!(map["P1.type"], "data");
+    }
+
+    #[test]
+    fn test_extract_string_map_absent() {
+        let data: toml::Table = toml::from_str("[section]\nkey = 1").unwrap();
+        assert!(extract_string_map(&data, "_pragma").is_none());
+    }
+
+    #[test]
+    fn test_extract_string_map_skips_non_strings() {
+        let toml_str = r#"
+[_pragma]
+"P1.key" = "test"
+numeric = 42
+"#;
+        let data: toml::Table = toml::from_str(toml_str).unwrap();
+        let map = extract_string_map(&data, "_pragma").unwrap();
+        assert_eq!(map.len(), 1); // only string values
+        assert_eq!(map["P1.key"], "test");
+    }
+
+    // ── Tripwire (Writer) ───────────────────────────────────
+
+    #[test]
+    fn test_tripwire_banner_output() {
+        let mut buf = Vec::new();
+        tripwire_banner(
+            &mut buf,
+            "Test Warning",
+            &["Line one".to_owned(), "Line two".to_owned()],
+        );
+        let output = String::from_utf8(buf).unwrap();
+        assert!(output.contains("Test Warning"));
+        assert!(output.contains("Line one"));
+        assert!(output.contains("Line two"));
+        assert!(output.contains("\u{2550}")); // ═ border
+    }
+
+    // ── File Loading (Filesystem) ───────────────────────────
+
+    #[test]
+    fn test_load_file_plain() {
+        let dir = test_dir("load-file-plain");
+        write_file(&dir, "test.toml", TEST_SPEC_PLAIN);
+
+        let cfg = load_file(&dir.join("test.toml")).unwrap();
+        assert_eq!(cfg.name, "test.toml");
+        assert!(cfg.keys.contains(&"primitives".to_owned()));
+        assert!(cfg.pragma.is_none());
+        assert!(cfg.metadata.is_none());
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_file_with_identity() {
+        let dir = test_dir("load-file-identity");
+        write_file(&dir, "ternary.toml", TEST_SPEC_WITH_IDENTITY);
+
+        let cfg = load_file(&dir.join("ternary.toml")).unwrap();
+        assert_eq!(cfg.name, "ternary.toml");
+
+        let pragma = cfg.pragma.as_ref().unwrap();
+        assert_eq!(pragma["P1.key"], "B-L0-math-ternary");
+        assert_eq!(pragma["P1.type"], "data");
+
+        let metadata = cfg.metadata.as_ref().unwrap();
+        assert_eq!(metadata["M1.key"], "B-L0-math-ternary");
+
+        // Keys should include _pragma, _metadata, ternary
+        assert!(cfg.keys.contains(&"_pragma".to_owned()));
+        assert!(cfg.keys.contains(&"ternary".to_owned()));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_file_not_found() {
+        let err = load_file(Path::new("/nonexistent/path/file.toml")).unwrap_err();
+        assert!(matches!(err, ConfigError::Load { op, .. } if op == LoadOp::Read));
+    }
+
+    #[test]
+    fn test_load_directory() {
+        let dir = test_dir("load-dir");
+        write_file(&dir, "specs/a.toml", "[alpha]\nval = 1");
+        write_file(&dir, "specs/b.toml", "[beta]\nval = 2");
+        write_file(&dir, "specs/readme.md", "not toml"); // should be ignored
+
+        let configs = load_directory(&dir.join("specs")).unwrap();
+        assert_eq!(configs.len(), 2);
+        assert_eq!(configs[0].name, "a.toml");
+        assert_eq!(configs[1].name, "b.toml");
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_directory_not_found() {
+        let err = load_directory(Path::new("/nonexistent/dir")).unwrap_err();
+        assert!(matches!(err, ConfigError::Load { op, .. } if op == LoadOp::Read));
+    }
+
+    // ── Integration: Full Load ──────────────────────────────
+
+    #[test]
+    fn test_load_all_from_index_integration() {
+        let dir = test_dir("load-all-index");
+
+        // Create index
+        write_file(
+            &dir,
+            "L0-universal/ladder/foundation/index.toml",
+            TEST_INDEX,
+        );
+        // Create specs
+        write_file(
+            &dir,
+            "L0-universal/ladder/foundation/math/ternary.toml",
+            TEST_SPEC_WITH_IDENTITY,
+        );
+        write_file(
+            &dir,
+            "L0-universal/ladder/foundation/types/primitives.toml",
+            TEST_SPEC_PLAIN,
+        );
+
+        let result = load_all_from_index(&dir, &mut Vec::new());
+        assert!(result.valid, "errors: {:?}", result.errors);
+        assert_eq!(result.configs.len(), 2);
+        assert!(result.configs.contains_key("math"));
+        assert!(result.configs.contains_key("types"));
+        assert_eq!(result.summary["math"], vec!["ternary.toml"]);
+        assert_eq!(result.summary["types"], vec!["primitives.toml"]);
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_all_watch_flow() {
+        let dir = test_dir("load-all-watch");
+        // No index.toml — force watch flow
+        // Create only math (one of the watch paths)
+        write_file(
+            &dir,
+            "L0-universal/ladder/foundation/math/ternary.toml",
+            TEST_SPEC_WITH_IDENTITY,
+        );
+
+        let result = do_load_all(&dir, &mut Vec::new());
+        // Not all systems will load (most dirs don't exist), but math should
+        assert!(result.configs.contains_key("math"));
+        assert_eq!(result.summary["math"], vec!["ternary.toml"]);
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_system_from_manifest() {
+        let dir = test_dir("load-system");
+        write_file(
+            &dir,
+            "L0-universal/ladder/foundation/index.toml",
+            TEST_INDEX,
+        );
+        write_file(
+            &dir,
+            "L0-universal/ladder/foundation/math/ternary.toml",
+            TEST_SPEC_WITH_IDENTITY,
+        );
+
+        let configs = do_load_system(&dir, "math").unwrap();
+        assert_eq!(configs.len(), 1);
+        assert_eq!(configs[0].name, "ternary.toml");
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_spec_from_manifest() {
+        let dir = test_dir("load-spec");
+        write_file(
+            &dir,
+            "L0-universal/ladder/foundation/index.toml",
+            TEST_INDEX,
+        );
+        write_file(
+            &dir,
+            "L0-universal/ladder/foundation/math/ternary.toml",
+            TEST_SPEC_WITH_IDENTITY,
+        );
+
+        let cfg = do_load_spec(&dir, "math", "ternary.toml").unwrap();
+        assert_eq!(cfg.name, "ternary.toml");
+        assert!(cfg.pragma.is_some());
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_system_not_found() {
+        let dir = test_dir("load-system-404");
+        write_file(
+            &dir,
+            "L0-universal/ladder/foundation/index.toml",
+            TEST_INDEX,
+        );
+
+        let err = do_load_system(&dir, "nonexistent").unwrap_err();
+        assert!(matches!(err, ConfigError::Load { op, .. } if op == LoadOp::Lookup));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
 }

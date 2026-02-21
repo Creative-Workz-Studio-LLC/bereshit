@@ -129,25 +129,35 @@ async function loadFormats() {
 
   try {
     const res = await fetch(`${API}/api/formats`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     formatsCache = data.formats;
 
-    for (const fmt of data.formats) {
-      const card = document.createElement("div");
-      card.className = "format-card";
-      card.innerHTML = `
-        <div class="format-name">${esc(fmt.name)}</div>
-        <div class="format-desc">${esc(fmt.description)}</div>
-        <div class="format-extensions">
-          ${fmt.extensions.map((e) => `<span class="ext-tag">${esc(e)}</span>`).join("")}
-        </div>
-      `;
-      grid.appendChild(card);
-    }
+    renderFormatCards(data.formats);
   } catch (err) {
+    // Reset cache so next click retries
+    formatsCache = null;
     grid.innerHTML = `<p style="color:var(--color-error)">Failed to load formats: ${esc(String(err))}</p>`;
   } finally {
     loading.style.display = "none";
+  }
+}
+
+function renderFormatCards(formats) {
+  const grid = $("#formats-grid");
+  grid.innerHTML = "";
+
+  for (const fmt of formats) {
+    const card = document.createElement("div");
+    card.className = "format-card";
+    card.innerHTML = `
+      <div class="format-name">${esc(fmt.name)}</div>
+      <div class="format-desc">${esc(fmt.description)}</div>
+      <div class="format-extensions">
+        ${fmt.extensions.map((e) => `<span class="ext-tag">${esc(e)}</span>`).join("")}
+      </div>
+    `;
+    grid.appendChild(card);
   }
 }
 
@@ -288,6 +298,10 @@ function gatherCreateBody() {
     title: $("#create-title").value.trim() || undefined,
     purpose: $("#create-purpose").value.trim() || undefined,
     version: $("#create-version").value.trim() || "a-01.00",
+    component: $("#create-component").value.trim() || undefined,
+    scripture: $("#create-scripture").value.trim() || undefined,
+    organization: $("#create-organization").value.trim() || undefined,
+    path: $("#create-path").value.trim() || undefined,
   };
 }
 
@@ -501,6 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initial data loads
   checkHealth();
   loadSeeds();
+  loadFormats();
 
   // Periodic health check
   setInterval(checkHealth, 30_000);

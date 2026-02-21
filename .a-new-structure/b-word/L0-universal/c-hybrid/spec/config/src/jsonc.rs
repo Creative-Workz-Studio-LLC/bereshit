@@ -1,6 +1,10 @@
 //! JSONC support — strip comments and trailing commas for clean JSON parsing.
 
-use crate::error::ConfigError;
+//omni:code --rust -library
+//omni:key B-L0-hybrid-config-jsonc
+//omni:version b-03.00
+
+use crate::error::{ConfigError, LoadOp};
 
 /// Strip JSONC comments and trailing commas, returning valid JSON.
 ///
@@ -140,7 +144,58 @@ pub fn parse_jsonc<T: serde::de::DeserializeOwned>(input: &str) -> Result<T, Con
     let clean = strip_jsonc_comments(input);
     serde_json::from_str(&clean).map_err(|e| ConfigError::Load {
         file: String::new(),
-        op: "parse_jsonc".to_owned(),
+        op: LoadOp::ParseJsonc,
         source: e.to_string(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_strip_single_line_comments() {
+        let input = "{ \"key\": \"value\" // comment\n}";
+        let result = strip_jsonc_comments(input);
+        assert!(result.contains("\"key\""));
+        assert!(!result.contains("comment"));
+    }
+
+    #[test]
+    fn test_strip_multi_line_comments() {
+        let input = "{ \"key\": /* block */ \"value\" }";
+        let result = strip_jsonc_comments(input);
+        assert!(result.contains("\"key\""));
+        assert!(!result.contains("block"));
+    }
+
+    #[test]
+    fn test_strip_trailing_commas() {
+        let input = "{ \"a\": 1, \"b\": 2, }";
+        let result = strip_jsonc_comments(input);
+        assert!(!result.ends_with(", }"));
+        // Should parse as valid JSON
+        let val: serde_json::Value = serde_json::from_str(&result).unwrap();
+        assert_eq!(val["a"], 1);
+        assert_eq!(val["b"], 2);
+    }
+
+    #[test]
+    fn test_strip_preserves_strings() {
+        let input = "{ \"url\": \"https://example.com//path\" }";
+        let result = strip_jsonc_comments(input);
+        assert!(result.contains("//path"));
+    }
+
+    #[test]
+    fn test_parse_jsonc() {
+        let input = r#"{
+            // Comment
+            "name": "test",
+            "version": 1, /* inline */
+        }"#;
+        let val: serde_json::Value = parse_jsonc(input).unwrap();
+        assert_eq!(val["name"], "test");
+        assert_eq!(val["version"], 1);
+    }
 }

@@ -1,0 +1,1 @@
+SELECT id, name, trit_count, states, bytes, layer FROM ternary_scales ORDER BY trit_count

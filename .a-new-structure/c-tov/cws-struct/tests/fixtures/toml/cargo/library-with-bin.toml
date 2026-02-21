@@ -1,0 +1,102 @@
+# #!omni code --toml --cargo --library
+
+# Library Cargo.toml that has a [[bin]] section — reserved for libraries.
+# This should trigger form/reserved-section-present for BinTarget.
+
+[package]
+name = "confused-crate"
+version = "0.1.0"
+edition = "2021"
+
+# This is the problem: libraries should NOT have [[bin]]
+[[bin]]
+name = "confused-binary"
+path = "src/main.rs"
+
+[dependencies]
+serde = "1.0"
+
+# Minimal OmniCode metadata so we don't fail on OTHER checks
+[package.metadata.omni.I1_core]
+key = "B-test-fixture-cargo-reserved"
+format = "@omni code --toml --cargo --library"
+from = "b-word/seed/code/L0/toml/cargo/Cargo.toml"
+at = "a-01.00"
+
+[package.metadata.omni.I2_family]
+type = "code"
+subtype = "crate-manifest"
+role = "seed"
+structure = "3-block"
+
+[package.metadata.omni.I3_instance]
+file = "library-with-bin.toml"
+title = "Library With Bin Fixture"
+component = "Test fixture for reserved section detection"
+path = "tests/fixtures/toml/cargo/library-with-bin.toml"
+provides = ["TEST_CARGO_RESERVED_SECTION"]
+brief = "Library Cargo.toml with [[bin]] — tests reserved section detection."
+
+[package.metadata.omni.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+[package.metadata.omni.C1_state]
+version = "a-01.00"
+status = "Draft"
+created = "2026-02-20"
+updated = "2026-02-20"
+
+[package.metadata.omni.C2_attribution]
+architect = "Nova Dawn"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+[package.metadata.omni.C3_grounding]
+scripture = "Psalm 127:1 (WEB) -- Unless Yahweh builds the house, they labor in vain."
+principle = "Test fixture for reserved section detection."
+anchor = "Reserved sections have a purpose — they belong to other forms."
+
+[package.metadata.omni.C4_dependencies]
+requires = "Rust toolchain (rustc, cargo)"
+consumers = "TOML linter test suite"
+integration = "Test fixture -- not compiled"
+if_missing = "Cannot test reserved section detection"
+
+[package.metadata.omni.C4_dependencies.related]
+parent = "seed/code/L0/toml/cargo/Cargo.toml"
+children = []
+
+[package.metadata.omni.C5_intent]
+purpose = "Test fixture: library Cargo.toml with reserved [[bin]] section"
+
+[package.metadata.omni.C6_roadmap]
+history = ["a-01.00 (2026-02-20) -- Initial fixture creation"]
+current = "a-01.00 -- Test fixture for reserved section detection"
+planned = []
+
+[package.metadata.omni.C7_classification]
+tags = ["test", "fixture", "toml", "cargo", "library", "reserved", "3-block"]
+domain = "quality"
+
+[package.metadata.omni._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C5_intent", "C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = []
+valid_patterns = ["I{N}_{name}", "C{N}_{name}", "X{N}_{name}", "_{name}"]
+rule = "Metadata in package.metadata.omni. Standard Cargo sections for content."
+
+[package.metadata.omni._closing.X1_policy]
+scripture = "Proverbs 22:28 (WEB) -- Don't move the ancient boundary stone."
+never = ["Remove reserved section detection test case"]
+careful = ["Changing [[bin]] section"]
+safe = ["Documentation updates"]
+
+[package.metadata.omni._closing.X5_note]
+note = "Test fixture: library with [[bin]] — reserved section violation."
+scripture = "Psalm 127:1 (WEB) -- Unless Yahweh builds the house."
+anchor = "Libraries don't have binary targets. [[bin]] belongs to executable form."

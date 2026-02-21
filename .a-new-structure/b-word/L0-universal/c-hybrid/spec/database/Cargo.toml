@@ -1,15 +1,247 @@
+# #!omni code --toml --cargo
+
+# ===================================================================
+# Cargo.toml -- 3-Block (METADATA + CONTENT + CLOSING)
+# ===================================================================
+#
+# Structure: 3-block (METADATA + CONTENT + CLOSING)
+#
+# TOML constraint: [package] must come before [package.metadata.*]
+# sub-tables. So the physical order is:
+#
+#   [package]                        <- Cc.1 identity (CONTENT)
+#   [package.metadata.omni.*]        <- I/C metadata (METADATA)
+#   [package.metadata.omni._closing] <- X closing (CLOSING)
+#   [dependencies] etc.              <- Co sections (CONTENT continued)
+#
+# Logical structure is still: METADATA -> CONTENT -> CLOSING
+# Physical ordering respects TOML's sub-table rule.
+
+# -------------------------------------------------------------------
+# [package] -- MUST come first (TOML sub-table ordering rule)
+# -------------------------------------------------------------------
+#
+# Cc.1 PACKAGE -- Crate Identity [REQUIRED]
+#
+# Foundation database queries. Typed access to the SQLite database
+# that materializes all TOML specifications. The Triangle complete:
+# Configuration (TOML) -> Data (SQLite) -> Code (this crate).
 [package]
 name = "bereshit-l0-foundation-db"
 version = "0.2.0"
 description = "Foundation database queries — typed access to SQLite-materialized TOML specs"
-edition.workspace = true
-rust-version.workspace = true
-authors.workspace = true
-repository.workspace = true
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
 
+# ===================================================================
+# METADATA BLOCK [METADATA]
+# ===================================================================
+#
+# OmniCode metadata lives in [package.metadata.omni] -- Cargo's
+# sanctioned extension point. Cargo ignores everything under
+# package.metadata.
+
+# -------------------------------------------------------------------
+# I -- Identity: What IS This File
+# -------------------------------------------------------------------
+
+[package.metadata.omni.I1_core]
+key = "B-L0-foundation-db-cargo"
+format = "@omni code --toml --cargo"
+from = "b-word/seed/code/L0/toml/cargo/Cargo.toml"
+at = "a-02.00"
+
+[package.metadata.omni.I2_family]
+type = "code"
+subtype = "crate-manifest"
+role = "derived"
+structure = "3-block"
+
+[package.metadata.omni.I3_instance]
+file = "Cargo.toml"
+title = "Foundation Database Crate Manifest"
+component = "Build manifest for the foundation database query layer"
+path = "L0-universal/c-hybrid/spec/database/Cargo.toml"
+provides = ["FOUNDATION_DB_CRATE_MANIFEST"]
+brief = "SQLite-backed foundation queries. Depends on rusqlite (bundled) and l0-identity."
+
+[package.metadata.omni.I4_architecture]
+layers = "L0:C, L1:C, L2:C, L3:Go, L4:Go/Rust, L5:C#"
+anchor = "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+
+# -------------------------------------------------------------------
+# C -- Context: What Do I Need to KNOW
+# -------------------------------------------------------------------
+
+[package.metadata.omni.C1_state]
+version = "a-02.00"
+status = "Active"
+created = "2026-02-16"
+updated = "2026-02-19"
+
+[package.metadata.omni.C2_attribution]
+architect = "Seanje Lenox-Wise"
+implementation = "Nova Dawn (CPI-SI)"
+organization = "CreativeWorkzStudio LLC"
+copyright = "2025-2026 CreativeWorkzStudio LLC. All rights reserved."
+
+# "In the beginning God created the heaven and the earth."
+[package.metadata.omni.C3_grounding]
+scripture = "Genesis 1:1 (KJV) -- In the beginning God created the heaven and the earth."
+principle = "The Triangle: Configuration (TOML) -> Data (SQLite) -> Code (queries). The system knows itself."
+anchor = "Every type, operation, scale, book, and dependency -- discoverable by query, not hardcoded."
+
+[package.metadata.omni.C4_dependencies]
+requires = "Rust toolchain (rustc, cargo), workspace Cargo.toml, rusqlite with bundled feature, bereshit-l0-identity"
+consumers = "L3-cpisi/core, tools, future OmniCode code generation, any consumer needing typed foundation access"
+integration = "Part of Cargo workspace. Workspace settings inherited via .workspace = true."
+if_missing = "Crate cannot be built -- no typed access to foundation data, consumers parse SQLite directly"
+
+[package.metadata.omni.C4_dependencies.related]
+parent = "seed/code/L0/toml/cargo/Cargo.toml -- Cargo.toml template"
+children = []
+
+[package.metadata.omni.C4_dependencies.cross_format]
+role = "Cargo.toml is TOML-native -- Cargo's manifest format."
+note = "Pairs with src/lib.rs and src/identity.rs (Rust source). Go counterpart: go/foundation.go."
+
+[package.metadata.omni.C5_intent]
+purpose = "Build manifest for the foundation database query layer -- The Triangle's code vertex"
+core_design = "Workspace inheritance -> minimal deps (rusqlite bundled + l0-identity) -> library-only target"
+philosophy = "L0 reads only. The database is truth materialized from TOML specs. Code queries, never writes."
+
+[package.metadata.omni.C5_intent.key_features]
+queries = "8 table readers: specs, type_families, types, operations, books, ternary_scales, dependencies, web_variants"
+identity = "OmniCode I/C metadata and identity registration via bereshit-l0-identity"
+bundled = "rusqlite with bundled SQLite -- zero system dependencies"
+readonly = "Read-only database access -- foundation is reference data"
+
+[package.metadata.omni.C6_roadmap]
+history = ["0.1.0 (2026-02-16) -- Initial creation", "0.2.0 (2026-02-18) -- 4-block alignment, I/C metadata, identity registration"]
+current = "a-02.00 -- 8 table readers, I/C metadata, identity registration, 22 tests"
+planned = ["Prepared statement caching", "Connection pooling", "Schema version checks"]
+
+[package.metadata.omni.C7_classification]
+tags = ["database", "sqlite", "foundation", "queries", "specs", "types", "operations", "books", "L0"]
+domain = "L0-universal/foundation-db"
+
+[package.metadata.omni._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_identity = ["I4_architecture"]
+extension_context = ["C5_intent", "C6_roadmap", "C7_classification"]
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = ["X2_extension", "X3_troubleshooting", "X4_reference"]
+valid_patterns = ["I{N}_{name}", "C{N}_{name}", "X{N}_{name}", "_{name}"]
+rule = "Metadata in package.metadata.omni. Standard Cargo sections for content."
+
+# ===================================================================
+# END METADATA [END]
+# ===================================================================
+
+
+# ===================================================================
+# CONTENT BLOCK [CONTENT] (continued)
+# ===================================================================
+#
+# [package] is above (TOML ordering constraint). Remaining
+# content sections follow here.
+#
+# Zones:
+#   Cc -- Configurations  Crate identity [package] and targets [lib]/[[bin]]
+#   Co -- Operations      Dependencies, features, lints
+#   Cv -- Validation      Build verification (comments only)
+#
+# Ordering: cargo_convention (package -> targets -> deps -> features -> lints)
+
+# -------------------------------------------------------------------
+# Cc.2 TARGETS -- Library Configuration [DEFAULT]
+# -------------------------------------------------------------------
+#
+# Library crate -- default target. No [lib] section needed because
+# Cargo infers lib from src/lib.rs. No [[bin]] because this is a
+# library, not an executable.
+
+# -------------------------------------------------------------------
+# Co -- Content Operations
+# -------------------------------------------------------------------
+
+# Co.1 DEPENDENCIES -- Crate Dependencies [REQUIRED]
+#
+# Two dependencies:
+#   - rusqlite (bundled SQLite, no system dependency)
+#   - bereshit-l0-identity (OmniCode identity registration)
 [dependencies]
 rusqlite = { workspace = true }
 bereshit-l0-identity = { workspace = true }
 
+[dev-dependencies]
+
+# Co.2 LINTS -- Code Quality Rules [WORKSPACE]
+#
+# Workspace-level lints keep all crates consistent.
 [lints]
 workspace = true
+
+# -------------------------------------------------------------------
+# Cv -- Content Validation (comments only)
+# -------------------------------------------------------------------
+#
+#   cargo check -p bereshit-l0-foundation-db    -- Type-check
+#   cargo build -p bereshit-l0-foundation-db    -- Full build
+#   cargo test  -p bereshit-l0-foundation-db    -- Run tests
+#   cargo clippy -p bereshit-l0-foundation-db   -- Lint check
+#   cargo fmt --check                           -- Format check
+
+# ===================================================================
+# END CONTENT [END]
+# ===================================================================
+
+
+# ===================================================================
+# CLOSING BLOCK [CLOSING]
+# ===================================================================
+
+# X.1 POLICY -- Modification Guidelines [REQUIRED]
+[package.metadata.omni._closing.X1_policy]
+scripture = "Proverbs 20:10 (KJV) -- Divers weights, and divers measures, both of them are alike abomination to the LORD."
+never = ["Add write operations (L0 = read-only)", "Remove bundled SQLite feature (zero system deps)", "Change query result types (downstream consumers depend on field names)"]
+careful = ["Version bumps (public API contract)", "Adding new table readers (must match schema in foundation.db)", "Changing SQL queries (affects result correctness)"]
+safe = ["Documentation updates", "Adding query variations (by_id, by_name)", "Improving error messages", "Adding prepared statement caching"]
+
+# X.2 EXTENSION -- Future Ideas [DEFINED]
+[package.metadata.omni._closing.X2_extension]
+planned = ["Prepared statement caching", "Connection pooling for concurrent access", "Schema version checks against foundation.db"]
+
+# X.3 TROUBLESHOOTING [DEFINED]
+[package.metadata.omni._closing.X3_troubleshooting]
+scripture = "James 1:5 (WEB) -- If any lacks wisdom, let him ask of God."
+workspace_not_found = "Ensure b-word/Cargo.toml exists with [workspace] section and this crate in members"
+path_mismatch = "Workspace member path must match: L0-universal/c-hybrid/spec/database"
+database_not_found = "foundation.db must exist at b-word/data/foundation/database/foundation.db"
+rusqlite_link_error = "Ensure bundled feature is enabled -- workspace dep should set features = ['bundled']"
+
+# X.4 REFERENCE [DEFINED]
+[package.metadata.omni._closing.X4_reference]
+related_files = [
+    "src/lib.rs -- Database query implementation (4-block Rust source)",
+    "src/identity.rs -- OmniCode identity module (PRAGMA + METADATA)",
+    "go/foundation.go -- Go counterpart (same directory)",
+    "b-word/Cargo.toml -- Workspace root",
+    "b-word/data/foundation/database/foundation.db -- The database",
+    "seed/code/L0/toml/cargo/Cargo.toml -- Template this derives from",
+]
+required_sections = ["package", "dependencies"]
+validate = "cargo check -p bereshit-l0-foundation-db && cargo clippy -p bereshit-l0-foundation-db && cargo test -p bereshit-l0-foundation-db"
+
+# X.5 NOTE -- Final Anchor [REQUIRED]
+[package.metadata.omni._closing.X5_note]
+note = "The Triangle complete: Configuration (TOML specs) -> Data (SQLite) -> Code (this crate). Every type, operation, scale, book, and dependency -- discoverable by query, not hardcoded. The system knows itself."
+scripture = "Genesis 1:1 (KJV) -- In the beginning God created the heaven and the earth."
+anchor = "Foundation is read-only truth. The database materializes what the specs define. Code makes it queryable."
+
+# ===================================================================
+# END CLOSING [END]
+# ===================================================================

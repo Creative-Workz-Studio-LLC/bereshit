@@ -10,6 +10,10 @@
 //! Proverbs 3:5-6 — "In all thy ways acknowledge him, and he shall direct thy paths."
 //! The loader acknowledges each file's format before trying to parse it.
 
+//omni:code --rust -library
+//omni:key B-L0-hybrid-config-format-loader
+//omni:version b-03.00
+
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -17,7 +21,7 @@ use std::path::{Path, PathBuf};
 use bereshit_l0_paths as paths;
 use serde::de::DeserializeOwned;
 
-use crate::error::ConfigError;
+use crate::error::{ConfigError, LoadOp};
 use crate::exists;
 use crate::jsonc::strip_jsonc_comments;
 
@@ -61,7 +65,7 @@ fn json_value_to_table(val: serde_json::Value) -> Result<toml::Table, ConfigErro
         toml::Value::Table(t) => Ok(t),
         _ => Err(ConfigError::Load {
             file: String::new(),
-            op: "convert".to_owned(),
+            op: LoadOp::Convert,
             source: "JSON root must be an object".to_owned(),
         }),
     }
@@ -87,7 +91,7 @@ pub fn load_config_file(path: &Path) -> Result<toml::Table, ConfigError> {
     if !exists::file_exists(path) {
         return Err(ConfigError::Load {
             file: name,
-            op: "stat".to_owned(),
+            op: LoadOp::Stat,
             source: "file not found".to_owned(),
         });
     }
@@ -102,12 +106,12 @@ pub fn load_config_file(path: &Path) -> Result<toml::Table, ConfigError> {
         ".toml" => {
             let content = fs::read_to_string(path).map_err(|e| ConfigError::Load {
                 file: name.clone(),
-                op: "read".to_owned(),
+                op: LoadOp::Read,
                 source: e.to_string(),
             })?;
             toml::from_str(&content).map_err(|e| ConfigError::Load {
                 file: name,
-                op: "parse".to_owned(),
+                op: LoadOp::Parse,
                 source: format!("toml: {e}"),
             })
         }
@@ -115,14 +119,14 @@ pub fn load_config_file(path: &Path) -> Result<toml::Table, ConfigError> {
         ".json" | ".jsonc" => {
             let content = fs::read_to_string(path).map_err(|e| ConfigError::Load {
                 file: name.clone(),
-                op: "read".to_owned(),
+                op: LoadOp::Read,
                 source: e.to_string(),
             })?;
             let clean = strip_jsonc_comments(&content);
             let json_val: serde_json::Value =
                 serde_json::from_str(&clean).map_err(|e| ConfigError::Load {
                     file: name.clone(),
-                    op: "parse".to_owned(),
+                    op: LoadOp::Parse,
                     source: e.to_string(),
                 })?;
             json_value_to_table(json_val).map_err(|mut e| {
@@ -135,7 +139,7 @@ pub fn load_config_file(path: &Path) -> Result<toml::Table, ConfigError> {
 
         _ => Err(ConfigError::Load {
             file: name,
-            op: "detect".to_owned(),
+            op: LoadOp::Detect,
             source: format!("unsupported config format {ext:?} — expected .toml, .json, or .jsonc"),
         }),
     }
@@ -167,20 +171,20 @@ pub fn load_toml_file<T: DeserializeOwned>(path: &Path) -> Result<T, ConfigError
     if !exists::file_exists(path) {
         return Err(ConfigError::Load {
             file: name,
-            op: "stat".to_owned(),
+            op: LoadOp::Stat,
             source: "file not found".to_owned(),
         });
     }
 
     let content = fs::read_to_string(path).map_err(|e| ConfigError::Load {
         file: name.clone(),
-        op: "read".to_owned(),
+        op: LoadOp::Read,
         source: e.to_string(),
     })?;
 
     toml::from_str(&content).map_err(|e| ConfigError::Load {
         file: name,
-        op: "parse".to_owned(),
+        op: LoadOp::Parse,
         source: format!("toml: {e}"),
     })
 }
@@ -189,13 +193,13 @@ pub fn load_toml_file<T: DeserializeOwned>(path: &Path) -> Result<T, ConfigError
 pub fn load_toml_bytes<T: DeserializeOwned>(data: &[u8]) -> Result<T, ConfigError> {
     let content = std::str::from_utf8(data).map_err(|e| ConfigError::Load {
         file: "(bytes)".to_owned(),
-        op: "decode".to_owned(),
+        op: LoadOp::Decode,
         source: e.to_string(),
     })?;
 
     toml::from_str(content).map_err(|e| ConfigError::Load {
         file: "(bytes)".to_owned(),
-        op: "parse".to_owned(),
+        op: LoadOp::Parse,
         source: format!("toml: {e}"),
     })
 }
@@ -230,21 +234,21 @@ pub fn load_jsonc_file<T: DeserializeOwned>(path: &Path) -> Result<T, ConfigErro
     if !exists::file_exists(path) {
         return Err(ConfigError::Load {
             file: name,
-            op: "stat".to_owned(),
+            op: LoadOp::Stat,
             source: "file not found".to_owned(),
         });
     }
 
     let content = fs::read_to_string(path).map_err(|e| ConfigError::Load {
         file: name.clone(),
-        op: "read".to_owned(),
+        op: LoadOp::Read,
         source: e.to_string(),
     })?;
 
     let clean = strip_jsonc_comments(&content);
     serde_json::from_str(&clean).map_err(|e| ConfigError::Load {
         file: name,
-        op: "parse".to_owned(),
+        op: LoadOp::Parse,
         source: format!("jsonc: {e}"),
     })
 }
@@ -279,7 +283,7 @@ pub fn find_config(config_name: &str, search_paths: &[PathBuf]) -> Result<PathBu
     }
     Err(ConfigError::Load {
         file: config_name.to_owned(),
-        op: "find".to_owned(),
+        op: LoadOp::Find,
         source: format!("not found in {} search paths", search_paths.len()),
     })
 }
@@ -298,7 +302,7 @@ pub fn find_config_dir(
     }
     Err(ConfigError::Load {
         file: config_name.to_owned(),
-        op: "find".to_owned(),
+        op: LoadOp::Find,
         source: format!("directory not found in {} search paths", search_paths.len()),
     })
 }
@@ -369,4 +373,172 @@ pub fn system_config_paths() -> Vec<PathBuf> {
         claude_home.join("cpi-si").join("system").join("config"),
         claude_home.join("system").join("config"),
     ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::{ConfigError, LoadOp};
+    use crate::test_utils::{test_dir, write_file};
+    use std::fs;
+    use std::path::Path;
+
+    // ── Format-Aware Loading ────────────────────────────────
+
+    #[test]
+    fn test_load_config_file_toml() {
+        let dir = test_dir("fmt-loader-toml");
+        write_file(&dir, "config.toml", "[section]\nkey = \"value\"\n");
+
+        let table = load_config_file(&dir.join("config.toml")).unwrap();
+        let section = table["section"].as_table().expect("expected table");
+        assert_eq!(section["key"].as_str(), Some("value"));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_config_file_jsonc() {
+        let dir = test_dir("fmt-loader-jsonc");
+        write_file(
+            &dir,
+            "config.jsonc",
+            "{\n// comment\n\"name\": \"test\",\n}",
+        );
+
+        let table = load_config_file(&dir.join("config.jsonc")).unwrap();
+        assert_eq!(table["name"].as_str(), Some("test"));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_config_file_json() {
+        let dir = test_dir("fmt-loader-json");
+        write_file(&dir, "config.json", r#"{"count": 42}"#);
+
+        let table = load_config_file(&dir.join("config.json")).unwrap();
+        assert_eq!(table["count"].as_integer(), Some(42));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_config_file_unsupported() {
+        let dir = test_dir("fmt-loader-unsup");
+        write_file(&dir, "config.xml", "<config/>");
+
+        let err = load_config_file(&dir.join("config.xml")).unwrap_err();
+        assert!(matches!(err, ConfigError::Load { op, .. } if op == LoadOp::Detect));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_config_file_missing() {
+        let err = load_config_file(Path::new("/nonexistent/config.toml")).unwrap_err();
+        assert!(matches!(err, ConfigError::Load { op, .. } if op == LoadOp::Stat));
+    }
+
+    // ── TOML Loading ────────────────────────────────────────
+
+    #[test]
+    fn test_load_toml_file_typed() {
+        let dir = test_dir("toml-typed");
+        write_file(
+            &dir,
+            "app.toml",
+            "[app]\nname = \"bereshit\"\nversion = 1\n",
+        );
+
+        #[derive(serde::Deserialize)]
+        struct Outer {
+            app: App,
+        }
+        #[derive(serde::Deserialize)]
+        struct App {
+            name: String,
+            version: i64,
+        }
+
+        let cfg: Outer = load_toml_file(&dir.join("app.toml")).unwrap();
+        assert_eq!(cfg.app.name, "bereshit");
+        assert_eq!(cfg.app.version, 1);
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    // ── JSONC Loading ───────────────────────────────────────
+
+    #[test]
+    fn test_load_jsonc_file_typed() {
+        let dir = test_dir("jsonc-typed");
+        write_file(
+            &dir,
+            "app.jsonc",
+            "{\n  // App config\n  \"name\": \"bereshit\",\n  \"version\": 1,\n}",
+        );
+
+        #[derive(serde::Deserialize)]
+        struct Config {
+            name: String,
+            version: i64,
+        }
+
+        let cfg: Config = load_jsonc_file(&dir.join("app.jsonc")).unwrap();
+        assert_eq!(cfg.name, "bereshit");
+        assert_eq!(cfg.version, 1);
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_load_jsonc_file_missing() {
+        let err =
+            load_jsonc_file::<serde_json::Value>(Path::new("/nonexistent/app.jsonc")).unwrap_err();
+        assert!(matches!(err, ConfigError::Load { op, .. } if op == LoadOp::Stat));
+    }
+
+    #[test]
+    fn test_load_jsonc_file_invalid() {
+        let dir = test_dir("jsonc-invalid");
+        write_file(&dir, "bad.jsonc", "{ not valid json }");
+
+        let err = load_jsonc_file::<serde_json::Value>(&dir.join("bad.jsonc")).unwrap_err();
+        assert!(matches!(err, ConfigError::Load { op, .. } if op == LoadOp::Parse));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    // ── Config Discovery ────────────────────────────────────
+
+    #[test]
+    fn test_find_config() {
+        let dir = test_dir("find-cfg");
+        write_file(&dir, "a/settings.toml", "[s]\nv=1");
+        write_file(&dir, "b/settings.toml", "[s]\nv=2");
+
+        let search = vec![dir.join("a"), dir.join("b")];
+        let found = find_config("settings.toml", &search).unwrap();
+        // Should find the first one (a/)
+        assert!(found.starts_with(dir.join("a")));
+
+        // Not found
+        let err = find_config("nope.toml", &search).unwrap_err();
+        assert!(matches!(err, ConfigError::Load { op, .. } if op == LoadOp::Find));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_find_config_dir() {
+        let dir = test_dir("find-cfg-dir");
+        write_file(&dir, "loc/app.toml", "[a]\nv=1");
+
+        let search = vec![dir.join("loc")];
+        let found_dir = find_config_dir("app.toml", &search).unwrap();
+        assert_eq!(found_dir, dir.join("loc"));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
 }

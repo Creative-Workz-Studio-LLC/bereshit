@@ -1,0 +1,1 @@
+SELECT id, spec_key, depends_on, relation FROM dependencies WHERE spec_key = ? ORDER BY relation, depends_on

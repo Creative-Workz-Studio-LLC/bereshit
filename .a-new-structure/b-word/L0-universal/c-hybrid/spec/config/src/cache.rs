@@ -111,3 +111,64 @@ pub(crate) fn has_index() -> bool {
     let guard = CACHE.index.read().unwrap_or_else(|e| e.into_inner());
     guard.is_some()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::{ConfigFile, IndexManifest, SystemEntry};
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_cache_full_lifecycle() {
+        // Phase 1: Clear and verify empty
+        clear_all();
+        assert!(!has_index(), "index should be empty after clear");
+        assert_eq!(spec_count(), 0, "specs should be empty after clear");
+        assert!(get_index().is_none());
+        assert!(get_spec("nonexistent").is_none());
+
+        // Phase 2: Index round-trip
+        let manifest = IndexManifest {
+            systems: vec![SystemEntry {
+                name: "math".into(),
+                path: "math".into(),
+                order: 0,
+                specs: vec![],
+            }],
+        };
+        put_index(manifest);
+        assert!(has_index());
+
+        let cached = get_index().unwrap();
+        assert_eq!(cached.systems.len(), 1);
+        assert_eq!(cached.systems[0].name, "math");
+
+        // Phase 3: Spec round-trip
+        let config = ConfigFile {
+            name: "file.toml".into(),
+            path: PathBuf::from("test/file.toml"),
+            data: toml::Table::new(),
+            keys: vec!["section".into()],
+            pragma: None,
+            metadata: None,
+        };
+        put_spec("test/file.toml".into(), config);
+        assert_eq!(spec_count(), 1);
+
+        let cached_spec = get_spec("test/file.toml").unwrap();
+        assert_eq!(cached_spec.name, "file.toml");
+        assert_eq!(cached_spec.keys, vec!["section"]);
+
+        // Phase 4: Clones, not references
+        let mut copy1 = get_spec("test/file.toml").unwrap();
+        let copy2 = get_spec("test/file.toml").unwrap();
+        copy1.keys.push("mutated".into());
+        // copy2 should be unaffected by mutation of copy1
+        assert_eq!(copy2.keys, vec!["section"]);
+
+        // Phase 5: Clear wipes both layers
+        clear_all();
+        assert!(!has_index());
+        assert_eq!(spec_count(), 0);
+    }
+}

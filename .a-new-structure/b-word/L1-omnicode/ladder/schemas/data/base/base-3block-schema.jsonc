@@ -19,7 +19,7 @@
     "_P1_tag": "P.1 CORE — Identity [CORE]",
     "_P1_key": "B-definitions-omni-base-3block-schema",
     "_P1_from": "b-word/seed/data/json/config.jsonc",
-    "_P1_at": "a-02.50",
+    "_P1_at": "a-03.00",
 
     // P.2 FAMILY — Classification
     "_P2_FAMILY": "─────────────────────────────────────────────────────────────",
@@ -35,7 +35,7 @@
     "_P3_component": "definitions",
     "_P3_layer": "b-word/L1-omnicode/ladder/schemas",
     "_P3_includes": "none",
-    "_P3_provides": ["BASE_3BLOCK_SCHEMA", "SHARED_DEFS"],
+    "_P3_provides": ["BASE_3BLOCK_SCHEMA", "SHARED_DEFS", "PRAGMA_ROUTING", "FORMAT_REGISTRY", "FORM_REGISTRY"],
 
     // P.4 ARCHITECTURE — Scaling Context
     "_P4_ARCH": "─────────────────────────────────────────────────────────────",
@@ -47,7 +47,7 @@
     "_P5_SUMMARY": "─────────────────────────────────────────────────────────────",
     "_P5_tag": "P.5 SUMMARY — Human Identity [SUMMARY]",
     "_P5_title": "Base 3-Block Schema",
-    "_P5_brief": "Format-independent foundation for OmniCode 3-block structure. Defines shared $defs using unified I/C metadata (I1-I4 identity, C1-C7 context), content Cc/Co/Cv zones, and X1-X5 closing with field-level requirements.",
+    "_P5_brief": "Format-independent foundation for OmniCode 3-block structure. Provides pragma_routing (inner pragma), format_registry (all 3-block formats), form_registry (bare-bone + Cargo forms with active/reserved sections). Defines shared $defs using unified I/C metadata (I1-I4 identity, C1-C7 context), content Cc/Co/Cv zones, and X1-X5 closing with field-level requirements.",
 
     // ═══════════════════════════════════════════════════════════════
     // END PRAGMA [END]
@@ -75,10 +75,10 @@
 
     // M.2 STATE
     "_M2_state": {
-        "version": "a-02.50",
+        "version": "a-03.00",
         "status": "Active",
         "created": "2026-02-13",
-        "updated": "2026-02-16"
+        "updated": "2026-02-20"
     },
 
     // M.3 ATTRIBUTION
@@ -164,6 +164,232 @@
     "_Co_tag": "Co — Content Operations [OPS]",
 
     "$defs": {
+
+        // ═══════════════════════════════════════════════════════
+        // 1. PRAGMA ROUTING — The inner pragma
+        // ═══════════════════════════════════════════════════════
+        //
+        // How #!omni parameters route to the correct schema chain.
+        // This IS the inner pragma — the routing table from file
+        // identity to validation rules.
+
+        "pragma_routing": {
+            "type": "object",
+            "description": "How the #!omni pragma line routes to the correct schema chain for 3-block data files. The inner pragma — the routing table that maps file identity to validation.",
+
+            "syntax": "#!omni {type} --{format} [--{derivation}] [-{form}]",
+            "example_data": "# #!omni data --toml",
+            "example_derived": "# #!omni code --toml --cargo --library",
+            "example_template": "# #!omni template --toml --cargo --bare-bone",
+
+            "parameters": {
+                "type": {
+                    "position": 1,
+                    "purpose": "Block structure selection — which architectural pattern",
+                    "values": {
+                        "code":     { "structure": "4-block", "base_schema": "code/base/base-4block-schema.jsonc" },
+                        "data":     { "structure": "3-block", "base_schema": "data/base/base-3block-schema.jsonc" },
+                        "document": { "structure": "5-block", "base_schema": "doc/base/base-5block-schema.jsonc" }
+                    }
+                },
+                "format": {
+                    "position": 2,
+                    "prefix": "--",
+                    "purpose": "Format-specific schema — which syntax rules, key naming, comment style",
+                    "note": "Routes to format schema within the block type directory. See format_registry for available formats."
+                },
+                "derivation": {
+                    "position": "2+",
+                    "prefix": "--",
+                    "purpose": "Host format derivation — remaps table paths for host-format extension points (Cargo, npm, pyproject)",
+                    "note": "Optional. When present, overrides standard 3-block layout with derivation-specific table structure."
+                },
+                "form": {
+                    "position": 3,
+                    "prefix": "--",
+                    "purpose": "Subtype/variant — which sections are required/reserved for this form",
+                    "note": "Routes to form config within format. See form_registry for available forms."
+                }
+            },
+
+            "routing_chain": [
+                "1. type → block structure (3/4/5-block) → base schema",
+                "2. format → format-specific schema → syntax rules, key naming, comment style",
+                "3. derivation → host format layout → required/defined/reserved host sections, table remapping",
+                "4. form → form config → which sections are active vs reserved for this variant"
+            ],
+
+            "template_variant": {
+                "keyword": "template",
+                "replaces": "type",
+                "syntax": "#!omni template --{format} [--{derivation}] [-{form}]",
+                "note": "Templates use 'template' instead of type. The form template is a usable schema — all values describe the template ITSELF."
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // 2. FORMAT REGISTRY — Master list of format schemas
+        // ═══════════════════════════════════════════════════════
+        //
+        // Every 3-block format schema that inherits from this base.
+        // Each format maps the same concepts to different syntax.
+
+        "format_registry": {
+            "type": "object",
+            "description": "Master register of all 3-block format schemas that inherit from this base. The base defines WHAT each block contains; format schemas define HOW to represent it.",
+
+            "formats": {
+                "toml": {
+                    "schema": "data/format/toml-3block-schema.jsonc",
+                    "linter": "c-tov/cws-struct/lib/handlers/toml.ts",
+                    "comment_syntax": "#",
+                    "identity_construct": "[_metadata] tables (generic) or [package.metadata.omni] tables (Cargo)",
+                    "status": "active",
+                    "available_derivations": ["cargo", "compiler"],
+                    "available_forms": ["bare-bone", "library", "executable"],
+                    "templates": "b-word/seed/data/L0/toml/"
+                },
+                "json": {
+                    "schema": "data/format/json-3block-schema.jsonc",
+                    "linter": null,
+                    "comment_syntax": "// (JSONC only)",
+                    "identity_construct": "_P{N}, _M{N} prefix keys",
+                    "status": "active",
+                    "available_derivations": [],
+                    "available_forms": ["bare-bone", "config", "schema"],
+                    "templates": "b-word/seed/data/L0/json/"
+                },
+                "yaml": {
+                    "schema": null,
+                    "status": "planned"
+                },
+                "env": {
+                    "schema": null,
+                    "comment_syntax": "#",
+                    "status": "planned"
+                }
+            },
+
+            "parent_schema": {
+                "sibling": "code/base/base-4block-schema.jsonc",
+                "relationship": "This 3-block base is the sibling of the 4-block base — shared I/C metadata vocabulary, different block architecture",
+                "shared": "I/C metadata definitions (I1-I4, C1-C7), closing documentation (X1-X5), shared types"
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // 3. FORM REGISTRY — Subtypes with bare-bone awareness
+        // ═══════════════════════════════════════════════════════
+        //
+        // All recognized 3-block form variants. bare-bone is the
+        // foundation — every other form is bare-bone plus promoted
+        // sections. The cheat code: cp bare-bone → change pragma →
+        // promote what you need → structurally complete day one.
+
+        "form_registry": {
+            "type": "object",
+            "description": "All 3-block form variants. bare-bone defines the absolute minimum. Forms build ON TOP by promoting Reserved Omission sections. Completeness check: active + reserved = bare-bone's full set.",
+
+            "derivation_principle": "bare-bone is the blueprint. Forms are the houses. cp bare-bone → change pragma → promote sections → structurally complete.",
+
+            "forms": {
+
+                "bare_bone": {
+                    "purpose": "Absolute minimum valid 3-block data file — foundation all forms derive from",
+                    "is_foundation": true,
+
+                    "metadata": {
+                        "active": ["I1_core", "I2_family", "I3_instance", "C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"],
+                        "reserved": ["I4_architecture", "C5_intent", "C6_roadmap", "C7_classification"],
+                        "reserved_omission_required": true
+                    },
+                    "content": {
+                        "active": ["identity", "_validation"],
+                        "reserved": ["settings", "resources", "behavior", "integrations"],
+                        "reserved_omission_required": true
+                    },
+                    "closing": {
+                        "active": ["X1_policy", "X5_note"],
+                        "reserved": ["X2_extension", "X3_troubleshooting", "X4_reference"],
+                        "reserved_omission_required": true
+                    },
+
+                    "note": "The cheat code — structurally complete before a single line of real data. Boundaries before content (badal)."
+                },
+
+                "cargo_library": {
+                    "purpose": "Cargo.toml for library crate — exposes public API, holds crate/package identity",
+                    "derivation": "cargo",
+                    "content_ordering": "cargo_convention",
+
+                    "promotes_from_bare_bone": {
+                        "metadata": ["I4_architecture", "C5_intent", "C6_roadmap", "C7_classification"],
+                        "content": [],
+                        "closing": ["X2_extension", "X3_troubleshooting", "X4_reference"]
+                    },
+
+                    "host_sections": {
+                        "required": {
+                            "package": "Crate identity — name, version, edition. MUST exist.",
+                            "dependencies": "Crate dependencies. Most libraries need at least one."
+                        },
+                        "defined": {
+                            "dev-dependencies": "Test/build dependencies. Expected for testable crates.",
+                            "lints": "Code quality rules. Expected for workspace-consistent linting.",
+                            "features": "Feature flags. Expected for configurable crates."
+                        },
+                        "reserved": {
+                            "bin": "Binary target [[bin]] — reserved for executable form. Libraries expose lib, not binaries.",
+                            "workspace": "Workspace root [workspace] — reserved for workspace manifests, not member crates."
+                        }
+                    },
+
+                    "omni_metadata": {
+                        "location": "package.metadata.omni",
+                        "required": "Full I1-I4, C1-C7, _contract — Cargo.toml IS the crate identity, metadata must be complete",
+                        "note": "Cargo's sanctioned extension point. Cargo ignores everything under package.metadata."
+                    },
+
+                    "note": "Library Cargo.toml promotes ALL metadata sections to required because the manifest IS the crate's identity document."
+                },
+
+                "cargo_executable": {
+                    "purpose": "Cargo.toml for binary crate — orchestrates via main() entry point",
+                    "derivation": "cargo",
+                    "content_ordering": "cargo_convention",
+
+                    "promotes_from_bare_bone": {
+                        "metadata": ["I4_architecture", "C5_intent", "C6_roadmap", "C7_classification"],
+                        "content": [],
+                        "closing": ["X2_extension", "X3_troubleshooting", "X4_reference"]
+                    },
+
+                    "host_sections": {
+                        "required": {
+                            "package": "Crate identity — MUST exist.",
+                            "bin": "Binary target [[bin]] — executables need at least one binary target."
+                        },
+                        "defined": {
+                            "dependencies": "Crate dependencies. Most binaries depend on libraries.",
+                            "dev-dependencies": "Test/build dependencies.",
+                            "lints": "Code quality rules.",
+                            "features": "Feature flags."
+                        },
+                        "reserved": {
+                            "workspace": "Workspace root [workspace] — reserved for workspace manifests."
+                        }
+                    },
+
+                    "omni_metadata": {
+                        "location": "package.metadata.omni",
+                        "required": "Full I1-I4, C1-C7, _contract",
+                        "note": "Same metadata requirements as library — executable Cargo.toml is also a full identity document."
+                    },
+
+                    "note": "Executable Cargo.toml requires [[bin]] (which library reserves) and puts [dependencies] as defined (still important, but not structurally required)."
+                }
+            }
+        },
 
         // ═══════════════════════════════════════════════════════
         // SHARED TYPES — Reusable patterns
@@ -630,7 +856,8 @@
         "Content-based health scoring — sections as containers with measured completeness"
     ],
     "_X2_delivered": [
-        "4-block base schema → base-4block-schema.jsonc (2026-02-17)"
+        "4-block base schema → base-4block-schema.jsonc (2026-02-17)",
+        "pragma_routing + format_registry + form_registry → 3-block base (2026-02-20)"
     ],
 
     // X.3 TROUBLESHOOTING [DEFINED]

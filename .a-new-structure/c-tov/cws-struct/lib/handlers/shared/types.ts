@@ -88,13 +88,10 @@ export interface BlockRange {
 export interface SubsectionDef {
   tag: string;
   pattern: RegExp;
-}
-
-/** A single entry in the CLOSING zone ordering table. */
-export interface ClosingZoneDef {
-  tag: string;
-  kind: "code" | "doc";
-  pattern: RegExp;
+  /** Regex matching ONLY alias names (not canonical). When present and
+   *  `pattern` matches, test this regex to detect alias usage and
+   *  emit info suggesting the canonical name. */
+  aliases?: RegExp;
 }
 
 // ---------------------------------------------------------------------------
@@ -167,33 +164,15 @@ export const BLOCK_SEPARATOR_WIDTH = 76;
 export const SUBSECTION_SEPARATOR_WIDTH = 74;
 
 // ---------------------------------------------------------------------------
-// I/C field requirements — Identity (I1-I4) and Context (C1-C7)
+// I/C field requirements — now fully schema-driven
 // ---------------------------------------------------------------------------
-
-/**
- * PRAGMA carries Identity (I1-I4).
- * Keys match the section prefix used in vars/statics (e.g., "I1" not "I1_core").
- */
-export const PRAGMA_FIELD_REQUIREMENTS: Record<string, { required: string[]; defined: string[] }> = {
-  I1: { required: ["key", "format", "from", "at"], defined: [] },
-  I2: { required: ["type", "structure"], defined: ["subtype", "role"] },
-  I3: { required: ["file", "title"], defined: ["component", "path", "provides", "brief"] },
-  I4: { required: [], defined: ["layer", "position", "pattern"] },
-};
-
-/**
- * METADATA carries Context (C1-C7).
- * Keys match the section prefix used in vars/statics (e.g., "C1" not "C1_lifecycle").
- */
-export const METADATA_FIELD_REQUIREMENTS: Record<string, { required: string[]; defined: string[] }> = {
-  C1: { required: ["version", "status"], defined: ["created", "updated"] },
-  C2: { required: ["organization"], defined: ["architect", "implementation", "copyright"] },
-  C3: { required: ["scripture"], defined: ["principle", "anchor"] },
-  C4: { required: ["requires", "consumers"], defined: ["integration", "if_missing"] },
-  C5: { required: [], defined: ["purpose", "philosophy"] },
-  C6: { required: [], defined: ["current", "planned", "limitations"] },
-  C7: { required: [], defined: ["tags", "category", "domain", "paradigm"] },
-};
+//
+// Formerly contained hardcoded PRAGMA_FIELD_REQUIREMENTS and
+// METADATA_FIELD_REQUIREMENTS. Both migrated to schema-driven values:
+//   Go handler: _goRules.pragmaFieldRequirements / .metadataFieldRequirements
+//   Rust handler: _rustRules.pragmaFieldRequirements / .metadataFieldRequirements
+// Source of truth: code-schema.ts → loadCodeRules()
+//
 
 // ---------------------------------------------------------------------------
 // Content validation — field value patterns and known values
@@ -302,74 +281,14 @@ export const BODY_SUBSECTION_PATTERN = /^\/\/\s+(\d+)\.?\s+(.+)/;
 export const BODY_SUBSECTION_LEGACY = /^\/\/\s+§(\d+)\s*[—–-]\s*(.+)/;
 
 // ---------------------------------------------------------------------------
-// CLOSING zone definitions — Cv/Ce/Cc code zones + X1-X6 doc sections
-// ---------------------------------------------------------------------------
-
-/**
- * Canonical CLOSING zone ordering.
- * Code zones must precede documentation sections.
- * Within each tier, zones appear in this order.
- */
-export const CLOSING_ZONES: readonly ClosingZoneDef[] = [
-  // Code zones (must come first)
-  { tag: "Cv", kind: "code", pattern: /^\/\/\s+Cv\s+[—–-]/ },
-  { tag: "Ce", kind: "code", pattern: /^\/\/\s+Ce\s+[—–-]/ },
-  { tag: "Cc", kind: "code", pattern: /^\/\/\s+Cc\s+[—–-]/ },
-  // Documentation sections (must come after all code zones)
-  { tag: "X1", kind: "doc", pattern: /^\/\/\s+X1[:\s]/ },
-  { tag: "X2", kind: "doc", pattern: /^\/\/\s+X2[:\s]/ },
-  { tag: "X3", kind: "doc", pattern: /^\/\/\s+X3[:\s]/ },
-  { tag: "X4", kind: "doc", pattern: /^\/\/\s+X4[:\s]/ },
-  { tag: "X5", kind: "doc", pattern: /^\/\/\s+X5[:\s]/ },
-  { tag: "X6", kind: "doc", pattern: /^\/\/\s+X6[:\s]/ },
-];
-
-// ---------------------------------------------------------------------------
-// CLOSING documentation requirements — X1-X6 zone structure
-// ---------------------------------------------------------------------------
-
-/** Required fields within a CLOSING documentation section. */
-export interface ClosingDocRequirement {
-  tag: string;
-  required: boolean;
-  fields?: { required: string[]; defined: string[] };
-}
-
-/**
- * CLOSING documentation section requirements.
- * Source: base-4block-schema.jsonc $defs.closing_documentation
- *
- * X1 (Policy) and X5 (Note) are required. Others are optional.
- * X6 (Template) is template-only — derived files should not have it.
- */
-export const CLOSING_DOC_REQUIREMENTS: readonly ClosingDocRequirement[] = [
-  { tag: "X1", required: true, fields: { required: ["never", "careful", "safe"], defined: ["scripture"] } },
-  { tag: "X2", required: false },
-  { tag: "X3", required: false },
-  { tag: "X4", required: false },
-  { tag: "X5", required: true, fields: { required: ["note", "scripture"], defined: ["anchor"] } },
-  { tag: "X6", required: false },
-];
-
-// ---------------------------------------------------------------------------
-// CLOSING zone content detection patterns
-// ---------------------------------------------------------------------------
-
-/** Patterns to detect X1 policy fields in CLOSING comments. */
-export const X1_FIELD_PATTERNS: Record<string, RegExp> = {
-  never:   /^\/\/\s*(?:Never|NEVER)\s*:/i,
-  careful: /^\/\/\s*(?:Careful|CAREFUL)\s*:/i,
-  safe:    /^\/\/\s*(?:Safe|SAFE)\s*:/i,
-};
-
-/** Patterns to detect X5 note fields in CLOSING comments. */
-export const X5_FIELD_PATTERNS: Record<string, RegExp> = {
-  note:      /^\/\/\s*(?:Note|NOTE)\s*:/i,
-  scripture: /^\/\/\s*(?:Scripture|SCRIPTURE)\s*:/i,
-};
-
-// ---------------------------------------------------------------------------
 // Scaling thresholds — block size warnings
+// ---------------------------------------------------------------------------
+//
+// CLOSING zone definitions, documentation requirements, and field patterns
+// are now entirely schema-driven via code-schema.ts (SchemaClosingZone,
+// SchemaClosingDocReq, closingData.fieldPatterns). The hardcoded constants
+// CLOSING_ZONES, CLOSING_DOC_REQUIREMENTS, X1_FIELD_PATTERNS, X5_FIELD_PATTERNS,
+// ClosingZoneDef, and ClosingDocRequirement were removed 2026-02-19.
 // ---------------------------------------------------------------------------
 
 /**
@@ -382,6 +301,114 @@ export const SCALING_THRESHOLDS = {
   BODY: 500,
 } as const;
 
+// ---------------------------------------------------------------------------
+// LanguageAdapter — the generalization interface
+// ---------------------------------------------------------------------------
+
+/**
+ * Language-specific adapter for 4-block code handlers.
+ *
+ * Captures what differs between Go and Rust (and future C, TypeScript, etc.)
+ * while everything else is shared. A future GenericCode4BlockHandler would
+ * take a LanguageAdapter + Code4BlockRules and produce a full handler.
+ *
+ * Today: adapters are defined alongside existing handlers. The handlers
+ * still use their own functions directly. The adapter packages them for
+ * a future that's open by design:
+ *
+ *   new format = new LanguageAdapter + new schema. Not new engine code.
+ */
+export interface LanguageAdapter {
+  /** Format name — matches schema key and handler registration. */
+  readonly format: import("../../foundation/code-schema.ts").CodeFormat;
+
+  /** File extensions this language handles (e.g., [".go"], [".rs"]). */
+  readonly extensions: readonly string[];
+
+  /** Known //omni:code directive patterns (e.g., "--go -library"). */
+  readonly knownCodeDirectives: readonly string[];
+
+  /**
+   * Classify a raw source line into a content kind string.
+   *
+   * Go: "package_decl", "import_decl", "func_decl", etc.
+   * Rust: "use_decl", "struct_decl", "impl_block", etc.
+   *
+   * The returned string is used for content placement checking —
+   * each kind maps to a block and/or subsection via the schema's
+   * content_kind_mapping.
+   */
+  classifyLine(rawLine: string): string;
+
+  /**
+   * Parse identity fields from a structured variable/static declaration.
+   *
+   * Go: [][2]string slice syntax — `Pragma = [][2]string{ {"I1.key", "..."}, ... }`
+   * Rust: &[(&str, &str)] static syntax — `static PRAGMA: &[(&str, &str)] = &[("I1.key", "...")];`
+   */
+  parseIdentityFields(lines: string[], varName: string): IdentityField[];
+
+  /**
+   * Find //omni: directives in the file.
+   *
+   * Each language has different scanning rules — Go stops at block markers
+   * or code, Rust stops at block markers, use statements, or pub items.
+   * Returns a Map<directiveName, DirectiveInfo>.
+   */
+  findOmniDirectives(lines: string[]): Map<string, DirectiveInfo>;
+
+  /**
+   * Find the test zone within a line range.
+   *
+   * Go: looks for `func Test...` declarations.
+   * Rust: looks for `#[cfg(test)]` module attribute.
+   *
+   * Returns null if no test zone found in the range.
+   */
+  findTestZone(
+    lines: string[],
+    rangeStart: number,
+    rangeEnd: number,
+  ): { start: number; end: number } | null;
+
+  /**
+   * Find the main function zone within a line range.
+   *
+   * Go: looks for `func main()`.
+   * Rust: looks for `fn main()`.
+   *
+   * Returns null if no main zone found in the range.
+   */
+  findMainZone(
+    lines: string[],
+    rangeStart: number,
+    rangeEnd: number,
+  ): { start: number; end: number } | null;
+
+  /**
+   * Enrich SETUP subsection patterns with legacy alternatives.
+   *
+   * Go: adds `//--- X.N` prefixes for backward compatibility.
+   * Rust: returns subsections as-is (no legacy patterns).
+   *
+   * If undefined, subsections are used directly from the schema.
+   */
+  enrichSubsectionPatterns?(subsections: SubsectionDef[]): SubsectionDef[];
+
+  /**
+   * Build language-specific context fields.
+   *
+   * Go: `{ isDocGo: boolean, isTestFile: boolean }`
+   * Rust: `{ isCrateRoot: boolean, isModuleFile: boolean }`
+   *
+   * These are merged into the handler's file context.
+   */
+  buildContextExtras(
+    filePath: string,
+    lines: string[],
+  ): Record<string, unknown>;
+}
+
 // ============================================================================
 // CLOSING
 // ============================================================================
@@ -389,6 +416,9 @@ export const SCALING_THRESHOLDS = {
 // Shared types and constants — the single source of truth for what 4-block
 // structure looks like. When go.ts and rust.ts both need the same interface
 // or constant, it lives here. DRY without abstraction gymnastics.
+//
+// The LanguageAdapter interface opens the generalization path: new format =
+// new adapter + new schema. The engine doesn't need to change.
 //
 // "One Lord, one faith, one baptism." — Ephesians 4:5
 // ============================================================================

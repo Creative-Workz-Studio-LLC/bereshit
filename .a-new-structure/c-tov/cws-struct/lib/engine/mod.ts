@@ -36,6 +36,10 @@ export {
   detectFormat,
 } from "./registry.ts";
 
+// Fill engine (schema-driven file generation)
+export type { FillContext } from "./fill.ts";
+export { generateFile, generateFileText } from "./fill.ts";
+
 // ============================================================================
 // CLOSING
 // ============================================================================

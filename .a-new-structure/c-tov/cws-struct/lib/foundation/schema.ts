@@ -22,7 +22,7 @@
 // ============================================================================
 
 import { parse as parseJsonc } from "@std/jsonc";
-import { fromFileUrl, dirname, join } from "@std/path";
+import { getDefaultPipeline } from "./schema-pipeline.ts";
 
 // ---------------------------------------------------------------------------
 // Types — mirrors validation_contract structure in the schema
@@ -73,6 +73,43 @@ export interface ValidationContract {
   closing: ClosingContract;
 }
 
+// ---------------------------------------------------------------------------
+// Pragma taxonomy types — form option tagging
+// ---------------------------------------------------------------------------
+
+/** Normalization layout for a derivation — how it remaps standard 3-block tables. */
+export interface DerivationNormalization {
+  source: string;        // e.g., "package.metadata.omni"
+  metadataFrom: string;  // e.g., "All keys except _closing"
+  closingFrom: string;   // e.g., "package.metadata.omni._closing"
+  contentSkip: boolean;  // true = skip standard _content check
+}
+
+/** Section requirement for a derivation. */
+export interface DerivationSection {
+  severity: string;
+  purpose: string;
+}
+
+/** Layout definition for a single derivation (e.g., cargo, compiler). */
+export interface DerivationLayout {
+  purpose: string;
+  normalization: DerivationNormalization | null;
+  requiredSections: Record<string, DerivationSection>;
+  definedSections: Record<string, DerivationSection>;
+}
+
+/** Schema-declared pragma taxonomy — types, formats, derivations, forms. */
+export interface PragmaTaxonomy {
+  validTypes: string[];
+  baseType: string;
+  format: string;
+  knownDerivations: Set<string>;
+  knownForms: Set<string>;
+  allKnownArgs: Set<string>;
+  derivationLayouts: Record<string, DerivationLayout>;
+}
+
 /** Derived rules — processed from the raw contract for direct use by the linter. */
 export interface DerivedRules {
   /** Raw contract for reference. */
@@ -104,14 +141,17 @@ export interface DerivedRules {
   metadataFields: Record<string, FieldRequirement>;
   contentFields: Record<string, FieldRequirement>;
   closingFields: Record<string, FieldRequirement>;
+
+  // Pragma taxonomy — form option tagging (types, derivations, forms)
+  pragmaTaxonomy: PragmaTaxonomy;
 }
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Relative path from this file to the schema. */
-const SCHEMA_REL_PATH = "../../../../b-word/L1-omnicode/ladder/schemas/data/format/toml-3block-schema.jsonc";
+/** Schema ID for the TOML 3-block schema within the pipeline's schema tree. */
+const TOML_SCHEMA_ID = "data/format/toml-3block-schema.jsonc";
 
 // ============================================================================
 // BODY
@@ -161,6 +201,115 @@ function compilePattern(patternStr: string): RegExp {
 }
 
 /**
+ * Extract pragma taxonomy from the schema's pragma_taxonomy section.
+ * Returns schema-declared types, derivations, forms, and derivation layouts.
+ * Falls back to sensible defaults if the section is missing (backwards compat).
+ */
+function extractPragmaTaxonomy(
+  // deno-lint-ignore no-explicit-any
+  parsed: Record<string, any>,
+): PragmaTaxonomy {
+  // deno-lint-ignore no-explicit-any
+  const pt = parsed["pragma_taxonomy"] as Record<string, any> | undefined;
+
+  if (!pt) {
+    // Backwards compatibility — return hardcoded defaults if schema lacks section
+    return {
+      validTypes: ["template", "data", "code"],
+      baseType: "data",
+      format: "toml",
+      knownDerivations: new Set(["compiler", "cargo"]),
+      knownForms: new Set(["library", "executable", "test"]),
+      allKnownArgs: new Set(["compiler", "cargo", "library", "executable", "test"]),
+      derivationLayouts: {},
+    };
+  }
+
+  const validTypes = Array.isArray(pt["valid_types"])
+    ? (pt["valid_types"] as string[])
+    : ["template", "data", "code"];
+  const baseType = (pt["base_type"] as string) ?? "data";
+  const format = (pt["format"] as string) ?? "toml";
+
+  // deno-lint-ignore no-explicit-any
+  const argTax = pt["arg_taxonomy"] as Record<string, any> | undefined;
+  // deno-lint-ignore no-explicit-any
+  const derivationsObj = argTax?.["derivations"] as Record<string, any> | undefined;
+  // deno-lint-ignore no-explicit-any
+  const formsObj = argTax?.["forms"] as Record<string, any> | undefined;
+
+  const knownDerivations = new Set(
+    Array.isArray(derivationsObj?.["known"]) ? (derivationsObj["known"] as string[]) : [],
+  );
+  const knownForms = new Set(
+    Array.isArray(formsObj?.["known"]) ? (formsObj["known"] as string[]) : [],
+  );
+  const allKnownArgs = new Set([...knownDerivations, ...knownForms]);
+
+  // Extract derivation layouts
+  // deno-lint-ignore no-explicit-any
+  const layoutsRaw = pt["derivation_layouts"] as Record<string, any> | undefined;
+  const derivationLayouts: Record<string, DerivationLayout> = {};
+
+  if (layoutsRaw) {
+    for (const [key, val] of Object.entries(layoutsRaw)) {
+      if (key === "note" || typeof val !== "object" || val === null) continue;
+      // deno-lint-ignore no-explicit-any
+      const entry = val as Record<string, any>;
+      // deno-lint-ignore no-explicit-any
+      const normRaw = entry["normalization"] as Record<string, any> | null;
+
+      derivationLayouts[key] = {
+        purpose: (entry["purpose"] as string) ?? "",
+        normalization: normRaw
+          ? {
+              source: (normRaw["source"] as string) ?? "",
+              metadataFrom: (normRaw["metadata_from"] as string) ?? "",
+              closingFrom: (normRaw["closing_from"] as string) ?? "",
+              contentSkip: (normRaw["content_skip"] as boolean) ?? false,
+            }
+          : null,
+        requiredSections: extractSections(entry["required_sections"]),
+        definedSections: extractSections(entry["defined_sections"]),
+      };
+    }
+  }
+
+  return {
+    validTypes,
+    baseType,
+    format,
+    knownDerivations,
+    knownForms,
+    allKnownArgs,
+    derivationLayouts,
+  };
+}
+
+/**
+ * Extract section requirements from a derivation layout.
+ * Each entry is { severity, purpose }.
+ */
+function extractSections(
+  // deno-lint-ignore no-explicit-any
+  raw: Record<string, any> | undefined,
+): Record<string, DerivationSection> {
+  if (!raw || typeof raw !== "object") return {};
+  const result: Record<string, DerivationSection> = {};
+  for (const [key, val] of Object.entries(raw)) {
+    if (typeof val === "object" && val !== null) {
+      // deno-lint-ignore no-explicit-any
+      const entry = val as Record<string, any>;
+      result[key] = {
+        severity: (entry["severity"] as string) ?? "info",
+        purpose: (entry["purpose"] as string) ?? "",
+      };
+    }
+  }
+  return result;
+}
+
+/**
  * Normalize a field_requirements entry from the schema.
  * Ensures `defined` is always an array (schema may omit it).
  */
@@ -181,15 +330,7 @@ function normalizeFieldReq(
 // Schema resolution
 // ---------------------------------------------------------------------------
 
-/**
- * Resolve the absolute path to the schema file.
- * Uses import.meta.url to find this file's location, then navigates
- * relative to it.
- */
-function resolveSchemaPath(): string {
-  const thisDir = dirname(fromFileUrl(import.meta.url));
-  return join(thisDir, SCHEMA_REL_PATH);
-}
+// (Schema resolution moved to pipeline — getDefaultPipeline() handles discovery.)
 
 // ---------------------------------------------------------------------------
 // Loader — lazy, cached
@@ -198,64 +339,45 @@ function resolveSchemaPath(): string {
 /** Module-level cache. Loaded once, used for all subsequent lint calls. */
 let cached: DerivedRules | null = null;
 
+// ---------------------------------------------------------------------------
+// 1. Pure parse — no I/O, no caching, no side effects
+// ---------------------------------------------------------------------------
+
 /**
- * Load and process the TOML 3-block schema.
- * First call reads from disk and caches. Subsequent calls return cache.
+ * Parse raw JSONC text of a TOML 3-block schema into linter-ready DerivedRules.
  *
- * Error handling:
- * - Schema file missing → clear error with path and resolution hint
- * - Schema file corrupt → clear error with parse details
- * - Schema missing required sections → clear error identifying what's absent
- * - All errors include the schema path for debugging
+ * This is the pure computation layer — takes text, returns rules. No disk
+ * access, no caching, no side effects. The I/O wrapper (loadRules) reads
+ * from disk and delegates here. The pipeline (Phase 2) will provide text
+ * from any source — disk, embedded, override — and this function stays
+ * unchanged.
+ *
+ * @param jsonText - Raw JSONC content of toml-3block-schema.jsonc
+ * @returns Derived rules compiled for linter use
  */
-export async function loadRules(): Promise<DerivedRules> {
-  if (cached) return cached;
-
-  const schemaPath = resolveSchemaPath();
-
-  // Read schema file — provide actionable error if missing
-  let text: string;
-  try {
-    text = await Deno.readTextFile(schemaPath);
-  } catch (e) {
-    if (e instanceof Deno.errors.NotFound) {
-      throw new Error(
-        `Schema file not found: ${schemaPath}\n` +
-        `Expected at: b-word/L1-omnicode/ladder/schemas/data/format/toml-3block-schema.jsonc\n` +
-        `This file is required for TOML linting. Verify the schema exists and the path is correct.`,
-      );
-    }
-    if (e instanceof Deno.errors.PermissionDenied) {
-      throw new Error(
-        `Permission denied reading schema: ${schemaPath}\n` +
-        `Run with --allow-read or check file permissions.`,
-      );
-    }
-    throw new Error(`Cannot read schema at ${schemaPath}: ${e instanceof Error ? e.message : String(e)}`);
-  }
-
-  // Parse JSONC — provide clear error on corrupt schema
+export function parseTomlSchema(jsonText: string): DerivedRules {
+  // Parse JSONC
   // deno-lint-ignore no-explicit-any
   let parsed: Record<string, any>;
   try {
     // deno-lint-ignore no-explicit-any
-    parsed = parseJsonc(text) as Record<string, any>;
+    parsed = parseJsonc(jsonText) as Record<string, any>;
   } catch (e) {
     throw new Error(
-      `Schema parse error at ${schemaPath}: ${e instanceof Error ? e.message : String(e)}\n` +
+      `TOML schema parse error: ${e instanceof Error ? e.message : String(e)}\n` +
       `The schema must be valid JSONC. Check for syntax errors.`,
     );
   }
 
   if (!parsed || typeof parsed !== "object") {
-    throw new Error(`Schema at ${schemaPath} parsed to non-object — expected JSONC object`);
+    throw new Error(`TOML schema parsed to non-object — expected JSONC object`);
   }
 
   const vc = parsed["validation_contract"] as Record<string, unknown>;
 
   if (!vc) {
     throw new Error(
-      `Schema at ${schemaPath} missing "validation_contract" — cannot derive rules`,
+      `TOML schema missing "validation_contract" — cannot derive rules`,
     );
   }
 
@@ -273,8 +395,7 @@ export async function loadRules(): Promise<DerivedRules> {
 
   if (missing.length > 0) {
     throw new Error(
-      `Schema validation_contract missing: ${missing.join(", ")}\n` +
-      `Schema path: ${schemaPath}`,
+      `TOML schema validation_contract missing: ${missing.join(", ")}`,
     );
   }
 
@@ -375,9 +496,13 @@ export async function loadRules(): Promise<DerivedRules> {
     ...templateClosing,
   ]);
 
-  // ── Assemble and cache ─────────────────────────────────────────
+  // ── Extract pragma taxonomy ──────────────────────────────────
 
-  cached = {
+  const pragmaTaxonomy = extractPragmaTaxonomy(parsed);
+
+  // ── Assemble ───────────────────────────────────────────────────
+
+  return {
     contract,
     metadataKeyPattern,
     closingKeyPattern,
@@ -398,8 +523,33 @@ export async function loadRules(): Promise<DerivedRules> {
     metadataFields: contract.metadata.field_requirements,
     contentFields: contract.content.field_requirements,
     closingFields: contract.closing.field_requirements,
+    pragmaTaxonomy,
   };
+}
 
+// ---------------------------------------------------------------------------
+// 2. I/O loader — thin wrapper that reads file + delegates to parseTomlSchema
+// ---------------------------------------------------------------------------
+
+/**
+ * Load and process the TOML 3-block schema.
+ *
+ * Resolves the schema through the pipeline (env override → project-local →
+ * default), then delegates to parseTomlSchema() for parsing and compilation.
+ * Result is cached — subsequent calls return cache.
+ *
+ * This is the I/O boundary. parseTomlSchema() is the pure computation.
+ * The pipeline handles discovery, caching raw text, and error diagnostics.
+ *
+ * @returns Derived rules compiled for linter use
+ */
+export async function loadRules(): Promise<DerivedRules> {
+  if (cached) return cached;
+
+  const pipeline = getDefaultPipeline();
+  const text = await pipeline.getText(TOML_SCHEMA_ID);
+
+  cached = parseTomlSchema(text);
   return cached;
 }
 

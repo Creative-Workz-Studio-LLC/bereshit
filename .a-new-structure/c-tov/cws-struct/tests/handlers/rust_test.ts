@@ -6,9 +6,9 @@
 // key:     B-tov-cws-struct-tests-handlers-rust
 // title:   CWS Struct — Rust Linter Tests
 // type:    Code (Test)
-// version: b-02.00
+// version: b-03.00
 // created: 2026-02-17
-// updated: 2026-02-18
+// updated: 2026-02-20
 // authors: Nova Dawn (CPI-SI)
 // purpose: Tests for the Rust 4-block format handler. Tests go through the
 //          public FormatHandler.lint() interface — same path the CLI uses.
@@ -16,6 +16,20 @@
 //          Fixture-driven: each .rs file in tests/fixtures/rust/<category>/
 //          targets a specific condition. Tests assert on result counts and
 //          rule names. Category prefixes enable --filter targeting.
+//
+//          Categories:
+//            structure/   — 4-block structure, parsing, block order, scaling
+//            consistency/ — Cross-cutting validation (pragma vs metadata)
+//            metadata/    — METADATA block (IC fields, presence, content)
+//            doc/         — Doc comment quality (schema-driven)
+//            setup/       — SETUP block (subsections, order, emphasis)
+//            body/        — BODY block (subsections, order, content)
+//            closing/     — CLOSING block (zones, content, depth, X6)
+//            format/      — Format detection
+//            unit/        — Exported function unit tests (no fixtures)
+//            transform/   — Transformer tests
+//            adapter/     — RustAdapter tests
+//            form/        — Form-aware validation (layer chain)
 //
 // ============================================================================
 
@@ -67,6 +81,19 @@ Deno.test("structure/valid-library: may have separator width warnings", async ()
       `Unexpected warning rule: ${w.rule} — ${w.message}`,
     );
   }
+});
+
+Deno.test("structure/valid-module: zero errors", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-module.rs"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors, got ${errs.length}: ${JSON.stringify(errs, null, 2)}`);
+});
+
+Deno.test("structure/valid-module: subtype detected as module", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-module.rs"));
+  // Module subtype should be recognized — no "Unknown subtype" warnings
+  const subtypeWarns = results.filter((r) => r.rule.includes("I2.subtype-value"));
+  assertEquals(subtypeWarns.length, 0, `Module subtype should be recognized: ${JSON.stringify(subtypeWarns)}`);
 });
 
 Deno.test("structure/valid-executable: zero errors", async () => {
@@ -240,6 +267,85 @@ Deno.test("metadata/bad-content-values: total of 14 content check results", asyn
     `Expected 14 total content results (8 PRAGMA + 6 METADATA), got ${contentResults.length}: ${JSON.stringify(contentResults.map(r => r.rule))}`);
 });
 
+Deno.test("structure/scaling: small fixture does not trigger scaling signals", async () => {
+  const f = fixture("rust/setup/subsection-order-correct.rs");
+  const results = await rust.lint(f);
+  const scaling = byRule(results, "structure/scaling");
+  assertEquals(scaling.length, 0, "Small fixture should not trigger scaling signals");
+});
+
+// ---------------------------------------------------------------------------
+// consistency/ — Cross-cutting validation (pragma-driven checks)
+// ---------------------------------------------------------------------------
+
+Deno.test("consistency/template-with-derived-values: detects wrong I1.at and C1.status for template", async () => {
+  const results = await rust.lint(fixture("rust/metadata/template-with-derived-values.rs"));
+  const templateAt = byRule(results, "content/PRAGMA/template-at");
+  const templateStatus = byRule(results, "content/METADATA/template-status");
+  assertGreater(templateAt.length, 0,
+    `Template file with I1.at="a-01.00" should trigger content/PRAGMA/template-at`);
+  assertGreater(templateStatus.length, 0,
+    `Template file with C1.status="Active" should trigger content/METADATA/template-status`);
+});
+
+Deno.test("consistency/derived-with-template-values: detects template values in derived file", async () => {
+  const results = await rust.lint(fixture("rust/metadata/derived-with-template-values.rs"));
+  const derivedAt = byRule(results, "content/PRAGMA/derived-at");
+  const derivedStatus = byRule(results, "content/METADATA/derived-status");
+  assertGreater(derivedAt.length, 0,
+    `Derived file with I1.at="template" should trigger content/PRAGMA/derived-at`);
+  assertGreater(derivedStatus.length, 0,
+    `Derived file with C1.status="Template" should trigger content/METADATA/derived-status`);
+});
+
+Deno.test("consistency/wrong-subtype: detects I2.subtype mismatch with pragma", async () => {
+  const results = await rust.lint(fixture("rust/metadata/wrong-subtype.rs"));
+  const subtypeMismatch = byRule(results, "content/PRAGMA/subtype-mismatch");
+  assertGreater(subtypeMismatch.length, 0,
+    `Pragma says -library but I2.subtype="executable" should trigger content/PRAGMA/subtype-mismatch`);
+});
+
+Deno.test("consistency/valid-library: no content-aware false positives", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-library.rs"));
+  const contentPragma = byRule(results, "content/PRAGMA/");
+  const contentMeta = byRule(results, "content/METADATA/");
+  assertEquals(contentPragma.length, 0,
+    `Valid library should have 0 content/PRAGMA infos: ${JSON.stringify(contentPragma.map(r => r.rule))}`);
+  assertEquals(contentMeta.length, 0,
+    `Valid library should have 0 content/METADATA infos: ${JSON.stringify(contentMeta.map(r => r.rule))}`);
+});
+
+// ---------------------------------------------------------------------------
+// doc/ — Doc comment quality checks (schema-driven)
+// ---------------------------------------------------------------------------
+
+Deno.test("doc/valid-library: no doc comment warnings (has //! doc comments)", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-library.rs"));
+  const docRules = byRule(results, "doc/");
+  assertEquals(docRules.length, 0,
+    `Valid library should have 0 doc warnings: ${JSON.stringify(docRules.map(r => r.rule))}`);
+});
+
+Deno.test("doc/template-with-doc-comments: no doc/template info (template has //!)", async () => {
+  const results = await rust.lint(fixture("rust/metadata/placeholder-values.rs"));
+  const templateDoc = byRule(results, "doc/template");
+  assertEquals(templateDoc.length, 0,
+    "Template with //! doc comments should not trigger doc/template");
+});
+
+Deno.test("doc/schema-driven-severity: crate root severity from schema is warn", async () => {
+  // Verify schema extraction produces the expected severity values.
+  // The Rust schema defines crate_root_severity: "warn", module_severity: "info".
+  // We can't easily test crate root (needs lib.rs filename) or missing //! module
+  // from existing fixtures, but we CAN verify the expectations loaded correctly.
+  const { loadCodeRules } = await import("../../lib/foundation/mod.ts");
+  const rules = await loadCodeRules("rust");
+  const crateExp = rules.docCommentExpectations["crate_root_docs"];
+  const moduleExp = rules.docCommentExpectations["module_docs"];
+  assertEquals(crateExp?.severity, "warn", "crate_root_docs severity from schema");
+  assertEquals(moduleExp?.severity, "info", "module_docs severity from schema");
+});
+
 // ---------------------------------------------------------------------------
 // setup/ — SETUP block
 // ---------------------------------------------------------------------------
@@ -268,6 +374,84 @@ Deno.test("setup/subsection-partial-correct: 3 of 10 in correct relative order �
   assertEquals(orderWarns.length, 0, `Expected 0 subsection-order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
 });
 
+Deno.test("setup/alias-name: detects alias names and suggests canonical alternatives", async () => {
+  const results = await rust.lint(fixture("rust/setup/aliased-subsection-names.rs"));
+  const aliasInfos = byRule(results, "setup/alias-name");
+  // Fixture uses: Consts (→Constants), Errors (→ErrorTypes), Types (→CoreTypes),
+  // Traits (→TraitDefs) = 4 aliases
+  assertGreater(aliasInfos.length, 0, `Expected alias info diagnostics, got: ${JSON.stringify(aliasInfos, null, 2)}`);
+  // Should NOT have order warnings — aliases are in correct order
+  const orderWarns = byRule(results, "setup/subsection-order");
+  assertEquals(orderWarns.length, 0, `Aliased names in correct order should produce 0 order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
+});
+
+Deno.test("content/subsection-placement: detects misplaced declarations within SETUP subsections", async () => {
+  const results = await rust.lint(fixture("rust/setup/misplaced-content.rs"));
+  const placementInfos = byRule(results, "content/subsection-placement");
+  // Fixture has: struct_decl in Constants (should be CoreTypes),
+  // const_decl in CoreTypes (should be Constants) = 2 misplacements
+  assertGreater(placementInfos.length, 0, `Expected subsection-placement infos, got: ${JSON.stringify(placementInfos, null, 2)}`);
+  // Verify it reports both directions of misplacement
+  const messages = placementInfos.map((r: { message: string }) => r.message).join(" | ");
+  assert(messages.includes("CoreTypes"), `Should suggest CoreTypes for struct: ${messages}`);
+  assert(messages.includes("Constants"), `Should suggest Constants for const: ${messages}`);
+
+  // Phase 9: Auto-move suggestions — fix should contain remove+insert actions
+  const withFix = placementInfos.filter((r: { fix?: unknown }) => r.fix);
+  assertGreater(withFix.length, 0, "At least one placement info should include a fix suggestion");
+  // deno-lint-ignore no-explicit-any
+  const fix = (withFix[0] as any).fix;
+  assertEquals(fix.actions.length, 2, "Fix should have 2 actions (remove + insert)");
+  assertEquals(fix.actions[0].type, "remove", "First action should be remove");
+  assertEquals(fix.actions[1].type, "insert", "Second action should be insert");
+  assert(fix.actions[1].content.length > 0, "Insert action should have content lines");
+});
+
+Deno.test("setup/header-doc: no documentation before first subsection triggers info", async () => {
+  const f = fixture("rust/setup/no-header-doc.rs");
+  const results = await rust.lint(f);
+  const headerDoc = byRule(results, "setup/header-doc");
+  assertGreater(headerDoc.length, 0, "Should detect missing header documentation");
+  assertEquals(headerDoc[0]!.severity, "info");
+  assert(hasMessage(headerDoc, "header documentation"), "Should mention header documentation");
+});
+
+Deno.test("setup/header-doc: good documentation before first subsection is clean", async () => {
+  const f = fixture("rust/setup/good-header-doc.rs");
+  const results = await rust.lint(f);
+  const headerDoc = byRule(results, "setup/header-doc");
+  assertEquals(headerDoc.length, 0, "Good header doc should produce no findings");
+});
+
+Deno.test("setup/missing-required-subsections: library missing Modules, ErrorTypes, CoreTypes", async () => {
+  const f = fixture("rust/setup/missing-required-subsections.rs");
+  const results = await rust.lint(f);
+
+  const required = byRule(results, "setup/required-subsection");
+  assertGreater(required.length, 0, "Should detect missing required SETUP subsections");
+  assertEquals(required[0]!.severity, "warn", "Required subsection check should be warn-level");
+  assert(hasMessage(required, "Modules") || hasMessage(required, "ErrorTypes") || hasMessage(required, "CoreTypes"),
+    "Should mention at least one missing required subsection");
+});
+
+Deno.test("setup/missing-required-subsections: reports count matches schema", async () => {
+  const f = fixture("rust/setup/missing-required-subsections.rs");
+  const results = await rust.lint(f);
+  const required = byRule(results, "setup/required-subsection");
+  // Rust schema: library requires S1 Imports (present), S2 Modules (missing), S6 ErrorTypes (missing), S7 CoreTypes (missing)
+  assertEquals(required.length, 3, "Should report exactly 3 missing required subsections");
+});
+
+Deno.test("setup/emphasis-inverted: library with empty heavy subs and full light subs", async () => {
+  const f = fixture("rust/setup/emphasis-inverted.rs");
+  const results = await rust.lint(f);
+
+  const emphasis = byRule(results, "emphasis/setup-inverted");
+  assertGreater(emphasis.length, 0, "Should detect inverted emphasis");
+  assertEquals(emphasis[0]!.severity, "info", "Emphasis check should be info-level");
+  assert(hasMessage(emphasis, "library"), "Should mention the subtype");
+});
+
 // ---------------------------------------------------------------------------
 // body/ — BODY block
 // ---------------------------------------------------------------------------
@@ -288,6 +472,32 @@ Deno.test("body/valid-library: zero body subsection order warnings", async () =>
   const results = await rust.lint(fixture("rust/structure/valid-library.rs"));
   const orderWarns = byRule(results, "body/subsection-order");
   assertEquals(orderWarns.length, 0, `Expected 0 body/subsection-order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
+});
+
+Deno.test("body/subtype-subsections: wrong subsection names for library triggers info", async () => {
+  const f = fixture("rust/body/wrong-subtype-subsections.rs");
+  const results = await rust.lint(f);
+  const subtypeSubs = byRule(results, "body/subtype-subsections");
+  assertGreater(subtypeSubs.length, 0, "Should detect wrong subsection names");
+  assertEquals(subtypeSubs[0]!.severity, "info");
+  assert(hasMessage(subtypeSubs, "library"), "Should mention the subtype");
+});
+
+Deno.test("body/missing-required-subsections: library missing IdentityAccessors and Constructors", async () => {
+  const f = fixture("rust/body/missing-required-subsections.rs");
+  const results = await rust.lint(f);
+
+  const required = byRule(results, "body/required-subsection");
+  assertGreater(required.length, 0, "Should detect missing required BODY subsections");
+  assertEquals(required[0]!.severity, "warn", "Required body subsection check should be warn-level");
+});
+
+Deno.test("body/missing-required-subsections: reports count matches schema", async () => {
+  const f = fixture("rust/body/missing-required-subsections.rs");
+  const results = await rust.lint(f);
+  const required = byRule(results, "body/required-subsection");
+  // Rust schema: library requires B1 IdentityAccessors (missing), B3 Constructors (missing)
+  assertEquals(required.length, 2, "Should report exactly 2 missing required body subsections");
 });
 
 // ---------------------------------------------------------------------------
@@ -334,6 +544,73 @@ Deno.test("closing/main-in-body: detects fn main() in BODY — should be CLOSING
     hasMessage(results, "CLOSING Ce") || hasMessage(results, "Ce zone"),
     "Should guide toward CLOSING Ce zone",
   );
+});
+
+Deno.test("closing/required-zones: missing X1 and X5 documentation zones triggers info", async () => {
+  const f = fixture("rust/closing/missing-required-zones.rs");
+  const results = await rust.lint(f);
+  const requiredX1 = byRule(results, "closing/required-X1");
+  const requiredX5 = byRule(results, "closing/required-X5");
+  assertGreater(requiredX1.length, 0, "Should detect missing X1 zone");
+  assertGreater(requiredX5.length, 0, "Should detect missing X5 zone");
+  assertEquals(requiredX1[0]!.severity, "info");
+  assertEquals(requiredX5[0]!.severity, "info");
+});
+
+Deno.test("closing/X1-content: X1 zone missing required fields triggers info", async () => {
+  const f = fixture("rust/closing/x1-missing-fields.rs");
+  const results = await rust.lint(f);
+  const x1Content = byRule(results, "closing/X1-content");
+  // X1 zone present but missing Never, Careful, Safe fields
+  assertGreater(x1Content.length, 0, "Should detect missing X1 fields");
+  assertEquals(x1Content[0]!.severity, "info");
+  assert(hasMessage(x1Content, "never"), "Should mention missing 'never' field");
+});
+
+Deno.test("closing/X5-content: X5 zone missing scripture field triggers info", async () => {
+  const f = fixture("rust/closing/x5-missing-scripture.rs");
+  const results = await rust.lint(f);
+  const x5Content = byRule(results, "closing/X5-content");
+  // X5 zone present but missing Scripture field
+  assertGreater(x5Content.length, 0, "Should detect missing scripture in X5 zone");
+  assertEquals(x5Content[0]!.severity, "info");
+  assert(hasMessage(x5Content, "scripture"), "Should mention missing 'scripture' field");
+});
+
+Deno.test("closing/X6-template-only: detects X6 section in non-template file", async () => {
+  const results = await rust.lint(fixture("rust/closing/x6-in-derived.rs"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  assert(hasRule(results, "closing/X6-template-only"), "Should detect X6 in non-template file");
+
+  const x6 = byRule(results, "closing/X6-template-only");
+  assertEquals(x6[0]!.severity, "warn", "X6-template-only should be warn-level");
+  assert(hasMessage(x6, "Template Guide"), "Should mention Template Guide");
+});
+
+Deno.test("closing/X6-template-only: valid-library has no X6 warning", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-library.rs"));
+  const x6 = byRule(results, "closing/X6-template-only");
+  assertEquals(x6.length, 0, "Valid library without X6 should produce no X6-template-only warning");
+});
+
+Deno.test("closing/X1-depth: detects empty and placeholder field values in X1", async () => {
+  const results = await rust.lint(fixture("rust/closing/x1-empty-fields.rs"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors: ${JSON.stringify(errs, null, 2)}`);
+
+  const depth = byRule(results, "closing/X1-depth");
+  assertGreater(depth.length, 0, "Should detect empty/placeholder X1 field values");
+  assertEquals(depth[0]!.severity, "info", "X1-depth should be info-level");
+  assert(hasMessage(depth, "never") || hasMessage(depth, "careful"),
+    "Should mention the field with empty/placeholder value");
+});
+
+Deno.test("closing/depth: valid-library has no depth warnings", async () => {
+  const results = await rust.lint(fixture("rust/structure/valid-library.rs"));
+  const depth = results.filter((r) => r.rule.includes("-depth"));
+  assertEquals(depth.length, 0, "Valid library should produce no depth warnings");
 });
 
 // ---------------------------------------------------------------------------
@@ -742,16 +1019,181 @@ Deno.test("transform/valid-library: no changes needed", async () => {
   assertEquals(moves.length, 0, "Valid library should need no structural transforms");
 });
 
+// ---------------------------------------------------------------------------
+// adapter/ — RustAdapter implements LanguageAdapter
+// ---------------------------------------------------------------------------
+
+import { rustAdapter } from "../../lib/handlers/rust.ts";
+
+Deno.test("adapter/rust: format is 'rust'", () => {
+  assertEquals(rustAdapter.format, "rust");
+});
+
+Deno.test("adapter/rust: extensions include .rs", () => {
+  assert(rustAdapter.extensions.includes(".rs"));
+});
+
+Deno.test("adapter/rust: classifyLine delegates to classifyLine", () => {
+  assertEquals(rustAdapter.classifyLine("use std::io;"), "use_decl");
+  assertEquals(rustAdapter.classifyLine("pub use crate::Foo;"), "reexport_decl");
+  assertEquals(rustAdapter.classifyLine("fn main() {"), "fn_decl");
+  assertEquals(rustAdapter.classifyLine("struct Foo {"), "struct_decl");
+  assertEquals(rustAdapter.classifyLine("impl Foo {"), "impl_block");
+  assertEquals(rustAdapter.classifyLine("// comment"), "comment");
+  assertEquals(rustAdapter.classifyLine(""), "blank");
+});
+
+Deno.test("adapter/rust: parseIdentityFields delegates to parseStaticFields", () => {
+  const lines = [
+    'pub static PRAGMA: &[(&str, &str)] = &[',
+    '    ("I1.key", "B-test"),',
+    '    ("I1.format", "rust"),',
+    '];',
+  ];
+  const fields = rustAdapter.parseIdentityFields(lines, "PRAGMA");
+  assertEquals(fields.length, 2);
+  assertEquals(fields[0]!.section, "I1");
+  assertEquals(fields[0]!.field, "key");
+  assertEquals(fields[0]!.value, "B-test");
+});
+
+Deno.test("adapter/rust: findOmniDirectives finds directives", () => {
+  const lines = [
+    "//omni:key B-test",
+    "//omni:code --rust -library",
+    "use std::io;",
+  ];
+  const directives = rustAdapter.findOmniDirectives(lines);
+  assert(directives.has("//omni:key"));
+  assert(directives.has("//omni:code"));
+  assertEquals(directives.get("//omni:key")!.value, "B-test");
+});
+
+Deno.test("adapter/rust: findTestZone finds #[cfg(test)]", () => {
+  const lines = [
+    "// code above",
+    "#[cfg(test)]",
+    "mod tests {",
+    "  #[test]",
+    "  fn it_works() {}",
+    "}",
+    "// code below",
+  ];
+  const zone = rustAdapter.findTestZone(lines, 0, lines.length);
+  assert(zone !== null);
+  assertEquals(zone!.start, 1);
+  assertEquals(zone!.end, 5);
+});
+
+Deno.test("adapter/rust: findMainZone finds fn main", () => {
+  const lines = [
+    "// header",
+    "fn main() {",
+    "    println!(\"hello\");",
+    "}",
+  ];
+  const zone = rustAdapter.findMainZone(lines, 0, lines.length);
+  assert(zone !== null);
+  assertEquals(zone!.start, 1);
+  assertEquals(zone!.end, 3);
+});
+
+Deno.test("adapter/rust: no enrichSubsectionPatterns (Rust has no legacy patterns)", () => {
+  assertEquals(rustAdapter.enrichSubsectionPatterns, undefined);
+});
+
+Deno.test("adapter/rust: buildContextExtras identifies crate root (lib.rs)", () => {
+  const extras = rustAdapter.buildContextExtras("/path/to/lib.rs", []);
+  assertEquals(extras.isCrateRoot, true);
+  assertEquals(extras.isModuleFile, false);
+});
+
+Deno.test("adapter/rust: buildContextExtras identifies crate root (main.rs)", () => {
+  const extras = rustAdapter.buildContextExtras("/path/to/main.rs", []);
+  assertEquals(extras.isCrateRoot, true);
+  assertEquals(extras.isModuleFile, false);
+});
+
+Deno.test("adapter/rust: buildContextExtras identifies module file", () => {
+  const extras = rustAdapter.buildContextExtras("/path/to/utils.rs", []);
+  assertEquals(extras.isCrateRoot, false);
+  assertEquals(extras.isModuleFile, true);
+});
+
+Deno.test("adapter/rust: buildContextExtras identifies template (not module)", () => {
+  const lines = ["// #!omni template --rust -library"];
+  const extras = rustAdapter.buildContextExtras("/path/to/template.rs", lines);
+  assertEquals(extras.isCrateRoot, false);
+  assertEquals(extras.isModuleFile, false);
+});
+
+// ---------------------------------------------------------------------------
+// form/ — Form-aware validation (layer chain: format → variant)
+// ---------------------------------------------------------------------------
+
+Deno.test("form/module-reserved: detects S2 Modules in non-template module", async () => {
+  const f = fixture("rust/form/module-has-reserved-section.rs");
+  const results = await rust.lint(f);
+  const reserved = byRule(results, "form/reserved-section-present");
+  assertGreater(reserved.length, 0, "Should detect reserved S2 Modules in module file");
+  assertEquals(reserved[0]!.severity, "warn");
+  assert(hasMessage(reserved, "Modules"), "Should mention the reserved section tag");
+  assert(hasMessage(reserved, "RESERVED"), "Should indicate the section is reserved");
+});
+
+Deno.test("form/module-missing-required: detects absent S1 Imports", async () => {
+  const f = fixture("rust/form/module-missing-required.rs");
+  const results = await rust.lint(f);
+  const missing = byRule(results, "form/required-section-missing");
+  assertGreater(missing.length, 0, "Should detect missing required section");
+  assertEquals(missing[0]!.severity, "warn");
+  assert(hasMessage(missing, "Imports"), "Should mention the missing Imports section");
+});
+
+Deno.test("form/template-reserved: reserved checks fire on templates (templates are live)", async () => {
+  const f = fixture("rust/form/template-with-reserved.rs");
+  const results = await rust.lint(f);
+  const reserved = byRule(results, "form/reserved-section-present");
+  assertGreater(reserved.length, 0, "Templates should be checked for reserved sections");
+  assert(hasMessage(reserved, "Modules"), "Should detect S2 Modules in module template");
+});
+
+Deno.test("form/template-required: required checks SKIP templates", async () => {
+  const f = fixture("rust/form/template-with-reserved.rs");
+  const results = await rust.lint(f);
+  const missing = byRule(results, "form/required-section-missing");
+  assertEquals(missing.length, 0, "Templates should not trigger required-section-missing");
+});
+
+Deno.test("form/valid-module: template has no reserved violations (existing valid-module)", async () => {
+  const f = fixture("rust/structure/valid-module.rs");
+  const results = await rust.lint(f);
+  const reserved = byRule(results, "form/reserved-section-present");
+  assertEquals(reserved.length, 0, "Valid module template should have no reserved section violations");
+});
+
+Deno.test("form/bare-bone-default: files without subtype get bare-bone form constraints", async () => {
+  // format/no-omni.rs has no subtype — should still get bare-bone form
+  const f = fixture("rust/format/no-omni.rs");
+  const results = await rust.lint(f);
+  // Bare-bone form loads but with no reserved sections to violate in a minimal file,
+  // we just verify no crash and no reserved-section-present results
+  const reserved = byRule(results, "form/reserved-section-present");
+  // A minimal file with no subsection headers won't trigger reserved checks
+  assertEquals(reserved.length, 0, "Minimal file without subsection headers should have no reserved violations");
+});
+
 // ============================================================================
 // CLOSING
 // ============================================================================
 //
-// Rust linter + transformer tests — fixture-driven through the public
-// lint() and transform() interfaces. Unit tests for parseStaticFields and
-// validateICFields target the parser directly with synthetic data.
-// Transformer tests use temp copies to verify non-destructive operation.
+// Rust 4-block linter + transformer tests — pragma-container organized.
+// Fixture-driven through public lint() and transform() interfaces.
+// Unit tests for parseStaticFields and validateICFields target parser directly.
 //
-// Categories: structure/, metadata/, setup/, body/, closing/, format/, unit/, transform/
+// Spine: structure/ → consistency/ → setup/ → body/ → closing/ → format/ → form/ → unit/ → transform/
+// Per-block: setup/ body/ closing/ (4-block specific)
+// Cross-cutting: consistency/ (pragma vs metadata agreement)
 // Filter: deno test --filter "category/" tests/handlers/rust_test.ts
 //
 // "Prove all things; hold fast that which is good." — 1 Thessalonians 5:21

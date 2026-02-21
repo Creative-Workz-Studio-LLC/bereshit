@@ -7,6 +7,10 @@
 //! Genesis 1:4 — "And God divided the light from the darkness."
 //! Format detection separates — each file gets its proper identity.
 
+//omni:code --rust -library
+//omni:key B-L0-hybrid-config-formats
+//omni:version b-03.00
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 use std::sync::{LazyLock, RwLock};
@@ -154,4 +158,81 @@ pub(crate) fn unregister_format(ext: &str) {
 pub(crate) fn unregister_config_format(format: &str) {
     let mut set = CONFIG_FORMATS.write().unwrap_or_else(|e| e.into_inner());
     set.remove(format);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn test_register_format() {
+        register_format(".omni", "omni");
+        assert_eq!(format_from_ext(".omni"), Some("omni".to_owned()));
+        assert!(is_known_ext(".omni"));
+
+        // Clean up
+        unregister_format(".omni");
+    }
+
+    #[test]
+    fn test_register_config_format() {
+        register_config_format("omni-config");
+        assert!(is_config_format("omni-config"));
+
+        // Clean up
+        unregister_config_format("omni-config");
+    }
+
+    #[test]
+    fn test_all_known_exts_sorted_and_populated() {
+        let exts = all_known_exts();
+        assert!(!exts.is_empty());
+
+        // Should be sorted (BTreeMap guarantees this)
+        for i in 1..exts.len() {
+            assert!(
+                exts[i] >= exts[i - 1],
+                "not sorted: {:?} before {:?}",
+                exts[i - 1],
+                exts[i]
+            );
+        }
+
+        // Should include known extensions
+        for required in [".go", ".toml", ".json", ".rs", ".c"] {
+            assert!(exts.contains(&required.to_owned()), "missing {required}");
+        }
+    }
+
+    #[test]
+    fn test_all_config_formats() {
+        let fmts = all_config_formats();
+        assert!(fmts.len() >= 4);
+
+        // Should be sorted
+        for i in 1..fmts.len() {
+            assert!(fmts[i] >= fmts[i - 1]);
+        }
+    }
+
+    #[test]
+    fn test_format_from_path() {
+        assert_eq!(
+            format_from_path(Path::new("config.toml")),
+            Some("toml".to_owned())
+        );
+        assert_eq!(
+            format_from_path(Path::new("/path/to/main.go")),
+            Some("go".to_owned())
+        );
+        assert!(format_from_path(Path::new("noext")).is_none());
+    }
+
+    #[test]
+    fn test_is_config_path() {
+        assert!(is_config_path(Path::new("settings.toml")));
+        assert!(is_config_path(Path::new("config.json")));
+        assert!(!is_config_path(Path::new("main.go")));
+    }
 }

@@ -6,9 +6,9 @@
 // key:     B-tov-cws-struct-tests-handlers-toml
 // title:   CWS Struct — TOML Linter Tests
 // type:    Code (Test)
-// version: a-02.00
+// version: a-03.00
 // created: 2026-02-17
-// updated: 2026-02-18
+// updated: 2026-02-20
 // authors: Nova Dawn (CPI-SI)
 // purpose: Tests for the TOML 3-block format handler. Tests go through the
 //          public FormatHandler.lint() interface — same path the CLI uses.
@@ -18,11 +18,14 @@
 //          rule names.
 //
 //          Categories (matching fixture subdirectories):
-//            structure/ — 3-block structure, parsing, missing blocks
-//            metadata/  — Contract validation, identity checks
-//            content/   — Value validation, zones, consistency
-//            closing/   — X section ordering
-//            unit/      — Exported function unit tests (no fixtures)
+//            structure/   — 3-block structure, parsing, missing blocks
+//            consistency/ — Cross-cutting consistency (pragma vs format)
+//            metadata/    — Contract validation, identity checks
+//            content/     — Value validation, zones, body zones
+//            closing/     — X section ordering
+//            cargo/       — Cargo.toml derivation-specific behavior
+//            form/        — Form-aware floor/ceiling validation
+//            unit/        — Exported function unit tests (no fixtures)
 //
 // ============================================================================
 
@@ -139,7 +142,11 @@ Deno.test("structure/missing-closing: no parse errors", async () => {
   assertEquals(parseErrs.length, 0, "File should parse without errors");
 });
 
-Deno.test("structure/pragma-mismatch: detects pragma vs format field mismatch", async () => {
+// ---------------------------------------------------------------------------
+// consistency/ — Cross-cutting consistency (pragma vs format)
+// ---------------------------------------------------------------------------
+
+Deno.test("consistency/pragma-mismatch: detects pragma vs format field mismatch", async () => {
   const results = await toml.lint(fixture("toml/structure/pragma-mismatch.toml"));
   assert(
     hasRule(results, "pragma") || hasMessage(results, "mismatch") || hasMessage(results, "pragma"),
@@ -296,6 +303,101 @@ Deno.test("closing/valid-complete: zero x-order warnings", async () => {
   const results = await toml.lint(fixture("toml/structure/valid-complete.toml"));
   const orderWarns = byRule(results, "closing/x-order");
   assertEquals(orderWarns.length, 0, `Expected 0 closing/x-order warnings: ${JSON.stringify(orderWarns, null, 2)}`);
+});
+
+// ---------------------------------------------------------------------------
+// cargo/ — Cargo.toml integration tests
+// ---------------------------------------------------------------------------
+
+Deno.test("cargo/valid-library: zero errors", async () => {
+  const results = await toml.lint(fixture("toml/cargo/valid-library.toml"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, `Expected 0 errors, got ${errs.length}: ${JSON.stringify(errs, null, 2)}`);
+});
+
+Deno.test("cargo/valid-library: zero warnings", async () => {
+  const results = await toml.lint(fixture("toml/cargo/valid-library.toml"));
+  const warns = warnings(results);
+  assertEquals(warns.length, 0, `Expected 0 warnings, got ${warns.length}: ${JSON.stringify(warns, null, 2)}`);
+});
+
+Deno.test("cargo/valid-library: pragma classifies cargo derivation", async () => {
+  const results = await toml.lint(fixture("toml/cargo/valid-library.toml"));
+  assert(
+    hasRule(results, "pragma/derivations") || hasRule(results, "pragma/classification"),
+    "Should have pragma classification info",
+  );
+  const classInfo = infos(results).filter((r) =>
+    r.rule.includes("pragma") && (r.message.includes("cargo") || r.message.includes("Cargo"))
+  );
+  assertGreater(classInfo.length, 0, "Should classify cargo derivation in pragma info");
+});
+
+Deno.test("cargo/valid-library: metadata extracted from package.metadata.omni", async () => {
+  const results = await toml.lint(fixture("toml/cargo/valid-library.toml"));
+  // Cargo metadata extraction is silent — no layout info noise
+  // Verify metadata sections are validated (I1 fields checked)
+  const errors = results.filter((r) => r.severity === "error");
+  assertEquals(errors.length, 0, "Valid library should have no errors");
+});
+
+// ---------------------------------------------------------------------------
+// form/ — Form-aware validation (floor/ceiling enforcement)
+// ---------------------------------------------------------------------------
+
+Deno.test("form/valid-library: detects library form arg", async () => {
+  const results = await toml.lint(fixture("toml/cargo/valid-library.toml"));
+  const formInfo = infos(results).filter((r) => r.rule === "pragma/forms");
+  assertGreater(formInfo.length, 0, "Should detect library form in pragma");
+  assert(formInfo[0]!.message.includes("library"), "Form info should mention library");
+});
+
+Deno.test("form/valid-library: no required-section-missing", async () => {
+  const results = await toml.lint(fixture("toml/cargo/valid-library.toml"));
+  const missing = results.filter((r) => r.rule === "form/required-section-missing");
+  assertEquals(missing.length, 0, "Valid library should have all required sections");
+});
+
+Deno.test("form/valid-library: no reserved-section-present", async () => {
+  const results = await toml.lint(fixture("toml/cargo/valid-library.toml"));
+  const reserved = results.filter((r) => r.rule === "form/reserved-section-present");
+  assertEquals(reserved.length, 0, "Valid library should have no reserved sections");
+});
+
+Deno.test("form/missing-omni-metadata: required-section-missing for OmniMetadata", async () => {
+  const results = await toml.lint(fixture("toml/cargo/missing-omni-metadata.toml"));
+  const missing = results.filter((r) => r.rule === "form/required-section-missing");
+  assertGreater(missing.length, 0, "Should warn about missing OmniMetadata");
+  assert(
+    missing.some((r) => r.message.includes("OmniMetadata")),
+    "Should specifically mention OmniMetadata",
+  );
+});
+
+Deno.test("form/library-with-bin: reserved-section-present for BinTarget", async () => {
+  const results = await toml.lint(fixture("toml/cargo/library-with-bin.toml"));
+  const reserved = results.filter((r) => r.rule === "form/reserved-section-present");
+  assertGreater(reserved.length, 0, "Should detect reserved [[bin]] section");
+  assert(
+    reserved.some((r) => r.message.includes("BinTarget")),
+    "Should specifically mention BinTarget",
+  );
+});
+
+Deno.test("form/library-with-bin: reserved message includes why_reserved", async () => {
+  const results = await toml.lint(fixture("toml/cargo/library-with-bin.toml"));
+  const reserved = results.filter((r) => r.rule === "form/reserved-section-present");
+  assertGreater(reserved.length, 0, "Should have reserved section info");
+  assert(
+    reserved.some((r) => r.message.includes("Libraries don't have binary targets")),
+    "Reserved message should explain why [[bin]] is reserved for libraries",
+  );
+});
+
+Deno.test("form/library-with-bin: zero errors despite reserved section", async () => {
+  const results = await toml.lint(fixture("toml/cargo/library-with-bin.toml"));
+  const errs = errors(results);
+  assertEquals(errs.length, 0, "Reserved section is info-level, not error-level");
 });
 
 // ---------------------------------------------------------------------------
@@ -570,10 +672,10 @@ Deno.test("unit/findSectionPositions: returns empty map for no sections", () => 
 // CLOSING
 // ============================================================================
 //
-// TOML linter tests — fixture-driven through the public lint() interface +
-// unit tests for exported internals. Value-level checks complement structural
-// checks: structure says "field exists", values say "field is correct."
-// Together they form the quality gate.
+// TOML linter tests — fixture-driven through the public lint() interface.
+// Pragma-container structure: structure → consistency → metadata → content →
+// closing → cargo (derivation) → form (floor/ceiling) → unit.
+// Each section tests a distinct concern. Together they form the quality gate.
 //
 // "Prove all things; hold fast that which is good." — 1 Thessalonians 5:21
 // ============================================================================

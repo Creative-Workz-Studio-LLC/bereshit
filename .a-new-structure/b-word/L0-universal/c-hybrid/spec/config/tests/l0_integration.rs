@@ -84,9 +84,21 @@ fn l0_crates_have_distinct_domains() {
     let paths_domain = bereshit_l0_identity::by_domain("filesystem");
     let config_domain = bereshit_l0_identity::by_domain("config-loading");
 
-    assert_eq!(identity_domain.len(), 1, "identity domain should have 1 package");
-    assert_eq!(paths_domain.len(), 1, "filesystem domain should have 1 package");
-    assert_eq!(config_domain.len(), 1, "config-loading domain should have 1 package");
+    assert_eq!(
+        identity_domain.len(),
+        1,
+        "identity domain should have 1 package"
+    );
+    assert_eq!(
+        paths_domain.len(),
+        1,
+        "filesystem domain should have 1 package"
+    );
+    assert_eq!(
+        config_domain.len(),
+        1,
+        "config-loading domain should have 1 package"
+    );
 
     // Verify correct package in each domain
     assert_eq!(identity_domain[0].key, "B-L0-identity-registry");
@@ -106,8 +118,8 @@ fn l0_crates_have_distinct_domains() {
 fn registered_identity_matches_source() {
     bereshit_l0_config::identity::register_identity();
 
-    let pkg = bereshit_l0_identity::lookup("B-L0-hybrid-config")
-        .expect("config must be registered");
+    let pkg =
+        bereshit_l0_identity::lookup("B-L0-hybrid-config").expect("config must be registered");
 
     // Pragma fields match
     assert_eq!(pkg.pragma["I1.key"], "B-L0-hybrid-config");
@@ -129,8 +141,7 @@ fn registered_identity_matches_source() {
 fn unified_get_works_cross_crate() {
     bereshit_l0_paths::register_identity();
 
-    let pkg = bereshit_l0_identity::lookup("B-L0-hybrid-paths")
-        .expect("paths must be registered");
+    let pkg = bereshit_l0_identity::lookup("B-L0-hybrid-paths").expect("paths must be registered");
 
     // Pragma field via get()
     assert_eq!(pkg.get("I1.format"), Some("rust"));
@@ -174,7 +185,9 @@ fn tag_discovery_across_l0() {
     // "identity" tag should find identity crate
     let identity_tagged = bereshit_l0_identity::by_tag("identity");
     assert!(
-        identity_tagged.iter().any(|p| p.key == "B-L0-identity-registry"),
+        identity_tagged
+            .iter()
+            .any(|p| p.key == "B-L0-identity-registry"),
         "identity crate should have identity tag"
     );
 }
@@ -214,7 +227,10 @@ fn stats_reflect_l0_topology() {
 fn config_uses_paths_for_resolution() {
     // paths::bereshit_root() should return a non-empty PathBuf
     let root = bereshit_l0_paths::bereshit_root();
-    assert!(!root.as_os_str().is_empty(), "bereshit root should not be empty");
+    assert!(
+        !root.as_os_str().is_empty(),
+        "bereshit root should not be empty"
+    );
 
     // Config's own root resolution should also work
     // (set_root / clear_root are the config-level API)
@@ -303,11 +319,14 @@ fn jsonc_stripping_produces_valid_json() {
 fn config_error_is_std_error() {
     let err = bereshit_l0_config::ConfigError::Load {
         file: "/nonexistent/path.toml".into(),
-        op: "read".into(),
+        op: bereshit_l0_config::LoadOp::Read,
         source: "file not found".into(),
     };
     let std_err: &dyn std::error::Error = &err;
     // The error should format without panic
     let msg = format!("{std_err}");
-    assert!(msg.contains("nonexistent"), "error message should contain the path");
+    assert!(
+        msg.contains("nonexistent"),
+        "error message should contain the path"
+    );
 }

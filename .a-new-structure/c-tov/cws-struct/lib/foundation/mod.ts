@@ -17,6 +17,7 @@
 // Types + result constructors + summarize
 export type {
   Severity,
+  FixAction,
   FixSuggestion,
   LintResult,
   LintSummary,
@@ -47,20 +48,71 @@ export {
   computeHealthScore,
 } from "./health.ts";
 
-// Schema loader
+// Schema pipeline (layered discovery)
+export type {
+  SchemaSource,
+} from "./schema-pipeline.ts";
+
+export {
+  FileSource,
+  SchemaPipeline,
+  getDefaultPipeline,
+  clearPipeline,
+} from "./schema-pipeline.ts";
+
+// TOML schema loader
 export type {
   FieldRequirement,
   MetadataContract,
   ContentContract,
   ClosingContract,
   ValidationContract,
+  DerivationNormalization,
+  DerivationSection,
+  DerivationLayout,
+  PragmaTaxonomy,
   DerivedRules,
 } from "./schema.ts";
 
 export {
+  parseTomlSchema,
   loadRules,
   clearCache,
 } from "./schema.ts";
+
+// Code schema loader (Go/Rust 4-block)
+export type {
+  SchemaSubsectionDef,
+  SchemaBodySubtype,
+  SchemaFieldRequirement,
+  SchemaDocComment,
+  SchemaSubtypeDef,
+  PlacementMaps,
+  SchemaClosingZone,
+  SchemaClosingDocReq,
+  SchemaClosingData,
+  SchemaIdentitySyntax,
+  SchemaFillDefaults,
+  SchemaClosingDefaults,
+  SchemaFillContent,
+  Code4BlockRules,
+  CodeFormat,
+  // Form constraint types
+  FormSectionConstraint,
+  FormReservedSection,
+  FormContainerConstraints,
+  FormConstraints,
+} from "./code-schema.ts";
+
+export {
+  parseCodeSchema,
+  loadCodeRules,
+  clearCodeCache,
+  // Form schema loader
+  parseFormSchema,
+  loadFormConstraints,
+  clearFormCache,
+} from "./code-schema.ts";
 
 // ============================================================================
 // CLOSING

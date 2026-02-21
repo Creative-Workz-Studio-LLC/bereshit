@@ -67,3 +67,90 @@ pub(crate) fn compare_manifest_to_disk(root: &Path, manifest: &IndexManifest) ->
 
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::{test_dir, write_file};
+    use crate::types::IndexManifest;
+    use std::fs;
+
+    #[test]
+    fn test_discovery_all_present() {
+        let dir = test_dir("discovery-present");
+        write_file(&dir, "math/ternary.toml", "[t]\nv = 1");
+
+        let manifest: IndexManifest = toml::from_str(
+            r#"
+[[systems]]
+name = "math"
+path = "math"
+order = 0
+[[systems.specs]]
+file = "ternary.toml"
+key = "t"
+"#,
+        )
+        .unwrap();
+
+        let result = compare_manifest_to_disk(&dir, &manifest);
+        assert!(result.valid);
+        assert!(result.missing.is_empty());
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_discovery_missing_file() {
+        let dir = test_dir("discovery-missing");
+        fs::create_dir_all(dir.join("math")).unwrap();
+        // Don't create the file
+
+        let manifest: IndexManifest = toml::from_str(
+            r#"
+[[systems]]
+name = "math"
+path = "math"
+order = 0
+[[systems.specs]]
+file = "ternary.toml"
+key = "t"
+"#,
+        )
+        .unwrap();
+
+        let result = compare_manifest_to_disk(&dir, &manifest);
+        assert!(!result.valid);
+        assert_eq!(result.missing.len(), 1);
+        assert!(result.missing[0].contains("ternary.toml"));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_discovery_unexpected_file() {
+        let dir = test_dir("discovery-unexpected");
+        write_file(&dir, "math/ternary.toml", "[t]\nv = 1");
+        write_file(&dir, "math/extra.toml", "[e]\nv = 2");
+
+        let manifest: IndexManifest = toml::from_str(
+            r#"
+[[systems]]
+name = "math"
+path = "math"
+order = 0
+[[systems.specs]]
+file = "ternary.toml"
+key = "t"
+"#,
+        )
+        .unwrap();
+
+        let result = compare_manifest_to_disk(&dir, &manifest);
+        assert!(result.valid); // unexpected is WARNING, not error
+        assert_eq!(result.unexpected.len(), 1);
+        assert!(result.unexpected[0].contains("extra.toml"));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+}

@@ -1,0 +1,349 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma": "===================================================================",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni data --jsonc",
+
+    "_P1_CORE": "-------------------------------------------------------------------",
+    "_P1_tag": "P.1 CORE -- Identity [CORE]",
+    "_P1_key": "B-L1-schemas-form-bare-bone-toml",
+    "_P1_from": "b-word/L1-omnicode/ladder/schemas/data/format/toml-3block-schema.jsonc",
+    "_P1_at": "a-01.00",
+
+    "_P2_FAMILY": "-------------------------------------------------------------------",
+    "_P2_tag": "P.2 FAMILY -- Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "schema",
+    "_P2_role": "form-constraint",
+    "_P2_structure": "3-block",
+
+    "_P3_INSTANCE": "-------------------------------------------------------------------",
+    "_P3_tag": "P.3 INSTANCE -- File Details [INSTANCE]",
+    "_P3_component": "schemas",
+    "_P3_layer": "b-word/L1-omnicode/ladder/schemas/data/forms/bare-bone",
+    "_P3_provides": ["TOML_BARE_BONE_FORM_CONSTRAINTS", "CONTAINER_CAN_CANNOT", "3BLOCK_CONTENT_CONSTRAINTS"],
+
+    "_P5_SUMMARY": "-------------------------------------------------------------------",
+    "_P5_tag": "P.5 SUMMARY -- Human Identity [SUMMARY]",
+    "_P5_title": "TOML Bare-Bone Form Schema",
+    "_P5_brief": "Defines what CAN and CANNOT be in each container of a bare-bone TOML data file. bare-bone is the foundation all TOML forms derive from -- the minimum valid 3-block file. CONTENT is the single container for all data (equivalent to SETUP + BODY in 4-block code files). Declared forms promote sections from Reserved Omission.",
+
+    // ===================================================================
+    // END PRAGMA [END]
+    // ===================================================================
+
+    "_pragma_end": "===================================================================",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ===================================================================
+    // METADATA BLOCK [METADATA]
+    // ===================================================================
+
+    "_metadata_start": "===================================================================",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "toml-bare-bone.jsonc",
+        "key": "B-L1-schemas-form-bare-bone-toml",
+        "title": "TOML Bare-Bone Form Schema",
+        "type": "Data (Form Constraint Schema)",
+        "component": "Ladder",
+        "role": "Define per-container CAN/CANNOT constraints for bare-bone TOML form -- the minimum valid 3-block file that all TOML forms derive from"
+    },
+
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-20",
+        "updated": "2026-02-20"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC"
+    },
+
+    "_M4_grounding": {
+        "scripture": "Matthew 7:24 (KJV) -- Whosoever heareth these sayings of mine, and doeth them, I will liken him unto a wise man, which built his house upon a rock.",
+        "principle": "The bare bone is the rock. Minimum structure, maximum clarity. Forms build on this; they don't reinvent it.",
+        "anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+    },
+
+    "_M5_dependencies": {
+        "stands_on": [
+            "data/base/base-3block-schema.jsonc -- container definitions, zone layout",
+            "data/format/toml-3block-schema.jsonc -- TOML syntax rules, pragma taxonomy"
+        ],
+        "consumers": [
+            "b-word/seed/data/L0/toml/bare-bone.toml -- the data template this schema constrains",
+            "b-word/seed/code/L0/toml/bare-bone.toml -- the code template this schema constrains",
+            "All bare-bone TOML files in the Bereshit codebase"
+        ],
+        "relationship": "bare-bone defines THE MINIMUM. Declared form schemas (config, cargo-library) define what CHANGES when promoting to a specific form -- which sections activate, what content fills the skeletons."
+    },
+
+    // ===================================================================
+    // END METADATA [END]
+    // ===================================================================
+
+    "_metadata_end": "===================================================================",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+    //
+    // THE BARE-BONE FORM CONSTRAINT SCHEMA FOR TOML
+    //
+    // bare-bone is the minimum valid 3-block TOML file:
+    //   METADATA: Full I1-I4, C1-C7 (identity is not optional)
+    //   CONTENT:  Cc.1 Identity + Cv.1 Validation (the two required zones)
+    //   CLOSING:  X1 Policy + X5 Note (the two required guards)
+    //
+    // Everything else is Reserved Omission -- sections that exist in
+    // declared forms but are not active in bare-bone.
+    //
+    // The CONTENT container in 3-block is the equivalent of
+    // SETUP + BODY in 4-block. Same can/cannot pattern, one container.
+
+    "_content_start": "===================================================================",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://creativeworkzstudio.com/schemas/omnicode/forms/bare-bone/toml.schema.json",
+    "title": "TOML Bare-Bone Form Constraints",
+    "description": "Per-container CAN/CANNOT constraints for bare-bone TOML files. The minimum valid 3-block file. All TOML forms inherit from this.",
+
+    "form_identity": {
+        "name": "bare-bone",
+        "is_foundation": true,
+        "pragma": "# #!omni template --toml -bare-bone",
+        "template": "b-word/seed/data/L0/toml/bare-bone.toml",
+        "principle": "Boundaries before content (badal). The minimum valid file has identity and validation. Everything else is form-specific.",
+        "derivation_rule": "Every other TOML form = bare-bone + promoted sections. Nothing in a form exists that bare-bone doesn't account for (either active or reserved).",
+        "ordering": "definition_flow -- Define first. Configure second. Validate last."
+    },
+
+    // -------------------------------------------------------------------
+    // Co -- Content Operations [OPS]
+    // -------------------------------------------------------------------
+    //
+    // Three containers for 3-block: METADATA, CONTENT, CLOSING.
+    // Each container gets: can, cannot, why, how.
+
+    "_Co": "-------------------------------------------------------------------",
+    "_Co_tag": "Co -- Content Operations [OPS]",
+
+    "containers": {
+
+        // =============================================================
+        // 1. METADATA CONTAINER -- fully required, no omissions
+        // =============================================================
+        //
+        // Same as Rust: METADATA is the ONLY container where bare-bone
+        // has EVERYTHING active. Identity is not optional.
+
+        "METADATA": {
+            "summary": "FULLY REQUIRED -- I1-I4 identity + C1-C7 context. bare-bone has complete identity.",
+            "reserved_omission": false,
+
+            "why": "Identity is not optional. A TOML file that doesn't know what it is cannot be validated, tracked, or referenced. Even the minimum file has complete metadata in [_metadata.*] tables.",
+
+            "how": "Copy METADATA block from bare-bone.toml. Change I1.key, I1.from, I3.file, I3.title, C1.version to describe YOUR file.",
+
+            "cannot": {
+                "description": "No data content in METADATA -- metadata describes the file, it doesn't hold operational data.",
+                "inherits": "base-3block-schema METADATA constraints"
+            }
+        },
+
+        // =============================================================
+        // 2. CONTENT CONTAINER -- 2 required + reserved omissions
+        // =============================================================
+        //
+        // CONTENT is the 3-block equivalent of SETUP + BODY.
+        // In bare-bone, only two subsections are REQUIRED:
+        //   Cc.1 Identity -- [identity] table
+        //   Cv.1 Validation -- [_validation] table
+        //
+        // Everything else is Reserved Omission.
+        //
+        // Three zones organize content by concern:
+        //   Cc -- Configurations (what EXISTS)
+        //   Co -- Operations (what HAPPENS)
+        //   Cv -- Validation (what's CORRECT)
+        //
+        // Ordering: definition_flow
+        //   Cc first, Co second, Cv last.
+
+        "CONTENT": {
+            "summary": "2 required (Identity + Validation) + reserved omissions. Bare-bone minimum data content.",
+            "reserved_omission": true,
+
+            "why": "Every TOML data file needs to identify itself (Cc.1) and be validatable (Cv.1). Settings, resources, behavior, integrations are form-specific -- a bare-bone file doesn't assume any particular purpose beyond identity and validation.",
+
+            "how": {
+                "working_with_constraints": "Every bare-bone file has: [identity] with name+version, [_validation] with schema. To add settings, resources, or behavior, promote from Reserved Omission by copying from the appropriate form template.",
+                "zone_ordering": "Cc zones first (configurations), then Co zones (operations), then Cv zones (validation). Within each zone, subsections are numbered."
+            },
+
+            "can": {
+                "Cc1_Identity": {
+                    "position": 1,
+                    "tag": "Identity",
+                    "status": "REQUIRED",
+                    "toml_section": "[identity]",
+                    "purpose": "What IS this config? Name, version, description, type.",
+                    "why_required": "Every TOML data file MUST have identity. name + version are the minimum viable contract. Without identity, the config is anonymous data -- tooling can't discover, version, or reference it.",
+                    "content_constraints": {
+                        "required_fields": ["name", "version"],
+                        "defined_fields": ["description", "type"],
+                        "field_types": {
+                            "name": "string -- unique configuration identifier",
+                            "version": "string -- living version (stage-phase.completion)",
+                            "description": "string -- human-readable purpose",
+                            "type": "string -- categorization (generic, library, binary, etc.)"
+                        }
+                    }
+                },
+
+                "Cv1_Validation": {
+                    "position": 2,
+                    "tag": "Validation",
+                    "status": "REQUIRED",
+                    "toml_section": "[_validation]",
+                    "purpose": "Schema, health scoring, content rules. The config validates itself.",
+                    "why_required": "Every TOML data file MUST be validatable. At minimum, schema.required tells tooling which sections MUST exist. health_scoring weights quality gates.",
+                    "content_constraints": {
+                        "required_subtables": ["schema"],
+                        "defined_subtables": ["health_scoring", "content"],
+                        "schema_structure": {
+                            "required": "array of string -- section names that MUST exist",
+                            "defined": "array of string -- sections that CAN exist",
+                            "optional": "array of string -- sections that MAY exist"
+                        }
+                    }
+                }
+            },
+
+            "cannot": {
+                "description": "Reserved Omission -- these sections exist in declared forms but NOT in bare-bone. Listed so every form can account for them.",
+
+                "Cc2_Settings": {
+                    "tag": "Settings",
+                    "why_reserved": "Settings are form-specific. A bare-bone file doesn't assume any particular configuration purpose. Promoted in config form.",
+                    "active_in": "config, code-config, compiler-config"
+                },
+
+                "Cc3_Resources": {
+                    "tag": "Resources",
+                    "why_reserved": "Resources (paths, limits, constraints) depend on what the config manages. Promoted in config form.",
+                    "active_in": "config, code-config, compiler-config"
+                },
+
+                "Co1_Behavior": {
+                    "tag": "Behavior",
+                    "why_reserved": "Runtime behavior (logging, toggles) is form-specific. Promoted in config form.",
+                    "active_in": "config, code-config"
+                },
+
+                "Co2_Operations": {
+                    "tag": "Operations",
+                    "why_reserved": "Operational sections (patterns, integrations) depend on the form's purpose. Patterns are root-template-only; integrations are code-config-specific.",
+                    "active_in": "config (patterns), code-config (integrations)"
+                }
+            }
+        },
+
+        // =============================================================
+        // 3. CLOSING CONTAINER -- 2 required + reserved omissions
+        // =============================================================
+        //
+        // X1 Policy and X5 Note are REQUIRED in every TOML file.
+        // X2-X4 are available in declared forms.
+        // X6 is template-only.
+
+        "CLOSING": {
+            "summary": "2 required (X1 Policy + X5 Note) + reserved omissions for X2-X4.",
+            "reserved_omission": true,
+
+            "why": "Every file needs modification guidelines (X1) and a grounding anchor (X5). Extension points, troubleshooting, and reference are form-specific -- promoted when a form has enough complexity to warrant them.",
+
+            "how": "X1 and X5 are always present. To add X2-X4, promote from Reserved Omission by copying from the appropriate form template.",
+
+            "can": {
+                "X1_Policy": {
+                    "position": 1,
+                    "tag": "Policy",
+                    "status": "REQUIRED",
+                    "toml_section": "[_closing.X1_policy]",
+                    "purpose": "Modification guidelines -- never, careful, safe boundaries.",
+                    "why_required": "Every file needs guardrails. X1 tells maintainers what they can and cannot change without breaking contracts."
+                },
+
+                "X5_Note": {
+                    "position": 5,
+                    "tag": "Note",
+                    "status": "REQUIRED",
+                    "toml_section": "[_closing.X5_note]",
+                    "purpose": "Final anchor -- scripture, note, anchor statement.",
+                    "why_required": "Every file needs grounding. X5 is the last word -- the anchor that closes the file with purpose."
+                }
+            },
+
+            "cannot": {
+                "description": "Reserved Omission -- X2-X4 exist in declared forms.",
+
+                "X2_Extension": {
+                    "tag": "Extension",
+                    "why_reserved": "Extension points are form-specific. bare-bone has no extensions to plan for.",
+                    "active_in": "config, code-config, cargo-library"
+                },
+
+                "X3_Troubleshooting": {
+                    "tag": "Troubleshooting",
+                    "why_reserved": "Troubleshooting requires form-specific knowledge of what can go wrong.",
+                    "active_in": "config, code-config, cargo-library"
+                },
+
+                "X4_Reference": {
+                    "tag": "Reference",
+                    "why_reserved": "Quick-lookup reference depends on form-specific files and validation commands.",
+                    "active_in": "config, code-config, cargo-library"
+                }
+            }
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_closing_start": "===================================================================",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+
+    "_X1_policy": {
+        "never": ["Remove form_identity or containers -- they are the schema's purpose"],
+        "careful": ["Rename container keys -- parseFormSchema depends on exact names"],
+        "safe": ["Add content_constraints detail", "Refine why/how text", "Add new cannot entries"]
+    },
+
+    "_X5_note": {
+        "note": "TOML bare-bone form schema. The floor. Identity + Validation in CONTENT, Policy + Note in CLOSING. Everything else is Reserved Omission. Declared forms build on this.",
+        "scripture": "Matthew 7:24 (KJV) -- Built his house upon a rock.",
+        "anchor": "The bare bone is the foundation. Forms promote from it. The minimum is not nothing -- it is the honest minimum."
+    },
+
+    // ===================================================================
+    // END CLOSING [END]
+    // ===================================================================
+
+    "_closing_end": "===================================================================",
+    "_closing_end_tag": "END CLOSING [END]"
+}

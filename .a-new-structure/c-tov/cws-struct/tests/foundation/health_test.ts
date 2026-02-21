@@ -179,14 +179,25 @@ Deno.test("scoring/computeBlockScore: empty containers = 0", () => {
   assertEquals(score.containers.length, 0);
 });
 
-Deno.test("scoring/computeBlockScore: averages container scores", () => {
+Deno.test("scoring/computeBlockScore: log-weighted from container actions", () => {
   const c1 = computeContainerScore("I1", "metadata", [pass("a"), pass("b")]);
   const c2 = computeContainerScore("I2", "metadata", [pass("a"), fail("b", "error")]);
-  // c1 = 100
-  // c2: pass weight 1.0 + error weight 2.0 → (1-2)/(1+2) = -1/3 → -33
-  // avg(100, -33) = 67/2 = 33.5 → 34
+  // c1 linear = 100, c2 linear = -33 (for drill-down)
+  //
+  // Block log-weighted: collect all 4 non-neutral actions, sort by severity:
+  //   [fail("b",error,-1), pass(warn,+1), pass(warn,+1), pass(warn,+1)]
+  // n=4, logDenom=ln(5)=1.609
+  //   i=0: base=2.0, mult=1.000, eff=2.000, contrib=-2.000
+  //   i=1: base=1.0, mult=0.861, eff=0.861, contrib=+0.861
+  //   i=2: base=1.0, mult=0.683, eff=0.683, contrib=+0.683
+  //   i=3: base=1.0, mult=0.431, eff=0.431, contrib=+0.431
+  // weightedSum=-0.025, maxWeight=3.975
+  // score = round(-0.025/3.975 × 100) = round(-0.63) = -1
+  //
+  // The error at position 0 gets FULL weight (2.0 base × 1.0 positional).
+  // Three passes with diminishing positional weight barely offset it.
   const block = computeBlockScore("metadata", [c1, c2]);
-  assertEquals(block.score, 34);
+  assertEquals(block.score, -1);
 });
 
 Deno.test("scoring/computeBlockScore: single perfect container = 100", () => {
@@ -208,25 +219,26 @@ Deno.test("scoring/computeHealthScore: empty blocks = 0", () => {
   assertEquals(health.misalignedCount, 0);
 });
 
-Deno.test("scoring/computeHealthScore: aggregates from blocks (log-weighted)", () => {
+Deno.test("scoring/computeHealthScore: per-block averaging of log-weighted blocks", () => {
   const c1 = computeContainerScore("I1", "metadata", [pass("a"), pass("b")]);
   const c2 = computeContainerScore("X1", "closing", [pass("a"), fail("b", "warn")]);
   const b1 = computeBlockScore("metadata", [c1]);
   const b2 = computeBlockScore("closing", [c2]);
   const health = computeHealthScore([b1, b2]);
 
-  // 4 active actions (all warn weight 1.0), sorted: fail first, 3 passes.
-  // n=4, logDenom=ln(5)=1.609
-  // Positional multipliers: [1.000, 0.861, 0.683, 0.431]
-  // Effective weights:       [1.000, 0.861, 0.683, 0.431]
-  // Contributions:           [-1.000, +0.861, +0.683, +0.431]
-  // weightedSum = 0.975, maxWeight = 2.975
-  // score = round(0.975/2.975 × 100) = 33
+  // b1 (metadata): 2 passes → log-weighted = 100
+  // b2 (closing): [fail(warn,-1), pass(warn,+1)]
+  //   n=2, logDenom=ln(3)=1.099
+  //   i=0: base=1.0, mult=1.000, eff=1.000, contrib=-1.000
+  //   i=1: base=1.0, mult=0.631, eff=0.631, contrib=+0.631
+  //   weightedSum=-0.369, maxWeight=1.631
+  //   score = round(-0.369/1.631 × 100) = -23
   //
-  // Log principle: the single failure at position 0 gets FULL weight,
-  // while passes at later positions get diminishing weight.
-  // Foundation checks matter most.
-  assertEquals(health.total, 33);
+  // Per-block average: (100 + (-23)) / 2 = 38.5 → 39
+  //
+  // Each block speaks with equal voice. Metadata is perfect.
+  // Closing has a foundation-level failure. The average reflects both.
+  assertEquals(health.total, 39);
   assertEquals(health.totalActions, 4);
   assertEquals(health.alignedCount, 3);
   assertEquals(health.misalignedCount, 1);

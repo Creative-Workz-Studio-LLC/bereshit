@@ -2,6 +2,7 @@
 //omni:code --go -library
 //omni:version a-01.00
 
+// Package fixture provides test fixtures for the Go 4-block linter.
 package fixture
 
 // ============================================================================
@@ -17,6 +18,7 @@ package fixture
 // Identity (I1-I4)
 // ──────────────────────────────────────────────────────────────────────────
 
+// Pragma carries OmniCode identity fields (I1-I4).
 var Pragma = [][2]string{
 	// I1: Core
 	{"I1.key", "B-test-fixture-valid-library"},
@@ -45,6 +47,7 @@ var Pragma = [][2]string{
 // Context (C1-C7)
 // ──────────────────────────────────────────────────────────────────────────
 
+// Metadata carries OmniCode context fields (C1-C7).
 var Metadata = [][2]string{
 	// C1: State
 	{"C1.version", "a-01.00"},
@@ -105,6 +108,15 @@ const Version = "0.1.0"
 var defaultConfig = Config{Name: "test", Version: Version}
 
 // ──────────────────────────────────────────────────────────────────────────
+// 5. Error Types
+// ──────────────────────────────────────────────────────────────────────────
+
+type ConfigError struct {
+	Field   string
+	Message string
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // 6. Core Types
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -135,6 +147,23 @@ func formatConfig(c Config) string {
 
 func NewConfig(name string) Config {
 	return Config{Name: name, Version: Version}
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 4. Type Methods
+// ──────────────────────────────────────────────────────────────────────────
+
+func (e *ConfigError) Error() string {
+	return fmt.Sprintf("config error: %s — %s", e.Field, e.Message)
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 5. Public APIs
+// ──────────────────────────────────────────────────────────────────────────
+
+// GetVersion returns the library version string.
+func GetVersion() string {
+	return Version
 }
 
 // ============================================================================

@@ -1,0 +1,344 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma": "===================================================================",
+    "_pragma_tag": "OMNICODE PRAGMA [PRAGMA]",
+    "_pragma_format": "@omni data --jsonc",
+
+    "_P1_CORE": "-------------------------------------------------------------------",
+    "_P1_tag": "P.1 CORE -- Identity [CORE]",
+    "_P1_key": "B-L1-schemas-form-cargo-library-toml",
+    "_P1_from": "b-word/L1-omnicode/ladder/schemas/data/forms/bare-bone/toml-bare-bone.jsonc",
+    "_P1_at": "a-01.00",
+
+    "_P2_FAMILY": "-------------------------------------------------------------------",
+    "_P2_tag": "P.2 FAMILY -- Classification [FAMILY]",
+    "_P2_type": "data",
+    "_P2_subtype": "schema",
+    "_P2_role": "form-constraint",
+    "_P2_structure": "3-block",
+
+    "_P3_INSTANCE": "-------------------------------------------------------------------",
+    "_P3_tag": "P.3 INSTANCE -- File Details [INSTANCE]",
+    "_P3_component": "schemas",
+    "_P3_layer": "b-word/L1-omnicode/ladder/schemas/data/forms/declared",
+    "_P3_provides": ["CARGO_LIBRARY_FORM_CONSTRAINTS", "CONTAINER_CAN_CANNOT", "CARGO_CONVENTION_ORDERING"],
+
+    "_P5_SUMMARY": "-------------------------------------------------------------------",
+    "_P5_tag": "P.5 SUMMARY -- Human Identity [SUMMARY]",
+    "_P5_title": "TOML Cargo Library Form Schema",
+    "_P5_brief": "Defines what CAN and CANNOT be in a Cargo.toml for a library crate. Inherits bare-bone foundation and promotes Cargo-specific sections. CONTENT container uses cargo_convention ordering: package -> targets -> deps -> features -> lints. Library form reserves [[bin]] and [workspace].",
+
+    // ===================================================================
+    // END PRAGMA [END]
+    // ===================================================================
+
+    "_pragma_end": "===================================================================",
+    "_pragma_end_tag": "END PRAGMA [END]",
+
+    // ===================================================================
+    // METADATA BLOCK [METADATA]
+    // ===================================================================
+
+    "_metadata_start": "===================================================================",
+    "_metadata_tag": "METADATA BLOCK [METADATA]",
+
+    "_M1_identity": {
+        "file": "toml-cargo-library.jsonc",
+        "key": "B-L1-schemas-form-cargo-library-toml",
+        "title": "TOML Cargo Library Form Schema",
+        "type": "Data (Form Constraint Schema)",
+        "component": "Ladder",
+        "role": "Define per-container CAN/CANNOT constraints for Cargo.toml library crate form"
+    },
+
+    "_M2_state": {
+        "version": "a-01.00",
+        "status": "Active",
+        "created": "2026-02-20",
+        "updated": "2026-02-20"
+    },
+
+    "_M3_attribution": {
+        "architect": "Seanje Lenox-Wise",
+        "implementation": "Nova Dawn (CPI-SI)",
+        "organization": "CreativeWorkzStudio LLC"
+    },
+
+    "_M4_grounding": {
+        "scripture": "Psalm 127:1 (WEB) -- Unless Yahweh builds the house, they labor in vain who build it.",
+        "principle": "Cargo builds the crate. The manifest declares what the builder needs. The library form ensures the declaration is honest -- no binary targets in a library, no workspace config in a member crate.",
+        "anchor": "genesis_1_1 -> void(0) -> unity(1) -> derivation"
+    },
+
+    "_M5_dependencies": {
+        "stands_on": [
+            "data/forms/bare-bone/toml-bare-bone.jsonc -- bare-bone foundation (floor)",
+            "data/format/toml-3block-schema.jsonc -- TOML syntax rules, pragma taxonomy"
+        ],
+        "consumers": [
+            "b-word/seed/code/L0/toml/cargo/Cargo.toml -- the Cargo template this schema constrains",
+            "All library Cargo.toml files in the Bereshit codebase"
+        ],
+        "relationship": "bare-bone defines THE MINIMUM. This cargo-library schema defines what CHANGES for a library crate -- which Cargo sections are expected, which are reserved, and what the OmniCode metadata requirements are."
+    },
+
+    // ===================================================================
+    // END METADATA [END]
+    // ===================================================================
+
+    "_metadata_end": "===================================================================",
+    "_metadata_end_tag": "END METADATA [END]",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+    //
+    // THE CARGO LIBRARY FORM CONSTRAINT SCHEMA
+    //
+    // Cargo.toml for a library crate. Inherits bare-bone and promotes:
+    //   CONTENT: [package] (required) + [dependencies], [dev-dependencies],
+    //            [features], [lints] (available) + OmniCode metadata (required)
+    //   CLOSING: X2, X3, X4 (available -- promoted from bare-bone reserved)
+    //
+    // CONTENT ordering: cargo_convention
+    //   package -> targets -> dependencies -> features -> lints -> metadata
+    //
+    // Cargo-specific constraint: [package] must physically come BEFORE
+    // [package.metadata.omni.*] sub-tables (TOML sub-table ordering rule).
+
+    "_content_start": "===================================================================",
+    "_content_tag": "CONTENT BLOCK [CONTENT]",
+
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://creativeworkzstudio.com/schemas/omnicode/forms/declared/toml-cargo-library.schema.json",
+    "title": "TOML Cargo Library Form Constraints",
+    "description": "Per-container CAN/CANNOT constraints for library Cargo.toml files. Declares crate identity, dependencies, and quality rules.",
+
+    "form_identity": {
+        "name": "cargo-library",
+        "is_foundation": false,
+        "inherits": "bare-bone",
+        "pragma": "# #!omni code --toml --cargo",
+        "template": "b-word/seed/code/L0/toml/cargo/Cargo.toml",
+        "principle": "Filling after separation. bare-bone declared the minimum (identity + validation); cargo-library fills it with crate identity, dependencies, and quality rules.",
+        "derivation_rule": "cargo-library = bare-bone + [package] (required) + [dependencies]/[dev-dependencies]/[features]/[lints] (available) + OmniCode metadata in package.metadata.omni (required). [[bin]] and [workspace] are reserved.",
+        "ordering": "cargo_convention -- package -> targets -> dependencies -> features -> lints"
+    },
+
+    // -------------------------------------------------------------------
+    // Co -- Content Operations [OPS]
+    // -------------------------------------------------------------------
+
+    "_Co": "-------------------------------------------------------------------",
+    "_Co_tag": "Co -- Content Operations [OPS]",
+
+    "containers": {
+
+        // =============================================================
+        // 1. METADATA CONTAINER -- identical to bare-bone
+        // =============================================================
+
+        "METADATA": {
+            "summary": "IDENTICAL TO BARE-BONE -- fully required I1-I4, C1-C7. Cargo library does not change metadata requirements.",
+            "reserved_omission": false,
+            "inherits_from": "bare-bone METADATA (all constraints unchanged)",
+
+            "why": "Identity is form-invariant. A Cargo library has exactly the same OmniCode metadata requirements as bare-bone. The only values that change are file-specific (I1.key, I3.file, C-sections).",
+
+            "cargo_specific_notes": {
+                "metadata_location": "OmniCode metadata lives in [package.metadata.omni.*] -- Cargo's sanctioned extension point. Cargo ignores everything under package.metadata.",
+                "physical_ordering": "[package] must come BEFORE [package.metadata.omni.*] sub-tables (TOML sub-table ordering rule). Logical order is still METADATA -> CONTENT -> CLOSING."
+            }
+        },
+
+        // =============================================================
+        // 2. CONTENT CONTAINER -- Cargo sections + OmniCode metadata
+        // =============================================================
+        //
+        // Library Cargo.toml CONTENT contains standard Cargo sections.
+        // Unlike generic TOML (which uses [identity] + [_validation]),
+        // Cargo has its own section structure defined by the Cargo spec.
+        //
+        // The bare-bone's Cc.1 Identity maps to [package] in Cargo.
+        // The bare-bone's Cv.1 Validation maps to the build commands.
+        //
+        // Ordering: cargo_convention
+        //   [package] -> [lib] -> [dependencies] -> [features] -> [lints]
+
+        "CONTENT": {
+            "summary": "1 required ([package]) + 5 available + OmniCode metadata required. Cargo library content.",
+            "reserved_omission": true,
+
+            "why": "Every Cargo.toml MUST have [package] -- it's the crate identity. Dependencies, features, and lints are available because not every library needs all of them. OmniCode metadata is required because we lint these files.",
+
+            "how": {
+                "working_with_constraints": "Every library Cargo.toml has at minimum: [package] with name+version+edition. Add [dependencies], [features], [lints] as needed. OmniCode metadata in [package.metadata.omni].",
+                "cargo_ordering": "[package] first (TOML sub-table rule), then remaining sections in any order. Convention: package -> targets -> deps -> features -> lints."
+            },
+
+            "can": {
+                "Cc1_Package": {
+                    "position": 1,
+                    "tag": "Package",
+                    "status": "REQUIRED",
+                    "toml_section": "[package]",
+                    "purpose": "Crate identity -- name, version, edition, description, authors.",
+                    "why_required": "Every Cargo.toml MUST have [package]. Without it, Cargo cannot build. name and version are the minimum. edition determines language features.",
+                    "content_constraints": {
+                        "required_fields": ["name", "version"],
+                        "defined_fields": ["edition", "description", "authors", "license", "repository", "rust-version"]
+                    }
+                },
+
+                "Co1_Dependencies": {
+                    "position": 2,
+                    "tag": "Dependencies",
+                    "status": "AVAILABLE",
+                    "toml_sections": ["[dependencies]", "[dev-dependencies]", "[build-dependencies]"],
+                    "purpose": "Crate dependencies -- runtime, test, and build dependencies.",
+                    "why_available": "Not every library has external dependencies. Some are pure-std. But most do."
+                },
+
+                "Co2_Features": {
+                    "position": 3,
+                    "tag": "Features",
+                    "status": "AVAILABLE",
+                    "toml_section": "[features]",
+                    "purpose": "Optional capabilities. default = [] for minimum surface.",
+                    "why_available": "Features are optional. Simple libraries don't need feature gates."
+                },
+
+                "Co3_Lints": {
+                    "position": 4,
+                    "tag": "Lints",
+                    "status": "AVAILABLE",
+                    "toml_section": "[lints]",
+                    "purpose": "Code quality rules. workspace = true for consistency.",
+                    "why_available": "Lint config is optional -- workspace-level lints handle most cases."
+                },
+
+                "Cc2_LibTarget": {
+                    "position": 5,
+                    "tag": "LibTarget",
+                    "status": "AVAILABLE",
+                    "toml_section": "[lib]",
+                    "purpose": "Library target configuration. Usually not needed -- Cargo defaults work.",
+                    "why_available": "Most libraries use default lib target (src/lib.rs). Only needed for custom lib name or path."
+                },
+
+                "Cv1_OmniMetadata": {
+                    "position": 6,
+                    "tag": "OmniMetadata",
+                    "status": "REQUIRED",
+                    "toml_section": "[package.metadata.omni.*]",
+                    "purpose": "OmniCode metadata -- I1-I4 identity, C1-C7 context, _contract, _closing.",
+                    "why_required": "Every Cargo.toml we lint MUST have OmniCode metadata. Without it, the file is just a Cargo manifest -- valid for Cargo but not for our standard."
+                }
+            },
+
+            "cannot": {
+                "description": "Reserved sections -- these MUST NOT appear in a library Cargo.toml.",
+
+                "BinTarget": {
+                    "tag": "BinTarget",
+                    "why_reserved": "Libraries don't have binary targets. [[bin]] means this is an executable crate, not a library. Use executable form instead.",
+                    "active_in": "cargo-executable"
+                },
+
+                "Workspace": {
+                    "tag": "Workspace",
+                    "why_reserved": "[workspace] means this IS the workspace root. Library crates are workspace MEMBERS, not roots. Workspace config lives in the root Cargo.toml.",
+                    "active_in": "cargo-workspace"
+                }
+            }
+        },
+
+        // =============================================================
+        // 3. CLOSING CONTAINER -- promotes X2-X4 from bare-bone reserved
+        // =============================================================
+
+        "CLOSING": {
+            "summary": "2 required (X1 + X5) + 3 available (X2, X3, X4). Promotes bare-bone reserved sections.",
+            "reserved_omission": false,
+
+            "why": "Cargo library files have enough complexity to warrant extension points (X2), troubleshooting (X3), and reference (X4). These are promoted from bare-bone's Reserved Omission.",
+
+            "can": {
+                "X1_Policy": {
+                    "position": 1,
+                    "tag": "Policy",
+                    "status": "REQUIRED",
+                    "toml_section": "[package.metadata.omni._closing.X1_policy]",
+                    "purpose": "Modification guidelines -- never, careful, safe."
+                },
+
+                "X2_Extension": {
+                    "position": 2,
+                    "tag": "Extension",
+                    "status": "AVAILABLE",
+                    "toml_section": "[package.metadata.omni._closing.X2_extension]",
+                    "purpose": "Future ideas -- planned capabilities."
+                },
+
+                "X3_Troubleshooting": {
+                    "position": 3,
+                    "tag": "Troubleshooting",
+                    "status": "AVAILABLE",
+                    "toml_section": "[package.metadata.omni._closing.X3_troubleshooting]",
+                    "purpose": "Common problems and solutions."
+                },
+
+                "X4_Reference": {
+                    "position": 4,
+                    "tag": "Reference",
+                    "status": "AVAILABLE",
+                    "toml_section": "[package.metadata.omni._closing.X4_reference]",
+                    "purpose": "Quick lookup -- related files, validation commands."
+                },
+
+                "X5_Note": {
+                    "position": 5,
+                    "tag": "Note",
+                    "status": "REQUIRED",
+                    "toml_section": "[package.metadata.omni._closing.X5_note]",
+                    "purpose": "Final anchor -- scripture, note, anchor statement."
+                }
+            },
+
+            "cannot": {
+                "description": "No reserved sections in library CLOSING -- all X sections are either required or available."
+            }
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_closing_start": "===================================================================",
+    "_closing_tag": "CLOSING BLOCK [CLOSING]",
+
+    "_X1_policy": {
+        "never": ["Remove form_identity or containers"],
+        "careful": ["Rename container keys -- parseFormSchema depends on exact names"],
+        "safe": ["Add content_constraints detail", "Refine why/how text", "Add new cannot entries"]
+    },
+
+    "_X5_note": {
+        "note": "TOML Cargo library form schema. The ceiling for library crates. [package] required, [[bin]] reserved, OmniCode metadata required. Inherits bare-bone foundation.",
+        "scripture": "Psalm 127:1 (WEB) -- Unless Yahweh builds the house, they labor in vain who build it.",
+        "anchor": "Cargo builds the crate. We declare what's needed honestly. The form schema ensures the declaration matches the purpose."
+    },
+
+    // ===================================================================
+    // END CLOSING [END]
+    // ===================================================================
+
+    "_closing_end": "===================================================================",
+    "_closing_end_tag": "END CLOSING [END]"
+}

@@ -1,5 +1,9 @@
 //! Thread-safe root directory guard — set once at startup, checked by all loaders.
 
+//omni:code --rust -library
+//omni:key B-L0-hybrid-config-root
+//omni:version b-03.00
+
 use std::path::PathBuf;
 use std::sync::RwLock;
 
@@ -42,5 +46,26 @@ impl RootGuard {
     pub(crate) fn clear(&self) {
         let mut guard = self.path.write().unwrap_or_else(|e| e.into_inner());
         *guard = None;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_root_guard_lifecycle() {
+        let guard = RootGuard::new("test");
+        assert!(guard.check().is_err());
+        assert!(guard.get().is_none());
+
+        guard.set(PathBuf::from("/tmp/test"));
+        assert!(guard.check().is_ok());
+        assert_eq!(guard.get().unwrap(), PathBuf::from("/tmp/test"));
+
+        guard.clear();
+        assert!(guard.check().is_err());
+        assert!(guard.get().is_none());
     }
 }

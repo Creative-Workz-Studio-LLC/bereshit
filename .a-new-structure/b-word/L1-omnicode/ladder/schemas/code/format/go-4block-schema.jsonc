@@ -382,75 +382,174 @@
             "required": true,
             "severity": "error",
 
-            "section_order": {
-                "note": "10-section dependency chain — each layer uses only what's above. Aligned with Rust 4-block SETUP pattern, adapted for Go conventions.",
-                "1": {
-                    "label": "Imports",
-                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
-                    "header": "// 1. Imports",
-                    "purpose": "What this file depends on. Groups: Standard Library → External → Internal → Package-Internal"
+            "subsection_order": {
+                "note": "Canonical order follows the Go dependency chain — each subsection can reference only what came before it. Linter checks that present subsections appear in this sequence. Not all 10 are required — only those with content should appear.",
+                "canonical_count": 10,
+                "ordering_principle": "dependency_chain",
+
+                "S1_Imports": {
+                    "position": 1,
+                    "tag": "Imports",
+                    "pattern": "Imports",
+                    "alt_patterns": ["Package Imports"],
+                    "purpose": "What this file depends on. Groups: Standard Library → External → Internal → Package-Internal",
+                    "production_note": "Group by origin: std → external → internal → package-internal. goimports handles formatting. Dot imports (. \"pkg\") are a code smell except in test files. Blank imports (_ \"pkg\") for side effects belong here, documented with purpose.",
+                    "required_in": ["library", "executable", "demo-test"]
                 },
-                "2": {
-                    "label": "Constants",
-                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
-                    "header": "// 2. Constants",
-                    "purpose": "Compile-time fixed values. Don't depend on types — they come first."
+                "S2_Constants": {
+                    "position": 2,
+                    "tag": "Constants",
+                    "pattern": "Constants",
+                    "alt_patterns": ["Consts"],
+                    "purpose": "Compile-time fixed values. Don't depend on types — they come first.",
+                    "production_note": "Every magic number in BODY should be a named constant here. Exit codes, buffer sizes, retry counts, version strings, default values — if it is hardcoded, it lives here. Use iota for enumerations. When the system scales, these migrate to config; BODY stays unchanged.",
+                    "required_in": ["executable"]
                 },
-                "3": {
-                    "label": "Variables",
-                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
-                    "header": "// 3. Variables",
-                    "purpose": "Package-level mutable state. Sentinel errors, registries, lazy singletons."
+                "S3_Variables": {
+                    "position": 3,
+                    "tag": "Variables",
+                    "pattern": "Variables",
+                    "alt_patterns": ["Vars", "Package Variables"],
+                    "purpose": "Package-level mutable state. Sentinel errors, registries, lazy singletons.",
+                    "production_note": "Package-level vars are Go's process-wide shared state: sentinel errors (ErrNotFound), registries (sync.Map), lazy singletons (sync.Once). In production: prefer sync primitives for concurrent access. In tests: avoid mutable package vars — parallel test execution creates race conditions.",
+                    "required_in": []
                 },
-                "4": {
-                    "label": "Type Aliases",
-                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
-                    "header": "// 4. Type Aliases",
-                    "purpose": "Shorthand for complex signatures. type X = Y (true alias)."
+                "S4_TypeAliases": {
+                    "position": 4,
+                    "tag": "TypeAliases",
+                    "pattern": "Type Aliases",
+                    "purpose": "Shorthand for complex signatures. type X = Y (true alias).",
+                    "production_note": "True aliases (type X = Y) share identity with the original. Defined types (type X Y) create new types. Use aliases for migration compatibility, defined types for domain vocabulary. A well-aliased package tells you what it does by how its types read.",
+                    "required_in": []
                 },
-                "5": {
-                    "label": "Error Types",
-                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
-                    "header": "// 5. Error Types",
-                    "purpose": "Custom errors + Error() method. Before Core Types because methods return these."
+                "S5_ErrorTypes": {
+                    "position": 5,
+                    "tag": "ErrorTypes",
+                    "pattern": "Error Types",
+                    "alt_patterns": ["Errors"],
+                    "purpose": "Custom errors + Error() method. Before Core Types because methods return these.",
+                    "production_note": "Error types define how your package fails. In production: sentinel errors (var ErrNotFound = errors.New(...)) for comparison, typed errors (type ValidationError struct{...}) for carrying context. Error() implementations go HERE with the type, not in BODY — they complete the type definition. A package's error type is its most important API surface after its happy path.",
+                    "required_in": ["library"]
                 },
-                "6": {
-                    "label": "Core Types",
-                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
-                    "header": "// 6. Core Types",
-                    "purpose": "struct definitions + simple constructors. The shapes this file works with."
+                "S6_CoreTypes": {
+                    "position": 6,
+                    "tag": "CoreTypes",
+                    "pattern": "Core Types",
+                    "alt_patterns": ["Types", "Structures", "Data Types"],
+                    "purpose": "struct definitions + simple constructors. The shapes this file works with.",
+                    "production_note": "These are the nouns of your system. Structs carry state. In production: export only what consumers need. Keep types flat — deeply nested types are a sign of missing abstractions. Simple New*() constructors are defensible here; complex construction with validation belongs in BODY.",
+                    "required_in": ["library"]
                 },
-                "7": {
-                    "label": "Interface Defs",
-                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
-                    "header": "// 7. Interface Definitions",
-                    "purpose": "Behavioral contracts (shape, not fulfillment). Implementations go in BODY."
+                "S7_InterfaceDefs": {
+                    "position": 7,
+                    "tag": "InterfaceDefs",
+                    "pattern": "Interface Definitions",
+                    "alt_patterns": ["Interfaces", "Interface Defs"],
+                    "purpose": "Behavioral contracts (shape, not fulfillment). Implementations go in BODY.",
+                    "production_note": "Interfaces define the extension points of your system. In Go: accept interfaces, return structs. Keep interfaces small (1-3 methods) — the io.Reader/io.Writer pattern. Interface definitions are SETUP (they declare contracts); implementations are BODY (they fulfill contracts). Consumers should define the interfaces they need, not the provider.",
+                    "required_in": []
                 },
-                "8": {
-                    "label": "Type Methods",
-                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
-                    "header": "// 8. Type Methods",
-                    "purpose": "Structural behaviors — completing interface impls (Error, String, Unwrap). Business logic goes in BODY."
+                "S8_TypeMethods": {
+                    "position": 8,
+                    "tag": "TypeMethods",
+                    "pattern": "Type Methods",
+                    "alt_patterns": ["Methods", "Receiver Methods"],
+                    "purpose": "Structural behaviors — completing interface impls (Error, String, Unwrap). Business logic goes in BODY.",
+                    "production_note": "Methods that complete a type's identity: Error(), String(), MarshalJSON(), Unwrap(). These are SETUP because removing them makes the type incomplete. Business logic methods (Process(), Execute(), Handle()) are BODY — removing them removes capability, not identity.",
+                    "required_in": []
                 },
-                "9": {
-                    "label": "Code Generation",
-                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
-                    "header": "// 9. Code Generation",
-                    "purpose": "go:generate directives. Go's equivalent of Rust macros."
+                "S9_CodeGeneration": {
+                    "position": 9,
+                    "tag": "CodeGeneration",
+                    "pattern": "Code Generation",
+                    "alt_patterns": ["Assertion Helpers"],
+                    "purpose": "go:generate directives. Go's equivalent of Rust macros.",
+                    "production_note": "//go:generate directives trigger code generation tooling (stringer, mockgen, protoc). In test files: assertion helpers with t.Helper() are the Go equivalent of Rust assertion macros — they eliminate boilerplate without hiding logic. Document what each directive generates.",
+                    "required_in": []
                 },
-                "10": {
-                    "label": "Build Tags",
-                    "divider": "// ──────────────────────────────────────────────────────────────────────────",
-                    "header": "// 10. Build Tags",
-                    "purpose": "Conditional compilation items. //go:build constraints and tag-specific code."
+                "S10_BuildTags": {
+                    "position": 10,
+                    "tag": "BuildTags",
+                    "pattern": "Build Tags",
+                    "purpose": "Conditional compilation items. //go:build constraints and tag-specific code.",
+                    "production_note": "Build tags are SETUP's config mechanism at compile time. In production: //go:build constraints control what gets compiled — platform code, integration tests, debug tooling. Last in SETUP because they modify what earlier subsections declared. Use the new //go:build syntax (Go 1.17+), not the legacy // +build.",
+                    "required_in": []
                 }
             },
 
-            "subtype_adaptations": {
-                "note": "Same 10 sections across all subtypes, but commentary and examples adapt per subtype",
-                "executable": "Exit codes in §2, minimal §6 (consume from libraries), §7/§9 rarely needed",
-                "library": "Rich §5-§7 (API contract errors, domain types, interface definitions)",
-                "demo_test": "§6 becomes 'Test Fixtures' with fixture*() pattern, §9 becomes 'Assertion Helpers' with t.Helper()"
+            "production_design": {
+                "principle": "SETUP is the file's local config layer. Everything hardcoded lives here, not scattered through BODY. This creates a single address for every value, a clear upgrade path to external config, and a BODY block that is pure logic.",
+                "storage_pattern": "The SETUP/BODY separation mirrors the data/logic split in database design. SETUP is your schema (what exists); BODY is your queries (what happens). When SETUP is clean, you can reason about data flow without reading logic.",
+                "scaling_signal": "If SETUP grows past 200 lines, the file is doing too much. Extract types into a types.go file, errors into errors.go, constants into constants.go. The subsection structure tells you exactly where to cut."
+            },
+
+            "subtype_emphasis": {
+                "note": "Each subtype leans on different SETUP subsections. The 10-subsection structure is universal; the weight distribution is subtype-specific.",
+                "library": {
+                    "heavy": ["Imports", "ErrorTypes", "CoreTypes", "InterfaceDefs"],
+                    "light": ["Constants", "Variables", "CodeGeneration"],
+                    "note": "Libraries are type-rich. Their SETUP defines the vocabulary consumers use."
+                },
+                "executable": {
+                    "heavy": ["Imports", "Constants", "Variables"],
+                    "light": ["CoreTypes", "InterfaceDefs", "CodeGeneration"],
+                    "note": "Executables are config-rich. Their SETUP defines the runtime parameters."
+                },
+                "demo_test": {
+                    "heavy": ["Imports", "Constants", "CoreTypes", "CodeGeneration"],
+                    "light": ["Variables", "InterfaceDefs", "BuildTags"],
+                    "note": "Tests are fixture-rich. Their SETUP defines expected values and assertion helpers."
+                }
+            },
+
+            "placement_rules": {
+                "must_be_in_setup": [
+                    "import declarations",
+                    "const blocks and individual const declarations",
+                    "var blocks and package-level var declarations",
+                    "type alias declarations (type X = Y)",
+                    "type definitions (type X struct/interface/func)",
+                    "Error type definitions and Error() method implementations",
+                    "struct and interface definitions",
+                    "Structural methods (Error, String, MarshalJSON, Unwrap)",
+                    "go:generate directives",
+                    "Build-tagged declarations"
+                ],
+                "must_not_be_in_setup": [
+                    "func implementations with business logic (belongs in BODY)",
+                    "Method implementations beyond structural completers (belongs in BODY)",
+                    "Business logic of any kind",
+                    "I/O operations",
+                    "Network calls or database queries"
+                ],
+                "gray_area": {
+                    "constructors": "New*() — defensible in SETUP for simple field assignment, BODY for complex construction with validation",
+                    "type_methods": "Error()/String() complete the type → SETUP. Process()/Execute() add capability → BODY"
+                }
+            },
+
+            "content_kind_mapping": {
+                "_description": "Maps Go source-level content kinds to blocks and subsections. This is the machine-readable version of placement_rules — the linter reads this, not the human-readable lists above.",
+                "block_placement": {
+                    "import_decl": "SETUP",
+                    "const_decl": "SETUP",
+                    "var_decl": "SETUP",
+                    "type_decl": "SETUP",
+                    "func_decl": "BODY",
+                    "method_decl": "BODY",
+                    "init_func": "BODY"
+                },
+                "subsection_placement": {
+                    "import_decl": "Imports",
+                    "const_decl": "Constants",
+                    "var_decl": "Variables",
+                    "type_decl": "CoreTypes",
+                    "method_decl": "TypeMethods"
+                },
+                "metadata_forbidden": [
+                    "import_decl", "const_decl", "var_decl", "type_decl",
+                    "func_decl", "method_decl", "init_func"
+                ]
             },
 
             "go_requirements": {
@@ -471,12 +570,183 @@
             "note": "BODY contains the actual Go functions — the reason the file exists",
 
             "subsection_order": {
-                "note": "Numeric ascending — linter checks // N. Name headers appear in ascending order (subtype-agnostic)",
+                "note": "Unlike SETUP's universal 10-subsection structure, BODY subsections are subtype-specific. Each subtype has its own ordering principle reflecting the nature of its logic. Linter checks that present subsections appear in the documented sequence within each subtype.",
+                "ordering_varies_by_subtype": true,
                 "format": "// N. Name — numbered headers between 74-char ─ separators",
                 "legacy_format": "§N — Name (backward-compatible, matched by BODY_SUBSECTION_LEGACY)",
-                "library": ["1. Org Chart", "2. Helpers", "3. Core Operations", "4. Error Handling", "5. Public APIs"],
-                "executable": ["1. Org Chart", "2. Helpers", "3. Core Operations", "4. Error Handling", "5. Public APIs"],
-                "demo_test": ["1. Org Chart", "2. Helpers", "3. Core Operations", "4. Error Handling", "5. Test Functions"]
+
+                // ─── Library: execution flow (B1-B5) ───
+
+                "library": {
+                    "canonical_count": 5,
+                    "ordering_principle": "execution_flow",
+                    "note": "Library BODY follows the execution flow — from structure overview through helpers and core operations to the public surface. Consumers see the Public APIs; everything before serves them.",
+
+                    "B1_OrgChart": {
+                        "position": 1,
+                        "tag": "OrgChart",
+                        "pattern": "Org Chart",
+                        "purpose": "Module structure overview — package relationships, internal organization, dependency graph",
+                        "production_note": "Documents how the package fits in the larger system. In multi-file packages: shows which files handle what. Helps navigators understand the package before diving into code.",
+                        "required_in": []
+                    },
+                    "B2_Helpers": {
+                        "position": 2,
+                        "tag": "Helpers",
+                        "pattern": "Helpers",
+                        "purpose": "Internal utility functions — private helpers that support core operations",
+                        "production_note": "Private functions (lowercase) serving the core operations. Each does one thing. If a helper grows complex, extract to its own file. Helper tests belong in demo-test files, not inline.",
+                        "required_in": []
+                    },
+                    "B3_CoreOperations": {
+                        "position": 3,
+                        "tag": "CoreOperations",
+                        "pattern": "Core Operations",
+                        "purpose": "Primary business logic — state transitions, computations, transformations",
+                        "production_note": "Typically the heaviest BODY subsection. If it exceeds ~200 lines, extract into a separate file. Methods take receivers (value or pointer). Internal helpers belong in §2 when reused, inline when not.",
+                        "required_in": []
+                    },
+                    "B4_ErrorHandling": {
+                        "position": 4,
+                        "tag": "ErrorHandling",
+                        "pattern": "Error Handling",
+                        "purpose": "Error processing, recovery, wrapping — functions that handle error conditions",
+                        "production_note": "Error handling functions wrap, transform, or recover from errors. Error TYPES go in SETUP §5; error HANDLING goes here. Pattern: fmt.Errorf(\"package.Method: %w\", err) for consistent wrapping.",
+                        "required_in": []
+                    },
+                    "B5_PublicAPIs": {
+                        "position": 5,
+                        "tag": "PublicAPIs",
+                        "pattern": "Public APIs",
+                        "purpose": "Exported functions — the package's public surface",
+                        "production_note": "The functions consumers actually call. Keep thin — delegate to core operations (§3). Document every exported function with Go doc comments. If this section grows large, the package is doing too much.",
+                        "required_in": ["library"]
+                    }
+                },
+
+                // ─── Executable: execution flow (B1-B5) ───
+
+                "executable": {
+                    "canonical_count": 5,
+                    "ordering_principle": "execution_flow",
+                    "note": "Executable BODY follows execution flow — same structure as library. Entry point (main) and exit code mapping live in CLOSING Ce. BODY contains only the testable business logic.",
+
+                    "B1_OrgChart": {
+                        "position": 1,
+                        "tag": "OrgChart",
+                        "pattern": "Org Chart",
+                        "purpose": "Module structure overview — command flow, subcommand relationships",
+                        "production_note": "For CLI tools: documents the command tree. For servers: documents the route/handler structure.",
+                        "required_in": []
+                    },
+                    "B2_Helpers": {
+                        "position": 2,
+                        "tag": "Helpers",
+                        "pattern": "Helpers",
+                        "purpose": "Internal utility functions — argument parsing, config loading, output formatting",
+                        "production_note": "Private functions (fn, not pub fn) serving run(). Each does one thing run() needs. If a helper grows complex, extract to a library package.",
+                        "required_in": []
+                    },
+                    "B3_CoreOperations": {
+                        "position": 3,
+                        "tag": "CoreOperations",
+                        "pattern": "Core Operations",
+                        "purpose": "The run() function — main business logic separated from main()",
+                        "production_note": "run() → error pattern keeps logic testable. Structure: Initialize → Execute → Output → Return. If run() exceeds ~50 lines, extract steps into helpers (§2). Every fallible operation propagates errors up.",
+                        "required_in": ["executable"]
+                    },
+                    "B4_ErrorHandling": {
+                        "position": 4,
+                        "tag": "ErrorHandling",
+                        "pattern": "Error Handling",
+                        "purpose": "Error processing and exit code mapping for the binary",
+                        "production_note": "Maps internal errors to user-facing messages and exit codes. Pattern: func exitCode(err error) int. Exit codes defined in SETUP §2 Constants.",
+                        "required_in": []
+                    },
+                    "B5_PublicAPIs": {
+                        "position": 5,
+                        "tag": "PublicAPIs",
+                        "pattern": "Public APIs",
+                        "purpose": "Exported functions — if the binary exposes a library interface",
+                        "production_note": "Most executables have no public APIs. When present, they allow the binary's logic to be used as a library. Consider extracting to a separate package.",
+                        "required_in": []
+                    }
+                },
+
+                // ─── Demo-test: test concern coverage (B1-B5) ───
+
+                "demo_test": {
+                    "canonical_count": 5,
+                    "ordering_principle": "concern_coverage",
+                    "note": "Test BODY follows concern coverage — from structure through helpers and core tests to the test-specific functions that validate behavior.",
+
+                    "B1_OrgChart": {
+                        "position": 1,
+                        "tag": "OrgChart",
+                        "pattern": "Org Chart",
+                        "purpose": "Test structure overview — what's being tested, test organization",
+                        "production_note": "Documents the test strategy. Which aspects are covered, which are deferred. Helps future developers understand what's proven.",
+                        "required_in": []
+                    },
+                    "B2_Helpers": {
+                        "position": 2,
+                        "tag": "Helpers",
+                        "pattern": "Helpers",
+                        "purpose": "Test helper functions — setup, teardown, assertion utilities",
+                        "production_note": "Functions with t.Helper() call. Fixtures, temporary file creators, assertion wrappers. Keep them focused — a test helper that does too much hides what's actually being tested.",
+                        "required_in": []
+                    },
+                    "B3_CoreOperations": {
+                        "position": 3,
+                        "tag": "CoreOperations",
+                        "pattern": "Core Operations",
+                        "purpose": "Core test operations — shared test logic and common patterns",
+                        "production_note": "Functions that multiple tests call. Table-driven test runner wrappers, benchmark setup, common assertion sequences.",
+                        "required_in": []
+                    },
+                    "B4_ErrorHandling": {
+                        "position": 4,
+                        "tag": "ErrorHandling",
+                        "pattern": "Error Handling",
+                        "purpose": "Error test helpers — functions that verify error conditions",
+                        "production_note": "assertError(), requireError(), custom error matchers. Validates both that errors occur and that they carry the right context.",
+                        "required_in": []
+                    },
+                    "B5_TestFunctions": {
+                        "position": 5,
+                        "tag": "TestFunctions",
+                        "pattern": "Test Functions",
+                        "purpose": "Test*() and Benchmark*() functions — the actual test cases",
+                        "production_note": "The tests themselves. Name pattern: Test{Aspect}_{Scenario} (e.g., TestOpen_InvalidPath). Use subtests (t.Run) for table-driven patterns. Each test should be independent — no ordering dependency.",
+                        "required_in": ["demo-test"]
+                    }
+                }
+            },
+
+            "production_design": {
+                "principle": "BODY is the file's logic layer. Everything executable lives here, not scattered through SETUP. SETUP declares what exists; BODY defines what happens.",
+                "scaling_signal": "If BODY exceeds ~500 lines, the file is doing too much. Extract logic into separate files. The subsection structure tells you where to cut.",
+                "testing_pattern": "BODY code maps 1:1 to tests. Helper functions (§2) → helper tests. Core operations (§3) → operation tests. Public APIs (§5) → integration tests.",
+                "refactoring_signal": "If methods for one type span multiple subsections (helpers in §2, core in §3, APIs in §5 for same type), that's correct — behavior organized by concern, not by type."
+            },
+
+            "subtype_emphasis": {
+                "note": "Each subtype leans on different BODY subsections.",
+                "library": {
+                    "heavy": ["CoreOperations", "PublicAPIs"],
+                    "light": ["OrgChart", "ErrorHandling"],
+                    "note": "Libraries center on core operations and the public surface."
+                },
+                "executable": {
+                    "heavy": ["Helpers", "CoreOperations"],
+                    "light": ["OrgChart", "PublicAPIs"],
+                    "note": "Executables center on the run() flow and its support functions."
+                },
+                "demo_test": {
+                    "heavy": ["Helpers", "TestFunctions"],
+                    "light": ["OrgChart", "CoreOperations"],
+                    "note": "Tests center on fixtures/helpers and the test functions themselves."
+                }
             }
         },
 
@@ -485,13 +755,196 @@
         // ═══════════════════════════════════════════════════════
 
         "CLOSING": {
-            "purpose": "Closing comments — summary, policy, guidance",
+            "purpose": "Validation → Execution → Cleanup. CLOSING proves the code works (tests), runs the code (entry point), and cleans up resources. Contains code zones (Cv/Ce/Cc) followed by documentation sections (X1-X6).",
+            "principle": "CLOSING is the accountability block. Tests prove claims. Entry points handle the OS interface. Cleanup prevents leaks. Documentation sections guide maintainers. Code zones come FIRST (they do real work); documentation sections come AFTER (they guide future work).",
             "boundary": "// ============================================================================",
             "label": "// CLOSING",
             "end_marker": "// END CLOSING",
             "required": true,
             "severity": "error",
-            "note": "CLOSING uses 9 zones: 3 code zones (Cv → Ce → Cc) then 6 doc sections (X1 → X2 → X3 → X4 → X5 + X6 template-only). Code zones must precede doc sections. Missing zones are valid."
+
+            "zone_ordering": {
+                "note": "Code zones precede documentation sections. Ordering: Cv → Ce → Cc → X1 → X2 → X3 → X4 → X5 → X6.",
+                "code_zones": ["Cv", "Ce", "Cc"],
+                "documentation_sections": ["X1", "X2", "X3", "X4", "X5", "X6"],
+                "ordering_principle": "prove_then_run_then_clean_then_document"
+            },
+
+            "code_zones": {
+                "note": "Zones contain actual executable Go code. Zone NAMES are universal; zone CONTENT varies by subtype.",
+
+                "Cv_Validation": {
+                    "position": 1,
+                    "tag": "Cv",
+                    "pattern": "Cv — Closing Validation",
+                    "purpose": "func Test* tests — prove code works",
+                    "subtype_content": {
+                        "library": "Package-level tests with table-driven patterns. Organize by BODY subsections.",
+                        "executable": "Exit code mapping tests, error display tests, identity verification.",
+                        "demo_test": "Meta-validation — tests that verify test infrastructure."
+                    }
+                },
+                "Ce_Execution": {
+                    "position": 2,
+                    "tag": "Ce",
+                    "pattern": "Ce — Closing Execution",
+                    "purpose": "main(), init(), entry — the code that starts execution",
+                    "subtype_content": {
+                        "library": "init() for identity registration. Libraries have no main().",
+                        "executable": "main() — thin entry delegating to run() (BODY). main() maps error to os.Exit; it contains no business logic.",
+                        "demo_test": "TestMain() if needed for global test setup/teardown."
+                    }
+                },
+                "Cc_Cleanup": {
+                    "position": 3,
+                    "tag": "Cc",
+                    "pattern": "Cc — Closing Cleanup",
+                    "purpose": "Close(), Shutdown(), defer cleanup — resource deallocation",
+                    "subtype_content": {
+                        "library": "Close/Shutdown methods for types owning resources (DB, files, network).",
+                        "executable": "Process cleanup — temp files, buffer flushing, DB connections.",
+                        "demo_test": "Test fixture teardown — cleanup functions, temp dir removal."
+                    }
+                }
+            },
+
+            "documentation_sections": {
+                "note": "Documentation sections follow code zones. They guide maintainers, not compilers.",
+                "X1_Policy": {
+                    "tag": "X1", "pattern": "X1: Policy", "required": true,
+                    "purpose": "Modification guidelines — never/careful/safe",
+                    "fields": { "required": ["never", "careful", "safe"], "defined": ["scripture"] }
+                },
+                "X2_Extension": {
+                    "tag": "X2", "pattern": "X2: Extension", "required": false,
+                    "purpose": "Designed growth points"
+                },
+                "X3_Troubleshooting": {
+                    "tag": "X3", "pattern": "X3: Troubleshooting", "required": false,
+                    "purpose": "Common problems and solutions"
+                },
+                "X4_Reference": {
+                    "tag": "X4", "pattern": "X4: Reference", "required": false,
+                    "purpose": "Related files, deps, validation"
+                },
+                "X5_Note": {
+                    "tag": "X5", "pattern": "X5: Note", "required": true,
+                    "purpose": "Closing scripture anchor",
+                    "fields": { "required": ["note", "scripture"], "defined": ["anchor"] }
+                },
+                "X6_Template": {
+                    "tag": "X6", "pattern": "X6: Template", "required": false,
+                    "template_only": true, "purpose": "Remove when instantiating"
+                }
+            },
+
+            "subtype_emphasis": {
+                "library": { "heavy": ["Cv"], "light": ["Ce", "Cc"], "note": "Libraries are test-rich." },
+                "executable": { "heavy": ["Ce", "Cv"], "light": ["Cc"], "note": "Executables need entry points AND tests." },
+                "demo_test": { "heavy": ["Cv", "Cc"], "light": ["Ce"], "note": "Test files need meta-validation AND fixture cleanup." }
+            },
+
+            "placement_rules": {
+                "must_be_in_closing": [
+                    "func Test* functions (Cv — package tests)",
+                    "main() function (Ce — executable entry point)",
+                    "init() function (Ce — identity registration for libraries)",
+                    "Close/Shutdown methods (Cc — resource cleanup)",
+                    "Test fixture teardown helpers (Cc — test cleanup)"
+                ],
+                "must_not_be_in_closing": [
+                    "run() function (→ BODY — business logic must be testable independently)",
+                    "Public API methods (→ BODY — they ARE the library)",
+                    "Type definitions (→ SETUP — declarations belong in SETUP)",
+                    "identity registration call site (→ Ce, not BODY)"
+                ]
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // FILL CONTENT — Schema-driven file generation templates
+        // ═══════════════════════════════════════════════════════
+        //
+        // Used by `cws-struct create` and `cws-struct fill` to generate
+        // complete 4-block Go files from schema alone. Placeholders use
+        // {{name}} syntax — engine substitutes with context values.
+        //
+        // When this section can generate a file that `lint` validates
+        // with 0 errors, the schema IS the complete specification.
+
+        "fill_content": {
+            "_description": "Templates for schema-driven file generation. Placeholders: {{key}}, {{title}}, {{format}}, {{subtype}}, {{version}}, {{date}}, {{organization}}, {{scripture}}, {{purpose}}, {{filename}}, {{package}}, {{consumers}}, {{from}}.",
+
+            "defaults": {
+                "version": "a-01.00",
+                "status": "Active",
+                "organization": "CreativeWorkzStudio LLC",
+                "scripture": "Genesis 1:1",
+                "scripture_text": "In the beginning God created the heaven and the earth.",
+                "type": "code",
+                "structure": "4-block"
+            },
+
+            "directives": [
+                "//omni:key {{key}}",
+                "//omni:code --go -{{subtype}}",
+                "//omni:version {{version}}"
+            ],
+
+            "package_declaration": "package {{package}}",
+
+            "identity_syntax": {
+                "pragma": {
+                    "declaration": "var Pragma = [][2]string{",
+                    "entry": "\t{\"{{field}}\", \"{{value}}\"},",
+                    "close": "}"
+                },
+                "metadata": {
+                    "declaration": "var Metadata = [][2]string{",
+                    "entry": "\t{\"{{field}}\", \"{{value}}\"},",
+                    "close": "}"
+                }
+            },
+
+            "pragma_entries": [
+                ["I1.key", "{{key}}"],
+                ["I1.format", "go"],
+                ["I1.from", "{{from}}"],
+                ["I1.at", "{{version}}"],
+                ["I2.type", "code"],
+                ["I2.structure", "4-block"],
+                ["I2.subtype", "{{subtype}}"],
+                ["I3.file", "{{filename}}"],
+                ["I3.title", "{{title}}"]
+            ],
+
+            "metadata_entries": [
+                ["C1.version", "{{version}}"],
+                ["C1.status", "{{status}}"],
+                ["C1.created", "{{date}}"],
+                ["C1.updated", "{{date}}"],
+                ["C2.organization", "{{organization}}"],
+                ["C3.scripture", "{{scripture}}"],
+                ["C4.requires.stdlib", "none"],
+                ["C4.consumers", "{{consumers}}"]
+            ],
+
+            "metadata_comment": [
+                "// Key:     {{key}}",
+                "// Purpose: {{purpose}}"
+            ],
+
+            "closing_defaults": {
+                "X1": {
+                    "never": "Remove 4-block structure",
+                    "careful": "Change public API signatures",
+                    "safe": "Add new functions, types, constants"
+                },
+                "X5": {
+                    "note": "{{purpose}}",
+                    "scripture": "\"{{scripture_text}}\" — {{scripture}}"
+                }
+            }
         }
     },
 
@@ -822,7 +1275,7 @@
     ],
     "_X1_careful": [
         "Adding new required //omni: directives (cascades to all Go files)",
-        "Changing SETUP section order (1-10 dependency chain — aligned with Rust)",
+        "Changing SETUP subsection order (10-subsection dependency chain — see SETUP.subsection_order)",
         "Modifying separator width standards (76= blocks / 74─ SETUP+BODY+CLOSING subsections)"
     ],
     "_X1_safe": [

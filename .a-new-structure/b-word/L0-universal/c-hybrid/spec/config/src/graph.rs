@@ -1,8 +1,12 @@
 //! Dependency graph — DAG construction and cycle detection.
 
+//omni:code --rust -library
+//omni:key B-L0-hybrid-config-graph
+//omni:version b-03.00
+
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::error::ConfigError;
+use crate::error::{ConfigError, DepKind};
 use crate::types::{DependencyNode, IndexManifest};
 
 /// Build a dependency graph from the manifest.
@@ -35,7 +39,7 @@ pub(crate) fn validate_dependencies(graph: &BTreeMap<String, DependencyNode>) ->
                 errors.push(ConfigError::Dependency {
                     spec: spec.clone(),
                     dep_spec: dep.clone(),
-                    kind: "missing".to_owned(),
+                    kind: DepKind::Missing,
                     message: "dependency not in manifest".to_owned(),
                 });
             }
@@ -50,7 +54,7 @@ pub(crate) fn validate_dependencies(graph: &BTreeMap<String, DependencyNode>) ->
             errors.push(ConfigError::Dependency {
                 spec: spec.clone(),
                 dep_spec: String::new(),
-                kind: "cycle".to_owned(),
+                kind: DepKind::Cycle,
                 message: "circular dependency detected".to_owned(),
             });
             break; // one cycle error is enough
@@ -87,4 +91,79 @@ fn has_cycle(
 
     in_stack.remove(spec);
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::{ConfigError, DepKind};
+    use crate::test_utils::TEST_INDEX;
+    use crate::types::IndexManifest;
+
+    #[test]
+    fn test_build_dependency_graph() {
+        let manifest: IndexManifest = toml::from_str(TEST_INDEX).unwrap();
+        let g = build_dependency_graph(&manifest);
+        assert_eq!(g.len(), 2);
+        assert!(g.contains_key("L0-universal/ladder/foundation/math/ternary.toml"));
+        assert!(g.contains_key("L0-universal/ladder/foundation/types/primitives.toml"));
+    }
+
+    #[test]
+    fn test_validate_dependencies_valid() {
+        let manifest: IndexManifest = toml::from_str(TEST_INDEX).unwrap();
+        let g = build_dependency_graph(&manifest);
+        let errors = validate_dependencies(&g);
+        assert!(errors.is_empty(), "expected no errors: {errors:?}");
+    }
+
+    #[test]
+    fn test_validate_dependencies_missing() {
+        let toml_str = r#"
+[[systems]]
+name = "types"
+path = "types"
+order = 0
+[[systems.specs]]
+file = "comp.toml"
+key = "comp"
+depends_on = ["missing/nonexistent.toml"]
+"#;
+        let manifest: IndexManifest = toml::from_str(toml_str).unwrap();
+        let g = build_dependency_graph(&manifest);
+        let errors = validate_dependencies(&g);
+        assert_eq!(errors.len(), 1);
+        assert!(
+            matches!(&errors[0], ConfigError::Dependency { kind, .. } if *kind == DepKind::Missing)
+        );
+    }
+
+    #[test]
+    fn test_validate_dependencies_cycle() {
+        let toml_str = r#"
+[[systems]]
+name = "sys"
+path = "sys"
+order = 0
+
+[[systems.specs]]
+file = "a.toml"
+key = "a"
+depends_on = ["sys/b.toml"]
+
+[[systems.specs]]
+file = "b.toml"
+key = "b"
+depends_on = ["sys/a.toml"]
+"#;
+        let manifest: IndexManifest = toml::from_str(toml_str).unwrap();
+        let g = build_dependency_graph(&manifest);
+        let errors = validate_dependencies(&g);
+        assert!(
+            errors.iter().any(
+                |e| matches!(e, ConfigError::Dependency { kind, .. } if *kind == DepKind::Cycle)
+            ),
+            "expected cycle error: {errors:?}"
+        );
+    }
 }

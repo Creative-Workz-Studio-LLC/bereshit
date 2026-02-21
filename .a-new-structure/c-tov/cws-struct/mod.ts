@@ -46,8 +46,11 @@ import {
   getFormat,
   listFormatDetails,
 } from "./lib/engine/mod.ts";
+import { generateFileText } from "./lib/engine/mod.ts";
+import type { FillContext } from "./lib/engine/mod.ts";
 import { verifyEnvironment } from "./lib/verify/env.ts";
 import { startStudio } from "./lib/studio/serve.ts";
+import { basename, dirname } from "@std/path";
 
 // Register all format handlers (side-effect imports)
 import "./lib/handlers/toml.ts";
@@ -156,10 +159,38 @@ function parseArgs(args: string[]): CliOptions {
 
   const targets = nonFlags.filter((a) => a !== format);
 
+  // Extract --key, --title, --purpose values for create command
+  const keyIdx = rest.indexOf("--key");
+  const titleIdx = rest.indexOf("--title");
+  const purposeIdx = rest.indexOf("--purpose");
+
+  const keyVal = keyIdx >= 0 ? rest[keyIdx + 1] : undefined;
+  const titleVal = titleIdx >= 0 ? rest[titleIdx + 1] : undefined;
+  const purposeVal = purposeIdx >= 0 ? rest[purposeIdx + 1] : undefined;
+
+  // For create command: args are `create <format> <subtype> <dest>`
+  // format is already extracted above; subtype is the next non-flag after format
+  let subtype: string | undefined;
+  if (command === "create" && format) {
+    const afterFormat = nonFlags.filter((a) => a !== format);
+    // First non-path arg is subtype, rest are targets
+    if (afterFormat.length >= 2) {
+      const candidateSubtype = afterFormat[0]!;
+      if (!candidateSubtype.includes("/") && !candidateSubtype.includes("\\") && !candidateSubtype.includes(".")) {
+        subtype = candidateSubtype;
+      }
+    }
+  }
+
+  // Filter subtype from targets for create command
+  const finalTargets = command === "create" && subtype
+    ? targets.filter((t) => t !== subtype)
+    : targets;
+
   return {
-    command: (command === "lint" || command === "transform" || command === "formats" || command === "verify" || command === "studio") ? command : "help",
+    command: (command === "lint" || command === "transform" || command === "create" || command === "formats" || command === "verify" || command === "studio") ? command : "help",
     format,
-    targets,
+    targets: finalTargets,
     verbose: rest.includes("--verbose") || rest.includes("-v"),
     errorsOnly: rest.includes("--errors-only"),
     summaryOnly: rest.includes("--summary"),
@@ -167,6 +198,10 @@ function parseArgs(args: string[]): CliOptions {
     extensions: rest.includes("--extensions"),
     json: rest.includes("--json"),
     failFast: rest.includes("--fail-fast"),
+    subtype,
+    key: keyVal,
+    title: titleVal,
+    purpose: purposeVal,
   };
 }
 
@@ -189,6 +224,7 @@ ${COLORS.bold}Usage:${COLORS.reset}
 ${COLORS.bold}Operations:${COLORS.reset}
   lint        Validate structural alignment
   transform   Transform files to aligned structure
+  create      Generate a new file from schema (schema-driven fill)
   verify env  Check development environment tools and versions
   formats     List registered format handlers
   studio      Launch CWS Studio web interface
@@ -203,8 +239,11 @@ ${COLORS.bold}Options:${COLORS.reset}
   --summary         Show only file-level summary
   --json            Machine-readable JSON output (suppresses human output)
   --fail-fast       Stop on first file with errors
-  --dry-run         Preview transforms without writing
+  --dry-run         Preview transforms / create output without writing
   --extensions      Also scaffold extension sections (I4, C5-C7, X2-X4, etc.)
+  --key <K>         OmniCode key for create (default: derived from path)
+  --title <T>       File title for create (default: derived from filename)
+  --purpose <P>     File purpose for create (default: placeholder)
   --port <N>        Studio port (default: 4200)
   --help, -h        Show this help
   --version         Show version
@@ -225,6 +264,9 @@ ${COLORS.bold}Examples:${COLORS.reset}
   ${TOOL_NAME} lint . --fail-fast            ${COLORS.dim}# stop on first error${COLORS.reset}
   ${TOOL_NAME} transform .                   ${COLORS.dim}# auto-fix all formats${COLORS.reset}
   ${TOOL_NAME} transform rust src/ --dry-run ${COLORS.dim}# preview Rust fixes${COLORS.reset}
+  ${TOOL_NAME} create go library path/file.go --key B-pkg --title "My Pkg"  ${COLORS.dim}# generate Go library${COLORS.reset}
+  ${TOOL_NAME} create rust executable src/main.rs --key B-cli              ${COLORS.dim}# generate Rust executable${COLORS.reset}
+  ${TOOL_NAME} create go library test.go --dry-run                         ${COLORS.dim}# preview without writing${COLORS.reset}
   ${TOOL_NAME} verify env                    ${COLORS.dim}# check dev tools${COLORS.reset}
   ${TOOL_NAME} verify env --verbose          ${COLORS.dim}# include optional tools${COLORS.reset}
   ${TOOL_NAME} studio                        ${COLORS.dim}# launch web UI on :4200${COLORS.reset}
@@ -589,6 +631,90 @@ async function runTransform(opts: CliOptions): Promise<boolean> {
   return allSummaries.every((s) => s.errors === 0);
 }
 
+// ---------------------------------------------------------------------------
+// Create command — schema-driven file generation
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a new 4-block code file from schema.
+ *
+ * Usage: cws-struct create <format> <subtype> <dest> [--key K] [--title T] [--purpose P]
+ *
+ * The proof: if the generated file lints with 0 errors,
+ * the schema IS the complete specification.
+ */
+async function runCreate(opts: CliOptions): Promise<boolean> {
+  if (!opts.format) {
+    console.error(`${COLORS.red}Format required. Usage: ${TOOL_NAME} create <format> <subtype> <dest>${COLORS.reset}`);
+    return false;
+  }
+
+  const handler = getFormat(opts.format);
+  if (!handler) {
+    console.error(`${COLORS.red}Unknown format: ${opts.format}${COLORS.reset}`);
+    return false;
+  }
+
+  const subtype = opts.subtype ?? "library";
+  const dest = opts.targets[0];
+  if (!dest) {
+    console.error(`${COLORS.red}Destination path required. Usage: ${TOOL_NAME} create ${opts.format} ${subtype} <dest>${COLORS.reset}`);
+    return false;
+  }
+
+  // Derive defaults from destination path
+  const filename = basename(dest);
+  const dirName = basename(dirname(dest));
+  const ext = filename.split(".").pop() ?? "";
+  const nameWithoutExt = filename.replace(`.${ext}`, "");
+
+  // Build FillContext
+  const ctx: FillContext = {
+    format: opts.format as "go" | "rust",
+    subtype,
+    key: opts.key ?? `B-${nameWithoutExt}`,
+    title: opts.title ?? nameWithoutExt.split(/[-_]/).map(
+      (w) => w.charAt(0).toUpperCase() + w.slice(1),
+    ).join(" "),
+    purpose: opts.purpose ?? "[purpose]",
+    filename,
+    packageOrCrate: subtype === "executable" && opts.format === "go"
+      ? "main"
+      : dirName !== "." ? dirName : nameWithoutExt,
+    from: dest,
+  };
+
+  const text = await generateFileText(ctx);
+
+  if (opts.dryRun) {
+    console.log(`${COLORS.bold}${TOOL_NAME}${COLORS.reset} — Preview (dry run)\n`);
+    console.log(`${COLORS.dim}Destination: ${dest}${COLORS.reset}`);
+    console.log(`${COLORS.dim}Format: ${opts.format}, Subtype: ${subtype}${COLORS.reset}`);
+    console.log(`${COLORS.dim}Key: ${ctx.key}, Title: ${ctx.title}${COLORS.reset}\n`);
+    console.log(text);
+    return true;
+  }
+
+  // Write the file
+  await Deno.writeTextFile(dest, text);
+  console.log(`${COLORS.green}Created${COLORS.reset} ${dest}`);
+  console.log(`${COLORS.dim}Format: ${opts.format}, Subtype: ${subtype}, Key: ${ctx.key}${COLORS.reset}`);
+
+  // Verify: lint the generated file
+  const results = await handler.lint(dest);
+  const errors = results.filter((r) => r.severity === "error");
+  if (errors.length > 0) {
+    console.error(`\n${COLORS.red}Generated file has ${errors.length} lint error(s):${COLORS.reset}`);
+    for (const e of errors) {
+      console.error(`  ${e.rule}: ${e.message}`);
+    }
+    return false;
+  }
+
+  console.log(`${COLORS.green}Verified${COLORS.reset} — 0 lint errors (schema = specification)`);
+  return true;
+}
+
 // ============================================================================
 // CLOSING
 // ============================================================================
@@ -620,6 +746,9 @@ const KNOWN_FLAGS = new Set([
   "--json",
   "--fail-fast",
   "--port",
+  "--key",
+  "--title",
+  "--purpose",
   "--help", "-h",
   "--version",
 ]);
@@ -688,6 +817,12 @@ async function main(): Promise<void> {
 
     case "transform": {
       const ok = await runTransform(opts);
+      Deno.exit(ok ? EXIT_OK : EXIT_LINT_ERRORS);
+      break;
+    }
+
+    case "create": {
+      const ok = await runCreate(opts);
       Deno.exit(ok ? EXIT_OK : EXIT_LINT_ERRORS);
       break;
     }

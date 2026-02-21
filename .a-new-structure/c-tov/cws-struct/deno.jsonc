@@ -147,33 +147,90 @@
     "_Co_tag": "Co — Content Operations [OPS]",
 
     "tasks": {
+
+        // ── Lint: per-format (append targets after task name) ────
         "lint": "deno run --allow-read mod.ts lint",
+        "lint:go": "deno run --allow-read mod.ts lint go",
+        "lint:rust": "deno run --allow-read mod.ts lint rust",
+        "lint:toml": "deno run --allow-read mod.ts lint toml",
+        "lint:json": "deno run --allow-read mod.ts lint json",
+        "lint:makefile": "deno run --allow-read mod.ts lint makefile",
+        "lint:dotfiles": "deno run --allow-read mod.ts lint dotfiles",
+        "lint:omni": "deno run --allow-read mod.ts lint omni",
+        "lint:ofd": "deno run --allow-read mod.ts lint ofd",
+
+        // ── Lint: output modes (append format + targets) ─────────
+        "lint:verbose": "deno run --allow-read mod.ts lint --verbose",
+        "lint:errors": "deno run --allow-read mod.ts lint --errors-only",
+        "lint:summary": "deno run --allow-read mod.ts lint --summary",
+        "lint:json-out": "deno run --allow-read mod.ts lint --json",
+
+        // ── Transform: per-format (append targets) ───────────────
         "transform": "deno run --allow-read --allow-write mod.ts transform",
+        "transform:go": "deno run --allow-read --allow-write mod.ts transform go",
+        "transform:rust": "deno run --allow-read --allow-write mod.ts transform rust",
+        "transform:toml": "deno run --allow-read --allow-write mod.ts transform toml",
+        "transform:json": "deno run --allow-read --allow-write mod.ts transform json",
+        "transform:dry": "deno run --allow-read mod.ts transform --dry-run",
+
+        // ── Create: per-format (append subtype + dest) ───────────
+        "create": "deno run --allow-read --allow-write mod.ts create",
+        "create:go": "deno run --allow-read --allow-write mod.ts create go",
+        "create:rust": "deno run --allow-read --allow-write mod.ts create rust",
+        "create:dry": "deno run --allow-read mod.ts create --dry-run",
+
+        // ── Verify, Check, Info ──────────────────────────────────
         "verify": "deno run --allow-read --allow-run mod.ts verify env",
+        "verify:verbose": "deno run --allow-read --allow-run mod.ts verify env --verbose",
         "check": "deno check mod.ts",
+        "formats": "deno run --allow-read mod.ts formats",
+        "help": "deno run --allow-read mod.ts help",
 
+        // ── Test: full suite ─────────────────────────────────────
         "test": "deno test --allow-read --allow-write --allow-run --allow-env tests/",
+        "test:watch": "deno test --allow-read --allow-write --allow-run --allow-env --watch tests/",
 
+        // ── Test: by handler ─────────────────────────────────────
         "test:go": "deno test --allow-read --allow-write --allow-run tests/handlers/go_test.ts",
         "test:rust": "deno test --allow-read --allow-write --allow-run tests/handlers/rust_test.ts",
         "test:toml": "deno test --allow-read --allow-write --allow-run tests/handlers/toml_test.ts",
 
+        // ── Test: by layer ───────────────────────────────────────
         "test:foundation": "deno test --allow-read --allow-write --allow-run tests/foundation/",
         "test:engine": "deno test --allow-read --allow-write --allow-run tests/engine/",
         "test:cli": "deno test --allow-read --allow-write --allow-run --allow-env tests/cli/",
         "test:verify": "deno test --allow-read --allow-run tests/verify/",
         "test:integration": "deno test --allow-read tests/integration_test.ts",
 
+        // ── Test: by concern (cross-handler) ─────────────────────
         "test:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/handlers/",
+        "test:consistency": "deno test --allow-read --allow-write --allow-run --filter 'consistency/' tests/handlers/",
         "test:metadata": "deno test --allow-read --allow-write --allow-run --filter 'metadata/' tests/handlers/",
         "test:setup": "deno test --allow-read --allow-write --allow-run --filter 'setup/' tests/handlers/",
         "test:body": "deno test --allow-read --allow-write --allow-run --filter 'body/' tests/handlers/",
         "test:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/handlers/",
+        "test:format": "deno test --allow-read --allow-write --allow-run --filter 'format/' tests/handlers/",
+        "test:form": "deno test --allow-read --allow-write --allow-run --filter 'form/' tests/handlers/",
         "test:unit": "deno test --allow-read --allow-write --allow-run --filter 'unit/' tests/handlers/",
         "test:transform": "deno test --allow-read --allow-write --allow-run --filter 'transform/' tests/handlers/",
 
+        // ── Test: handler x concern (targeted debugging) ─────────
+        "test:rust:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/handlers/rust_test.ts",
+        "test:rust:form": "deno test --allow-read --allow-write --allow-run --filter 'form/' tests/handlers/rust_test.ts",
+        "test:rust:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/handlers/rust_test.ts",
+        "test:go:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/handlers/go_test.ts",
+        "test:go:form": "deno test --allow-read --allow-write --allow-run --filter 'form/' tests/handlers/go_test.ts",
+        "test:go:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/handlers/go_test.ts",
+        "test:toml:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/handlers/toml_test.ts",
+        "test:toml:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/handlers/toml_test.ts",
+
+        // ── Dev workflow ─────────────────────────────────────────
+        "dev": "deno check mod.ts && deno test --allow-read --allow-write --allow-run --allow-env tests/",
+        "ci": "deno check mod.ts && deno test --allow-read --allow-write --allow-run --allow-env tests/",
+
+        // ── Studio & Build ───────────────────────────────────────
         "studio": "deno run --allow-read --allow-write --allow-run --allow-net mod.ts studio",
-        "compile": "deno compile --allow-read --allow-write --allow-run --allow-net --output bin/cws-struct mod.ts"
+        "compile": "deno compile --allow-read --allow-write --allow-run --allow-net --allow-env --include ../../b-word/L1-omnicode/ladder/schemas/ --output bin/cws-struct mod.ts"
     },
 
     "imports": {

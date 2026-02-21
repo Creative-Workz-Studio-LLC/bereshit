@@ -1,0 +1,1 @@
+SELECT id, name, abbreviation, chapters, verses, range_start, range_end FROM books WHERE id = ?

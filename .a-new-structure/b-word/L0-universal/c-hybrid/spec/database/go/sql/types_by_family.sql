@@ -1,0 +1,1 @@
+SELECT id, name, family, size_trits, size_bits, min_value, max_value, default_val, nullable, signed, states, description, layer_role FROM types WHERE family = ? ORDER BY id

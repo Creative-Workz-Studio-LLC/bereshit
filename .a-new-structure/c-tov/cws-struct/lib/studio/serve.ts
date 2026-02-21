@@ -121,6 +121,10 @@ async function createFile(body: Record<string, unknown>): Promise<{
   if (body.key) scriptArgs.push("--key", String(body.key));
   if (body.title) scriptArgs.push("--title", String(body.title));
   if (body.purpose) scriptArgs.push("--purpose", String(body.purpose));
+  if (body.component) scriptArgs.push("--component", String(body.component));
+  if (body.scripture) scriptArgs.push("--scripture", String(body.scripture));
+  if (body.organization) scriptArgs.push("--organization", String(body.organization));
+  if (body.path) scriptArgs.push("--path", String(body.path));
   if (body.version && body.version !== "a-01.00") {
     scriptArgs.push("--version", String(body.version));
   }

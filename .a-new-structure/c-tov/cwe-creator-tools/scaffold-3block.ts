@@ -108,6 +108,10 @@ interface ScaffoldOptions {
   title: string;
   purpose: string;
   version: string;
+  component?: string;
+  scripture?: string;
+  organization?: string;
+  path?: string;
   dryRun: boolean;
   verify: boolean;
 }
@@ -120,11 +124,77 @@ interface ScaffoldOptions {
 // Template Reading and Substitution
 // ---------------------------------------------------------------------------
 
+/** Escape special regex characters. */
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Replace a string value within a specific TOML table.
+ *
+ * Finds `[table]` header, then within that table's scope (until next `[`
+ * header), replaces `key = "oldvalue"` with `key = "newvalue"`.
+ */
+function replaceTomlTableField(content: string, table: string, key: string, value: string): string {
+  const tableHeader = `[${table}]`;
+  const headerIdx = content.indexOf(tableHeader);
+  if (headerIdx === -1) return content;
+
+  // Find table scope: from header to next table or end-of-file
+  const afterHeader = headerIdx + tableHeader.length;
+  const nextTable = content.indexOf("\n[", afterHeader);
+  const scopeEnd = nextTable === -1 ? content.length : nextTable;
+  const scope = content.substring(afterHeader, scopeEnd);
+
+  // Replace key = "..." within scope (anchored to line start to avoid
+  // substring matches like "at" inside "format")
+  const fieldPattern = new RegExp(
+    `(^${escapeRegex(key)}\\s*=\\s*)"[^"]*"`,
+    "m",
+  );
+  const replaced = scope.replace(fieldPattern, `$1"${value}"`);
+
+  if (replaced === scope) return content; // no match — unchanged
+  return content.substring(0, afterHeader) + replaced + content.substring(scopeEnd);
+}
+
+/**
+ * Replace a TOML array field: key = ["old"] → key = ["new"]
+ */
+function replaceTomlTableArray(content: string, table: string, key: string, values: string[]): string {
+  const tableHeader = `[${table}]`;
+  const headerIdx = content.indexOf(tableHeader);
+  if (headerIdx === -1) return content;
+
+  const afterHeader = headerIdx + tableHeader.length;
+  const nextTable = content.indexOf("\n[", afterHeader);
+  const scopeEnd = nextTable === -1 ? content.length : nextTable;
+  const scope = content.substring(afterHeader, scopeEnd);
+
+  const fieldPattern = new RegExp(
+    `(^${escapeRegex(key)}\\s*=\\s*)\\[[^\\]]*\\]`,
+    "m",
+  );
+  const arrayStr = "[" + values.map((v) => `"${v}"`).join(", ") + "]";
+  const replaced = scope.replace(fieldPattern, `$1${arrayStr}`);
+
+  if (replaced === scope) return content;
+  return content.substring(0, afterHeader) + replaced + content.substring(scopeEnd);
+}
+
+/** Derive a PROVIDES constant from a key: B-my-server → MY_SERVER */
+function deriveProvides(key: string): string {
+  return key
+    .replace(/^B-/, "")
+    .replace(/-/g, "_")
+    .toUpperCase();
+}
+
 /**
  * Read a seed template and substitute metadata placeholders.
  *
  * Different formats use different metadata styles:
- *   - TOML: [_pragma], [_metadata] tables with key = "value"
+ *   - TOML: [_metadata.*] tables with key = "value"
  *   - JSONC: "_P1_key", "_M1_identity" etc.
  *   - Dotfiles: # comment-based metadata
  *
@@ -162,38 +232,63 @@ async function scaffoldFromTemplate(opts: ScaffoldOptions): Promise<string> {
 }
 
 /**
- * TOML metadata substitution.
+ * TOML metadata substitution — table-context-aware.
+ *
+ * Replaces values within [_metadata.*] tables using table-scoped matching.
+ * This prevents ambiguity when the same key name appears in different tables.
  */
 function substituteTomlMeta(content: string, opts: ScaffoldOptions, destFile: string): string {
-  // Key in [_pragma.P1_core]
+  const tf = replaceTomlTableField;
+  const ta = replaceTomlTableArray;
+
+  // --- Pragma directive ---
   content = content.replace(
-    /(key\s*=\s*)"[^"]*"/,
-    `$1"${opts.key}"`,
+    /^#\s*#!omni\s+template\s+--(\w+)/m,
+    "# #!omni data --$1",
   );
 
-  // Title in [_pragma.P5_summary]
-  content = content.replace(
-    /(title\s*=\s*)"[^"]*"(\s*#.*P5)/,
-    `$1"${opts.title}"$2`,
-  );
+  // --- I1: Core ---
+  content = tf(content, "_metadata.I1_core", "key", opts.key);
+  content = tf(content, "_metadata.I1_core", "format", `@omni data --${opts.format}`);
+  content = tf(content, "_metadata.I1_core", "at", opts.version);
 
-  // File in [_metadata.M1_identity]
-  content = content.replace(
-    /(file\s*=\s*)"[^"]*"(\s*#.*M1)/,
-    `$1"${destFile}"$2`,
-  );
+  // --- I2: Family ---
+  // subtype stays as template default unless format-specific logic needed
 
-  // Version
-  content = content.replace(
-    /(version\s*=\s*)"[^"]*"(\s*#.*M2)/,
-    `$1"${opts.version}"$2`,
-  );
+  // --- I3: Instance ---
+  content = tf(content, "_metadata.I3_instance", "file", destFile);
+  content = tf(content, "_metadata.I3_instance", "title", opts.title);
+  content = ta(content, "_metadata.I3_instance", "provides", [deriveProvides(opts.key)]);
+  if (opts.component) {
+    content = tf(content, "_metadata.I3_instance", "component", opts.component);
+  }
+  if (opts.path) {
+    content = tf(content, "_metadata.I3_instance", "path", opts.path);
+  }
+  if (opts.purpose) {
+    content = tf(content, "_metadata.I3_instance", "brief", opts.purpose);
+  }
 
-  // Created date
-  content = content.replace(
-    /(created\s*=\s*)"[^"]*"(\s*#.*M2)/,
-    `$1"${TODAY}"$2`,
-  );
+  // --- C1: State ---
+  content = tf(content, "_metadata.C1_state", "version", opts.version);
+  content = tf(content, "_metadata.C1_state", "status", "draft");
+  content = tf(content, "_metadata.C1_state", "created", TODAY);
+  content = tf(content, "_metadata.C1_state", "updated", TODAY);
+
+  // --- C2: Attribution ---
+  if (opts.organization) {
+    content = tf(content, "_metadata.C2_attribution", "organization", opts.organization);
+  }
+
+  // --- C3: Grounding ---
+  if (opts.scripture) {
+    content = tf(content, "_metadata.C3_grounding", "scripture", opts.scripture);
+  }
+
+  // --- C5: Intent ---
+  if (opts.purpose) {
+    content = tf(content, "_metadata.C5_intent", "purpose", opts.purpose);
+  }
 
   return content;
 }
@@ -323,12 +418,17 @@ ${COLORS.bold}Options:${COLORS.reset}
   --title <title>         File title (default: derived from filename)
   --purpose <text>        Purpose description
   --version <ver>         Version (default: a-01.00)
+  --component <text>      Component description (I3.component)
+  --scripture <text>      Scripture reference (C3.grounding)
+  --organization <name>   Organization name (C2.attribution)
+  --path <path>           Logical path (I3.path)
   --dry-run               Preview without writing
   --no-verify             Skip post-scaffold lint verification
   --help, -h              Show this help
 
 ${COLORS.bold}Examples:${COLORS.reset}
   ${TOOL_NAME} toml  config/app.toml        --key B-app-config --title "App Config"
+  ${TOOL_NAME} toml  config/db.toml         --key B-db-config --scripture "Psalm 127:1"
   ${TOOL_NAME} jsonc config/format.jsonc     --title "Log Format Definition"
   ${TOOL_NAME} json  data/events.json        --purpose "Event stream storage"
   ${TOOL_NAME} editorconfig .editorconfig    --dry-run
@@ -378,6 +478,10 @@ function parseArgs(args: string[]): ScaffoldOptions | null {
     title: flagValue("--title") ?? deriveTitle(dest),
     purpose: flagValue("--purpose") ?? `Data configuration for ${deriveTitle(dest)}`,
     version: flagValue("--version") ?? "a-01.00",
+    component: flagValue("--component"),
+    scripture: flagValue("--scripture"),
+    organization: flagValue("--organization"),
+    path: flagValue("--path"),
     dryRun,
     verify: !noVerify,
   };

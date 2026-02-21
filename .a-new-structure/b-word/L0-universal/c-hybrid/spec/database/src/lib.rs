@@ -2,15 +2,6 @@
 //omni:key B-L0-foundation-db
 //omni:version a-02.00
 
-// ============================================================================
-// METADATA
-// ============================================================================
-//
-// Key:     B-L0-foundation-db
-// Purpose: Foundation database queries — typed access to SQLite-materialized TOML specs
-// Biblical: Genesis 1:1 — In the beginning God created the heaven and the earth
-// Version: a-02.00
-
 //! # Foundation Database
 //!
 //! L0 foundation access to the SQLite database that materializes all TOML specs.
@@ -53,6 +44,15 @@
 //! Data source: `b-word/data/foundation/database/foundation.db`
 
 // ============================================================================
+// METADATA
+// ============================================================================
+//
+// Key:     B-L0-foundation-db
+// Purpose: Foundation database queries — typed access to SQLite-materialized TOML specs
+// Biblical: Genesis 1:1 — In the beginning God created the heaven and the earth
+// Version: a-02.00
+
+// ============================================================================
 // END METADATA
 // ============================================================================
 
@@ -60,24 +60,24 @@
 // SETUP
 // ============================================================================
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // S.1 Imports
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 
 use rusqlite::{Connection, OpenFlags, params};
 use std::fmt;
 use std::path::{Path, PathBuf};
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // S.2 Modules
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 
 pub mod identity;
 pub use identity::{metadata, metadata_get, pragma, pragma_get, register_identity};
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // S.3 Types
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 
 /// A TOML specification file's metadata.
 #[derive(Debug, Clone)]
@@ -190,7 +190,75 @@ pub enum FoundationError {
     Open(String, rusqlite::Error),
     Query(String, rusqlite::Error),
     NotFound(String),
+    Schema(String),
 }
+
+/// Open connection to the foundation database.
+pub struct DB {
+    conn: Connection,
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// S.4 Constants
+// ──────────────────────────────────────────────────────────────────────────
+
+/// Path to foundation database relative to module root (b-word/).
+pub const DATABASE_DIR: &str = "data/foundation/database";
+
+/// Database filename.
+pub const DATABASE_FILE: &str = "foundation.db";
+
+/// Expected PRAGMA user_version value.
+/// Increment when schema changes — open() rejects mismatches.
+pub const SCHEMA_VERSION: i32 = 1;
+
+/// Required tables in foundation.db (8 core tables).
+const REQUIRED_TABLES: &[&str] = &[
+    "books", "dependencies", "operations", "specs",
+    "ternary_scales", "type_families", "types", "web_variants",
+];
+
+// SQL queries — single source of truth in go/sql/*.sql files.
+// Shared with Go via //go:embed. Uses positional ? parameters (both drivers handle this).
+const Q_SPEC_BY_KEY: &str = include_str!("../go/sql/spec_by_key.sql");
+const Q_SPECS_BY_DOMAIN: &str = include_str!("../go/sql/specs_by_domain.sql");
+const Q_ALL_SPECS: &str = include_str!("../go/sql/all_specs.sql");
+const Q_SPEC_COUNT: &str = include_str!("../go/sql/spec_count.sql");
+
+const Q_ALL_FAMILIES: &str = include_str!("../go/sql/all_families.sql");
+const Q_FAMILY_BY_NAME: &str = include_str!("../go/sql/family_by_name.sql");
+
+const Q_ALL_TYPES: &str = include_str!("../go/sql/all_types.sql");
+const Q_TYPE_BY_NAME: &str = include_str!("../go/sql/type_by_name.sql");
+const Q_TYPES_BY_FAMILY: &str = include_str!("../go/sql/types_by_family.sql");
+
+const Q_ALL_OPS: &str = include_str!("../go/sql/all_operations.sql");
+const Q_OPS_BY_CAT: &str = include_str!("../go/sql/operations_by_category.sql");
+const Q_OP_BY_NAME: &str = include_str!("../go/sql/operation_by_name.sql");
+
+const Q_ALL_BOOKS: &str = include_str!("../go/sql/all_books.sql");
+const Q_BOOK_BY_ORD: &str = include_str!("../go/sql/book_by_ordinal.sql");
+const Q_BOOK_BY_NAME: &str = include_str!("../go/sql/book_by_name.sql");
+const Q_BOOK_BY_ABBR: &str = include_str!("../go/sql/book_by_abbreviation.sql");
+
+const Q_ALL_SCALES: &str = include_str!("../go/sql/all_scales.sql");
+
+const Q_DEPS_OF: &str = include_str!("../go/sql/dependencies_of.sql");
+const Q_DEPS_ON: &str = include_str!("../go/sql/dependents_on.sql");
+
+const Q_ALL_WEB_VARIANTS: &str = include_str!("../go/sql/all_web_variants.sql");
+
+// ============================================================================
+// END SETUP
+// ============================================================================
+
+// ============================================================================
+// BODY
+// ============================================================================
+
+// ──────────────────────────────────────────────────────────────────────────
+// B.0 Type Implementations
+// ──────────────────────────────────────────────────────────────────────────
 
 impl fmt::Display for FoundationError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -198,6 +266,7 @@ impl fmt::Display for FoundationError {
             FoundationError::Open(path, e) => write!(f, "foundation.open({path}): {e}"),
             FoundationError::Query(ctx, e) => write!(f, "foundation.{ctx}: {e}"),
             FoundationError::NotFound(ctx) => write!(f, "foundation.{ctx}: not found"),
+            FoundationError::Schema(msg) => write!(f, "foundation.validate_schema: {msg}"),
         }
     }
 }
@@ -206,108 +275,14 @@ impl std::error::Error for FoundationError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             FoundationError::Open(_, e) | FoundationError::Query(_, e) => Some(e),
-            FoundationError::NotFound(_) => None,
+            FoundationError::NotFound(_) | FoundationError::Schema(_) => None,
         }
     }
 }
 
-/// Open connection to the foundation database.
-pub struct DB {
-    conn: Connection,
-}
-
-// ────────────────────────────────────────────────────────────────
-// S.4 Constants
-// ────────────────────────────────────────────────────────────────
-
-/// Path to foundation database relative to module root (b-word/).
-pub const DATABASE_DIR: &str = "data/foundation/database";
-
-/// Database filename.
-pub const DATABASE_FILE: &str = "foundation.db";
-
-// SQL queries
-const Q_SPEC_BY_KEY: &str =
-    "SELECT id, key, file, title, type, component, role, domain, layer, version, status, \
-     scripture, principle, tags, provides, created, updated FROM specs WHERE key = ?1";
-
-const Q_SPECS_BY_DOMAIN: &str =
-    "SELECT id, key, file, title, type, component, role, domain, layer, version, status, \
-     scripture, principle, tags, provides, created, updated FROM specs WHERE domain = ?1 ORDER BY key";
-
-const Q_ALL_SPECS: &str =
-    "SELECT id, key, file, title, type, component, role, domain, layer, version, status, \
-     scripture, principle, tags, provides, created, updated FROM specs ORDER BY domain, key";
-
-const Q_SPEC_COUNT: &str = "SELECT COUNT(*) FROM specs";
-
-const Q_ALL_FAMILIES: &str =
-    "SELECT id, name, description, scripture, purpose, count FROM type_families ORDER BY id";
-
-const Q_FAMILY_BY_NAME: &str =
-    "SELECT id, name, description, scripture, purpose, count FROM type_families WHERE name = ?1";
-
-const Q_ALL_TYPES: &str =
-    "SELECT id, name, family, size_trits, size_bits, min_value, max_value, default_val, \
-     nullable, signed, states, description, layer_role FROM types ORDER BY id";
-
-const Q_TYPE_BY_NAME: &str =
-    "SELECT id, name, family, size_trits, size_bits, min_value, max_value, default_val, \
-     nullable, signed, states, description, layer_role FROM types WHERE name = ?1";
-
-const Q_TYPES_BY_FAMILY: &str =
-    "SELECT id, name, family, size_trits, size_bits, min_value, max_value, default_val, \
-     nullable, signed, states, description, layer_role FROM types WHERE family = ?1 ORDER BY id";
-
-const Q_ALL_OPS: &str =
-    "SELECT id, name, category, description, input_size, table_data, properties \
-     FROM operations ORDER BY category, name";
-
-const Q_OPS_BY_CAT: &str =
-    "SELECT id, name, category, description, input_size, table_data, properties \
-     FROM operations WHERE category = ?1 ORDER BY name";
-
-const Q_OP_BY_NAME: &str =
-    "SELECT id, name, category, description, input_size, table_data, properties \
-     FROM operations WHERE name = ?1 AND category = ?2";
-
-const Q_ALL_BOOKS: &str =
-    "SELECT id, name, abbreviation, chapters, verses, range_start, range_end \
-     FROM books ORDER BY id";
-
-const Q_BOOK_BY_ORD: &str =
-    "SELECT id, name, abbreviation, chapters, verses, range_start, range_end \
-     FROM books WHERE id = ?1";
-
-const Q_BOOK_BY_NAME: &str =
-    "SELECT id, name, abbreviation, chapters, verses, range_start, range_end \
-     FROM books WHERE name = ?1";
-
-const Q_BOOK_BY_ABBR: &str =
-    "SELECT id, name, abbreviation, chapters, verses, range_start, range_end \
-     FROM books WHERE abbreviation = ?1";
-
-const Q_ALL_SCALES: &str =
-    "SELECT id, name, trit_count, states, bytes, layer FROM ternary_scales ORDER BY trit_count";
-
-const Q_DEPS_OF: &str =
-    "SELECT id, spec_key, depends_on, relation FROM dependencies \
-     WHERE spec_key = ?1 ORDER BY relation, depends_on";
-
-const Q_DEPS_ON: &str =
-    "SELECT id, spec_key, depends_on, relation FROM dependencies \
-     WHERE depends_on = ?1 ORDER BY relation, spec_key";
-
-const Q_ALL_WEB_VARIANTS: &str =
-    "SELECT trite, book, chapter, verse, summary FROM web_variants ORDER BY trite";
-
-// ============================================================================
-// BODY
-// ============================================================================
-
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // B.1 Helpers
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 
 fn scan_spec(row: &rusqlite::Row<'_>) -> rusqlite::Result<Spec> {
     Ok(Spec {
@@ -424,7 +399,7 @@ fn collect<T>(
     scan: fn(&rusqlite::Row<'_>) -> rusqlite::Result<T>,
     ctx: &str,
 ) -> Result<Vec<T>, FoundationError> {
-    let mut stmt = conn.prepare(sql)
+    let mut stmt = conn.prepare_cached(sql)
         .map_err(|e| FoundationError::Query(ctx.into(), e))?;
     let rows = stmt.query_map(params, scan)
         .map_err(|e| FoundationError::Query(ctx.into(), e))?;
@@ -435,12 +410,15 @@ fn collect<T>(
     Ok(results)
 }
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // B.2 Core Operations (Open/Close)
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 
 impl DB {
     /// Open the foundation database from a directory path.
+    ///
+    /// Validates schema version and required tables on open.
+    /// Fails fast if database is wrong version or missing expected tables.
     pub fn open(db_dir: impl AsRef<Path>) -> Result<Self, FoundationError> {
         let db_path: PathBuf = db_dir.as_ref().join(DATABASE_FILE);
         let path_str = db_path.display().to_string();
@@ -451,6 +429,35 @@ impl DB {
         )
         .map_err(|e| FoundationError::Open(path_str, e))?;
 
+        // Validate schema version
+        let version: i32 = conn
+            .query_row("PRAGMA user_version", [], |row| row.get(0))
+            .map_err(|e| FoundationError::Query("validate_schema".into(), e))?;
+        if version != SCHEMA_VERSION {
+            return Err(FoundationError::Schema(format!(
+                "schema version {version}, expected {SCHEMA_VERSION}"
+            )));
+        }
+
+        // Validate required tables exist (scoped to drop stmt before moving conn)
+        {
+            let mut stmt = conn
+                .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+                .map_err(|e| FoundationError::Query("validate_schema".into(), e))?;
+            let tables: Vec<String> = stmt
+                .query_map([], |row| row.get(0))
+                .map_err(|e| FoundationError::Query("validate_schema".into(), e))?
+                .filter_map(|r| r.ok())
+                .collect();
+            for &required in REQUIRED_TABLES {
+                if !tables.iter().any(|t| t == required) {
+                    return Err(FoundationError::Schema(format!(
+                        "missing required table \"{required}\""
+                    )));
+                }
+            }
+        }
+
         Ok(DB { conn })
     }
 
@@ -460,9 +467,15 @@ impl DB {
     }
 }
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // B.3 Spec Queries
-// ────────────────────────────────────────────────────────────────
+//
+// Table: specs
+//   id INTEGER PK, key TEXT UNIQUE, file TEXT, title TEXT, type TEXT,
+//   component TEXT, role TEXT, domain TEXT, layer TEXT, version TEXT,
+//   status TEXT, scripture TEXT, principle TEXT, tags TEXT, provides TEXT,
+//   created TEXT, updated TEXT
+// ──────────────────────────────────────────────────────────────────────────
 
 impl DB {
     /// Lookup a single spec by its unique key.
@@ -492,11 +505,40 @@ impl DB {
             .query_row(Q_SPEC_COUNT, [], |row| row.get(0))
             .map_err(|e| FoundationError::Query("spec_count".into(), e))
     }
+
+    /// Batch lookup: multiple specs by their keys.
+    ///
+    /// Builds a dynamic IN clause — useful when consumers need several specs
+    /// at once without N+1 queries. Returns specs in key order.
+    pub fn specs_by_keys(&self, keys: &[&str]) -> Result<Vec<Spec>, FoundationError> {
+        if keys.is_empty() {
+            return Ok(Vec::new());
+        }
+        let placeholders = vec!["?"; keys.len()].join(", ");
+        let sql = format!(
+            "SELECT id, key, file, title, type, component, role, domain, layer, \
+             version, status, scripture, principle, tags, provides, created, updated \
+             FROM specs WHERE key IN ({placeholders}) ORDER BY key"
+        );
+        let params: Vec<&dyn rusqlite::types::ToSql> =
+            keys.iter().map(|k| k as &dyn rusqlite::types::ToSql).collect();
+        collect(&self.conn, &sql, &params, scan_spec, "specs_by_keys")
+    }
 }
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // B.4 Type Queries
-// ────────────────────────────────────────────────────────────────
+//
+// Table: type_families
+//   id INTEGER PK, name TEXT UNIQUE, description TEXT, scripture TEXT,
+//   purpose TEXT, count INTEGER
+//
+// Table: types
+//   id INTEGER PK, name TEXT UNIQUE, family TEXT, size_trits INTEGER,
+//   size_bits INTEGER, min_value TEXT, max_value TEXT, default_val TEXT,
+//   nullable INTEGER, signed INTEGER, states TEXT, description TEXT,
+//   layer_role TEXT
+// ──────────────────────────────────────────────────────────────────────────
 
 impl DB {
     /// All 10 type families.
@@ -537,9 +579,13 @@ impl DB {
     }
 }
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // B.5 Operation Queries
-// ────────────────────────────────────────────────────────────────
+//
+// Table: operations
+//   id INTEGER PK, name TEXT, category TEXT, description TEXT,
+//   input_size INTEGER, table_data TEXT (JSON), properties TEXT (JSON)
+// ──────────────────────────────────────────────────────────────────────────
 
 impl DB {
     /// All operations.
@@ -564,9 +610,13 @@ impl DB {
     }
 }
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // B.6 Book Queries
-// ────────────────────────────────────────────────────────────────
+//
+// Table: books
+//   id INTEGER PK (ordinal 1-66), name TEXT UNIQUE, abbreviation TEXT,
+//   chapters INTEGER, verses INTEGER, range_start INTEGER, range_end INTEGER
+// ──────────────────────────────────────────────────────────────────────────
 
 impl DB {
     /// All 66 Bible books in ordinal order.
@@ -608,9 +658,16 @@ impl DB {
     }
 }
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // B.7 Scale & Dependency Queries
-// ────────────────────────────────────────────────────────────────
+//
+// Table: ternary_scales
+//   id INTEGER PK, name TEXT UNIQUE, trit_count INTEGER, states TEXT,
+//   bytes INTEGER, layer TEXT
+//
+// Table: dependencies
+//   id INTEGER PK, spec_key TEXT, depends_on TEXT, relation TEXT
+// ──────────────────────────────────────────────────────────────────────────
 
 impl DB {
     /// All ternary scales ordered by trit count.
@@ -629,9 +686,13 @@ impl DB {
     }
 }
 
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // B.8 Web Variant Queries
-// ────────────────────────────────────────────────────────────────
+//
+// Table: web_variants
+//   trite INTEGER PK (243-255), book TEXT, chapter INTEGER, verse INTEGER,
+//   summary TEXT
+// ──────────────────────────────────────────────────────────────────────────
 
 impl DB {
     /// The 13 WEB-only verses.
@@ -656,7 +717,7 @@ impl DB {
 // Cc — Connection closed when DB struct is dropped (rusqlite handles cleanup).
 //       No global state beyond identity registration.
 //
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // X1: Modification Policy
 //
 //   Never:
@@ -671,9 +732,9 @@ impl DB {
 //   Safe:
 //     - Adding query variations (by_id, by_name, etc.)
 //     - Improving doc comments
-//     - Adding prepared statement caching
+//     - Adding connection pooling (when concurrent access needed)
 //
-// ────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
 // X5: Closing Note
 //
 //   The Triangle: Configuration (TOML specs) → Data (SQLite) → Code (this crate)
@@ -795,6 +856,21 @@ mod tests {
         let db = DB::open(db_dir()).unwrap();
         let types_specs = db.specs_by_domain("types").unwrap();
         assert!(types_specs.len() >= 30, "Expected >= 30 type specs");
+    }
+
+    #[test]
+    fn specs_by_keys_batch() {
+        let db = DB::open(db_dir()).unwrap();
+        let all = db.all_specs().unwrap();
+        assert!(all.len() >= 3, "need at least 3 specs for batch test");
+
+        let keys: Vec<&str> = all[..3].iter().map(|s| s.key.as_str()).collect();
+        let batch = db.specs_by_keys(&keys).unwrap();
+        assert_eq!(batch.len(), 3, "batch should return 3 specs");
+
+        // Empty keys returns empty vec.
+        let empty = db.specs_by_keys(&[]).unwrap();
+        assert!(empty.is_empty(), "empty keys should return empty vec");
     }
 
     #[test]

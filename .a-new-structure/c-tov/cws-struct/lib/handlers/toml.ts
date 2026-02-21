@@ -49,6 +49,7 @@ import {
 } from "../foundation/mod.ts";
 import { registerFormat } from "../engine/mod.ts";
 import { loadRules, type DerivedRules } from "../foundation/mod.ts";
+import { loadFormConstraints, type FormConstraints } from "../foundation/code-schema.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -91,17 +92,10 @@ export interface PragmaInfo {
   args: string[];    // derivation or form args
 }
 
-/** Valid main types for TOML files */
-const VALID_PRAGMA_TYPES = ["template", "data", "code"];
-
-/** Known derivations — templates derived from a parent template */
-const KNOWN_DERIVATIONS = new Set(["compiler", "cargo"]);
-
-/** Known forms — shape variants of the same base template */
-const KNOWN_FORMS = new Set(["library", "executable", "test"]);
-
-/** All known args (derivations + forms) */
-const KNOWN_ARGS = new Set([...KNOWN_DERIVATIONS, ...KNOWN_FORMS]);
+// Pragma taxonomy constants are now schema-derived:
+// rules.pragmaTaxonomy.validTypes, .knownDerivations, .knownForms, .allKnownArgs
+// See toml-3block-schema.jsonc → pragma_taxonomy section.
+// Fallback defaults exist in schema.ts extractPragmaTaxonomy() for backwards compat.
 
 /**
  * Parse a pragma line: # #!omni <type> --<format> [--<arg>...]
@@ -188,38 +182,167 @@ export function normalizeCargoData(data: TomlData): TomlData {
 function checkCargoContent(
   file: string,
   data: TomlData,
+  rules: DerivedRules,
   lineMap?: Map<string, number>,
 ): LintResult[] {
   const results: LintResult[] = [];
 
-  // [package] is required
-  if (!getTable(data, "package")) {
+  // Get cargo layout from schema — if not present, fall back gracefully
+  const layout = rules.pragmaTaxonomy.derivationLayouts["cargo"];
+  if (!layout) {
     results.push(
-      error(file, "cargo/package", "Missing [package] — required for Cargo.toml",
-        { line: lineMap?.get("package") }),
+      warn(file, "cargo/schema", "No cargo derivation layout in schema — Cargo content checks skipped"),
     );
+    return results;
   }
 
-  // [dependencies] is expected (most crates need it)
-  if (!getTable(data, "dependencies")) {
-    results.push(
-      info(file, "cargo/dependencies", "Missing [dependencies] — most crates need dependencies",
-        { line: lineMap?.get("package") }),
-    );
+  // Check required sections (severity: error)
+  for (const [section, def] of Object.entries(layout.requiredSections)) {
+    if (!getTable(data, section)) {
+      const msg = def.purpose
+        ? `Missing [${section}] — ${def.purpose}`
+        : `Missing [${section}] — required for Cargo.toml`;
+      if (def.severity === "error") {
+        results.push(error(file, `cargo/${section}`, msg, { line: lineMap?.get(section) }));
+      } else {
+        results.push(warn(file, `cargo/${section}`, msg, { line: lineMap?.get(section) }));
+      }
+    }
   }
 
-  // [features] is expected for templates
-  if (!getTable(data, "features")) {
-    results.push(
-      info(file, "cargo/features", "Missing [features] — templates should include features scaffold",
-        { line: lineMap?.get("package") }),
-    );
+  // Check defined sections (severity: warn — defined means expected)
+  for (const [section, def] of Object.entries(layout.definedSections)) {
+    if (!getTable(data, section)) {
+      const msg = def.purpose
+        ? `Missing [${section}] — ${def.purpose}`
+        : `Missing [${section}] — expected for well-formed Cargo.toml`;
+      results.push(warn(file, `cargo/${section}`, msg, { line: lineMap?.get("package") }));
+    }
   }
 
-  results.push(
-    info(file, "cargo/layout", "Cargo.toml uses package.metadata.omni for OmniCode metadata — standard _content check skipped",
-      { line: lineMap?.get("package.metadata.omni") ?? lineMap?.get("package") }),
-  );
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Form-aware checks — Cargo form constraints (floor/ceiling enforcement)
+// ---------------------------------------------------------------------------
+//
+// Form checks validate that a Cargo.toml with a declared form (e.g., library)
+// has the sections its form REQUIRES and does NOT have sections it RESERVES.
+//
+// Unlike Rust (where we scan comment headers), TOML checks are data-driven:
+// we check for the presence/absence of parsed TOML sections directly.
+//
+// Tag → TOML section mapping for Cargo:
+//   Package     → [package]
+//   OmniMetadata → [package.metadata.omni] (normalized to _metadata by normalizeCargoData)
+//   BinTarget   → [bin] (Cargo array-of-tables: [[bin]])
+//   Workspace   → [workspace]
+//   Dependencies → [dependencies] (any of: dependencies, dev-dependencies, build-dependencies)
+//   Features    → [features]
+//   Lints       → [lints]
+//   LibTarget   → [lib]
+
+/**
+ * Map form schema tags to TOML section keys for Cargo.toml.
+ *
+ * Returns the TOML key(s) to check for a given tag name.
+ * Multiple keys means "any of these satisfies the requirement."
+ */
+function cargoTagToSections(tag: string): string[] {
+  switch (tag) {
+    case "Package":      return ["package"];
+    case "OmniMetadata": return ["package.metadata.omni"];
+    case "Dependencies": return ["dependencies", "dev-dependencies", "build-dependencies"];
+    case "Features":     return ["features"];
+    case "Lints":        return ["lints"];
+    case "LibTarget":    return ["lib"];
+    case "BinTarget":    return ["bin"];
+    case "Workspace":    return ["workspace"];
+    default:             return [tag.toLowerCase()];
+  }
+}
+
+/**
+ * Resolve a dotted TOML path to check existence.
+ *
+ * For "package.metadata.omni", walks package → metadata → omni.
+ * Returns true if the final table exists and has content.
+ */
+function hasDottedSection(data: TomlData, path: string): boolean {
+  const parts = path.split(".");
+  // deno-lint-ignore no-explicit-any
+  let current: any = data;
+  for (const part of parts) {
+    if (current == null || typeof current !== "object" || !(part in current)) {
+      return false;
+    }
+    current = current[part];
+  }
+  return current != null && typeof current === "object";
+}
+
+/**
+ * Check A: Form-required sections must be present.
+ *
+ * For each CONTENT.can entry with status === "REQUIRED":
+ * check that the corresponding TOML section exists in the raw data.
+ */
+function checkCargoFormRequired(
+  file: string,
+  data: TomlData,
+  formConstraints: FormConstraints,
+): LintResult[] {
+  const results: LintResult[] = [];
+  const content = formConstraints.CONTENT;
+  if (!content) return results;
+
+  for (const section of content.can) {
+    if (section.status !== "REQUIRED") continue;
+
+    const tomlKeys = cargoTagToSections(section.tag);
+    const found = tomlKeys.some((key) =>
+      key.includes(".") ? hasDottedSection(data, key) : getTable(data, key) != null
+    );
+
+    if (!found) {
+      results.push(warn(file, `form/required-section-missing`,
+        `${formConstraints.name} form: CONTENT requires "${section.tag}" (position ${section.position}) but it's absent`));
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Check B: Form-reserved sections must NOT be present.
+ *
+ * For each CONTENT.cannot entry: check that the reserved section
+ * does NOT exist in the raw data. If present, emit info with why_reserved.
+ */
+function checkCargoFormReserved(
+  file: string,
+  data: TomlData,
+  formConstraints: FormConstraints,
+): LintResult[] {
+  const results: LintResult[] = [];
+  const content = formConstraints.CONTENT;
+  if (!content) return results;
+
+  for (const reserved of content.cannot) {
+    const tomlKeys = cargoTagToSections(reserved.tag);
+    const found = tomlKeys.some((key) => {
+      // Check both table and array-of-tables (e.g., [[bin]])
+      if (key.includes(".")) return hasDottedSection(data, key);
+      const val = data[key];
+      return val != null;  // table or array — either counts
+    });
+
+    if (found) {
+      results.push(warn(file, `form/reserved-section-present`,
+        `${formConstraints.name} form: "${reserved.tag}" is RESERVED in CONTENT — ${reserved.whyReserved}`));
+    }
+  }
 
   return results;
 }
@@ -964,13 +1087,14 @@ function checkConsistency(
 
   // ── Pragma line validation ───────────────────────────────────────
   if (pragma) {
-    // Pragma type must be valid
-    if (!VALID_PRAGMA_TYPES.includes(pragma.type)) {
+    // Pragma type must be valid (schema-derived)
+    const validTypes = r.pragmaTaxonomy.validTypes;
+    if (!validTypes.includes(pragma.type)) {
       results.push(
         error(
           file,
           "consistency/pragma/type",
-          `Pragma type "${pragma.type}" — expected one of: ${VALID_PRAGMA_TYPES.join(", ")}`,
+          `Pragma type "${pragma.type}" — expected one of: ${validTypes.join(", ")}`,
           { line: 1 },
         ),
       );
@@ -988,14 +1112,15 @@ function checkConsistency(
       );
     }
 
-    // Pragma args should be recognized
+    // Pragma args should be recognized (schema-derived)
+    const allKnownArgs = r.pragmaTaxonomy.allKnownArgs;
     for (const arg of pragma.args) {
-      if (!KNOWN_ARGS.has(arg)) {
+      if (!allKnownArgs.has(arg)) {
         results.push(
           info(
             file,
             "consistency/pragma/arg",
-            `Pragma arg "--${arg}" is not a known derivation or form (known: ${[...KNOWN_ARGS].join(", ")})`,
+            `Pragma arg "--${arg}" is not a known derivation or form (known: ${[...allKnownArgs].join(", ")})`,
             { line: 1 },
           ),
         );
@@ -1060,7 +1185,7 @@ function checkConsistency(
     // I1_core.at should match pragma type (when at is a keyword)
     if (pragma && i1 && has(i1, "at")) {
       const at = i1["at"] as string;
-      if (VALID_PRAGMA_TYPES.includes(at) && at !== pragma.type) {
+      if (r.pragmaTaxonomy.validTypes.includes(at) && at !== pragma.type) {
         results.push(
           warn(
             file,
@@ -1387,7 +1512,7 @@ function checkFieldValues(
   const i1 = getTable(meta, "I1_core");
   // Keywords that skip version consistency (at vs C1_state.version)
   const atValue = i1 != null && typeof i1["at"] === "string" ? i1["at"] : "";
-  const isKeywordAt = VALID_PRAGMA_TYPES.includes(atValue);
+  const isKeywordAt = r.pragmaTaxonomy.validTypes.includes(atValue);
   // Determine effective type from pragma (preferred) or at field (fallback)
   const effectiveType = pragma?.type ?? (isKeywordAt ? atValue : null);
 
@@ -1555,12 +1680,40 @@ function checkFieldValues(
     }
   }
 
+  // Template vs derived: I1_core.at = "template" should pair with C1_state.status = "Template"
+  if (i1 && c1) {
+    const at = typeof i1["at"] === "string" ? i1["at"] : "";
+    const status = typeof c1["status"] === "string" ? c1["status"] : "";
+
+    if (at === "template" && status && status.toLowerCase() !== "template") {
+      results.push(
+        info(
+          file,
+          "content/template-status",
+          `Template file (I1_core.at="template") has C1_state.status="${status}" — expected "Template"`,
+          { line: ln("_metadata.C1_state.status") },
+        ),
+      );
+    }
+
+    if (at !== "template" && status && status.toLowerCase() === "template") {
+      results.push(
+        info(
+          file,
+          "content/derived-status",
+          `C1_state.status="Template" in non-template file (I1_core.at="${at}") — should be Active, Draft, etc.`,
+          { line: ln("_metadata.C1_state.status") },
+        ),
+      );
+    }
+  }
+
   // ── Level 4: Pragma classification info ────────────────────────────
 
   if (pragma) {
-    // Classify args as derivations or forms
-    const derivations = pragma.args.filter((a) => KNOWN_DERIVATIONS.has(a));
-    const forms = pragma.args.filter((a) => KNOWN_FORMS.has(a));
+    // Classify args as derivations or forms (schema-derived)
+    const derivations = pragma.args.filter((a) => r.pragmaTaxonomy.knownDerivations.has(a));
+    const forms = pragma.args.filter((a) => r.pragmaTaxonomy.knownForms.has(a));
 
     if (derivations.length > 0) {
       results.push(
@@ -2121,15 +2274,27 @@ async function transformTomlFile(
   // Build line map once — shared across all check functions for traceback
   const lineMap = buildLineMap(text);
 
+  // Load form constraints if a form arg is declared (e.g., --library)
+  let formConstraints: FormConstraints | null = null;
+  if (isCargo && pragma) {
+    const form = pragma.args.find((a) => rules.pragmaTaxonomy.knownForms.has(a));
+    if (form) {
+      formConstraints = await loadFormConstraints("toml", `cargo-${form}`, "data");
+    }
+  }
+
   // ── Phase 1: Lint to discover fixable issues ──────────────────────
 
   const lintResults = isCargo
     ? [
         ...checkMetadata(filePath, lintData, rules, lineMap),
-        ...checkCargoContent(filePath, data, lineMap),
+        ...checkCargoContent(filePath, data, rules, lineMap),
         ...checkClosing(filePath, lintData, rules, lineMap),
         ...checkConsistency(filePath, lintData, rules, pragma, lineMap),
         ...checkFieldValues(filePath, lintData, rules, pragma, lineMap),
+        // Form-aware validation (floor/ceiling enforcement)
+        ...(formConstraints ? checkCargoFormRequired(filePath, data, formConstraints) : []),
+        ...(formConstraints ? checkCargoFormReserved(filePath, data, formConstraints) : []),
       ]
     : [
         ...checkMetadata(filePath, lintData, rules, lineMap),
@@ -2170,9 +2335,9 @@ async function transformTomlFile(
   const lines = text.split("\n");
   const resolved: ResolvedFix[] = [];
 
-  // Separate section additions from field additions
-  const sectionAdds = fixable.filter((r) => r.fix!.toml.startsWith("["));
-  const fieldAdds = fixable.filter((r) => !r.fix!.toml.startsWith("["));
+  // Separate section additions from field additions (all TOML fixes have .toml set)
+  const sectionAdds = fixable.filter((r) => r.fix!.toml!.startsWith("["));
+  const fieldAdds = fixable.filter((r) => !r.fix!.toml!.startsWith("["));
 
   // Resolve section additions individually
   for (const r of sectionAdds) {
@@ -2181,7 +2346,7 @@ async function transformTomlFile(
     if (insertAfter >= 0) {
       resolved.push({
         insertAfter,
-        content: r.fix!.toml.split("\n"),
+        content: r.fix!.toml!.split("\n"),
         description: r.fix!.description,
         rule: r.rule,
       });
@@ -2219,7 +2384,7 @@ async function transformTomlFile(
     if (!fieldGroups.has(loc)) {
       fieldGroups.set(loc, { insertAfter, fields: [], descriptions: [] });
     }
-    fieldGroups.get(loc)!.fields.push(r.fix!.toml);
+    fieldGroups.get(loc)!.fields.push(r.fix!.toml!);
     fieldGroups.get(loc)!.descriptions.push(r.fix!.description);
   }
 
@@ -2382,14 +2547,26 @@ async function lintTomlFile(filePath: string): Promise<LintResult[]> {
   // Build line map once — shared across all check functions for traceback
   const lineMap = buildLineMap(text);
 
+  // Load form constraints if a form arg is declared (e.g., --library)
+  let formConstraints: FormConstraints | null = null;
+  if (isCargo && pragma) {
+    const form = pragma.args.find((a) => rules.pragmaTaxonomy.knownForms.has(a));
+    if (form) {
+      formConstraints = await loadFormConstraints("toml", `cargo-${form}`, "data");
+    }
+  }
+
   if (isCargo) {
     // Cargo layout: metadata + closing via normalization, content via Cargo sections
     return [
       ...checkMetadata(filePath, lintData, rules, lineMap),
-      ...checkCargoContent(filePath, data, lineMap),
+      ...checkCargoContent(filePath, data, rules, lineMap),
       ...checkClosing(filePath, lintData, rules, lineMap),
       ...checkConsistency(filePath, lintData, rules, pragma, lineMap),
       ...checkFieldValues(filePath, lintData, rules, pragma, lineMap),
+      // Form-aware validation (floor/ceiling enforcement)
+      ...(formConstraints ? checkCargoFormRequired(filePath, data, formConstraints) : []),
+      ...(formConstraints ? checkCargoFormReserved(filePath, data, formConstraints) : []),
     ];
   }
 
@@ -2470,6 +2647,28 @@ async function computeTomlHealth(
   }
 
   const failures = buildFailureIndex(results);
+
+  // ── Determine file classification for form-aware scoring ────────────
+  //
+  // The health scorer must build content actions from the RIGHT source:
+  //   - Cargo files → derivation layout (package, dependencies, lints)
+  //   - Standard TOML → format schema (identity, settings, resources, etc.)
+  //
+  // Without this, Cargo files score against phantom content sections
+  // (identity, settings, etc.) that don't exist — inflating to 100/100.
+  let isCargo = false;
+  let hasForm = false;
+  try {
+    const text = await Deno.readTextFile(filePath);
+    const firstLine = text.split("\n")[0] ?? "";
+    const pragma = parsePragmaLine(firstLine);
+    isCargo = pragma?.args.includes("cargo") ?? false;
+    if (pragma) {
+      hasForm = !!pragma.args.find((a) => rules.pragmaTaxonomy.knownForms.has(a));
+    }
+  } catch {
+    // File read failed — fall back to generic scoring (isCargo stays false)
+  }
 
   // ── METADATA block ─────────────────────────────────────────────────
   const metaActions: Map<string, AtomicAction[]> = new Map();
@@ -2585,77 +2784,127 @@ async function computeTomlHealth(
   );
 
   // ── CONTENT block ──────────────────────────────────────────────────
+  //
+  // Content scoring is DERIVATION-AWARE:
+  //   Cargo files → derivation layout sections (package, dependencies, lints)
+  //   Standard TOML → format schema sections (identity, settings, resources, etc.)
+  //
+  // Without this split, Cargo files score against phantom content sections
+  // (identity, settings, resources, behavior, integrations, _validation)
+  // that don't exist in Cargo.toml — inflating scores to 100/100.
   const contentActions: Map<string, AtomicAction[]> = new Map();
 
-  // Structural: _content table exists
-  const contentStructural: AtomicAction[] = [
-    action("_content exists", "structural", "content", failures, "content/exists"),
-  ];
-  contentActions.set("structural", contentStructural);
-
-  // Required content sections (identity, _validation, etc.)
-  for (const section of rules.requiredContent) {
-    const acts: AtomicAction[] = [
-      action(`${section} exists`, section, "content", failures, `content/${section}`),
-    ];
-    const fieldReqs = rules.contentFields[section];
-    if (fieldReqs) {
-      for (const f of fieldReqs.required) {
-        acts.push(action(
-          `${section}.${f}`, section, "content", failures, `_content.${section}/${f}`,
-        ));
+  if (isCargo) {
+    // ── Cargo derivation: score against Cargo-specific sections ──────
+    //
+    // Cargo files have [package], [dependencies], [lints], etc.
+    // NOT [_content]/[identity]/[_validation]. Score against the
+    // derivation layout's required/defined sections.
+    const layout = rules.pragmaTaxonomy.derivationLayouts["cargo"];
+    if (layout) {
+      // Required Cargo sections (e.g., [package]) — severity: error
+      for (const section of Object.keys(layout.requiredSections)) {
+        contentActions.set(`cargo/${section}`, [
+          action(`[${section}] exists`, `cargo/${section}`, "content", failures, `cargo/${section}`),
+        ]);
       }
-      for (const f of fieldReqs.defined) {
-        acts.push(action(
-          `${section}.${f}`, section, "content", failures, `_content.${section}/${f}`,
-        ));
+
+      // Defined Cargo sections (e.g., [dependencies], [lints]) — severity: info
+      for (const section of Object.keys(layout.definedSections)) {
+        contentActions.set(`cargo/${section}`, [
+          action(`[${section}] expected`, `cargo/${section}`, "content", failures, `cargo/${section}`),
+        ]);
       }
     }
-    contentActions.set(section, acts);
-  }
 
-  // Cc zone sections
-  for (const section of rules.definedCc) {
-    if (contentActions.has(section)) continue; // avoid duplication
-    const acts: AtomicAction[] = [
-      action(`Cc:${section} exists`, section, "content", failures, `content/cc/${section}`),
-    ];
-    contentActions.set(section, acts);
-  }
+    // Form-aware actions (if form declared, e.g., --library)
+    if (hasForm) {
+      contentActions.set("form", [
+        action("form required sections", "form", "content", failures, "form/required-section-missing"),
+        action("form reserved sections", "form", "content", failures, "form/reserved-section-present"),
+      ]);
+    }
 
-  // Co zone sections
-  for (const section of rules.definedCo) {
-    if (contentActions.has(section)) continue;
-    const acts: AtomicAction[] = [
-      action(`Co:${section} exists`, section, "content", failures, `content/co/${section}`),
-    ];
-    contentActions.set(section, acts);
-  }
+    // Cascade: if [package] is missing, other Cargo sections go neutral
+    if (failures.has("cargo/package")) {
+      for (const [key, acts] of contentActions) {
+        if (key === "cargo/package") continue;
+        for (const a of acts) {
+          if (a.direction > 0) {
+            (a as { direction: -1 | 0 | 1 }).direction = 0;
+            a.impact = "info";
+            a.reason = "[package] table missing — cannot assess Cargo content";
+          }
+        }
+      }
+    }
+  } else {
+    // ── Standard TOML: score against generic content schema ───────────
 
-  // Cv zone (validation)
-  for (const section of rules.requiredValidation) {
-    if (contentActions.has(section)) continue;
-    const acts: AtomicAction[] = [
-      action(`Cv:${section} exists`, section, "content", failures, `content/cv/${section}`),
-    ];
-    contentActions.set(section, acts);
-  }
+    // Structural: _content table exists
+    contentActions.set("structural", [
+      action("_content exists", "structural", "content", failures, "content/exists"),
+    ]);
 
-  // Content body zone ordering
-  const bodyOrderActs: AtomicAction[] = [
-    action("zone ordering", "body-order", "content", failures, "content-body/zone-order"),
-  ];
-  contentActions.set("body-order", bodyOrderActs);
+    // Required content sections (identity, _validation, etc.)
+    for (const section of rules.requiredContent) {
+      const acts: AtomicAction[] = [
+        action(`${section} exists`, section, "content", failures, `content/${section}`),
+      ];
+      const fieldReqs = rules.contentFields[section];
+      if (fieldReqs) {
+        for (const f of fieldReqs.required) {
+          acts.push(action(
+            `${section}.${f}`, section, "content", failures, `_content.${section}/${f}`,
+          ));
+        }
+        for (const f of fieldReqs.defined) {
+          acts.push(action(
+            `${section}.${f}`, section, "content", failures, `_content.${section}/${f}`,
+          ));
+        }
+      }
+      contentActions.set(section, acts);
+    }
 
-  // Cascade: if _content table is missing, children go neutral (root carries weight)
-  const contentExists = !failures.has("content/exists");
-  if (!contentExists) {
-    for (const [, acts] of contentActions) {
-      for (const a of acts) {
-        if (a.direction > 0 && a.check !== "_content exists") {
-          (a as { direction: -1 | 0 | 1 }).direction = 0;
-          a.impact = "info";
-          a.reason = "Parent [_content] table missing — cannot assess";
+    // Cc zone sections
+    for (const section of rules.definedCc) {
+      if (contentActions.has(section)) continue;
+      contentActions.set(section, [
+        action(`Cc:${section} exists`, section, "content", failures, `content/cc/${section}`),
+      ]);
+    }
+
+    // Co zone sections
+    for (const section of rules.definedCo) {
+      if (contentActions.has(section)) continue;
+      contentActions.set(section, [
+        action(`Co:${section} exists`, section, "content", failures, `content/co/${section}`),
+      ]);
+    }
+
+    // Cv zone (validation)
+    for (const section of rules.requiredValidation) {
+      if (contentActions.has(section)) continue;
+      contentActions.set(section, [
+        action(`Cv:${section} exists`, section, "content", failures, `content/cv/${section}`),
+      ]);
+    }
+
+    // Content body zone ordering
+    contentActions.set("body-order", [
+      action("zone ordering", "body-order", "content", failures, "content-body/zone-order"),
+    ]);
+
+    // Cascade: if _content table is missing, children go neutral
+    if (failures.has("content/exists")) {
+      for (const [, acts] of contentActions) {
+        for (const a of acts) {
+          if (a.direction > 0 && a.check !== "_content exists") {
+            (a as { direction: -1 | 0 | 1 }).direction = 0;
+            a.impact = "info";
+            a.reason = "Parent [_content] table missing — cannot assess";
+          }
         }
       }
     }

@@ -33,12 +33,14 @@ import type {
 } from "./types.ts";
 
 import {
-  BLOCKS, BLOCK_PATTERNS, END_PATTERNS, CLOSING_ZONES,
+  BLOCKS, BLOCK_PATTERNS, END_PATTERNS,
   BLOCK_SEPARATOR_WIDTH, SUBSECTION_SEPARATOR_WIDTH,
-  CLOSING_DOC_REQUIREMENTS, X1_FIELD_PATTERNS, X5_FIELD_PATTERNS,
+  BODY_SUBSECTION_PATTERN, BODY_SUBSECTION_LEGACY,
+  SCALING_THRESHOLDS,
 } from "./types.ts";
 
 import type { LintResult } from "../../foundation/mod.ts";
+import type { SchemaSubsectionDef, SchemaBodySubtype, SchemaClosingData } from "../../foundation/mod.ts";
 import { error, warn, info } from "../../foundation/mod.ts";
 
 import type { IdentityField, FieldContentRule } from "./types.ts";
@@ -376,7 +378,10 @@ export function checkSeparatorConsistency(ctx: BaseFileContext): LintResult[] {
  * Only checks zones that ARE present — missing zones are valid
  * (not all files need all zones).
  */
-export function checkClosingZoneOrder(ctx: BaseFileContext): LintResult[] {
+export function checkClosingZoneOrder(
+  ctx: BaseFileContext,
+  closingData: SchemaClosingData,
+): LintResult[] {
   const results: LintResult[] = [];
   const file = ctx.filePath;
 
@@ -394,7 +399,7 @@ export function checkClosingZoneOrder(ctx: BaseFileContext): LintResult[] {
     // Skip separator-only lines
     if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
 
-    for (const zone of CLOSING_ZONES) {
+    for (const zone of closingData.zones) {
       if (zone.pattern.test(trimmed)) {
         if (!found.some((f) => f.tag === zone.tag)) {
           found.push({ tag: zone.tag, kind: zone.kind, lineIdx: i });
@@ -421,7 +426,7 @@ export function checkClosingZoneOrder(ctx: BaseFileContext): LintResult[] {
 
   // Check 2: Within code zones, verify canonical order (Cv → Ce → Cc)
   const codeZones = found.filter((f) => f.kind === "code");
-  const codeOrder: string[] = CLOSING_ZONES.filter((z) => z.kind === "code").map((z) => z.tag);
+  const codeOrder: string[] = closingData.zones.filter((z) => z.kind === "code").map((z) => z.tag);
 
   for (let i = 1; i < codeZones.length; i++) {
     const prev = codeZones[i - 1]!;
@@ -443,7 +448,7 @@ export function checkClosingZoneOrder(ctx: BaseFileContext): LintResult[] {
 
   // Check 3: Within documentation sections, verify canonical order (X1 → ... → X6)
   const docZones = found.filter((f) => f.kind === "doc");
-  const docOrder: string[] = CLOSING_ZONES.filter((z) => z.kind === "doc").map((z) => z.tag);
+  const docOrder: string[] = closingData.zones.filter((z) => z.kind === "doc").map((z) => z.tag);
 
   for (let i = 1; i < docZones.length; i++) {
     const prev = docZones[i - 1]!;
@@ -562,7 +567,10 @@ export function validateICFieldContent(
  *
  * Skips templates — they have X6 (Template) zone with different rules.
  */
-export function checkClosingRequiredZones(ctx: BaseFileContext): LintResult[] {
+export function checkClosingRequiredZones(
+  ctx: BaseFileContext,
+  closingData: SchemaClosingData,
+): LintResult[] {
   const results: LintResult[] = [];
   const file = ctx.filePath;
 
@@ -576,7 +584,7 @@ export function checkClosingRequiredZones(ctx: BaseFileContext): LintResult[] {
   for (const line of closingLines) {
     const trimmed = line.trim();
     if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
-    for (const zone of CLOSING_ZONES) {
+    for (const zone of closingData.zones) {
       if (zone.kind === "doc" && zone.pattern.test(trimmed)) {
         presentTags.add(zone.tag);
         break;
@@ -585,7 +593,7 @@ export function checkClosingRequiredZones(ctx: BaseFileContext): LintResult[] {
   }
 
   // Check required zones
-  for (const req of CLOSING_DOC_REQUIREMENTS) {
+  for (const req of closingData.docRequirements) {
     if (req.required && !presentTags.has(req.tag)) {
       const closingBlock = ctx.blocks.find((b) => b.name === "CLOSING");
       results.push(
@@ -613,7 +621,10 @@ export function checkClosingRequiredZones(ctx: BaseFileContext): LintResult[] {
  * checkClosingRequiredZones catches that. The cascade in computeHealth
  * will neutralize content checks for missing zones.
  */
-export function checkClosingZoneContent(ctx: BaseFileContext): LintResult[] {
+export function checkClosingZoneContent(
+  ctx: BaseFileContext,
+  closingData: SchemaClosingData,
+): LintResult[] {
   const results: LintResult[] = [];
   const file = ctx.filePath;
 
@@ -632,7 +643,7 @@ export function checkClosingZoneContent(ctx: BaseFileContext): LintResult[] {
     const trimmed = closingLines[i]!.trim();
     if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
 
-    for (const zone of CLOSING_ZONES) {
+    for (const zone of closingData.zones) {
       if (zone.kind === "doc" && zone.pattern.test(trimmed)) {
         if (!zoneRanges.some((z) => z.tag === zone.tag)) {
           zoneRanges.push({ tag: zone.tag, startIdx: i, endIdx: closingLines.length });
@@ -647,60 +658,706 @@ export function checkClosingZoneContent(ctx: BaseFileContext): LintResult[] {
     zoneRanges[i]!.endIdx = zoneRanges[i + 1]!.startIdx;
   }
 
-  // Check X1 content
-  const x1 = zoneRanges.find((z) => z.tag === "X1");
-  if (x1) {
-    const x1Lines = closingLines.slice(x1.startIdx, x1.endIdx);
+  // Check every doc zone that has fields defined in the schema
+  for (const req of closingData.docRequirements) {
+    if (!req.fields) continue;
+
+    const zoneRange = zoneRanges.find((z) => z.tag === req.tag);
+    if (!zoneRange) continue;
+
+    const patterns = closingData.fieldPatterns[req.tag];
+    if (!patterns) continue;
+
+    const zoneLinesSlice = closingLines.slice(zoneRange.startIdx, zoneRange.endIdx);
     const foundFields = new Set<string>();
 
-    for (const line of x1Lines) {
+    for (const line of zoneLinesSlice) {
       const trimmed = line.trim();
-      for (const [field, pattern] of Object.entries(X1_FIELD_PATTERNS)) {
+      for (const [field, pattern] of Object.entries(patterns)) {
         if (pattern.test(trimmed)) {
           foundFields.add(field);
         }
       }
     }
 
-    const required = CLOSING_DOC_REQUIREMENTS.find((r) => r.tag === "X1");
-    if (required?.fields) {
-      const missing = required.fields.required.filter((f) => !foundFields.has(f));
-      if (missing.length > 0) {
-        results.push(
-          info(file, "closing/X1-content",
-            `X1 Policy zone missing required fields: ${missing.join(", ")} (expected: Never, Careful, Safe)`,
-            { line: closingStart + 1 + x1.startIdx }),
-        );
+    const missing = req.fields.required.filter((f) => !foundFields.has(f));
+    if (missing.length > 0) {
+      const fieldList = req.fields.required.join(", ");
+      results.push(
+        info(file, `closing/${req.tag}-content`,
+          `${req.tag} zone missing required fields: ${missing.join(", ")} (expected: ${fieldList})`,
+          { line: closingStart + 1 + zoneRange.startIdx }),
+      );
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// CLOSING X6 template-only detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Check if X6 (Template Guide) section appears in a non-template file.
+ *
+ * X6 is template-only — it should be removed when instantiating from template.
+ * Its presence in a derived file indicates the template wasn't fully processed.
+ */
+export function checkClosingX6TemplateOnly(
+  ctx: BaseFileContext,
+  closingData: SchemaClosingData,
+): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  // X6 is EXPECTED in templates — only flag in derived files
+  if (ctx.isTemplate) return results;
+
+  const closingLines = getBlockLines(ctx.lines, ctx.blocks, "CLOSING");
+  if (closingLines.length === 0) return results;
+
+  // Find X6 in the schema — check if it's marked template_only
+  const x6Req = closingData.docRequirements.find((r) => r.tag === "X6");
+  if (!x6Req || !x6Req.templateOnly) return results;
+
+  // Find X6 zone in the file
+  const x6Zone = closingData.zones.find((z) => z.tag === "X6");
+  if (!x6Zone) return results;
+
+  for (let i = 0; i < closingLines.length; i++) {
+    const trimmed = closingLines[i]!.trim();
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
+    if (x6Zone.pattern.test(trimmed)) {
+      const fileLine = blockLineToFile(ctx.blocks, "CLOSING", i);
+      results.push(
+        warn(file, "closing/X6-template-only",
+          `X6 (Template Guide) section found in non-template file — remove when instantiating from template`,
+          { line: fileLine }),
+      );
+      break;
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// CLOSING content depth — check that field values are non-empty
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that CLOSING documentation zone fields have non-empty content.
+ *
+ * This is a DEPTH check — goes beyond field presence (checkClosingZoneContent)
+ * to verify the content is meaningful:
+ * - Never/Careful/Safe in X1 should have actual guidance text
+ * - Note in X5 should have a real note, not placeholder
+ * - Scripture in X5 should contain a scripture reference
+ *
+ * Only checks fields that ARE present — missing fields are caught by
+ * checkClosingZoneContent.
+ */
+export function checkClosingDocFieldContent(
+  ctx: BaseFileContext,
+  closingData: SchemaClosingData,
+): LintResult[] {
+  const results: LintResult[] = [];
+  const file = ctx.filePath;
+
+  if (ctx.isTemplate) return results;
+
+  const closingLines = getBlockLines(ctx.lines, ctx.blocks, "CLOSING");
+  if (closingLines.length === 0) return results;
+
+  const closingBlock = ctx.blocks.find((b) => b.name === "CLOSING");
+  const closingStart = closingBlock?.line ?? 0;
+
+  // Build zone ranges
+  const zoneRanges: Array<{ tag: string; startIdx: number; endIdx: number }> = [];
+  for (let i = 0; i < closingLines.length; i++) {
+    const trimmed = closingLines[i]!.trim();
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+    for (const zone of closingData.zones) {
+      if (zone.kind === "doc" && zone.pattern.test(trimmed)) {
+        if (!zoneRanges.some((z) => z.tag === zone.tag)) {
+          zoneRanges.push({ tag: zone.tag, startIdx: i, endIdx: closingLines.length });
+        }
+        break;
+      }
+    }
+  }
+  for (let i = 0; i < zoneRanges.length - 1; i++) {
+    zoneRanges[i]!.endIdx = zoneRanges[i + 1]!.startIdx;
+  }
+
+  // For each doc zone with fields, check content depth
+  for (const req of closingData.docRequirements) {
+    if (!req.fields) continue;
+
+    const zoneRange = zoneRanges.find((z) => z.tag === req.tag);
+    if (!zoneRange) continue;
+
+    const patterns = closingData.fieldPatterns[req.tag];
+    if (!patterns) continue;
+
+    const zoneLinesSlice = closingLines.slice(zoneRange.startIdx, zoneRange.endIdx);
+
+    // Check each field line: "// Never: <value>" — value should be non-trivial
+    for (const [fieldName, fieldPattern] of Object.entries(patterns)) {
+      for (const line of zoneLinesSlice) {
+        const trimmed = line.trim();
+        if (fieldPattern.test(trimmed)) {
+          // Extract value after the colon
+          const colonIdx = trimmed.indexOf(":");
+          if (colonIdx >= 0) {
+            const value = trimmed.slice(colonIdx + 1).trim();
+            // Check for empty or placeholder values
+            if (!value || value === "" || /^\[.*\]$/.test(value)) {
+              results.push(
+                info(file, `closing/${req.tag}-depth`,
+                  `${req.tag} field "${fieldName}" has ${!value ? "empty" : "placeholder"} value — provide actual guidance`,
+                  { line: closingStart + 1 + zoneRange.startIdx }),
+              );
+            }
+          }
+          break; // field found, move to next field
+        }
       }
     }
   }
 
-  // Check X5 content
-  const x5 = zoneRanges.find((z) => z.tag === "X5");
-  if (x5) {
-    const x5Lines = closingLines.slice(x5.startIdx, x5.endIdx);
-    const foundFields = new Set<string>();
+  return results;
+}
 
-    for (const line of x5Lines) {
-      const trimmed = line.trim();
-      for (const [field, pattern] of Object.entries(X5_FIELD_PATTERNS)) {
-        if (pattern.test(trimmed)) {
-          foundFields.add(field);
+// ---------------------------------------------------------------------------
+// Content-aware validation — template/derived, subtype, cross-field
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate template vs derived field consistency.
+ *
+ * Templates SHOULD have:   I1.at = "template", C1.status = "Template"
+ * Derived files SHOULD NOT have these values (they indicate uninstantiated template).
+ *
+ * Starts at info severity — promote after false-positive assessment.
+ */
+export function validateTemplateVsDerived(
+  file: string,
+  pragmaFields: IdentityField[],
+  metadataFields: IdentityField[],
+  isTemplate: boolean,
+  varName: { pragma: string; metadata: string },
+): LintResult[] {
+  const results: LintResult[] = [];
+
+  // Build lookups
+  const pragmaMap = new Map<string, IdentityField>();
+  for (const f of pragmaFields) {
+    pragmaMap.set(`${f.section}.${f.field}`, f);
+  }
+  const metaMap = new Map<string, IdentityField>();
+  for (const f of metadataFields) {
+    metaMap.set(`${f.section}.${f.field}`, f);
+  }
+
+  const i1at = pragmaMap.get("I1.at");
+  const c1status = metaMap.get("C1.status");
+
+  if (isTemplate) {
+    // Template SHOULD have "template" / "Template"
+    if (i1at && i1at.value && i1at.value.toLowerCase() !== "template") {
+      results.push(info(file, `content/${varName.pragma}/template-at`,
+        `Template file has ${varName.pragma}.I1.at = "${i1at.value}" — expected "template"`,
+        { line: i1at.line }));
+    }
+    if (c1status && c1status.value && c1status.value.toLowerCase() !== "template") {
+      results.push(info(file, `content/${varName.metadata}/template-status`,
+        `Template file has ${varName.metadata}.C1.status = "${c1status.value}" — expected "Template"`,
+        { line: c1status.line }));
+    }
+  } else {
+    // Derived file SHOULD NOT have "template" values
+    if (i1at && i1at.value && i1at.value.toLowerCase() === "template") {
+      results.push(info(file, `content/${varName.pragma}/derived-at`,
+        `${varName.pragma}.I1.at = "template" in non-template file — should be a version (e.g., a-01.00)`,
+        { line: i1at.line }));
+    }
+    if (c1status && c1status.value && c1status.value.toLowerCase() === "template") {
+      results.push(info(file, `content/${varName.metadata}/derived-status`,
+        `${varName.metadata}.C1.status = "Template" in non-template file — should be Active, Draft, etc.`,
+        { line: c1status.line }));
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Validate I2.subtype matches the detected file subtype.
+ *
+ * The handler's subtype detection (via file pattern / pragma directive)
+ * should agree with the I2.subtype field value.
+ */
+export function validateSubtypeConsistency(
+  file: string,
+  pragmaFields: IdentityField[],
+  detectedSubtype: string | null,
+  varName: string,
+): LintResult[] {
+  if (!detectedSubtype) return [];
+
+  const i2subtype = pragmaFields.find(
+    (f) => f.section === "I2" && f.field === "subtype",
+  );
+  if (!i2subtype || !i2subtype.value) return [];
+
+  // Skip placeholder values
+  if (/^\[.+\]$/.test(i2subtype.value)) return [];
+
+  if (i2subtype.value.toLowerCase() !== detectedSubtype.toLowerCase()) {
+    return [info(file, `content/${varName}/subtype-mismatch`,
+      `${varName}.I2.subtype = "${i2subtype.value}" but file detected as "${detectedSubtype}"`,
+      { line: i2subtype.line })];
+  }
+
+  return [];
+}
+
+/**
+ * Validate I1.format matches the expected format.
+ *
+ * When linting a Go file, I1.format should be "go". For Rust, "rust".
+ */
+export function validateFormatConsistency(
+  file: string,
+  pragmaFields: IdentityField[],
+  expectedFormat: string,
+  varName: string,
+): LintResult[] {
+  const i1format = pragmaFields.find(
+    (f) => f.section === "I1" && f.field === "format",
+  );
+  if (!i1format || !i1format.value) return [];
+
+  // Skip placeholders
+  if (/^\[.+\]$/.test(i1format.value)) return [];
+
+  if (i1format.value.toLowerCase() !== expectedFormat.toLowerCase()) {
+    return [info(file, `content/${varName}/format-mismatch`,
+      `${varName}.I1.format = "${i1format.value}" but file is being linted as "${expectedFormat}"`,
+      { line: i1format.line })];
+  }
+
+  return [];
+}
+
+// ---------------------------------------------------------------------------
+// SETUP subsection ordering — canonical order enforcement
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that SETUP subsections appear in canonical order.
+ *
+ * Both Go and Rust handlers use the identical algorithm: iterate SETUP lines,
+ * match against subsection definitions, verify ascending canonical order.
+ * Alias usage is detected and reported as info.
+ *
+ * @param setupLines  Lines within the SETUP block (from getBlockLines)
+ * @param subsections Schema-derived subsection definitions (tag + pattern + aliases)
+ * @param blocks      Block positions (for line number computation)
+ * @param file        File path for lint results
+ * @param isTemplate  Skip ordering for templates (subsection names in comments)
+ */
+export function checkSetupSubsectionOrder(
+  setupLines: string[],
+  subsections: SubsectionDef[],
+  blocks: BlockPosition[],
+  file: string,
+  isTemplate: boolean,
+): LintResult[] {
+  const results: LintResult[] = [];
+
+  // Templates mention section names in overview comments — skip order check
+  if (isTemplate) return results;
+  if (setupLines.length === 0) return results;
+
+  // Find which sections are present and their positions
+  const found: Array<{ tag: string; lineIdx: number }> = [];
+
+  for (let i = 0; i < setupLines.length; i++) {
+    const trimmed = setupLines[i]!.trim();
+    // Skip separator-only lines
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
+    for (const sub of subsections) {
+      if (sub.pattern.test(trimmed)) {
+        if (!found.some((f) => f.tag === sub.tag)) {
+          found.push({ tag: sub.tag, lineIdx: i });
+          // Detect alias usage — suggest canonical name.
+          if (sub.aliases?.test(trimmed)) {
+            const fileLine = blockLineToFile(blocks, "SETUP", i);
+            results.push(
+              info(file, "setup/alias-name",
+                `"${trimmed.replace(/^\/\/\s*(?:\d+\.\s+)?/, "").trim()}" is recognized — consider canonical name "${sub.tag}"`,
+                { line: fileLine }),
+            );
+          }
         }
+        break;
       }
     }
+  }
 
-    const required = CLOSING_DOC_REQUIREMENTS.find((r) => r.tag === "X5");
-    if (required?.fields) {
-      const missing = required.fields.required.filter((f) => !foundFields.has(f));
-      if (missing.length > 0) {
-        results.push(
-          info(file, "closing/X5-content",
-            `X5 Note zone missing required fields: ${missing.join(", ")} (expected: note, scripture)`,
-            { line: closingStart + 1 + x5.startIdx }),
-        );
+  if (found.length < 2) return results; // Nothing to check ordering on
+
+  // Check ordering against the canonical sequence
+  const canonicalOrder: string[] = subsections.map((s) => s.tag);
+
+  let lastCanonIdx = -1;
+  for (const f of found) {
+    const canonIdx = canonicalOrder.indexOf(f.tag);
+    if (canonIdx < lastCanonIdx) {
+      const foundTags = found.map((x) => x.tag).join(" → ");
+      const fileLine = blockLineToFile(blocks, "SETUP", f.lineIdx);
+      results.push(
+        warn(file, "setup/subsection-order",
+          `SETUP subsection ${f.tag} appears after a later subsection — found: ${foundTags}, expected: ${canonicalOrder.join(" → ")}`,
+          { line: fileLine }),
+      );
+      break;
+    }
+    lastCanonIdx = canonIdx;
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// BODY subsection ordering — numeric ascending order
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that BODY subsections appear in ascending numeric order.
+ *
+ * BODY uses numbered markers: `// N. <Name>` where N determines order.
+ * Unlike SETUP (name-based), BODY ordering is purely numeric and
+ * subtype-agnostic. Both Go and Rust use the identical algorithm.
+ *
+ * @param bodyLines      Lines within the BODY block (from getBlockLines)
+ * @param blocks         Block positions (for line number computation)
+ * @param file           File path for lint results
+ * @param isTemplate     Skip ordering for templates
+ * @param includeLegacy  Also match §N — Name format (Go has this, Rust does not)
+ */
+export function checkBodySubsectionOrder(
+  bodyLines: string[],
+  blocks: BlockPosition[],
+  file: string,
+  isTemplate: boolean,
+  includeLegacy = false,
+): LintResult[] {
+  const results: LintResult[] = [];
+
+  if (isTemplate) return results;
+  if (bodyLines.length === 0) return results;
+
+  // Find numbered subsection markers in BODY
+  const found: Array<{ num: number; name: string; lineIdx: number }> = [];
+
+  for (let i = 0; i < bodyLines.length; i++) {
+    const trimmed = bodyLines[i]!.trim();
+    // Skip separator-only lines
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
+    const match = BODY_SUBSECTION_PATTERN.exec(trimmed) ??
+                  (includeLegacy ? BODY_SUBSECTION_LEGACY.exec(trimmed) : null);
+    if (match) {
+      const num = parseInt(match[1]!, 10);
+      const name = match[2]!.trim();
+      // Only record first occurrence of each number
+      if (!found.some((f) => f.num === num)) {
+        found.push({ num, name, lineIdx: i });
       }
     }
+  }
+
+  // Need at least 2 subsections to check ordering
+  if (found.length < 2) return results;
+
+  // Check that numbers appear in ascending order
+  let lastNum = -1;
+  for (const f of found) {
+    if (f.num < lastNum) {
+      const foundOrder = found.map((x) => `${x.num}. ${x.name}`).join(" → ");
+      const fileLine = blockLineToFile(blocks, "BODY", f.lineIdx);
+      results.push(
+        warn(file, "body/subsection-order",
+          `BODY subsection §${f.num} (${f.name}) appears after §${lastNum} — found: ${foundOrder}`,
+          { line: fileLine }),
+      );
+      break;
+    }
+    lastNum = f.num;
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Required SETUP subsections — schema-driven per-subtype
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that SETUP subsections required for the detected subtype are present.
+ *
+ * The schema defines `required_in` for each SETUP subsection — e.g., Imports
+ * required in all subtypes, CoreTypes required in library, Constants in executable.
+ * This check verifies that required subsections have a matching header in SETUP.
+ *
+ * @param setupLines    Lines within the SETUP block
+ * @param subsections   Compiled subsection regexes (for finding present sections)
+ * @param setupData     Raw schema data with requiredIn per subsection
+ * @param subtype       Detected file subtype (null = skip)
+ * @param blocks        Block positions (for line number computation)
+ * @param file          File path for lint results
+ * @param isTemplate    Skip for templates
+ */
+export function checkRequiredSetupSubsections(
+  setupLines: string[],
+  subsections: SubsectionDef[],
+  setupData: SchemaSubsectionDef[],
+  subtype: string | null,
+  blocks: BlockPosition[],
+  file: string,
+  isTemplate: boolean,
+): LintResult[] {
+  if (isTemplate || !subtype) return [];
+  if (setupLines.length === 0) return [];
+
+  const ranges = getSubsectionRanges(setupLines, subsections);
+  const presentTags = new Set(ranges.map((r) => r.tag));
+
+  const results: LintResult[] = [];
+  const setupBlock = blocks.find((b) => b.name === "SETUP");
+
+  for (const sub of setupData) {
+    if (sub.requiredIn.includes(subtype) && !presentTags.has(sub.tag)) {
+      results.push(
+        warn(file, "setup/required-subsection",
+          `SETUP missing subsection "${sub.tag}" — required for ${subtype} subtype`,
+          { line: setupBlock?.line ?? 0 }),
+      );
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Required BODY subsections — schema-driven per-subtype
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that BODY subsections required for the detected subtype are present.
+ *
+ * The schema defines `required_in` for each BODY subsection per subtype —
+ * e.g., PublicAPIs required in library, RunFunction required in executable.
+ * This check looks for matching numbered markers (// N. Name) in the BODY.
+ *
+ * @param bodyLines       Lines within the BODY block
+ * @param bodySubtype     Body subtype data from schema (has subsections with requiredIn)
+ * @param subtype         Detected file subtype (null = skip)
+ * @param blocks          Block positions (for line number computation)
+ * @param file            File path for lint results
+ * @param isTemplate      Skip for templates
+ * @param includeLegacy   Also match §N — Name format (Go has this, Rust does not)
+ */
+export function checkRequiredBodySubsections(
+  bodyLines: string[],
+  bodySubtype: SchemaBodySubtype | undefined,
+  subtype: string | null,
+  blocks: BlockPosition[],
+  file: string,
+  isTemplate: boolean,
+  includeLegacy = false,
+): LintResult[] {
+  if (isTemplate || !subtype) return [];
+  if (bodyLines.length === 0) return [];
+  if (!bodySubtype || bodySubtype.subsections.length === 0) return [];
+
+  // Collect subsection names from BODY markers
+  const foundNames: string[] = [];
+  for (const line of bodyLines) {
+    const trimmed = line.trim();
+    if (/^\/\/\s*[─=\-]{4,}\s*$/.test(trimmed)) continue;
+
+    const match = BODY_SUBSECTION_PATTERN.exec(trimmed) ??
+                  (includeLegacy ? BODY_SUBSECTION_LEGACY.exec(trimmed) : null);
+    if (match) {
+      foundNames.push(match[2]!.trim());
+    }
+  }
+
+  const results: LintResult[] = [];
+  const bodyBlock = blocks.find((b) => b.name === "BODY");
+
+  for (const sub of bodySubtype.subsections) {
+    if (!sub.requiredIn.includes(subtype)) continue;
+
+    // Case-insensitive substring match — "Public APIs" matches "PublicAPIs" pattern
+    const present = foundNames.some((f) => {
+      const fLower = f.toLowerCase().replace(/\s+/g, "");
+      const tagLower = sub.tag.toLowerCase().replace(/\s+/g, "");
+      return fLower.includes(tagLower) || tagLower.includes(fLower);
+    });
+
+    if (!present) {
+      results.push(
+        warn(file, "body/required-subsection",
+          `BODY missing subsection "${sub.tag}" — required for ${subtype} subtype`,
+          { line: bodyBlock?.line ?? 0 }),
+      );
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Subtype emphasis — heavy/light subsection balance
+// ---------------------------------------------------------------------------
+
+/**
+ * Check that "heavy" subsections for the detected subtype have content.
+ *
+ * Each subtype has emphasis data: heavy subsections should carry the most
+ * content, light subsections should be supporting. If heavy subsections
+ * are empty but light ones have content, the emphasis is inverted.
+ *
+ * Only checks SETUP emphasis (exact tag matching). BODY emphasis requires
+ * fuzzy name matching and is deferred to a future enhancement.
+ *
+ * @param lines            Full file lines
+ * @param blocks           Block positions
+ * @param setupSubsections Compiled subsection regexes (for finding ranges)
+ * @param setupEmphasis    Heavy/light lists for SETUP from the schema
+ * @param subtype          Detected file subtype (null = skip)
+ * @param file             File path for lint results
+ * @param isTemplate       Skip for templates
+ */
+export function checkSubtypeEmphasis(
+  lines: string[],
+  blocks: BlockPosition[],
+  setupSubsections: SubsectionDef[],
+  setupEmphasis: { heavy: string[]; light: string[] } | undefined,
+  subtype: string | null,
+  file: string,
+  isTemplate: boolean,
+): LintResult[] {
+  if (isTemplate || !subtype) return [];
+  if (!setupEmphasis) return [];
+
+  const results: LintResult[] = [];
+
+  const setupLines = getBlockLines(lines, blocks, "SETUP");
+  if (setupLines.length === 0) return results;
+
+  const ranges = getSubsectionRanges(setupLines, setupSubsections);
+
+  // Count content lines per subsection (exclude separators and blanks)
+  function contentCount(tag: string): number {
+    const range = ranges.find((r) => r.tag === tag);
+    if (!range) return 0;
+    // startIdx is the header line itself — skip it (+1)
+    const start = Math.min(range.startIdx + 1, range.endIdx);
+    return setupLines.slice(start, range.endIdx).filter((l) => {
+      const t = l.trim();
+      return t !== "" && !/^\/\/\s*[─=\-]{4,}\s*$/.test(t);
+    }).length;
+  }
+
+  let heavyTotal = 0;
+  let lightTotal = 0;
+
+  for (const tag of setupEmphasis.heavy) {
+    heavyTotal += contentCount(tag);
+  }
+
+  for (const tag of setupEmphasis.light) {
+    lightTotal += contentCount(tag);
+  }
+
+  // Only flag if heavy is completely empty but light has content
+  if (heavyTotal === 0 && lightTotal > 0) {
+    const setupBlock = blocks.find((b) => b.name === "SETUP");
+    results.push(
+      info(file, "emphasis/setup-inverted",
+        `SETUP emphasis inverted for ${subtype} — heavy subsections (${setupEmphasis.heavy.join(", ")}) are empty but light subsections have ${lightTotal} content lines`,
+        { line: setupBlock?.line ?? 0 }),
+    );
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Scaling signals — block size thresholds
+// ---------------------------------------------------------------------------
+
+/**
+ * Check for oversized SETUP and BODY blocks that suggest refactoring.
+ *
+ * SETUP > 200 content lines or BODY > 500 content lines triggers an info
+ * suggesting the file may benefit from splitting. Separator-only lines
+ * and blank lines are excluded from the count.
+ *
+ * @param lines      Full file lines
+ * @param blocks     Block positions
+ * @param file       File path for lint results
+ * @param isTemplate Skip for templates
+ */
+export function checkScalingSignals(
+  lines: string[],
+  blocks: BlockPosition[],
+  file: string,
+  isTemplate: boolean,
+): LintResult[] {
+  const results: LintResult[] = [];
+
+  if (isTemplate) return results;
+
+  // SETUP size
+  const setupLines = getBlockLines(lines, blocks, "SETUP");
+  const setupContent = setupLines.filter((l) => {
+    const t = l.trim();
+    return t !== "" && !/^\/\/\s*[─=\-]{4,}\s*$/.test(t);
+  });
+
+  if (setupContent.length > SCALING_THRESHOLDS.SETUP) {
+    const setupBlock = blocks.find((b) => b.name === "SETUP");
+    results.push(
+      info(file, "scaling/setup-size",
+        `SETUP block has ${setupContent.length} content lines (threshold: ${SCALING_THRESHOLDS.SETUP}) — consider extracting types/constants into separate files`,
+        { line: setupBlock?.line ?? 0 }),
+    );
+  }
+
+  // BODY size
+  const bodyLines = getBlockLines(lines, blocks, "BODY");
+  const bodyContent = bodyLines.filter((l) => {
+    const t = l.trim();
+    return t !== "" && !/^\/\/\s*[─=\-]{4,}\s*$/.test(t);
+  });
+
+  if (bodyContent.length > SCALING_THRESHOLDS.BODY) {
+    const bodyBlock = blocks.find((b) => b.name === "BODY");
+    results.push(
+      info(file, "scaling/body-size",
+        `BODY block has ${bodyContent.length} content lines (threshold: ${SCALING_THRESHOLDS.BODY}) — consider extracting logic into submodules`,
+        { line: bodyBlock?.line ?? 0 }),
+    );
   }
 
   return results;
