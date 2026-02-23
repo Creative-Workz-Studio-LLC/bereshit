@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-constants",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.Constants Content Character — What Constant Content IS",
+    "_P5_brief": "Format-independent definition of constant content character. Constants are compile-time fixed values — known before execution begins, immutable throughout program lifetime. Syntax varies (const, #define, static const); the fixedness doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "constants",
+        "block": "SETUP",
+        "position": 3,
+        "nature": "compile-time-fixed",
+
+        "description": "Constant content is the immutable truth of a file. Values declared here are known at compile time and never change at runtime. They give names to magic numbers, establish configuration defaults, and define domain-specific fixed values. Constants are the most stable content in any file — they exist before execution and persist unchanged throughout.",
+
+        "invariants": {
+            "description": "Properties true of ALL constant content, regardless of language.",
+
+            "compile-time-known": "Every constant's value is fully determined at compile time. No runtime computation, no environment reading, no function calls.",
+            "immutable": "Constants cannot be modified after compilation. They are baked into the binary. Attempting to mutate a constant is a compile error, not a runtime error.",
+            "named": "Every constant has a meaningful name. Magic numbers and string literals are replaced with names that carry domain intent.",
+            "typed": "Constants have explicit or inferred types. The type constrains what the constant can represent and how it can be used.",
+            "grouped": "Constants are organized by domain concern — sizes together, defaults together, limits together. Grouping conveys relationships."
+        },
+
+        "content_forms": {
+            "description": "What constant content looks like across languages. Syntax varies; the compile-time fixedness is invariant.",
+
+            "rust": {
+                "syntax": "const MAX_RETRIES: u32 = 3; const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);",
+                "grouping": "Related constants grouped in blocks. May use const fn for computed constants. Visibility modifiers (pub) on public constants.",
+                "notes": "Rust distinguishes const (compile-time) from static (runtime-initialized). Constants here are strictly const — values the compiler can inline."
+            },
+
+            "go": {
+                "syntax": "const ( MaxRetries = 3; DefaultTimeout = 30 * time.Second )",
+                "grouping": "Grouped in const blocks. iota for sequential enumerations. Typed vs untyped constants (Go's unique distinction).",
+                "notes": "Go untyped constants have arbitrary precision and adapt to context. Typed constants are fixed to their declared type. iota sequences are idiomatic for related sets."
+            },
+
+            "c": {
+                "syntax": "#define MAX_RETRIES 3  or  static const int MAX_RETRIES = 3;  or  enum { MAX_RETRIES = 3 };",
+                "grouping": "#define macros grouped at top. static const declarations grouped by purpose. enum blocks for related integer sets.",
+                "notes": "C has three constant mechanisms: preprocessor macros (#define, no type safety), static const (typed but not always compile-time), and enum (integer only). Prefer enum for integer sets, static const for typed values."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, constants change syntax but preserve their values and semantics. A constant of 3 is 3 in every language. The name may change (snake_case vs PascalCase); the value and purpose don't.",
+            "invariant": ["values (the actual data)", "semantics (what the constant means)", "grouping relationships (which constants belong together)", "immutability guarantee"],
+            "variable": ["syntax (const vs #define vs static const)", "naming convention (SCREAMING_SNAKE vs PascalCase vs snake_case)", "type annotation style", "grouping mechanism (const block vs individual declarations)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "granted",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "defer"
+    },
+
+    "detection_weight": 0.73,
+    "_weight_rationale": "|avg| of concept_map: 1G 1F 9D. (1−9)/11 = −8/11 ≈ −0.73. variable_binding granted (constants ARE bindings), string_format defers.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Constants are the fixed truths of a file. They are known before execution begins, immutable throughout, and named for clarity. Like the laws of nature — established once, reliable forever.",
+    "_X5_scripture": "Malachi 3:6 — For I am the LORD, I change not."
+}

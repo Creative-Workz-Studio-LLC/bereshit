@@ -1,0 +1,241 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-structure-molded-module",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "form-structure-schema",
+    "_P2_role": "structure-molded",
+    "_P5_title": "Module Form Structure — A Member of the Body",
+    "_P5_brief": "Format-agnostic structural definition of module form. A focused, single-concern file within a crate/package. Follows type_lifecycle ordering like library but reserves crate-level sections (Modules, Macros, FeatureGates) and the output layer.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "form": {
+        "name": "module",
+        "extends": "structure/whole/4-block.jsonc",
+        "derives_from": "structure/molded/bare-bone.jsonc",
+        "pattern_from": "structure/molded/library.jsonc",
+        "is_foundation": false,
+        "purpose": "Internal module — focused single-concern file within a crate/package (src/parser.rs, src/config.rs)",
+
+        "principle": "Module is a member of the body (1 Cor 12:18). Each module has a specific function — focused, single-concern, serving the whole. The body is not one member but many.",
+
+        "SETUP": {
+            "required": ["Imports", "Constants", "ErrorTypes", "CoreTypes"],
+            "available": ["Statics", "TypeAliases", "TraitDefs"],
+            "reserved": ["Modules", "Macros", "FeatureGates"],
+            "required_count": 4,
+            "available_count": 3,
+            "reserved_count": 3,
+            "total": 10,
+
+            "promotes_from_bare_bone": {
+                "to_available": ["Statics", "TypeAliases", "TraitDefs"]
+            },
+
+            "reserves_from_library": {
+                "sections": ["Modules", "Macros", "FeatureGates"],
+                "why": "Crate-level concerns. Modules are members, not the body itself. S2 (submodule tree), S9 (macro exports), S10 (feature organization) stay at crate root."
+            }
+        },
+
+        "BODY": {
+            "required": ["IdentityAccess", "TraitImplementations", "Constructors", "CoreLogic", "Queries", "FreeFunctions"],
+            "reserved": ["Output", "Helpers", "ConstructorTests", "BuilderTests", "TransitionTests", "QueryTests", "IdentityTests", "ErrorTests", "EdgeCaseTests", "TableDrivenTests", "IntegrationTests"],
+            "required_count": 6,
+            "reserved_count": 11,
+            "total": 17,
+            "ordering": "type_lifecycle",
+            "ordering_sequence": ["IdentityAccess", "TraitImplementations", "Constructors", "CoreLogic", "Queries", "[Output RESERVED]", "FreeFunctions"],
+
+            "promotes_from_bare_bone": {
+                "to_required": ["TraitImplementations", "Constructors", "Queries"]
+            },
+
+            "reserves_specifically": {
+                "Output": "Modules return data; the crate's output layer formats it. A parser returns AST nodes, not formatted error messages."
+            }
+        },
+
+        "CLOSING": {
+            "required": ["Cv", "Ce", "X1", "X4", "X5"],
+            "available": ["Cc", "X2", "X3"],
+            "reserved": ["TestCoverageSummary", "X6"],
+            "required_count": 5,
+            "available_count": 3,
+            "reserved_count": 2,
+            "total": 10,
+            "emphasis": { "heavy": ["Cv"], "light": ["Ce", "Cc"] },
+
+            "promotes_from_bare_bone": {
+                "to_available": ["Cc", "X2", "X3"]
+            },
+
+            "removes": {
+                "X6": "Module is a derived file, not a template. X6 was removed during instantiation."
+            },
+
+            "ce_note": "Ce is structurally required but always EMPTY for modules — modules have no entry point."
+        },
+
+        // ── Typing Map ─────────────────────────────────────────────
+        //
+        // Arrow syntax: -module-><typing>
+        // Pragma:       //omni:code --rust -module->utility
+        //
+        // The generic module form defines the FULL section universe.
+        // The typing arrow NARROWS that universe to what's relevant
+        // for a specific kind of module. Without the arrow, the full
+        // profile applies. With it, only highlighted sections matter.
+        //
+        // Three states per section:
+        //   required   — must be present (linter flags if missing)
+        //   available  — can be present (no flag either way)
+        //   irrelevant — not expected for this typing (excluded from canonical check)
+        //
+        // CLOSING is invariant — typing doesn't change documentation zones.
+        //
+        // Detection granularity:
+        //   R[10] = generic module sections (the form profile above)
+        //   R[5]  = typing-narrowed sections (this map)
+        //   The arrow IS the R[10] → R[5] refinement.
+
+        "typing_map": {
+            "_principle": "Not every member is the eye (1 Cor 12:17). A utility module doesn't need Constructors. A types module doesn't need FreeFunctions. The arrow tells the linter which member this is.",
+
+            "utility": {
+                "description": "Stateless utility functions. No type lifecycle — pure functions operating on parameters.",
+                "example_files": "exists.rs, paths.rs, hash.rs, format.rs",
+                "pragma": "//omni:code --rust -module->utility",
+                "distinguisher": "Free functions, no struct/enum state, no constructors",
+                "SETUP": {
+                    "required": ["Imports"],
+                    "available": ["Constants", "ErrorTypes", "TypeAliases"],
+                    "irrelevant": ["CoreTypes", "TraitDefs", "Statics"]
+                },
+                "BODY": {
+                    "required": ["FreeFunctions"],
+                    "available": ["IdentityAccess", "CoreLogic"],
+                    "irrelevant": ["TraitImplementations", "Constructors", "Queries"]
+                }
+            },
+
+            "types": {
+                "description": "Type definitions. Structs, enums, and their trait contracts. The foundational shapes other modules build on.",
+                "example_files": "types.rs, ast.rs, model.rs, node.rs",
+                "pragma": "//omni:code --rust -module->types",
+                "distinguisher": "struct/enum definitions with trait impls, minimal logic",
+                "SETUP": {
+                    "required": ["Imports", "CoreTypes"],
+                    "available": ["Constants", "ErrorTypes", "TypeAliases", "TraitDefs"],
+                    "irrelevant": ["Statics"]
+                },
+                "BODY": {
+                    "required": ["TraitImplementations", "CoreLogic"],
+                    "available": ["IdentityAccess", "Constructors", "Queries", "FreeFunctions"],
+                    "irrelevant": []
+                }
+            },
+
+            "service": {
+                "description": "Stateful service. Full type lifecycle — construction, operation, query. The module that 'does the work.'",
+                "example_files": "engine.rs, database.rs, cache.rs, pipeline.rs",
+                "pragma": "//omni:code --rust -module->service",
+                "distinguisher": "Types with mutable state, constructors, methods, queries",
+                "SETUP": {
+                    "required": ["Imports", "Constants", "ErrorTypes", "CoreTypes"],
+                    "available": ["Statics", "TypeAliases", "TraitDefs"],
+                    "irrelevant": []
+                },
+                "BODY": {
+                    "required": ["IdentityAccess", "TraitImplementations", "Constructors", "CoreLogic", "Queries", "FreeFunctions"],
+                    "available": [],
+                    "irrelevant": []
+                }
+            },
+
+            "handler": {
+                "description": "Request/event dispatch. Receives input, matches patterns, delegates to services. Thin by design.",
+                "example_files": "handler.rs, router.rs, dispatch.rs, listener.rs",
+                "pragma": "//omni:code --rust -module->handler",
+                "distinguisher": "Pattern-match dispatch, delegates to service modules",
+                "SETUP": {
+                    "required": ["Imports", "Constants"],
+                    "available": ["ErrorTypes", "TypeAliases"],
+                    "irrelevant": ["CoreTypes", "TraitDefs", "Statics"]
+                },
+                "BODY": {
+                    "required": ["CoreLogic", "FreeFunctions"],
+                    "available": ["IdentityAccess", "TraitImplementations"],
+                    "irrelevant": ["Constructors", "Queries"]
+                }
+            },
+
+            "config": {
+                "description": "Configuration loading. Reads, validates, deserializes config into typed structures.",
+                "example_files": "config.rs, settings.rs, options.rs, env.rs",
+                "pragma": "//omni:code --rust -module->config",
+                "distinguisher": "Config structs, deserialization, validation, defaults",
+                "SETUP": {
+                    "required": ["Imports", "Constants", "CoreTypes"],
+                    "available": ["ErrorTypes", "TypeAliases", "TraitDefs"],
+                    "irrelevant": ["Statics"]
+                },
+                "BODY": {
+                    "required": ["Constructors", "CoreLogic", "Queries"],
+                    "available": ["IdentityAccess", "TraitImplementations", "FreeFunctions"],
+                    "irrelevant": []
+                }
+            },
+
+            "error": {
+                "description": "Error definitions. Crate error types, conversions, display formatting. The module that names what went wrong.",
+                "example_files": "error.rs, errors.rs, fault.rs",
+                "pragma": "//omni:code --rust -module->error",
+                "distinguisher": "Error enums, From impls, Display impls, thiserror derives",
+                "SETUP": {
+                    "required": ["Imports", "ErrorTypes"],
+                    "available": ["Constants", "TypeAliases"],
+                    "irrelevant": ["CoreTypes", "TraitDefs", "Statics"]
+                },
+                "BODY": {
+                    "required": ["TraitImplementations", "CoreLogic"],
+                    "available": ["IdentityAccess", "FreeFunctions"],
+                    "irrelevant": ["Constructors", "Queries"]
+                }
+            },
+
+            "parser": {
+                "description": "Parsing logic. Transforms raw input into structured data. Stateless transformation pipeline.",
+                "example_files": "parser.rs, lexer.rs, tokenizer.rs, reader.rs",
+                "pragma": "//omni:code --rust -module->parser",
+                "distinguisher": "Input → structured output, error recovery, position tracking",
+                "SETUP": {
+                    "required": ["Imports", "Constants", "CoreTypes"],
+                    "available": ["ErrorTypes", "TypeAliases"],
+                    "irrelevant": ["TraitDefs", "Statics"]
+                },
+                "BODY": {
+                    "required": ["Constructors", "CoreLogic", "FreeFunctions"],
+                    "available": ["IdentityAccess", "TraitImplementations", "Queries"],
+                    "irrelevant": []
+                }
+            }
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Module is a member of the body. Not every member is the eye. Not every module is the crate root. Each module does its one thing with excellence. A parser parses. A config loads. A handler handles. The focused purpose IS the excellence.",
+    "_X5_scripture": "But now hath God set the members every one of them in the body, as it hath pleased him. — 1 Corinthians 12:18"
+}

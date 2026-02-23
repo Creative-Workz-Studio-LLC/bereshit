@@ -1,0 +1,89 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-closing-cleanup",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section Cc: Cleanup — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Cc (Cleanup). Resource deallocation via Drop — explicit teardown that RAII can't handle alone. AVAILABLE in library and module forms.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/closing/cleanup.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "impl Drop for {TypeName} { fn drop(&mut self) { ... } }",
+                "description": "Resource cleanup — explicit teardown for types holding non-Rust resources",
+                "patterns": [
+                    "impl Drop for Connection {\n    fn drop(&mut self) {\n        if let Some(handle) = self.handle.take() {\n            let _ = handle.close();\n        }\n    }\n}",
+                    "impl Drop for TempFile {\n    fn drop(&mut self) {\n        let _ = std::fs::remove_file(&self.path);\n    }\n}"
+                ],
+                "visibility": "N/A — Drop is automatic"
+            },
+            {
+                "construct": "cleanup helper functions",
+                "description": "Private helpers called by Drop implementations",
+                "patterns": [
+                    "fn flush_buffer(&mut self) {\n    if !self.buffer.is_empty() {\n        let _ = self.writer.write_all(&self.buffer);\n        self.buffer.clear();\n    }\n}"
+                ],
+                "visibility": "private (fn, not pub fn)"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "business logic in Drop",
+                "reason": "Drop is for cleanup, not operations. Business logic belongs in BODY.",
+                "defer_to": "BODY.CoreLogic",
+                "rust_signal": "N/A — design judgment"
+            },
+            {
+                "construct": "panicking in Drop",
+                "reason": "Panicking during Drop can cause double-panic → abort. Use let _ = to ignore errors.",
+                "defer_to": "N/A — use Result-based cleanup",
+                "rust_signal": "unwrap\\(\\)|expect\\(.*\\)|panic!"
+            },
+            {
+                "construct": "blocking I/O in Drop without timeout",
+                "reason": "Drop can be called during stack unwinding — blocking I/O could hang the cleanup process",
+                "defer_to": "N/A — add timeouts or use async cleanup",
+                "rust_signal": "N/A"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "^(pub\\s+)?fn\\s+(?!drop)\\w+\\(",
+                "to": "BODY.CoreLogic or BODY.FreeFunctions",
+                "confidence": "medium",
+                "why": "Non-cleanup function in Cc section"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// Cc — Cleanup (no resources requiring explicit Drop)",
+            "empty_library": "// Cc — Cleanup (no resources requiring explicit Drop)",
+            "comment_skeleton": "// impl Drop for TypeName {\n//     fn drop(&mut self) {\n//         // cleanup\n//     }\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Cc (Cleanup): impl Drop for types holding non-Rust resources. Reliable, non-panicking, focused on deallocation. let _ = to ignore errors. Most Rust types don't need explicit Drop — RAII handles it.",
+    "_X5_scripture": "Ecclesiastes 3:6 — A time to get, and a time to lose; a time to keep, and a time to cast away."
+}

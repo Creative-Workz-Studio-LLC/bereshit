@@ -9,7 +9,13 @@ package fixture
 // ============================================================================
 //
 // Key:     B-test-fixture-subsection-order-correct
-// Purpose: Test fixture — SETUP sections in correct 10-section order.
+// Purpose: Test fixture — SETUP sections in correct canonical order.
+//          Canonical order from SECTION_REGISTRY:
+//          Imports(1) → Modules(2) → Constants(3) → Statics(4) →
+//          Type Aliases(5) → Error Types(6) → Core Types(7) →
+//          Trait Defs(8) → Macros(9) → Feature Gates(10) →
+//          Variables(11) → Interface Defs(12) → Type Methods(13) →
+//          Code Generation(14) → Build Tags(15)
 //
 
 var Pragma = [][2]string{
@@ -19,6 +25,7 @@ var Pragma = [][2]string{
 	{"I1.at", "a-01.00"},
 	{"I2.type", "code"},
 	{"I2.structure", "4-block"},
+	{"I2.subtype", "library"},
 	{"I3.file", "subsection-order-correct.go"},
 	{"I3.title", "Subsection Order Correct Fixture"},
 }
@@ -47,19 +54,13 @@ var Metadata = [][2]string{
 import "fmt"
 
 // ──────────────────────────────────────────────────────────────────────────
-// 2. Constants
+// 3. Constants
 // ──────────────────────────────────────────────────────────────────────────
 
 const MaxWidgets = 100
 
 // ──────────────────────────────────────────────────────────────────────────
-// 3. Variables
-// ──────────────────────────────────────────────────────────────────────────
-
-var widgetCount int
-
-// ──────────────────────────────────────────────────────────────────────────
-// 6. Core Types
+// 7. Core Types
 // ──────────────────────────────────────────────────────────────────────────
 
 type Widget struct {
@@ -67,7 +68,13 @@ type Widget struct {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// 8. Type Methods
+// 11. Variables
+// ──────────────────────────────────────────────────────────────────────────
+
+var widgetCount int
+
+// ──────────────────────────────────────────────────────────────────────────
+// 13. Type Methods
 // ──────────────────────────────────────────────────────────────────────────
 
 func (w Widget) String() string {

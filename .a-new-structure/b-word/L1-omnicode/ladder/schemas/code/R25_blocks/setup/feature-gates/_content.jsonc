@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-feature-gates",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.FeatureGates Content Character — What Feature Gate Content IS",
+    "_P5_brief": "Format-independent definition of feature gate content character. Feature gates are compile-time conditional compilation directives — doors that include or exclude code based on build configuration. Syntax varies (#[cfg], //go:build, #ifdef); the compile-time inclusion decision doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "feature-gates",
+        "block": "SETUP",
+        "position": 10,
+        "nature": "conditional-compilation",
+
+        "description": "Feature gate content controls what code exists in a compiled binary. It marks sections of code as conditional on features, platforms, or build configurations. Feature gates operate at compile time — the decision is made before the program runs. Code behind a disabled gate does not exist in the binary at all. This is not runtime feature toggling — it is build-time code selection.",
+
+        "invariants": {
+            "description": "Properties true of ALL feature gate content, regardless of language.",
+
+            "compile-time-resolved": "Feature gate decisions are resolved at compile time. The compiler knows which gates are open before generating any code.",
+            "binary-affecting": "Feature gates change what code exists in the final binary. Disabled code is not compiled, not linked, not present. It has zero runtime cost.",
+            "declarative": "Feature gates declare conditions, not implement logic. The gate says 'if feature X is enabled'; the guarded code provides the implementation.",
+            "reversible": "Each feature gate has at least two states — enabled and disabled. The code must be valid in both configurations. No gate should be permanently enabled or permanently disabled.",
+            "documented": "Feature gates must document what they control and why the feature is optional. A gate without documentation is a mystery switch."
+        },
+
+        "content_forms": {
+            "description": "What feature gate content looks like across languages. Syntax varies; the compile-time conditional inclusion is invariant.",
+
+            "rust": {
+                "syntax": "#[cfg(feature = \"serde\")] use serde::{Serialize, Deserialize};  #[cfg(target_os = \"linux\")] mod linux_impl;  #[cfg(test)] mod tests;",
+                "grouping": "Feature-dependent imports first, then feature-dependent modules, then platform-specific modules. Grouped by gate condition.",
+                "notes": "Rust cfg attributes are fine-grained — can gate individual items, blocks, or entire modules. cfg_attr for conditional attributes. Feature flags defined in Cargo.toml. The test cfg is the most common gate."
+            },
+
+            "go": {
+                "syntax": "//go:build linux && amd64  //go:build !windows  //go:build integration",
+                "grouping": "Build constraint line at file top (before package declaration). One constraint per file — Go gates entire files, not individual items.",
+                "notes": "Go build constraints operate at file granularity. To gate a single function, put it in its own file with a build tag. Custom tags (integration, e2e) for test categories. GOEXPERIMENT for language experiments."
+            },
+
+            "c": {
+                "syntax": "#ifdef FEATURE_SERDE ... #endif  #if defined(__linux__) ... #elif defined(_WIN32) ... #endif  #ifndef NDEBUG ... #endif",
+                "grouping": "#ifdef/#if blocks at section boundaries. Platform checks grouped together. Debug/release gates grouped together.",
+                "notes": "C preprocessor conditionals are textual — #ifdef checks whether a macro is defined. Feature flags passed via -DFLAG compiler arguments. #ifndef for header guards. Nesting is common but deep nesting indicates design problems."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, feature gates change syntax but preserve the conditional set. The same features are optional in every language — only the gating mechanism and granularity change.",
+            "invariant": ["feature set (what's optional)", "condition logic (which features depend on which)", "guarded code (what each gate protects)", "platform targets (what platforms are supported)"],
+            "variable": ["syntax (#[cfg] vs //go:build vs #ifdef)", "granularity (item-level vs file-level vs block-level)", "feature definition location (Cargo.toml vs compiler flags vs build system)", "boolean logic syntax (all/any/not vs &&/|| vs defined/!defined)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "granted",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.82,
+    "_weight_rationale": "|avg| of concept_map: 1G 10D. (1−10)/11 = −9/11 ≈ −0.82. conditional_if granted (feature gates ARE conditional compilation).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Feature gates are compile-time doors. Open doors let code in; closed doors leave it out entirely. The decision is permanent for each build — chosen once, enforced throughout.",
+    "_X5_scripture": "Revelation 3:8 — Behold, I have set before thee an open door, and no man can shut it."
+}

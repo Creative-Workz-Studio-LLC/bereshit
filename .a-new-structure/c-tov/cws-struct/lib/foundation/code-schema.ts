@@ -29,7 +29,14 @@
 
 import { parse as parseJsonc } from "@std/jsonc";
 import { getDefaultPipeline } from "./schema-pipeline.ts";
-import type { SubsectionDef } from "../handlers/shared/types.ts";
+import type { SubsectionDef } from "./types.ts";
+import {
+  SECTION_REGISTRY,
+  SECTION_ORDER,
+  FORM_REGISTRY,
+} from "../data/mod.ts";
+import type { SectionEntry, FormDefinition } from "../data/mod.ts";
+import { registerCache } from "./cache-registry.ts";
 
 // ---------------------------------------------------------------------------
 // 2. Types — raw schema data
@@ -85,7 +92,25 @@ export interface SchemaSubtypeDef {
 }
 
 // ---------------------------------------------------------------------------
-// 2b. Types — CLOSING block schema data
+// 2b. Types — Typing map (arrow refinement profiles)
+// ---------------------------------------------------------------------------
+
+/** Section profile for a typing arrow refinement (e.g., module->utility). */
+export interface TypingBlockProfile {
+  required: string[];
+  available: string[];
+  irrelevant: string[];
+}
+
+/** Complete typing profile for a form subtype (e.g., "utility" under "module"). */
+export interface TypingProfile {
+  description: string;
+  SETUP: TypingBlockProfile;
+  BODY: TypingBlockProfile;
+}
+
+// ---------------------------------------------------------------------------
+// 2c. Types — CLOSING block schema data
 // ---------------------------------------------------------------------------
 
 /** Schema-derived closing zone definition (replaces hardcoded CLOSING_ZONES). */
@@ -109,7 +134,7 @@ export interface SchemaClosingDocReq {
 /**
  * Complete CLOSING block data loaded from schema.
  *
- * Replaces the hardcoded constants in handlers/shared/types.ts:
+ * Replaces the hardcoded constants in shared/types.ts:
  * - zones replaces CLOSING_ZONES + ClosingZoneDef
  * - docRequirements replaces CLOSING_DOC_REQUIREMENTS + ClosingDocRequirement
  * - fieldPatterns replaces X1_FIELD_PATTERNS + X5_FIELD_PATTERNS
@@ -304,6 +329,17 @@ export interface Code4BlockRules {
   /** BODY canonical subsection names per subtype (e.g., library → ["Org Chart", "Helpers", ...]). */
   bodySubsections: Record<string, readonly string[]>;
 
+  /** BODY subsections with compiled regexes — ALL 13 BODY sections, universal.
+   *  Same pattern as setupSubsections: schema → SubsectionDef[] → getSubsectionRanges().
+   *  Form-level filtering (bare-bone → library → ...) is separate from detection.
+   *  Detection is universal; expectations are form-specific. */
+  bodySubsectionDefs: SubsectionDef[];
+
+  /** CLOSING subsections with compiled regexes — ALL 8 CLOSING sections, universal.
+   *  Zone markers (Cv, Ce, X1, etc.) compiled from CLOSING_DISPLAY_TAGS.
+   *  Tags use Title Case matching section display names for normalizeTag() alignment. */
+  closingSubsectionDefs: SubsectionDef[];
+
   /** Placement rules from schema — what content belongs where. */
   placementRules: {
     mustBeInSetup: string[];
@@ -346,6 +382,13 @@ export interface Code4BlockRules {
   /** CLOSING block zones, requirements, and field patterns from schema. */
   closingData: SchemaClosingData;
 
+  // ── Typing maps (arrow refinement: -module->utility) ────────────
+
+  /** Typing maps per form: form name → typing name → profile.
+   *  Used when pragma declares -<form>-><typing> arrow syntax.
+   *  Narrows section expectations from generic form to specific variant. */
+  typingMaps: Record<string, Record<string, TypingProfile>>;
+
   // ── Fill content (schema-driven file generation) ──────────────────
 
   /** Fill content for schema-driven file generation. Undefined if schema lacks fill_content. */
@@ -356,14 +399,118 @@ export interface Code4BlockRules {
 // 3. Constants
 // ---------------------------------------------------------------------------
 
-/** Schema filenames per format (used to build schema IDs for the pipeline). */
-const SCHEMA_FILES: Record<string, string> = {
-  go:   "go-4block-schema.jsonc",
-  rust: "rust-4block-schema.jsonc",
-};
-
 /** Supported format identifiers. */
 export type CodeFormat = "go" | "rust";
+
+// ---------------------------------------------------------------------------
+// 3b. Tag → label conversion (data layer kebab-case → display PascalCase)
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert a kebab-case tag to a display label.
+ *
+ * "core-types" → "Core Types"
+ * "trait-implementations" → "Trait Implementations"
+ * "imports" → "Imports"
+ * "org-chart" → "Org Chart"
+ * "public-apis" → "Public APIs"
+ */
+const KNOWN_ACRONYMS: Record<string, string> = {
+  "apis": "APIs",
+  "api": "API",
+  "io": "IO",
+  "id": "ID",
+};
+
+function tagToLabel(tag: string): string {
+  return tag
+    .split("-")
+    .map((word) => {
+      const lower = word.toLowerCase();
+      return KNOWN_ACRONYMS[lower] ?? (word.charAt(0).toUpperCase() + word.slice(1));
+    })
+    .join(" ");
+}
+
+/**
+ * Known alternative names for subsection headers.
+ *
+ * When a handler matches a subsection header in source code, it needs
+ * to recognize both the canonical name AND common alternatives.
+ * These come from real-world usage patterns across Go and Rust files.
+ *
+ * Key: SECTION_REGISTRY tag (kebab-case)
+ * Value: Alternative display names (not including canonical)
+ */
+const ALT_PATTERNS: Record<string, string[]> = {
+  // SETUP alternatives
+  "imports": ["Dependencies", "External Imports"],
+  "modules": ["Module Declarations", "Submodules", "Re-exports"],
+  "constants": ["Const", "Constant Definitions"],
+  "statics": ["Static Variables", "Package Variables"],
+  "type-aliases": ["Type Definitions", "Aliases"],
+  "error-types": ["Errors", "Error Definitions", "Custom Errors"],
+  "core-types": ["Types", "Structures", "Structs", "Data Types"],
+  "trait-defs": ["Traits", "Trait Definitions"],
+  "macros": ["Macro Definitions"],
+  "feature-gates": ["Feature Flags", "Conditional Compilation"],
+  "variables": ["Vars", "Variable Declarations", "Package Variables"],
+  "interface-defs": ["Interfaces", "Interface Definitions"],
+  "type-methods": ["Methods", "Type Methods"],
+  "code-generation": ["Code Gen", "Generate"],
+  "build-tags": ["Build Constraints"],
+
+  // BODY alternatives
+  "org-chart": ["Block Overview", "Organization", "Module Overview"],
+  "identity-access": ["Identity", "Accessors", "Identity Accessors"],
+  "trait-implementations": ["Implementations", "Impl Blocks", "Trait Impls"],
+  "constructors": ["Constructor", "Builders", "New Functions"],
+  "core-logic": ["Core", "Logic", "Core Operations"],
+  "queries": ["Query Methods", "Getters", "Observers"],
+  "output-display": ["Output", "Display", "Formatting"],
+  "free-functions": ["Functions", "Free Functions", "Utilities"],
+  "helpers": ["Helper Functions", "Support Functions"],
+  "tests": ["Test Functions", "Unit Tests"],
+  "core-operations": ["Operations", "Business Logic"],
+  "error-handling": ["Error Recovery", "Error Processing"],
+  "public-apis": ["Public API", "Exported Functions", "API Surface"],
+};
+
+/**
+ * Closing zone display tags keyed by SECTION_REGISTRY tag.
+ *
+ * The closing zones in source files use short display tags (Cv, Ce, Cc, X1-X5)
+ * for zone header matching. SECTION_REGISTRY uses kebab-case tags.
+ * This bridges between them.
+ */
+const CLOSING_DISPLAY_TAGS: Record<string, string> = {
+  "validation": "Cv",
+  "execution": "Ce",
+  "cleanup": "Cc",
+  "modification-policy": "X1",
+  "extension-points": "X2",
+  "troubleshooting": "X3",
+  "reference": "X4",
+  "closing-note": "X5",
+  // X6 is NOT in SECTION_REGISTRY (template-only) but must be detectable
+  // for checkClosingX6TemplateOnly to flag it in derived files.
+  "template-guide": "X6",
+};
+
+/**
+ * Closing zone kind — code or doc — keyed by SECTION_REGISTRY tag.
+ */
+const CLOSING_ZONE_KIND: Record<string, "code" | "doc"> = {
+  "validation": "code",
+  "execution": "code",
+  "cleanup": "code",
+  "modification-policy": "doc",
+  "extension-points": "doc",
+  "troubleshooting": "doc",
+  "reference": "doc",
+  "closing-note": "doc",
+  "template-guide": "doc",
+};
 
 // ============================================================================
 // BODY
@@ -440,425 +587,7 @@ function buildAliasPattern(altNames: string[]): RegExp | undefined {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Schema extraction — SETUP subsections
-// ---------------------------------------------------------------------------
-
-/**
- * Extract SETUP subsection definitions from a schema's SETUP block.
- *
- * Handles two schema formats:
- * - Rust-style: `subsection_order.S1_Imports` with position/tag/pattern/alt_patterns
- * - Go-style:   `subsection_order.S1_Imports` (same after upgrade)
- *
- * Both schemas now use the same S{N}_{Tag} key format.
- */
-function extractSetupSubsections(
-  // deno-lint-ignore no-explicit-any
-  setupBlock: Record<string, any>,
-): SchemaSubsectionDef[] {
-  const subOrder = setupBlock["subsection_order"] as
-    // deno-lint-ignore no-explicit-any
-    | Record<string, any>
-    | undefined;
-  if (!subOrder) return [];
-
-  const results: SchemaSubsectionDef[] = [];
-
-  for (const [key, value] of Object.entries(subOrder)) {
-    // Match S1_Imports, S2_Constants, ..., S10_BuildTags
-    const keyMatch = key.match(/^S(\d+)_/);
-    if (!keyMatch || typeof value !== "object" || !value) continue;
-
-    // deno-lint-ignore no-explicit-any
-    const v = value as Record<string, any>;
-    results.push({
-      position: typeof v["position"] === "number"
-        ? v["position"]
-        : parseInt(keyMatch[1]!, 10),
-      tag: v["tag"] ?? "",
-      pattern: v["pattern"] ?? v["tag"] ?? "",
-      altPatterns: Array.isArray(v["alt_patterns"]) ? v["alt_patterns"] : [],
-      purpose: v["purpose"] ?? "",
-      productionNote: v["production_note"] ?? "",
-      requiredIn: Array.isArray(v["required_in"]) ? v["required_in"] : [],
-    });
-  }
-
-  // Sort by position (dependency chain)
-  results.sort((a, b) => a.position - b.position);
-  return results;
-}
-
-// ---------------------------------------------------------------------------
-// 3. Schema extraction — BODY subtypes
-// ---------------------------------------------------------------------------
-
-/**
- * Extract BODY subtype definitions from a schema's BODY block.
- *
- * Handles structured format: each subtype has B{N}_{Tag} entries
- * with position/tag/pattern/alt_patterns/purpose/production_note/required_in.
- */
-function extractBodySubtypes(
-  // deno-lint-ignore no-explicit-any
-  bodyBlock: Record<string, any>,
-): Record<string, SchemaBodySubtype> {
-  const subOrder = bodyBlock["subsection_order"] as
-    // deno-lint-ignore no-explicit-any
-    | Record<string, any>
-    | undefined;
-  if (!subOrder) return {};
-
-  const result: Record<string, SchemaBodySubtype> = {};
-
-  // Dynamic: extract subtype keys from schema (not hardcoded)
-  const subtypeNames = Object.keys(subOrder).filter(
-    (k) => typeof subOrder[k] === "object" && subOrder[k] !== null &&
-           k !== "note" && k !== "ordering_varies_by_subtype"
-  );
-
-  for (const subtypeName of subtypeNames) {
-    // deno-lint-ignore no-explicit-any
-    const subtypeData = subOrder[subtypeName] as Record<string, any>;
-    if (!subtypeData || typeof subtypeData !== "object") continue;
-
-    const canonicalCount = typeof subtypeData["canonical_count"] === "number"
-      ? subtypeData["canonical_count"]
-      : 0;
-    const orderingPrinciple =
-      typeof subtypeData["ordering_principle"] === "string"
-        ? subtypeData["ordering_principle"]
-        : "";
-    const note = typeof subtypeData["note"] === "string"
-      ? subtypeData["note"]
-      : "";
-
-    const subsections: SchemaSubsectionDef[] = [];
-
-    // Extract B1_Xxx through B9_Xxx entries
-    for (const [key, value] of Object.entries(subtypeData)) {
-      const keyMatch = key.match(/^B(\d+)_/);
-      if (!keyMatch || typeof value !== "object" || !value) continue;
-
-      // deno-lint-ignore no-explicit-any
-      const v = value as Record<string, any>;
-      subsections.push({
-        position: typeof v["position"] === "number"
-          ? v["position"]
-          : parseInt(keyMatch[1]!, 10),
-        tag: v["tag"] ?? "",
-        pattern: v["pattern"] ?? v["tag"] ?? "",
-        altPatterns: Array.isArray(v["alt_patterns"]) ? v["alt_patterns"] : [],
-        purpose: v["purpose"] ?? "",
-        productionNote: v["production_note"] ?? "",
-        requiredIn: Array.isArray(v["required_in"]) ? v["required_in"] : [],
-      });
-    }
-
-    subsections.sort((a, b) => a.position - b.position);
-
-    // Normalize key: "demo_test" → "demo-test" (schema uses underscore, code uses hyphen)
-    const normalizedName = subtypeName.replace(/_/g, "-");
-    result[normalizedName] = {
-      canonicalCount,
-      orderingPrinciple,
-      note,
-      subsections,
-    };
-  }
-
-  return result;
-}
-
-// ---------------------------------------------------------------------------
-// 4. Schema extraction — placement rules + subtype emphasis
-// ---------------------------------------------------------------------------
-
-function extractPlacementRules(
-  // deno-lint-ignore no-explicit-any
-  setupBlock: Record<string, any>,
-): { mustBeInSetup: string[]; mustNotBeInSetup: string[] } {
-  // deno-lint-ignore no-explicit-any
-  const rules = setupBlock["placement_rules"] as Record<string, any>;
-  if (!rules) return { mustBeInSetup: [], mustNotBeInSetup: [] };
-
-  return {
-    mustBeInSetup: Array.isArray(rules["must_be_in_setup"])
-      ? rules["must_be_in_setup"]
-      : [],
-    mustNotBeInSetup: Array.isArray(rules["must_not_be_in_setup"])
-      ? rules["must_not_be_in_setup"]
-      : [],
-  };
-}
-
-function extractSubtypeEmphasis(
-  // deno-lint-ignore no-explicit-any
-  block: Record<string, any>,
-): Record<string, { heavy: string[]; light: string[] }> {
-  // deno-lint-ignore no-explicit-any
-  const emphasis = block["subtype_emphasis"] as Record<string, any>;
-  if (!emphasis) return {};
-
-  const result: Record<string, { heavy: string[]; light: string[] }> = {};
-
-  // Dynamic: extract subtype keys from schema (not hardcoded)
-  const subtypeNames = Object.keys(emphasis).filter(
-    (k) => typeof emphasis[k] === "object" && emphasis[k] !== null && k !== "note"
-  );
-
-  for (const subtypeName of subtypeNames) {
-    // deno-lint-ignore no-explicit-any
-    const data = emphasis[subtypeName] as Record<string, any>;
-    if (!data || typeof data !== "object") continue;
-
-    const normalizedName = subtypeName.replace(/_/g, "-");
-    result[normalizedName] = {
-      heavy: Array.isArray(data["heavy"]) ? data["heavy"] : [],
-      light: Array.isArray(data["light"]) ? data["light"] : [],
-    };
-  }
-
-  return result;
-}
-
-// ---------------------------------------------------------------------------
-// 4b. Schema extraction — content kind placement maps
-// ---------------------------------------------------------------------------
-
-/**
- * Extract content_kind_mapping from the SETUP block.
- *
- * Returns block_placement (kind → "SETUP"|"BODY"), subsection_placement
- * (kind → subsection tag), and metadata_forbidden (list of forbidden kinds).
- *
- * Falls back to empty structures if the schema section is missing — this
- * keeps handlers working with older schemas that lack content_kind_mapping.
- */
-function extractContentKindMapping(
-  // deno-lint-ignore no-explicit-any
-  setupBlock: Record<string, any>,
-): PlacementMaps {
-  // deno-lint-ignore no-explicit-any
-  const mapping = setupBlock?.["content_kind_mapping"] as Record<string, any> | undefined;
-
-  if (!mapping || typeof mapping !== "object") {
-    return { blockPlacement: {}, subsectionPlacement: {}, metadataForbidden: [] };
-  }
-
-  const blockPlacement: Record<string, string> = {};
-  const bp = mapping["block_placement"];
-  if (bp && typeof bp === "object") {
-    for (const [kind, block] of Object.entries(bp)) {
-      if (typeof block === "string") blockPlacement[kind] = block;
-    }
-  }
-
-  const subsectionPlacement: Record<string, string> = {};
-  const sp = mapping["subsection_placement"];
-  if (sp && typeof sp === "object") {
-    for (const [kind, tag] of Object.entries(sp)) {
-      if (typeof tag === "string") subsectionPlacement[kind] = tag;
-    }
-  }
-
-  const metadataForbidden: string[] = [];
-  const mf = mapping["metadata_forbidden"];
-  if (Array.isArray(mf)) {
-    for (const item of mf) {
-      if (typeof item === "string") metadataForbidden.push(item);
-    }
-  }
-
-  return { blockPlacement, subsectionPlacement, metadataForbidden };
-}
-
-// ---------------------------------------------------------------------------
-// 5. Schema extraction — METADATA block (I/C, doc comments, subtypes)
-// ---------------------------------------------------------------------------
-
-/**
- * Extract I/C field requirements from the METADATA block's identity_statics.
- *
- * Reads pragma_sections (I1-I4) and metadata_sections (C1-C7).
- * Both Go and Rust schemas define these identically — the I/C standard
- * is format-agnostic, only the carrier syntax differs.
- *
- * Returns two maps: pragma (I-sections) and metadata (C-sections).
- * Each entry has required[], defined[], and purpose.
- */
-function extractFieldRequirements(
-  // deno-lint-ignore no-explicit-any
-  metadataBlock: Record<string, any>,
-): {
-  pragma: Record<string, SchemaFieldRequirement>;
-  metadata: Record<string, SchemaFieldRequirement>;
-} {
-  // deno-lint-ignore no-explicit-any
-  const statics = metadataBlock["identity_statics"] as Record<string, any>;
-  if (!statics) return { pragma: {}, metadata: {} };
-
-  const pragma: Record<string, SchemaFieldRequirement> = {};
-  const metadata: Record<string, SchemaFieldRequirement> = {};
-
-  // Extract pragma_sections → I1, I2, I3, I4
-  // deno-lint-ignore no-explicit-any
-  const pragmaSections = statics["pragma_sections"] as Record<string, any>;
-  if (pragmaSections) {
-    for (const [key, value] of Object.entries(pragmaSections)) {
-      if (typeof value !== "object" || !value) continue;
-      // deno-lint-ignore no-explicit-any
-      const v = value as Record<string, any>;
-
-      // Key is like "I1_core" — normalize to "I1"
-      const sectionMatch = key.match(/^(I\d+)_/);
-      if (!sectionMatch) continue;
-
-      pragma[sectionMatch[1]!] = {
-        required: Array.isArray(v["required"]) ? v["required"] : [],
-        defined: Array.isArray(v["defined"]) ? v["defined"] : [],
-        purpose: typeof v["purpose"] === "string" ? v["purpose"] : "",
-      };
-    }
-  }
-
-  // Extract metadata_sections → C1, C2, ..., C7
-  // deno-lint-ignore no-explicit-any
-  const metaSections = statics["metadata_sections"] as Record<string, any>;
-  if (metaSections) {
-    for (const [key, value] of Object.entries(metaSections)) {
-      if (typeof value !== "object" || !value) continue;
-      // deno-lint-ignore no-explicit-any
-      const v = value as Record<string, any>;
-
-      // Key is like "C1_state" — normalize to "C1"
-      const sectionMatch = key.match(/^(C\d+)_/);
-      if (!sectionMatch) continue;
-
-      metadata[sectionMatch[1]!] = {
-        required: Array.isArray(v["required"]) ? v["required"] : [],
-        defined: Array.isArray(v["defined"]) ? v["defined"] : [],
-        purpose: typeof v["purpose"] === "string" ? v["purpose"] : "",
-      };
-    }
-  }
-
-  return { pragma, metadata };
-}
-
-/**
- * Extract doc comment expectations from the METADATA block.
- *
- * Go has: package_doc, pragma_doc, metadata_doc (each with purpose, severity, format).
- * Rust has: purpose, location, crate_root_severity, module_severity.
- *
- * Returns a map of comment type → expectation.
- */
-function extractDocComments(
-  // deno-lint-ignore no-explicit-any
-  metadataBlock: Record<string, any>,
-): Record<string, SchemaDocComment> {
-  // deno-lint-ignore no-explicit-any
-  const docComments = metadataBlock["doc_comments"] as Record<string, any>;
-  if (!docComments) return {};
-
-  const result: Record<string, SchemaDocComment> = {};
-
-  for (const [key, value] of Object.entries(docComments)) {
-    // Skip non-object entries (like "note" string)
-    if (typeof value !== "object" || !value) continue;
-    // Skip known non-doc entries
-    if (key === "three_tier_discipline") continue;
-
-    // deno-lint-ignore no-explicit-any
-    const v = value as Record<string, any>;
-    result[key] = {
-      purpose: typeof v["purpose"] === "string" ? v["purpose"] : "",
-      severity: typeof v["severity"] === "string"
-        ? v["severity"]
-        : typeof v["crate_root_severity"] === "string"
-          ? v["crate_root_severity"]
-          : "info",
-      format: typeof v["format"] === "string" ? v["format"] : undefined,
-      contains: typeof v["contains"] === "string" ? v["contains"] : undefined,
-      location: typeof v["location"] === "string" ? v["location"] : undefined,
-    };
-  }
-
-  // Rust flat pattern: doc_comments has crate_root_severity/module_severity
-  // directly (not nested objects). Synthesize named entries.
-  if (Object.keys(result).length === 0) {
-    const purpose = typeof docComments["purpose"] === "string"
-      ? docComments["purpose"] : "";
-    const location = typeof docComments["location"] === "string"
-      ? docComments["location"] : undefined;
-
-    if (typeof docComments["crate_root_severity"] === "string") {
-      result["crate_root_docs"] = {
-        purpose,
-        severity: docComments["crate_root_severity"],
-        format: "//!",
-        location,
-      };
-    }
-    if (typeof docComments["module_severity"] === "string") {
-      result["module_docs"] = {
-        purpose,
-        severity: docComments["module_severity"],
-        format: "//!",
-        location,
-      };
-    }
-  }
-
-  return result;
-}
-
-/**
- * Extract subtype definitions from the METADATA block.
- *
- * Both Go and Rust define library, executable, demo_test subtypes
- * with I2_subtype, file_pattern, directives, and capabilities.
- */
-function extractSubtypeDefs(
-  // deno-lint-ignore no-explicit-any
-  metadataBlock: Record<string, any>,
-): Record<string, SchemaSubtypeDef> {
-  // deno-lint-ignore no-explicit-any
-  const subtypes = metadataBlock["subtypes"] as Record<string, any>;
-  if (!subtypes) return {};
-
-  const result: Record<string, SchemaSubtypeDef> = {};
-
-  // Dynamic: extract subtype keys from schema (not hardcoded)
-  const subtypeNames = Object.keys(subtypes).filter(
-    (k) => typeof subtypes[k] === "object" && subtypes[k] !== null && k !== "note"
-  );
-
-  for (const subtypeName of subtypeNames) {
-    // deno-lint-ignore no-explicit-any
-    const data = subtypes[subtypeName] as Record<string, any>;
-    if (!data || typeof data !== "object") continue;
-
-    // Normalize: "demo_test" → "demo-test", "bare_bone" → "bare-bone"
-    const normalizedName = subtypeName.replace(/_/g, "-");
-    result[normalizedName] = {
-      subtypeValue: typeof data["I2_subtype"] === "string" ? data["I2_subtype"] : normalizedName,
-      filePattern: typeof data["file_pattern"] === "string" ? data["file_pattern"] : "",
-      pragmaDirective: typeof data["pragma_directive"] === "string" ? data["pragma_directive"] : "",
-      templateDirective: typeof data["template_directive"] === "string" ? data["template_directive"] : "",
-      hasPublicApi: data["has_public_api"] === true,
-      hasTestsBlock: data["has_tests_block"] === true ? true : undefined,
-      packagePattern: typeof data["package"] === "string" ? data["package"] : undefined,
-      purpose: typeof data["purpose"] === "string" ? data["purpose"] : "",
-    };
-  }
-
-  return result;
-}
-
-// ---------------------------------------------------------------------------
-// 6. Schema extraction — CLOSING block (zones, requirements, field patterns)
+// 2. Regex compilation — zone + field patterns
 // ---------------------------------------------------------------------------
 
 /**
@@ -896,141 +625,8 @@ function buildFieldPattern(fieldName: string): RegExp {
   return new RegExp(`^\\/\\/\\s*${fieldName}\\s*:`, "i");
 }
 
-/**
- * Extract CLOSING block data from a schema's CLOSING section.
- *
- * Reads zone_ordering, code_zones, documentation_sections.
- * Builds compiled regexes for zone detection and field matching.
- *
- * Falls back to empty structures if the schema lacks CLOSING data —
- * this keeps the linter working with older schemas that haven't been
- * enriched yet (they'll just skip CLOSING checks).
- */
-function extractClosingData(
-  // deno-lint-ignore no-explicit-any
-  closingBlock: Record<string, any> | undefined,
-): SchemaClosingData {
-  const zones: SchemaClosingZone[] = [];
-  const docRequirements: SchemaClosingDocReq[] = [];
-  const fieldPatterns: Record<string, Record<string, RegExp>> = {};
-
-  if (!closingBlock) return { zones, docRequirements, fieldPatterns };
-
-  // ── Extract zone ordering ───────────────────────────────────────
-  // deno-lint-ignore no-explicit-any
-  const zoneOrdering = closingBlock["zone_ordering"] as Record<string, any>;
-  const codeZoneTags: string[] = zoneOrdering
-    ? (Array.isArray(zoneOrdering["code_zones"]) ? zoneOrdering["code_zones"] : [])
-    : [];
-  const docZoneTags: string[] = zoneOrdering
-    ? (Array.isArray(zoneOrdering["documentation_sections"]) ? zoneOrdering["documentation_sections"] : [])
-    : [];
-
-  // ── Build code zones from code_zones section ────────────────────
-  // deno-lint-ignore no-explicit-any
-  const codeZonesData = closingBlock["code_zones"] as Record<string, any>;
-  if (codeZonesData) {
-    // Walk the code_zones section — look for entries with "tag" field
-    for (const tag of codeZoneTags) {
-      // Find the entry with matching tag (e.g., Cv_Validation has tag: "Cv")
-      let found = false;
-      for (const [, value] of Object.entries(codeZonesData)) {
-        if (typeof value !== "object" || !value) continue;
-        // deno-lint-ignore no-explicit-any
-        const v = value as Record<string, any>;
-        if (v["tag"] === tag) {
-          zones.push({
-            tag,
-            kind: "code",
-            pattern: buildZonePattern(tag, "code"),
-          });
-          found = true;
-          break;
-        }
-      }
-      // If no detailed entry found, still add from ordering
-      if (!found) {
-        zones.push({
-          tag,
-          kind: "code",
-          pattern: buildZonePattern(tag, "code"),
-        });
-      }
-    }
-  } else {
-    // No detailed code_zones — build from ordering alone
-    for (const tag of codeZoneTags) {
-      zones.push({ tag, kind: "code", pattern: buildZonePattern(tag, "code") });
-    }
-  }
-
-  // ── Build doc zones from documentation_sections ─────────────────
-  // deno-lint-ignore no-explicit-any
-  const docSectionsData = closingBlock["documentation_sections"] as Record<string, any>;
-  if (docSectionsData) {
-    for (const tag of docZoneTags) {
-      // Find the entry with matching tag
-      let entryFound = false;
-      for (const [, value] of Object.entries(docSectionsData)) {
-        if (typeof value !== "object" || !value) continue;
-        // deno-lint-ignore no-explicit-any
-        const v = value as Record<string, any>;
-        if (v["tag"] === tag) {
-          zones.push({
-            tag,
-            kind: "doc",
-            pattern: buildZonePattern(tag, "doc"),
-          });
-
-          // Build doc requirement
-          const req: SchemaClosingDocReq = {
-            tag,
-            required: v["required"] === true,
-            templateOnly: v["template_only"] === true ? true : undefined,
-          };
-          if (v["fields"] && typeof v["fields"] === "object") {
-            // deno-lint-ignore no-explicit-any
-            const fields = v["fields"] as Record<string, any>;
-            req.fields = {
-              required: Array.isArray(fields["required"]) ? fields["required"] : [],
-              defined: Array.isArray(fields["defined"]) ? fields["defined"] : [],
-            };
-            // Build field detection patterns
-            const patterns: Record<string, RegExp> = {};
-            for (const f of req.fields.required) {
-              patterns[f] = buildFieldPattern(f);
-            }
-            for (const f of req.fields.defined) {
-              if (!patterns[f]) patterns[f] = buildFieldPattern(f);
-            }
-            if (Object.keys(patterns).length > 0) {
-              fieldPatterns[tag] = patterns;
-            }
-          }
-          docRequirements.push(req);
-          entryFound = true;
-          break;
-        }
-      }
-      // If no detailed entry, add minimal zone + non-required doc req
-      if (!entryFound) {
-        zones.push({ tag, kind: "doc", pattern: buildZonePattern(tag, "doc") });
-        docRequirements.push({ tag, required: false });
-      }
-    }
-  } else {
-    // No detailed doc sections — build from ordering alone
-    for (const tag of docZoneTags) {
-      zones.push({ tag, kind: "doc", pattern: buildZonePattern(tag, "doc") });
-      docRequirements.push({ tag, required: false });
-    }
-  }
-
-  return { zones, docRequirements, fieldPatterns };
-}
-
 // ---------------------------------------------------------------------------
-// 6b. Fill content extraction
+// 3. Fill content extraction (used by assembleFillContent bridge)
 // ---------------------------------------------------------------------------
 
 /**
@@ -1247,179 +843,632 @@ function extractTransformerModes(
 /** Per-format caches. Loaded once per format, used for all subsequent calls. */
 const caches = new Map<string, Code4BlockRules>();
 
-/**
- * Build the schema ID for a code format.
- * Schema IDs are relative paths within the schema tree.
- */
-function schemaIdFor(format: CodeFormat): string {
-  const file = SCHEMA_FILES[format];
-  if (!file) throw new Error(`Unknown code format: ${format}. Known: ${Object.keys(SCHEMA_FILES).join(", ")}`);
-  return `code/format/${file}`;
-}
-
 // ---------------------------------------------------------------------------
-// 6. Pure parse — schema text to compiled rules (no I/O)
+// 6. Multi-file assembler — data layer + split schemas → compiled rules
 // ---------------------------------------------------------------------------
 
 /**
- * Parse a 4-block code schema from JSONC text. **Pure function — no I/O.**
+ * Assemble Code4BlockRules from the data layer (SECTION_REGISTRY, FORM_REGISTRY)
+ * and split schema files (IC fields, doc comments, subtypes, placement maps).
  *
- * Takes raw JSONC text and a format identifier, returns compiled handler-ready
- * rules. All extract*() functions are called here. The format parameter is used
- * for structure key lookup (go_structure vs rust_structure) and error messages.
+ * **This replaces the old parseCodeSchema().** Instead of reading one monolithic
+ * schema file and extracting everything, we:
+ * - Read SETUP/BODY/CLOSING sections from SECTION_REGISTRY (compiled data)
+ * - Read form structures from FORM_REGISTRY (compiled data)
+ * - Read IC field requirements from R25_blocks/metadata/ split schemas
+ * - Read doc comment expectations from R25_blocks/metadata/doc-comments/
+ * - Read subtype definitions from R25_blocks/metadata/subtypes/
+ * - Read placement maps from code/{format}.jsonc
+ * - Read fill content from archive monolithic schema (bridge until split)
  *
- * This is the core of the schema pipeline — the thing that turns text into
- * rules. Where the text comes from (file, embedded, override) is the caller's
- * concern.
+ * The result is identical to what parseCodeSchema produced — same
+ * Code4BlockRules interface. Handlers don't change.
  *
- * @param format - Format identifier ("go", "rust", or future formats)
- * @param jsonText - Raw JSONC text content of the schema file
+ * @param format - "go" or "rust"
  * @returns Compiled handler-ready rules
- * @throws Error if text is invalid JSONC or missing required structure
  */
-export function parseCodeSchema(format: string, jsonText: string): Code4BlockRules {
-  // ── Parse JSONC ───────────────────────────────────────────────
+export async function assembleCodeRules(format: CodeFormat): Promise<Code4BlockRules> {
+  const pipeline = getDefaultPipeline();
 
-  // deno-lint-ignore no-explicit-any
-  let parsed: Record<string, any>;
-  try {
-    // deno-lint-ignore no-explicit-any
-    parsed = parseJsonc(jsonText) as Record<string, any>;
-  } catch (e) {
-    throw new Error(
-      `Schema parse error for ${format}: ${e instanceof Error ? e.message : String(e)}\n` +
-      `The schema must be valid JSONC. Check for syntax errors.`,
-    );
-  }
+  // ── SETUP data from SECTION_REGISTRY ───────────────────────────
 
-  if (!parsed || typeof parsed !== "object") {
-    throw new Error(
-      `Schema for ${format} parsed to non-object — expected JSONC object`,
-    );
-  }
+  const setupTags = SECTION_ORDER.setup;
+  const setupData: SchemaSubsectionDef[] = setupTags.map((tag) => {
+    const entry = SECTION_REGISTRY[tag]!;
+    const label = tagToLabel(tag);
+    const altPatterns = ALT_PATTERNS[tag] ?? [];
+    return {
+      position: typeof entry.position === "number" ? entry.position : parseInt(String(entry.position), 10),
+      tag: label,  // Handler expects display label as "tag" (historical)
+      pattern: label,
+      altPatterns,
+      purpose: entry.description,
+      productionNote: "",
+      requiredIn: Object.entries(entry.formStatus)
+        .filter(([, status]) => status === "required")
+        .map(([form]) => form),
+    };
+  });
 
-  // ── Navigate to structural blocks ─────────────────────────────
-
-  // Each schema nests block definitions under a format-specific key:
-  //   Go:   go_structure.SETUP, go_structure.BODY
-  //   Rust: rust_structure.SETUP, rust_structure.BODY
-  // Fall back to "blocks" for future schemas that use a generic key.
-  // deno-lint-ignore no-explicit-any
-  const blocks = (parsed[`${format}_structure`] ?? parsed["blocks"]) as Record<string, any>;
-  if (!blocks) {
-    throw new Error(
-      `Schema for ${format} missing structure key (expected "${format}_structure" or "blocks") — cannot derive rules`,
-    );
-  }
-
-  // deno-lint-ignore no-explicit-any
-  const setupBlock = blocks["SETUP"] as Record<string, any>;
-  // deno-lint-ignore no-explicit-any
-  const bodyBlock = blocks["BODY"] as Record<string, any>;
-  // deno-lint-ignore no-explicit-any
-  const metadataBlock = blocks["METADATA"] as Record<string, any>;
-
-  const missing: string[] = [];
-  if (!setupBlock) missing.push("SETUP");
-  if (!bodyBlock) missing.push("BODY");
-  // METADATA is expected but not fatal — handlers can fall back to empty
-  if (!metadataBlock) missing.push("METADATA");
-
-  if (missing.length > 0) {
-    // Only throw if SETUP or BODY is missing — those are structural requirements
-    const critical = missing.filter((b) => b !== "METADATA");
-    if (critical.length > 0) {
-      throw new Error(
-        `Schema for ${format} missing blocks: ${critical.join(", ")}`,
-      );
-    }
-  }
-
-  // ── Extract SETUP + BODY raw data ─────────────────────────────
-
-  const setupData = extractSetupSubsections(setupBlock);
-  const bodyData = extractBodySubtypes(bodyBlock);
-  const placementRules = extractPlacementRules(setupBlock);
-
-  // Subtype emphasis is block-specific — SETUP and BODY have different heavy/light distributions
-  const subtypeEmphasis = {
-    setup: extractSubtypeEmphasis(setupBlock),
-    body: extractSubtypeEmphasis(bodyBlock),
-  };
-
-  // Content kind → block/subsection placement maps
-  const placementMaps = extractContentKindMapping(setupBlock);
-
-  // ── Extract METADATA block data ───────────────────────────────
-
-  const fieldReqs = metadataBlock
-    ? extractFieldRequirements(metadataBlock)
-    : { pragma: {}, metadata: {} };
-  const docCommentExpectations = metadataBlock
-    ? extractDocComments(metadataBlock)
-    : {};
-  const subtypeDefinitions = metadataBlock
-    ? extractSubtypeDefs(metadataBlock)
-    : {};
-
-  // ── Extract CLOSING block data ──────────────────────────────
-
-  // deno-lint-ignore no-explicit-any
-  const closingBlock = blocks["CLOSING"] as Record<string, any> | undefined;
-  const closingData = extractClosingData(closingBlock);
-
-  // ── Extract fill content (for schema-driven file generation) ──
-
-  // deno-lint-ignore no-explicit-any
-  const fillContent = extractFillContent(parsed[`${format}_structure`] ?? parsed["blocks"] as Record<string, any> | undefined);
-
-  // ── Compile SETUP subsection regexes ──────────────────────────
-
+  // Compile SETUP subsection regexes
   const setupSubsections: SubsectionDef[] = setupData.map((s) => ({
     tag: s.tag,
     pattern: buildSubsectionPattern(s.pattern, s.altPatterns),
     aliases: buildAliasPattern(s.altPatterns),
   }));
 
-  // ── Build BODY canonical name arrays ──────────────────────────
+  // ── BODY data from SECTION_REGISTRY + FORM_REGISTRY ──────────
 
+  const bodyTags = SECTION_ORDER.body;
+  const bodyData: Record<string, SchemaBodySubtype> = {};
   const bodySubsections: Record<string, readonly string[]> = {};
-  for (const [subtype, data] of Object.entries(bodyData)) {
-    bodySubsections[subtype] = data.subsections.map((s) => s.pattern);
+
+  // For each form, collect the BODY sections that are required or available
+  for (const [formName, formDef] of Object.entries(FORM_REGISTRY)) {
+    const subsections: SchemaSubsectionDef[] = [];
+
+    for (const tag of bodyTags) {
+      const entry = SECTION_REGISTRY[tag]!;
+      const formStatus = entry.formStatus[formName];
+      // Include required and available sections (not reserved)
+      if (formStatus === "required" || formStatus === "available") {
+        const label = tagToLabel(tag);
+        const altPatterns = ALT_PATTERNS[tag] ?? [];
+        subsections.push({
+          position: typeof entry.position === "number"
+            ? entry.position
+            : parseInt(String(entry.position), 10),
+          tag: label,
+          pattern: label,
+          altPatterns,
+          purpose: entry.description,
+          productionNote: "",
+          requiredIn: Object.entries(entry.formStatus)
+            .filter(([, status]) => status === "required")
+            .map(([form]) => form),
+        });
+      }
+    }
+
+    subsections.sort((a, b) => a.position - b.position);
+
+    bodyData[formName] = {
+      canonicalCount: subsections.length,
+      orderingPrinciple: formDef.ordering ?? "unpositioned",
+      note: formDef.description,
+      subsections,
+    };
+    bodySubsections[formName] = subsections.map((s) => s.pattern);
   }
+
+  // ── Placement rules from SECTION_REGISTRY ─────────────────────
+
+  const mustBeInSetup: string[] = [];
+  const mustNotBeInSetup: string[] = [];
+  for (const tag of bodyTags) {
+    const label = tagToLabel(tag);
+    mustNotBeInSetup.push(label);
+  }
+  for (const tag of setupTags) {
+    const label = tagToLabel(tag);
+    mustBeInSetup.push(label);
+  }
+
+  // ── Subtype emphasis from FORM_REGISTRY + form schemas ───────
+
+  const subtypeEmphasis: {
+    setup: Record<string, { heavy: string[]; light: string[] }>;
+    body: Record<string, { heavy: string[]; light: string[] }>;
+  } = { setup: {}, body: {} };
+
+  for (const formName of Object.keys(FORM_REGISTRY)) {
+    // Try loading the form structure schema for emphasis data
+    try {
+      const formSchemaId = `code/forms/${formName}/_structure.jsonc`;
+      const formText = await pipeline.getText(formSchemaId);
+      // deno-lint-ignore no-explicit-any
+      const formData = parseJsonc(formText) as Record<string, any>;
+      // deno-lint-ignore no-explicit-any
+      const form = formData?.["form"] as Record<string, any> | undefined;
+
+      if (form) {
+        // CLOSING emphasis (the only place emphasis is defined in form schemas)
+        // deno-lint-ignore no-explicit-any
+        const closingBlock = form["CLOSING"] as Record<string, any> | undefined;
+        // deno-lint-ignore no-explicit-any
+        const emphasis = closingBlock?.["emphasis"] as Record<string, any> | undefined;
+        if (emphasis) {
+          // Body emphasis from BODY block
+          // deno-lint-ignore no-explicit-any
+          const bodyBlock = form["BODY"] as Record<string, any> | undefined;
+          // deno-lint-ignore no-explicit-any
+          const bodyEmphasis = bodyBlock?.["emphasis"] as Record<string, any> | undefined;
+          if (bodyEmphasis) {
+            const toLabel = (s: string) => s.replace(/([a-z])([A-Z])/g, "$1 $2");
+            subtypeEmphasis.body[formName] = {
+              heavy: Array.isArray(bodyEmphasis["heavy"]) ? bodyEmphasis["heavy"].map(toLabel) : [],
+              light: Array.isArray(bodyEmphasis["light"]) ? bodyEmphasis["light"].map(toLabel) : [],
+            };
+          }
+
+          // Setup emphasis from SETUP block
+          // deno-lint-ignore no-explicit-any
+          const setupBlock = form["SETUP"] as Record<string, any> | undefined;
+          // deno-lint-ignore no-explicit-any
+          const setupEmphasis = setupBlock?.["emphasis"] as Record<string, any> | undefined;
+          if (setupEmphasis) {
+            // Form schemas use PascalCase ("ErrorTypes"), SubsectionDef tags
+            // use tagToLabel format ("Error Types"). Bridge the naming convention.
+            const toLabel = (s: string) => s.replace(/([a-z])([A-Z])/g, "$1 $2");
+            subtypeEmphasis.setup[formName] = {
+              heavy: Array.isArray(setupEmphasis["heavy"]) ? setupEmphasis["heavy"].map(toLabel) : [],
+              light: Array.isArray(setupEmphasis["light"]) ? setupEmphasis["light"].map(toLabel) : [],
+            };
+          }
+        }
+      }
+    } catch {
+      // Form schema not found — that's fine, emphasis defaults to empty
+    }
+  }
+
+  // ── Typing maps from form schemas (arrow refinement) ─────────
+
+  const typingMaps: Record<string, Record<string, TypingProfile>> = {};
+
+  for (const formName of Object.keys(FORM_REGISTRY)) {
+    try {
+      const formSchemaId = `code/forms/${formName}/_structure.jsonc`;
+      const formText = await pipeline.getText(formSchemaId);
+      // deno-lint-ignore no-explicit-any
+      const formData = parseJsonc(formText) as Record<string, any>;
+      // deno-lint-ignore no-explicit-any
+      const form = formData?.["form"] as Record<string, any> | undefined;
+      // deno-lint-ignore no-explicit-any
+      const rawMap = form?.["typing_map"] as Record<string, any> | undefined;
+
+      if (rawMap) {
+        const formTypings: Record<string, TypingProfile> = {};
+        // PascalCase → display label (e.g., "CoreLogic" → "Core Logic")
+        const toLabel = (s: string) => s.replace(/([a-z])([A-Z])/g, "$1 $2");
+
+        for (const [typingName, typingData] of Object.entries(rawMap)) {
+          // Skip metadata keys
+          if (typingName.startsWith("_")) continue;
+          // deno-lint-ignore no-explicit-any
+          const td = typingData as Record<string, any>;
+          const setupBlock = td["SETUP"] as { required?: string[]; available?: string[]; irrelevant?: string[] } | undefined;
+          const bodyBlock = td["BODY"] as { required?: string[]; available?: string[]; irrelevant?: string[] } | undefined;
+
+          if (setupBlock || bodyBlock) {
+            formTypings[typingName] = {
+              description: String(td["description"] ?? ""),
+              SETUP: {
+                required: (setupBlock?.required ?? []).map(toLabel),
+                available: (setupBlock?.available ?? []).map(toLabel),
+                irrelevant: (setupBlock?.irrelevant ?? []).map(toLabel),
+              },
+              BODY: {
+                required: (bodyBlock?.required ?? []).map(toLabel),
+                available: (bodyBlock?.available ?? []).map(toLabel),
+                irrelevant: (bodyBlock?.irrelevant ?? []).map(toLabel),
+              },
+            };
+          }
+        }
+
+        if (Object.keys(formTypings).length > 0) {
+          typingMaps[formName] = formTypings;
+        }
+      }
+    } catch {
+      // Form schema not found or has no typing_map — that's fine
+    }
+  }
+
+  // ── Placement maps from code/{format}.jsonc ──────────────────
+
+  const placementMaps = await assemblePlacementMaps(format, pipeline);
+
+  // ── IC field requirements from R25_blocks/metadata/ ──────────
+
+  const pragmaFieldRequirements = await assembleFieldRequirements(
+    "pragma-identity", ["i1-core", "i2-family", "i3-instance", "i4-architecture"],
+    ["I1", "I2", "I3", "I4"], pipeline,
+  );
+
+  const metadataFieldRequirements = await assembleFieldRequirements(
+    "metadata-context",
+    ["c1-state", "c2-attribution", "c3-grounding", "c4-dependencies", "c5-intent", "c6-roadmap", "c7-classification"],
+    ["C1", "C2", "C3", "C4", "C5", "C6", "C7"], pipeline,
+  );
+
+  // ── Doc comment expectations from R25_blocks/metadata/doc-comments/{format}.jsonc ─
+
+  const docCommentExpectations = await assembleDocComments(format, pipeline);
+
+  // ── Subtype definitions from R25_blocks/metadata/subtypes/{subtype}/{format}.jsonc ─
+
+  const subtypeDefinitions = await assembleSubtypeDefs(format, pipeline);
+
+  // ── CLOSING data from SECTION_REGISTRY + zone type mapping ───
+
+  const closingData = assembleClosingData();
+
+  // ── Fill content from archive monolithic schema (bridge) ──────
+
+  const fillContent = await assembleFillContent(format, pipeline);
+
+  // ── BODY subsection defs — ALL 13 sections, universal detection ────
+  // Same compilation pattern as SETUP: schema → SubsectionDef[] → getSubsectionRanges().
+  // Detection is universal (all sections compiled); form filtering is separate.
+  const bodySubsectionDefs: SubsectionDef[] = SECTION_ORDER.body.map((tag) => {
+    const label = tagToLabel(tag);
+    const altPatterns = ALT_PATTERNS[tag] ?? [];
+    return {
+      tag: label,
+      pattern: buildSubsectionPattern(label, altPatterns),
+      aliases: buildAliasPattern(altPatterns),
+    };
+  });
+
+  // ── CLOSING subsection defs — ALL 8 zones, universal detection ─────
+  // Closing zones use display tags (Cv, Ce, X1) in source code but section
+  // registry uses kebab-case (validation, execution). SubsectionDef tags use
+  // Title Case labels for normalizeTag() alignment with both conventions.
+  const closingSubsectionDefs: SubsectionDef[] = Object.entries(CLOSING_DISPLAY_TAGS)
+    .filter(([registryTag]) => CLOSING_ZONE_KIND[registryTag] !== undefined)
+    .map(([registryTag, displayTag]) => ({
+      tag: tagToLabel(registryTag),
+      pattern: buildZonePattern(displayTag, CLOSING_ZONE_KIND[registryTag]!),
+    }));
 
   // ── Assemble ──────────────────────────────────────────────────
 
   return {
     setupSubsections,
     bodySubsections,
-    placementRules,
+    bodySubsectionDefs,
+    closingSubsectionDefs,
+    placementRules: { mustBeInSetup, mustNotBeInSetup },
     setupData,
     bodyData,
     subtypeEmphasis,
     placementMaps,
-    pragmaFieldRequirements: fieldReqs.pragma,
-    metadataFieldRequirements: fieldReqs.metadata,
+    pragmaFieldRequirements,
+    metadataFieldRequirements,
     docCommentExpectations,
     subtypeDefinitions,
     closingData,
+    typingMaps,
     fillContent,
   };
 }
 
 // ---------------------------------------------------------------------------
-// 7. I/O loader — thin wrapper that reads file + delegates to parseCodeSchema
+// 6a. Sub-assemblers — each populates one field of Code4BlockRules
 // ---------------------------------------------------------------------------
 
 /**
- * Load and process a 4-block code schema.
+ * Assemble placement maps from code/{format}.jsonc.
+ */
+async function assemblePlacementMaps(
+  format: CodeFormat,
+  pipeline: { getText(id: string): Promise<string> },
+): Promise<PlacementMaps> {
+  try {
+    const text = await pipeline.getText(`code/R50_codefile/languages/${format}/${format}.jsonc`);
+    // deno-lint-ignore no-explicit-any
+    const data = parseJsonc(text) as Record<string, any>;
+    // deno-lint-ignore no-explicit-any
+    const kinds = data?.["content_kinds"] as Record<string, any> | undefined;
+    if (!kinds) return { blockPlacement: {}, subsectionPlacement: {}, metadataForbidden: [] };
+
+    const blockPlacement: Record<string, string> = {};
+    const subsectionPlacement: Record<string, string> = {};
+
+    for (const [kind, def] of Object.entries(kinds)) {
+      if (typeof def !== "object" || !def || kind === "note") continue;
+      // deno-lint-ignore no-explicit-any
+      const d = def as Record<string, any>;
+      if (typeof d["block"] === "string") blockPlacement[kind] = d["block"];
+      if (typeof d["subsection"] === "string") subsectionPlacement[kind] = d["subsection"];
+    }
+
+    // Metadata forbidden
+    // deno-lint-ignore no-explicit-any
+    const mfData = data?.["metadata_forbidden"] as Record<string, any> | undefined;
+    const metadataForbidden: string[] = Array.isArray(mfData?.["kinds"])
+      ? mfData!["kinds"].filter((k: unknown) => typeof k === "string")
+      : [];
+
+    return { blockPlacement, subsectionPlacement, metadataForbidden };
+  } catch {
+    return { blockPlacement: {}, subsectionPlacement: {}, metadataForbidden: [] };
+  }
+}
+
+/**
+ * Assemble IC field requirements from R25_blocks/metadata/{parent}/{dirs}/_structure.jsonc.
  *
- * Resolves the schema through the pipeline (env override → project-local →
- * default), then delegates to parseCodeSchema() for parsing and compilation.
+ * Reads each sub-container's fields to determine required/defined lists.
+ */
+async function assembleFieldRequirements(
+  parentDir: string,
+  subDirs: string[],
+  sectionKeys: string[],
+  pipeline: { getText(id: string): Promise<string> },
+): Promise<Record<string, SchemaFieldRequirement>> {
+  const result: Record<string, SchemaFieldRequirement> = {};
+
+  for (let i = 0; i < subDirs.length; i++) {
+    const dir = subDirs[i]!;
+    const sectionKey = sectionKeys[i]!;
+
+    try {
+      const schemaId = `code/R25_blocks/metadata/${parentDir}/${dir}/_structure.jsonc`;
+      const text = await pipeline.getText(schemaId);
+      // deno-lint-ignore no-explicit-any
+      const data = parseJsonc(text) as Record<string, any>;
+      // deno-lint-ignore no-explicit-any
+      const subContainer = data?.["sub_container"] as Record<string, any> | undefined;
+      if (!subContainer) continue;
+
+      // deno-lint-ignore no-explicit-any
+      const fields = subContainer["fields"] as Record<string, any> | undefined;
+      if (!fields) continue;
+
+      const required: string[] = [];
+      const defined: string[] = [];
+
+      for (const [fieldName, fieldDef] of Object.entries(fields)) {
+        if (typeof fieldDef !== "object" || !fieldDef) continue;
+        // deno-lint-ignore no-explicit-any
+        const fd = fieldDef as Record<string, any>;
+        if (fd["required"] === true) required.push(fieldName);
+        if (fd["defined"] === true) defined.push(fieldName);
+      }
+
+      const purpose = typeof subContainer["purpose"] === "string"
+        ? subContainer["purpose"] : "";
+
+      result[sectionKey] = { required, defined, purpose };
+    } catch {
+      // Sub-container schema not found — skip gracefully
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Assemble doc comment expectations from R25_blocks/metadata/doc-comments/{format}.jsonc.
+ */
+async function assembleDocComments(
+  format: CodeFormat,
+  pipeline: { getText(id: string): Promise<string> },
+): Promise<Record<string, SchemaDocComment>> {
+  try {
+    const schemaId = `code/R25_blocks/metadata/doc-comments/${format}.jsonc`;
+    const text = await pipeline.getText(schemaId);
+    // deno-lint-ignore no-explicit-any
+    const data = parseJsonc(text) as Record<string, any>;
+    // deno-lint-ignore no-explicit-any
+    const content = data?.["content"] as Record<string, any> | undefined;
+    if (!content) return {};
+
+    const result: Record<string, SchemaDocComment> = {};
+
+    // Extract severity section — Go has package_doc, pragma_doc, metadata_doc
+    // deno-lint-ignore no-explicit-any
+    const severity = content["severity"] as Record<string, any> | undefined;
+    if (severity) {
+      for (const [key, value] of Object.entries(severity)) {
+        if (key === "note" || typeof value !== "string") continue;
+        result[key] = {
+          purpose: `Doc comment: ${key}`,
+          severity: value,
+        };
+      }
+    }
+
+    // Rust flat pattern: crate_root_severity/module_severity directly
+    if (Object.keys(result).length === 0) {
+      // deno-lint-ignore no-explicit-any
+      const rustContent = data as Record<string, any>;
+      if (typeof rustContent["crate_root_severity"] === "string") {
+        result["crate_root_docs"] = {
+          purpose: typeof rustContent["purpose"] === "string" ? rustContent["purpose"] : "",
+          severity: rustContent["crate_root_severity"],
+          format: "//!",
+          location: typeof rustContent["location"] === "string" ? rustContent["location"] : undefined,
+        };
+      }
+      if (typeof rustContent["module_severity"] === "string") {
+        result["module_docs"] = {
+          purpose: typeof rustContent["purpose"] === "string" ? rustContent["purpose"] : "",
+          severity: rustContent["module_severity"],
+          format: "//!",
+          location: typeof rustContent["location"] === "string" ? rustContent["location"] : undefined,
+        };
+      }
+    }
+
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Assemble subtype definitions from R25_blocks/metadata/subtypes/{subtype}/{format}.jsonc.
+ */
+async function assembleSubtypeDefs(
+  format: CodeFormat,
+  pipeline: { getText(id: string): Promise<string> },
+): Promise<Record<string, SchemaSubtypeDef>> {
+  const result: Record<string, SchemaSubtypeDef> = {};
+
+  // Known subtypes from FORM_REGISTRY (excluding bare-bone — it's the foundation, not a subtype)
+  const subtypes = Object.keys(FORM_REGISTRY).filter((name) => name !== "bare-bone");
+
+  for (const subtype of subtypes) {
+    try {
+      const schemaId = `code/R25_blocks/metadata/subtypes/${subtype}/${format}.jsonc`;
+      const text = await pipeline.getText(schemaId);
+      // deno-lint-ignore no-explicit-any
+      const data = parseJsonc(text) as Record<string, any>;
+      // Go schemas use "sub_container", Rust schemas use "content" — check both
+      // deno-lint-ignore no-explicit-any
+      const subContainer = (data?.["sub_container"] ?? data?.["content"]) as Record<string, any> | undefined;
+      if (!subContainer) continue;
+
+      result[subtype] = {
+        subtypeValue: typeof subContainer["I2_subtype"] === "string"
+          ? subContainer["I2_subtype"] : subtype,
+        filePattern: typeof subContainer["file_pattern"] === "string"
+          ? subContainer["file_pattern"] : "",
+        pragmaDirective: typeof subContainer["pragma_directive"] === "string"
+          ? subContainer["pragma_directive"] : "",
+        templateDirective: typeof subContainer["template_directive"] === "string"
+          ? subContainer["template_directive"] : "",
+        hasPublicApi: subContainer["has_public_api"] === true,
+        hasTestsBlock: subContainer["has_tests_block"] === true ? true : undefined,
+        packagePattern: typeof subContainer["package"] === "string"
+          ? subContainer["package"] : undefined,
+        purpose: typeof subContainer["purpose"] === "string"
+          ? subContainer["purpose"] : "",
+      };
+    } catch {
+      // Subtype schema not found for this format — skip gracefully
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Assemble closing data from SECTION_REGISTRY + display tag mapping.
+ *
+ * The SECTION_REGISTRY closing sections have the metadata. The display tag
+ * mapping provides the short tags (Cv, Ce, X1) used in zone header regex.
+ * The zone type (code vs doc) comes from CLOSING_ZONE_KIND.
+ *
+ * For doc zone field requirements, we read the _structure.jsonc for
+ * each doc zone to get the "fields" block. Currently these are
+ * hardcoded in the CLOSING_DISPLAY_TAGS and CLOSING_ZONE_KIND maps
+ * which are derived from the schema _structure.jsonc files.
+ */
+function assembleClosingData(): SchemaClosingData {
+  const zones: SchemaClosingZone[] = [];
+  const docRequirements: SchemaClosingDocReq[] = [];
+  const fieldPatterns: Record<string, Record<string, RegExp>> = {};
+
+  // Include SECTION_REGISTRY closing tags + template-guide (X6).
+  // X6 is template-only (not in SECTION_REGISTRY) but must be detectable
+  // for X6-template-only check in derived files.
+  const closingTags = [
+    ...SECTION_ORDER.closing,
+    "template-guide",
+  ];
+
+  for (const tag of closingTags) {
+    const displayTag = CLOSING_DISPLAY_TAGS[tag];
+    if (!displayTag) continue;
+
+    const kind = CLOSING_ZONE_KIND[tag] ?? "doc";
+
+    zones.push({
+      tag: displayTag,
+      kind: kind === "code" ? "code" : "doc",
+      pattern: buildZonePattern(displayTag, kind === "code" ? "code" : "doc"),
+    });
+
+    // Doc zone requirements
+    if (kind === "doc") {
+      const entry = SECTION_REGISTRY[tag];
+      const isRequired = entry
+        ? Object.values(entry.formStatus).some((s) => s === "required")
+        : false;
+
+      // X6 is template-only (not in our 8 closing sections)
+      const templateOnly = displayTag === "X6" ? true : undefined;
+
+      // X1 has known fields: never, careful, safe
+      // X5 has known fields: note, scripture
+      // Other doc zones: no specific field patterns
+      const req: SchemaClosingDocReq = {
+        tag: displayTag,
+        required: isRequired,
+        templateOnly,
+      };
+
+      if (displayTag === "X1") {
+        req.fields = {
+          required: ["never", "careful", "safe"],
+          defined: [],
+        };
+        const patterns: Record<string, RegExp> = {};
+        for (const f of req.fields.required) {
+          patterns[f] = buildFieldPattern(f);
+        }
+        fieldPatterns[displayTag] = patterns;
+      } else if (displayTag === "X5") {
+        req.fields = {
+          required: ["note", "scripture"],
+          defined: [],
+        };
+        const patterns: Record<string, RegExp> = {};
+        for (const f of req.fields.required) {
+          patterns[f] = buildFieldPattern(f);
+        }
+        fieldPatterns[displayTag] = patterns;
+      }
+
+      docRequirements.push(req);
+    }
+  }
+
+  return { zones, docRequirements, fieldPatterns };
+}
+
+/**
+ * Load fill content from archive monolithic schema as a bridge.
+ *
+ * Fill content (for CREATE/TRANSFORM) hasn't been split into the new
+ * schema format yet. Read it from the archived monolithic schema.
+ * When the split is complete, this function gets replaced.
+ */
+async function assembleFillContent(
+  format: CodeFormat,
+  pipeline: { getText(id: string): Promise<string> },
+): Promise<SchemaFillContent | undefined> {
+  try {
+    const archiveId = `code/_archive/format/${format}-4block-schema.jsonc`;
+    const text = await pipeline.getText(archiveId);
+    // deno-lint-ignore no-explicit-any
+    const parsed = parseJsonc(text) as Record<string, any>;
+    // deno-lint-ignore no-explicit-any
+    const blocks = (parsed[`${format}_structure`] ?? parsed["blocks"]) as Record<string, any> | undefined;
+    return extractFillContent(blocks);
+  } catch {
+    // Archive not available — fill content is optional
+    return undefined;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 7. I/O loader — assembles from data layer + split schemas
+// ---------------------------------------------------------------------------
+
+/**
+ * Load and assemble Code4BlockRules for a code format.
+ *
+ * Uses the multi-file assembler: data layer (SECTION_REGISTRY, FORM_REGISTRY)
+ * provides the structural backbone, split schema files provide format-specific
+ * data (IC fields, doc comments, subtypes, placement maps).
+ *
  * Result is cached — subsequent calls return cache.
- *
- * This is the I/O boundary. parseCodeSchema() is the pure computation.
- * The pipeline handles discovery, caching raw text, and error diagnostics.
  *
  * @param format - "go" or "rust"
  * @returns Derived rules compiled for handler use
@@ -1428,10 +1477,7 @@ export async function loadCodeRules(format: CodeFormat): Promise<Code4BlockRules
   const cached = caches.get(format);
   if (cached) return cached;
 
-  const pipeline = getDefaultPipeline();
-  const text = await pipeline.getText(schemaIdFor(format));
-
-  const rules = parseCodeSchema(format, text);
+  const rules = await assembleCodeRules(format);
   caches.set(format, rules);
   return rules;
 }
@@ -1449,6 +1495,7 @@ export function clearCodeCache(format?: string): void {
   }
 }
 
+registerCache("code-schema/rules", clearCodeCache);
 // ---------------------------------------------------------------------------
 // 7. Form Schema Loader — load per-subtype form constraints
 // ---------------------------------------------------------------------------
@@ -1577,13 +1624,13 @@ export function parseFormSchema(jsonText: string): FormConstraints | null {
  * Returns null gracefully if the form schema doesn't exist (forward-compatible).
  * Caches per format:subtype:category key.
  *
- * Schema ID mapping (category="code", the default):
- *   "bare-bone" → "code/forms/bare-bone/rust-bare-bone.jsonc"
- *   all others  → "code/forms/declared/rust-{subtype}.jsonc"
+ * Schema ID mapping (category="code"):
+ *   "bare-bone" → tries "code/forms/bare-bone/{format}.jsonc" then "code/forms/bare-bone/{format}-bare-bone.jsonc"
+ *   all others  → tries "code/forms/{subtype}/{format}.jsonc" then "code/forms/declared/{format}-{subtype}.jsonc"
  *
  * Schema ID mapping (category="data"):
- *   "bare-bone" → "data/forms/bare-bone/toml-bare-bone.jsonc"
- *   all others  → "data/forms/declared/toml-{subtype}.jsonc"
+ *   "bare-bone" → "data/forms/bare-bone/{format}-bare-bone.jsonc"
+ *   all others  → "data/forms/declared/{format}-{subtype}.jsonc"
  */
 export async function loadFormConstraints(
   format: string,
@@ -1593,14 +1640,30 @@ export async function loadFormConstraints(
   const cacheKey = `${category}:${format}:${subtype}`;
   if (formCache.has(cacheKey)) return formCache.get(cacheKey)!;
 
-  // Build schema ID based on subtype and category
-  const schemaId = subtype === "bare-bone"
+  // Build schema ID — try the canonical path first, then the legacy flat path
+  // Canonical: code/forms/{subtype}/{format}.jsonc  (e.g. code/forms/module/rust.jsonc)
+  // Legacy:    code/forms/declared/{format}-{subtype}.jsonc  (e.g. code/forms/declared/rust-module.jsonc)
+  const canonicalId = subtype === "bare-bone"
+    ? `${category}/forms/bare-bone/${format}.jsonc`
+    : `${category}/forms/${subtype}/${format}.jsonc`;
+  const legacyId = subtype === "bare-bone"
     ? `${category}/forms/bare-bone/${format}-bare-bone.jsonc`
     : `${category}/forms/declared/${format}-${subtype}.jsonc`;
+  const schemaId = canonicalId;  // try canonical first
 
   try {
     const pipeline = getDefaultPipeline();
-    const text = await pipeline.getText(schemaId);
+    let text: string | undefined;
+    try {
+      text = await pipeline.getText(schemaId);
+    } catch {
+      // Canonical path not found — try legacy path
+      try {
+        text = await pipeline.getText(legacyId);
+      } catch {
+        // Neither path exists
+      }
+    }
     if (!text) {
       formCache.set(cacheKey, null);
       return null;
@@ -1619,6 +1682,283 @@ export async function loadFormConstraints(
  */
 export function clearFormCache(): void {
   formCache.clear();
+}
+
+registerCache("code-schema/forms", clearFormCache);
+// ---------------------------------------------------------------------------
+// 7b. Registry-to-FormConstraints Fallback
+// ---------------------------------------------------------------------------
+//
+// When form constraint schemas (parseFormSchema) and composition targets
+// (compositionToFormConstraints) are both unavailable, the SECTION_REGISTRY
+// can derive FormConstraints directly. The registry IS the single source
+// of truth for section ordering and form status.
+//
+// This ensures the scaffold transformer always has form-aware output —
+// numbered section headers, block overviews, Reserved Omission grouping —
+// even when the format doesn't have specialized form constraint schemas.
+
+/**
+ * Build FormConstraints from SECTION_REGISTRY for any format/form.
+ *
+ * Uses SECTION_REGISTRY formStatus to classify sections as
+ * REQUIRED, AVAILABLE, or reserved for the given form. Positions
+ * and labels come directly from the registry.
+ *
+ * @param form - Form name (e.g., "module", "library", "bare-bone")
+ * @returns FormConstraints ready for scaffold consumption
+ */
+export function buildFormConstraintsFromRegistry(
+  form: string,
+): FormConstraints {
+  const formDef = FORM_REGISTRY[form];
+
+  function buildBlockConstraints(block: "setup" | "body" | "closing"): FormContainerConstraints {
+    const tags = SECTION_ORDER[block];
+    const can: FormSectionConstraint[] = [];
+    const cannot: FormReservedSection[] = [];
+
+    for (const tag of tags) {
+      const entry = SECTION_REGISTRY[tag];
+      if (!entry) continue;
+
+      const status = entry.formStatus[form];
+      const label = tagToLabel(tag);
+      const pos = typeof entry.position === "number"
+        ? entry.position
+        : parseInt(String(entry.position).replace("X", ""), 10) + 100;
+
+      if (status === "required") {
+        can.push({ position: pos, tag: label, status: "REQUIRED" });
+      } else if (status === "available") {
+        can.push({ position: pos, tag: label, status: "AVAILABLE" });
+      } else if (status === "reserved") {
+        // Figure out which forms this IS active in
+        const activeIn = Object.entries(entry.formStatus)
+          .filter(([, s]) => s === "required" || s === "available")
+          .map(([f]) => f)
+          .join(", ");
+        cannot.push({
+          tag: label,
+          whyReserved: `Reserved for ${form}`,
+          activeIn,
+          position: pos,
+        });
+      }
+    }
+
+    can.sort((a, b) => a.position - b.position);
+    return { can, cannot };
+  }
+
+  return {
+    name: form,
+    isFoundation: form === "bare-bone",
+    inherits: form === "bare-bone" ? undefined : "bare-bone",
+    ordering: formDef?.ordering ?? "type_lifecycle",
+    SETUP: buildBlockConstraints("setup"),
+    BODY: buildBlockConstraints("body"),
+    CLOSING: buildBlockConstraints("closing"),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// 8. Composition-to-FormConstraints Bridge
+// ---------------------------------------------------------------------------
+//
+// The three-cord composition targets (index layer) have active_sections
+// with required/available/reserved string arrays per block. The scaffold
+// reads FormConstraints with position/tag/status objects. This bridge
+// converts between the two — adapter pattern, no scaffold changes needed.
+//
+// Bridge pattern: composition data flows IN, FormConstraints flows OUT.
+// The scaffold doesn't know or care where its constraints come from.
+//
+
+import type {
+  CompositionActiveSections,
+  CompositionBlockSections,
+} from "./composition-loader.ts";
+
+/**
+ * Convert composition target active_sections to FormConstraints.
+ *
+ * Bridges the three-cord composition system (cord 3: index) to the
+ * handler's existing FormConstraints interface. The scaffold already knows
+ * how to read FormConstraints — this adapter lets it read from composition
+ * targets without any scaffold changes.
+ *
+ * Positions are resolved from Code4BlockRules schema data (SETUP from
+ * setupData, BODY from bodyData[form], CLOSING from closingData.zones).
+ * When a tag doesn't appear in the schema, position falls back to array
+ * order — degraded but functional.
+ *
+ * @param activeSections - The composition target's active_sections
+ * @param rules - Loaded Code4BlockRules for position resolution
+ * @param form - Form name (e.g., "module", "library") for body subtype lookup
+ * @returns FormConstraints ready for scaffold consumption
+ */
+export function compositionToFormConstraints(
+  activeSections: CompositionActiveSections,
+  rules: Code4BlockRules,
+  form: string,
+): FormConstraints {
+  return {
+    name: form,
+    isFoundation: false,
+    ordering: activeSections.BODY.ordering ?? "type_lifecycle",
+    SETUP: bridgeBlock(
+      activeSections.SETUP,
+      rules.setupData,
+    ),
+    BODY: bridgeBlock(
+      activeSections.BODY,
+      rules.bodyData[form]?.subsections ?? [],
+    ),
+    CLOSING: bridgeClosingBlock(
+      activeSections.CLOSING,
+      rules.closingData,
+    ),
+  };
+}
+
+/**
+ * Bridge a single block's composition sections to FormContainerConstraints.
+ *
+ * Maps required[] → can[] with status "REQUIRED", available[] → can[] with
+ * status "AVAILABLE", reserved[] → cannot[]. Positions come from schema
+ * subsection data via tag lookup.
+ */
+function bridgeBlock(
+  sections: CompositionBlockSections,
+  schemaSections: SchemaSubsectionDef[],
+): FormContainerConstraints {
+  // Build tag → position lookup from schema.
+  // Schema tags use display labels ("Core Types") but composition targets
+  // use PascalCase ("CoreTypes"). Index both forms for robust matching.
+  const tagPositions = new Map<string, number>();
+  for (const s of schemaSections) {
+    tagPositions.set(s.tag, s.position);
+    // Also index the no-space PascalCase form for schema tag compatibility
+    const collapsed = s.tag.replace(/\s+/g, "");
+    if (collapsed !== s.tag) {
+      tagPositions.set(collapsed, s.position);
+    }
+  }
+
+  const can: FormSectionConstraint[] = [];
+
+  // Required sections
+  for (const tag of sections.required) {
+    can.push({
+      position: tagPositions.get(tag) ?? can.length + 1,
+      tag,
+      status: "REQUIRED",
+    });
+  }
+
+  // Available sections
+  for (const tag of sections.available ?? []) {
+    can.push({
+      position: tagPositions.get(tag) ?? can.length + 1,
+      tag,
+      status: "AVAILABLE",
+    });
+  }
+
+  // Sort by position — dependency chain ordering
+  can.sort((a, b) => a.position - b.position);
+
+  // Reserved sections → cannot
+  const cannot: FormReservedSection[] = sections.reserved.map((tag) => ({
+    tag,
+    whyReserved: "Reserved in composition target",
+    activeIn: "",
+    position: tagPositions.get(tag),
+  }));
+
+  return { can, cannot };
+}
+
+/**
+ * Bridge CLOSING block sections to FormContainerConstraints.
+ *
+ * Closing zones have a different position source — the zone_ordering
+ * array from schema closingData. Code zones (Cv, Ce, Cc) and doc zones
+ * (X1-X6) are ordered by their index in closingData.zones.
+ */
+function bridgeClosingBlock(
+  sections: CompositionBlockSections,
+  closingData: SchemaClosingData,
+): FormContainerConstraints {
+  // Position from zone ordering index
+  const zonePositions = new Map(
+    closingData.zones.map((z, i) => [z.tag, i + 1]),
+  );
+
+  const can: FormSectionConstraint[] = [];
+
+  for (const tag of sections.required) {
+    can.push({
+      position: zonePositions.get(tag) ?? can.length + 1,
+      tag,
+      status: "REQUIRED",
+    });
+  }
+
+  for (const tag of sections.available ?? []) {
+    can.push({
+      position: zonePositions.get(tag) ?? can.length + 1,
+      tag,
+      status: "AVAILABLE",
+    });
+  }
+
+  can.sort((a, b) => a.position - b.position);
+
+  const cannot: FormReservedSection[] = sections.reserved.map((tag) => ({
+    tag,
+    whyReserved: "Reserved in composition target",
+    activeIn: "",
+    position: zonePositions.get(tag),
+  }));
+
+  return { can, cannot };
+}
+
+/**
+ * Load FormConstraints from a composition target.
+ *
+ * This is the async convenience wrapper that:
+ * 1. Loads the composition target from index/targets/
+ * 2. Loads the code rules for position resolution
+ * 3. Bridges the two into FormConstraints
+ *
+ * Returns null if no composition target exists for this format+form.
+ * Falls back gracefully — callers can try composition first, then
+ * fall back to loadFormConstraints().
+ *
+ * @param format - Language (e.g., "rust", "go")
+ * @param form - Form (e.g., "module", "library")
+ * @returns FormConstraints from composition target, or null
+ */
+export async function loadCompositionFormConstraints(
+  format: string,
+  form: string,
+): Promise<FormConstraints | null> {
+  try {
+    const { loadCompositionCached } = await import("./composition-loader.ts");
+    const composition = await loadCompositionCached(format, form);
+    const rules = await loadCodeRules(format as CodeFormat);
+    return compositionToFormConstraints(
+      composition.target.active_sections,
+      rules,
+      form,
+    );
+  } catch {
+    // No composition target for this format+form — that's fine
+    return null;
+  }
 }
 
 // ============================================================================

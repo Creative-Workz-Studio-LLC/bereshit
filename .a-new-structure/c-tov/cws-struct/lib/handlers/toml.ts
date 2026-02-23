@@ -49,7 +49,7 @@ import {
 } from "../foundation/mod.ts";
 import { registerFormat } from "../engine/mod.ts";
 import { loadRules, type DerivedRules } from "../foundation/mod.ts";
-import { loadFormConstraints, type FormConstraints } from "../foundation/code-schema.ts";
+import { loadFormConstraints, type FormConstraints } from "../foundation/mod.ts";
 
 // ---------------------------------------------------------------------------
 // Types

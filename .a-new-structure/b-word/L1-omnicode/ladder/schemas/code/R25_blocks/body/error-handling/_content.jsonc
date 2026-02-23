@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-error-handling",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.ErrorHandling Content Character — What Error Handling Content IS",
+    "_P5_brief": "Format-independent definition of error handling content character. Error handling is the response to failure — wrapping errors with context, classifying them for routing, recovering gracefully, and translating internal errors for users. Syntax varies (match on Error, if err != nil, switch on errno); the failure-response pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "error-handling",
+        "block": "BODY",
+        "position": 21,
+        "nature": "resilience",
+
+        "description": "Error handling content is where the module responds to failure. SETUP defines error TYPES (what can go wrong). Error handling defines error RESPONSES (what happens when it does). This section wraps errors with context as they propagate, classifies errors for routing, implements retry logic, and translates internal errors into user-facing messages.",
+
+        "invariants": {
+            "description": "Properties true of ALL error handling content, regardless of language.",
+
+            "responsive": "Error handling reacts to errors produced elsewhere. It does not generate errors from business logic — it processes errors that core operations, constructors, and external calls produce.",
+            "contextual": "Every error gains context as it propagates. A raw 'file not found' becomes 'failed to load config: file not found: /path/to/file'. Each wrapping layer adds meaning.",
+            "classifying": "Error handling routes different errors to different responses. Not all errors are equal — some are retryable, some are fatal, some need user input. Classification determines the response.",
+            "boundary-translating": "Internal errors use precise types. User-facing errors use helpful messages. Error handling translates between these worlds at the boundary.",
+            "non-originating": "Error handling does not create new error conditions. It processes errors produced by other sections. If new error types are needed, they belong in SETUP.ErrorTypes."
+        },
+
+        "content_forms": {
+            "description": "What error handling content looks like across languages. Failure response is invariant; the syntax of error matching and wrapping varies.",
+
+            "rust": {
+                "syntax": "fn handle_error(err: Error) -> AppError { match err { Error::NotFound(path) => AppError::config(format!(\"missing: {path}\")), Error::Permission(e) => AppError::fatal(e), _ => AppError::internal(err) } }",
+                "grouping": "Error wrapping functions first, then error classification/routing, then recovery logic (retry, fallback), then exit code mapping",
+                "notes": "Rust error handling uses match on error enums. The ? operator propagates. anyhow/thiserror crates provide context and display. From impls convert between error types. map_err adds context inline."
+            },
+
+            "go": {
+                "syntax": "func handleError(err error) error { var notFound *NotFoundError; if errors.As(err, &notFound) { return fmt.Errorf(\"config missing: %w\", err) }; return fmt.Errorf(\"internal: %w\", err) }",
+                "grouping": "Error wrapping helpers first, then error classification, then recovery logic, then exit code mapping",
+                "notes": "Go error handling uses errors.Is/errors.As for classification. fmt.Errorf with %w wraps with context. Sentinel errors (var ErrNotFound = errors.New(...)) live in SETUP. Custom error types with Is/As/Unwrap methods."
+            },
+
+            "c": {
+                "syntax": "int handle_error(int err_code, char* msg, size_t len) { switch(err_code) { case ERR_NOT_FOUND: snprintf(msg, len, \"config missing\"); return EXIT_CONFIG; default: snprintf(msg, len, \"internal error\"); return EXIT_FAILURE; } }",
+                "grouping": "Error wrapping/formatting first, then error classification switch, then recovery logic, then exit code mapping",
+                "notes": "C error handling uses switch on error codes or errno values. Error context added via snprintf into message buffers. No automatic propagation — every call site checks return values explicitly."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, error handling content preserves the failure response logic. The same errors get classified the same way, wrapped with the same context, and routed to the same recovery paths — only the syntax of matching and wrapping changes.",
+            "invariant": ["error classification rules (which errors map to which responses)", "context messages (what information is added at each propagation layer)", "recovery strategies (retry counts, fallback paths, degradation levels)"],
+            "variable": ["matching syntax (match vs errors.As vs switch)", "wrapping mechanism (map_err vs fmt.Errorf %w vs snprintf)", "propagation style (? operator vs if err != nil vs explicit check)", "exit code conventions (process::exit vs os.Exit vs return from main)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — error handling hosts any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Error handling is grace in code. Things go wrong — that is reality, not failure. What matters is the response: meaningful context so the developer can fix it, helpful messages so the user can act, and graceful degradation so the system survives. Good error handling turns crashes into recoveries.",
+    "_X5_scripture": "Proverbs 24:16 — For a just man falleth seven times, and riseth up again: but the wicked shall fall into mischief."
+}

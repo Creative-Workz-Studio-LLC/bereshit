@@ -1,0 +1,107 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-molded-go-library",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "form-content-schema",
+    "_P2_role": "content-molded",
+    "_P5_title": "Go Library Form Content — The Package Identity",
+    "_P5_brief": "Go-specific content expectations for library form (doc.go + package files). The public API surface — exports via Uppercase, holds package identity in Pragma/Metadata [][2]string vars, defines error types and core types. Exported visibility default because libraries exist to serve consumers.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends_structure": "structure/molded/library.jsonc",
+    "extends_content": "content/whole/code.jsonc",
+    "format": "go",
+    "form": "library",
+
+    "content_expectations": {
+
+        "pragma": "//omni:code --go -library",
+
+        "content_state": "REAL — all code is live, uncommented.",
+
+        "METADATA": {
+            "directive": "//omni:code --go -library",
+            "identity_construct": "var Pragma = [][2]string{...} and var Metadata = [][2]string{...} slices — I1-I4 identity, C1-C7 context",
+            "I2_subtype": "library",
+            "I2_role": "Package identity — the public face of the package",
+            "doc_comments": "// package-level doc comments before package declaration — what the package does, key types, usage examples. Go 1.19+ format: # Heading, tab-indented preformatted, [Name] for doc links.",
+            "visibility": "N/A — METADATA is identity, not API",
+            "delegated_identity": "doc.go holds Pragma and Metadata — other package files inherit identity"
+        },
+
+        "SETUP": {
+            "import_pattern": {
+                "primary": "Standard library imports (fmt, errors, strings, etc.)",
+                "secondary": "External dependencies, then internal packages",
+                "grouping": "std → external → internal → package-internal",
+                "note": "Libraries import OUTWARD (std, external) more than INWARD. Consumers import from the library; the library imports from the world. goimports handles formatting."
+            },
+
+            "visibility_pattern": {
+                "types": "Exported (Uppercase) for public API types. Unexported (lowercase) for internal types.",
+                "functions": "Exported for public API, unexported for internal. New*() constructors in SETUP for simple field assignment, BODY for complex construction.",
+                "constants": "Exported for public constants. Package-wide constants and iota enumerations live here.",
+                "errors": "Sentinel errors (var ErrNotFound = errors.New(...)) for comparison. Typed errors (type ValidationError struct{...}) for carrying context. Error() method implementations complete the type in SETUP.",
+                "interfaces": "Exported interfaces define extension points. Accept interfaces, return structs. Keep small (1-3 methods) — the io.Reader/io.Writer pattern."
+            },
+
+            "S1_import_pattern": {
+                "structure": "import block with blank-line-separated groups",
+                "example": "import (\n\t\"fmt\"\n\t\"strings\"\n\n\t\"github.com/external/pkg\"\n\n\t\"internal/config\"\n)",
+                "note": "The import block is the package's dependency declaration. Group by origin for readability."
+            },
+
+            "error_pattern": "Top-level error types wrapping domain errors. Sentinel errors for comparison (errors.Is), typed errors for context (errors.As). Error() method implementations live with the type in SETUP, not in BODY.",
+
+            "type_pattern": "Core public types — the nouns of the package. Keep types flat. If >3-4 types, consider splitting into separate files. Exported types are the package's vocabulary."
+        },
+
+        "BODY": {
+            "ordering": "execution_flow",
+            "section_content": {
+                "B1_OrgChart": "Module structure overview — package relationships, which files handle what. In multi-file packages: documents the internal organization.",
+                "B2_Helpers": "Internal utility functions (unexported/lowercase). Private helpers that support core operations. Each does one thing. If a helper grows complex, extract to its own file.",
+                "B3_CoreOperations": "Primary business logic — state transitions, computations, transformations. Methods take receivers (value or pointer). Typically the heaviest BODY subsection. If >200 lines, extract into a separate file.",
+                "B4_ErrorHandling": "Error processing, recovery, wrapping. Error TYPES go in SETUP S5; error HANDLING goes here. Pattern: fmt.Errorf(\"package.Method: %w\", err) for consistent wrapping.",
+                "B5_PublicAPIs": "Exported functions — the package's public surface. Keep thin — delegate to core operations (B3). Document every exported function with Go doc comments."
+            }
+        },
+
+        "CLOSING": {
+            "Cv_pattern": {
+                "structure": "func Test*() in Cv zone — table-driven patterns, subtests with t.Run()",
+                "organization": "Tests organized by BODY subsections: // -- B1 Org Chart ---- through // -- B5 Public APIs ----",
+                "note": "Library tests cover the full API surface. Table-driven test pattern is Go-idiomatic."
+            },
+
+            "Ce_pattern": "init() for identity registration (if needed). Libraries have no main(). The init() function is thin — typically 1-3 lines registering Pragma/Metadata with a package registry.",
+
+            "Cc_pattern": "Close/Shutdown methods for types owning resources (DB connections, file handles, network connections). Implements io.Closer where appropriate.",
+
+            "X1_pattern": {
+                "safe": "Additive changes (new exported funcs, new error types, new interface implementations, new tests)",
+                "careful": "API changes (exported func signatures, exported type fields) — affects all consumers",
+                "never": "Structural invariants (4-block, Pragma/Metadata layout, block boundaries)"
+            },
+
+            "X5_pattern": "Package-level scripture grounding the entire library's purpose."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The Go library is the package's public face. Exported names (Uppercase) are the default visibility because libraries exist to serve consumers. doc.go holds the identity (Pragma/Metadata); other files hold the logic. The import groups show what the package depends on. The error types show how it fails. The interfaces show where it extends. Every Go convention serves the library's role as the package consumers actually import.",
+    "_X5_scripture": "Now ye are the body of Christ, and members in particular. — 1 Corinthians 12:27"
+}

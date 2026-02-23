@@ -1,0 +1,79 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-whole-data",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-whole",
+    "_P5_title": "Data Content Character — What Data IS",
+    "_P5_brief": "Format-independent definition of what data content is. Data is declarative, key-value, schema-driven. It configures, describes, maps, constrains. This schema defines the NATURE of data content — what all data has in common regardless of format.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "data",
+        "structure": "3-block",
+        "nature": "declarative",
+
+        "description": "Data content is facts for machines and humans to read. It configures systems, describes structures, maps relationships, and constrains values. Unlike code (which acts) and documentation (which explains), data DESCRIBES.",
+
+        "invariants": {
+            "description": "Properties true of ALL data content, regardless of format.",
+
+            "declarative": "Data states facts — it doesn't compute, branch, loop, or execute. A config file says 'port = 8080', not 'if env == prod then port = 8080'.",
+            "key_value": "Data is fundamentally key-value — every data format maps names to values, whether flat (INI), nested (TOML/JSON/YAML), or tabular (CSV).",
+            "schema_driven": "Data has shape — required fields, valid ranges, type constraints. Even 'schemaless' data has implicit expectations.",
+            "parseable": "Data is consumed by parsers — every format has a grammar. The grammar IS the contract.",
+            "static": "Data doesn't change during reading. A TOML file is the same at line 1 and line 100. Code can mutate state; data cannot.",
+            "versioned": "Data has identity — OmniCode pragma carries key, version, format. Every data file knows who it is."
+        },
+
+        "content_patterns": {
+            "description": "What data content looks like in each block, regardless of format.",
+
+            "METADATA": {
+                "pattern": "Identity and context — format-specific representation of who this data is",
+                "examples": "TOML: [_metadata] table. JSONC: '_' prefixed keys. YAML: metadata section.",
+                "invariant": "Every data file has identity. The representation varies; the requirement doesn't."
+            },
+
+            "CONTENT": {
+                "pattern": "The actual data — configurations, mappings, definitions, schemas",
+                "examples": "TOML: tables and key-value pairs. JSONC: objects and arrays. YAML: mappings and sequences.",
+                "invariant": "CONTENT is why the file exists. Everything else supports this.",
+                "subsections": {
+                    "Cc": "Configurations — settings, parameters, options (the what)",
+                    "Co": "Operations — rules, mappings, registries (the how)",
+                    "Cv": "Validation — constraints, schemas, verification (the proof)"
+                }
+            },
+
+            "CLOSING": {
+                "pattern": "Documentation — policy, references, closing anchor",
+                "examples": "TOML: [_closing] or comment blocks. JSONC: '_X' prefixed keys. YAML: closing comments.",
+                "invariant": "Every data file has a closing contract. Policy and grounding are universal needs."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During format conversion (e.g., TOML → JSONC), data content character stays constant. The NATURE of the content (declarative, key-value, schema-driven) doesn't change — only the SYNTAX changes.",
+            "invariant_during_conversion": ["structure (3-block skeleton)", "semantic content (what the data DESCRIBES)", "schema constraints"],
+            "variable_during_conversion": ["syntax (format-specific grammar)", "comment conventions", "nesting representation", "type representation"]
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Data is the quietest of the three types. Code shouts (it executes). Documentation speaks (it explains). Data whispers (it describes). But the whisper carries weight — a misconfigured port number brings down a service, a wrong schema constraint rejects valid input. The 3-block structure gives even the quietest file dignity: identity, substance, accountability.",
+    "_X5_scripture": "A faithful witness will not lie: but a false witness will utter lies. — Proverbs 14:5"
+}

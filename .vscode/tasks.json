@@ -3,12 +3,281 @@
   // ==========================================================================
   // METADATA
   // Key: B-vscode-tasks
-  // Purpose: Build tasks for Bereshit - thin wrapper over Makefiles
-  // Version: a-01.00
+  // Purpose: Build tasks for Bereshit — libtrit, demos, cws-struct, cpisi
+  // Version: a-02.00
   // ==========================================================================
 
   "version": "2.0.0",
   "tasks": [
+    // ========================================================================
+    // cws-struct (DAR Engine — Lint / Transform / Create)
+    // Binary: ~/.local/share/claude/bin/cws-struct
+    // ========================================================================
+    {
+      "label": "cws-struct: Lint Current File",
+      "type": "shell",
+      "command": "~/.local/share/claude/bin/cws-struct lint ${fileExtname} ${file}",
+      "problemMatcher": {
+        "owner": "cws-struct",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):\\s+(error|warning|info):\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "cws-struct: Lint Go Files",
+      "type": "shell",
+      "command": "~/.local/share/claude/bin/cws-struct lint go ${workspaceFolder}",
+      "problemMatcher": {
+        "owner": "cws-struct",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):\\s+(error|warning|info):\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    },
+    {
+      "label": "cws-struct: Lint Rust Files",
+      "type": "shell",
+      "command": "~/.local/share/claude/bin/cws-struct lint rust ${workspaceFolder}",
+      "problemMatcher": {
+        "owner": "cws-struct",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):\\s+(error|warning|info):\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    },
+    {
+      "label": "cws-struct: Lint TOML Files",
+      "type": "shell",
+      "command": "~/.local/share/claude/bin/cws-struct lint toml ${workspaceFolder}",
+      "problemMatcher": {
+        "owner": "cws-struct",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):\\s+(error|warning|info):\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    },
+    {
+      "label": "cws-struct: Lint All Formats",
+      "type": "shell",
+      "command": "~/.local/share/claude/bin/cws-struct lint ${workspaceFolder} --summary",
+      "problemMatcher": []
+    },
+    {
+      "label": "cws-struct: Transform Current File",
+      "type": "shell",
+      "command": "~/.local/share/claude/bin/cws-struct transform ${fileExtname} ${file}",
+      "problemMatcher": []
+    },
+    {
+      "label": "cws-struct: Transform Dry Run",
+      "type": "shell",
+      "command": "~/.local/share/claude/bin/cws-struct transform ${fileExtname} ${file} --dry-run",
+      "problemMatcher": []
+    },
+    {
+      "label": "cws-struct: Show Formats",
+      "type": "shell",
+      "command": "~/.local/share/claude/bin/cws-struct formats",
+      "problemMatcher": []
+    },
+    {
+      "label": "cws-struct: Verify Environment",
+      "type": "shell",
+      "command": "~/.local/share/claude/bin/cws-struct verify env --verbose",
+      "problemMatcher": []
+    },
+    {
+      "label": "cws-struct: Studio (Web UI)",
+      "type": "shell",
+      "command": "~/.local/share/claude/bin/cws-struct studio",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "cws-struct: Tests",
+      "type": "shell",
+      "command": "deno task test",
+      "options": {
+        "cwd": "${workspaceFolder}/.a-new-structure/c-tov/cws-struct"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+
+    // ========================================================================
+    // cws-struct via Deno (fallback — runs from source, no install needed)
+    // Use these if binary is not installed or out of date
+    // ========================================================================
+    {
+      "label": "cws-struct [deno]: Lint Current File",
+      "type": "shell",
+      "command": "deno task lint ${fileExtname} ${file}",
+      "options": {
+        "cwd": "${workspaceFolder}/.a-new-structure/c-tov/cws-struct"
+      },
+      "problemMatcher": {
+        "owner": "cws-struct",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):\\s+(error|warning|info):\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    },
+    {
+      "label": "cws-struct [deno]: Lint Go",
+      "type": "shell",
+      "command": "deno task lint:go ${workspaceFolder}",
+      "options": {
+        "cwd": "${workspaceFolder}/.a-new-structure/c-tov/cws-struct"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "cws-struct [deno]: Lint Rust",
+      "type": "shell",
+      "command": "deno task lint:rust ${workspaceFolder}",
+      "options": {
+        "cwd": "${workspaceFolder}/.a-new-structure/c-tov/cws-struct"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "cws-struct [deno]: Lint TOML",
+      "type": "shell",
+      "command": "deno task lint:toml ${workspaceFolder}",
+      "options": {
+        "cwd": "${workspaceFolder}/.a-new-structure/c-tov/cws-struct"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "cws-struct [deno]: Transform Current File",
+      "type": "shell",
+      "command": "deno task transform ${fileExtname} ${file}",
+      "options": {
+        "cwd": "${workspaceFolder}/.a-new-structure/c-tov/cws-struct"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "cws-struct [deno]: Verify Environment",
+      "type": "shell",
+      "command": "deno task verify:verbose",
+      "options": {
+        "cwd": "${workspaceFolder}/.a-new-structure/c-tov/cws-struct"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "cws-struct [deno]: Compile Binary",
+      "type": "shell",
+      "command": "deno task compile && cp bin/cws-struct ~/.local/share/claude/bin/cws-struct && chmod 755 ~/.local/share/claude/bin/cws-struct",
+      "options": {
+        "cwd": "${workspaceFolder}/.a-new-structure/c-tov/cws-struct"
+      },
+      "problemMatcher": []
+    },
+
+    // ========================================================================
+    // cpisi CLI (CPI-SI System)
+    // ========================================================================
+    {
+      "label": "cpisi: Build All",
+      "type": "shell",
+      "command": "make build",
+      "options": {
+        "cwd": "${workspaceFolder}/word/claude"
+      },
+      "group": "build",
+      "problemMatcher": ["$go"]
+    },
+    {
+      "label": "cpisi: Install Binaries",
+      "type": "shell",
+      "command": "make install-bin",
+      "options": {
+        "cwd": "${workspaceFolder}/word/claude"
+      },
+      "dependsOn": "cpisi: Build All",
+      "problemMatcher": []
+    },
+    {
+      "label": "cpisi: Fresh Install",
+      "type": "shell",
+      "command": "make fresh",
+      "options": {
+        "cwd": "${workspaceFolder}/word/claude"
+      },
+      "problemMatcher": ["$go"]
+    },
+    {
+      "label": "cpisi: Status",
+      "type": "shell",
+      "command": "~/.local/share/claude/system/bin/status",
+      "problemMatcher": []
+    },
+    {
+      "label": "cpisi: Verify",
+      "type": "shell",
+      "command": "make verify",
+      "options": {
+        "cwd": "${workspaceFolder}/word/claude"
+      },
+      "problemMatcher": []
+    },
+
+    // ========================================================================
+    // Go Tests (workspace-wide)
+    // ========================================================================
+    {
+      "label": "Go: Test Package",
+      "type": "shell",
+      "command": "go test -v -count=1 ./...",
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "group": "test",
+      "problemMatcher": ["$go"]
+    },
+    {
+      "label": "Go: Test Current File",
+      "type": "shell",
+      "command": "go test -v -count=1 -run ${fileBasenameNoExtension}",
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "problemMatcher": ["$go"]
+    },
+
     // ========================================================================
     // libtrit (C Library)
     // ========================================================================

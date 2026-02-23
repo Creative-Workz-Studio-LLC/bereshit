@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-output-display",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.OutputDisplay Content Character — What Output & Display Content IS",
+    "_P5_brief": "Format-independent definition of output and display content character. Output & Display is the presentation layer — transforming internal state into human-readable or machine-readable text. Syntax varies (Display impl, Stringer interface, printf wrappers); the state-to-text pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "output-display",
+        "block": "BODY",
+        "position": 6,
+        "nature": "presentation",
+
+        "description": "Output & Display content transforms internal truth into external representation. Queries tell you what state IS. Output tells you how state LOOKS. The distinction matters: a query returns a bool; output formats that bool as 'valid' or an ANSI-colored checkmark. The content is representational: 'this is how the world sees what we know.'",
+
+        "invariants": {
+            "description": "Properties true of ALL output & display content, regardless of language.",
+
+            "representational": "Output transforms data into text. It never computes new data — it formats existing data for consumption. The input is always state (from queries or core logic); the output is always a string or stream.",
+            "audience-aware": "Output content knows its audience. Human-readable output uses formatting, colors, alignment. Machine-readable output uses JSON, CSV, structured formats. The same data looks different for different consumers.",
+            "non-mutating": "Displaying state never changes state. Output is observation with formatting — a read-only operation that produces text as a side effect.",
+            "severity-conscious": "When output includes diagnostic messages (errors, warnings, info), it uses severity levels consistently. The gravity of the message determines its presentation.",
+            "boundary-residing": "Output belongs at the boundary between internal logic and the outside world. Internal modules return data; the boundary layer formats it. This is why Output is RESERVED in modules."
+        },
+
+        "content_forms": {
+            "description": "What output & display content looks like across languages. State-to-text transformation is invariant; the formatting mechanism varies.",
+
+            "rust": {
+                "syntax": "impl fmt::Display for MyType { fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, \"{}: {}\", self.label, self.value) } }",
+                "grouping": "Display/Debug impls first, then custom format functions, then severity-leveled output helpers (error!, warn!, info!)",
+                "notes": "Rust output uses the fmt::Display and fmt::Debug traits. Display is user-facing; Debug is developer-facing. The write! macro handles buffered formatting. Color via external crates (colored, termcolor)."
+            },
+
+            "go": {
+                "syntax": "func (t *MyType) String() string { return fmt.Sprintf(\"%s: %s\", t.label, t.value) } func (t *MyType) WriteJSON(w io.Writer) error { ... }",
+                "grouping": "Stringer (String()) first, then structured output (JSON, table), then severity-leveled helpers",
+                "notes": "Go output implements the fmt.Stringer interface for human-readable text. Structured output writes to io.Writer. The log/slog packages handle severity-leveled output."
+            },
+
+            "c": {
+                "syntax": "int my_type_display(const MyType* self, FILE* out) { return fprintf(out, \"%s: %s\", self->label, self->value); }",
+                "grouping": "Primary display function first, then format variants (verbose, compact, JSON), then severity wrappers",
+                "notes": "C output uses fprintf to FILE* streams. No standard Display trait — convention establishes _display() as the pattern. Color via ANSI escape codes directly."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, output content preserves the formatting intent and audience targeting. The same data gets presented the same way for the same audience — only the formatting API and trait/interface mechanism change.",
+            "invariant": ["format intent (what information is shown and how)", "audience targeting (human vs machine output)", "severity levels (error/warn/info/debug distinctions)"],
+            "variable": ["trait/interface mechanism (Display vs Stringer vs function convention)", "format API (write! vs fmt.Sprintf vs fprintf)", "color/styling approach (crate vs package vs raw ANSI)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — output/display hosts any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Output & Display is the public face. Internal truth is precise but opaque. Output makes truth visible, readable, actionable. The quality of output determines whether users understand what the code is telling them — and misunderstood output is worse than no output at all.",
+    "_X5_scripture": "Matthew 5:16 — Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven."
+}

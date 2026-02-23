@@ -1,0 +1,84 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-R50-universal-format",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "format-schema",
+    "_P2_role": "universal-formatting",
+    "_P5_title": "Universal Code Formatting Rules (R[50])",
+    "_P5_brief": "Language-agnostic formatting rules for 4-block code files. Defines separator patterns, block boundary markers, pragma format, and structural formatting. Every language inherits these — language-specific _format.jsonc files ADD to, never replace.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "formatting": {
+        "resolution": "R[50]",
+        "scope": "all code formats",
+
+        "separators": {
+            "block": {
+                "character": "=",
+                "standard_width": 76,
+                "description": "Block-level separators use = (equals). Full width. Mandatory between blocks."
+            },
+            "subsection": {
+                "character": "-",
+                "standard_width": 76,
+                "description": "Subsection separators use - (dash). Full width. Within blocks."
+            },
+            "note": "Separator widths are measured from first non-whitespace character to last. Comment prefix is NOT counted."
+        },
+
+        "block_boundaries": {
+            "pattern": "^<comment_prefix>\\s*(={10,})\\s*$",
+            "title_pattern": "^<comment_prefix>\\s+(METADATA|SETUP|BODY|CLOSING)\\b",
+            "end_pattern": "^<comment_prefix>\\s+END\\s+(METADATA|SETUP|BODY|CLOSING)\\b",
+            "description": "Blocks are bounded by separator lines with block name on the title line. END markers close each block."
+        },
+
+        "pragma": {
+            "pattern": "^<comment_prefix>\\s+#!omni\\b",
+            "legacy_pattern": "^<comment_prefix>omni:code\\b",
+            "directives": [
+                { "name": "key",      "pattern": "<comment_prefix>omni:key",      "required": true },
+                { "name": "version",  "pattern": "<comment_prefix>omni:version",  "required": true },
+                { "name": "pragma",   "pattern": "<comment_prefix>omni:pragma",   "recommended": true },
+                { "name": "metadata", "pattern": "<comment_prefix>omni:metadata", "recommended": true }
+            ]
+        },
+
+        "identity_fields": {
+            "pragma_sections": ["I1", "I2", "I3", "I4"],
+            "metadata_sections": ["C1", "C2", "C3", "C4", "C5", "C6", "C7"],
+            "description": "I-fields define identity (WHO). C-fields define context (WHEN/WHY/WHERE). Same across all languages."
+        },
+
+        "closing_zones": {
+            "code_zones": ["Cv", "Ce", "Cc"],
+            "doc_sections": ["X1", "X2", "X3", "X4", "X5", "X6"],
+            "order": "code zones first, then documentation sections",
+            "description": "CLOSING has executable code (validate, execute, cleanup) then documentation (policy, extension, troubleshooting, reference, note, template)."
+        },
+
+        "reserved_omission": {
+            "required_in": ["SETUP", "BODY", "CLOSING"],
+            "not_required_in": ["METADATA"],
+            "marker_pattern": "Reserved Omission",
+            "description": "Explicit listing of sections NOT present. active + reserved = master list. Nothing is silently absent."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Universal formatting is the Genesis 1 principle applied to code: boundaries (badal) before content. Every language expresses these same patterns through its own comment syntax. The separator width, block order, identity fields, closing zones — all constant. The language provides the words; the structure provides the grammar.",
+    "_X5_scripture": "Look that thou make them after their pattern. — Exodus 25:40"
+}

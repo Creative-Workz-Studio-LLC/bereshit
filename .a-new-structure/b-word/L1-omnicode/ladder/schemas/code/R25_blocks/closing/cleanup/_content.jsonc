@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-closing-cleanup",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "CLOSING.Cleanup Content Character — What Cleanup Content IS",
+    "_P5_brief": "Format-independent definition of cleanup content character. Cleanup is resource release — deterministic teardown of what was acquired. Syntax varies (impl Drop, defer, atexit); the stewardship obligation doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "cleanup",
+        "block": "CLOSING",
+        "position": 3,
+        "nature": "resource-release",
+
+        "description": "Cleanup content is stewardship made concrete. Resources borrowed must be returned — file handles closed, connections severed, memory freed, state persisted. This section contains destructor implementations, deferred cleanup logic, and explicit teardown that automatic resource management cannot handle alone. Cleanup code must be reliable above all else: it runs during shutdown, and failure here means resource leaks.",
+
+        "invariants": {
+            "description": "Properties true of ALL cleanup content, regardless of language.",
+
+            "release_only": "Cleanup releases resources. It never acquires new ones. Allocating during teardown invites cascading failures.",
+            "idempotent": "Cleanup can be called multiple times without harm. Double-free is a bug; double-close should be a no-op.",
+            "non_blocking": "Cleanup must complete. It does not wait indefinitely on locks, I/O, or remote services. Timeouts are mandatory for any blocking operation during teardown.",
+            "error_absorbing": "Cleanup handles its own errors gracefully. Panicking during teardown is catastrophic — log the error, continue cleaning up the rest.",
+            "deterministic": "Cleanup executes in a predictable order. Resources acquired last are released first (LIFO). The teardown sequence mirrors the setup sequence in reverse."
+        },
+
+        "content_forms": {
+            "description": "What cleanup content looks like across languages. Resource management models vary; the stewardship obligation is invariant.",
+
+            "rust": {
+                "syntax": "impl Drop for Resource { fn drop(&mut self) { self.handle.close(); self.connection.shutdown(); } }",
+                "grouping": "Drop trait implementations grouped by resource type. Explicit drop() calls rare — compiler inserts them. ManuallyDrop for special ordering needs.",
+                "notes": "Rust's ownership model handles most cleanup automatically. Drop implementations are for resources the borrow checker can't manage — FFI handles, network connections, file locks. Drop runs in reverse declaration order."
+            },
+
+            "go": {
+                "syntax": "defer file.Close() // or: func (r *Resource) Close() error { r.conn.Close(); r.handle.Release(); return nil }",
+                "grouping": "defer statements near acquisition (LIFO execution). Close() methods on types that hold resources. Cleanup functions called from main() or shutdown handlers.",
+                "notes": "Go's defer is LIFO — last deferred runs first. For complex cleanup, a shutdown function aggregates multiple Close() calls. Context cancellation triggers cleanup chains."
+            },
+
+            "c": {
+                "syntax": "static void cleanup(void) { if (handle) { close_handle(handle); handle = NULL; } } /* registered via atexit(cleanup); */",
+                "grouping": "Static cleanup functions registered with atexit(). Explicit free/close calls. Cleanup functions set pointers to NULL after release to prevent double-free.",
+                "notes": "C has no automatic cleanup. Everything is manual — malloc/free, open/close, init/destroy. atexit() provides shutdown hooks. Signal handlers need async-signal-safe cleanup."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, cleanup content changes resource management syntax but preserves the teardown graph. What resources are released and in what order stays constant — how the language expresses release changes.",
+            "invariant": ["teardown graph (which resources are released)", "release order (LIFO — last acquired, first released)", "resource-release pairing (every acquire has a release)", "error tolerance (cleanup must not panic)"],
+            "variable": ["release mechanism (Drop vs defer vs atexit/free)", "automatic vs explicit (Rust auto-drops, C is fully manual)", "error handling in cleanup (Result vs error vs errno)", "ordering enforcement (compiler-inserted vs programmer-managed)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — cleanup code uses any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Cleanup content is the last act of stewardship in a file. Every resource borrowed is returned, every connection opened is closed. The quality of cleanup reveals the quality of the engineer — anyone can acquire resources; the disciplined release them.",
+    "_X5_scripture": "Luke 16:10 — He that is faithful in that which is least is faithful also in much."
+}

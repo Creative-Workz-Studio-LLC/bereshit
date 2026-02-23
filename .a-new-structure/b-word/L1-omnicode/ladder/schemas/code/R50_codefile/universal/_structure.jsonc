@@ -1,0 +1,155 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-structure-whole-4block",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-skeleton-schema",
+    "_P2_role": "structure-whole",
+    "_P5_title": "4-Block Structure Skeleton — Code Files",
+    "_P5_brief": "Format-agnostic definition of the 4-block (code) structure. Defines WHAT blocks exist, their ORDER, their PURPOSE, and the separation principle. No format-specific or form-specific details — those live in parts/ and molded/.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "skeleton": {
+        "name": "4-block",
+        "type": "code",
+        "block_count": 4,
+
+        "blocks": {
+            "type": "array",
+            "const": ["METADATA", "SETUP", "BODY", "CLOSING"],
+            "description": "Canonical block order — never changes. The 4-block structure is the pattern for code files."
+        },
+
+        "principle": "SETUP forms. BODY fills. CLOSING declares 'it is good.' Genesis 1: forming (day 1-3) then filling (day 4-6). Existence before action. Declaration before execution.",
+
+        "METADATA": {
+            "position": 1,
+            "purpose": "Identity and context — WHO this file is, WHAT it needs",
+            "required": true,
+            "nature": "declarative",
+            "contains": "Identity directives, pragma fields (I1-I4), metadata fields (C1-C7), format-specific identity constructs",
+            "reserved_omission": false,
+            "note": "METADATA is fully required in all forms. No Reserved Omission needed because every section is always active."
+        },
+
+        "SETUP": {
+            "position": 2,
+            "purpose": "Declarations — everything BODY needs to EXIST before logic runs",
+            "required": true,
+            "nature": "declarative",
+            "contains": "Imports, constants, statics, type aliases, error types, core types, trait definitions, macros, feature gates",
+            "reserved_omission": true,
+            "canonical_section_count": 10,
+            "ordering_principle": "dependency_chain — each section can reference only what came before it",
+            "sections": [
+                { "position": 1,  "tag": "Imports",      "purpose": "External dependencies — what exists elsewhere that this file needs" },
+                { "position": 2,  "tag": "Modules",      "purpose": "Module declarations, re-exports — defining the public surface" },
+                { "position": 3,  "tag": "Constants",    "purpose": "Compile-time known values — zero-cost, inlined" },
+                { "position": 4,  "tag": "Statics",      "purpose": "Runtime-initialized singletons — process-wide shared state" },
+                { "position": 5,  "tag": "TypeAliases",  "purpose": "Type aliases — domain vocabulary without new types" },
+                { "position": 6,  "tag": "ErrorTypes",   "purpose": "Error definitions — the failure vocabulary" },
+                { "position": 7,  "tag": "CoreTypes",    "purpose": "Primary structs/enums/interfaces — the data shapes logic operates on" },
+                { "position": 8,  "tag": "TraitDefs",    "purpose": "Trait/interface definitions — contracts that BODY fulfills" },
+                { "position": 9,  "tag": "Macros",       "purpose": "Code generation — compile-time patterns for repeated structures" },
+                { "position": 10, "tag": "FeatureGates", "purpose": "Conditional compilation — platform/feature-specific declarations" }
+            ],
+            "scaling_signal": "If SETUP grows past 200 lines, the file is doing too much. Extract types, errors, constants into modules.",
+            "principle": "SETUP makes things EXIST. BODY makes things HAPPEN."
+        },
+
+        "BODY": {
+            "position": 3,
+            "purpose": "Core logic — implementations, operations, the actual work",
+            "required": true,
+            "nature": "executable",
+            "contains": "Identity accessors, trait implementations, constructors, core logic, queries, output, free functions",
+            "reserved_omission": true,
+            "ordering_varies_by_form": true,
+            "universal_sections": [
+                { "tag": "IdentityAccess", "purpose": "OmniCode identity accessors — bridge between compile-time identity and runtime code" },
+                { "tag": "CoreLogic",      "purpose": "Primary operations — state transitions, computations, business rules" },
+                { "tag": "FreeFunctions",  "purpose": "Module-level public functions — convenience wrappers, facades" }
+            ],
+            "ordering_principles": {
+                "type_lifecycle":    "Identity → Traits → Constructors → CoreLogic → Queries → Output → Free (library, module)",
+                "execution_flow":    "Identity → Helpers → CoreOperations (executable)",
+                "concern_coverage":  "ConstructorTests → BuilderTests → ... → IntegrationTests (demo-test)"
+            },
+            "scaling_signal": "If BODY exceeds ~500 lines, the file is doing too much. Extract logic into submodules.",
+            "principle": "BODY is where things HAPPEN. SETUP/BODY mirrors data/behavior, schema/queries."
+        },
+
+        "CLOSING": {
+            "position": 4,
+            "purpose": "Accountability — prove it works, run it, clean up, document",
+            "required": true,
+            "nature": "mixed (code zones + documentation sections)",
+            "contains": "Validation tests, execution entry, cleanup, policy, extension points, troubleshooting, references, closing note",
+            "reserved_omission": true,
+            "canonical_order": ["Cv", "Ce", "Cc", "X1", "X2", "X3", "X4", "X5", "X6"],
+            "ordering_principle": "prove_then_run_then_clean_then_document",
+
+            "code_zones": {
+                "description": "Actual executable code — always precede documentation sections",
+                "Cv": { "position": 1, "name": "Validation", "purpose": "Tests — prove code works" },
+                "Ce": { "position": 2, "name": "Execution",  "purpose": "Entry point, init, registration — code that starts execution" },
+                "Cc": { "position": 3, "name": "Cleanup",    "purpose": "Resource deallocation, teardown, destructor implementations" }
+            },
+
+            "documentation_sections": {
+                "description": "Guidance for humans — always follow code zones",
+                "X1": { "position": 1, "name": "Policy",           "required": true,  "purpose": "Modification guidelines — never/careful/safe classification" },
+                "X2": { "position": 2, "name": "Extension",        "required": false, "purpose": "Designed growth points — planned features, expansion areas" },
+                "X3": { "position": 3, "name": "Troubleshooting",  "required": false, "purpose": "Common problems and solutions" },
+                "X4": { "position": 4, "name": "Reference",        "required": false, "purpose": "Related files, dependencies, validation commands" },
+                "X5": { "position": 5, "name": "Note",             "required": true,  "purpose": "Closing scripture anchor — grounds the file in eternal truth" },
+                "X6": { "position": 6, "name": "Template",         "required": false, "purpose": "Instantiation guide — template-only, removed when copying" }
+            },
+
+            "principle": "CLOSING is the accountability block. Tests prove claims. Docs guide maintainers."
+        },
+
+        "reserved_omission": {
+            "description": "Structural container required in SETUP, BODY, and CLOSING. Lists sections NOT present in this file. Nothing is silently absent.",
+            "required_in": ["SETUP", "BODY", "CLOSING"],
+            "not_required_in": "METADATA — all METADATA sections are always required",
+            "empty_valid": true,
+            "purpose": "Completeness contract. active_sections + reserved_sections = master list. Linter validates nothing is silently missing."
+        },
+
+        "placement_rules": {
+            "METADATA": {
+                "must_contain": ["Identity directives", "Identity statics/constructs", "Comment-based metadata"],
+                "must_not_contain": ["Executable code", "Import declarations", "Type definitions"]
+            },
+            "SETUP": {
+                "must_contain": ["Imports", "Constants", "Type definitions", "Error types"],
+                "must_not_contain": ["Function implementations with logic", "Business logic", "I/O operations"]
+            },
+            "BODY": {
+                "must_contain": ["Function/method implementations", "Behavioral implementations", "Core operations"],
+                "must_not_contain": ["Import declarations", "Constant/static definitions", "Type definitions", "Trait/interface definitions"]
+            },
+            "CLOSING": {
+                "must_contain": ["Test functions (Cv)", "Entry point if executable (Ce)", "Policy documentation (X1)", "Closing note (X5)"],
+                "must_not_contain": ["run() function (belongs in BODY)", "Public API methods (belongs in BODY)", "Type definitions (SETUP)"]
+            }
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The 4-block structure tames code's unique problem: it DOES things. Data sits and describes. Code acts and transforms. SETUP forms the landscape. BODY fills it with life. CLOSING declares it is good. The same separation Genesis made between forming (day 1-3) and filling (day 4-6).",
+    "_X5_scripture": "And God saw every thing that he had made, and, behold, it was very good. — Genesis 1:31"
+}

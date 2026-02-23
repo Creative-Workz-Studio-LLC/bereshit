@@ -1,0 +1,35 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-err-wrap",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Err Wrap",
+
+    "concept": "err_wrap",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "err_new",
+            "syntax": "Err({error_type}::new({kind}, {message}))",
+            "detect": "Err\\(([\\w:]+)::new\\(([^,]+),\\s*(.+)\\)\\)",
+            "captures": { "error_type": 1, "kind": 2, "message": 3 },
+            "notes": "Constructed error: Err(io::Error::new(ErrorKind::AlreadyExists, msg)).",
+            "priority": 1
+        },
+        {
+            "id": "err_propagate",
+            "syntax": "Err({expr})",
+            "detect": "Err\\(([^)]+)\\)",
+            "captures": { "expr": 1 },
+            "notes": "Re-wrapping an existing error: Err(e).",
+            "priority": 2
+        }
+    ],
+
+    "_X5_note": "Rust Err() — wrapping in Result::Err variant."
+}

@@ -20,7 +20,7 @@
 // ============================================================================
 
 import { assertEquals, assert } from "jsr:@std/assert";
-import { getFormat, errors, warnings } from "./helpers.ts";
+import { lazyFormat, errors, warnings } from "./helpers.ts";
 
 // ============================================================================
 // BODY
@@ -40,11 +40,9 @@ const SEED_TOML = new URL(
   import.meta.url,
 ).pathname;
 
-const rust = getFormat("rust");
-const toml = getFormat("toml");
-
-if (!rust) throw new Error("Rust handler not registered");
-if (!toml) throw new Error("TOML handler not registered");
+// Lazy handlers — initialize on first property access, no setup test needed.
+const rust = lazyFormat("rust");
+const toml = lazyFormat("toml");
 
 // ---------------------------------------------------------------------------
 // Rust seed templates: zero errors

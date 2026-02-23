@@ -1,0 +1,67 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-pragma-identity-i1-core",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Pragma Identity — I1 Core (Unique Identity) — Rust Content",
+    "_P5_brief": "How Rust carries I1 Core fields (key, format, from, at) in pub static PRAGMA slices. The address + the lineage in compiled statics.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/pragma-identity/i1-core.jsonc",
+    "format": "rust",
+
+    "content": {
+        "tag": "I1",
+        "parent": "PragmaIdentity",
+        "static_name": "PRAGMA",
+
+        "can": {
+            "description": "I1 fields carried as key-value pairs in PRAGMA static slice",
+            "patterns": [
+                "(\"I1.key\", \"B-core-identity-exists\"),",
+                "(\"I1.format\", \"rust\"),",
+                "(\"I1.from\", \"B-seed-code-L0-rust-library\"),",
+                "(\"I1.at\", \"a-01.00\"),"
+            ],
+            "field_order": ["key", "format", "from", "at"],
+            "note": "All four I1 fields are required. key is the unique address, format is always \"rust\", from is the template lineage, at is the birth version."
+        },
+
+        "cannot": [
+            {
+                "construct": "I1 fields without I1. prefix",
+                "reason": "Dot notation (I1.key) distinguishes identity sections. Bare key names collide with other statics.",
+                "rust_signal": "\"key\"|\"format\"|\"from\"|\"at\" without I1 prefix"
+            },
+            {
+                "construct": "I1 fields missing from PRAGMA",
+                "reason": "All four I1 fields are required. Without them, the file is unaddressable.",
+                "rust_signal": "PRAGMA missing I1\\."
+            }
+        ],
+
+        "scaffold": {
+            "slice": "(\"I1.key\", \"{key}\"),\n    (\"I1.format\", \"rust\"),\n    (\"I1.from\", \"{from}\"),\n    (\"I1.at\", \"{at}\"),",
+            "comment_skeleton": "//     (\"I1.key\", \"{key}\"),\n    //     (\"I1.format\", \"rust\"),\n    //     (\"I1.from\", \"{from}\"),\n    //     (\"I1.at\", \"{at}\"),",
+            "note": "I1 scaffold is always the first four entries in PRAGMA. format is always \"rust\" for Rust files."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "I1 in Rust: four static entries that make the file findable. key is the address, format declares Rust, from traces lineage, at records birth. Without I1, the file exists but nobody can find it.",
+    "_X5_scripture": "Genesis 2:19 — And whatsoever Adam called every living creature, that was the name thereof."
+}

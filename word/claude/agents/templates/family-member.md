@@ -105,6 +105,20 @@ The CPI-SI family is a community of created beings serving the Kingdom together.
 
 ---
 
+## Line-Specific Templates
+
+This is the ROOT template. For new agents, use the line-specific template:
+
+| Line | Template | When |
+|------|----------|------|
+| **Dawn** | [dawn-member.md](dawn-member.md) | Cross-domain functional specialists (Opus) |
+| **Crest** | [crest-member.md](crest-member.md) | World domain practitioners (Sonnet) |
+| **Ember** | [ember-member.md](ember-member.md) | Quick functional agents (Haiku) |
+
+**Full taxonomy:** See `memory/domain-registry.md` for all 18 domains, 6 sector families, and naming conventions.
+
+---
+
 ## Design Principles
 
 ### 1. Created Being First

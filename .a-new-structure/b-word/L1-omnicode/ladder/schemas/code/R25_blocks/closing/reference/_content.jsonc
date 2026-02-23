@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-closing-reference",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "CLOSING.Reference Content Character — What Reference Content IS",
+    "_P5_brief": "Format-independent definition of reference content character. Reference is navigation documentation — cross-references to related files, template provenance, and validation commands. Always comments, never code.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "reference",
+        "block": "CLOSING",
+        "position": "X4",
+        "nature": "navigation",
+
+        "description": "Reference content is the navigation map at the end of a file. It documents where this file came from (template provenance), what it depends on (upstream references), what depends on it (downstream consumers), and how to verify it (validation commands). Every file exists in relationship to other files — X4 makes that relationship graph visible.",
+
+        "invariants": {
+            "description": "Properties true of ALL reference content, regardless of language.",
+
+            "documentary": "Reference is comments only. No executable code. The content documents relationships and commands in the language's comment syntax.",
+            "bidirectional": "References point both upstream (what this file depends on) and downstream (what depends on this file). Navigation works in both directions.",
+            "verifiable": "References include validation commands — concrete build, test, or lint commands that prove this file is correct. Not just 'run the tests' but the exact command.",
+            "current": "References must be maintained when dependencies change. Stale paths and wrong commands are worse than no references — they actively mislead.",
+            "traceable": "Template provenance is documented. Every file knows which template it was created from, connecting the instance back to its origin."
+        },
+
+        "content_forms": {
+            "description": "What reference content looks like across languages. Comment syntax varies; the navigation structure is invariant.",
+
+            "rust": {
+                "syntax": "// [X4] Reference\n// Template: seed/code/L0/rust/module.rs\n// Depends on: crate::types (S5 types), crate::errors (S7 errors)\n// Used by: crate::handlers (B3 calls into this module)\n// Validate: cargo test --lib -- module_name\n// Lint: cargo clippy -- -W clippy::all",
+                "grouping": "Line comments (//) with labeled categories: Template, Depends on, Used by, Validate, Lint. Each category lists concrete paths or commands.",
+                "notes": "Rust references use crate:: paths for internal deps, crate names for external. Validation commands are cargo subcommands. Module-level test filtering via -- module_name."
+            },
+
+            "go": {
+                "syntax": "// [X4] Reference\n// Template: seed/code/L0/go/module.go\n// Depends on: internal/types (S5 types), internal/errors (S7 errors)\n// Used by: cmd/server/main.go (imports this package)\n// Validate: go test ./pkg/module/...\n// Lint: golangci-lint run ./pkg/module/...",
+                "grouping": "Line comments (//) with labeled categories: Template, Depends on, Used by, Validate, Lint. Each category lists concrete paths or commands.",
+                "notes": "Go references use import paths for dependencies. Validation via go test with package path. The ./... pattern covers subpackages."
+            },
+
+            "c": {
+                "syntax": "/* [X4] Reference\n * Template: seed/code/L0/c/module.c\n * Depends on: types.h (S5 types), errors.h (S7 errors)\n * Used by: main.c (includes this module's header)\n * Validate: make test-module\n * Lint: cppcheck --enable=all module.c */",
+                "grouping": "Block comments (/* */) with labeled categories: Template, Depends on, Used by, Validate, Lint. Each category lists concrete paths or commands.",
+                "notes": "C references distinguish header dependencies (.h) from source dependencies (.c). Validation via Makefile targets. Static analysis via cppcheck or clang-tidy."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, reference content changes file paths and tool commands but preserves the navigation structure. The relationship graph stays constant — which files relate to each other doesn't change, only how you name and verify them.",
+            "invariant": ["relationship graph (dependency and consumer sets)", "navigation categories (template, depends-on, used-by, validate)", "bidirectional references", "documentary nature (comments only)"],
+            "variable": ["file paths and extensions (.rs vs .go vs .c/.h)", "validation commands (cargo test vs go test vs make test)", "lint tools (clippy vs golangci-lint vs cppcheck)", "comment syntax (// vs /* */)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — reference is documentation, not code.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Reference content makes the invisible visible. Every file has dependencies, consumers, and a template origin — X4 documents these relationships so navigation is deliberate, not accidental. A file that knows its place in the system is a file that can be maintained.",
+    "_X5_scripture": "Proverbs 4:26 — Ponder the path of thy feet, and let all thy ways be established."
+}

@@ -1,0 +1,140 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-index-targets-rust-library",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "composition-target",
+    "_P2_role": "index-target",
+    "_P5_title": "Rust Library Composition Target",
+    "_P5_brief": "Composition recipe for building a Rust library file. The fullest non-test composition — all 10 SETUP sections available, 7 BODY sections required, owns the output layer. The linker's instruction set for //omni:code --rust -library.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "target": {
+        "pragma": "//omni:code --rust -library",
+        "format": "rust",
+        "form": "library",
+        "block_pattern": "4-block",
+
+        "composition": {
+
+            "structure": {
+                "whole": "R50_codefile/universal/_structure.jsonc",
+                "molded": "forms/library/_structure.jsonc",
+                "parts": {
+                    "setup": [
+                        "R25_blocks/setup/imports/_structure.jsonc",
+                        "R25_blocks/setup/modules/_structure.jsonc",
+                        "R25_blocks/setup/constants/_structure.jsonc",
+                        "R25_blocks/setup/statics/_structure.jsonc",
+                        "R25_blocks/setup/type-aliases/_structure.jsonc",
+                        "R25_blocks/setup/error-types/_structure.jsonc",
+                        "R25_blocks/setup/core-types/_structure.jsonc",
+                        "R25_blocks/setup/trait-defs/_structure.jsonc",
+                        "R25_blocks/setup/macros/_structure.jsonc",
+                        "R25_blocks/setup/feature-gates/_structure.jsonc"
+                    ],
+                    "body": [
+                        "R25_blocks/body/identity-access/_structure.jsonc",
+                        "R25_blocks/body/trait-implementations/_structure.jsonc",
+                        "R25_blocks/body/constructors/_structure.jsonc",
+                        "R25_blocks/body/core-logic/_structure.jsonc",
+                        "R25_blocks/body/queries/_structure.jsonc",
+                        "R25_blocks/body/output-display/_structure.jsonc",
+                        "R25_blocks/body/free-functions/_structure.jsonc"
+                    ],
+                    "closing": [
+                        "R25_blocks/closing/validation/_structure.jsonc",
+                        "R25_blocks/closing/execution/_structure.jsonc",
+                        "R25_blocks/closing/cleanup/_structure.jsonc",
+                        "R25_blocks/closing/modification-policy/_structure.jsonc",
+                        "R25_blocks/closing/extension-points/_structure.jsonc",
+                        "R25_blocks/closing/troubleshooting/_structure.jsonc",
+                        "R25_blocks/closing/reference/_structure.jsonc",
+                        "R25_blocks/closing/closing-note/_structure.jsonc"
+                    ]
+                }
+            },
+
+            "content": {
+                "whole": "R50_codefile/universal/_content.jsonc",
+                "molded": "forms/library/rust.jsonc",
+                "parts": {
+                    "setup": [
+                        "R25_blocks/setup/imports/rust.jsonc",
+                        "R25_blocks/setup/modules/rust.jsonc",
+                        "R25_blocks/setup/constants/rust.jsonc",
+                        "R25_blocks/setup/statics/rust.jsonc",
+                        "R25_blocks/setup/type-aliases/rust.jsonc",
+                        "R25_blocks/setup/error-types/rust.jsonc",
+                        "R25_blocks/setup/core-types/rust.jsonc",
+                        "R25_blocks/setup/trait-defs/rust.jsonc",
+                        "R25_blocks/setup/macros/rust.jsonc",
+                        "R25_blocks/setup/feature-gates/rust.jsonc"
+                    ],
+                    "body": [
+                        "R25_blocks/body/identity-access/rust.jsonc",
+                        "R25_blocks/body/trait-implementations/rust.jsonc",
+                        "R25_blocks/body/constructors/rust.jsonc",
+                        "R25_blocks/body/core-logic/rust.jsonc",
+                        "R25_blocks/body/queries/rust.jsonc",
+                        "R25_blocks/body/output-display/rust.jsonc",
+                        "R25_blocks/body/free-functions/rust.jsonc"
+                    ],
+                    "closing": [
+                        "R25_blocks/closing/validation/rust.jsonc",
+                        "R25_blocks/closing/execution/rust.jsonc",
+                        "R25_blocks/closing/cleanup/rust.jsonc",
+                        "R25_blocks/closing/modification-policy/rust.jsonc",
+                        "R25_blocks/closing/extension-points/rust.jsonc",
+                        "R25_blocks/closing/troubleshooting/rust.jsonc",
+                        "R25_blocks/closing/reference/rust.jsonc",
+                        "R25_blocks/closing/closing-note/rust.jsonc"
+                    ]
+                }
+            }
+        },
+
+        "active_sections": {
+            "SETUP": {
+                "required": ["Imports", "Constants", "ErrorTypes", "CoreTypes"],
+                "available": ["Modules", "Statics", "TypeAliases", "TraitDefs", "Macros", "FeatureGates"],
+                "reserved": []
+            },
+            "BODY": {
+                "required": ["IdentityAccess", "TraitImplementations", "Constructors", "CoreLogic", "Queries", "Output", "FreeFunctions"],
+                "reserved": ["Helpers", "ConstructorTests", "BuilderTests", "TransitionTests", "QueryTests", "IdentityTests", "ErrorTests", "EdgeCaseTests", "TableDrivenTests", "IntegrationTests"],
+                "ordering": "type_lifecycle"
+            },
+            "CLOSING": {
+                "required": ["Cv", "Ce", "X1", "X4", "X5"],
+                "available": ["Cc", "X2", "X3"],
+                "reserved": ["TestCoverageSummary", "X6"]
+            }
+        },
+
+        "resolution_order": [
+            "1. Load _structure.jsonc — block skeleton",
+            "2. Load forms/library/_structure.jsonc — form section rules",
+            "3. Load _content.jsonc — base code nature",
+            "4. Load forms/library/rust.jsonc — Rust library expectations",
+            "5. For each active section: load R25_blocks/{block}/{section}/_structure + {lang}",
+            "6. Merge: structure contracts + content specifics = complete rules"
+        ]
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "A Rust library is the crate root — the body itself. This is the fullest non-test composition: all 10 SETUP sections available, 7 BODY sections required including Output. pub visibility by default because libraries exist to serve others. The module tree is the organizational structure.",
+    "_X5_scripture": "Now ye are the body of Christ, and members in particular. — 1 Corinthians 12:27"
+}

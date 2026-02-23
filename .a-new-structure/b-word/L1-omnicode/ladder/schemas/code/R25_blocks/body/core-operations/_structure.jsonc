@@ -1,0 +1,128 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-body-core-operations",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "BODY Section 20: Core Operations — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Core Operations IS, not how it manifests in any language. See format/blocks/{lang}/body/core-operations.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "CoreOperations",
+        "position": 20,
+        "label": "Core Operations",
+        "block": "BODY",
+        "overview_text": "Primary business logic, state transitions",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "primary operations",
+                "description": "Methods/functions that perform the module's core work",
+                "distinguisher": "The verb, not the noun. Does things, not defines things."
+            },
+            {
+                "concept": "state transforms",
+                "description": "Operations that change internal state",
+                "distinguisher": "Mutation with purpose. Side effects that ARE the point."
+            },
+            {
+                "concept": "complex construction",
+                "description": "Constructors with validation, I/O, or computed defaults",
+                "distinguisher": "When creation requires logic beyond field assignment."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "type definitions",
+                "reason": "Existence belongs in SETUP — SETUP makes things EXIST, BODY makes things HAPPEN",
+                "defer_to": "SETUP.CoreTypes"
+            },
+            {
+                "concept": "entry points",
+                "reason": "main() is execution — belongs in CLOSING",
+                "defer_to": "CLOSING.Execution"
+            },
+            {
+                "concept": "read-only accessors",
+                "reason": "Observation is distinct from mutation",
+                "defer_to": "BODY.Queries"
+            },
+            {
+                "concept": "error type definitions",
+                "reason": "Error TYPES go in SETUP. Error HANDLING goes in BODY.ErrorHandling.",
+                "defer_to": "SETUP.ErrorTypes"
+            }
+        ],
+
+        "defer": [
+            {
+                "signal": "pure read with no side effects",
+                "to": "BODY.Queries",
+                "why": "Observation, not mutation"
+            },
+            {
+                "signal": "standalone utility not tied to a type",
+                "to": "BODY.FreeFunctions",
+                "why": "Module-level, not type-level"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "REQUIRED",
+            "module": "REQUIRED",
+            "library": "REQUIRED",
+            "executable": "REQUIRED",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Core Operations",
+            "reserved_reason": null,
+            "note": "Core Operations is REQUIRED in all declared forms. If empty, question the file's purpose."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — core operations host any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Core Operations is the engine room. SETUP declares, Constructors create, Core Operations transforms, Queries observe.",
+    "_X5_scripture": "Ecclesiastes 9:10 — Whatsoever thy hand findeth to do, do it with thy might."
+}

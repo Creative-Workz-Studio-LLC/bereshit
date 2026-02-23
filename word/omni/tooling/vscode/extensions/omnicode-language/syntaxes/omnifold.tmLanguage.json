@@ -1,0 +1,187 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "OmniFold",
+  "scopeName": "source.json.omnifold",
+  "comment": "OmniFold (.ofd) — compiled folder metadata. Clean JSON with fixed schema. Wraps source.json and adds semantic scopes for .ofd property names.",
+  "patterns": [
+    { "include": "#ofd-format-header-keys" },
+    { "include": "#ofd-required-section-keys" },
+    { "include": "#ofd-recommended-section-keys" },
+    { "include": "#ofd-optional-section-keys" },
+    { "include": "#ofd-identity-field-keys" },
+    { "include": "#ofd-state-field-keys" },
+    { "include": "#ofd-attribution-field-keys" },
+    { "include": "#ofd-grounding-field-keys" },
+    { "include": "#ofd-dependency-field-keys" },
+    { "include": "#ofd-child-field-keys" },
+    { "include": "#ofd-scripture-field-keys" },
+    { "include": "source.json" }
+  ],
+  "repository": {
+
+    "ofd-format-header-keys": {
+      "comment": "Top-level format header: ofd version, source file, compilation timestamp",
+      "patterns": [
+        {
+          "match": "(\")(ofd|source|compiled)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "entity.name.tag.header.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    },
+
+    "ofd-required-section-keys": {
+      "comment": "Required top-level sections — identity, state, attribution, children",
+      "patterns": [
+        {
+          "match": "(\")(identity|state|attribution|children)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "entity.name.tag.section.required.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    },
+
+    "ofd-recommended-section-keys": {
+      "comment": "Recommended top-level sections — grounding, dependencies, metadata",
+      "patterns": [
+        {
+          "match": "(\")(grounding|dependencies|metadata)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "entity.name.tag.section.recommended.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    },
+
+    "ofd-optional-section-keys": {
+      "comment": "Optional top-level sections — declarations, observations, navigation",
+      "patterns": [
+        {
+          "match": "(\")(declarations|observations|navigation)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "entity.name.tag.section.optional.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    },
+
+    "ofd-identity-field-keys": {
+      "comment": "Fields within the identity section",
+      "patterns": [
+        {
+          "match": "(\")(key|subtype|structure)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "support.type.property-name.identity.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    },
+
+    "ofd-state-field-keys": {
+      "comment": "Fields within the state section — version, status, created, updated",
+      "patterns": [
+        {
+          "match": "(\")(version|status|created|updated)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "support.type.property-name.state.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    },
+
+    "ofd-attribution-field-keys": {
+      "comment": "Fields within the attribution section",
+      "patterns": [
+        {
+          "match": "(\")(architect|implementation|organization)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "support.type.property-name.attribution.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    },
+
+    "ofd-grounding-field-keys": {
+      "comment": "Fields within the grounding section",
+      "patterns": [
+        {
+          "match": "(\")(scriptures|principle)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "support.type.property-name.grounding.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    },
+
+    "ofd-dependency-field-keys": {
+      "comment": "Fields within the dependencies section",
+      "patterns": [
+        {
+          "match": "(\")(from|provides|derives)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "support.type.property-name.dependency.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    },
+
+    "ofd-child-field-keys": {
+      "comment": "Fields within children array entries",
+      "patterns": [
+        {
+          "match": "(\")(path|description)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "support.type.property-name.child.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    },
+
+    "ofd-scripture-field-keys": {
+      "comment": "Fields within scripture entries and metadata",
+      "patterns": [
+        {
+          "match": "(\")(text|reference|translation|role|design)(\")(\\s*:)",
+          "captures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "support.type.property-name.detail.omnifold" },
+            "3": { "name": "punctuation.definition.string.end.json" },
+            "4": { "name": "punctuation.separator.dictionary.key-value.json" }
+          }
+        }
+      ]
+    }
+  }
+}

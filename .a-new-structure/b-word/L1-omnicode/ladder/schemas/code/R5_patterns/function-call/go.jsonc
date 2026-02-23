@@ -1,0 +1,39 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-function-call",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — Function Call",
+
+    "concept": "function_call",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "qualified_call",
+            "emit": "{package}.{Function}({args})",
+            "when": "calling an exported function from another package",
+            "notes": "Go uses dot (not ::) for package qualification. Function name PascalCase.",
+            "priority": 1
+        },
+        {
+            "id": "unqualified_call",
+            "emit": "{function}({args})",
+            "when": "calling a function in the current package",
+            "notes": "No package qualifier needed for same-package functions.",
+            "priority": 2
+        }
+    ],
+
+    "rust_to_go_mapping": {
+        "fs::metadata(path)": "os.Stat(path)",
+        "fs::create_dir_all(path)": "os.MkdirAll(path, 0755)",
+        "io::Error::new(kind, msg)": "fmt.Errorf(\"%s\", msg) or errors.New(msg)"
+    },
+
+    "_X5_note": "Go function calls — dot-qualified, PascalCase for exported functions."
+}

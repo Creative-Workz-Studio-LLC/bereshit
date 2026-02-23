@@ -1,0 +1,123 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-closing-cleanup",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section Cc: Cleanup — Go Content",
+    "_P5_brief": "Go-specific content rules for Cc (Cleanup). Resource deallocation via defer, Close/Shutdown methods, t.Cleanup() in tests. AVAILABLE in all forms. Extends the base structure at blocks/closing/cleanup.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/closing/cleanup.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "func (r *Receiver) Close() error { ... }",
+                "description": "Resource cleanup method — closes files, connections, channels owned by the type",
+                "patterns": [
+                    "// Close releases all resources held by the connection.\nfunc (c *Conn) Close() error {\n\tif c.closed {\n\t\treturn nil\n\t}\n\tc.closed = true\n\treturn c.conn.Close()\n}",
+                    "// Close flushes remaining data and closes the writer.\nfunc (w *Writer) Close() error {\n\tif err := w.Flush(); err != nil {\n\t\treturn fmt.Errorf(\"Writer.Close: flush: %w\", err)\n\t}\n\treturn w.file.Close()\n}"
+                ],
+                "visibility": "Exported — consumers call Close()"
+            },
+            {
+                "construct": "func (r *Receiver) Shutdown(ctx context.Context) error { ... }",
+                "description": "Graceful shutdown with context — allows in-flight operations to complete",
+                "patterns": [
+                    "// Shutdown gracefully shuts down the server, waiting for\n// in-flight requests to complete or the context to expire.\nfunc (s *Server) Shutdown(ctx context.Context) error {\n\ts.mu.Lock()\n\ts.shutting = true\n\ts.mu.Unlock()\n\treturn s.server.Shutdown(ctx)\n}"
+                ],
+                "visibility": "Exported"
+            },
+            {
+                "construct": "defer cleanup patterns",
+                "description": "Resource cleanup via defer — Go's primary cleanup mechanism",
+                "patterns": [
+                    "func process(path string) error {\n\tf, err := os.Open(path)\n\tif err != nil {\n\t\treturn err\n\t}\n\tdefer f.Close()\n\t// ... use f\n\treturn nil\n}"
+                ],
+                "visibility": "N/A — pattern, not specific function",
+                "note": "defer statements appear where the resource is acquired. This section documents the Close/Shutdown methods they call."
+            },
+            {
+                "construct": "t.Cleanup(func() { ... }) in tests",
+                "description": "Test-specific cleanup — runs after the test completes, even on failure",
+                "patterns": [
+                    "func TestWithTempDir(t *testing.T) {\n\tdir := t.TempDir() // auto-cleaned\n\t// or manual:\n\tdir, err := os.MkdirTemp(\"\", \"test-*\")\n\trequire.NoError(t, err)\n\tt.Cleanup(func() { os.RemoveAll(dir) })\n}"
+                ],
+                "visibility": "N/A — test infrastructure"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "business logic in Close/Shutdown",
+                "reason": "Close/Shutdown is for cleanup, not operations. Business logic belongs in BODY.",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "N/A — design judgment"
+            },
+            {
+                "construct": "panicking in Close",
+                "reason": "Close() may be called in defer chains. Panicking during cleanup can mask the original error.",
+                "defer_to": "N/A — return error instead",
+                "go_signal": "panic\\("
+            },
+            {
+                "construct": "os.Exit() in Close/Shutdown",
+                "reason": "os.Exit() skips deferred functions. Only main() should call os.Exit().",
+                "defer_to": "CLOSING.Execution (Ce)",
+                "go_signal": "os\\.Exit\\("
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "func\\s+\\(.*\\)\\s+(?!Close|Shutdown|Cleanup)[A-Z]\\w+\\(",
+                "to": "BODY.PublicAPIs or BODY.CoreOperations",
+                "confidence": "medium",
+                "why": "Exported non-cleanup method in Cc section"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// Cc -- Closing Cleanup (no resources requiring explicit Close)",
+            "empty_executable": "// Cc -- Closing Cleanup (no resources requiring explicit cleanup)",
+            "empty_demo_test": "// Cc -- Closing Cleanup\n//\n// Test fixture teardown — t.Cleanup() for per-test resources,\n// TestMain teardown for global resources.",
+            "comment_skeleton": "// Cc -- Closing Cleanup\n// func (r *Type) Close() error { ... }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Cc (Cleanup): Close, Shutdown, defer cleanup. Go's defer mechanism handles most cleanup automatically. Cc holds the methods that defer calls. Never panic in cleanup. Never os.Exit() in cleanup.",
+    "_X5_scripture": "Ecclesiastes 3:6 — A time to get, and a time to lose; a time to keep, and a time to cast away."
+}

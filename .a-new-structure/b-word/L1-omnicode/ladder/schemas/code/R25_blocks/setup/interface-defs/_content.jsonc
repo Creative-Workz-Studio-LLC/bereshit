@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-interface-defs",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.InterfaceDefs Content Character — What Interface Definition Content IS",
+    "_P5_brief": "Format-independent definition of interface definition content character. Interfaces declare behavioral contracts through method sets — what types CAN do, determined by what methods they have. Go-centric but universally applicable. Syntax varies (interface, trait, abstract); the implicit-satisfaction contract pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "interface-defs",
+        "block": "SETUP",
+        "position": 12,
+        "nature": "implicit-contract",
+
+        "description": "Interface definition content declares behavioral contracts that types satisfy implicitly. Unlike trait definitions (which require explicit implementation), interfaces are satisfied by any type that has the right methods — no declaration of intent needed. This is Go's interface philosophy: 'if it walks like a duck and quacks like a duck, it's a duck.' Interfaces should be small (1-3 methods), defined by the consumer, and composed when richer contracts are needed.",
+
+        "invariants": {
+            "description": "Properties true of ALL interface definition content, regardless of language.",
+
+            "behavioral": "Interfaces define behavior through method signatures. A type satisfies an interface by having methods with matching signatures, not by declaring intent.",
+            "small": "Good interfaces are small — one to three methods. Large interfaces are monoliths that force implementors to provide behavior they may not need.",
+            "consumer-defined": "Interfaces should be defined where they are USED, not where they are implemented. The consumer knows what behavior it needs; the implementor provides it.",
+            "composable": "Interfaces compose through embedding. A ReadWriter embeds Reader and Writer. Small interfaces combine into richer contracts without inheritance.",
+            "implicitly-satisfied": "No explicit 'implements' declaration is needed. If a type has the methods, it satisfies the interface. Verification happens at compile time through usage, not declaration."
+        },
+
+        "content_forms": {
+            "description": "What interface definition content looks like across languages. Syntax varies; the method-set contract pattern is invariant.",
+
+            "go": {
+                "syntax": "type Reader interface { Read(p []byte) (n int, err error) }  type ReadCloser interface { Reader; Closer }",
+                "grouping": "Single-method interfaces first, then composed interfaces. Defined near the code that uses them, not near the types that implement them.",
+                "notes": "Go interfaces are the canonical example of implicit satisfaction. The empty interface (any/interface{}) accepts all types. Interface embedding composes contracts. Accept interfaces, return structs is the Go idiom."
+            },
+
+            "rust": {
+                "syntax": "// Rust uses traits (see TraitDefs) rather than interfaces. Traits require explicit impl, not implicit satisfaction.",
+                "grouping": "N/A for Rust — behavioral contracts are expressed as traits with explicit implementation.",
+                "notes": "This section is primarily for Go. Rust achieves the same goal through TraitDefs with explicit impl blocks rather than implicit satisfaction. During transpilation, Go interfaces map to Rust traits but the satisfaction mechanism differs fundamentally."
+            },
+
+            "c": {
+                "syntax": "typedef struct { int (*read)(void *self, char *buf, int len); int (*close)(void *self); } ReadCloserVTable;",
+                "grouping": "VTable structs grouped by behavioral concern. Composed by embedding struct fields.",
+                "notes": "C approximates interfaces through VTable patterns — structs of function pointers. Satisfaction is manual — the caller fills in the function pointers. No compiler enforcement of interface contracts."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, interface definitions change satisfaction mechanism but preserve the behavioral contract. The same method signatures exist in every language — only whether satisfaction is implicit or explicit changes.",
+            "invariant": ["method signatures (required behavior)", "composition relationships (which interfaces embed which)", "consumer-side usage (where interfaces are used as parameter types)", "contract semantics (what behavior is promised)"],
+            "variable": ["satisfaction mechanism (implicit vs explicit vs manual vtable)", "syntax (interface vs trait vs vtable struct)", "definition placement conventions (consumer-side vs provider-side)", "empty interface semantics (any vs dyn Any vs void*)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "defer",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 1F 10D. −10/11 ≈ −0.91. method_call defers (interfaces define method contracts).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Interfaces are promises kept by behavior, not declaration. A type does not say 'I implement this' — it simply has the methods, and the compiler recognizes the fit. Faithfulness shown through action, not words.",
+    "_X5_scripture": "Micah 6:8 — He hath shewed thee, O man, what is good; and what doth the LORD require of thee, but to do justly, and to love mercy, and to walk humbly with thy God."
+}

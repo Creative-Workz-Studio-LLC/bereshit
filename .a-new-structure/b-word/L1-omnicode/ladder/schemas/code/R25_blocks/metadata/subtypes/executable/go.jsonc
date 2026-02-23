@@ -1,0 +1,64 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-subtypes-executable",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Subtypes -- Executable Form -- Go Content",
+    "_P5_brief": "Go-specific executable form. main.go entry point. package main with func main() -> run() -> error pattern. Thin orchestration -- delegates to library packages.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/subtypes/executable.jsonc",
+    "format": "go",
+
+    "sub_container": {
+        "tag": "executable",
+        "label": "Executable -- Entry Point Form (Go)",
+        "parent": "Subtypes",
+        "I2_subtype": "executable",
+
+        "file_pattern": "main.go",
+        "pragma_directive": "//omni:code --go -executable",
+        "template_directive": "// #!omni template --go -executable",
+        "package": "package main",
+        "has_public_api": false,
+
+        "purpose": "Binary -- orchestrates via main() -> run() -> error pattern",
+        "distinguisher": "The only Go form with func main(). Thin by design -- logic belongs in library packages, not main.go.",
+
+        "go_specifics": {
+            "entry_point": "func main() { if err := run(); err != nil { os.Exit(1) } }",
+            "pattern": "main() -> run() -> error -- separates entry from orchestration for testability",
+            "no_doc_comments": "Executable packages are not imported -- no doc comments needed",
+            "exports": "N/A -- package main is not importable"
+        },
+
+        "required_sections": {
+            "METADATA": ["Directives", "CommentBlock", "PragmaIdentity", "MetadataContext", "Subtypes"],
+            "SETUP": ["Imports"],
+            "BODY": ["CoreOperations", "Orchestration"],
+            "CLOSING": ["Execution"]
+        },
+
+        "scaffold": {
+            "executable_go": "//omni:code --go -executable\npackage main\n\n// ========================================\n// {title}\n// ========================================\n//\n// {brief}\n//\n\nimport (\n\t\"fmt\"\n\t\"os\"\n)\n\nfunc main() {\n\tif err := run(); err != nil {\n\t\tfmt.Fprintf(os.Stderr, \"error: %v\\n\", err)\n\t\tos.Exit(1)\n\t}\n}\n\nfunc run() error {\n\t// TODO: orchestration logic\n\treturn nil\n}"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Executable Go form -- the point of action. package main with main() -> run() -> error pattern. Thin orchestration layer. Logic belongs in library packages; main.go delegates.",
+    "_X5_scripture": "Nehemiah 2:18 -- Then I told them of the hand of my God which was good upon me... And they said, Let us rise up and build."
+}

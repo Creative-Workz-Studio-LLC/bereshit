@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-core-logic",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.CoreLogic Content Character — What Core Logic Content IS",
+    "_P5_brief": "Format-independent definition of core logic content character. Core logic is the primary algorithm — the computation this file exists to perform. Syntax varies (fn, func, function definitions); the transformational nature doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "core-logic",
+        "block": "BODY",
+        "position": 4,
+        "nature": "computation",
+
+        "description": "Core logic content is the reason the file exists. Constructors create instances. Queries observe them. Core logic TRANSFORMS them. This is where state changes, algorithms execute, decisions are made. If the file were a machine, core logic is the engine.",
+
+        "invariants": {
+            "description": "Properties true of ALL core logic content, regardless of language.",
+
+            "transformational": "Core logic changes state. It takes input and produces different output. Unlike queries (which observe) and constructors (which create), core logic mutates, computes, and decides.",
+            "purposeful": "Every core logic function serves the module's primary mission. If a function doesn't contribute to the file's reason for existing, it belongs in Helpers or FreeFunctions.",
+            "type-attached": "Core logic methods operate on types defined in SETUP. They take self/receiver parameters. Standalone transformations belong in FreeFunctions.",
+            "testable": "Every core logic operation has observable effects that can be verified. State changes produce query-visible results. Computations return values. Decisions branch predictably.",
+            "bounded": "Core logic operates within the constraints set by SETUP types and error types. It cannot introduce new types or new error categories — only exercise the ones declared."
+        },
+
+        "content_forms": {
+            "description": "What core logic content looks like across languages. Transformational computation is invariant; the syntax of methods and mutation varies.",
+
+            "rust": {
+                "syntax": "pub fn process(&mut self, input: Input) -> Result<Output, Error> { self.state = transform(input); Ok(self.derive_output()) }",
+                "grouping": "Primary operations first (the main verbs), then state transitions, then scoped private helpers serving a single operation",
+                "notes": "Rust core logic uses &mut self for mutation, &self for computed derivations. Ownership semantics make mutation explicit. Method chains are common. Error propagation via ? operator."
+            },
+
+            "go": {
+                "syntax": "func (t *MyType) Process(input Input) (Output, error) { t.state = transform(input); return t.deriveOutput(), nil }",
+                "grouping": "Primary operations first, then state transitions, then small private helpers",
+                "notes": "Go core logic uses pointer receivers (*MyType) for mutation. Error returns are idiomatic. Method grouping by logical operation, not by visibility."
+            },
+
+            "c": {
+                "syntax": "int my_type_process(MyType* self, const Input* input, Output* out) { self->state = transform(input); *out = derive_output(self); return 0; }",
+                "grouping": "Primary operations first, then state transitions, then internal helpers (static functions)",
+                "notes": "C core logic passes self as first parameter explicitly. Output via pointer parameter or return value. Error codes returned as int. Static functions for file-private helpers."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, core logic content preserves the algorithm and state transformations. The same computations occur on the same data with the same results — only the syntax of mutation and method dispatch changes.",
+            "invariant": ["algorithm logic (the actual computation steps)", "state transitions (what changes and to what)", "operation signatures (inputs required, outputs produced)", "error conditions (what can fail and when)"],
+            "variable": ["mutation syntax (&mut self vs *receiver vs explicit pointer)", "error propagation (? operator vs if err != nil vs return codes)", "method dispatch (static vs vtable vs function pointer)", "ownership semantics (Rust borrow checker vs GC vs manual)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — core logic hosts any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Core logic is the engine room. Everything else in the file exists to support it — SETUP declares what the engine needs, Constructors build it, Queries inspect it, Tests verify it. Core logic is what the file DOES. If this section is empty, the file has no purpose.",
+    "_X5_scripture": "Ecclesiastes 9:10 — Whatsoever thy hand findeth to do, do it with thy might; for there is no work, nor device, nor knowledge, nor wisdom, in the grave, whither thou goest."
+}

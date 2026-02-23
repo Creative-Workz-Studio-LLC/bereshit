@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-metadata-pragma-identity",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "METADATA.PragmaIdentity Content Character — What Pragma Identity Content IS",
+    "_P5_brief": "Format-independent definition of pragma identity content character. Pragma identity is the file's structured WHO — four I-sections (I1 Core, I2 Family, I3 Instance, I4 Architecture) carried as compile-time static data. The representation varies by language; the identity contract is universal.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "pragma-identity",
+        "block": "METADATA",
+        "position": 4,
+        "nature": "structured-identity",
+
+        "description": "Pragma identity content is the file's self-knowledge made concrete in code. It is a language-level data structure — a static slice, a package variable, a const array — carrying the I-sections that answer WHO this file is. I1 (Core) gives the universal identifier. I2 (Family) gives the classification. I3 (Instance) gives the file-specific details. I4 (Architecture) gives the structural context. Together they form the file's complete identity, queryable at runtime and verifiable at compile time.",
+
+        "invariants": {
+            "description": "Properties true of ALL pragma identity content, regardless of language.",
+
+            "compile_time_static": "Pragma identity is initialized at compile time or package load. It never changes during execution. The identity is baked into the binary — not loaded from config, not computed at runtime, not mutable.",
+            "key_value_pairs": "Regardless of language, pragma identity content is a collection of key-value pairs where keys follow the I{N}.{field} naming convention. I1.key, I2.type, I3.file — the dotted notation is the universal addressing scheme.",
+            "four_section_hierarchy": "Identity content is organized into exactly four sections: I1 (universal identity), I2 (type classification), I3 (file-specific instance), I4 (architectural position). This hierarchy flows from most universal to most specific.",
+            "self_referential": "The pragma identity describes the file it lives in. I3.file matches the actual filename. I3.path matches the actual path. I1.key matches the project graph address. If any of these diverge from reality, the identity is broken.",
+            "documented_with_section_table": "The static data structure is preceded by a doc comment that includes a table of sections, their purpose, and which fields are required vs defined. This documentation IS the identity schema — not separate from the data."
+        },
+
+        "content_forms": {
+            "description": "What pragma identity content looks like across languages. The data structure varies; the identity fields and their semantics are invariant.",
+
+            "rust": {
+                "syntax": "pub static PRAGMA: &[(&str, &str)] = &[\\n    (\"I1.key\", \"B-...\"),\\n    (\"I1.format\", \"rust\"),\\n    (\"I2.type\", \"code\"),\\n    ...\\n];",
+                "grouping": "Static slice of string tuples, grouped by I-section with // I1: Core, // I2: Family comment headers. Preceded by /// doc comment with section table.",
+                "notes": "Rust uses pub static with &[(&str, &str)] — a borrowed slice of borrowed string pairs. Zero-cost at runtime (no allocation). The static is public so other crates can inspect identity. Accessor functions pragma() and pragma_get() are defined in BODY."
+            },
+
+            "go": {
+                "syntax": "var Pragma = [][2]string{\\n    {\"I1.key\", \"B-...\"},\\n    {\"I1.format\", \"go\"},\\n    {\"I2.type\", \"code\"},\\n    ...\\n}",
+                "grouping": "Package-level var of [][2]string (slice of 2-element string arrays), grouped by I-section with // I1: Core comment headers. Preceded by // doc comment with section table.",
+                "notes": "Go uses var (not const, since slices cannot be const) with [][2]string. Exported (capital P) so other packages can inspect. Initialized at package load time. PragmaGet() accessor defined in BODY."
+            },
+
+            "c": {
+                "syntax": "C does not have native pragma identity statics in the same form. Identity is carried in the comment block (@omni:req key = B-...) and optionally as preprocessor defines (#define PRAGMA_KEY \"B-...\") or const char* arrays.",
+                "grouping": "When using arrays: static const char* pragma[][2] grouped by section. When using defines: #define PRAGMA_I1_KEY \"B-...\" grouped by section. Most commonly, identity stays in Doxygen @omni comments.",
+                "notes": "C lacks Rust/Go's rich static initialization. The comment block (@omni tags) IS the primary identity carrier. Structured access requires either preprocessor defines or a const array — both less ergonomic than Rust/Go. The PRAGMA concept maps to the @omni comment block in practice."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, pragma identity content preserves all identity values and their hierarchical structure but adapts the data carrier to the target language's static data idioms.",
+            "invariant": ["identity values (all I1-I4 field values)", "four-section hierarchy (I1 -> I2 -> I3 -> I4)", "key naming convention (I{N}.{field})", "compile-time/load-time initialization", "public visibility for cross-module inspection"],
+            "variable": ["data structure (static slice vs var slice vs #define vs const array)", "type system ((&str, &str) vs [2]string vs char*[])", "accessor pattern (function vs method vs macro)", "documentation syntax (/// vs // vs /** */)", "mutability semantics (Rust: immutable by default, Go: var is mutable, C: const qualifier)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "defer",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 10D + 1F. variable_binding defers (pragma fields are bound values). −10/11 ≈ −0.91.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Pragma identity is the file's answer to the deepest question: WHO are you? Four layers of identity, from the universal (I1 — your address in the graph) to the specific (I4 — your place in the architecture). When a file knows who it is, every decision that follows has a foundation. Identity precedes action.",
+    "_X5_scripture": "Exodus 3:14 — And God said unto Moses, I AM THAT I AM. Identity is the foundation of all action."
+}

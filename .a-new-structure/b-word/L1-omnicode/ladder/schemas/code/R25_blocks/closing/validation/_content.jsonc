@@ -1,0 +1,94 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-closing-validation",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "CLOSING.Validation Content Character — What Validation Content IS",
+    "_P5_brief": "Format-independent definition of validation content character. Validation is proof — tests, assertions, and property checks that verify BODY logic is correct. Syntax varies (#[cfg(test)], func Test*, test functions); the proof obligation doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "validation",
+        "block": "CLOSING",
+        "position": 1,
+        "nature": "proof",
+
+        "description": "Validation content is the accountability mechanism. BODY makes claims — Cv proves them. Every function tested, every edge case covered, every assertion a binary truth: the code does what it says, or it doesn't. Validation content is executable, but its purpose is verification, not production logic.",
+
+        "invariants": {
+            "description": "Properties true of ALL validation content, regardless of language.",
+
+            "executable": "Validation content runs. Tests are code that exercises other code — they compile, they execute, they produce pass/fail verdicts.",
+            "isolated": "Each test is independent. No test depends on another test's output or side effects. Order-dependent tests are fragile lies.",
+            "grouped_by_subject": "Tests are organized by the BODY section they validate. Coverage mirrors structure — missing group means missing proof.",
+            "assertion_based": "Tests make concrete claims. assert_eq, assertEqual, assert — binary truth statements that fail fast on incorrect behavior.",
+            "deterministic": "Same code, same tests, same results. Flaky tests undermine the entire proof system.",
+            "separate_from_production": "Test code validates production code but never ships with it. Conditional compilation or test frameworks enforce this boundary."
+        },
+
+        "content_forms": {
+            "description": "What validation content looks like across languages. Test frameworks vary; the proof obligation is invariant.",
+
+            "rust": {
+                "syntax": "#[cfg(test)] mod tests { use super::*; #[test] fn test_name() { assert_eq!(actual, expected); } }",
+                "grouping": "cfg(test) module at file bottom. Inner use super::* imports. Tests grouped by subject. Property tests via proptest crate.",
+                "notes": "Rust's cfg(test) is compile-time conditional — test code is stripped from release builds. #[should_panic] for expected failures. #[ignore] for slow tests."
+            },
+
+            "go": {
+                "syntax": "func TestFunctionName(t *testing.T) { if got := Function(); got != expected { t.Errorf(\"got %v, want %v\", got, expected) } }",
+                "grouping": "Test functions in same file (or _test.go). Table-driven tests with test cases slice. Subtests via t.Run(). Helpers with t.Helper().",
+                "notes": "Go test functions must start with Test and take *testing.T. Benchmarks start with Benchmark and take *testing.B. Examples start with Example."
+            },
+
+            "c": {
+                "syntax": "static void test_function_name(void) { assert(actual == expected); } /* or custom: TEST_ASSERT_EQUAL(expected, actual); */",
+                "grouping": "Static test functions grouped by subject. Test runner function calls each test. Often wrapped in #ifdef TEST or similar preprocessor guard.",
+                "notes": "C has no built-in test framework. Common patterns: static test functions with assert(), custom test macros, or frameworks like Unity/CMocka. Preprocessor guards separate test code."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, validation content changes test framework syntax but preserves the proof graph. What is tested and what is asserted stays constant — how you express tests changes.",
+            "invariant": ["proof graph (which functions are tested)", "assertion semantics (what claims are made)", "coverage structure (which BODY sections have tests)", "test isolation (each test independent)"],
+            "variable": ["test framework syntax (#[test] vs func Test* vs static void test_*)", "assertion mechanism (assert_eq! vs t.Errorf vs assert())", "conditional compilation (#[cfg(test)] vs _test.go vs #ifdef TEST)", "test runner invocation"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — validation tests use any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Validation content is where code earns trust. BODY claims to work. Cv proves it — or exposes the lie. Every assertion is a covenant: this function promises this behavior, and the test holds it accountable.",
+    "_X5_scripture": "1 Thessalonians 5:21 — Prove all things; hold fast that which is good."
+}

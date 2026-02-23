@@ -1,0 +1,118 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-concepts-ok-wrap",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "concept-definition",
+    "_P2_role": "schema",
+    "_P5_title": "Concept — Ok Wrap (Success Result)",
+    "_P5_brief": "Universal concept: wrapping a value in a success result type. Rust Ok(val), Go (val, nil), C return 0.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "concept": "ok_wrap",
+    "description": "Wrap a value as a successful result",
+
+    "universal_shape": {
+        "expr": "the success value to wrap (may be unit/void)",
+        "void": "whether wrapping the unit/void value (Ok(()), nil with no value)"
+    },
+
+    "semantic_notes": [
+        "Rust: Ok(expr) — wraps in Result::Ok variant. Ok(()) for void success.",
+        "Go: return expr, nil — success value paired with nil error. return nil for void.",
+        "C: return 0 or return SUCCESS — convention-based, no type wrapper.",
+        "Often appears at the end of functions that return Result/error."
+    ],
+
+    "container_map": {
+        "_note": "granted (+1) = belongs here. denied (-1) = does not belong. defer (0) = context-dependent.",
+
+        "METADATA": {
+            "directives": "denied",
+            "doc-comments": "denied",
+            "comment-block": "denied",
+            "pragma-identity": "denied",
+            "metadata-context": "denied",
+            "subtypes": "denied"
+        },
+
+        "SETUP": {
+            "imports": "denied",
+            "modules": "denied",
+            "constants": "denied",
+            "statics": "denied",
+            "type-aliases": "denied",
+            "error-types": "denied",
+            "core-types": "denied",
+            "trait-defs": "denied",
+            "macros": "defer",
+            "feature-gates": "denied",
+            "build-tags": "denied",
+            "code-generation": "denied",
+            "interface-defs": "denied",
+            "type-methods": "denied",
+            "variables": "denied"
+        },
+
+        "BODY": {
+            "identity-access": "granted",
+            "trait-implementations": "granted",
+            "constructors": "granted",
+            "core-logic": "granted",
+            "core-operations": "granted",
+            "queries": "granted",
+            "output-display": "granted",
+            "free-functions": "granted",
+            "helpers": "granted",
+            "org-chart": "denied",
+            "public-apis": "granted",
+            "error-handling": "granted",
+            "tests": "granted"
+        },
+
+        "CLOSING": {
+            "validation": "granted",
+            "execution": "granted",
+            "cleanup": "granted",
+            "modification-policy": "denied",
+            "extension-points": "denied",
+            "troubleshooting": "denied",
+            "reference": "denied",
+            "closing-note": "denied"
+        }
+    },
+
+    "concept_relations": {
+        "_note": "granted = high co-occurrence. denied = anti-correlation. defer = context-dependent. Asymmetric.",
+
+        "return_value": "granted",
+        "function_call": "defer",
+        "method_call": "defer",
+        "variable_binding": "defer",
+        "self_access": "defer",
+        "conditional_if": "defer",
+        "conditional_match": "defer",
+        "error_propagation": "defer",
+        "err_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.79,
+    "_weight_rationale": "4-block derived: (B − avg(M,S,C)) / 2. B=11/13, M=−6/6, S=−14/15, C=−2/8. Only macros defer in SETUP.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The happy path expressed. When things go right.",
+    "_X5_scripture": "Romans 8:28 — All things work together for good. Ok(()) — it worked."
+}

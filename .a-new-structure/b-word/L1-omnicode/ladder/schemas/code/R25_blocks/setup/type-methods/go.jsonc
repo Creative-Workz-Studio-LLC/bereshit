@@ -1,0 +1,141 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-setup-type-methods",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 8: Type Methods -- Go Content",
+    "_P5_brief": "Go-specific content rules for Type Methods. Structural completers: Error(), String(), MarshalJSON(), UnmarshalJSON(), Unwrap(). Methods that complete a type's identity -- removing them makes the type incomplete. Business logic methods belong in BODY.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/trait-defs.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "func (t Type) String() string",
+                "description": "fmt.Stringer implementation -- human-readable representation",
+                "patterns": [
+                    "func (f Format) String() string {\n\tswitch f {\n\tcase FormatTOML:\n\t\treturn \"toml\"\n\tcase FormatJSON:\n\t\treturn \"json\"\n\tdefault:\n\t\treturn \"unknown\"\n\t}\n}",
+                    "func (s Status) String() string {\n\treturn [...]string{\"pending\", \"active\", \"complete\"}[s]\n}"
+                ],
+                "visibility": "Exported -- implements fmt.Stringer",
+                "note": "Completes iota enums and types that need human-readable display. The type is incomplete without it -- a LogLevel without String() is just an int."
+            },
+            {
+                "construct": "func (t Type) MarshalJSON() ([]byte, error)",
+                "description": "json.Marshaler implementation -- custom JSON serialization",
+                "patterns": [
+                    "func (f Format) MarshalJSON() ([]byte, error) {\n\treturn json.Marshal(f.String())\n}"
+                ],
+                "visibility": "Exported -- implements json.Marshaler",
+                "note": "Only when the default JSON representation is wrong. If struct tags suffice, do not implement MarshalJSON."
+            },
+            {
+                "construct": "func (t *Type) UnmarshalJSON(data []byte) error",
+                "description": "json.Unmarshaler implementation -- custom JSON deserialization",
+                "patterns": [
+                    "func (f *Format) UnmarshalJSON(data []byte) error {\n\tvar s string\n\tif err := json.Unmarshal(data, &s); err != nil {\n\t\treturn err\n\t}\n\tswitch s {\n\tcase \"toml\":\n\t\t*f = FormatTOML\n\tdefault:\n\t\treturn fmt.Errorf(\"unknown format: %s\", s)\n\t}\n\treturn nil\n}"
+                ],
+                "visibility": "Exported -- implements json.Unmarshaler"
+            },
+            {
+                "construct": "func (t Type) GoString() string",
+                "description": "fmt.GoStringer implementation -- Go-syntax representation for %#v",
+                "patterns": [
+                    "func (c Config) GoString() string {\n\treturn fmt.Sprintf(\"Config{Path: %q}\", c.Path)\n}"
+                ],
+                "visibility": "Exported -- implements fmt.GoStringer",
+                "note": "Useful for debugging. Only when the default %#v output is unhelpful."
+            },
+            {
+                "construct": "interface satisfaction compile-time checks",
+                "description": "Compile-time assertions that types satisfy interfaces",
+                "patterns": [
+                    "var _ fmt.Stringer = (*Format)(nil)",
+                    "var _ json.Marshaler = (*Format)(nil)",
+                    "var _ error = (*ConfigError)(nil)"
+                ],
+                "visibility": "N/A -- compile-time assertion, not runtime code",
+                "note": "Place near the type methods they verify. These catch missing method implementations at compile time, not runtime."
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "business logic methods (Process, Execute, Handle, Run)",
+                "reason": "Methods that add CAPABILITY belong in BODY. TypeMethods are structural COMPLETERS -- removing them makes the type incomplete, not less capable.",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "func\\s+\\(\\w+\\s+\\*?\\w+\\)\\s+(Process|Execute|Handle|Run|Do|Serve|Start|Stop)\\("
+            },
+            {
+                "construct": "getter/setter methods",
+                "reason": "Go avoids getter/setter patterns. Access exported fields directly. If encapsulation is needed, use methods in BODY.",
+                "defer_to": "BODY.CoreOperations or N/A -- export the field",
+                "go_signal": "func\\s+\\(\\w+\\s+\\*?\\w+\\)\\s+(Get|Set)\\w+\\("
+            },
+            {
+                "construct": "methods with side effects (I/O, network, database)",
+                "reason": "Side-effectful methods are business logic, not type completion",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "os\\.|net\\.|http\\.|sql\\.|io\\."
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "func\\s+\\(\\w+\\s+\\*?\\w+\\)\\s+(Process|Execute|Handle|Run|Do|Serve)\\(",
+                "to": "BODY.CoreOperations",
+                "confidence": "high",
+                "why": "Business logic method -- adds capability, does not complete the type"
+            },
+            {
+                "pattern": "func\\s+\\(\\w+\\s+\\*?\\w+\\)\\s+(Get|Set)\\w+\\(",
+                "to": "BODY.CoreOperations or N/A",
+                "confidence": "medium",
+                "why": "Getter/setter -- Go prefers direct field access for exported fields"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// No structural type methods needed.",
+            "empty_executable": "// No structural type methods needed.",
+            "comment_skeleton": "// func (t Type) String() string { return \"...\" }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Type Methods: structural completers. Error(), String(), MarshalJSON(), Unwrap() -- methods that complete a type's identity. The test: if removing the method makes the type INCOMPLETE (not just less capable), it belongs here. If it adds CAPABILITY, it belongs in BODY.",
+    "_X5_scripture": "Ecclesiastes 3:11 -- He hath made every thing beautiful in his time."
+}

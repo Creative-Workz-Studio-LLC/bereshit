@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-macros",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.Macros Content Character — What Macro Content IS",
+    "_P5_brief": "Format-independent definition of macro content character. Macros are code that generates code — reusable compile-time patterns that expand into concrete implementations. Syntax varies (macro_rules!, #define, //go:generate); the code-generating-code pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "macros",
+        "block": "SETUP",
+        "position": 9,
+        "nature": "meta-code",
+
+        "description": "Macro content is code that writes code. It captures repeated patterns and encodes them as reusable compile-time expansions. Macros operate at a higher level than functions — they manipulate syntax, not values. This power comes with responsibility: macros are harder to debug, harder to read, and harder to maintain than regular code. A macro must justify its existence by eliminating genuine, repeated boilerplate that functions cannot abstract.",
+
+        "invariants": {
+            "description": "Properties true of ALL macro content, regardless of language.",
+
+            "generative": "Macros produce code. Their output is more code that gets compiled normally. The macro itself is not the final product — its expansion is.",
+            "compile-time": "Macro expansion happens before runtime. The generated code exists in the compiled binary as if it were handwritten.",
+            "pattern-capturing": "Each macro encodes a repeating pattern. The same structural shape appears in multiple places; the macro captures that shape and parameterizes the variable parts.",
+            "multiply-justified": "A macro used once is obfuscation. Macros must be used multiple times to justify the indirection cost. If used once, inline the code.",
+            "non-runtime": "No macro executes at runtime. Macros expand to code that executes, but the macro mechanism itself is purely compile-time."
+        },
+
+        "content_forms": {
+            "description": "What macro content looks like across languages. Syntax varies dramatically; the code-generating-code pattern is invariant.",
+
+            "rust": {
+                "syntax": "macro_rules! impl_display { ($t:ty, $fmt:expr) => { impl fmt::Display for $t { fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, $fmt, self) } } } }",
+                "grouping": "Declarative macros (macro_rules!) first, then procedural macro invocations. Grouped by the pattern they capture.",
+                "notes": "Rust has two macro systems: declarative (macro_rules! — pattern matching on syntax) and procedural (derive macros, attribute macros — full Rust code generating code). Declarative macros are defined in-file; procedural macros require a separate proc-macro crate."
+            },
+
+            "go": {
+                "syntax": "//go:generate stringer -type=State  //go:generate mockgen -source=interface.go -destination=mock_test.go",
+                "grouping": "go:generate directives grouped by tool. Code generation is external-tool-driven, not language-native.",
+                "notes": "Go has no native macro system. //go:generate directives invoke external tools at build time. The generated code is committed alongside source. This is fundamentally different from Rust macros — external tooling vs language-native metaprogramming."
+            },
+
+            "c": {
+                "syntax": "#define MAX(a, b) ((a) > (b) ? (a) : (b))  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))  #define LOG(fmt, ...) fprintf(stderr, fmt \"\\n\", ##__VA_ARGS__)",
+                "grouping": "Utility macros first (MAX, MIN, ARRAY_SIZE), then domain-specific macros, then variadic macros. Grouped by purpose.",
+                "notes": "C preprocessor macros are textual substitution — powerful but dangerous. Parenthesization is critical to prevent operator precedence bugs. No type safety, no hygiene. X-macros for repetitive enum/string patterns. Inline functions preferred when possible."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, macros are the hardest section to translate because the meta-programming mechanisms differ fundamentally. The PATTERN each macro captures is invariant; the mechanism for capturing it is completely variable.",
+            "invariant": ["pattern captured (what repeated shape the macro encodes)", "expansion sites (where the macro is used)", "parameters (what varies across uses)", "generated output shape (what the expansion looks like)"],
+            "variable": ["mechanism (language-native vs preprocessor vs external tool)", "syntax (macro_rules! vs #define vs //go:generate)", "hygiene (Rust macros are hygienic; C macros are not)", "type safety during expansion", "debugging visibility (can you see the expansion?)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "defer",
+        "method_call": "defer",
+        "self_access": "denied",
+        "variable_binding": "defer",
+        "conditional_if": "defer",
+        "conditional_match": "defer",
+        "return_value": "defer",
+        "error_propagation": "defer",
+        "err_wrap": "defer",
+        "ok_wrap": "defer",
+        "string_format": "defer"
+    },
+
+    "detection_weight": 0.09,
+    "_weight_rationale": "|avg| of concept_map: 10F 1D. −1/11 ≈ −0.09. Nearly maximally ambiguous — macros can generate any pattern. self_access denied (macros don't access self).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Macros are patterns made reusable at the syntax level. Powerful but costly — each macro adds indirection that future readers must penetrate. Use only when the pattern truly repeats and functions cannot capture it.",
+    "_X5_scripture": "Ecclesiastes 3:1 — To every thing there is a season, and a time to every purpose under the heaven."
+}

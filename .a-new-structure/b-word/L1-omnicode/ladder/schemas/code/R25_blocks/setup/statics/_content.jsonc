@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-statics",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.Statics Content Character — What Static Content IS",
+    "_P5_brief": "Format-independent definition of static content character. Statics are runtime-initialized but lifetime-fixed values — born at first access, then immutable for the duration of the program. Syntax varies (lazy_static, sync.Once, static); the initialize-once-read-forever pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "statics",
+        "block": "SETUP",
+        "position": 4,
+        "nature": "runtime-initialized-fixed",
+
+        "description": "Static content bridges compile time and runtime. Values declared here cannot be known at compile time — they require runtime computation (regex compilation, environment reading, complex initialization) — but once initialized, they are fixed for program lifetime. Statics are the 'initialized once, read forever' pattern. They live longer than any function scope but shorter than constants in the dependency chain.",
+
+        "invariants": {
+            "description": "Properties true of ALL static content, regardless of language.",
+
+            "runtime-initialized": "Static values require runtime computation to produce. If the value could be known at compile time, it should be a constant, not a static.",
+            "lifetime-fixed": "Once initialized, statics do not change. They are effectively immutable after their one-time setup completes.",
+            "lazily-evaluated": "Statics are typically initialized on first access, not at program start. Lazy initialization avoids paying startup costs for values that may never be used.",
+            "thread-safe": "Because statics are shared across the program, their initialization must be safe for concurrent access. Every language solves this differently but the requirement is universal.",
+            "singleton": "Each static value exists exactly once in the program. There is one compiled regex, one logger instance, one configuration snapshot."
+        },
+
+        "content_forms": {
+            "description": "What static content looks like across languages. Syntax varies; the initialize-once-read-forever pattern is invariant.",
+
+            "rust": {
+                "syntax": "static INSTANCE: LazyLock<Config> = LazyLock::new(|| Config::load()); static PATTERN: LazyLock<Regex> = LazyLock::new(|| Regex::new(r\"...\").unwrap());",
+                "grouping": "LazyLock/OnceLock for safe lazy initialization. Grouped by concern (configuration statics, compiled patterns, caches).",
+                "notes": "Rust requires explicit thread-safety via LazyLock, OnceLock, or once_cell. static mut is unsafe and belongs in Variables, not Statics. The LazyLock pattern is the idiomatic choice for read-only statics."
+            },
+
+            "go": {
+                "syntax": "var ( once sync.Once; instance *Config ) func getInstance() *Config { once.Do(func() { instance = loadConfig() }); return instance }",
+                "grouping": "sync.Once pattern for singletons. Package-level var + init() for simpler cases. Grouped by initialization dependency.",
+                "notes": "Go uses sync.Once or init() functions for static initialization. The var keyword is used, but the value is semantically static — set once in init() or sync.Once, never modified after."
+            },
+
+            "c": {
+                "syntax": "static regex_t *compiled_pattern = NULL; void init_patterns(void) { compiled_pattern = compile_regex(\"...\"); }",
+                "grouping": "static keyword for file-scoped statics. Initialization in explicit init functions called once.",
+                "notes": "C has no lazy initialization primitive. static file-scope variables plus explicit init functions approximate the pattern. Thread safety requires pthread_once or manual synchronization."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, statics change their initialization mechanism but preserve the initialize-once-read-forever semantic. The lazy singleton pattern is universal; the syntax for expressing it is not.",
+            "invariant": ["initialization semantics (compute once, read forever)", "thread-safety requirement", "singleton guarantee (exactly one instance)", "values produced (what gets initialized)"],
+            "variable": ["initialization mechanism (LazyLock vs sync.Once vs pthread_once)", "syntax (static vs var vs file-scope static)", "thread-safety approach (type system vs runtime sync vs manual)", "lazy vs eager initialization choice"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "defer",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "granted",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "defer"
+    },
+
+    "detection_weight": 0.64,
+    "_weight_rationale": "|avg| of concept_map: 1G 2F 8D. (1−8)/11 = −7/11 ≈ −0.64. variable_binding granted (statics ARE bindings). function_call and string_format defer.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Statics are the anchors of runtime — values too complex for compile time but too stable for mutability. Born once, they hold steady for the life of the program. The anchor that stabilizes what runs.",
+    "_X5_scripture": "Hebrews 6:19 — Which hope we have as an anchor of the soul, both sure and stedfast."
+}

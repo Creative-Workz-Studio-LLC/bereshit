@@ -1,0 +1,49 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-method-call",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — Method Call",
+
+    "concept": "method_call",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "method_call",
+            "emit": "{receiver}.{Method}({args})",
+            "when": "calling a method on a value or pointer",
+            "notes": "Go method calls: dot syntax. Exported methods PascalCase.",
+            "priority": 1
+        },
+        {
+            "id": "method_chain",
+            "emit": "{receiver}.{Method1}({args1}).{Method2}({args2})",
+            "when": "chained method calls",
+            "notes": "Go supports chaining but it's less common than Rust's builder pattern.",
+            "priority": 2
+        },
+        {
+            "id": "field_access",
+            "emit": "{receiver}.{Field}",
+            "when": "accessing a struct field (no parens)",
+            "notes": "Exported fields are PascalCase, unexported are camelCase.",
+            "priority": 3
+        }
+    ],
+
+    "rust_to_go_methods": {
+        "path.exists()": "exists(path) — Go doesn't have Path.Exists(); use helper or os.Stat",
+        "path.is_dir()": "info.IsDir() — after os.Stat, check FileInfo",
+        "path.is_file()": "info.Mode().IsRegular() — after os.Stat",
+        "path.display()": "path — Go strings are directly printable, no .display() needed",
+        "e.kind()": "errors.Is(err, target) or err type assertion",
+        "meta.is_dir()": "meta.IsDir() — os.FileInfo method"
+    },
+
+    "_X5_note": "Go methods — PascalCase for exported, receiver is explicit in definition but implicit in call."
+}

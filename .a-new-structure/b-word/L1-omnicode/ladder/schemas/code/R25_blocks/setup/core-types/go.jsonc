@@ -1,0 +1,158 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-setup-core-types",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 6: Core Types -- Go Content",
+    "_P5_brief": "Go-specific content rules for Core Types. Struct definitions with simple New*() constructors. The nouns of the codebase. Export only what consumers need, keep types flat. Extends the base structure at blocks/setup/core-types.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/core-types.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "type Name struct { fields... }",
+                "description": "Primary data structures with domain-specific fields",
+                "patterns": [
+                    "type Config struct {\n\tPath   string\n\tValues map[string]any\n}",
+                    "type internalState struct {\n\tbuffer   []byte\n\tposition int\n}"
+                ],
+                "visibility": "Exported (capitalized) for package API types, unexported (lowercase) for internal types"
+            },
+            {
+                "construct": "struct tags",
+                "description": "Field tags for serialization, validation, database mapping",
+                "patterns": [
+                    "type Config struct {\n\tPath   string `json:\"path\" toml:\"path\"`\n\tDebug  bool   `json:\"debug,omitempty\"`\n}",
+                    "type User struct {\n\tID   int64  `db:\"id\"`\n\tName string `db:\"name\" json:\"name\"`\n}"
+                ],
+                "visibility": "N/A -- tags are metadata on fields",
+                "note": "Tags follow the field on the same line. json, toml, yaml for serialization. db for database. validate for validation. Keep tags readable -- if more than 3, consider a wrapper type."
+            },
+            {
+                "construct": "func NewName(params) *Name",
+                "description": "SIMPLE constructors only -- assigns fields, no validation, no logic",
+                "patterns": [
+                    "func NewConfig(path string) *Config {\n\treturn &Config{\n\t\tPath:   path,\n\t\tValues: make(map[string]any),\n\t}\n}"
+                ],
+                "visibility": "Exported for public types, unexported for internal",
+                "note": "Field assignment only. Any validation, fallible creation, or options pattern goes to BODY. The test: if removing the constructor would leave fields uninitialized in a dangerous way, it belongs here. If it contains if/switch/for, it belongs in BODY."
+            },
+            {
+                "construct": "embedded types (composition)",
+                "description": "Go composition via struct embedding -- promoted fields and methods",
+                "patterns": [
+                    "type Server struct {\n\thttp.Server\n\tlogger *Logger\n}",
+                    "type Config struct {\n\tBaseConfig\n\tExtra map[string]string\n}"
+                ],
+                "visibility": "varies",
+                "note": "Embedding promotes the embedded type's exported methods. Use when you want IS-A composition, not when you want HAS-A (use a named field instead)."
+            },
+            {
+                "construct": "// doc comments on every exported type and field",
+                "description": "What the type represents, field purposes, lifecycle expectations",
+                "patterns": [
+                    "// Config holds application configuration loaded from TOML.\n//\n// Fields:\n//   - Path: source file location\n//   - Values: parsed key-value pairs"
+                ],
+                "visibility": "N/A -- doc comments, not code"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "complex constructors (validation, options pattern)",
+                "reason": "Constructors with validation, functional options, or builder patterns belong in BODY",
+                "defer_to": "BODY.CoreOperations or BODY.PublicAPIs",
+                "go_signal": "func\\s+New\\w+.*error|func\\s+With\\w+.*Option"
+            },
+            {
+                "construct": "business logic methods",
+                "reason": "Methods that operate on instances belong in BODY. SETUP declares WHAT exists; BODY defines WHAT happens.",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "func\\s+\\(\\w+\\s+\\*?\\w+\\)\\s+(?!New|Error|String|MarshalJSON|UnmarshalJSON|Unwrap)"
+            },
+            {
+                "construct": "interface definitions",
+                "reason": "Behavioral contracts belong in S7 InterfaceDefs",
+                "defer_to": "SETUP.InterfaceDefs",
+                "go_signal": "^type\\s+\\w+\\s+interface\\s*\\{"
+            },
+            {
+                "construct": "error types",
+                "reason": "Error types have their own dedicated section S5",
+                "defer_to": "SETUP.ErrorTypes",
+                "go_signal": "^type\\s+\\w*Error\\w*\\s+struct|func.*Error\\(\\)\\s+string"
+            },
+            {
+                "construct": "deeply nested types",
+                "reason": "Deeply nested types are a sign of missing abstractions. Keep types flat -- extract nested concepts into their own types.",
+                "defer_to": "N/A -- extract into separate types",
+                "go_signal": "N/A -- design judgment"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "func\\s+New\\w+.*error",
+                "to": "BODY.CoreOperations or BODY.PublicAPIs",
+                "confidence": "high",
+                "why": "Fallible constructor -- returns error, belongs in BODY"
+            },
+            {
+                "pattern": "func\\s+\\(\\w+\\s+\\*?\\w+\\)\\s+\\w+\\(",
+                "to": "BODY.CoreOperations or SETUP.TypeMethods",
+                "confidence": "medium",
+                "why": "Method -- structural completers (Error, String) in S8, business logic in BODY"
+            },
+            {
+                "pattern": "^type\\s+\\w+\\s+interface\\s*\\{",
+                "to": "SETUP.InterfaceDefs",
+                "confidence": "high",
+                "why": "Interface definition -- behavioral contract, not data type"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// TODO: Primary type for this package.\ntype {{type_name}} struct {\n\t// fields\n}",
+            "empty_executable": "// No application types needed -- executables use library types.",
+            "comment_skeleton": "// // Primary type.\n// type TypeName struct {\n// \t// fields\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Core Types: the NOUNS of the codebase. Structs declare shapes. SETUP defines what things ARE; BODY defines what they DO. Simple New*() stays here; anything with logic or error returns moves to BODY. Export only what consumers need.",
+    "_X5_scripture": "Genesis 2:19 -- And whatsoever Adam called every living creature, that was the name thereof."
+}

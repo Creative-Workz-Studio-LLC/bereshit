@@ -23,6 +23,7 @@
 // ============================================================================
 
 import type { FormatHandler } from "../foundation/mod.ts";
+import { ToolError } from "../foundation/mod.ts";
 
 // ============================================================================
 // BODY
@@ -37,7 +38,7 @@ const registry = new Map<string, FormatHandler>();
 /** Register a format handler. */
 export function registerFormat(handler: FormatHandler): void {
   if (registry.has(handler.name)) {
-    throw new Error(`Format "${handler.name}" already registered`);
+    throw new ToolError("CWS-T00-040", { format: handler.name });
   }
   registry.set(handler.name, handler);
 }

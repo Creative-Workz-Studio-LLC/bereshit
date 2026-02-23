@@ -1,0 +1,47 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-return-value",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — Return Value",
+
+    "concept": "return_value",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "return_value",
+            "emit": "return {expr}",
+            "when": "returning a computed value from a function",
+            "notes": "Go always uses explicit return keyword.",
+            "priority": 1
+        },
+        {
+            "id": "return_void",
+            "emit": "return",
+            "when": "void return — function has no return value",
+            "notes": "Bare return for void functions.",
+            "priority": 2
+        },
+        {
+            "id": "return_error_tuple",
+            "emit": "return {value}, nil",
+            "when": "returning success from a function that returns (T, error)",
+            "notes": "Success tuple — value with nil error.",
+            "priority": 3
+        },
+        {
+            "id": "return_nil_only",
+            "emit": "return nil",
+            "when": "returning success from a function that returns only error",
+            "notes": "Void success — only the error return, and it's nil.",
+            "priority": 4
+        }
+    ],
+
+    "_X5_note": "Go returns — always explicit keyword. No implicit last-expression returns."
+}

@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-metadata-comment-block",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "METADATA.CommentBlock Content Character — What Comment Block Content IS",
+    "_P5_brief": "Format-independent definition of comment block content character. The comment block is the human-readable identity layer — key-value fields in plain comments that any developer can read at a glance. When PRAGMA statics carry structured identity, the comment block becomes the introduction; when they don't exist, it IS the identity system.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "comment-block",
+        "block": "METADATA",
+        "position": 3,
+        "nature": "human-readable-identity",
+
+        "description": "Comment block content is the file's nameplate — human-readable identity fields in plain comment syntax. It carries file name, key, title, type, version, status, dates, authors, purpose, and biblical grounding. Unlike directives (machine-targeted) and doc comments (tool-parsed), the comment block speaks directly to the developer who opens the file. It answers: what is this file, who made it, when, why, and what truth grounds it.",
+
+        "invariants": {
+            "description": "Properties true of ALL comment block content, regardless of language.",
+
+            "human_first": "Comment block content is written for human eyes. A developer opening this file for the first time should understand what it is, who made it, and why it exists within 10 seconds of reading the comment block.",
+            "key_value_structured": "Despite being in comments, the content follows a consistent key: value pattern (// file:, // key:, // version:, // purpose:). This structure makes it both human-scannable and grep-searchable.",
+            "identity_complete": "The comment block contains enough identity information to understand the file without reading any code. File name, title, type, version, status, authorship, purpose — the complete introduction.",
+            "secondary_to_statics": "When PRAGMA and METADATA statics exist (the struct/slice/map carrying I and C fields), the comment block is secondary — a human-readable mirror of what the statics carry in structured form. The statics are authoritative; comments are accessible.",
+            "bounded_by_block_markers": "The comment block is visually delimited by block boundary markers (// ====... METADATA ...====). This boundary separates it from directives above and code below. The markers are structural, not decorative."
+        },
+
+        "content_forms": {
+            "description": "What comment block content looks like across languages. The comment syntax varies; the identity fields are invariant.",
+
+            "rust": {
+                "syntax": "// ============================================================================\\n// METADATA\\n// ============================================================================\\n//\\n// TEMPLATE: Rust Library Crate -- 4-Block Structure\\n//\\n// Usage:\\n//   1. cp library.rs /path/to/crate/src/lib.rs\\n//   ...\\n//\\n// derives_from: b-word/seed/code/L0/rust/root.omni",
+                "grouping": "// line comments between // ====... METADATA ...==== boundary markers. Block overview, usage instructions, and derivation chain reference.",
+                "notes": "In Rust, the comment block sits between directives (top) and inner doc comments (//!). It provides the template-level introduction — how to use this file, what it derives from, what it's for. Content is plain // comments, not doc comments."
+            },
+
+            "go": {
+                "syntax": "// ============================================================================\\n// METADATA\\n// ============================================================================\\n//\\n// TEMPLATE: Go Library Package -- 4-Block Structure\\n//\\n// Usage:\\n//   1. cp library.go /path/to/package/mypackage.go\\n//   ...\\n//\\n// derives_from: b-word/seed/code/L0/go/root.omni",
+                "grouping": "// line comments between // ====... METADATA ...==== boundary markers. Same structure as Rust — block overview, usage, derivation.",
+                "notes": "In Go, the comment block sits between directives and the package doc comment. It is NOT a package doc comment (those are parsed by godoc). The comment block is purely for the developer reading the source file."
+            },
+
+            "c": {
+                "syntax": "/**\\n * ============================================================================\\n * METADATA\\n * ============================================================================\\n *\\n * @file source.c\\n * @key B-...\\n * @version a-01.00\\n * @author CreativeWorkzStudio LLC\\n * @brief One-line description.\\n * @purpose Full purpose statement.\\n * @biblical_foundation Scripture reference\\n */",
+                "grouping": "Doxygen-compatible /** ... */ block comment with @-tag structured fields between boundary markers.",
+                "notes": "In C, the comment block merges with Doxygen conventions. The @file, @author, @brief tags serve double duty — readable by humans AND parsed by Doxygen. C has no separate doc comment concept at the module level, so the comment block IS the documentation entry point."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, comment block content preserves the identity fields but adapts to the target language's comment conventions. The information (file name, key, version, purpose, authors) stays the same; the container (comment syntax, Doxygen tags vs plain comments) changes.",
+            "invariant": ["identity fields present (file, key, title, version, status, authors, purpose)", "block boundary markers", "derivation chain reference", "human-readable without tooling"],
+            "variable": ["comment syntax (// vs /* */ vs /** */)", "field tag format (// key: vs @key vs :key:)", "Doxygen integration (C uses @tags, Rust/Go use plain text)", "boundary marker style (equals-76 vs other widths)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — no code patterns belong in comment blocks.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The comment block is the file's handshake. Before PRAGMA statics existed, it WAS the identity system — the only way a file could say who it was. Now it serves as the human-readable layer that makes identity accessible without tooling. Structured data for machines; plain comments for people. Both carry the same truth.",
+    "_X5_scripture": "Proverbs 22:1 — A good name is rather to be chosen than great riches. The comment block is the file's good name."
+}

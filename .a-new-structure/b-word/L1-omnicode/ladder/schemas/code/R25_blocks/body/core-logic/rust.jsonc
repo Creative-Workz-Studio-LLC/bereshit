@@ -1,0 +1,188 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-body-core-logic",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 4: Core Logic — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Core Logic. What Rust code CAN, CANNOT, and SHOULD DEFER within this section. Extends the base structure at blocks/body/core-logic.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/body/core-logic.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "impl TypeName { pub(crate) fn method(&self, ...) -> ... }",
+                "description": "Methods on the primary type that perform core operations",
+                "patterns": [
+                    "pub(crate) fn set(&self, value: T)",
+                    "pub(crate) fn clear(&self)",
+                    "pub fn load(&self, path: &Path) -> Result<Config, Error>",
+                    "pub fn process(&mut self, input: &[u8]) -> Result<Output, Error>"
+                ],
+                "visibility": "pub(crate) for internal modules, pub for library API surface"
+            },
+            {
+                "construct": "interior mutability operations",
+                "description": "Methods using RwLock/Mutex/Cell for thread-safe mutation",
+                "patterns": [
+                    "self.field.write().unwrap_or_else(|e| e.into_inner())",
+                    "self.field.lock().expect(\"poisoned\")"
+                ],
+                "note": "Prefer unwrap_or_else(|e| e.into_inner()) for poison recovery over unwrap()"
+            },
+            {
+                "construct": "multiple impl blocks",
+                "description": "Split impl TypeName across subsections (Constructors, Core Logic, Queries)",
+                "note": "Valid Rust — each subsection gets its own impl block for the same type. This is the structural idiom for 4-block.",
+                "example": "// 3. Constructors\nimpl Guard { fn new() -> Self { ... } }\n// 4. Core Logic\nimpl Guard { fn set(&self, v: T) { ... } }\n// 5. Queries\nimpl Guard { fn get(&self) -> Option<T> { ... } }"
+            },
+            {
+                "construct": "private fn helpers (inline)",
+                "description": "Small private functions that serve a single method above",
+                "patterns": [
+                    "fn validate_input(&self, input: &[u8]) -> Result<(), Error>",
+                    "fn normalize_path(p: &Path) -> PathBuf"
+                ],
+                "threshold": "Under ~20 lines, serving one core operation. Larger → BODY.Helpers"
+            },
+            {
+                "construct": "Result<T, E> return types",
+                "description": "Core operations return Results — errors are named, not swallowed",
+                "patterns": [
+                    "-> Result<T, ConfigError>",
+                    "-> Result<(), io::Error>"
+                ],
+                "note": "Use the crate's error type (from SETUP S6), not String or Box<dyn Error>"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "struct / enum / union",
+                "reason": "Type definitions belong in SETUP section 7 (Core Types)",
+                "defer_to": "SETUP.CoreTypes",
+                "rust_signal": "Starts with pub struct, pub enum, pub union, struct, enum"
+            },
+            {
+                "construct": "trait definition (trait Foo { ... })",
+                "reason": "Behavioral contracts belong in SETUP section 8 (Trait Defs)",
+                "defer_to": "SETUP.TraitDefs",
+                "rust_signal": "Starts with pub trait, trait"
+            },
+            {
+                "construct": "fn new(...) -> Self",
+                "reason": "Constructors belong in BODY section 3",
+                "defer_to": "BODY.Constructors",
+                "rust_signal": "Method named new, build, with_*, from_*, returns Self"
+            },
+            {
+                "construct": "&self getters with no side effects",
+                "reason": "Pure accessors belong in BODY section 5 (Queries)",
+                "defer_to": "BODY.Queries",
+                "rust_signal": "fn name(&self) -> T, fn name(&self) -> &T, fn name(&self) -> Option<T>"
+            },
+            {
+                "construct": "impl Display / impl Debug / impl Error / impl From<E>",
+                "reason": "Trait implementations belong in BODY section 2",
+                "defer_to": "BODY.TraitImplementations",
+                "rust_signal": "impl {TraitName} for {TypeName}"
+            },
+            {
+                "construct": "#[cfg(test)] mod tests { ... }",
+                "reason": "Tests belong in CLOSING Cv",
+                "defer_to": "CLOSING.Cv",
+                "rust_signal": "#[cfg(test)]"
+            },
+            {
+                "construct": "use / extern crate",
+                "reason": "Imports belong in SETUP section 1",
+                "defer_to": "SETUP.Imports",
+                "rust_signal": "use, extern crate"
+            },
+            {
+                "construct": "const / static",
+                "reason": "Fixed values belong in SETUP sections 3-4",
+                "defer_to": "SETUP.Constants or SETUP.Statics",
+                "rust_signal": "const NAME: Type = ..., static NAME: Type = ..."
+            },
+            {
+                "construct": "type Alias = ...",
+                "reason": "Type aliases belong in SETUP section 5",
+                "defer_to": "SETUP.TypeAliases",
+                "rust_signal": "type Name = ..."
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific Defer Signals
+        // ─────────────────────────────────────
+
+        "defer_signals": [
+            {
+                "pattern": "fn\\s+\\w+\\(&self\\)\\s*->\\s*(?:&|Option<|bool)",
+                "to": "BODY.Queries",
+                "confidence": "high",
+                "why": "Pure accessor signature — no &mut, returns reference or Option"
+            },
+            {
+                "pattern": "fn\\s+(?:new|build|with_|from_)",
+                "to": "BODY.Constructors",
+                "confidence": "high",
+                "why": "Constructor naming convention"
+            },
+            {
+                "pattern": "^pub\\s+fn\\s+\\w+\\(",
+                "to": "BODY.FreeFunctions",
+                "confidence": "medium",
+                "why": "No &self — standalone function. Check if it should be a method."
+            },
+            {
+                "pattern": "impl\\s+\\w+\\s+for\\s+\\w+",
+                "to": "BODY.TraitImplementations",
+                "confidence": "high",
+                "why": "Trait impl block — fulfilling contract, not core operation"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+        //
+        // What the transformer emits when scaffolding this section.
+
+        "scaffold": {
+            "empty_module": "impl {{type_name}} {\n    /// TODO: Primary operations.\n    pub(crate) fn operate(&self) -> Result<(), {{error_type}}> {\n        todo!()\n    }\n}",
+            "empty_library": "impl {{type_name}} {\n    /// TODO: Primary operations.\n    pub fn operate(&self) -> Result<(), {{error_type}}> {\n        todo!()\n    }\n}",
+            "comment_skeleton": "// impl {{type_name}} {\n//     /// Primary operations.\n//     pub(crate) fn operate(&self) -> Result<(), {{error_type}}> {\n//         todo!()\n//     }\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Core Logic: impl blocks with operational methods. &self for reads, &mut self for mutations, interior mutability for thread-safe state. Errors are typed and named.",
+    "_X5_scripture": "Ecclesiastes 9:10 — Whatsoever thy hand findeth to do, do it with thy might."
+}

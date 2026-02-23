@@ -1,0 +1,153 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-setup-error-types",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 5: Error Types -- Go Content",
+    "_P5_brief": "Go-specific content rules for Error Types. Custom error structs implementing the error interface, Error() method, Unwrap() for wrapping, fmt.Errorf wrapping. Before Core Types because methods return these. Extends the base structure at blocks/setup/error-types.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/error-types.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "type NameError struct { fields... }",
+                "description": "Typed errors with domain-specific context fields",
+                "patterns": [
+                    "type ConfigError struct {\n\tPath   string\n\tLine   int\n\tReason string\n}",
+                    "type ValidationError struct {\n\tField   string\n\tMessage string\n}"
+                ],
+                "visibility": "Exported for package API errors, unexported for internal errors"
+            },
+            {
+                "construct": "func (e *NameError) Error() string",
+                "description": "Error interface implementation -- meaningful message per error type",
+                "patterns": [
+                    "func (e *ConfigError) Error() string {\n\treturn fmt.Sprintf(\"config error at %s:%d: %s\", e.Path, e.Line, e.Reason)\n}",
+                    "func (e *ValidationError) Error() string {\n\treturn fmt.Sprintf(\"validation: %s: %s\", e.Field, e.Message)\n}"
+                ],
+                "visibility": "Exported -- implements the error interface",
+                "note": "Error() lives HERE with the type, not in BODY -- it completes the type definition. Every error type gets a meaningful message. No generic 'an error occurred'."
+            },
+            {
+                "construct": "func (e *NameError) Unwrap() error",
+                "description": "Error wrapping for errors.Is() / errors.As() chain traversal",
+                "patterns": [
+                    "func (e *ConfigError) Unwrap() error {\n\treturn e.Cause\n}"
+                ],
+                "visibility": "Exported -- enables error chain traversal",
+                "note": "Only needed when the error wraps an underlying cause. Enables errors.Is() and errors.As() to traverse the chain."
+            },
+            {
+                "construct": "enum-like error via typed constants",
+                "description": "Go has no error enums -- use typed constants or sentinel patterns for matchable categories",
+                "patterns": [
+                    "type ErrorKind int\n\nconst (\n\tErrKindNotFound ErrorKind = iota\n\tErrKindInvalid\n\tErrKindConflict\n)",
+                    "type PackageError struct {\n\tKind    ErrorKind\n\tMessage string\n}"
+                ],
+                "visibility": "Exported for public error categories",
+                "note": "Go lacks Rust's error enums. Typed constants with iota provide matchable categories. Callers switch on Kind, not string content."
+            },
+            {
+                "construct": "// doc comment on every exported error type",
+                "description": "What the error represents, when it occurs, how to handle it",
+                "patterns": [
+                    "// ConfigError represents a failure to load or parse configuration.\n// Use errors.As() to extract structured details.",
+                    "// ValidationError indicates a field failed validation constraints."
+                ],
+                "visibility": "N/A -- doc comments, not code"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "stringly-typed error fields where enums would serve",
+                "reason": "Kind string forces callers to match on string content -- fragile and unexhaustive. Use typed constants.",
+                "defer_to": "N/A -- define typed constants for the field",
+                "go_signal": "Kind\\s+string|Op\\s+string"
+            },
+            {
+                "construct": "error handling logic",
+                "reason": "SETUP defines error types. BODY handles errors (switch, if err, recover). Define the shape here, use it in BODY.",
+                "defer_to": "BODY.ErrorHandling or BODY.CoreOperations",
+                "go_signal": "if\\s+err\\s*!=\\s*nil|switch.*\\.(type)|errors\\.Is|errors\\.As"
+            },
+            {
+                "construct": "business logic / func definitions beyond Error()/Unwrap()",
+                "reason": "Error types section is purely type definitions and their error interface methods",
+                "defer_to": "BODY.CoreOperations or BODY.Helpers",
+                "go_signal": "^func\\s+(?!.*Error\\(\\))(?!.*Unwrap\\(\\))"
+            },
+            {
+                "construct": "sentinel errors (var ErrX = errors.New(...))",
+                "reason": "Simple sentinel errors belong in S3 Variables. S5 is for structured error types with fields.",
+                "defer_to": "SETUP.Variables",
+                "go_signal": "var\\s+Err\\w+\\s*=\\s*errors\\.New"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "if\\s+err\\s*!=\\s*nil",
+                "to": "BODY.CoreOperations or BODY.ErrorHandling",
+                "confidence": "high",
+                "why": "Error handling logic -- define here, handle in BODY"
+            },
+            {
+                "pattern": "errors\\.Is|errors\\.As",
+                "to": "BODY.ErrorHandling",
+                "confidence": "high",
+                "why": "Error comparison logic belongs in BODY"
+            },
+            {
+                "pattern": "^type\\s+\\w+\\s+struct\\s*\\{(?!.*error|.*Error)",
+                "to": "SETUP.CoreTypes",
+                "confidence": "high",
+                "why": "Non-error struct belongs in core types"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// TODO: Package error type.\ntype Error struct {\n\tMessage string\n}\n\nfunc (e *Error) Error() string {\n\treturn e.Message\n}",
+            "empty_executable": "// No custom error types needed -- executables use fmt.Errorf wrapping.",
+            "comment_skeleton": "// type Error struct {\n// \tMessage string\n// }\n//\n// func (e *Error) Error() string { return e.Message }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Error Types: structured errors implementing the error interface. Error() and Unwrap() complete the type -- they live HERE, not in BODY. Typed constants for matchable categories. A package's error type is its most important API surface after its happy path.",
+    "_X5_scripture": "James 1:5 -- If any of you lack wisdom, let him ask of God, that giveth to all men liberally, and upbraideth not."
+}

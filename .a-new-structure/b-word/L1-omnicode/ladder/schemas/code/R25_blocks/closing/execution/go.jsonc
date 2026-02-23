@@ -1,0 +1,138 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-closing-execution",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section Ce: Execution — Go Content",
+    "_P5_brief": "Go-specific content rules for Ce (Execution). Entry points — func main() { os.Exit(run()) } for executables, init() for library identity registration. Extends the base structure at blocks/closing/execution.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/closing/execution.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "func main() { os.Exit(run()) } (executable form only)",
+                "description": "Program entry point — delegates to run(), maps error to exit code. No business logic in main().",
+                "patterns": [
+                    "func main() {\n\tif err := run(); err != nil {\n\t\tfmt.Fprintf(os.Stderr, \"error: %v\\n\", err)\n\t\tos.Exit(1)\n\t}\n}",
+                    "func main() {\n\tos.Exit(exitCode(run()))\n}"
+                ],
+                "visibility": "N/A — main is the entry point",
+                "note": "Executable form ONLY. Library and demo-test forms have different Ce content."
+            },
+            {
+                "construct": "func init() { ... } (library form — identity registration)",
+                "description": "Library identity registration — registers package with a central registry at import time",
+                "patterns": [
+                    "func init() {\n\tregistry.Register(PragmaGet(\"I1.key\"), Pragma, Metadata)\n}"
+                ],
+                "visibility": "N/A — init is automatic",
+                "note": "Library form. init() registers the package's identity. Not all libraries need this."
+            },
+            {
+                "construct": "func TestMain(m *testing.M) { ... } (demo-test form)",
+                "description": "Global test setup/teardown — runs before/after all tests in the package",
+                "patterns": [
+                    "func TestMain(m *testing.M) {\n\t// Global setup\n\tsetup()\n\tcode := m.Run()\n\t// Global teardown\n\tteardown()\n\tos.Exit(code)\n}"
+                ],
+                "visibility": "N/A — test infrastructure",
+                "note": "Demo-test form ONLY. Use when tests need shared setup (temp dirs, test servers)."
+            },
+            {
+                "construct": "// Ce section header (library form without init)",
+                "description": "Structural marker indicating Ce is present but empty",
+                "patterns": [
+                    "// Ce -- Closing Execution (no entry point -- library package)",
+                    "// Ce -- Closing Execution (no init required)"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "business logic in main()",
+                "reason": "main() delegates to run(). Logic goes in BODY B3. main() only handles error reporting and exit codes.",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "func\\s+main.*\\{[^}]{200,}"
+            },
+            {
+                "construct": "func main() in library or demo-test form",
+                "reason": "Libraries and test files are not executables — they have no main()",
+                "defer_to": "N/A — Ce uses init() or stays empty",
+                "go_signal": "func\\s+main\\s*\\("
+            },
+            {
+                "construct": "heavy init() with business logic",
+                "reason": "init() should be minimal — identity registration only. Side effects in init() make packages hard to test and import.",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "func\\s+init.*\\{[^}]{100,}"
+            },
+            {
+                "construct": "multiple init() functions in one file",
+                "reason": "Go allows multiple init() but it hurts readability. One init() per file, doing one thing.",
+                "defer_to": "N/A — consolidate into one init()",
+                "go_signal": "N/A"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "func\\s+main\\s*\\(",
+                "to": "N/A — Ce is the correct location (but only for executable form)",
+                "confidence": "high",
+                "why": "main() found outside Ce"
+            },
+            {
+                "pattern": "func\\s+run\\s*\\(",
+                "to": "BODY.CoreOperations",
+                "confidence": "high",
+                "why": "run() is business logic — belongs in BODY B3, not Ce"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// Ce -- Closing Execution (no entry point -- library package)",
+            "empty_executable": "func main() {\n\tif err := run(); err != nil {\n\t\tfmt.Fprintf(os.Stderr, \"error: %v\\n\", err)\n\t\tos.Exit(1)\n\t}\n}",
+            "empty_demo_test": "// Ce -- Closing Execution (no TestMain required)",
+            "comment_skeleton": "// Ce -- Closing Execution\n// func main() { os.Exit(exitCode(run())) }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Ce (Execution): the entry point. main() delegates to run() for testability. os.Exit() only in main() — never in library code. Library init() is for identity registration. Demo-test TestMain() for global setup.",
+    "_X5_scripture": "Ecclesiastes 3:1 — To every thing there is a season, and a time to every purpose under the heaven."
+}

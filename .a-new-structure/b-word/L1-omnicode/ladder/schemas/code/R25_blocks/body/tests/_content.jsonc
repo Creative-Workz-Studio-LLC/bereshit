@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-tests",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.Tests Content Character — What Test Content IS",
+    "_P5_brief": "Format-independent definition of BODY test content character. BODY tests are dedicated test subsections (B9-B17) that appear ONLY in demo-test form. They provide exhaustive, section-by-section validation of template patterns. In all other forms, tests live in CLOSING Cv.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "tests",
+        "block": "BODY",
+        "position": 9,
+        "nature": "verification",
+
+        "description": "BODY test content is exhaustive template validation. Unlike CLOSING Cv tests (which verify that production code works), BODY tests verify that template PATTERNS work. Each subsection (B9-B17) maps to a specific section being tested — constructor tests verify constructor patterns, query tests verify query patterns. This is the demo-test form's proof that the template is trustworthy.",
+
+        "invariants": {
+            "description": "Properties true of ALL BODY test content, regardless of language.",
+
+            "section-mapped": "Each test subsection maps to a specific BODY or SETUP section. ConstructorTests test Constructors. QueryTests test Queries. IdentityTests test IdentityAccess. The mapping is explicit and complete.",
+            "pattern-proving": "Tests prove that template patterns work as claimed. A constructor test does not test business logic — it tests that the constructor PATTERN (new, try_new, builder) compiles and behaves correctly.",
+            "demo-only": "BODY tests appear ONLY in demo-test form. All other forms consolidate tests in CLOSING Cv. Promoting tests to dedicated BODY subsections is the demo-test form's distinguishing feature.",
+            "exhaustive": "Within each subsection, tests cover all variants of the pattern. Constructor tests cover infallible, fallible, and builder. Query tests cover boolean, scalar, and computed. No pattern goes unproven.",
+            "non-production": "Test content contains zero production logic. Test functions exist only to verify — they set up, act, and assert. Helper functions within tests serve testing only."
+        },
+
+        "content_forms": {
+            "description": "What BODY test content looks like across languages. Section-mapped verification is invariant; the test framework and assertion syntax vary.",
+
+            "rust": {
+                "syntax": "#[cfg(test)] mod constructor_tests { use super::*; #[test] fn test_new_creates_valid_instance() { let t = MyType::new(42); assert!(t.is_valid()); } }",
+                "grouping": "One #[cfg(test)] module per subsection (B9-B17). Within each: happy path first, error cases second, edge cases third",
+                "notes": "Rust BODY tests use #[cfg(test)] mod blocks — one per subsection. Tests are #[test] functions. Assertions via assert!, assert_eq!, assert_ne!. Test modules have use super::* to access the file's items."
+            },
+
+            "go": {
+                "syntax": "// --- B9: Constructor Tests ---\\nfunc TestNewCreatesValidInstance(t *testing.T) { typ := NewMyType(42); if !typ.IsValid() { t.Fatal(\"expected valid\") } }",
+                "grouping": "Comment-separated subsections. Within each: happy path first, error cases second, table-driven tests third",
+                "notes": "Go BODY tests use comment headers to mark subsections. Test functions follow TestXxx naming. t.Fatal/t.Error for assertions. Table-driven tests (B16) use subtests with t.Run."
+            },
+
+            "c": {
+                "syntax": "/* --- B9: Constructor Tests --- */\\nstatic void test_new_creates_valid_instance(void) { MyType* t = my_type_new(42); assert(my_type_is_valid(t)); my_type_free(t); }",
+                "grouping": "Comment-separated subsections. Within each: happy path first, error cases second, cleanup after each test",
+                "notes": "C BODY tests are static void functions with assert() macros. Manual memory management in tests — every allocation needs cleanup. A test runner function calls all tests in sequence."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, BODY test content preserves the section-mapped verification pattern. The same patterns get tested with the same assertions — only the test framework and assertion syntax change.",
+            "invariant": ["section mapping (which tests verify which sections)", "assertion semantics (what each test proves)", "pattern coverage (all variants of each pattern tested)"],
+            "variable": ["test framework (#[test] vs testing.T vs assert macro)", "test organization (mod blocks vs comment sections vs function grouping)", "assertion syntax (assert_eq! vs t.Fatal vs assert())", "cleanup mechanism (Drop vs defer vs explicit free)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "defer",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 10G 1F. 10/11 ≈ 0.91. self_access defers (tests may or may not use self/receivers).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "BODY tests are the template proving itself. Before any downstream file copies a pattern, the demo-test form has already verified that every pattern works. Trust is not assumed — it is earned through exhaustive verification. The 9 subsections (B9-B17) are the 9 witnesses that the template's promises are kept.",
+    "_X5_scripture": "1 Thessalonians 5:21 — Prove all things; hold fast that which is good."
+}

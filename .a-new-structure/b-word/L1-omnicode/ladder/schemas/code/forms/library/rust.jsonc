@@ -1,0 +1,106 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-molded-rust-library",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "form-content-schema",
+    "_P2_role": "content-molded",
+    "_P5_title": "Rust Library Form Content — The Crate Root",
+    "_P5_brief": "Rust-specific content expectations for library form (lib.rs). The public API surface — declares modules, exposes types, owns the output layer. pub visibility default, external crate imports primary, register_identity() in FreeFunctions.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends_structure": "structure/molded/library.jsonc",
+    "extends_content": "content/whole/code.jsonc",
+    "format": "rust",
+    "form": "library",
+
+    "content_expectations": {
+
+        "pragma": "//omni:code --rust -library",
+
+        "content_state": "REAL — all code is live, uncommented.",
+
+        "METADATA": {
+            "directive": "//omni:code --rust -library",
+            "identity_construct": "static PRAGMA: &[(&str, &str)] and static METADATA: &[(&str, &str)] slices",
+            "I2_subtype": "library",
+            "I2_role": "Crate identity — the root file",
+            "doc_comments": "//! crate-level doc comments — what the crate does, key types, usage examples",
+            "visibility": "N/A — METADATA is identity, not API"
+        },
+
+        "SETUP": {
+            "import_pattern": {
+                "primary": "use {external_crate}:: (external dependencies from Cargo.toml)",
+                "secondary": "use std:: (standard library), use crate:: (internal cross-references)",
+                "grouping": "std → external → internal/crate",
+                "note": "Libraries import OUTWARD (external crates, std) more than INWARD. Modules import from the library; the library imports from the world."
+            },
+
+            "visibility_pattern": {
+                "types": "pub for public API types. Internal types stay in modules.",
+                "functions": "pub for public API. Internal logic delegates to modules.",
+                "modules": "pub mod name; for public modules. mod name; for internal. pub use name::Type; for re-exports.",
+                "constants": "pub const for public constants. Crate-wide constants live here.",
+                "errors": "pub enum Error — the crate's top-level error type with variants wrapping module errors."
+            },
+
+            "S2_modules_pattern": {
+                "structure": "mod declarations first, then pub use re-exports",
+                "example": "mod parser;\nmod config;\npub use parser::Parser;\npub use config::Config;",
+                "note": "The module tree is the library's table of contents."
+            },
+
+            "error_pattern": "Top-level Error enum wrapping module errors via From impls. Crate consumers see one Error type.",
+
+            "type_pattern": "Core public types. If the crate has many types, they should live in modules and be re-exported."
+        },
+
+        "BODY": {
+            "ordering": "type_lifecycle",
+            "section_content": {
+                "B1_IdentityAccess": "4 accessor functions. Same as module but with crate-level PRAGMA values.",
+                "B2_TraitImplementations": "Trait impls for crate-level types. Standard library traits (Display, From, Debug) and custom traits.",
+                "B3_Constructors": "Crate-level constructors. Often builders with validation.",
+                "B4_CoreLogic": "Primary crate operations. May delegate to modules. The crate's main verbs.",
+                "B5_Queries": "Read-only accessors for crate-level types.",
+                "B6_Output": "Output formatting — Display impls, CLI output helpers (fatal, error, warn), serialization. Libraries OWN the output layer.",
+                "B7_FreeFunctions": "register_identity() + convenience wrappers. The crate's top-level public API."
+            }
+        },
+
+        "CLOSING": {
+            "Cv_pattern": {
+                "structure": "#[cfg(test)] mod tests { use super::*; ... }",
+                "organization": "// -- B1 Identity Access ---- through // -- B7 Free Functions ---- (all 7 sections)",
+                "note": "Library tests cover the full API surface including B6 Output."
+            },
+
+            "Ce_pattern": "register_identity() or empty. Libraries have no main().",
+
+            "X1_pattern": {
+                "safe": "Additive changes (new pub fns, new error variants, new trait impls)",
+                "careful": "API changes (pub fn signatures, pub type fields) — affects all consumers",
+                "never": "Structural invariants (4-block, PRAGMA/METADATA layout)"
+            },
+
+            "X5_pattern": "Crate-level scripture grounding the entire library's purpose."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The Rust library is the crate root — the body itself. pub is the default visibility because libraries exist to serve others. The module tree is the organizational structure. The error enum is the failure vocabulary. Every Rust convention serves the library's role as the public face of the crate.",
+    "_X5_scripture": "Now ye are the body of Christ, and members in particular. — 1 Corinthians 12:27"
+}

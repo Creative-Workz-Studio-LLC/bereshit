@@ -15,7 +15,7 @@
 // ============================================================================
 
 // Discovery
-export { discoverFiles, discoverAllFiles, relativePaths } from "./discovery.ts";
+export { discoverFiles, discoverAllFiles, relativePaths, setDiscoveryLimits } from "./discovery.ts";
 
 // Output
 export {
@@ -39,6 +39,140 @@ export {
 // Fill engine (schema-driven file generation)
 export type { FillContext } from "./fill.ts";
 export { generateFile, generateFileText } from "./fill.ts";
+
+// Transpiler (three-cord format conversion)
+export type {
+  ExtractedIdentity,
+  ExtractedSemantics,
+  SemanticChunk,
+  ChunkItem,
+  TranspileOptions,
+  TranspileResult,
+  FormatFormMapping,
+} from "./transpiler-types.ts";
+
+export {
+  transpile,
+  transpileFile,
+  findMapping,
+  getTargetForm,
+  extractRustSemantics,
+  rustNameToGo,
+  rustTypeToGo,
+  rustImportToGo,
+  rustParamsToGo,
+} from "./transpiler.ts";
+
+// Transpiler schema-driven mappings (first principles)
+export type {
+  ResolvedMappings,
+  ConceptMappingPair,
+  LanguageConcept,
+  ConceptPattern,
+  FormStructure,
+  FormContent,
+  FormContentExpectations,
+  BlockSections,
+  BodyBlockSections,
+} from "./transpiler-mappings.ts";
+export {
+  loadTranspilerMappings,
+  loadTranspilerMappingsCached,
+  loadFormStructure,
+  loadFormStructureCached,
+  loadFormContent,
+  loadFormContentCached,
+  clearFormSchemaCache,
+  loadConceptMappings,
+  loadConceptMappingsCached,
+  loadLanguageConcept,
+  clearConceptCache,
+  convertType,
+  convertImport,
+  convertName,
+  convertParams,
+} from "./transpiler-mappings.ts";
+
+// Transpiler AST (universal concept body translation)
+export type { AstNode, BodyTranslation } from "./transpiler-ast.ts";
+export {
+  translateBody,
+  parseSourceBody,
+  emitTargetBody,
+} from "./transpiler-ast.ts";
+
+// Shared transform pipeline (schema-driven, handler-parameterized)
+export type {
+  TransformContext,
+  TransformPass,
+  TransformVerifier,
+  CodeRangeDetector,
+  CodeMoveSpec,
+  SubsectionScaffoldSpec,
+  SubsectionReorderSpec,
+} from "./transform.ts";
+export {
+  fixBlockSeparatorWidths,
+  fixSubsectionSeparatorWidths,
+  convertAsciiToUnicode,
+  normalizeSeparatorPrefix,
+  reorderClosingZonesPass,
+  createCodeMovePass,
+  createSubsectionScaffoldPass,
+  createSubsectionReorderPass,
+  UNIVERSAL_PASSES,
+  runTransformPipeline,
+} from "./transform.ts";
+
+// Enrichment (rule → error code resolution)
+export { resolveErrorCodes } from "./enrich.ts";
+
+// Cascade logic (4-layer pipeline cascade)
+export {
+  cascadeActions,
+  cascadeActionGroups,
+  cascadeBlock,
+  hasStructuralFailure,
+  detectFailedBlocks,
+  tagLayer,
+} from "./cascade.ts";
+
+export type {
+  LayerResult,
+  PipelineResult,
+} from "./cascade.ts";
+
+// Quick-fix suggestions engine
+export type { QuickFixSuggestion } from "./suggest.ts";
+export {
+  computeQuickFixes,
+  printQuickFixes,
+  printSuggestSummary,
+} from "./suggest.ts";
+
+// Debug / trace diagnostic output
+export {
+  initDebug,
+  isDebug,
+  isTrace,
+  debugConfig,
+  debugPolicy,
+  debugDiscovery,
+  debugFileStart,
+  debugFileEnd,
+  debugLayerTransition,
+  debugCascade,
+  debugHealth,
+  traceEnter,
+  traceExit,
+  traceCheckStart,
+  traceCheckEnd,
+  traceDetection,
+  traceLookup,
+  traceAction,
+  traceCascadeDecision,
+  traceResult,
+} from "./debug.ts";
 
 // ============================================================================
 // CLOSING

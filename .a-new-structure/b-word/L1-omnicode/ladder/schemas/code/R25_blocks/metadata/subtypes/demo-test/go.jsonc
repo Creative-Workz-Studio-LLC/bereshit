@@ -1,0 +1,65 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-subtypes-demo-test",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Subtypes -- Demo/Test Form -- Go Content",
+    "_P5_brief": "Go-specific demo/test form. *_test.go files that validate behavior and prove claims. External test packages (package name_test) or internal tests (package name). Tests are the primary content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/subtypes/demo-test.jsonc",
+    "format": "go",
+
+    "sub_container": {
+        "tag": "demo-test",
+        "label": "Demo/Test -- Validation Form (Go)",
+        "parent": "Subtypes",
+        "I2_subtype": "demo-test",
+
+        "file_pattern": "*_test.go",
+        "pragma_directive": "//omni:code --go -demo-test",
+        "template_directive": "// #!omni template --go -demo-test",
+        "package": "package packagename_test (external) or package packagename (internal)",
+        "has_public_api": false,
+
+        "purpose": "Test file -- validates package behavior, proves claims",
+        "distinguisher": "The proving ground for Go. Tests are the content, not a side effect. External tests (package_test) test the public API; internal tests test implementation.",
+
+        "go_specifics": {
+            "external_tests": "package name_test -- tests public API through exported surface only",
+            "internal_tests": "package name -- tests implementation details with internal access",
+            "test_function": "func TestXxx(t *testing.T) -- Go test naming convention",
+            "table_driven": "Table-driven tests are the Go idiom for systematic coverage",
+            "run_command": "go test ./... or go test -v -run TestSpecific"
+        },
+
+        "required_sections": {
+            "METADATA": ["Directives", "CommentBlock", "PragmaIdentity", "MetadataContext", "Subtypes"],
+            "SETUP": ["Imports"],
+            "BODY": ["Tests"],
+            "CLOSING": ["Validation"]
+        },
+
+        "scaffold": {
+            "demo_test_go": "//omni:code --go -demo-test\npackage {packagename}_test\n\n// ========================================\n// {title}\n// ========================================\n//\n// {brief}\n//\n\nimport (\n\t\"testing\"\n)\n\nfunc TestExample(t *testing.T) {\n\t// TODO: test cases\n\tt.Run(\"basic\", func(t *testing.T) {\n\t\t// arrange, act, assert\n\t})\n}"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Demo/test Go form -- the refining fire. *_test.go files with external (package_test) or internal tests. Table-driven tests are the Go idiom. Tests prove what is claimed, expose what is hidden.",
+    "_X5_scripture": "Proverbs 27:21 -- As the fining pot for silver, and the furnace for gold; so is a man to his praise."
+}

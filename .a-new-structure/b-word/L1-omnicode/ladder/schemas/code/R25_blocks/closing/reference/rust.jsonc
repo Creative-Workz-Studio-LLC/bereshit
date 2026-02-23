@@ -1,0 +1,115 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-closing-reference",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section X4: Reference — Rust Content",
+    "_P5_brief": "Rust-specific content rules for X4 (Reference). Navigation map — dependencies, dependents, template source, schema, validation commands.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/closing/reference.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "// Dependencies",
+                "description": "What this file depends on — std modules, crate modules, external crates",
+                "patterns": [
+                    "// X4 — Reference\n//\n// Dependencies:\n//   std: fmt, sync, collections\n//   crate: config, error, types\n//   external: serde, toml"
+                ],
+                "visibility": "N/A — documentation"
+            },
+            {
+                "construct": "// Dependents (module form)",
+                "description": "Other modules within the crate that import from this one",
+                "patterns": [
+                    "// Dependents:\n//   crate::handler — uses Config from this module\n//   crate::validator — uses Error from this module"
+                ],
+                "visibility": "N/A",
+                "note": "Module form emphasizes intra-crate relationships. Library form emphasizes external consumers."
+            },
+            {
+                "construct": "// Template",
+                "description": "Source template this file was instantiated from",
+                "patterns": [
+                    "// Template: b-word/seed/code/L0/rust/module.rs",
+                    "// Template: b-word/seed/code/L0/rust/library.rs"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// Derives from / Schema",
+                "description": "The form schema that constrains this file",
+                "patterns": [
+                    "// Derives from: library.rs (parent pattern)",
+                    "// Schema: schemas/code/forms/declared/rust-module.jsonc"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// Validation commands",
+                "description": "How to verify this file is correct",
+                "patterns": [
+                    "// Validation:\n//   cargo build       — compilation\n//   cargo test        — all tests pass\n//   cargo clippy      — no warnings\n//   cargo doc         — documentation builds"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "executable Rust code",
+                "reason": "X4 is navigation documentation — comments only",
+                "defer_to": "BODY",
+                "rust_signal": "^(pub\\s+)?(fn|impl|struct|enum|trait|const|static|type|use|mod)\\s+"
+            },
+            {
+                "construct": "placeholder values",
+                "reason": "References must be real — no 'TODO: add dependencies'. If unknown, investigate.",
+                "defer_to": "N/A — fill with real values",
+                "rust_signal": "TODO|placeholder|TBD"
+            },
+            {
+                "construct": "outdated dependency information",
+                "reason": "References must be current — stale dependency lists mislead developers",
+                "defer_to": "N/A — update when dependencies change",
+                "rust_signal": "N/A"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "^(pub\\s+)?(fn|impl|struct|enum)\\s+",
+                "to": "BODY",
+                "confidence": "high",
+                "why": "Executable code in reference section"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// X4 — Reference\n//\n// Dependencies: std (fmt, sync), parent module, sibling modules\n// Dependents: (list modules that import from this one)\n// Template: b-word/seed/code/L0/rust/module.rs\n// Schema: schemas/code/forms/declared/rust-module.jsonc\n// Validation: cargo build && cargo test && cargo clippy",
+            "empty_library": "// X4 — Reference\n//\n// Dependencies: std (fmt, sync), external crates\n// Consumers: (list crates/binaries that depend on this library)\n// Template: b-word/seed/code/L0/rust/library.rs\n// Schema: schemas/code/forms/declared/rust-library.jsonc\n// Validation: cargo build && cargo test && cargo clippy && cargo doc",
+            "comment_skeleton": "// X4 — Reference\n// Dependencies: ...\n// Template: ...\n// Validation: cargo build && cargo test && cargo clippy"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust X4 (Reference): the navigation map. Dependencies, dependents, template source, schema, validation commands. When someone asks 'what does this file depend on?' or 'how do I verify it?' — X4 answers.",
+    "_X5_scripture": "Proverbs 4:26 — Ponder the path of thy feet, and let all thy ways be established."
+}

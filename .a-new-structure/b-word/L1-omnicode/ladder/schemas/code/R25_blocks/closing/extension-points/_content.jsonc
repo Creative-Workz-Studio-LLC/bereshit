@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-closing-extension-points",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "CLOSING.Extension Points Content Character — What Extension Points Content IS",
+    "_P5_brief": "Format-independent definition of extension points content character. Extension points are growth documentation — intentional hooks where the file is designed to expand. Always comments, never code.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "extension-points",
+        "block": "CLOSING",
+        "position": "X2",
+        "nature": "growth-map",
+
+        "description": "Extension points content is intentional extensibility documented. It marks WHERE new functionality should be added, WHAT form that addition should take, and WHY the extension was anticipated. This is growth by design, not by accident. The content is pure documentation — comment blocks that guide future development. No executable code.",
+
+        "invariants": {
+            "description": "Properties true of ALL extension points content, regardless of language.",
+
+            "documentary": "Extension points are comments only. No executable code. The content describes growth opportunities in the language's comment syntax.",
+            "location_specific": "Each extension point names a concrete location — a section tag, function, trait, interface — where new code should be added.",
+            "form_prescriptive": "Extension points describe WHAT to add, not just WHERE. 'Add new validator here' is weak. 'Add new Validator impl matching the ValidateX pattern in B3' is useful.",
+            "current": "Extension points must be maintained. Completed extensions still listed as planned are lies. Stale items erode trust in the entire section.",
+            "forward_looking": "Extension points anticipate needs based on architectural knowledge. They capture the original author's intent for growth directions the code was designed to support."
+        },
+
+        "content_forms": {
+            "description": "What extension points content looks like across languages. Comment syntax varies; the growth-map structure is invariant.",
+
+            "rust": {
+                "syntax": "// [X2] Extension Points\n// - New error variants: Add to ErrorKind enum in S7, implement Display, add test in Cv\n// - Additional formats: Implement FormatHandler trait (see B3 pattern), register in B5\n// - Known limitation: Single-threaded only. Parallelism would require Send+Sync on Context",
+                "grouping": "Line comments (//) with bulleted items. Each point names location (section/type), describes the addition pattern, and references existing code as template.",
+                "notes": "Rust extension points often reference traits to implement, enum variants to add, or generic type parameters to fill. The type system makes extension patterns explicit."
+            },
+
+            "go": {
+                "syntax": "// [X2] Extension Points\n// - New handlers: Implement Handler interface (see B3), register in handlerMap (B5)\n// - Additional output formats: Add case to formatSwitch in B4, add formatter func\n// - Known limitation: No streaming support. Would require io.Reader/Writer refactor in S6",
+                "grouping": "Line comments (//) with bulleted items. Each point names location (section/function), describes the addition pattern, and references existing code as template.",
+                "notes": "Go extension points often reference interfaces to implement, map entries to add, or switch cases to extend. The interface-based design makes extension points natural."
+            },
+
+            "c": {
+                "syntax": "/* [X2] Extension Points\n * - New operations: Add op_* function following B3 pattern, add to dispatch table in B5\n * - Additional types: Add typedef in S6, constructor/destructor pair in B2/Cc\n * - Known limitation: Fixed-size buffers. Dynamic allocation would require malloc/free lifecycle */",
+                "grouping": "Block comments (/* */) with bulleted items. Each point names location (section/function), describes the addition pattern, and references existing code as template.",
+                "notes": "C extension points often reference function pointer tables, typedef additions, or preprocessor-controlled feature flags. Manual memory management means extensions must document their allocation strategy."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, extension points content changes language-specific references but preserves the growth map. Where to extend and what pattern to follow stays semantically constant — the language-specific details change.",
+            "invariant": ["growth locations (which sections/functions accept extension)", "pattern references (which existing code to follow)", "known limitations (what architectural constraints exist)", "documentary nature (comments only)"],
+            "variable": ["extension mechanism (trait impl vs interface impl vs function pointer)", "comment syntax (// vs /* */)", "language-specific patterns (enum variants vs switch cases vs dispatch tables)", "type system implications (generics vs interfaces vs void pointers)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — extension points are documentation, not code.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Extension points content is the architect's invitation to the future. Not 'figure it out' but 'here is where, here is how, here is why.' Growth by design honors both the original vision and the future contributor.",
+    "_X5_scripture": "Isaiah 54:2 — Enlarge the place of thy tent, and let them stretch forth the curtains of thine habitations."
+}

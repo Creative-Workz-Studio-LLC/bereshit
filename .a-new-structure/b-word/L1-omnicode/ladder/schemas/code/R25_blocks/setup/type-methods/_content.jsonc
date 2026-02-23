@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-type-methods",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.TypeMethods Content Character — What Type Method Content IS",
+    "_P5_brief": "Format-independent definition of type method content character. Type methods are structural completers — methods whose absence makes the type INCOMPLETE, not just less capable. Error(), String(), MarshalJSON(). Syntax varies (impl, receiver methods, function declarations); the structural-completion role doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "type-methods",
+        "block": "SETUP",
+        "position": 13,
+        "nature": "structural-completer",
+
+        "description": "Type method content provides methods that complete a type's identity. The litmus test: if removing the method makes the type INCOMPLETE (not just less capable), it belongs here. Error() on an error type, String() on a printable type, MarshalJSON() on a serializable type — these are not added capabilities but structural requirements. Business logic methods that add capability belong in BODY. Type methods in SETUP finish what CoreTypes started.",
+
+        "invariants": {
+            "description": "Properties true of ALL type method content, regardless of language.",
+
+            "identity-completing": "Each method here completes a type's identity. The type is structurally incomplete without it — like a puzzle with a missing piece, not a car without a radio.",
+            "interface-satisfying": "Type methods typically satisfy well-known interfaces — error, fmt.Stringer, Display, encoding interfaces. They connect types to language-level contracts.",
+            "non-behavioral": "Type methods do not add business capability. They provide structural completeness — how the type represents itself, how it serializes, how it reports errors. Not what it DOES, but what it IS.",
+            "deterministic": "Type methods produce consistent output from the same input. String() on the same value always returns the same string. No side effects, no external dependencies.",
+            "adjacent-to-type": "Type methods live near their type definition in the source. They are part of the type's declaration surface, not separate behavioral additions."
+        },
+
+        "content_forms": {
+            "description": "What type method content looks like across languages. Syntax varies; the structural-completion role is invariant.",
+
+            "rust": {
+                "syntax": "impl fmt::Display for Config { fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, \"Config({})\", self.name) } }  impl Error for ParseError { fn source(&self) -> Option<&(dyn Error + 'static)> { self.cause.as_deref() } }",
+                "grouping": "Display impls first, then Error impls, then serialization impls (Serialize/Deserialize), then other standard trait impls. Grouped by the trait being satisfied.",
+                "notes": "Rust type methods are impl blocks for standard traits. The distinction from BODY is clear: Display, Error, From, Default, Hash, Eq — these complete the type. Custom business methods in impl Self go to BODY."
+            },
+
+            "go": {
+                "syntax": "func (c Config) String() string { return fmt.Sprintf(\"Config(%s)\", c.Name) }  func (e *ParseError) Error() string { return fmt.Sprintf(\"parse error: %s\", e.Message) }",
+                "grouping": "String() methods first, then Error() methods, then encoding methods (MarshalJSON/UnmarshalJSON), then interface satisfaction checks (var _ Interface = (*Type)(nil)).",
+                "notes": "Go type methods are receiver functions. Structural completers satisfy stdlib interfaces — fmt.Stringer, error, encoding.TextMarshaler. Interface satisfaction compile-time checks (var _ I = (*T)(nil)) also belong here."
+            },
+
+            "c": {
+                "syntax": "const char* config_to_string(const Config *c) { ... }  const char* parse_error_message(ErrorCode code) { ... }",
+                "grouping": "String conversion functions first, then error message functions, then serialization functions. Named with type prefix (config_, error_).",
+                "notes": "C has no methods — type completers are functions that take the type as first argument. The naming convention (type_operation) makes the relationship explicit. These functions are the C equivalent of impl Display."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, type methods change syntax but preserve the completion relationship. The same types need the same structural methods in every language — only the syntax for attaching methods to types changes.",
+            "invariant": ["completion relationship (which methods complete which types)", "output semantics (what String()/Display returns for given values)", "interface satisfaction (which standard contracts are met)", "deterministic behavior (same input = same output)"],
+            "variable": ["attachment syntax (impl Trait for Type vs receiver method vs prefixed function)", "interface system (explicit impl vs implicit satisfaction vs manual)", "method naming (fmt vs String vs to_string)", "self/receiver conventions (&self vs pointer receiver vs first parameter)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "defer",
+        "self_access": "defer",
+        "variable_binding": "defer",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.73,
+    "_weight_rationale": "|avg| of concept_map: 3F 8D. −8/11 ≈ −0.73. method_call, self_access, and variable_binding defer (type methods involve all three).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Type methods complete what type definitions start. A type without its structural methods is like a name without a face — defined but not fully present. These methods give types their complete identity.",
+    "_X5_scripture": "Ecclesiastes 3:11 — He hath made every thing beautiful in his time."
+}

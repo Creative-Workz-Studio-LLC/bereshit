@@ -1,0 +1,105 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-comment-block",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 3: Comment Block — Go Content",
+    "_P5_brief": "Go-specific content rules for the METADATA comment block. // comment fields that identify the file. Secondary to Pragma/Metadata vars. Extends the base structure at structure/parts/metadata/comment-block.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/comment-block.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "// file: {filename}",
+                "description": "File identity -- what file is this",
+                "patterns": ["// file: doc.go", "// file: main.go", "// file: config.go"],
+                "visibility": "N/A -- comments"
+            },
+            {
+                "construct": "// key: {key}",
+                "description": "OmniCode key -- unique identifier",
+                "patterns": ["// key: B-claude-global-hooks-session-start"],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// purpose: {description}",
+                "description": "What this file does",
+                "patterns": ["// purpose: Session start hook -- health tracking and context loading"],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// biblical_foundation: {verse}",
+                "description": "The truth this file stands on",
+                "patterns": ["// biblical_foundation: Proverbs 9:10 -- The fear of the LORD is the beginning of wisdom"],
+                "visibility": "N/A"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "executable code in comment block area",
+                "reason": "The METADATA comment block is documentation. Code belongs in SETUP or BODY.",
+                "defer_to": "SETUP or BODY",
+                "go_signal": "^(func|type|const|var|import)\\s+"
+            },
+            {
+                "construct": "package declaration before METADATA block",
+                "reason": "In Go, the package declaration must come after the METADATA comment block. The METADATA block sits between the pragma directive and package statement.",
+                "defer_to": "N/A -- reorder: directive -> METADATA -> package",
+                "go_signal": "N/A",
+                "note": "This is Go-specific. The Go compiler requires package as first non-comment declaration, so METADATA uses comments."
+            }
+        ],
+
+        // -----------------------------------------
+        // Severity & Downgrade Rules
+        // -----------------------------------------
+
+        "field_severity": {
+            "Key": { "required": true, "severity": "warn", "downgrade_when": "file has Pragma var with I1.key" },
+            "Purpose": { "required": true, "severity": "warn", "downgrade_when": "file has Metadata var with C5.purpose" },
+            "Biblical/Scripture": { "recommended": true, "severity": "info", "downgrade_when": "file has Metadata var with C3.scripture" },
+            "Version": { "recommended": true, "severity": "info", "downgrade_when": "file has Metadata var with C1.version" }
+        },
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "full": "// file: {filename}\n// key: {key}\n// title: {title}\n// type: {type}\n// purpose: {purpose}\n// biblical_foundation: {scripture}\n// version: {version}\n// status: {status}\n// created: {date}\n// updated: {date}\n// authors: {authors}",
+            "minimal": "// file: {filename}\n// key: {key}\n// purpose: {purpose}",
+            "comment_skeleton": "// // file: {filename}\n// // key: {key}\n// // purpose: {purpose}"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go comment block: the file's nameplate in // comments. Go-specific constraint: METADATA block must come BEFORE package declaration. When Pragma/Metadata vars exist, comment fields become secondary -- but always present for human readability.",
+    "_X5_scripture": "Proverbs 22:1 -- A good name is rather to be chosen than great riches."
+}

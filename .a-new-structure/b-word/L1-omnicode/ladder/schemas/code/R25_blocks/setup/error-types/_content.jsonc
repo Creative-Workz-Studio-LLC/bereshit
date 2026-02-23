@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-error-types",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.ErrorTypes Content Character — What Error Type Content IS",
+    "_P5_brief": "Format-independent definition of error type content character. Error types name every way a file can fail — enumerated variants with human-readable messages and conversion from upstream errors. Syntax varies (enum Error, custom structs, errno); the exhaustive naming of failure modes doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "error-types",
+        "block": "SETUP",
+        "position": 6,
+        "nature": "failure-declaration",
+
+        "description": "Error type content names failure. Every way this file's code can fail gets a named variant with a human-readable message. Error types are defined here — enumerated, documented, with display formatting and conversion from upstream error types. No error HANDLING occurs here. Errors are declared so that BODY code can propagate them with precision. A named error is a diagnosed error; an unnamed error is a panic in disguise.",
+
+        "invariants": {
+            "description": "Properties true of ALL error type content, regardless of language.",
+
+            "exhaustive": "Error types enumerate ALL failure modes of this file. No unnamed errors. Every possible failure has a variant.",
+            "displayable": "Every error variant has a human-readable message. Errors must speak to humans, not just compilers.",
+            "convertible": "Error types include conversion from upstream (dependency) errors into this file's error vocabulary. External errors become local errors.",
+            "matchable": "Error variants can be pattern-matched by callers. Structured enums over stringly-typed errors — callers must be able to handle specific failures.",
+            "non-handling": "Error types only DECLARE failure modes. No try/catch, no recovery logic, no fallback behavior. Handling is BODY's responsibility."
+        },
+
+        "content_forms": {
+            "description": "What error type content looks like across languages. Syntax varies; the exhaustive naming of failure modes is invariant.",
+
+            "rust": {
+                "syntax": "#[derive(Debug)] enum Error { ParseFailed(String), InvalidInput { field: &'static str }, IoError(std::io::Error) } impl fmt::Display for Error { ... } impl From<std::io::Error> for Error { ... }",
+                "grouping": "Error enum first, then Display impl, then From impls for upstream error conversion. One enum per file unless domain demands multiple.",
+                "notes": "Rust error types are rich — enums with data, Display for human messages, From for automatic conversion via ? operator. thiserror crate can derive Display and From. Error types in SETUP; error handling (match, ?) in BODY."
+            },
+
+            "go": {
+                "syntax": "type ParseError struct { Field string; Message string } func (e *ParseError) Error() string { return fmt.Sprintf(...) }",
+                "grouping": "Error struct definitions first, then Error() method implementations, then sentinel error variables (var ErrNotFound = errors.New(...))",
+                "notes": "Go errors are values implementing the error interface. Sentinel errors (var Err*) go in Variables section. Structured error types with Error() method go here. fmt.Errorf wrapping happens in BODY, not SETUP."
+            },
+
+            "c": {
+                "syntax": "typedef enum { ERR_NONE = 0, ERR_PARSE_FAILED, ERR_INVALID_INPUT, ERR_IO } ErrorCode; const char* error_string(ErrorCode code);",
+                "grouping": "Error enum first, then string conversion function declaration. Error codes are integer enums; messages are in a lookup function.",
+                "notes": "C errors are integer codes by convention. A string conversion function maps codes to messages. errno-style patterns for system integration. No automatic conversion — manual mapping from upstream error codes."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, error types change their expression mechanism but preserve the set of failure modes and their messages. The same failures exist in every language — only how they're encoded changes.",
+            "invariant": ["failure mode set (which errors can occur)", "error messages (human-readable descriptions)", "conversion relationships (which upstream errors map to which local errors)", "exhaustiveness (all failures named)"],
+            "variable": ["encoding mechanism (enum vs struct vs integer codes)", "display/formatting approach (impl Display vs Error() vs lookup function)", "conversion mechanism (From trait vs manual wrapping vs code mapping)", "error propagation syntax (? vs if err != nil vs return code checking)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "defer",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "defer",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.82,
+    "_weight_rationale": "|avg| of concept_map: 2F 9D. −9/11 ≈ −0.82. variable_binding and err_wrap defer (error types relate to both).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Error types are the vocabulary of failure. A file that names its errors has already begun to handle them. The act of declaring what can go wrong is the first step toward resilience.",
+    "_X5_scripture": "Proverbs 27:12 — A prudent man foreseeth the evil, and hideth himself; but the simple pass on, and are punished."
+}

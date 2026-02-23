@@ -1,0 +1,49 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-string-format",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — String Format",
+
+    "concept": "string_format",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "sprintf",
+            "emit": "fmt.Sprintf(\"{template}\", {args})",
+            "when": "building a formatted string — Rust format!(...)",
+            "notes": "fmt.Sprintf is Go's format! equivalent.",
+            "priority": 1
+        },
+        {
+            "id": "printf",
+            "emit": "fmt.Printf(\"{template}\\n\", {args})",
+            "when": "printing formatted string to stdout — Rust println!(...)",
+            "notes": "fmt.Printf + \\n for Rust println!. Or fmt.Println for simple cases.",
+            "priority": 2
+        },
+        {
+            "id": "fprintf_stderr",
+            "emit": "fmt.Fprintf(os.Stderr, \"{template}\\n\", {args})",
+            "when": "printing to stderr — Rust eprintln!(...)",
+            "notes": "Go has no built-in eprintln — use fmt.Fprintf to os.Stderr.",
+            "priority": 3
+        }
+    ],
+
+    "placeholder_mapping": {
+        "{}": "%v",
+        "{:?}": "%+v",
+        "{:#?}": "%#v",
+        "{:.2}": "%.2f",
+        "{:x}": "%x",
+        "{:b}": "%b"
+    },
+
+    "_X5_note": "Go string formatting — fmt.Sprintf with %verb placeholders. Same concept, different syntax."
+}

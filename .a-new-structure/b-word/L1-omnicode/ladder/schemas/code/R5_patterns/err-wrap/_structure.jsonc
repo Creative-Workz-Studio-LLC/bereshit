@@ -1,0 +1,121 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-concepts-err-wrap",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "concept-definition",
+    "_P2_role": "schema",
+    "_P5_title": "Concept — Err Wrap (Error Result)",
+    "_P5_brief": "Universal concept: creating an error value to return. Rust Err(e), Go fmt.Errorf(...), C return -1.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "concept": "err_wrap",
+    "description": "Create and return an error value",
+
+    "universal_shape": {
+        "error_type": "the type/kind of error being created",
+        "message": "human-readable error description",
+        "cause": "optional underlying error being wrapped",
+        "args": "format arguments for the error message"
+    },
+
+    "semantic_notes": [
+        "Rust: Err(io::Error::new(kind, msg)) — typed error with kind enum and message.",
+        "Go: fmt.Errorf('msg: %w', err) — formatted error with optional wrapping.",
+        "Go: errors.New('msg') — simple error without wrapping.",
+        "C: errno = ENOENT; return -1 — global errno + return code convention.",
+        "Error wrapping preserves the causal chain for debugging."
+    ],
+
+    "container_map": {
+        "_note": "granted (+1) = belongs here. denied (-1) = does not belong. defer (0) = context-dependent.",
+
+        "METADATA": {
+            "directives": "denied",
+            "doc-comments": "denied",
+            "comment-block": "denied",
+            "pragma-identity": "denied",
+            "metadata-context": "denied",
+            "subtypes": "denied"
+        },
+
+        "SETUP": {
+            "imports": "denied",
+            "modules": "denied",
+            "constants": "denied",
+            "statics": "denied",
+            "type-aliases": "denied",
+            "error-types": "defer",
+            "core-types": "denied",
+            "trait-defs": "denied",
+            "macros": "defer",
+            "feature-gates": "denied",
+            "build-tags": "denied",
+            "code-generation": "denied",
+            "interface-defs": "denied",
+            "type-methods": "denied",
+            "variables": "denied"
+        },
+
+        "BODY": {
+            "identity-access": "granted",
+            "trait-implementations": "granted",
+            "constructors": "granted",
+            "core-logic": "granted",
+            "core-operations": "granted",
+            "queries": "granted",
+            "output-display": "granted",
+            "free-functions": "granted",
+            "helpers": "granted",
+            "org-chart": "denied",
+            "public-apis": "granted",
+            "error-handling": "granted",
+            "tests": "granted"
+        },
+
+        "CLOSING": {
+            "validation": "granted",
+            "execution": "granted",
+            "cleanup": "granted",
+            "modification-policy": "denied",
+            "extension-points": "denied",
+            "troubleshooting": "denied",
+            "reference": "denied",
+            "closing-note": "denied"
+        }
+    },
+
+    "concept_relations": {
+        "_note": "granted = high co-occurrence. denied = anti-correlation. defer = context-dependent. Asymmetric.",
+
+        "error_propagation": "granted",
+        "string_format": "granted",
+        "return_value": "granted",
+        "function_call": "granted",
+        "method_call": "defer",
+        "variable_binding": "defer",
+        "conditional_if": "defer",
+        "conditional_match": "defer",
+        "self_access": "denied",
+        "ok_wrap": "denied"
+    },
+
+    "detection_weight": 0.78,
+    "_weight_rationale": "4-block derived: (B − avg(M,S,C)) / 2. B=11/13, M=−6/6, S=−13/15, C=−2/8. 2 SETUP defers (error-types, macros).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Creating errors honestly. Naming what went wrong.",
+    "_X5_scripture": "John 8:32 — The truth shall make you free. Honest error reporting leads to correct fixes."
+}

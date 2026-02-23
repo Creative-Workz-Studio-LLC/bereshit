@@ -1,0 +1,644 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "OmniCode",
+  "scopeName": "source.omnicode",
+  "patterns": [
+    { "include": "#pragma" },
+    { "include": "#block-boundaries" },
+    { "include": "#section-boundaries" },
+    { "include": "#block-tags" },
+    { "include": "#section-tags" },
+    { "include": "#section-addressing" },
+    { "include": "#block-end-markers" },
+    { "include": "#anchor" },
+    { "include": "#directives" },
+    { "include": "#containment" },
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#attention" },
+    { "include": "#control-flow-symbols" },
+    { "include": "#binding" },
+    { "include": "#direction" },
+    { "include": "#control-keywords" },
+    { "include": "#response-keywords" },
+    { "include": "#emphasis-keywords" },
+    { "include": "#flow-keywords" },
+    { "include": "#cpisi-keywords" },
+    { "include": "#types" },
+    { "include": "#values" },
+    { "include": "#numbers" },
+    { "include": "#identifiers" }
+  ],
+  "repository": {
+
+    "pragma": {
+      "patterns": [
+        {
+          "comment": "Shebang line: #!omni <type> [--flags]",
+          "name": "meta.pragma.omnicode",
+          "match": "^(#!omni)\\s+(\\w+)(.*)$",
+          "captures": {
+            "1": { "name": "keyword.control.pragma.shebang.omnicode" },
+            "2": { "name": "entity.name.type.pragma.omnicode" },
+            "3": {
+              "patterns": [
+                {
+                  "name": "keyword.operator.flag.omnicode",
+                  "match": "--\\w+"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "Shebang in comment: // #!omni <type> [--flags]",
+          "name": "meta.pragma.comment.omnicode",
+          "match": "^\\s*//\\s*(#!omni)\\s+(\\w+)(.*)$",
+          "captures": {
+            "1": { "name": "keyword.control.pragma.shebang.omnicode" },
+            "2": { "name": "entity.name.type.pragma.omnicode" },
+            "3": {
+              "patterns": [
+                {
+                  "name": "keyword.operator.flag.omnicode",
+                  "match": "--\\w+"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "Pragma format: @pragma omni <type>",
+          "name": "meta.pragma.directive.omnicode",
+          "match": "^(@pragma)\\s+(omni)\\s+(\\w+)",
+          "captures": {
+            "1": { "name": "keyword.control.directive.omnicode" },
+            "2": { "name": "keyword.control.pragma.omnicode" },
+            "3": { "name": "entity.name.type.pragma.omnicode" }
+          }
+        }
+      ]
+    },
+
+    "block-boundaries": {
+      "patterns": [
+        {
+          "comment": "Block boundary: ═══ lines (thick double-line separators)",
+          "name": "markup.heading.block-boundary.omnicode",
+          "match": "^\\s*(?://|#)\\s*[═]{3,}\\s*$"
+        }
+      ]
+    },
+
+    "section-boundaries": {
+      "patterns": [
+        {
+          "comment": "Section boundary: ─── lines (thin single-line separators)",
+          "name": "comment.line.section-boundary.omnicode",
+          "match": "^\\s*(?://|#)\\s*[─]{3,}\\s*$"
+        }
+      ]
+    },
+
+    "block-tags": {
+      "patterns": [
+        {
+          "comment": "Block header with tag: // BLOCK NAME [TAG]",
+          "name": "meta.block.header.omnicode",
+          "match": "^\\s*(?://|#)\\s*(OMNICODE PRAGMA|METADATA BLOCK|CONTENT BLOCK|CLOSING BLOCK|HEADER BLOCK|CONTEXT BLOCK|SETUP BLOCK|BODY BLOCK|FOOTER BLOCK)\\s*(\\[(?:PRAGMA|METADATA|CONTENT|CLOSING|HEADER|CONTEXT|SETUP|BODY|FOOTER)\\])",
+          "captures": {
+            "1": { "name": "keyword.control.block.name.omnicode" },
+            "2": { "name": "keyword.control.block.tag.omnicode" }
+          }
+        },
+        {
+          "comment": "Block end tag: // END BLOCK [END]",
+          "name": "meta.block.end.omnicode",
+          "match": "^\\s*(?://|#)\\s*(END\\s+(?:PRAGMA|METADATA|CONTENT|CLOSING|HEADER|CONTEXT|SETUP|BODY|FOOTER))\\s*(\\[END\\])",
+          "captures": {
+            "1": { "name": "keyword.control.block.end.omnicode" },
+            "2": { "name": "keyword.control.block.tag.omnicode" }
+          }
+        }
+      ]
+    },
+
+    "section-tags": {
+      "patterns": [
+        {
+          "comment": "Section header with tag: // P.1 CORE — Identity [CORE]",
+          "name": "meta.section.header.omnicode",
+          "match": "^\\s*(?://|#)\\s*(?:P\\.[1-5]|M\\.[1-5]|X\\.[1-5]|Cc|Co|Cv)\\s+[A-Z]+(?:\\s*—\\s*.+?)?\\s*(\\[(?:CORE|FAMILY|INSTANCE|ARCH|SUMMARY|IDENTITY|STATE|ATTRIBUTION|GROUNDING|DEPENDENCIES|CONFIG|OPS|VALIDATE|POLICY|EXTENSION|TROUBLESHOOTING|REFERENCE|NOTE|ROLE|PURPOSE)\\])",
+          "captures": {
+            "1": { "name": "keyword.control.section.tag.omnicode" }
+          }
+        },
+        {
+          "comment": "Standalone section tags in brackets",
+          "name": "keyword.control.section.tag.omnicode",
+          "match": "\\[(CORE|FAMILY|INSTANCE|ARCH|SUMMARY|IDENTITY|STATE|ATTRIBUTION|GROUNDING|DEPENDENCIES|CONFIG|OPS|VALIDATE|POLICY|EXTENSION|TROUBLESHOOTING|REFERENCE|NOTE|ROLE|PURPOSE|PRAGMA|METADATA|CONTENT|CLOSING|HEADER|CONTEXT|SETUP|BODY|FOOTER|END)\\]"
+        }
+      ]
+    },
+
+    "section-addressing": {
+      "patterns": [
+        {
+          "comment": "Pragma sections: P.1 through P.5",
+          "name": "entity.name.section.pragma.omnicode",
+          "match": "\\bP\\.[1-5]\\b"
+        },
+        {
+          "comment": "Metadata sections: M.1 through M.5",
+          "name": "entity.name.section.metadata.omnicode",
+          "match": "\\bM\\.[1-5]\\b"
+        },
+        {
+          "comment": "Closing sections: X.1 through X.5",
+          "name": "entity.name.section.closing.omnicode",
+          "match": "\\bX\\.[1-5]\\b"
+        },
+        {
+          "comment": "Content sub-blocks: Cc, Co, Cv",
+          "name": "entity.name.section.content.omnicode",
+          "match": "\\bC[cov]\\b"
+        }
+      ]
+    },
+
+    "block-end-markers": {
+      "patterns": [
+        {
+          "comment": "END keyword in block context",
+          "name": "keyword.control.block.end.omnicode",
+          "match": "^\\s*(?://|#)\\s*END\\s+(?:PRAGMA|METADATA|CONTENT|CLOSING|HEADER|CONTEXT|SETUP|BODY|FOOTER)"
+        }
+      ]
+    },
+
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.omnicode",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.line.hash.omnicode",
+          "match": "^\\s*#(?![!a-zA-Z]).*$"
+        },
+        {
+          "name": "comment.block.omnicode",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.omnicode",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.omnicode",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.omnicode",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.omnicode",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+
+    "anchor": {
+      "patterns": [
+        {
+          "comment": "#anchor directive — grounding reference",
+          "name": "meta.anchor.omnicode",
+          "match": "^(#anchor)\\b(.*)$",
+          "captures": {
+            "1": { "name": "keyword.control.anchor.omnicode" },
+            "2": { "name": "string.unquoted.anchor.omnicode" }
+          }
+        }
+      ]
+    },
+
+    "directives": {
+      "patterns": [
+        {
+          "comment": "@legend directive with special :: | syntax",
+          "name": "meta.directive.legend.omnicode",
+          "match": "^(@legend)\\s+(.*)",
+          "captures": {
+            "1": { "name": "keyword.control.directive.omnicode" },
+            "2": {
+              "patterns": [
+                {
+                  "name": "variable.parameter.legend.omnicode",
+                  "match": "_\\w+"
+                },
+                {
+                  "name": "keyword.operator.type-binding.omnicode",
+                  "match": "::"
+                },
+                {
+                  "name": "keyword.operator.branch.omnicode",
+                  "match": "\\|"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "@directive with value: @key value, @type data :: folder, etc.",
+          "name": "meta.directive.omnicode",
+          "match": "^(@\\w+)\\s+(.*)",
+          "captures": {
+            "1": { "name": "keyword.control.directive.omnicode" },
+            "2": {
+              "patterns": [
+                { "include": "#binding" },
+                { "include": "#strings" },
+                { "include": "#containment-inline" },
+                {
+                  "name": "variable.other.value.omnicode",
+                  "match": "[^\\s]+"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "Bare @directive at start of line",
+          "name": "keyword.control.directive.omnicode",
+          "match": "^@\\w+\\b"
+        }
+      ]
+    },
+
+    "containment": {
+      "patterns": [
+        {
+          "comment": ">> child/contains with :: description",
+          "name": "meta.containment.child.omnicode",
+          "match": "^(\\s*)(>>)\\s+(\\S+)\\s*(::)\\s*(.*)",
+          "captures": {
+            "2": { "name": "keyword.operator.containment.child.omnicode" },
+            "3": { "name": "entity.name.filename.omnicode" },
+            "4": { "name": "keyword.operator.type-binding.omnicode" },
+            "5": { "name": "string.unquoted.description.omnicode" }
+          }
+        },
+        {
+          "comment": ">> child/contains without description",
+          "name": "meta.containment.child.omnicode",
+          "match": "^(\\s*)(>>)\\s+(\\S+)",
+          "captures": {
+            "2": { "name": "keyword.operator.containment.child.omnicode" },
+            "3": { "name": "entity.name.filename.omnicode" }
+          }
+        },
+        {
+          "comment": "=> provides/exports",
+          "name": "meta.containment.provides.omnicode",
+          "match": "^(=>)\\s+(.*)",
+          "captures": {
+            "1": { "name": "keyword.operator.containment.provides.omnicode" },
+            "2": { "name": "variable.other.export.omnicode" }
+          }
+        },
+        {
+          "comment": "<- derives from/inherits",
+          "name": "meta.containment.derives.omnicode",
+          "match": "^(<-)\\s+(.*)",
+          "captures": {
+            "1": { "name": "keyword.operator.containment.derives.omnicode" },
+            "2": { "name": "string.unquoted.path.omnicode" }
+          }
+        }
+      ]
+    },
+
+    "containment-inline": {
+      "patterns": [
+        {
+          "comment": "Inline >> operator",
+          "name": "keyword.operator.containment.child.omnicode",
+          "match": ">>"
+        },
+        {
+          "comment": "Inline => operator",
+          "name": "keyword.operator.containment.provides.omnicode",
+          "match": "=>"
+        },
+        {
+          "comment": "Inline <- operator",
+          "name": "keyword.operator.containment.derives.omnicode",
+          "match": "<-"
+        }
+      ]
+    },
+
+    "attention": {
+      "patterns": [
+        {
+          "comment": "Critical attention: >!!! !!!>",
+          "name": "markup.bold.attention.critical.omnicode",
+          "match": ">!!!\\s.*\\s!!!>"
+        },
+        {
+          "comment": "Warning attention: >!! !!>",
+          "name": "markup.bold.attention.warning.omnicode",
+          "match": ">!!\\s.*\\s!!>"
+        },
+        {
+          "comment": "Notice attention: >! !>",
+          "name": "markup.bold.attention.notice.omnicode",
+          "match": ">!\\s.*\\s!>"
+        }
+      ]
+    },
+
+    "control-flow-symbols": {
+      "patterns": [
+        {
+          "comment": "Halt: ->| (flow stops at wall)",
+          "name": "keyword.control.halt.omnicode",
+          "match": "->\\|"
+        },
+        {
+          "comment": "Proceed: --> (full forward flow)",
+          "name": "keyword.control.proceed.omnicode",
+          "match": "-->"
+        },
+        {
+          "comment": "Backward: <-- (pull, retrieve)",
+          "name": "keyword.control.backward.omnicode",
+          "match": "<--"
+        },
+        {
+          "comment": "Await: \\-> (pause before flow)",
+          "name": "keyword.control.await.omnicode",
+          "match": "\\\\->"
+        }
+      ]
+    },
+
+    "binding": {
+      "patterns": [
+        {
+          "comment": "Type binding: :: (declares what something IS)",
+          "name": "keyword.operator.type-binding.omnicode",
+          "match": "::"
+        }
+      ]
+    },
+
+    "direction": {
+      "patterns": [
+        {
+          "comment": "Light flow: -> (maps to, derivation)",
+          "name": "keyword.operator.arrow.forward.omnicode",
+          "match": "->"
+        },
+        {
+          "comment": "Branch/alternative: |",
+          "name": "keyword.operator.branch.omnicode",
+          "match": "\\|"
+        }
+      ]
+    },
+
+    "control-keywords": {
+      "patterns": [
+        {
+          "comment": "Proceed keywords (+1 ternary)",
+          "name": "keyword.control.proceed.omnicode",
+          "match": "\\b(PROCEED|CONTINUE|GO|NEXT)\\b"
+        },
+        {
+          "comment": "Await keywords (0 ternary)",
+          "name": "keyword.control.await.omnicode",
+          "match": "\\b(AWAIT|WAIT|PAUSE|HOLD)\\b"
+        },
+        {
+          "comment": "Halt keywords (-1 ternary)",
+          "name": "keyword.control.halt.omnicode",
+          "match": "\\b(HALT|STOP|END|TERMINATE)\\b"
+        },
+        {
+          "comment": "Pivot keywords (direction change)",
+          "name": "keyword.control.pivot.omnicode",
+          "match": "\\b(PIVOT|REDIRECT|CHANGE)\\b"
+        }
+      ]
+    },
+
+    "response-keywords": {
+      "patterns": [
+        {
+          "comment": "Affirm responses",
+          "name": "constant.language.affirm.omnicode",
+          "match": "\\b(YES|OK|CONFIRMED|APPROVED|ACCEPT)\\b"
+        },
+        {
+          "comment": "Negate responses",
+          "name": "constant.language.negate.omnicode",
+          "match": "\\b(NO|DENIED|REJECTED|REFUSE)\\b"
+        },
+        {
+          "comment": "Acknowledge responses",
+          "name": "constant.language.acknowledge.omnicode",
+          "match": "\\b(ACKNOWLEDGED|NOTED|UNDERSTOOD|COPY)\\b"
+        }
+      ]
+    },
+
+    "emphasis-keywords": {
+      "patterns": [
+        {
+          "comment": "Attention/emphasis keywords (escalating severity)",
+          "name": "markup.bold.emphasis.omnicode",
+          "match": "\\b(BAM|ATTENTION|NOTICE|IMPORTANT)\\b"
+        }
+      ]
+    },
+
+    "flow-keywords": {
+      "patterns": [
+        {
+          "comment": "Continuation flow",
+          "name": "keyword.control.flow.continuation.omnicode",
+          "match": "\\b(AND|ALSO|ADDITIONALLY|PLUS)\\b"
+        },
+        {
+          "comment": "Alternative flow",
+          "name": "keyword.control.flow.alternative.omnicode",
+          "match": "\\b(OR|ALTERNATIVELY|EITHER)\\b"
+        },
+        {
+          "comment": "Exception flow",
+          "name": "keyword.control.flow.exception.omnicode",
+          "match": "\\b(BUT|HOWEVER|EXCEPT|UNLESS)\\b"
+        },
+        {
+          "comment": "Conditional flow",
+          "name": "keyword.control.flow.conditional.omnicode",
+          "match": "\\b(IF|WHEN|WHERE|WHILE)\\b"
+        },
+        {
+          "comment": "Consequent flow",
+          "name": "keyword.control.flow.consequent.omnicode",
+          "match": "\\b(THEN|THEREFORE|SO|THUS)\\b"
+        },
+        {
+          "comment": "Sequence keywords",
+          "name": "keyword.control.flow.sequence.omnicode",
+          "match": "\\b(FIRST|SECOND|THIRD|NEXT|FINALLY|LAST|PRIMARY|MAIN|CRITICAL|ESSENTIAL)\\b"
+        },
+        {
+          "comment": "Lower-case flow keywords (natural language form)",
+          "name": "keyword.control.flow.omnicode",
+          "match": "\\b(when|otherwise|repeat|until|through|each|from|to|in|if|then|else|while|for|return)\\b"
+        }
+      ]
+    },
+
+    "cpisi-keywords": {
+      "patterns": [
+        {
+          "comment": "CPI-SI health",
+          "name": "keyword.cpisi.health.omnicode",
+          "match": "\\b(health)\\b"
+        },
+        {
+          "comment": "CPI-SI state operations",
+          "name": "keyword.cpisi.state.omnicode",
+          "match": "\\b(state|transition|expand|retreat|maintain)\\b"
+        },
+        {
+          "comment": "CPI-SI detect-assess-recover",
+          "name": "keyword.cpisi.dar.omnicode",
+          "match": "\\b(checkpoint|restore|discard)\\b"
+        },
+        {
+          "comment": "CPI-SI witness",
+          "name": "keyword.cpisi.witness.omnicode",
+          "match": "\\b(witness|display)\\b"
+        },
+        {
+          "comment": "CPI-SI operations",
+          "name": "keyword.cpisi.operation.omnicode",
+          "match": "\\b(get|add|set)\\b"
+        },
+        {
+          "comment": "High-level OmniCode declaration keywords",
+          "name": "keyword.control.entity.omnicode",
+          "match": "\\b(this|is|a|folder|file|module|named)\\b"
+        },
+        {
+          "comment": "Declaration keywords",
+          "name": "keyword.declaration.omnicode",
+          "match": "\\b(let|be|establish|work|provide|import|export|create)\\b"
+        },
+        {
+          "comment": "Error handling keywords",
+          "name": "keyword.control.error.omnicode",
+          "match": "\\b(attempt|recover|ensure|fail|with)\\b"
+        }
+      ]
+    },
+
+    "types": {
+      "patterns": [
+        {
+          "comment": "Primitive types",
+          "name": "support.type.primitive.omnicode",
+          "match": "\\b(covenant|trit|count|word|truth|none|ratio|moment|span|path|array|map|text|letter|measure|whole|list)\\b"
+        },
+        {
+          "comment": "Hebrew cognitive states (7 states)",
+          "name": "support.type.hebrew.omnicode",
+          "match": "\\b(shavar|chaser|ratsah|yashar|tamim|shalem|tov)\\b"
+        },
+        {
+          "comment": "Sized numeric types",
+          "name": "support.type.numeric.omnicode",
+          "match": "\\b(count8|count16|count32|count64|whole8|whole16|whole32|whole64|measure32|measure64)\\b"
+        },
+        {
+          "comment": "Type names (capitalized identifiers)",
+          "name": "entity.name.type.omnicode",
+          "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    },
+
+    "values": {
+      "patterns": [
+        {
+          "comment": "Covenant values",
+          "name": "constant.language.covenant.omnicode",
+          "match": "\\b(granted|deferred|denied)\\b"
+        },
+        {
+          "comment": "Boolean values",
+          "name": "constant.language.boolean.omnicode",
+          "match": "\\b(yes|no|true|false)\\b"
+        },
+        {
+          "comment": "Null/void values",
+          "name": "constant.language.null.omnicode",
+          "match": "\\b(none|void|nothing)\\b"
+        }
+      ]
+    },
+
+    "numbers": {
+      "patterns": [
+        {
+          "comment": "Float numbers",
+          "name": "constant.numeric.float.omnicode",
+          "match": "\\b\\d+\\.\\d+\\b"
+        },
+        {
+          "comment": "Integer numbers",
+          "name": "constant.numeric.integer.omnicode",
+          "match": "\\b\\d+\\b"
+        },
+        {
+          "comment": "Ternary values: +1, -1",
+          "name": "constant.numeric.trit.omnicode",
+          "match": "[+-]1\\b"
+        }
+      ]
+    },
+
+    "identifiers": {
+      "patterns": [
+        {
+          "comment": "Meta/documentation fields (_ prefix)",
+          "name": "variable.other.meta.omnicode",
+          "match": "\\b_[a-zA-Z][a-zA-Z0-9_]*\\b"
+        },
+        {
+          "comment": "General identifiers",
+          "name": "variable.other.omnicode",
+          "match": "\\b[a-z][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    }
+  }
+}

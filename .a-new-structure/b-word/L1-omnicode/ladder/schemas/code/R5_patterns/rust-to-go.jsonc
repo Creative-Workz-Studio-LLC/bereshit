@@ -1,0 +1,323 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-mappings-rust-to-go",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "transform-mapping",
+    "_P2_role": "schema",
+    "_P5_title": "Transpiler Mapping — Rust to Go",
+    "_P5_brief": "Concrete translation rules: Rust types, imports, and conventions to Go equivalents. Loaded by the transpiler schema loader. Extends transform/concepts.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "transform/concepts.jsonc",
+    "source_format": "rust",
+    "target_format": "go",
+
+    "mapping": {
+
+        // -----------------------------------------
+        // 1. Primitive Types (direct 1:1)
+        // -----------------------------------------
+
+        "types_primitive": {
+            "String": "string",
+            "&str": "string",
+            "str": "string",
+            "bool": "bool",
+            "char": "rune",
+            "u8": "uint8",
+            "u16": "uint16",
+            "u32": "uint32",
+            "u64": "uint64",
+            "u128": "uint64",
+            "i8": "int8",
+            "i16": "int16",
+            "i32": "int32",
+            "i64": "int64",
+            "i128": "int64",
+            "f32": "float32",
+            "f64": "float64",
+            "usize": "int",
+            "isize": "int",
+            "()": "",
+            "Self": "",
+
+            // Path types — Go uses plain strings for filesystem paths
+            "Path": "string",
+            "&Path": "string",
+            "PathBuf": "string",
+            "&PathBuf": "string",
+            "std::path::Path": "string",
+            "std::path::PathBuf": "string",
+
+            // io types — Rust io::Result<()> reduces to just error in Go
+            "io::Result<()>": "error",
+            "std::io::Result<()>": "error",
+
+            // Slice of tuple pairs — common OmniCode identity pattern
+            "&[(&str, &str)]": "[][2]string",
+            "&'static [(&str, &str)]": "[][2]string",
+            "&'static [(&'static str, &'static str)]": "[][2]string"
+        },
+
+        // -----------------------------------------
+        // 2. Generic Type Patterns
+        // -----------------------------------------
+        // {T}, {K}, {V}, {E} are placeholders for inner types.
+        // The transpiler recursively resolves inner types using
+        // this same mapping table.
+
+        "types_generic": [
+            {
+                "concept": "optional",
+                "rust_pattern": "Option<{T}>",
+                "go_pattern": "*{T}",
+                "notes": "None → nil"
+            },
+            {
+                "concept": "result",
+                "rust_pattern": "Result<{T}, {E}>",
+                "go_pattern": "({T}, error)",
+                "notes": "E type erased — Go uses error interface"
+            },
+            {
+                "concept": "result_single",
+                "rust_pattern": "Result<{T}>",
+                "go_pattern": "({T}, error)",
+                "notes": "io::Result<T> = Result<T, io::Error> — single-param shorthand"
+            },
+            {
+                "concept": "collection_list",
+                "rust_pattern": "Vec<{T}>",
+                "go_pattern": "[]{T}",
+                "notes": "Growable array"
+            },
+            {
+                "concept": "collection_map",
+                "rust_pattern": "HashMap<{K}, {V}>",
+                "go_pattern": "map[{K}]{V}",
+                "notes": "Also BTreeMap → map (Go has no ordered map builtin)"
+            },
+            {
+                "concept": "collection_map",
+                "rust_pattern": "BTreeMap<{K}, {V}>",
+                "go_pattern": "map[{K}]{V}",
+                "notes": "BTree ordering lost — Go maps are unordered"
+            },
+            {
+                "concept": "owned_pointer",
+                "rust_pattern": "Box<{T}>",
+                "go_pattern": "*{T}",
+                "notes": "Heap allocation explicit in Rust, implicit in Go"
+            },
+            {
+                "concept": "reference",
+                "rust_pattern": "&{T}",
+                "go_pattern": "*{T}",
+                "notes": "Borrow → pointer. Go has no borrow checker."
+            },
+            {
+                "concept": "mutable_reference",
+                "rust_pattern": "&mut {T}",
+                "go_pattern": "*{T}",
+                "notes": "Mutability implicit in Go — all pointers are mutable"
+            },
+            {
+                "concept": "collection_set",
+                "rust_pattern": "HashSet<{T}>",
+                "go_pattern": "map[{T}]struct{}",
+                "notes": "Go has no Set type — use map with empty struct"
+            },
+            {
+                "concept": "shared_pointer",
+                "rust_pattern": "Arc<{T}>",
+                "go_pattern": "*{T}",
+                "notes": "Go GC handles shared ownership — no Arc needed"
+            },
+            {
+                "concept": "mutex",
+                "rust_pattern": "Mutex<{T}>",
+                "go_pattern": "*{T}",
+                "notes": "Go uses sync.Mutex separately, not wrapping the type"
+            },
+            {
+                "concept": "rwlock",
+                "rust_pattern": "RwLock<{T}>",
+                "go_pattern": "*{T}",
+                "notes": "Go uses sync.RWMutex separately"
+            }
+        ],
+
+        // -----------------------------------------
+        // 3. Import Path Mappings
+        // -----------------------------------------
+        // source_path → target info.
+        // "builtin" means no import needed (Go has it natively).
+        // "comment" means emit as a comment (informational only).
+
+        "imports": {
+            "std::fs": { "go_path": "os", "category": "standard_library" },
+            "std::io": { "go_path": "io", "category": "standard_library" },
+            "std::io::Read": { "go_path": "io", "category": "standard_library" },
+            "std::io::Write": { "go_path": "io", "category": "standard_library" },
+            "std::io::BufReader": { "go_path": "bufio", "category": "standard_library" },
+            "std::io::BufWriter": { "go_path": "bufio", "category": "standard_library" },
+            "std::fmt": { "go_path": "fmt", "category": "standard_library" },
+            "std::path::Path": { "go_path": "path/filepath", "category": "standard_library" },
+            "std::path::PathBuf": { "go_path": "path/filepath", "category": "standard_library" },
+            "std::path": { "go_path": "path/filepath", "category": "standard_library" },
+            "std::env": { "go_path": "os", "category": "standard_library" },
+            "std::process": { "go_path": "os/exec", "category": "standard_library" },
+            "std::collections::HashMap": { "go_path": "// builtin map type", "category": "builtin" },
+            "std::collections::BTreeMap": { "go_path": "// builtin map type (unordered)", "category": "builtin" },
+            "std::collections::HashSet": { "go_path": "// builtin map[T]struct{}", "category": "builtin" },
+            "std::collections::VecDeque": { "go_path": "container/list", "category": "standard_library" },
+            "std::collections": { "go_path": "// builtin collections", "category": "builtin" },
+            "std::sync::Arc": { "go_path": "sync", "category": "standard_library" },
+            "std::sync::Mutex": { "go_path": "sync", "category": "standard_library" },
+            "std::sync::RwLock": { "go_path": "sync", "category": "standard_library" },
+            "std::sync": { "go_path": "sync", "category": "standard_library" },
+            "std::thread": { "go_path": "// goroutines (no import needed)", "category": "builtin" },
+            "std::time::Duration": { "go_path": "time", "category": "standard_library" },
+            "std::time::Instant": { "go_path": "time", "category": "standard_library" },
+            "std::time": { "go_path": "time", "category": "standard_library" },
+            "std::error::Error": { "go_path": "errors", "category": "standard_library" },
+            "std::net": { "go_path": "net", "category": "standard_library" },
+            "std::str": { "go_path": "strings", "category": "standard_library" },
+            "std::string::String": { "go_path": "// builtin string", "category": "builtin" },
+            "std::convert": { "go_path": "// type assertions/conversions", "category": "builtin" },
+            "std::ops": { "go_path": "// operator overloading (not in Go)", "category": "builtin" },
+            "std::cmp": { "go_path": "sort", "category": "standard_library" },
+            "std::iter": { "go_path": "// for range loops", "category": "builtin" },
+            "std::result": { "go_path": "// (T, error) pattern", "category": "builtin" },
+            "std::option": { "go_path": "// *T with nil", "category": "builtin" }
+        },
+
+        // -----------------------------------------
+        // 4. Naming Conventions
+        // -----------------------------------------
+
+        "conventions": {
+            "naming": {
+                "public_function": {
+                    "rust": "snake_case + pub",
+                    "go": "PascalCase",
+                    "transform": "snake_to_pascal"
+                },
+                "private_function": {
+                    "rust": "snake_case (no pub)",
+                    "go": "camelCase",
+                    "transform": "snake_to_camel"
+                },
+                "public_type": {
+                    "rust": "PascalCase + pub",
+                    "go": "PascalCase",
+                    "transform": "preserve"
+                },
+                "private_type": {
+                    "rust": "PascalCase (no pub)",
+                    "go": "camelCase",
+                    "transform": "pascal_to_camel"
+                },
+                "constant_public": {
+                    "rust": "UPPER_SNAKE + pub const",
+                    "go": "PascalCase",
+                    "transform": "upper_snake_to_pascal"
+                },
+                "constant_private": {
+                    "rust": "UPPER_SNAKE + const",
+                    "go": "camelCase",
+                    "transform": "upper_snake_to_camel"
+                },
+                "parameter": {
+                    "rust": "snake_case",
+                    "go": "camelCase",
+                    "transform": "snake_to_camel"
+                },
+                "package": {
+                    "rust": "snake_case (crate/module name)",
+                    "go": "lowercase (short, no underscores)",
+                    "transform": "to_lowercase_stripped"
+                }
+            },
+
+            "receiver": {
+                "rust_self": "&self",
+                "rust_mut_self": "&mut self",
+                "rust_owned_self": "self",
+                "go_pattern": "func ({short} *{Type}) {Method}({params}) {returns}",
+                "strip_self": true,
+                "short_name": "first_letter_lowercase"
+            },
+
+            "visibility": {
+                "rust_pub": "go_exported",
+                "rust_pub_crate": "go_unexported",
+                "rust_private": "go_unexported",
+                "mechanism": "Go uses PascalCase (exported) vs camelCase (unexported). Rust uses pub keyword."
+            },
+
+            "error_handling": {
+                "rust_result_t_e": "go_tuple_t_error",
+                "rust_question_mark": "go_if_err_nil",
+                "rust_unwrap": "go_must_pattern",
+                "notes": "Result<T, E> → (T, error). ? operator → if err != nil { return ..., err }. unwrap() → must(val, err) helper or panic."
+            }
+        },
+
+        // -----------------------------------------
+        // 5. Section Mapping (form-level)
+        // -----------------------------------------
+        // How source sections map to target sections.
+        // This duplicates what FORMAT_MAPPINGS has in transpiler.ts
+        // but as data, not code. The transpiler loads this.
+
+        "section_mapping": {
+            "source_form": "module",
+            "target_form": "library",
+            "setup": {
+                "Imports": "Imports",
+                "Constants": "Constants",
+                "Statics": "Variables",
+                "ErrorTypes": "ErrorTypes",
+                "CoreTypes": "CoreTypes",
+                "TypeAliases": "TypeAliases",
+                "TraitDefs": "InterfaceDefs"
+            },
+            "body": {
+                "IdentityAccess": "OrgChart",
+                "TraitImplementations": "InterfaceImplementations",
+                "Constructors": "CoreOperations",
+                "CoreLogic": "CoreOperations",
+                "Queries": "PublicAPIs",
+                "FreeFunctions": "PublicAPIs"
+            },
+            "closing": {
+                "Cv": "Cv",
+                "Ce": "Ce",
+                "Cc": "Cc",
+                "X1": "X1",
+                "X2": "X2",
+                "X3": "X3",
+                "X4": "X4",
+                "X5": "X5"
+            }
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust-to-Go mapping: same program, different expression. The Semantic IR captures meaning. This schema maps syntax. Together they enable complete translation.",
+    "_X5_scripture": "Ecclesiastes 3:1 — To every thing there is a season. Same code. Different season. Different language."
+}

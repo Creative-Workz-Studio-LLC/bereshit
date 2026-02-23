@@ -1,0 +1,51 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-subtypes-container",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 6: Subtypes — Rust Content Container",
+    "_P5_brief": "Parent container for Rust-specific subtype content. Five forms: bare-bone (bare-bone.rs), library (lib.rs), executable (main.rs), module (src/*.rs), demo-test (tests/*.rs). Each carries Rust-specific directives, file patterns, and required sections. Extends the base structure container.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/subtypes/_container.jsonc",
+    "format": "rust",
+
+    "overview": {
+        "section": "Subtypes",
+        "description": "Rust subtype forms driven by I2.subtype. Each form specifies the Rust pragma directive, template directive, file pattern, and section requirements. bare-bone is the foundation all others derive from.",
+        "directive_format": "//omni:code --rust -{subtype}",
+        "template_format": "// #!omni template --rust -{subtype}"
+    },
+
+    "sub_containers": {
+        "bare-bone": { "file": "bare-bone.jsonc", "purpose": "Rust bare-bone form — foundation template (bare-bone.rs)" },
+        "library": { "file": "library.jsonc", "purpose": "Rust library form — crate root (lib.rs)" },
+        "executable": { "file": "executable.jsonc", "purpose": "Rust executable form — binary entry (main.rs)" },
+        "module": { "file": "module.jsonc", "purpose": "Rust module form — internal unit (src/*.rs)" },
+        "demo-test": { "file": "demo-test.jsonc", "purpose": "Rust demo-test form — validation (tests/*.rs)" }
+    },
+
+    "cascade": {
+        "note": "I2.subtype drives the entire form system. When the linter reads the directive, it knows the subtype. The subtype determines which sections are REQUIRED, AVAILABLE, or RESERVED for each block.",
+        "flow": "pragma directive -> I2.subtype -> form constraints -> section availability",
+        "bare_bone_principle": "bare-bone is the anchor. It defines the minimum. Every declared form ADDS to bare-bone; none REMOVES from it."
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust subtypes container: five forms, one foundation. The pragma directive (//omni:code --rust -{subtype}) drives everything. bare-bone is the rock; library, executable, module, and demo-test build on it. Identity determines structure.",
+    "_X5_scripture": "1 Corinthians 12:18 — But now hath God set the members every one of them in the body, as it hath pleased him."
+}

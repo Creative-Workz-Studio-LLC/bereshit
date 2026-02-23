@@ -1,0 +1,35 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-function-call",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Function Call",
+
+    "concept": "function_call",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "qualified_call",
+            "syntax": "{module}::{function}({args})",
+            "detect": "([\\w:]+)::(\\w+)\\(([^)]*)\\)",
+            "captures": { "module": 1, "function": 2, "args": 3 },
+            "notes": "Module-qualified call: fs::metadata(path), io::Error::new(kind, msg).",
+            "priority": 1
+        },
+        {
+            "id": "unqualified_call",
+            "syntax": "{function}({args})",
+            "detect": "(?<!\\.)(?<!::)(\\w+)\\(([^)]*)\\)",
+            "captures": { "function": 1, "args": 2 },
+            "notes": "Unqualified call — function imported into scope.",
+            "priority": 2
+        }
+    ],
+
+    "_X5_note": "Rust function calls use :: for module qualification, not dots."
+}

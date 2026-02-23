@@ -1,0 +1,88 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-pragma-identity-container",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 4: Pragma Identity (I1-I4) -- Go Content Container",
+    "_P5_brief": "Parent container for Go-specific Pragma identity content. How Go carries I1-I4 identity in var Pragma = [][2]string slices. Sub-containers: i1-core through i4-architecture.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/pragma-identity/_container.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "Pragma as map[string]string",
+                "reason": "Identity is compile-time known. map requires runtime initialization. [][2]string is zero-allocation.",
+                "defer_to": "N/A -- use [][2]string",
+                "go_signal": "map\\[string\\]string"
+            },
+            {
+                "construct": "Pragma fields in wrong section order",
+                "reason": "I-sections must appear in order: I1 -> I2 -> I3 -> I4.",
+                "defer_to": "N/A -- reorder fields",
+                "go_signal": "N/A"
+            },
+            {
+                "construct": "unexported pragma (lowercase)",
+                "reason": "Go templates use exported Pragma so downstream packages can access identity.",
+                "defer_to": "N/A -- capitalize: var Pragma (not var pragma)",
+                "go_signal": "var\\s+pragma\\s+"
+            }
+        ],
+
+        // -----------------------------------------
+        // Severity
+        // -----------------------------------------
+
+        "severity": {
+            "package_root": "warn",
+            "other_files": "not checked -- identity delegated to doc.go",
+            "note": "Only doc.go (or the main package file) carries Pragma. Other files inherit."
+        },
+
+        // -----------------------------------------
+        // Double Import Declare
+        // -----------------------------------------
+
+        "double_import_declare": {
+            "note": "Go requires imports before other declarations. Templates use a minimal import() block in METADATA area to satisfy syntax, with the full import block in SETUP. When instantiated, both merge or METADATA import is removed.",
+            "severity": "info"
+        },
+
+        // -----------------------------------------
+        // Sub-containers
+        // -----------------------------------------
+
+        "sub_containers": {
+            "i1-core": { "file": "i1-core.jsonc", "purpose": "WHO -- unique identity (Go [][2]string pattern)" },
+            "i2-family": { "file": "i2-family.jsonc", "purpose": "WHAT -- classification (Go export convention)" },
+            "i3-instance": { "file": "i3-instance.jsonc", "purpose": "THIS -- file-specific (Go doc.go delegation)" },
+            "i4-architecture": { "file": "i4-architecture.jsonc", "purpose": "WHERE -- structural context (Go package position)" }
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Pragma identity container -- parent for I1-I4 Go content sub-containers. Cannot rules (no map, no lowercase, correct order), severity (doc.go only), and double import declare note all live here. Sub-containers carry the per-section Go-specific patterns and scaffolds.",
+    "_X5_scripture": "Exodus 3:14 -- And God said unto Moses, I AM THAT I AM."
+}

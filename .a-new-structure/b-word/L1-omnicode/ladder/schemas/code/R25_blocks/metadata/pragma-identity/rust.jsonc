@@ -1,0 +1,101 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-pragma-identity-container",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 4: Pragma Identity (I1-I4) — Rust Content Container",
+    "_P5_brief": "Parent container for Rust-specific PRAGMA identity content. How Rust carries I1-I4 identity in pub static slices or BTreeMap statics. Extends the base structure container.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/pragma-identity/_container.jsonc",
+    "format": "rust",
+
+    "overview": {
+        "section": "PragmaIdentity",
+        "description": "Rust carries PRAGMA identity as pub static &[(&str, &str)] slices (default) or LazyLock<BTreeMap<&str, &str>> (when runtime lookup needed). Zero-allocation for compile-time known identity.",
+        "static_name": "PRAGMA",
+        "key_pattern": "I{section}.{field}"
+    },
+
+    "sub_containers": {
+        "i1-core": { "file": "i1-core.jsonc", "purpose": "Rust I1 content — key, format, from, at in slice" },
+        "i2-family": { "file": "i2-family.jsonc", "purpose": "Rust I2 content — type, structure, subtype, role in slice" },
+        "i3-instance": { "file": "i3-instance.jsonc", "purpose": "Rust I3 content — file, title, component, path, provides, brief in slice" },
+        "i4-architecture": { "file": "i4-architecture.jsonc", "purpose": "Rust I4 content — layer, position, pattern in slice" }
+    },
+
+    "cannot": [
+        {
+            "construct": "PRAGMA as String-owning",
+            "reason": "Identity is compile-time known. Using String/HashMap adds unnecessary allocation.",
+            "defer_to": "N/A — use &str slices or BTreeMap<&str, &str>",
+            "rust_signal": "HashMap<String,\\s*String>"
+        },
+        {
+            "construct": "PRAGMA fields in wrong section order",
+            "reason": "I-sections must appear in order: I1 -> I2 -> I3 -> I4. Within each section, required fields first.",
+            "defer_to": "N/A — reorder fields",
+            "rust_signal": "N/A"
+        },
+        {
+            "construct": "missing required I1 fields",
+            "reason": "I1 (key, format, from, at) is the minimum identity. Without these, the file is unaddressable.",
+            "defer_to": "N/A — add missing fields",
+            "rust_signal": "N/A"
+        }
+    ],
+
+    "severity": {
+        "crate_root": "warn",
+        "module": "not checked — identity delegated to lib.rs",
+        "note": "Only crate roots (lib.rs, main.rs) are expected to carry PRAGMA statics. Modules inherit identity from their crate."
+    },
+
+    "can_patterns": {
+        "note": "Format-level CAN patterns shared across all I-sections. Individual sub-containers define section-specific scaffolds.",
+        "constructs": [
+            {
+                "construct": "pub static PRAGMA: &[(&str, &str)]",
+                "description": "Slice pattern — lightweight, zero-allocation identity for most crates",
+                "visibility": "pub static — exported for downstream consumers",
+                "note": "Slice pattern is the DEFAULT. Use when crate doesn't need runtime key lookup."
+            },
+            {
+                "construct": "static PRAGMA: LazyLock<BTreeMap<&str, &str>>",
+                "description": "BTreeMap pattern — runtime-queryable identity for crates that need key lookup",
+                "visibility": "pub or private depending on crate structure",
+                "note": "BTreeMap when you need PRAGMA.get(\"I1.key\"). Requires std::sync::LazyLock + std::collections::BTreeMap."
+            },
+            {
+                "construct": "static OWN_PRAGMA: ...",
+                "description": "Identity crate self-registration — avoids naming collision with public API",
+                "visibility": "private — internal to identity crate",
+                "note": "Only used in identity crate itself. Other crates use PRAGMA."
+            },
+            {
+                "construct": "pub mod identity;",
+                "description": "Delegated identity — PRAGMA/METADATA live in a submodule",
+                "visibility": "pub mod",
+                "note": "Config crate pattern. Identity lives in a dedicated submodule."
+            }
+        ]
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust PRAGMA identity container: the parent for I1-I4 Rust content. Slice pattern is zero-allocation — identity is compile-time known. Sub-containers carry section-specific field patterns and scaffold templates.",
+    "_X5_scripture": "Exodus 3:14 — And God said unto Moses, I AM THAT I AM."
+}

@@ -1,0 +1,111 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-R50-languages-rust-format",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "format-schema",
+    "_P2_role": "language-formatting",
+    "_P5_title": "Rust Language Formatting Rules (R[50])",
+    "_P5_brief": "Rust-specific formatting additions that build ON universal _format.jsonc. Defines Rust comment syntax, doc comments, attributes, pragma expression, identity construct format. Inherits universal, never replaces.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "language": "rust",
+    "inherits": "../universal/_format.jsonc",
+
+    "comment_syntax": {
+        "line": "//",
+        "block_open": "/*",
+        "block_close": "*/",
+        "doc_comment": "///",
+        "inner_doc": "//!",
+        "note": "Rust has dedicated doc comment syntax. /// attaches to the NEXT item. //! attaches to the ENCLOSING item (module-level docs). Both are semantic, not decorative."
+    },
+
+    "pragma_expression": {
+        "pragma_line": "// #!omni code --rust",
+        "directive_prefix": "//omni:",
+        "examples": {
+            "key": "//omni:key B-example-key",
+            "version": "//omni:version a-01.00",
+            "pragma": "//omni:pragma PRAGMA",
+            "metadata": "//omni:metadata METADATA"
+        }
+    },
+
+    "identity_constructs": {
+        "pragma_const": {
+            "pattern": "pub(crate) const PRAGMA: &[(&str, &str)]",
+            "type": "&[(&str, &str)]",
+            "description": "Rust PRAGMA const: static slice of (field, value) tuples. Compile-time identity.",
+            "field_pattern": "(\"<section>.<field>\", \"<value>\")"
+        },
+        "metadata_const": {
+            "pattern": "pub(crate) const METADATA: &[(&str, &str)]",
+            "type": "&[(&str, &str)]",
+            "description": "Rust METADATA const: static slice of (field, value) tuples. Compile-time context.",
+            "field_pattern": "(\"<section>.<field>\", \"<value>\")"
+        }
+    },
+
+    "separator_expression": {
+        "block_separator": "// ============================================================================",
+        "subsection_separator": "// ---------------------------------------------------------------------------",
+        "width_includes_prefix": false,
+        "note": "Same as Go. Comment prefix // then separator characters."
+    },
+
+    "block_tags": {
+        "metadata": "// METADATA",
+        "setup": "// SETUP",
+        "body": "// BODY",
+        "closing": "// CLOSING",
+        "end_prefix": "// END "
+    },
+
+    "rust_specific": {
+        "attributes": {
+            "outer": "#[<attr>]",
+            "inner": "#![<attr>]",
+            "derives": "#[derive(Clone, Debug)]",
+            "cfg": "#[cfg(test)]",
+            "attachment": "Outer attributes attach to the NEXT item. Inner attributes attach to the ENCLOSING item.",
+            "chunking_note": "Attributes are collected and prepended to the item they modify. #[cfg(test)] triggers test_module category."
+        },
+        "visibility": {
+            "public": "pub",
+            "crate": "pub(crate)",
+            "super": "pub(super)",
+            "private": "(default, no keyword)",
+            "note": "Visibility modifiers prefix declarations. They do NOT change the content kind classification."
+        },
+        "modules": {
+            "declaration": "mod name;",
+            "definition": "mod name { ... }",
+            "reexport": "pub use name::*;",
+            "note": "Module declarations (mod name;) go in SETUP/Modules. Module definitions with bodies follow normal brace-tracking."
+        },
+        "use_statements": {
+            "simple": "use std::io;",
+            "tree": "use std::{io, fs};",
+            "glob": "use std::io::*;",
+            "alias": "use std::io::Result as IoResult;",
+            "placement": "SETUP/Imports"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust formatting is richer than Go: doc comments (///), inner docs (//!), attributes (#[...]), visibility modifiers, module system. Same universal structure, more language-specific exceptions. The handler's job is to handle these exceptions. The schema's job is to name them.",
+    "_X5_scripture": "Let all things be done decently and in order. — 1 Corinthians 14:40"
+}

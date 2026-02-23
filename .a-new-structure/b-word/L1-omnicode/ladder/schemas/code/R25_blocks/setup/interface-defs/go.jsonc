@@ -1,0 +1,148 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-setup-interface-defs",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 7: Interface Definitions -- Go Content",
+    "_P5_brief": "Go-specific content rules for Interface Definitions. Behavioral contracts: accept interfaces, return structs. Small interfaces (1-3 methods). Consumer-defined. Go equivalent of Rust trait-defs. Extends the base structure at blocks/setup/trait-defs.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/trait-defs.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "type Name interface { Method(params) returns }",
+                "description": "Behavioral contracts -- define what types CAN DO without specifying HOW",
+                "patterns": [
+                    "type Handler interface {\n\tHandle(ctx context.Context, req *Request) (*Response, error)\n}",
+                    "type Validator interface {\n\tValidate() error\n}"
+                ],
+                "visibility": "Exported for package API interfaces, unexported for internal contracts",
+                "note": "Go convention: accept interfaces, return structs. Interfaces define the extension points of your system."
+            },
+            {
+                "construct": "small interfaces (1-3 methods)",
+                "description": "The io.Reader/io.Writer pattern -- small, composable interfaces",
+                "patterns": [
+                    "type Reader interface {\n\tRead(p []byte) (n int, err error)\n}",
+                    "type Closer interface {\n\tClose() error\n}",
+                    "type ReadCloser interface {\n\tReader\n\tCloser\n}"
+                ],
+                "visibility": "Exported",
+                "note": "Keep interfaces small. Large interfaces (5+ methods) signal the need for decomposition. Compose small interfaces into larger ones via embedding."
+            },
+            {
+                "construct": "interface embedding (composition)",
+                "description": "Building contracts from smaller contracts -- Go's way of inheriting behavior",
+                "patterns": [
+                    "type ReadWriter interface {\n\tio.Reader\n\tio.Writer\n}",
+                    "type Service interface {\n\tHandler\n\tCloser\n}"
+                ],
+                "visibility": "Exported typically"
+            },
+            {
+                "construct": "consumer-defined interfaces",
+                "description": "Interfaces defined where they are USED, not where they are implemented",
+                "patterns": [
+                    "// In the consumer package:\ntype Storage interface {\n\tGet(key string) ([]byte, error)\n\tSet(key string, value []byte) error\n}"
+                ],
+                "visibility": "varies",
+                "note": "Go best practice: consumers define the interfaces they need, not the provider. This keeps interfaces minimal and decoupled. Providers expose concrete types; consumers define their own interface shaped to their needs."
+            },
+            {
+                "construct": "// doc comments with usage contracts",
+                "description": "Document the behavioral contract -- what implementors must guarantee",
+                "patterns": [
+                    "// Handler processes incoming requests.\n// Implementations must be safe for concurrent use.",
+                    "// Validator checks structural integrity.\n// Returns nil if valid, error describing the violation otherwise."
+                ],
+                "visibility": "N/A -- doc comments, not code"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "interface implementations (method bodies on concrete types)",
+                "reason": "Interface IMPLEMENTATIONS go in BODY. SETUP defines contracts, BODY fulfills them.",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "func\\s+\\(\\w+\\s+\\*?\\w+\\)\\s+\\w+\\("
+            },
+            {
+                "construct": "concrete logic in interfaces",
+                "reason": "Go interfaces are purely behavioral contracts -- no default implementations, no fields, no logic",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "N/A -- Go interfaces cannot contain logic"
+            },
+            {
+                "construct": "more than ~3 interfaces per file",
+                "reason": "Many interfaces signal the file needs decomposition. Extract related interfaces into their own file.",
+                "defer_to": "N/A -- split into separate files",
+                "go_signal": "N/A -- count check"
+            },
+            {
+                "construct": "large interfaces (5+ methods)",
+                "reason": "Large interfaces are hard to implement and test. Decompose into smaller composable interfaces.",
+                "defer_to": "N/A -- decompose",
+                "go_signal": "N/A -- design judgment"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "func\\s+\\(\\w+\\s+\\*?\\w+\\)\\s+\\w+\\(",
+                "to": "BODY.CoreOperations or SETUP.TypeMethods",
+                "confidence": "high",
+                "why": "Method implementation -- fulfills contract, belongs in BODY (or S8 for structural completers)"
+            },
+            {
+                "pattern": "^type\\s+\\w+\\s+struct\\s*\\{",
+                "to": "SETUP.CoreTypes",
+                "confidence": "high",
+                "why": "Struct definition -- data type, not behavioral contract"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// TODO: Behavioral contract for this package's primary abstraction.\ntype {{interface_name}} interface {\n\t// TODO: Primary capability.\n\tOperate(ctx context.Context) error\n}",
+            "empty_executable": "// No interfaces needed -- executables consume, not define.",
+            "comment_skeleton": "// type Name interface {\n// \tOperate(ctx context.Context) error\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Interface Definitions: behavioral contracts. Accept interfaces, return structs. Keep interfaces small (1-3 methods). Consumers define the interfaces they need. Interfaces live in SETUP because they are declarations; implementations live in BODY because they are logic.",
+    "_X5_scripture": "Micah 6:8 -- He hath shewed thee, O man, what is good; and what doth the LORD require of thee."
+}

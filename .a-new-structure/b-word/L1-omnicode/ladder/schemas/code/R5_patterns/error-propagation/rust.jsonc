@@ -1,0 +1,35 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-error-propagation",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Error Propagation",
+
+    "concept": "error_propagation",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "question_mark_binding",
+            "syntax": "let {name} = {expr}?;",
+            "detect": "^\\s*let\\s+(\\w+)\\s*=\\s*(.+)\\?;",
+            "captures": { "name": 1, "expr": 2 },
+            "notes": "Bind the Ok value, early-return on Err.",
+            "priority": 1
+        },
+        {
+            "id": "question_mark_chain",
+            "syntax": "{expr}?",
+            "detect": "(.+)\\?",
+            "captures": { "expr": 1 },
+            "notes": "Inline ? — unwrap or propagate. May appear mid-expression.",
+            "priority": 2
+        }
+    ],
+
+    "_X5_note": "Rust ? operator — the most concise error propagation in any systems language."
+}

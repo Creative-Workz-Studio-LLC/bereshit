@@ -1,0 +1,140 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-setup-type-aliases",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 4: Type Aliases -- Go Content",
+    "_P5_brief": "Go-specific content rules for Type Aliases. True aliases (type X = Y) share identity; defined types (type X Y) create new types. Domain vocabulary for complex signatures. Extends the base structure at blocks/setup/type-aliases.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/type-aliases.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "type Name = ExistingType (true alias)",
+                "description": "True alias -- shares identity with the original type. Used for migration compatibility.",
+                "patterns": [
+                    "type Reader = io.Reader",
+                    "type Context = context.Context"
+                ],
+                "visibility": "Exported for package API aliases, unexported for internal",
+                "note": "True aliases (=) share methods, assignability, and identity with the original. Use for gradual migration or re-exporting external types."
+            },
+            {
+                "construct": "type Name ExistingType (defined type)",
+                "description": "Defined type -- new type with same underlying representation but distinct identity",
+                "patterns": [
+                    "type UserID int64",
+                    "type HandlerFunc func(http.ResponseWriter, *http.Request)",
+                    "type Middleware func(http.Handler) http.Handler"
+                ],
+                "visibility": "Exported for domain vocabulary, unexported for internal",
+                "note": "Defined types (no =) create domain vocabulary. UserID is not interchangeable with int64 -- the type system catches misuse. A well-typed package tells you what it does by how its types read."
+            },
+            {
+                "construct": "type Name map/slice/func shorthand",
+                "description": "Simplifying complex type expressions for readability",
+                "patterns": [
+                    "type HandlerMap map[string]Handler",
+                    "type Callback func(event Event) error",
+                    "type StringSet map[string]struct{}"
+                ],
+                "visibility": "varies"
+            },
+            {
+                "construct": "// doc comment explaining what the alias simplifies",
+                "description": "Each alias documents what it replaces and why",
+                "patterns": [
+                    "// HandlerMap maps route patterns to their handlers.",
+                    "// UserID wraps int64 to prevent accidental mixing of user IDs with other integers."
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "type aliases that hide important information",
+                "reason": "Alias should clarify, not obscure. If the full type carries meaning the alias loses, do not alias.",
+                "defer_to": "N/A -- use the full type",
+                "go_signal": "N/A -- design judgment"
+            },
+            {
+                "construct": "aliases used in only one place",
+                "reason": "Wait until 3+ uses before aliasing. One-use alias is just indirection.",
+                "defer_to": "N/A -- wait for repetition",
+                "go_signal": "N/A"
+            },
+            {
+                "construct": "struct / interface definitions",
+                "reason": "Type aliases are type Name = ... or type Name Underlying -- not struct/interface declarations",
+                "defer_to": "SETUP.CoreTypes or SETUP.InterfaceDefs",
+                "go_signal": "^type\\s+\\w+\\s+(struct|interface)\\s*\\{"
+            },
+            {
+                "construct": "error type definitions",
+                "reason": "Error types with fields belong in S5 ErrorTypes, not type aliases",
+                "defer_to": "SETUP.ErrorTypes",
+                "go_signal": "^type\\s+\\w+Error\\s+struct"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "^type\\s+\\w+\\s+struct\\s*\\{",
+                "to": "SETUP.CoreTypes",
+                "confidence": "high",
+                "why": "Struct definition -- not a type alias"
+            },
+            {
+                "pattern": "^type\\s+\\w+\\s+interface\\s*\\{",
+                "to": "SETUP.InterfaceDefs",
+                "confidence": "high",
+                "why": "Interface definition -- not a type alias"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// No package-level type aliases needed.",
+            "empty_executable": "// No type aliases needed.",
+            "comment_skeleton": "// type HandlerFunc func(http.ResponseWriter, *http.Request)"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Type Aliases: vocabulary for complex types. True aliases (=) for migration compatibility. Defined types (no =) for domain vocabulary. Aliases should clarify, never obscure. A well-typed package tells you what it does by how its types read.",
+    "_X5_scripture": "Proverbs 25:11 -- A word fitly spoken is like apples of gold in pictures of silver."
+}

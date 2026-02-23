@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-closing-execution",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "CLOSING.Execution Content Character — What Execution Content IS",
+    "_P5_brief": "Format-independent definition of execution content character. Execution is the entry point — the door through which a program begins. Syntax varies (fn main(), func main(), int main()); the delegation pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "execution",
+        "block": "CLOSING",
+        "position": 2,
+        "nature": "entry-point",
+
+        "description": "Execution content is the door. In executable files, main() lives here — the OS entry point that delegates to BODY logic via run(). In library and module files, this section is structurally present but content-empty. The entry point is thin by design: parse args, call run(), handle the exit code. Business logic belongs in BODY.",
+
+        "invariants": {
+            "description": "Properties true of ALL execution content, regardless of language.",
+
+            "thin": "The entry point delegates immediately. main() calls run() or equivalent. No business logic lives in the entry point itself.",
+            "form_dependent": "Whether this section has content depends on the file's form. Executables have main(). Libraries and modules have an empty section.",
+            "structurally_present": "Ce exists in every file regardless of form. In non-executable files, the section header is present but the section body is empty.",
+            "error_terminal": "The entry point is where errors become exit codes. run() returns Result/error; main() translates that to process exit status.",
+            "singular": "There is exactly one entry point per executable. Multiple main() functions is a compilation error in every language."
+        },
+
+        "content_forms": {
+            "description": "What execution content looks like across languages. Entry point syntax varies; the thin-delegation pattern is invariant.",
+
+            "rust": {
+                "syntax": "fn main() { if let Err(e) = run() { eprintln!(\"Error: {e}\"); std::process::exit(1); } }",
+                "grouping": "Single fn main() at file bottom. Delegates to run() -> Result<()>. Error handling converts Result to exit code.",
+                "notes": "Rust main() can return Result directly (fn main() -> Result<(), E>) since edition 2018. The run() pattern is convention for separating entry from logic. Library crates have no main()."
+            },
+
+            "go": {
+                "syntax": "func main() { if err := run(); err != nil { fmt.Fprintf(os.Stderr, \"Error: %v\\n\", err); os.Exit(1) } }",
+                "grouping": "Single func main() in package main. Delegates to run() error. os.Exit() for non-zero status.",
+                "notes": "Go main() takes no arguments and returns nothing. Args come from os.Args. Exit status via os.Exit(). Library packages have no main()."
+            },
+
+            "c": {
+                "syntax": "int main(int argc, char *argv[]) { return run(argc, argv); }",
+                "grouping": "Single main() function. Returns int (exit status). Delegates to run() or equivalent. argc/argv for command-line arguments.",
+                "notes": "C main() is the only entry point the OS recognizes. Return 0 for success, non-zero for failure. Libraries compiled without main() — the linker resolves this."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, execution content changes entry point syntax but preserves the delegation pattern. main() exists or doesn't based on form, and when it exists, it delegates to BODY logic.",
+            "invariant": ["delegation pattern (main calls run)", "form-dependence (executables have it, libraries don't)", "error-to-exit-code translation", "structural presence regardless of content"],
+            "variable": ["entry point syntax (fn main vs func main vs int main)", "error handling mechanism (Result vs error vs return int)", "argument access (std::env vs os.Args vs argc/argv)", "exit mechanism (process::exit vs os.Exit vs return)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — execution entry points use any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Execution content is the thinnest section in a well-structured file. The entry point's job is to open the door and step aside. All the real work happens in BODY — main() just makes it reachable.",
+    "_X5_scripture": "John 10:9 — I am the door: by me if any man enter in, he shall be saved."
+}

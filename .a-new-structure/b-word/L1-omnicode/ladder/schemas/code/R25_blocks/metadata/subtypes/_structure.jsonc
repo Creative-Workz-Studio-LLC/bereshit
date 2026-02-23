@@ -1,0 +1,99 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-metadata-subtypes-container",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "METADATA Section 6: Subtypes — Container",
+    "_P5_brief": "Parent container for Subtypes. Form classifications driven by I2.subtype — bare-bone is the foundation, declared forms add specialization. Sub-containers: one per form.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "Subtypes",
+        "position": 6,
+        "label": "Subtypes (Form Definitions)",
+        "block": "METADATA",
+        "overview_text": "Form classifications driven by I2.subtype",
+
+        "header": {
+            "section_comment": "// Subtypes",
+            "separator_style": "none"
+        },
+
+        "sub_containers": {
+            "bare-bone": { "file": "bare-bone.jsonc", "purpose": "Foundation — minimum valid file" },
+            "library": { "file": "library.jsonc", "purpose": "Library — exposes public API" },
+            "executable": { "file": "executable.jsonc", "purpose": "Executable — entry point binary" },
+            "module": { "file": "module.jsonc", "purpose": "Module — focused internal unit" },
+            "demo-test": { "file": "demo-test.jsonc", "purpose": "Demo/Test — validates and proves" }
+        },
+
+        "cannot": [
+            {
+                "concept": "runtime behavior",
+                "reason": "Subtypes are compile-time classification, not runtime logic",
+                "defer_to": "BODY"
+            },
+            {
+                "concept": "section content",
+                "reason": "Subtypes declare WHICH sections exist. What goes IN sections is the content layer's concern.",
+                "defer_to": "content/parts/{lang}/{block}/"
+            }
+        ],
+
+        "cascade": {
+            "note": "I2.subtype drives the entire form system. The cascade flows: pragma directive -> I2.subtype -> form constraints -> section availability. Identity determines structure.",
+            "bare_bone_principle": "bare-bone is the anchor. It defines the minimum. Every declared form ADDS to bare-bone; none REMOVES from it."
+        },
+
+        "forms": {
+            "bare-bone": "REQUIRED",
+            "module": "REQUIRED",
+            "library": "REQUIRED",
+            "executable": "REQUIRED",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Subtypes",
+            "reserved_reason": null,
+            "note": "Subtype classification is REQUIRED — the file must know its form to know its constraints."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — no code patterns belong in subtype declarations.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Subtypes are the form system. bare-bone is the foundation; declared forms add specialization. The cascade flows: pragma directive -> I2.subtype -> form constraints -> section availability. Identity determines structure.",
+    "_X5_scripture": "1 Corinthians 12:18 — But now hath God set the members every one of them in the body, as it hath pleased him."
+}

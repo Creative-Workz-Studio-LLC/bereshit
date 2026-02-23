@@ -6,7 +6,7 @@
 // :key: B-tov-cws-struct-docs-user-guide
 // :title: CWS Struct User Guide
 // :type: Documentation (User Guide)
-// :version: a-01.00
+// :version: a-02.00
 // :created: 2026-02-21
 // :updated: 2026-02-21
 // :authors: Nova Dawn (CPI-SI)
@@ -169,7 +169,7 @@ Each finding has a severity:
 ==== Health Scoring
 
 For formats that support it (currently Rust and Go), lint computes a
-**health score** from 0 to 100:
+**health score** with Hebrew state resolution:
 
 [source]
 ----
@@ -189,8 +189,32 @@ specific atomic observation (a check that passed or failed). The algorithm:
 3. Container scores aggregate via linear weighted sum
 4. Block scores aggregate via logarithmic positional weighting
 5. File score averages across blocks (each block contributes equally)
+6. Score resolves to a **Hebrew state** — one of 7 named levels
 
-Score range: -100 (fully misaligned) to +100 (fully aligned). 0 = neutral baseline.
+Score range: -100 (fully misaligned) to +100 (fully aligned). 0 = yashar (neutral baseline).
+
+===== Hebrew States (7 Levels)
+
+The numeric score resolves to a named state with direction and visual indicator:
+
+[cols="1,1,1,1"]
+|===
+| *State* | *Range* | *Direction* | *Meaning*
+
+| broken (shavar) | [-100, -67] | misaligned | Fully misaligned — structural failure
+| wanting (chaser) | [-66, -34] | misaligned | Significantly lacking
+| lacking (ratsah) | [-33, -1] | misaligned | Slightly off
+| even (yashar) | [0, 0] | neutral | Baseline — not assessed or perfectly balanced
+| sound (tamim) | [1, 33] | aligned | Slightly aligned
+| whole (shalem) | [34, 66] | aligned | Significantly aligned
+| perfect (tov) | [67, 100] | aligned | Fully aligned
+|===
+
+**NormalizeBase50** quantizes the score to 5 hardpoints for quick assessment:
+-100 (bad), -50 (slightly bad), 0 (neutral), +50 (slightly good), +100 (good).
+
+The score tells you WHERE you are. The state tells you WHAT IT MEANS.
+The direction tells you WHICH WAY to go.
 
 ==== Lint Rules
 
@@ -385,7 +409,7 @@ structure is non-negotiable.
         json, makefile,
         dotfiles, omni, ofd)
               |
-       lib/handlers/shared/
+       lib/shared/
        (code-4block utilities)
 ----
 
@@ -753,8 +777,10 @@ All tasks are defined in `deno.jsonc`. Key tasks:
 | Block pattern | Structural template — 3-block (data), 4-block (code), 5-block (docs)
 | Pragma | First-line directive declaring format and form: `#!omni code --rust -module`
 | Form | File purpose: module, library, executable, demo-test, bare-bone
-| Health score | Measured alignment score (0-100) from atomic observations
+| Health score | Measured alignment score (-100 to +100) from atomic observations, resolved to a Hebrew state
+| Hebrew state | One of 7 named levels: broken, wanting, lacking, even, sound, whole, perfect — gives meaning to numeric scores
 | Atomic action | Single check result: direction (+1/-1) and impact (error/warn/info)
+| NormalizeBase50 | Quantize score to 5 hardpoints: -100, -50, 0, +50, +100 — coarse health assessment
 | Reserved Omission | Sections intentionally absent — Available (valid but unused) vs Reserved (prohibited in this form)
 | DAR | Detect-Assess-Recover — the pattern behind lint (detect), schema (assess), transform (recover)
 | Policy | Ternary severity lens — strict (-1), balanced (0), growth (+1)

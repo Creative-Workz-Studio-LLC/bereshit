@@ -1,0 +1,64 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-subtypes-library",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Subtypes -- Library Form -- Go Content",
+    "_P5_brief": "Go-specific library form. Package exposing public API. doc.go holds identity (Pragma + Metadata). Requires doc comments, full SETUP with types, BODY with public API surface.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/subtypes/library.jsonc",
+    "format": "go",
+
+    "sub_container": {
+        "tag": "library",
+        "label": "Library -- Public API Form (Go)",
+        "parent": "Subtypes",
+        "I2_subtype": "library",
+
+        "file_pattern": "*.go (doc.go for identity)",
+        "pragma_directive": "//omni:code --go -library",
+        "template_directive": "// #!omni template --go -library",
+        "package": "package packagename",
+        "has_public_api": true,
+
+        "purpose": "Library package -- exposes public API, holds package identity",
+        "distinguisher": "The most complete Go form. Full SETUP, full BODY, doc comments required. Exported functions use uppercase naming.",
+
+        "go_specifics": {
+            "doc_comments": "REQUIRED -- Go doc comments use // preceding the declaration",
+            "exports": "Go exports via capitalization (Pragma not pragma, Config not config)",
+            "identity_file": "doc.go carries Pragma + Metadata for the entire package",
+            "godoc": "Doc comments render in godoc/pkg.go.dev -- quality matters"
+        },
+
+        "required_sections": {
+            "METADATA": ["Directives", "DocComments", "CommentBlock", "PragmaIdentity", "MetadataContext", "Subtypes"],
+            "SETUP": ["Imports", "Constants", "CoreTypes"],
+            "BODY": ["PublicAPI"],
+            "CLOSING": ["Validation"]
+        },
+
+        "scaffold": {
+            "library_go": "//omni:code --go -library\npackage {packagename}\n\n// ========================================\n// {title}\n// ========================================\n//\n// {brief}\n//\n// Package {packagename} provides {purpose}.\n//"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Library Go form -- the most complete. Full SETUP, full BODY, doc comments required. Go exports via capitalization. doc.go carries identity for the package. Every public function documented for godoc.",
+    "_X5_scripture": "Proverbs 24:3-4 -- Through wisdom is an house builded; and by understanding it is established: And by knowledge shall the chambers be filled with all precious and pleasant riches."
+}

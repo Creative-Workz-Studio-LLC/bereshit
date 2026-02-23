@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-closing-troubleshooting",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "CLOSING.Troubleshooting Content Character — What Troubleshooting Content IS",
+    "_P5_brief": "Format-independent definition of troubleshooting content character. Troubleshooting is experience documentation — problem-solution pairs capturing known issues and their resolutions. Always comments, never code.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "troubleshooting",
+        "block": "CLOSING",
+        "position": "X3",
+        "nature": "experience-capture",
+
+        "description": "Troubleshooting content is wisdom from experience — problems someone already encountered, diagnosed, and solved, documented so the next person doesn't repeat the journey. Each entry is a problem-solution pair: symptom, cause, fix. This is pure documentation — comment blocks that save debugging time. No executable code.",
+
+        "invariants": {
+            "description": "Properties true of ALL troubleshooting content, regardless of language.",
+
+            "documentary": "Troubleshooting is comments only. No executable code. The content describes problems and solutions in the language's comment syntax.",
+            "paired": "Every problem has a solution or workaround. Documenting issues without resolutions is complaining, not troubleshooting.",
+            "symptomatic": "Entries describe the symptom first — what the developer sees — then the cause and fix. Diagnosis flows from observable behavior to root cause.",
+            "earned": "Troubleshooting entries come from real experience. They document gotchas that actually bit someone, not hypothetical problems.",
+            "actionable": "Solutions are concrete steps, not vague suggestions. 'Check the config' helps nobody. 'Set TIMEOUT_MS > 5000 in S3 constants when connecting to remote hosts' helps."
+        },
+
+        "content_forms": {
+            "description": "What troubleshooting content looks like across languages. Comment syntax varies; the problem-solution structure is invariant.",
+
+            "rust": {
+                "syntax": "// [X3] Troubleshooting\n// ISSUE: Compilation fails with 'lifetime may not live long enough'\n//   CAUSE: The parse() return borrows from input buffer that goes out of scope\n//   FIX: Clone the parsed value, or restructure to return owned types (see B3)\n// ISSUE: Tests pass locally but fail in CI\n//   CAUSE: Default features differ — CI builds with --no-default-features\n//   FIX: Run `cargo test --no-default-features` locally to reproduce",
+                "grouping": "Line comments (//) with ISSUE/CAUSE/FIX structure. Each entry is self-contained. Grouped by symptom category (compilation, runtime, testing).",
+                "notes": "Rust troubleshooting often involves lifetime errors, borrow checker diagnostics, trait bound failures, and feature-flag differences. Error messages are specific enough to include verbatim."
+            },
+
+            "go": {
+                "syntax": "// [X3] Troubleshooting\n// ISSUE: 'nil pointer dereference' panic in HandleRequest\n//   CAUSE: Config not loaded before server starts — Init() must precede Serve()\n//   FIX: Ensure Init() is called in main() before Serve() (see Ce entry point)\n// ISSUE: Race detector reports data race in concurrent map access\n//   CAUSE: Shared map written without mutex in B4 handler\n//   FIX: Use sync.RWMutex (added in B4) or switch to sync.Map",
+                "grouping": "Line comments (//) with ISSUE/CAUSE/FIX structure. Each entry is self-contained. Grouped by symptom category (panics, races, build errors).",
+                "notes": "Go troubleshooting often involves nil dereferences, race conditions, interface satisfaction errors, and import cycles. The race detector (-race flag) is a primary diagnostic tool."
+            },
+
+            "c": {
+                "syntax": "/* [X3] Troubleshooting\n * ISSUE: Segmentation fault in process_buffer()\n *   CAUSE: Buffer passed without null-terminator — strlen walks past allocation\n *   FIX: Always use sized variants (process_buffer_n) or ensure null-termination in caller\n * ISSUE: Valgrind reports 'definitely lost' bytes\n *   CAUSE: Early return in B3 skips cleanup — add goto cleanup pattern\n *   FIX: Restructure to use goto cleanup (see Cc cleanup section) */",
+                "grouping": "Block comments (/* */) with ISSUE/CAUSE/FIX structure. Each entry is self-contained. Grouped by symptom category (crashes, memory leaks, undefined behavior).",
+                "notes": "C troubleshooting centers on memory safety — buffer overflows, use-after-free, double-free, null dereference. Valgrind, AddressSanitizer, and UndefinedBehaviorSanitizer are primary diagnostic tools."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, troubleshooting content changes language-specific issues but preserves the problem-solution structure. The symptoms, causes, and diagnostic approach are language-specific — the documentation pattern is invariant.",
+            "invariant": ["problem-solution pairing", "symptom-cause-fix structure", "actionable resolution requirement", "documentary nature (comments only)"],
+            "variable": ["language-specific symptoms (lifetime errors vs nil panics vs segfaults)", "diagnostic tools (cargo test vs -race vs valgrind)", "comment syntax (// vs /* */)", "common error patterns (borrow checker vs race detector vs memory safety)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — troubleshooting is documentation, not code.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Troubleshooting content transforms pain into wisdom. Every entry represents hours someone spent debugging — documented so those hours are spent exactly once. The prudent see danger and prepare; the simple keep walking into the same wall.",
+    "_X5_scripture": "Proverbs 27:12 — A prudent man foreseeth the evil, and hideth himself; but the simple pass on, and are punished."
+}

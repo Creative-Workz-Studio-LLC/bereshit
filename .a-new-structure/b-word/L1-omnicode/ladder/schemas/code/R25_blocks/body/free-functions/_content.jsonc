@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-free-functions",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.FreeFunctions Content Character — What Free Function Content IS",
+    "_P5_brief": "Format-independent definition of free function content character. Free functions are module-level operations not attached to any type — standalone utilities and convenience wrappers. Syntax varies (pub fn, func, function); the unattached-to-type pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "free-functions",
+        "block": "BODY",
+        "position": 7,
+        "nature": "standalone",
+
+        "description": "Free function content is module-level operations without a type receiver. Where core logic methods operate ON a type (self.transform()), free functions operate WITH types (transform(a, b)). They are the module's public utilities — stateless, composable, callable without an instance.",
+
+        "invariants": {
+            "description": "Properties true of ALL free function content, regardless of language.",
+
+            "unattached": "Free functions have no self/receiver parameter. They do not belong to any type. If a function needs self access, it is a method, not a free function.",
+            "stateless": "Free functions carry no internal state between calls. They take inputs, produce outputs, and remember nothing. Any persistent state belongs on a type.",
+            "public": "Free functions in this section are exported — visible to callers outside the module. Private standalone utilities belong in Helpers.",
+            "composable": "Free functions are building blocks. They combine with other functions and methods. Their lack of state makes them safe to call from any context.",
+            "discoverable": "Free functions are the first thing a consumer sees when scanning module-level exports. They should have clear names and documentation."
+        },
+
+        "content_forms": {
+            "description": "What free function content looks like across languages. Module-level standalone operations are invariant; the syntax and export mechanism vary.",
+
+            "rust": {
+                "syntax": "pub fn parse_input(raw: &str) -> Result<Input, ParseError> { ... } pub fn register_identity(registry: &mut Registry) { ... }",
+                "grouping": "Convenience wrappers first, then parsing/conversion utilities, then identity registration (if applicable)",
+                "notes": "Rust free functions are module-level pub fn without self. They appear outside any impl block. The pub keyword controls export. May appear in crate root for register_identity()."
+            },
+
+            "go": {
+                "syntax": "func ParseInput(raw string) (Input, error) { ... } func RegisterIdentity(reg *Registry) { ... }",
+                "grouping": "Convenience wrappers first, then parsing/conversion utilities, then identity registration",
+                "notes": "Go free functions are package-level exported functions (uppercase). No syntactic difference from constructors — distinguished by naming and intent. Not prefixed with New."
+            },
+
+            "c": {
+                "syntax": "Input* parse_input(const char* raw) { ... } void register_identity(Registry* reg) { ... }",
+                "grouping": "Convenience wrappers first, then utilities, then registration",
+                "notes": "C free functions are externally-visible functions declared in the header. The module prefix (my_module_) provides namespace. Static functions are NOT free functions — they are helpers."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, free function content preserves the standalone operation semantics. The same utilities perform the same transformations — only the export mechanism and calling convention change.",
+            "invariant": ["function signatures (inputs and outputs)", "statelessness (no hidden state between calls)", "semantic purpose (what each function does)"],
+            "variable": ["export mechanism (pub vs uppercase vs header declaration)", "namespace (module path vs package vs prefix convention)", "calling convention (direct vs through module path)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "denied",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 0.82,
+    "_weight_rationale": "|avg| of concept_map: 10G 1D. (10−1)/11 = 9/11 ≈ 0.82. self_access denied (free functions have no self/receiver).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Free functions are the module's servants — available to anyone, attached to nothing, carrying no agenda. They are the most composable unit of code because they depend only on their arguments. Every free function is a promise: give me these inputs, I will give you this output, and I will touch nothing else.",
+    "_X5_scripture": "Galatians 5:13 — For, brethren, ye have been called unto liberty; only use not liberty for an occasion to the flesh, but by love serve one another."
+}

@@ -1,0 +1,64 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-metadata-context-c2-attribution",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Metadata Context -- C2 Attribution (Credit) -- Go Content",
+    "_P5_brief": "Go-specific content for C2 Attribution fields. organization, architect carried in var Metadata = [][2]string slice. Names on the work.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/metadata-context/c2-attribution.jsonc",
+    "format": "go",
+
+    "sub_container": {
+        "tag": "C2",
+        "label": "C2 Attribution -- Credit (Go)",
+        "parent": "MetadataContext",
+
+        "go_construct": "C2 entries in var Metadata = [][2]string{...}",
+        "go_visibility": "exported -- within exported Metadata var",
+        "go_note": "C2 fields follow C1 in the Metadata slice. Organization is required; architect and implementation are defined.",
+
+        "field_format": {
+            "key_pattern": "C2.{field}",
+            "examples": ["C2.organization", "C2.architect", "C2.implementation"],
+            "note": "C2 section follows C1 in the Metadata slice."
+        },
+
+        "can": [
+            {
+                "construct": "C2 fields in Metadata slice",
+                "description": "Attribution entries -- who made this and who owns it",
+                "patterns": [
+                    "\t// C2 Attribution -- credit",
+                    "\t{\"C2.organization\", \"CreativeWorkzStudio LLC\"},",
+                    "\t{\"C2.architect\", \"Nova Dawn\"},",
+                    "\t{\"C2.implementation\", \"Nova Dawn\"},"
+                ],
+                "note": "Section comment '// C2 Attribution -- credit' precedes the C2 entries."
+            }
+        ],
+
+        "scaffold": {
+            "c2_fields": "\t// C2 Attribution -- credit\n\t{\"C2.organization\", \"CreativeWorkzStudio LLC\"},\n\t{\"C2.architect\", \"{architect}\"},"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "C2 Attribution in Go -- the ledger. organization, architect, implementation in [][2]string pairs. Work without attribution is work without accountability.",
+    "_X5_scripture": "1 Chronicles 4:23 -- These were the potters, and those that dwelt among plants and hedges: there they dwelt with the king for his work."
+}

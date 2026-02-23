@@ -1,0 +1,137 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-body-public-apis",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 5: Public APIs — Go Content",
+    "_P5_brief": "Go-specific content rules for Public APIs. Exported functions — the package's public surface. Thin delegation to core operations. Go doc comments on every export. Extends the base structure at blocks/body/queries.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/body/queries.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "func ExportedName(params) (result, error) { ... }",
+                "description": "Exported package-level functions — the functions consumers actually call",
+                "patterns": [
+                    "// Open opens the database at the given path.\n//\n// It returns an error if the path does not exist or the file\n// is not a valid database.\nfunc Open(path string) (*DB, error) {\n\treturn newDB(path)\n}",
+                    "// Load reads and parses configuration from the given file.\nfunc Load(path string) (*Config, error) {\n\tdata, err := os.ReadFile(path)\n\tif err != nil {\n\t\treturn nil, fmt.Errorf(\"Load: %w\", err)\n\t}\n\treturn parseConfig(data)\n}"
+                ],
+                "visibility": "Exported (uppercase) — public API surface"
+            },
+            {
+                "construct": "func (r *Receiver) ExportedMethod(params) (result, error) { ... }",
+                "description": "Exported methods on types — the type's public behavior",
+                "patterns": [
+                    "// Get retrieves the value associated with key.\n// It returns ErrNotFound if the key does not exist.\nfunc (db *DB) Get(key string) ([]byte, error) {\n\treturn db.get(key)\n}",
+                    "// Close releases all resources held by the connection.\nfunc (c *Conn) Close() error {\n\treturn c.close()\n}"
+                ],
+                "visibility": "Exported",
+                "note": "Close/Shutdown methods may also appear in CLOSING Cc if they are resource cleanup."
+            },
+            {
+                "construct": "// Go doc comment on every exported function",
+                "description": "Every exported function MUST have a doc comment — first sentence is the summary",
+                "patterns": [
+                    "// Parse parses the input bytes into a structured AST.\n//\n// The input must be valid UTF-8. Parse returns a *SyntaxError\n// if the input contains invalid syntax.\nfunc Parse(input []byte) (*AST, error) { ... }"
+                ],
+                "visibility": "N/A — documentation requirement"
+            },
+            {
+                "construct": "thin delegation pattern",
+                "description": "Public API functions delegate to private core operations — keep the public surface thin",
+                "patterns": [
+                    "// Validate checks the configuration for errors.\nfunc (c *Config) Validate() error {\n\treturn c.validate()\n}"
+                ],
+                "visibility": "Exported",
+                "note": "The real work happens in unexported helpers (B2) or core operations (B3). Public APIs are the interface."
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "unexported (lowercase) functions",
+                "reason": "Private functions belong in B2 Helpers or B3 Core Operations. This section is the PUBLIC surface.",
+                "defer_to": "BODY.Helpers or BODY.CoreOperations",
+                "go_signal": "^func\\s+[a-z]"
+            },
+            {
+                "construct": "heavy business logic in public functions",
+                "reason": "Public APIs should be thin — delegate to core operations. If the function body exceeds ~15 lines, the logic should be in B3.",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "N/A — design judgment (function body length)"
+            },
+            {
+                "construct": "exported functions without doc comments",
+                "reason": "Go convention: every exported function has a doc comment. golint and go vet enforce this.",
+                "defer_to": "N/A — add doc comment",
+                "go_signal": "^func\\s+[A-Z]\\w+\\((?!.*//)"
+            },
+            {
+                "construct": "type definitions",
+                "reason": "Types belong in SETUP, not BODY",
+                "defer_to": "SETUP.CoreTypes",
+                "go_signal": "^type\\s+\\w+\\s+(struct|interface)"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "^func\\s+[a-z]\\w+\\(",
+                "to": "BODY.Helpers or BODY.CoreOperations",
+                "confidence": "high",
+                "why": "Unexported function — not a public API"
+            },
+            {
+                "pattern": "^type\\s+",
+                "to": "SETUP",
+                "confidence": "high",
+                "why": "Type definition — belongs in SETUP"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// 5. Public APIs\n//\n// Exported functions — the package's public surface.\n// Keep thin. Delegate to core operations (B3).\n// Document every export with Go doc comments.",
+            "empty_executable": "// 5. Public APIs\n//\n// (Most executables have no public APIs.\n// If present, they allow the binary's logic to be used as a library.)",
+            "empty_demo_test": "// 5. Test Functions\n//\n// func Test*(t *testing.T) { ... }\n// Table-driven patterns with t.Run() subtests.",
+            "comment_skeleton": "// 5. Public APIs\n// func ExportedName(params) (result, error) { ... }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Public APIs: the package's public contract. Exported uppercase functions with doc comments. Thin delegation to core operations. If this section grows large, the package is doing too much — extract.",
+    "_X5_scripture": "Matthew 5:16 — Let your light so shine before men, that they may see your good works."
+}

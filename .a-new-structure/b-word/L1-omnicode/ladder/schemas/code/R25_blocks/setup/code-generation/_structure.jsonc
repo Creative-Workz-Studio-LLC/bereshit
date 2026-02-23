@@ -1,0 +1,108 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-setup-code-generation",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "SETUP Section 14: Code Generation — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Code Generation IS, not how it manifests in any language. See format/blocks/{lang}/setup/code-generation.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "CodeGeneration",
+        "position": 14,
+        "label": "Code Generation",
+        "block": "SETUP",
+        "overview_text": "Code generation directives and test helpers",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "code generation directives",
+                "description": "Directives that trigger external tooling to generate code at build time",
+                "distinguisher": "Meta-level instructions. Code that causes code to be written."
+            },
+            {
+                "concept": "test assertion helpers",
+                "description": "Reusable test utilities that simplify assertion patterns",
+                "distinguisher": "Thin wrappers for common test patterns. Keep tests readable."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "runtime logic",
+                "reason": "Code generation directives are build-time; they don't execute at runtime",
+                "defer_to": "BODY.CoreLogic"
+            },
+            {
+                "concept": "complex business logic in helpers",
+                "reason": "Helpers should be thin wrappers. Complex logic hides what's being tested.",
+                "defer_to": "BODY.Helpers"
+            }
+        ],
+
+        "defer": [
+            {
+                "signal": "generated code used across multiple packages",
+                "to": "Dedicated generation module",
+                "why": "Cross-package generation needs centralized handling"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "RESERVED",
+            "library": "AVAILABLE",
+            "executable": "AVAILABLE",
+            "demo-test": "RESERVED"
+        },
+
+        "ro": {
+            "available_label": "Code Generation",
+            "reserved_reason": "Code generation belongs in dedicated modules or project root, not leaf modules",
+            "reserved_explanation": "Individual modules should USE generated code, not DEFINE generation directives."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — code generation is meta-level, not pattern-level.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Code generation is meta-level — directives that cause code to be written, not code itself.",
+    "_X5_scripture": "Ecclesiastes 3:1 — To every thing there is a season, and a time to every purpose under the heaven."
+}

@@ -1,0 +1,115 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-setup-error-types",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "SETUP Section 6: Error Types — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Error Types IS, not how it manifests in any language. See format/blocks/{lang}/setup/error-types.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "ErrorTypes",
+        "position": 6,
+        "label": "Error Types",
+        "block": "SETUP",
+        "overview_text": "Error definitions with display and conversion",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "error enumeration",
+                "description": "Named variants covering all failure modes of this file",
+                "distinguisher": "Every way this code can fail has a name. No anonymous errors."
+            },
+            {
+                "concept": "display formatting",
+                "description": "Human-readable error messages for each variant",
+                "distinguisher": "Errors speak to humans, not just compilers."
+            },
+            {
+                "concept": "conversion from upstream",
+                "description": "Transforming errors from dependencies into this file's error type",
+                "distinguisher": "Errors flow inward. External errors become local errors."
+            },
+            {
+                "concept": "completing impls",
+                "description": "Display, Error, and From impls that complete the error type. These stay WITH the type — they are part of its existence, not separate behavior.",
+                "distinguisher": "Pattern: enum (variants) → Display (messages) → Error (chaining) → From (conversion). All four are one unit."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "error handling logic",
+                "reason": "SETUP defines errors; BODY handles them. Existence before operation.",
+                "defer_to": "BODY.CoreLogic"
+            },
+            {
+                "concept": "non-error types",
+                "reason": "Core types have their own section. Errors are special — they need Display and conversion.",
+                "defer_to": "SETUP.CoreTypes"
+            },
+            {
+                "concept": "string-typed error fields",
+                "reason": "Use enums for error variants. Strings are unstructured — enums are matchable.",
+                "defer_to": "Define an enum variant instead"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "REQUIRED",
+            "module": "REQUIRED",
+            "library": "REQUIRED",
+            "executable": "REQUIRED",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Error Types",
+            "reserved_reason": null,
+            "note": "Error Types is REQUIRED in all forms. Every file that can fail must name its failures."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "defer",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "defer",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.82,
+    "_weight_rationale": "|avg| of concept_map: 2F 9D. −9/11 ≈ −0.82. variable_binding and err_wrap defer (error types relate to both).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Error types name failure. A named error is a diagnosed error. Unnamed errors are just panics in disguise.",
+    "_X5_scripture": "Proverbs 27:12 — A prudent man foreseeth the evil, and hideth himself; but the simple pass on, and are punished."
+}

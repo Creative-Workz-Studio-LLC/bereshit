@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-build-tags",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.BuildTags Content Character — What Build Tag Content IS",
+    "_P5_brief": "Format-independent definition of build tag content character. Build tags are compile-time constraint markers — labels that determine whether an entire file is included in compilation. Syntax varies (//go:build, #[cfg], #ifdef); the file-level inclusion decision doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "build-tags",
+        "block": "SETUP",
+        "position": 15,
+        "nature": "compilation-constraint",
+
+        "description": "Build tag content marks files for conditional inclusion based on build constraints. Unlike feature gates which can operate at item granularity, build tags are primarily a file-level concern — the tag determines whether the entire file participates in compilation. Build tags are Go's primary conditional compilation mechanism, though the concept applies across languages. Tags represent named build contexts (platform, architecture, test category) that the build system resolves.",
+
+        "invariants": {
+            "description": "Properties true of ALL build tag content, regardless of language.",
+
+            "file-scoped": "Build tags apply to the entire file they appear in. The tag is a gate on the whole file, not on individual items within it.",
+            "build-system-resolved": "Build tags are resolved by the build system, not the compiler proper. The build system decides which files to feed to the compiler based on tag matching.",
+            "combinable": "Build tags support boolean logic — AND, OR, NOT. Complex constraints compose from simple tag names.",
+            "named": "Each tag has a meaningful name representing a build context — os, arch, test category, environment. Tags are vocabulary for build configurations.",
+            "exclusive-with-feature-gates": "Build tags and feature gates serve the same purpose at different granularities. A file uses one or the other, not both for the same concern."
+        },
+
+        "content_forms": {
+            "description": "What build tag content looks like across languages. Syntax varies; the file-level conditional inclusion is invariant.",
+
+            "rust": {
+                "syntax": "// Rust uses #[cfg] attributes (see FeatureGates) rather than file-level build tags. File-level gating is done via cfg on the mod declaration in the parent.",
+                "grouping": "N/A for Rust — conditional compilation is handled at item or module level via #[cfg], not file-level tags.",
+                "notes": "Rust does not use build tags in the Go sense. File inclusion is controlled by parent mod declarations with cfg attributes. This section exists primarily for Go; Rust equivalents live in FeatureGates."
+            },
+
+            "go": {
+                "syntax": "//go:build linux && amd64  //go:build !windows  //go:build integration  //go:build ignore",
+                "grouping": "Single constraint line before package declaration. Multiple constraints on one line using boolean operators. One file = one constraint expression.",
+                "notes": "Go build tags are the canonical example. The //go:build line (replacing older // +build) must appear before the package statement. Custom tags enable test categories (integration, e2e), environment targeting (staging, production), and tooling separation."
+            },
+
+            "c": {
+                "syntax": "// C uses #ifdef blocks (see FeatureGates) rather than file-level build tags. Build system (Make/CMake) controls file inclusion.",
+                "grouping": "N/A for C as file-level tags — the build system's file list determines inclusion, not in-file markers.",
+                "notes": "C achieves file-level conditional compilation through the build system (Makefile conditionals, CMake if-statements). The closest in-file equivalent is a whole-file #ifdef wrapper, but this is less idiomatic than build-system-level file selection."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, build tags translate to each language's file-level conditional compilation mechanism. Go build tags become Rust cfg on mod declarations or C build-system file lists. The set of tagged files is invariant; how tagging works is variable.",
+            "invariant": ["file set per configuration (which files are included for each build context)", "constraint logic (AND/OR/NOT relationships between tags)", "tag names and their meanings (what each build context represents)"],
+            "variable": ["syntax (//go:build vs #[cfg] on mod vs Makefile conditionals)", "placement (file top vs parent module vs build script)", "granularity (Go: file-level; Rust: item-level; C: build-system-level)", "custom tag definition mechanism"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "granted",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.82,
+    "_weight_rationale": "|avg| of concept_map: 1G 10D. (1−10)/11 = −9/11 ≈ −0.82. conditional_if granted (build tags ARE conditional compilation).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Build tags are labels on files that the build system reads. They answer a simple question: does this file belong in this build? Yes means compiled; no means invisible.",
+    "_X5_scripture": "Revelation 3:8 — Behold, I have set before thee an open door, and no man can shut it."
+}

@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-core-types",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.CoreTypes Content Character — What Core Type Content IS",
+    "_P5_brief": "Format-independent definition of core type content character. Core types are the nouns of a file — the primary data structures and enumerations that BODY code operates on. Syntax varies (struct, enum, type); the declaration of what EXISTS doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "core-types",
+        "block": "SETUP",
+        "position": 7,
+        "nature": "existence-declaration",
+
+        "description": "Core type content declares what EXISTS in a file's domain. Structs hold state. Enums enumerate possibilities. Together they form the nouns that BODY code operates on. Core types answer 'what things are there?' — not 'what can they do?' (traits) or 'what can go wrong?' (errors). Simple constructors that merely assign fields may live here; complex creation with validation or fallibility belongs in BODY.",
+
+        "invariants": {
+            "description": "Properties true of ALL core type content, regardless of language.",
+
+            "structural": "Core types define data shape — fields, variants, compositions. They describe what a thing IS, not what it DOES.",
+            "named": "Every type has a meaningful name drawn from the domain. The name communicates what the type represents in the problem space.",
+            "composed": "Core types may reference other types — fields of type T, variants containing data. Types build on types already declared in earlier sections.",
+            "non-behavioral": "Core types declare existence, not behavior. Methods that add capability belong in BODY. Only trivial constructors (field assignment, no validation) stay here.",
+            "documented": "Each type and its fields have documentation explaining their domain purpose. Types without documentation are shapes without meaning."
+        },
+
+        "content_forms": {
+            "description": "What core type content looks like across languages. Syntax varies; the declaration of data shape is invariant.",
+
+            "rust": {
+                "syntax": "pub struct Config { pub name: String, pub timeout: Duration, pub retries: u32 } pub enum State { Idle, Running(TaskId), Failed(Error) }",
+                "grouping": "Primary struct first, then supporting structs, then enums. Derive macros on declarations (Debug, Clone, etc.). Simple impl Self { fn new(...) } for trivial constructors.",
+                "notes": "Rust structs and enums are the core type primitives. Tuple structs for wrappers, unit structs for markers. Derive macros declare derived behavior without implementing it. Keep impl blocks here ONLY for trivial new() — complex constructors go to BODY."
+            },
+
+            "go": {
+                "syntax": "type Config struct { Name string; Timeout time.Duration; Retries int } type State int; const ( StateIdle State = iota; StateRunning; StateFailed )",
+                "grouping": "Primary struct first, then supporting structs, then const-iota enum patterns. Grouped in type blocks when related.",
+                "notes": "Go types are structs and const-iota patterns (Go has no native enum). Interface types go in InterfaceDefs, not here. Embedding composes types. Simple NewConfig() constructors may live adjacent to the type."
+            },
+
+            "c": {
+                "syntax": "typedef struct { char *name; int timeout_secs; int retries; } Config; typedef enum { STATE_IDLE, STATE_RUNNING, STATE_FAILED } State;",
+                "grouping": "typedef structs first, then typedef enums. Forward declarations for mutually-referential types.",
+                "notes": "C uses typedef for named types. Structs and enums are the only composite type mechanisms. Forward declarations (struct Foo;) enable mutual references. Union types for variant-like patterns."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, core types change their expression syntax but preserve data shape and domain semantics. The same fields, the same variants, the same relationships — expressed in a different language's type system.",
+            "invariant": ["data shape (fields, variants, compositions)", "domain names (what types are called)", "relationships between types (which types reference which)", "documentation (what each type means)"],
+            "variable": ["syntax (struct vs type vs typedef)", "enum mechanism (native enum vs const-iota vs typedef enum)", "visibility modifiers (pub vs exported-by-capitalization vs header exposure)", "derive/generation annotations", "constructor placement conventions"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "defer",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 1F 10D. −10/11 ≈ −0.91. variable_binding defers (types are named definitions).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Core types are the nouns of the code. They declare what EXISTS before anything HAPPENS. Just as Adam named the animals before working the garden — naming precedes doing.",
+    "_X5_scripture": "Genesis 2:19 — And whatsoever Adam called every living creature, that was the name thereof."
+}

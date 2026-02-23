@@ -1,0 +1,128 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-body-org-chart",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 1: Org Chart — Go Content",
+    "_P5_brief": "Go-specific content rules for Org Chart. Module structure overview — package relationships, file responsibilities, internal organization. Extends the base structure at blocks/body/identity-access.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/body/identity-access.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "// package structure overview comment block",
+                "description": "Documents how the package is organized — which files handle what, how they relate",
+                "patterns": [
+                    "// Org Chart\n//\n// This package is organized as:\n//   doc.go      — Package identity (Pragma, Metadata)\n//   config.go   — Configuration loading and validation\n//   handler.go  — Request handling and routing\n//   errors.go   — Error types and wrapping"
+                ],
+                "visibility": "N/A — documentation"
+            },
+            {
+                "construct": "// dependency graph comment",
+                "description": "Shows which internal packages this package depends on and which depend on it",
+                "patterns": [
+                    "// Dependencies:\n//   internal/config  — configuration loading\n//   internal/logger  — structured logging\n//\n// Dependents:\n//   cmd/server  — imports this package for HTTP handling"
+                ],
+                "visibility": "N/A — documentation"
+            },
+            {
+                "construct": "// multi-file package navigation comment",
+                "description": "For packages split across multiple files, documents the file boundaries",
+                "patterns": [
+                    "// File Boundaries:\n//   types.go    — all struct/interface definitions (SETUP-heavy)\n//   logic.go    — all func implementations (BODY-heavy)\n//   helpers.go  — private utility functions"
+                ],
+                "visibility": "N/A — documentation"
+            },
+            {
+                "construct": "PragmaGet() / MetadataGet() accessor functions",
+                "description": "Identity accessor functions — Go equivalent of Rust's pragma()/metadata() accessors",
+                "patterns": [
+                    "// PragmaGet returns the value for the given Pragma key, or empty string if not found.\nfunc PragmaGet(key string) string {\n\tfor _, entry := range Pragma {\n\t\tif entry[0] == key {\n\t\t\treturn entry[1]\n\t\t}\n\t}\n\treturn \"\"\n}",
+                    "// MetadataGet returns the value for the given Metadata key, or empty string if not found.\nfunc MetadataGet(key string) string {\n\tfor _, entry := range Metadata {\n\t\tif entry[0] == key {\n\t\t\treturn entry[1]\n\t\t}\n\t}\n\treturn \"\"\n}"
+                ],
+                "visibility": "Exported — consumers can query package identity at runtime"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "business logic functions",
+                "reason": "Org Chart is for navigation and identity access — business logic belongs in B3 Core Operations",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "func\\s+[A-Z]\\w+\\(.*\\)\\s+.*error"
+            },
+            {
+                "construct": "type definitions or struct declarations",
+                "reason": "Type declarations belong in SETUP, not BODY",
+                "defer_to": "SETUP.CoreTypes",
+                "go_signal": "^type\\s+\\w+\\s+(struct|interface)"
+            },
+            {
+                "construct": "functions mutating package state",
+                "reason": "Identity accessors are read-only. Mutation belongs in Core Operations.",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "N/A — design judgment"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "func\\s+[a-z]\\w+\\(.*\\)\\s+.*error",
+                "to": "BODY.Helpers or BODY.CoreOperations",
+                "confidence": "medium",
+                "why": "Private function with error return — likely business logic, not navigation"
+            },
+            {
+                "pattern": "func\\s+[A-Z]\\w+\\(.*\\)\\s+\\(",
+                "to": "BODY.PublicAPIs",
+                "confidence": "medium",
+                "why": "Exported function with multiple returns — likely API, not identity access"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// PragmaGet returns the value for the given Pragma key, or empty string if not found.\nfunc PragmaGet(key string) string {\n\tfor _, entry := range Pragma {\n\t\tif entry[0] == key {\n\t\t\treturn entry[1]\n\t\t}\n\t}\n\treturn \"\"\n}\n\n// MetadataGet returns the value for the given Metadata key, or empty string if not found.\nfunc MetadataGet(key string) string {\n\tfor _, entry := range Metadata {\n\t\tif entry[0] == key {\n\t\t\treturn entry[1]\n\t\t}\n\t}\n\treturn \"\"\n}",
+            "empty_executable": "// 1. Org Chart\n//\n// This executable provides [purpose].\n// See BODY subsections for the run() flow.",
+            "empty_demo_test": "// 1. Org Chart\n//\n// Tests for [package] — validates [aspects].\n// See B5 Test Functions for the actual test cases.",
+            "comment_skeleton": "// 1. Org Chart\n// Package overview and identity accessors."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Org Chart: the package's table of contents. Documents structure, provides identity accessors. PragmaGet/MetadataGet are the Go equivalent of Rust's pragma()/metadata() — linear scan over [][2]string identity slices.",
+    "_X5_scripture": "Genesis 1:1 — In the beginning God created the heaven and the earth."
+}

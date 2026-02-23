@@ -1,0 +1,127 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-concepts-conditional-match",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "concept-definition",
+    "_P2_role": "schema",
+    "_P5_title": "Concept — Conditional Match (Pattern Matching)",
+    "_P5_brief": "Universal concept: multi-way branching by matching an expression against patterns. Rust match, Go switch, C switch.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "concept": "conditional_match",
+    "description": "Multi-way branching by matching an expression against patterns or values",
+
+    "universal_shape": {
+        "scrutinee": "the expression being matched against",
+        "arms": "array of (pattern, guard, body) triples",
+        "default": "optional catch-all arm (wildcard / default case)"
+    },
+
+    "arm_shape": {
+        "pattern": "the pattern to match (value, destructor, wildcard)",
+        "guard": "optional additional condition on the pattern",
+        "body": "statements or expression to execute when matched",
+        "bindings": "variables bound by destructuring the pattern"
+    },
+
+    "semantic_notes": [
+        "Rust match: exhaustive, pattern destructuring, guards with 'if', is expression.",
+        "Go switch: non-exhaustive (unless all cases covered), value or type switch, fallthrough explicit.",
+        "C switch: non-exhaustive, integer/enum only, fallthrough default, break required.",
+        "Rust Ok(meta) if meta.is_dir() → Go case with inner if check.",
+        "Rust Err(e) if e.kind() == ... → Go error type assertion or kind check."
+    ],
+
+    "container_map": {
+        "_note": "granted (+1) = belongs here. denied (-1) = does not belong. defer (0) = context-dependent.",
+
+        "METADATA": {
+            "directives": "denied",
+            "doc-comments": "denied",
+            "comment-block": "denied",
+            "pragma-identity": "denied",
+            "metadata-context": "denied",
+            "subtypes": "denied"
+        },
+
+        "SETUP": {
+            "imports": "denied",
+            "modules": "denied",
+            "constants": "denied",
+            "statics": "denied",
+            "type-aliases": "denied",
+            "error-types": "denied",
+            "core-types": "denied",
+            "trait-defs": "denied",
+            "macros": "defer",
+            "feature-gates": "denied",
+            "build-tags": "denied",
+            "code-generation": "denied",
+            "interface-defs": "denied",
+            "type-methods": "denied",
+            "variables": "denied"
+        },
+
+        "BODY": {
+            "identity-access": "granted",
+            "trait-implementations": "granted",
+            "constructors": "granted",
+            "core-logic": "granted",
+            "core-operations": "granted",
+            "queries": "granted",
+            "output-display": "granted",
+            "free-functions": "granted",
+            "helpers": "granted",
+            "org-chart": "denied",
+            "public-apis": "granted",
+            "error-handling": "granted",
+            "tests": "granted"
+        },
+
+        "CLOSING": {
+            "validation": "granted",
+            "execution": "granted",
+            "cleanup": "granted",
+            "modification-policy": "denied",
+            "extension-points": "denied",
+            "troubleshooting": "denied",
+            "reference": "denied",
+            "closing-note": "denied"
+        }
+    },
+
+    "concept_relations": {
+        "_note": "granted = high co-occurrence. denied = anti-correlation. defer = context-dependent. Asymmetric.",
+
+        "variable_binding": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "conditional_if": "defer",
+        "function_call": "defer",
+        "method_call": "defer",
+        "self_access": "defer",
+        "err_wrap": "defer",
+        "ok_wrap": "defer",
+        "string_format": "defer"
+    },
+
+    "detection_weight": 0.79,
+    "_weight_rationale": "4-block derived: (B − avg(M,S,C)) / 2. B=11/13, M=−6/6, S=−14/15, C=−2/8. Only macros defer in SETUP.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Pattern matching — the richest form of conditional. Each language expresses it differently but the concept is universal.",
+    "_X5_scripture": "1 Corinthians 12:4-6 — There are diversities of gifts, but the same Spirit. Many patterns, one truth."
+}

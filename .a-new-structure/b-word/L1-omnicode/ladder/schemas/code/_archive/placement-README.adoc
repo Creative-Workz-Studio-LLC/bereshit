@@ -1,0 +1,121 @@
+// #!omni document --adoc
+// ============================================================================
+// METADATA
+// ============================================================================
+// :key: B-L1-schemas-placement-README
+// :title: Placement Layer (R[10]) — Content-Kind Mapping
+// :type: Documentation (Index)
+// :status: Active
+// :version: a-01.00
+// :created: 2026-02-21
+// :updated: 2026-02-21
+// :authors: Nova Dawn
+// :purpose: Index document for the placement layer — maps content kinds to structural locations
+// :biblical_foundation: 1 Corinthians 14:40 — Let all things be done decently and in order
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+= Placement Layer (R[10]) — Content-Kind Mapping
+
+[quote, 1 Corinthians 14:40]
+____
+Let all things be done decently and in order.
+____
+
+== Overview
+
+The placement layer answers one question: *is this construct in the right place?*
+
+It sits at R[10] detection granularity — between structural organization (R[25]) and content substance (R[5]).
+Where R[25] checks that blocks and sections _exist_ and are _ordered_, placement checks that the right _constructs_ live in the right _blocks_ and _subsections_.
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+== Detection Chain Position
+
+[cols="1,1,3"]
+|===
+| Resolution | Layer | What It Checks
+
+| R[50]
+| existence/
+| Does this file have OmniCode markers at all?
+
+| R[25]
+| structure/
+| Are blocks and sections present and ordered?
+
+| **R[10]**
+| **placement/**
+| **Are constructs in the right blocks and subsections?**
+
+| R[5]
+| content/
+| Is content within each section semantically correct?
+|===
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+== What Placement Maps
+
+Each format has a content-kinds file that maps source-level construct categories to structural locations.
+
+=== Three Map Types
+
+block_placement:: Which block does this construct belong in? (SETUP vs BODY)
+subsection_placement:: Which subsection within a block? (Imports, Constants, CoreTypes, etc.)
+metadata_forbidden:: Which constructs must NOT appear in METADATA?
+
+=== Format Files
+
+[cols="1,3"]
+|===
+| Path | Description
+
+| `rust/content-kinds.jsonc`
+| 12 Rust content kinds -> 2 blocks, 8 subsections
+
+| `go/content-kinds.jsonc`
+| 7 Go content kinds -> 2 blocks, 5 subsections
+|===
+
+== The Principle
+
+Without placement, you could have a structurally valid file with everything in the wrong block.
+A `struct` in BODY. A `fn` in SETUP. A `use` in METADATA.
+All blocks present and ordered — but the code is in chaos.
+
+Placement is the rule that says: *declarations in SETUP, logic in BODY, comments in METADATA.*
+
+The construct tells you what it is. The placement map tells you where it goes.
+Identity determines structure.
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+== Related
+
+[cols="1,3"]
+|===
+| Document | Relationship
+
+| `structure/parts/`
+| R[25] — what sections exist and their order
+
+| `content/parts/`
+| R[5] — what goes inside each section
+
+| `format/`
+| Monolithic schemas (content_kind_mapping embedded here)
+|===
+
+---
+
+_1 Corinthians 14:40 — Let all things be done decently and in order._

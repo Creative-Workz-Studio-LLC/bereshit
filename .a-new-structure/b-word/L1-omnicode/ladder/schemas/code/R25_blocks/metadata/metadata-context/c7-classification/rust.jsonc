@@ -1,0 +1,67 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-metadata-context-c7-classification",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Metadata Context — C7 Classification (Discovery) — Rust Content",
+    "_P5_brief": "How Rust carries C7 Classification fields (tags, category, domain, paradigm) in pub static METADATA slices. The search surface in compiled statics.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/metadata-context/c7-classification.jsonc",
+    "format": "rust",
+
+    "content": {
+        "tag": "C7",
+        "parent": "MetadataContext",
+        "static_name": "METADATA",
+
+        "can": {
+            "description": "C7 fields carried as key-value pairs in METADATA static slice, as the final C-section entries",
+            "patterns": [
+                "(\"C7.tags\", \"identity, traceability, existence\"),",
+                "(\"C7.category\", \"error-handling\"),",
+                "(\"C7.domain\", \"identity\"),",
+                "(\"C7.paradigm\", \"CPI-SI\"),"
+            ],
+            "field_order": ["tags", "category", "domain", "paradigm"],
+            "note": "All four C7 fields are defined (not required). tags is a comma-separated list of freeform discovery terms. category, domain, and paradigm are single-value classifiers."
+        },
+
+        "cannot": [
+            {
+                "construct": "C7 fields before C6 in METADATA",
+                "reason": "Section order: C1 -> C2 -> C3 -> C4 -> C5 -> C6 -> C7. Classification is always last.",
+                "rust_signal": "C7\\. appearing before C6\\."
+            },
+            {
+                "construct": "C7.tags as structured data",
+                "reason": "Tags are freeform comma-separated strings, not arrays or objects. Keep it simple for static slices.",
+                "rust_signal": "N/A — format check"
+            }
+        ],
+
+        "scaffold": {
+            "slice_full": "// C7 Classification — discovery\n    (\"C7.tags\", \"{tags}\"),\n    (\"C7.category\", \"{category}\"),\n    (\"C7.domain\", \"{domain}\"),\n    (\"C7.paradigm\", \"{paradigm}\"),",
+            "slice_minimal": "(\"C7.tags\", \"{tags}\"),",
+            "note": "tags alone is the common case. Full scaffold adds category, domain, paradigm for files in well-classified systems. Omit C7 entirely for simple utility files."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "C7 in Rust: the index. tags give freeform search handles, category gives functional grouping, domain gives business context, paradigm gives design family. Without C7, discovery depends on file paths and naming alone — which break at scale.",
+    "_X5_scripture": "Proverbs 25:2 — It is the glory of God to conceal a thing: but the honour of kings is to search out a matter."
+}

@@ -1,0 +1,133 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-doc-comments",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 2: Doc Comments — Go Content",
+    "_P5_brief": "Go-specific content rules for doc comments. Three-tier discipline: doc comments (// before declarations), organizational comments (separated by blank line), inline comments. Extends the base structure at structure/parts/metadata/doc-comments.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/doc-comments.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "// Package-level doc comment",
+                "description": "First // comment block before package declaration -- consumed by go doc and godoc",
+                "patterns": [
+                    "// Package config provides OmniCode identity and configuration loading.",
+                    "//",
+                    "// # Design",
+                    "//",
+                    "// The config package uses [][2]string slices for zero-allocation identity.",
+                    "// Tab-indented preformatted text for code examples.",
+                    "// [Name] for doc links (Go 1.19+ format)."
+                ],
+                "visibility": "N/A -- comments",
+                "note": "Go 1.19+ doc comment format: # Heading, tab-indented preformatted text, [Name] for doc links. First sentence is the summary in godoc."
+            },
+            {
+                "construct": "// Pragma doc comment",
+                "description": "Doc comment on var Pragma -- describes I1-I4 sections",
+                "patterns": [
+                    "// Pragma carries the OmniCode identity sections (I1-I4).",
+                    "//",
+                    "// Sections:",
+                    "//   I1 Core      key, format, from, at",
+                    "//   I2 Family    type, structure, subtype, role",
+                    "//   I3 Instance  file, title, component, path",
+                    "//   I4 Arch      layer, position, pattern"
+                ],
+                "visibility": "N/A",
+                "note": "Doc comment directly before var Pragma. Describes the identity contract."
+            },
+            {
+                "construct": "// Metadata doc comment",
+                "description": "Doc comment on var Metadata -- describes C1-C7 sections",
+                "patterns": [
+                    "// Metadata carries the OmniCode context sections (C1-C7).",
+                    "//",
+                    "// Sections:",
+                    "//   C1 State       version, status, created, updated",
+                    "//   C2 Attribution  organization, architect"
+                ],
+                "visibility": "N/A",
+                "note": "Doc comment directly before var Metadata. Describes the context contract."
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "/* */ block comments for documentation",
+                "reason": "Go convention is // line comments for documentation. /* */ is acceptable but uncommon and not parsed the same way by go doc.",
+                "defer_to": "N/A -- use // comments",
+                "go_signal": "/\\*"
+            },
+            {
+                "construct": "doc comment separated from declaration by blank line",
+                "reason": "A blank line between comment and declaration makes it an organizational comment, NOT a doc comment. go doc won't see it.",
+                "defer_to": "N/A -- remove blank line or make it organizational intentionally",
+                "go_signal": "N/A"
+            }
+        ],
+
+        // -----------------------------------------
+        // Three-Tier Comment Discipline
+        // -----------------------------------------
+
+        "three_tier_discipline": {
+            "doc_comments": "// before exported declarations -- go doc/godoc parseable (first sentence = summary)",
+            "organizational_comments": "// section dividers -- blank line separates from declarations so NOT parsed as doc comments",
+            "inline_comments": "// within code for navigation and clarification"
+        },
+
+        // -----------------------------------------
+        // Severity
+        // -----------------------------------------
+
+        "severity": {
+            "package_doc": "warn",
+            "pragma_doc": "warn",
+            "metadata_doc": "warn",
+            "note": "Package-level and identity var doc comments are expected for library packages. Not checked for non-root package files."
+        },
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "package_library": "// Package {name} provides {brief_description}.\n//\n// # Design\n//\n// {design_notes}",
+            "package_executable": "// Command {name} {brief_description}.\n//\n// # Usage\n//\n// \t{name} [flags]",
+            "comment_skeleton": "// // Package {name} provides {brief_description}."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go doc comments: three tiers working together. Doc comments (before declarations) feed go doc. Organizational comments (blank-line separated) provide structure. Inline comments explain code. The first sentence of a doc comment IS the summary in godoc -- make it count.",
+    "_X5_scripture": "Habakkuk 2:2 -- Write the vision, and make it plain upon tables, that he may run that readeth it."
+}

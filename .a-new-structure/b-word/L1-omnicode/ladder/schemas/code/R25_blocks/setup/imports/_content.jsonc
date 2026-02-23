@@ -1,0 +1,94 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-imports",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.Imports Content Character — What Import Content IS",
+    "_P5_brief": "Format-independent definition of import content character. Imports are dependency declarations — naming what exists elsewhere that this file needs. Syntax varies (use, import, #include); the dependency graph doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "imports",
+        "block": "SETUP",
+        "position": 1,
+        "nature": "dependency-declaration",
+
+        "description": "Import content is the dependency graph made visible. It names external code this file needs to function. No logic executes here — imports only declare existence. The content is purely referential: 'this thing exists elsewhere, and I need it here.'",
+
+        "invariants": {
+            "description": "Properties true of ALL import content, regardless of language.",
+
+            "referential": "Imports reference code that lives elsewhere. They never define new things — only name existing things.",
+            "ordered": "Imports follow a conventional ordering — standard library first, then external/third-party, then project-internal. Near to far.",
+            "grouped": "Imports are visually grouped by source origin. Blank lines or comment headers separate groups.",
+            "minimal": "Only import what you use. Unused imports are dead weight — most languages enforce or lint this.",
+            "deterministic": "The same source code always requires the same imports. Dependencies are structural, not behavioral.",
+            "non-executable": "No computation occurs in import content. Imports are evaluated at compile/load time, not runtime."
+        },
+
+        "content_forms": {
+            "description": "What import content looks like across languages. Syntax varies; the dependency graph is invariant.",
+
+            "rust": {
+                "syntax": "use std::path::Path; use crate::internal; use external_crate;",
+                "grouping": "std → crate (internal) → external crates",
+                "notes": "Rust imports are scoped (can appear in function bodies too, but SETUP.Imports covers module-level). Selective imports via use path::{A, B}."
+            },
+
+            "go": {
+                "syntax": "import (\"fmt\" \"github.com/pkg\" \"project/internal\")",
+                "grouping": "stdlib → external → internal (goimports enforces grouping)",
+                "notes": "Go imports are always at file top. Blank-identifier imports (_ \"pkg\") for side effects. Dot imports discouraged."
+            },
+
+            "c": {
+                "syntax": "#include <stdlib.h> #include \"local.h\"",
+                "grouping": "system headers (<>) → project headers (\"\") → local headers",
+                "notes": "C includes are textual insertion — fundamentally different from module imports. Include guards prevent double-inclusion."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, import content changes syntax but preserves the dependency graph. The set of things needed doesn't change — how you name them does.",
+            "invariant": ["dependency set (what external code is needed)", "grouping categories (stdlib vs external vs internal)", "selectivity (which names are imported)"],
+            "variable": ["syntax (use vs import vs #include)", "path format (crate:: vs module path vs header path)", "aliasing mechanism (as vs named import vs typedef)", "side-effect imports (Go _ imports have no Rust equivalent)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — no code patterns in import declarations.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Import content is the first thing a compiler reads and the last thing a reader notices. But every line of code that follows depends on these declarations being right. The dependency graph is the skeleton that the rest of the file hangs on.",
+    "_X5_scripture": "1 Corinthians 12:21 — The eye cannot say unto the hand, I have no need of thee. Every dependency serves a purpose."
+}

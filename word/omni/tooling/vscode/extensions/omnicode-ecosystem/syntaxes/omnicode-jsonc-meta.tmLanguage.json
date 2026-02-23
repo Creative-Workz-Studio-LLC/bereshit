@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "OmniCode JSONC Meta Fields",
+  "scopeName": "omnicode.ecosystem.jsonc-meta",
+  "injectionSelector": "L:string.quoted.double.json",
+  "patterns": [
+    { "include": "#meta-keys" },
+    { "include": "#block-boundary-values" },
+    { "include": "#section-boundary-values" },
+    { "include": "#tag-values" }
+  ],
+  "repository": {
+
+    "meta-keys": {
+      "patterns": [
+        {
+          "comment": "OmniCode _ prefix meta field keys in JSON strings",
+          "name": "omnicode.jsonc.meta-key",
+          "match": "^_(?:pragma|metadata|content|closing|P[1-5]|M[1-5]|X[1-5]|Cc|Co|Cv)(?:_\\w+)?$"
+        }
+      ]
+    },
+
+    "block-boundary-values": {
+      "patterns": [
+        {
+          "comment": "═══ block boundary as JSON string value",
+          "name": "omnicode.structure.block-boundary",
+          "match": "[═]{3,}"
+        }
+      ]
+    },
+
+    "section-boundary-values": {
+      "patterns": [
+        {
+          "comment": "─── section boundary as JSON string value",
+          "name": "omnicode.structure.section-boundary",
+          "match": "[─]{3,}"
+        }
+      ]
+    },
+
+    "tag-values": {
+      "patterns": [
+        {
+          "comment": "Block/section tags in JSON string values",
+          "name": "omnicode.tag",
+          "match": "\\[(PRAGMA|METADATA|CONTENT|CLOSING|END|CORE|FAMILY|INSTANCE|ARCH|SUMMARY|CONFIG|OPS|VALIDATE|POLICY|EXTENSION|TROUBLESHOOTING|REFERENCE|NOTE)\\]"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,135 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-index-targets-go-demo-test",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "composition-target",
+    "_P2_role": "index-target",
+    "_P5_title": "Go Demo-Test Composition Target",
+    "_P5_brief": "Composition recipe for building a Go test file (*_test.go). The proving ground — table-driven tests, t.Run() subtests, t.Helper() fixtures. package xxx_test (external) or package xxx (internal). concern_coverage ordering because tests validate by aspect, not by execution order. Imports and CoreTypes (testCase structs) required in SETUP; TestFunctions (B5) required in BODY.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "target": {
+        "pragma": "//omni:code --go -demo-test",
+        "format": "go",
+        "form": "demo-test",
+        "block_pattern": "4-block",
+
+        "composition": {
+
+            "structure": {
+                "whole": "R50_codefile/universal/_structure.jsonc",
+                "molded": "forms/demo-test/_structure.jsonc",
+                "parts": {
+                    "setup": [
+                        "R25_blocks/setup/imports/_structure.jsonc",
+                        "R25_blocks/setup/constants/_structure.jsonc",
+                        "R25_blocks/setup/statics/_structure.jsonc",
+                        "R25_blocks/setup/type-aliases/_structure.jsonc",
+                        "R25_blocks/setup/error-types/_structure.jsonc",
+                        "R25_blocks/setup/core-types/_structure.jsonc",
+                        "R25_blocks/setup/trait-defs/_structure.jsonc",
+                        "R25_blocks/setup/macros/_structure.jsonc",
+                        "R25_blocks/setup/feature-gates/_structure.jsonc"
+                    ],
+                    "body": [
+                        "R25_blocks/body/identity-access/_structure.jsonc",
+                        "R25_blocks/body/helpers/_structure.jsonc",
+                        "R25_blocks/body/core-logic/_structure.jsonc",
+                        "R25_blocks/body/queries/_structure.jsonc"
+                    ],
+                    "closing": [
+                        "R25_blocks/closing/validation/_structure.jsonc",
+                        "R25_blocks/closing/execution/_structure.jsonc",
+                        "R25_blocks/closing/cleanup/_structure.jsonc",
+                        "R25_blocks/closing/modification-policy/_structure.jsonc",
+                        "R25_blocks/closing/extension-points/_structure.jsonc",
+                        "R25_blocks/closing/troubleshooting/_structure.jsonc",
+                        "R25_blocks/closing/reference/_structure.jsonc",
+                        "R25_blocks/closing/closing-note/_structure.jsonc"
+                    ]
+                }
+            },
+
+            "content": {
+                "whole": "R50_codefile/universal/_content.jsonc",
+                "molded": "forms/demo-test/go.jsonc",
+                "parts": {
+                    "setup": [
+                        "R25_blocks/setup/imports/go.jsonc",
+                        "R25_blocks/setup/constants/go.jsonc",
+                        "R25_blocks/setup/variables/go.jsonc",
+                        "R25_blocks/setup/type-aliases/go.jsonc",
+                        "R25_blocks/setup/error-types/go.jsonc",
+                        "R25_blocks/setup/core-types/go.jsonc",
+                        "R25_blocks/setup/interface-defs/go.jsonc",
+                        "R25_blocks/setup/type-methods/go.jsonc",
+                        "R25_blocks/setup/code-generation/go.jsonc",
+                        "R25_blocks/setup/build-tags/go.jsonc"
+                    ],
+                    "body": [
+                        "R25_blocks/body/org-chart/go.jsonc",
+                        "R25_blocks/body/helpers/go.jsonc",
+                        "R25_blocks/body/core-operations/go.jsonc",
+                        "R25_blocks/body/error-handling/go.jsonc",
+                        "R25_blocks/body/public-apis/go.jsonc"
+                    ],
+                    "closing": [
+                        "R25_blocks/closing/validation/go.jsonc",
+                        "R25_blocks/closing/execution/go.jsonc",
+                        "R25_blocks/closing/cleanup/go.jsonc",
+                        "R25_blocks/closing/modification-policy/go.jsonc",
+                        "R25_blocks/closing/extension-points/go.jsonc",
+                        "R25_blocks/closing/troubleshooting/go.jsonc",
+                        "R25_blocks/closing/reference/go.jsonc",
+                        "R25_blocks/closing/closing-note/go.jsonc"
+                    ]
+                }
+            }
+        },
+
+        "active_sections": {
+            "SETUP": {
+                "required": ["Imports", "CoreTypes"],
+                "available": ["Constants", "Variables", "TypeAliases", "ErrorTypes", "InterfaceDefs", "TypeMethods", "CodeGeneration", "BuildTags"],
+                "reserved": []
+            },
+            "BODY": {
+                "required": ["PublicAPIs"],
+                "available": ["OrgChart", "Helpers", "CoreOperations", "ErrorHandling"],
+                "reserved": ["ConstructorTests", "BuilderTests", "TransitionTests", "QueryTests", "IdentityTests", "ErrorTests", "EdgeCaseTests", "TableDrivenTests", "IntegrationTests"],
+                "ordering": "concern_coverage"
+            },
+            "CLOSING": {
+                "required": ["X1", "X5"],
+                "available": ["Cv", "Ce", "Cc", "X2", "X3", "X4"],
+                "reserved": ["TestCoverageSummary"]
+            }
+        },
+
+        "resolution_order": [
+            "1. Load _structure.jsonc — block skeleton",
+            "2. Load forms/demo-test/_structure.jsonc — form section rules",
+            "3. Load _content.jsonc — base code nature",
+            "4. Load forms/demo-test/go.jsonc — Go test expectations",
+            "5. For each active section: load R25_blocks/{block}/{section}/_structure + {lang}",
+            "6. Merge: structure contracts + content specifics = complete rules"
+        ]
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The Go test file is the proving ground. Table-driven tests are Go's signature pattern — the testCase struct (CoreTypes, required) feeds t.Run() subtests (PublicAPIs/TestFunctions, required). concern_coverage ordering because tests validate by WHAT they prove, not by execution order. BODY reserved sections anticipate test categories (ConstructorTests, ErrorTests, etc.) that will become real body sections as the test architecture matures. Most CLOSING sections are available rather than required — a test file's primary obligation is to prove claims (BODY) and document its modification policy (X1) and anchor (X5).",
+    "_X5_scripture": "Prove all things; hold fast that which is good. — 1 Thessalonians 5:21"
+}

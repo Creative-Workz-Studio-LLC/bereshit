@@ -1,0 +1,91 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-placement-go",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "placement-map",
+    "_P2_role": "container-structure",
+    "_P5_title": "Go Content-Kind Placement Map (R[10])",
+    "_P5_brief": "Maps Go source-level content kinds to blocks and subsections. The machine-readable truth about WHERE each construct belongs. Extracted from go-4block-schema.jsonc SETUP.content_kind_mapping.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "format": "go",
+    "detection_resolution": "R[10]",
+
+    "content_kinds": {
+        "note": "Each key is a content kind (construct category). The linter classifies parsed lines into these kinds, then checks placement.",
+
+        "import_decl": {
+            "description": "import declarations -- stdlib, external, internal packages",
+            "go_signal": "^import\\s+",
+            "block": "SETUP",
+            "subsection": "Imports"
+        },
+        "const_decl": {
+            "description": "const declarations -- compile-time constants and iota enumerations",
+            "go_signal": "^const\\s+",
+            "block": "SETUP",
+            "subsection": "Constants"
+        },
+        "var_decl": {
+            "description": "var declarations -- package-level variables",
+            "go_signal": "^var\\s+",
+            "block": "SETUP",
+            "subsection": "Variables"
+        },
+        "type_decl": {
+            "description": "type declarations -- structs, interfaces, type aliases",
+            "go_signal": "^type\\s+",
+            "block": "SETUP",
+            "subsection": "CoreTypes"
+        },
+        "func_decl": {
+            "description": "func declarations -- free functions",
+            "go_signal": "^func\\s+[A-Za-z]",
+            "block": "BODY",
+            "subsection": null
+        },
+        "method_decl": {
+            "description": "method declarations -- functions with receivers",
+            "go_signal": "^func\\s+\\(",
+            "block": "BODY",
+            "subsection": "TypeMethods"
+        },
+        "init_func": {
+            "description": "init() function -- package initialization",
+            "go_signal": "^func\\s+init\\(\\)",
+            "block": "BODY",
+            "subsection": null
+        }
+    },
+
+    "metadata_forbidden": {
+        "note": "These content kinds MUST NOT appear in the METADATA block. METADATA is comments and identity statics only.",
+        "kinds": [
+            "import_decl", "const_decl", "var_decl", "type_decl",
+            "func_decl", "method_decl", "init_func"
+        ]
+    },
+
+    "summary": {
+        "setup_kinds": ["import_decl", "const_decl", "var_decl", "type_decl"],
+        "body_kinds": ["func_decl", "method_decl", "init_func"],
+        "principle": "SETUP makes things EXIST. BODY makes things HAPPEN. Declarations in SETUP, functions in BODY."
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go placement: 7 content kinds mapped to 2 blocks and 5 subsections. Simpler than Rust -- Go has fewer construct categories. The import/const/var/type quartet lives in SETUP; func/method/init lives in BODY. The compiler enforces some of this (unused imports); the linter enforces the rest.",
+    "_X5_scripture": "1 Corinthians 14:40 -- Let all things be done decently and in order."
+}

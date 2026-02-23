@@ -1,0 +1,151 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-concepts",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "transform-concepts",
+    "_P2_role": "schema",
+    "_P5_title": "Transpiler — Abstract Type & Convention Concepts",
+    "_P5_brief": "Format-agnostic vocabulary for transpilation. Defines WHAT types and patterns exist abstractly. Language-specific mappings express HOW each language manifests these concepts.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "concepts": {
+
+        // -----------------------------------------
+        // Type Concepts (what types ARE)
+        // -----------------------------------------
+
+        "type_categories": {
+            "primitive": {
+                "description": "Scalar types with direct language equivalents",
+                "examples": ["string", "boolean", "integer", "float", "byte"]
+            },
+            "owned_string": {
+                "description": "Heap-allocated, growable string",
+                "notes": "Rust String vs Go string — ownership differs, usage maps"
+            },
+            "string_reference": {
+                "description": "Borrowed/view into a string",
+                "notes": "Rust &str → Go string (Go strings are already views)"
+            },
+            "integer_sized": {
+                "description": "Fixed-width integers with explicit bit size",
+                "examples": ["i8/u8", "i16/u16", "i32/u32", "i64/u64"]
+            },
+            "integer_pointer": {
+                "description": "Pointer-sized integer (platform dependent)",
+                "notes": "Rust usize/isize → Go int/uint"
+            },
+            "boolean": {
+                "description": "True/false value",
+                "notes": "Universal — maps 1:1 across all languages"
+            },
+            "float": {
+                "description": "IEEE 754 floating point with explicit bit size",
+                "examples": ["f32/float32", "f64/float64"]
+            },
+            "unit": {
+                "description": "No meaningful value (void equivalent)",
+                "notes": "Rust () → Go omitted return"
+            },
+            "optional": {
+                "description": "Value that may or may not exist",
+                "notes": "Rust Option<T> → Go *T (nil = None)"
+            },
+            "result": {
+                "description": "Operation that may fail with typed error",
+                "notes": "Rust Result<T, E> → Go (T, error)"
+            },
+            "collection_list": {
+                "description": "Ordered, growable sequence of elements",
+                "notes": "Rust Vec<T> → Go []T"
+            },
+            "collection_map": {
+                "description": "Key-value associative container",
+                "notes": "Rust HashMap<K,V> → Go map[K]V"
+            },
+            "reference": {
+                "description": "Borrowed view of data (no ownership transfer)",
+                "notes": "Rust &T → Go *T (Go has no borrow checker)"
+            },
+            "mutable_reference": {
+                "description": "Borrowed mutable view of data",
+                "notes": "Rust &mut T → Go *T (mutability is implicit in Go)"
+            },
+            "owned_pointer": {
+                "description": "Heap-allocated owned value",
+                "notes": "Rust Box<T> → Go *T"
+            }
+        },
+
+        // -----------------------------------------
+        // Import Concepts (what imports ARE)
+        // -----------------------------------------
+
+        "import_categories": {
+            "standard_library": {
+                "description": "Language standard library modules",
+                "notes": "Every language has a stdlib — paths differ, concepts map"
+            },
+            "external_dependency": {
+                "description": "Third-party library from package manager",
+                "notes": "Rust crates → Go modules — may not have 1:1 equivalents"
+            },
+            "internal_module": {
+                "description": "Cross-module imports within the same project",
+                "notes": "Rust crate::path → Go project/internal/path"
+            },
+            "builtin": {
+                "description": "Language built-in that needs no import",
+                "notes": "Rust HashMap needs use; Go map is builtin"
+            }
+        },
+
+        // -----------------------------------------
+        // Convention Concepts (how code is expressed)
+        // -----------------------------------------
+
+        "convention_categories": {
+            "naming_public": {
+                "description": "How public/exported identifiers are named",
+                "notes": "Rust: any case + pub keyword. Go: PascalCase = exported"
+            },
+            "naming_private": {
+                "description": "How private/unexported identifiers are named",
+                "notes": "Rust: any case without pub. Go: camelCase = unexported"
+            },
+            "naming_constant": {
+                "description": "How constants are named",
+                "notes": "Rust: UPPER_SNAKE. Go: PascalCase or camelCase"
+            },
+            "receiver": {
+                "description": "How methods receive their 'self' parameter",
+                "notes": "Rust: &self/&mut self/self. Go: func (r *Type) Method()"
+            },
+            "error_handling": {
+                "description": "How errors are propagated",
+                "notes": "Rust: Result<T, E> + ? operator. Go: (T, error) + if err != nil"
+            },
+            "visibility": {
+                "description": "How access control is expressed",
+                "notes": "Rust: pub/pub(crate)/private. Go: PascalCase/camelCase"
+            }
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Abstract concepts are the anchor — format-agnostic truth. Language-specific mappings express these concepts in their own syntax. The concept vocabulary is the Semantic IR's dictionary.",
+    "_X5_scripture": "Ephesians 4:4 — There is one body, and one Spirit. One structure, many expressions."
+}

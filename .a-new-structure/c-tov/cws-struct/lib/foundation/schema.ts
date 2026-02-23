@@ -23,6 +23,8 @@
 
 import { parse as parseJsonc } from "@std/jsonc";
 import { getDefaultPipeline } from "./schema-pipeline.ts";
+import { ToolError } from "./tool-error.ts";
+import { registerCache } from "./cache-registry.ts";
 
 // ---------------------------------------------------------------------------
 // Types — mirrors validation_contract structure in the schema
@@ -363,22 +365,19 @@ export function parseTomlSchema(jsonText: string): DerivedRules {
     // deno-lint-ignore no-explicit-any
     parsed = parseJsonc(jsonText) as Record<string, any>;
   } catch (e) {
-    throw new Error(
-      `TOML schema parse error: ${e instanceof Error ? e.message : String(e)}\n` +
-      `The schema must be valid JSONC. Check for syntax errors.`,
-    );
+    throw new ToolError("CWS-T00-010", {
+      error: e instanceof Error ? e.message : String(e),
+    });
   }
 
   if (!parsed || typeof parsed !== "object") {
-    throw new Error(`TOML schema parsed to non-object — expected JSONC object`);
+    throw new ToolError("CWS-T00-011");
   }
 
   const vc = parsed["validation_contract"] as Record<string, unknown>;
 
   if (!vc) {
-    throw new Error(
-      `TOML schema missing "validation_contract" — cannot derive rules`,
-    );
+    throw new ToolError("CWS-T00-012");
   }
 
   // deno-lint-ignore no-explicit-any
@@ -394,9 +393,7 @@ export function parseTomlSchema(jsonText: string): DerivedRules {
   if (!closing) missing.push("closing");
 
   if (missing.length > 0) {
-    throw new Error(
-      `TOML schema validation_contract missing: ${missing.join(", ")}`,
-    );
+    throw new ToolError("CWS-T00-013", { missing: missing.join(", ") });
   }
 
   // ── Build the raw contract ──────────────────────────────────────
@@ -559,6 +556,7 @@ export async function loadRules(): Promise<DerivedRules> {
 export function clearCache(): void {
   cached = null;
 }
+registerCache("schema/derived-rules", clearCache);
 
 // ============================================================================
 // CLOSING

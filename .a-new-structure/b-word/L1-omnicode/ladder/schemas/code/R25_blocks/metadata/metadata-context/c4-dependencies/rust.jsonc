@@ -1,0 +1,75 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-metadata-context-c4-dependencies",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Metadata Context — C4 Dependencies (Dependency Graph) — Rust Content",
+    "_P5_brief": "How Rust carries C4 Dependencies fields (requires.stdlib, requires.external, requires.internal, consumers, integration, if_missing) in pub static METADATA slices. The dependency graph in compiled statics with dot-nested keys.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/metadata-context/c4-dependencies.jsonc",
+    "format": "rust",
+
+    "content": {
+        "tag": "C4",
+        "parent": "MetadataContext",
+        "static_name": "METADATA",
+
+        "can": {
+            "description": "C4 fields carried as key-value pairs in METADATA static slice, with dot-nested keys for requires subcategories",
+            "patterns": [
+                "(\"C4.requires.stdlib\", \"std::fmt, std::sync\"),",
+                "(\"C4.requires.external\", \"serde, toml\"),",
+                "(\"C4.requires.internal\", \"crate::config\"),",
+                "(\"C4.consumers\", \"parent crate, integration tests\"),",
+                "(\"C4.integration\", \"imported by lib.rs\"),",
+                "(\"C4.if_missing\", \"core identity unavailable\"),"
+            ],
+            "field_order": ["requires.stdlib", "requires.external", "requires.internal", "consumers", "integration", "if_missing"],
+            "note": "requires and consumers are required. C4 uses dot-nested keys (C4.requires.stdlib) for dependency categories. Values are comma-separated lists of Rust paths/crate names."
+        },
+
+        "cannot": [
+            {
+                "construct": "C4 fields before C3 in METADATA",
+                "reason": "Section order: C1 -> C2 -> C3 -> C4. Dependencies follow grounding.",
+                "rust_signal": "C4\\. appearing before C3\\."
+            },
+            {
+                "construct": "C4.requires without subcategory",
+                "reason": "requires must use nested keys (C4.requires.stdlib, C4.requires.external, C4.requires.internal). Bare C4.requires is ambiguous.",
+                "rust_signal": "\"C4\\.requires\"[^.]"
+            },
+            {
+                "construct": "Cargo.toml dependencies not reflected in C4",
+                "reason": "C4 should mirror actual dependencies. When Cargo.toml changes, C4 should update to reflect the truth.",
+                "rust_signal": "N/A — detected by cross-referencing Cargo.toml"
+            }
+        ],
+
+        "scaffold": {
+            "slice_full": "// C4 Dependencies — graph edges\n    (\"C4.requires.stdlib\", \"{stdlib_deps}\"),\n    (\"C4.requires.external\", \"{external_deps}\"),\n    (\"C4.requires.internal\", \"{internal_deps}\"),\n    (\"C4.consumers\", \"{consumers}\"),\n    (\"C4.integration\", \"{integration}\"),\n    (\"C4.if_missing\", \"{if_missing}\"),",
+            "slice_minimal": "(\"C4.requires.stdlib\", \"{stdlib_deps}\"),\n    (\"C4.consumers\", \"{consumers}\"),",
+            "slice_no_external": "// C4 Dependencies — graph edges\n    (\"C4.requires.stdlib\", \"{stdlib_deps}\"),\n    (\"C4.requires.internal\", \"{internal_deps}\"),\n    (\"C4.consumers\", \"{consumers}\"),",
+            "note": "Full scaffold includes all six C4 fields with section comment. Minimal includes just stdlib deps + consumers. no_external variant for crates with zero third-party dependencies."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "C4 in Rust: the web. requires tells you what the file needs (stdlib, external crates, internal modules). consumers tells you what needs the file. integration tells you how it connects. if_missing tells you what breaks. The eye cannot say unto the hand, I have no need of thee.",
+    "_X5_scripture": "1 Corinthians 12:21 — And the eye cannot say unto the hand, I have no need of thee: nor again the head to the feet, I have no need of you."
+}

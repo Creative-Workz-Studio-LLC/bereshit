@@ -1,0 +1,144 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-setup-constants",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 2: Constants -- Go Content",
+    "_P5_brief": "Go-specific content rules for Constants. Compile-time values, iota enums, SCREAMING_SNAKE or CamelCase naming. Every magic number in BODY should be a named constant here. Extends the base structure at blocks/setup/constants.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/constants.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "const Name Type = value",
+                "description": "Typed constants with domain-specific values",
+                "patterns": [
+                    "const MaxRetries = 3",
+                    "const DefaultTimeout = 30 * time.Second",
+                    "const Version = \"1.0.0\"",
+                    "const BufferSize = 8192"
+                ],
+                "visibility": "Exported (capitalized) for package API constants, unexported (lowercase) for internal"
+            },
+            {
+                "construct": "const ( ... ) block",
+                "description": "Grouped constants -- related values declared together",
+                "patterns": [
+                    "const (\n\tMaxRetries  = 3\n\tMaxTimeout  = 30 * time.Second\n\tDefaultPort = 3847\n)"
+                ],
+                "visibility": "varies"
+            },
+            {
+                "construct": "iota enumerations",
+                "description": "Go's auto-incrementing enum pattern -- type-safe enumeration via iota",
+                "patterns": [
+                    "type LogLevel int\n\nconst (\n\tLogDebug LogLevel = iota\n\tLogInfo\n\tLogWarn\n\tLogError\n)",
+                    "type Format int\n\nconst (\n\tFormatTOML Format = iota\n\tFormatJSON\n\tFormatYAML\n)"
+                ],
+                "visibility": "Exported for public enums, unexported for internal",
+                "note": "iota enums should always have a named type. Untyped iota enums lose type safety. Consider adding a String() method in S8 TypeMethods."
+            },
+            {
+                "construct": "exit code constants (executables)",
+                "description": "Named exit codes for os.Exit -- maps every exit condition",
+                "patterns": [
+                    "const (\n\tExitSuccess    = 0\n\tExitError      = 1\n\tExitUsage      = 2\n\tExitConfig     = 3\n)"
+                ],
+                "visibility": "unexported typically -- exit codes are internal to main",
+                "note": "Required in executable form. Every os.Exit call uses a named constant, never a bare integer."
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "var declarations",
+                "reason": "Variables are runtime-mutable. Constants are compile-time-fixed. Different section (S3).",
+                "defer_to": "SETUP.Variables",
+                "go_signal": "^var\\s+"
+            },
+            {
+                "construct": "runtime-computed values",
+                "reason": "Constants must be compile-time evaluable. Runtime values use var or init().",
+                "defer_to": "SETUP.Variables or BODY",
+                "go_signal": "N/A -- compiler error for non-const expressions"
+            },
+            {
+                "construct": "Pragma / Metadata identity vars",
+                "reason": "Identity variables live in METADATA block, not SETUP constants",
+                "defer_to": "METADATA",
+                "go_signal": "Pragma|Metadata.*\\[\\]\\[2\\]string"
+            },
+            {
+                "construct": "magic numbers in const blocks",
+                "reason": "Even constants should be named meaningfully. const x = 42 without context is still a magic number.",
+                "defer_to": "N/A -- name it",
+                "go_signal": "N/A -- design judgment"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "^var\\s+",
+                "to": "SETUP.Variables",
+                "confidence": "high",
+                "why": "Variable declaration, not compile-time constant"
+            },
+            {
+                "pattern": "^type\\s+",
+                "to": "SETUP.CoreTypes or SETUP.TypeAliases",
+                "confidence": "high",
+                "why": "Type definition in constants section"
+            },
+            {
+                "pattern": "^func\\s+",
+                "to": "BODY",
+                "confidence": "high",
+                "why": "Function definition in constants section"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// TODO: Package-level constants.\nconst DefaultCapacity = 64",
+            "empty_executable": "// Exit codes.\nconst (\n\texitSuccess = 0\n\texitError   = 1\n)",
+            "comment_skeleton": "// const DefaultCapacity = 64"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Constants: compile-time values. Every magic number in BODY should be a named constant here. iota for enumerations. When the system scales, these migrate to config; BODY stays unchanged.",
+    "_X5_scripture": "Malachi 3:6 -- For I am the LORD, I change not."
+}

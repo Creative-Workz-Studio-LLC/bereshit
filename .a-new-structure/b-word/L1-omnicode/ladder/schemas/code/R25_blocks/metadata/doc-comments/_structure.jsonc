@@ -1,0 +1,99 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-metadata-doc-comments",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "METADATA Section 2: Doc Comments — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Doc Comments ARE — language-level documentation that tools and IDEs consume. See content/parts/{lang}/metadata/doc-comments.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "DocComments",
+        "position": 2,
+        "label": "Doc Comments",
+        "block": "METADATA",
+        "overview_text": "Language-native documentation for tools and IDEs",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "separator_style": "none"
+        },
+
+        "can": [
+            {
+                "concept": "crate/package-level documentation",
+                "description": "Top-level docs that describe the entire file or package purpose",
+                "distinguisher": "The 30-second pitch. What does this file DO and WHY does it exist."
+            },
+            {
+                "concept": "module-level documentation",
+                "description": "Documentation scoped to module/package identity within larger crate/project",
+                "distinguisher": "Where this file fits in the larger system."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "implementation details",
+                "reason": "Doc comments describe WHAT, not HOW. Implementation lives in BODY.",
+                "defer_to": "BODY inline comments"
+            },
+            {
+                "concept": "identity fields",
+                "reason": "Structured identity (key, version, author) belongs in pragma statics, not prose.",
+                "defer_to": "METADATA.PragmaIdentity or METADATA.MetadataContext"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "AVAILABLE",
+            "module": "AVAILABLE",
+            "library": "REQUIRED",
+            "executable": "AVAILABLE",
+            "demo-test": "AVAILABLE"
+        },
+
+        "ro": {
+            "available_label": "Doc Comments",
+            "reserved_reason": null,
+            "note": "Doc comments are REQUIRED for libraries (they publish APIs). AVAILABLE for all other forms."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — no code patterns belong in doc-comments.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Doc comments bridge human understanding and tool consumption. The compiler reads them, IDEs display them, and documentation generators publish them. Good doc comments make the code's purpose visible without reading the code.",
+    "_X5_scripture": "Habakkuk 2:2 — Write the vision, and make it plain upon tables, that he may run that readeth it."
+}

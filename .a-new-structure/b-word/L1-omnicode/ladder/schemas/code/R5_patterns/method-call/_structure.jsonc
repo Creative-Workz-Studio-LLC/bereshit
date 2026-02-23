@@ -1,0 +1,122 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-concepts-method-call",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "concept-definition",
+    "_P2_role": "schema",
+    "_P5_title": "Concept — Method Call",
+    "_P5_brief": "Universal concept: invoking a method on a receiver (object/value). Distinguished from function calls by having a receiver.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "concept": "method_call",
+    "description": "Invoke a method on a receiver value or reference",
+
+    "universal_shape": {
+        "receiver": "the value or reference the method is called on",
+        "method": "the method name",
+        "args": "argument expressions (excluding the receiver)",
+        "result": "optional variable receiving the return value",
+        "chain": "whether this is part of a method chain"
+    },
+
+    "semantic_notes": [
+        "Rust: receiver.method(args) — &self is implicit in the call.",
+        "Go: receiver.Method(args) — explicit receiver in definition, implicit in call.",
+        "C: no methods — functions take explicit first argument (struct pointer).",
+        "Method chains: a.b().c().d() — each call returns a value the next operates on.",
+        "Rust path.exists() and Go path.Exists() are the same concept, different naming."
+    ],
+
+    "container_map": {
+        "_note": "granted (+1) = belongs here. denied (-1) = does not belong. defer (0) = context-dependent.",
+
+        "METADATA": {
+            "directives": "denied",
+            "doc-comments": "denied",
+            "comment-block": "denied",
+            "pragma-identity": "denied",
+            "metadata-context": "denied",
+            "subtypes": "denied"
+        },
+
+        "SETUP": {
+            "imports": "denied",
+            "modules": "denied",
+            "constants": "denied",
+            "statics": "denied",
+            "type-aliases": "denied",
+            "error-types": "denied",
+            "core-types": "denied",
+            "trait-defs": "defer",
+            "macros": "defer",
+            "feature-gates": "denied",
+            "build-tags": "denied",
+            "code-generation": "denied",
+            "interface-defs": "defer",
+            "type-methods": "defer",
+            "variables": "denied"
+        },
+
+        "BODY": {
+            "identity-access": "granted",
+            "trait-implementations": "granted",
+            "constructors": "granted",
+            "core-logic": "granted",
+            "core-operations": "granted",
+            "queries": "granted",
+            "output-display": "granted",
+            "free-functions": "granted",
+            "helpers": "granted",
+            "org-chart": "denied",
+            "public-apis": "granted",
+            "error-handling": "granted",
+            "tests": "granted"
+        },
+
+        "CLOSING": {
+            "validation": "granted",
+            "execution": "granted",
+            "cleanup": "granted",
+            "modification-policy": "denied",
+            "extension-points": "denied",
+            "troubleshooting": "denied",
+            "reference": "denied",
+            "closing-note": "denied"
+        }
+    },
+
+    "concept_relations": {
+        "_note": "granted = high co-occurrence. denied = anti-correlation. defer = context-dependent. Asymmetric.",
+
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "return_value": "granted",
+        "function_call": "defer",
+        "error_propagation": "defer",
+        "conditional_if": "defer",
+        "conditional_match": "defer",
+        "err_wrap": "defer",
+        "ok_wrap": "defer",
+        "string_format": "defer"
+    },
+
+    "detection_weight": 0.75,
+    "_weight_rationale": "4-block derived: (B − avg(M,S,C)) / 2. B=11/13, M=−6/6, S=−11/15, C=−2/8. 4 SETUP defers (trait-defs, macros, interface-defs, type-methods).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Methods are functions that know their subject. The receiver is the context.",
+    "_X5_scripture": "Proverbs 16:9 — A man's heart deviseth his way: but the LORD directeth his steps. The receiver gives direction."
+}

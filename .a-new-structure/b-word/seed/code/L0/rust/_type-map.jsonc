@@ -1,0 +1,143 @@
+// #!omni data --jsonc
+// Type Map — Rust Module Typing Arrows
+//
+// When a module pragma includes an arrow (e.g., -module->utility), the typing
+// narrows what sections are REQUIRED, AVAILABLE, or IRRELEVANT for that variant.
+// This map is the discoverable reference alongside the template files.
+//
+// Canonical source: ladder/schemas/code/forms/module/_structure.jsonc
+// Used by: cws-struct linter (lib/foundation/code-schema.ts)
+//
+// "Not every member is the eye." — 1 Corinthians 12:17
+// Each typing declares what matters for its concern.
+
+{
+  "_principle": "The arrow refines the form. -module is the genus; ->utility is the species.",
+
+  // ── Module Typing Arrows ─────────────────────────────────────────────────
+  //
+  // Usage:  // #!omni code --rust -module->utility
+  //         //omni:code --rust -module->utility
+  //
+  // The linter reads the arrow and narrows its checks accordingly.
+  // Missing irrelevant sections produce NO warnings. Missing required
+  // sections still produce warnings. Missing available sections are
+  // informational only.
+
+  "module": {
+    "utility": {
+      "description": "Stateless utility functions. No type lifecycle, no constructors.",
+      "example_files": "exists.rs, paths.rs, hash.rs, format.rs",
+      "pragma": "//omni:code --rust -module->utility",
+      "SETUP": {
+        "required": ["Imports"],
+        "available": ["Constants", "Error Types", "Type Aliases"],
+        "irrelevant": ["Core Types", "Trait Defs", "Statics"]
+      },
+      "BODY": {
+        "required": ["Free Functions"],
+        "available": ["Identity Access", "Core Logic"],
+        "irrelevant": ["Trait Implementations", "Constructors", "Queries"]
+      }
+    },
+    "types": {
+      "description": "Type definitions with constructors. Data structures are the point.",
+      "example_files": "types.rs, model.rs, ast.rs, schema.rs",
+      "pragma": "//omni:code --rust -module->types",
+      "SETUP": {
+        "required": ["Imports", "Core Types"],
+        "available": ["Constants", "Error Types", "Type Aliases", "Trait Defs"],
+        "irrelevant": ["Statics"]
+      },
+      "BODY": {
+        "required": ["Constructors", "Core Logic"],
+        "available": ["Identity Access", "Trait Implementations", "Queries", "Free Functions"],
+        "irrelevant": []
+      }
+    },
+    "service": {
+      "description": "Stateful service with full lifecycle. All sections relevant.",
+      "example_files": "server.rs, engine.rs, pipeline.rs, registry.rs",
+      "pragma": "//omni:code --rust -module->service",
+      "SETUP": {
+        "required": ["Imports", "Core Types"],
+        "available": ["Constants", "Error Types", "Type Aliases", "Trait Defs", "Statics"],
+        "irrelevant": []
+      },
+      "BODY": {
+        "required": ["Identity Access", "Trait Implementations", "Constructors", "Core Logic", "Queries", "Free Functions"],
+        "available": [],
+        "irrelevant": []
+      }
+    },
+    "handler": {
+      "description": "Request/event handler. Processes input, produces output.",
+      "example_files": "handler.rs, router.rs, dispatcher.rs, middleware.rs",
+      "pragma": "//omni:code --rust -module->handler",
+      "SETUP": {
+        "required": ["Imports", "Error Types"],
+        "available": ["Constants", "Core Types", "Type Aliases"],
+        "irrelevant": ["Trait Defs", "Statics"]
+      },
+      "BODY": {
+        "required": ["Core Logic", "Free Functions"],
+        "available": ["Identity Access", "Constructors", "Queries"],
+        "irrelevant": ["Trait Implementations"]
+      }
+    },
+    "config": {
+      "description": "Configuration loading and validation. Struct + deserialize + validate.",
+      "example_files": "config.rs, settings.rs, options.rs, env.rs",
+      "pragma": "//omni:code --rust -module->config",
+      "SETUP": {
+        "required": ["Imports", "Constants", "Core Types"],
+        "available": ["Error Types", "Type Aliases"],
+        "irrelevant": ["Trait Defs", "Statics"]
+      },
+      "BODY": {
+        "required": ["Constructors", "Queries"],
+        "available": ["Identity Access", "Core Logic", "Free Functions"],
+        "irrelevant": ["Trait Implementations"]
+      }
+    },
+    "error": {
+      "description": "Error type module. Defines error hierarchy for a crate/subsystem.",
+      "example_files": "error.rs, errors.rs, fault.rs",
+      "pragma": "//omni:code --rust -module->error",
+      "SETUP": {
+        "required": ["Imports", "Error Types"],
+        "available": ["Constants", "Type Aliases"],
+        "irrelevant": ["Core Types", "Trait Defs", "Statics"]
+      },
+      "BODY": {
+        "required": ["Free Functions"],
+        "available": ["Identity Access", "Core Logic"],
+        "irrelevant": ["Trait Implementations", "Constructors", "Queries"]
+      }
+    },
+    "parser": {
+      "description": "Parsing/transformation module. Input → structured output.",
+      "example_files": "parser.rs, lexer.rs, tokenizer.rs, decoder.rs",
+      "pragma": "//omni:code --rust -module->parser",
+      "SETUP": {
+        "required": ["Imports", "Core Types", "Error Types"],
+        "available": ["Constants", "Type Aliases"],
+        "irrelevant": ["Trait Defs", "Statics"]
+      },
+      "BODY": {
+        "required": ["Constructors", "Core Logic", "Free Functions"],
+        "available": ["Identity Access", "Trait Implementations", "Queries"],
+        "irrelevant": []
+      }
+    }
+  },
+
+  // ── Future: Other Form Typing Arrows ─────────────────────────────────────
+  //
+  // library->api, library->cli, library->sdk
+  // executable->daemon, executable->cli, executable->test-harness
+  //
+  // As forms mature, their typing maps will be added here.
+
+  "_closing_note": "Ecclesiastes 3:1 — To every thing there is a season, and a time to every purpose under the heaven."
+}

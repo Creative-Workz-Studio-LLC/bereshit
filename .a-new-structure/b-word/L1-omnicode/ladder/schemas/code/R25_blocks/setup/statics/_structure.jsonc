@@ -1,0 +1,113 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-setup-statics",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "SETUP Section 4: Statics — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Statics IS, not how it manifests in any language. See format/blocks/{lang}/setup/statics.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "Statics",
+        "position": 4,
+        "label": "Statics",
+        "block": "SETUP",
+        "overview_text": "Runtime-initialized fixed values",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "lazy initialization",
+                "description": "Values computed once at first access, then fixed for program lifetime",
+                "distinguisher": "Born at runtime, lives forever. Initialized once, read many."
+            },
+            {
+                "concept": "module-level singletons",
+                "description": "Shared state with file-level lifetime — compiled regexes, caches",
+                "distinguisher": "Global to this file but not mutable after init."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "compile-time constants",
+                "reason": "If the value is known at compile time, use Constants",
+                "defer_to": "SETUP.Constants"
+            },
+            {
+                "concept": "mutable global state",
+                "reason": "Statics are fixed after initialization. Mutable shared state is a BODY concern.",
+                "defer_to": "BODY.CoreLogic"
+            },
+            {
+                "concept": "identity statics (PRAGMA/METADATA)",
+                "reason": "Identity lives in METADATA block, not SETUP",
+                "defer_to": "METADATA"
+            }
+        ],
+
+        "defer": [
+            {
+                "signal": "value is known at compile time",
+                "to": "SETUP.Constants",
+                "why": "Prefer const over static when possible — no runtime cost"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "AVAILABLE",
+            "library": "AVAILABLE",
+            "executable": "AVAILABLE",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Statics",
+            "reserved_reason": null,
+            "note": "RESERVED in bare-bone (skeleton has no runtime-initialized values). REQUIRED in demo-test. AVAILABLE in module/library/executable — use when runtime-initialized values are needed."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "defer",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "granted",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "defer"
+    },
+
+    "detection_weight": 0.64,
+    "_weight_rationale": "|avg| of concept_map: 1G 2F 8D. (1−8)/11 = −7/11 ≈ −0.64. variable_binding granted (statics ARE bindings). function_call and string_format defer.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Statics bridge compile-time and runtime. They exist once, initialized lazily, read forever after.",
+    "_X5_scripture": "Hebrews 6:19 — Which hope we have as an anchor of the soul, both sure and stedfast."
+}

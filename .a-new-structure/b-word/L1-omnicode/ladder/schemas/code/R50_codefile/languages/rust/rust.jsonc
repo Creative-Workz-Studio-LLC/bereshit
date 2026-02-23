@@ -1,0 +1,122 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-placement-rust",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "placement-map",
+    "_P2_role": "container-structure",
+    "_P5_title": "Rust Content-Kind Placement Map (R[10])",
+    "_P5_brief": "Maps Rust source-level content kinds to blocks and subsections. The machine-readable truth about WHERE each construct belongs. Extracted from rust-4block-schema.jsonc SETUP.content_kind_mapping.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "format": "rust",
+    "detection_resolution": "R[10]",
+
+    "content_kinds": {
+        "note": "Each key is a content kind (construct category). The linter classifies parsed lines into these kinds, then checks placement.",
+
+        "use_decl": {
+            "description": "use declarations — external crates, std library, internal modules",
+            "rust_signal": "^(pub\\s+)?use\\s+",
+            "block": "SETUP",
+            "subsection": "Imports"
+        },
+        "reexport_decl": {
+            "description": "pub use re-exports — making internal items available at higher paths",
+            "rust_signal": "^pub\\s+use\\s+",
+            "block": "SETUP",
+            "subsection": "Modules"
+        },
+        "mod_decl": {
+            "description": "mod declarations — module tree structure",
+            "rust_signal": "^(pub\\s+)?mod\\s+",
+            "block": "SETUP",
+            "subsection": "Modules"
+        },
+        "const_decl": {
+            "description": "const declarations — compile-time constants",
+            "rust_signal": "^(pub\\s+)?const\\s+",
+            "block": "SETUP",
+            "subsection": "Constants"
+        },
+        "static_decl": {
+            "description": "static declarations — mutable or immutable statics",
+            "rust_signal": "^(pub\\s+)?static\\s+",
+            "block": "SETUP",
+            "subsection": "Statics"
+        },
+        "type_alias": {
+            "description": "type aliases — type Foo = Bar",
+            "rust_signal": "^(pub\\s+)?type\\s+\\w+\\s*=",
+            "block": "SETUP",
+            "subsection": "TypeAliases"
+        },
+        "struct_decl": {
+            "description": "struct definitions — data types",
+            "rust_signal": "^(pub\\s+)?struct\\s+",
+            "block": "SETUP",
+            "subsection": "CoreTypes"
+        },
+        "enum_decl": {
+            "description": "enum definitions — sum types",
+            "rust_signal": "^(pub\\s+)?enum\\s+",
+            "block": "SETUP",
+            "subsection": "CoreTypes"
+        },
+        "trait_decl": {
+            "description": "trait definitions — behavioral contracts",
+            "rust_signal": "^(pub\\s+)?trait\\s+",
+            "block": "SETUP",
+            "subsection": "TraitDefs"
+        },
+        "macro_decl": {
+            "description": "macro definitions — declarative or procedural macros",
+            "rust_signal": "^(pub\\s+)?macro_rules!\\s+",
+            "block": "SETUP",
+            "subsection": "Macros"
+        },
+        "fn_decl": {
+            "description": "function definitions — free functions and associated functions",
+            "rust_signal": "^(pub\\s+)?(async\\s+)?fn\\s+",
+            "block": "BODY",
+            "subsection": null
+        },
+        "impl_block": {
+            "description": "impl blocks — method implementations and trait impls",
+            "rust_signal": "^impl\\s+",
+            "block": "BODY",
+            "subsection": null
+        }
+    },
+
+    "metadata_forbidden": {
+        "note": "These content kinds MUST NOT appear in the METADATA block. METADATA is comments and statics only.",
+        "kinds": [
+            "use_decl", "reexport_decl", "mod_decl", "const_decl", "static_decl", "type_alias",
+            "struct_decl", "enum_decl", "trait_decl", "macro_decl",
+            "fn_decl", "impl_block"
+        ]
+    },
+
+    "summary": {
+        "setup_kinds": ["use_decl", "reexport_decl", "mod_decl", "const_decl", "static_decl", "type_alias", "struct_decl", "enum_decl", "trait_decl", "macro_decl"],
+        "body_kinds": ["fn_decl", "impl_block"],
+        "principle": "SETUP makes things EXIST. BODY makes things HAPPEN. Declarations in SETUP, logic in BODY."
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust placement: 12 content kinds mapped to 2 blocks and 8 subsections. The linter classifies each construct, checks it against this map, and emits atomic actions for misplacement. SETUP holds declarations; BODY holds logic. The map IS the placement rule.",
+    "_X5_scripture": "1 Corinthians 14:40 — Let all things be done decently and in order."
+}

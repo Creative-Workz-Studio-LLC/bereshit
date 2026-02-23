@@ -1,0 +1,53 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-err-wrap",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — Err Wrap (Error Return)",
+
+    "concept": "err_wrap",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "fmt_errorf",
+            "emit": "fmt.Errorf(\"{message}\", {args})",
+            "when": "creating a new formatted error — Rust Err(io::Error::new(kind, format!(...)))",
+            "notes": "fmt.Errorf for formatted errors. Use %w to wrap inner errors.",
+            "priority": 1
+        },
+        {
+            "id": "errors_new",
+            "emit": "errors.New(\"{message}\")",
+            "when": "creating a simple error with no formatting",
+            "notes": "errors.New for static error strings.",
+            "priority": 2
+        },
+        {
+            "id": "return_err",
+            "emit": "return err",
+            "when": "propagating an existing error — Rust Err(e)",
+            "notes": "Direct propagation — just return the error as-is.",
+            "priority": 3
+        },
+        {
+            "id": "return_zero_err",
+            "emit": "return {zero_value}, err",
+            "when": "returning error from function with value+error return",
+            "notes": "Must include zero value for the non-error return.",
+            "priority": 4
+        }
+    ],
+
+    "rust_error_kind_mapping": {
+        "io::ErrorKind::AlreadyExists": "os.ErrExist",
+        "io::ErrorKind::NotFound": "os.ErrNotExist",
+        "io::ErrorKind::PermissionDenied": "os.ErrPermission"
+    },
+
+    "_X5_note": "Go errors — fmt.Errorf, errors.New, or direct propagation. No Err() wrapper."
+}

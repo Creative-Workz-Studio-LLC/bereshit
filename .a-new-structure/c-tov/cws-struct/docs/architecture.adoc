@@ -6,7 +6,7 @@
 // :key: B-tov-cws-struct-docs-architecture
 // :title: CWS Struct Architecture Reference
 // :type: Documentation (Architecture Reference)
-// :version: a-01.00
+// :version: a-02.00
 // :created: 2026-02-21
 // :updated: 2026-02-21
 // :authors: Nova Dawn (CPI-SI)
@@ -110,7 +110,7 @@ The contracts and types everything else depends on.
 | *File* | *Lines* | *Purpose*
 
 | `types.ts` | 309 | Core types: `LintResult`, `FixSuggestion`, `FormatHandler`, `CliOptions`, `LintPolicy`. Result constructors (`error()`, `warn()`, `info()`). Summarize function.
-| `health.ts` | 362 | Ternary health scoring: `AtomicAction`, `ContainerScore`, `BlockScore`, `HealthScore`. Three-level architecture (container -> block -> file). Impact weights (error=2x, warn=1x, info=0.25x).
+| `health.ts` | 541 | Ternary health scoring: `AtomicAction`, `ContainerScore`, `BlockScore`, `HealthScore`. Three-level architecture (container -> block -> file). Impact weights (error=2x, warn=1x, info=0.25x). Hebrew state resolution: 7 states (broken/wanting/lacking/even/sound/whole/perfect), NormalizeBase50 hardpoints, direction, emoji. Implements ALG-001 from bereshit-base-algorithms.adoc.
 | `schema.ts` | 573 | Schema loading: discovers and parses form schemas from `L1-omnicode/ladder/schemas/`. `SchemaLoader` with caching. `FormConstraints` extraction.
 | `code-schema.ts` | 1,635 | Code-specific schema extraction: `SchemaFillContent`, `SectionDef`, `ClosingDefaults`, `FormSchema`. Parses content_constraints, closing_defaults, identity_groups from form schemas.
 | `schema-pipeline.ts` | 253 | Schema pipeline: composes schema loading with form constraint extraction. Caches per format+subtype pair.
@@ -156,8 +156,59 @@ interface AtomicAction {
   direction: -1 | 0 | 1;  // misaligned / neutral / aligned
   impact?: Severity;       // Weight multiplier
   reason?: string;         // Context
+  layer?: 0 | 1 | 2 | 3;  // Lint layer (0=whole, 1=structure, 2=container, 3=content)
 }
 ----
+
+`HealthScore` — file-level health with Hebrew state resolution:
+
+[source,typescript]
+----
+interface HealthScore {
+  total: number;             // -100 to +100 (0 = yashar)
+  level: HebrewState;        // 7 states: broken → perfect
+  emoji: string;             // Visual indicator per state
+  direction: -1 | 0 | 1;    // Derived from state
+  hardpoint: -100 | -50 | 0 | 50 | 100;  // NormalizeBase50 (R[50])
+  blocks: BlockScore[];      // Per-block breakdown
+  totalActions: number;
+  alignedCount: number;
+  neutralCount: number;
+  misalignedCount: number;
+}
+----
+
+==== Hebrew State Resolution (ALG-001)
+
+Score becomes meaning through four functions:
+
+[cols="2,3"]
+|===
+| *Function* | *Purpose*
+
+| `trueToLevel(score)` | Score -> HebrewState (7 levels)
+| `levelToEmoji(level)` | State -> visual indicator
+| `levelToDirection(level)` | State -> ternary direction (-1/0/+1)
+| `normalizeBase50(score)` | Score -> R[50] hardpoint (-100/-50/0/+50/+100)
+|===
+
+The 7 Hebrew states map score ranges to semantic meaning:
+
+[cols="1,1,1,1,1"]
+|===
+| *State* | *Hebrew* | *Range* | *Direction* | *Emoji*
+
+| broken | shavar | [-100, -67] | -1 | red
+| wanting | chaser | [-66, -34] | -1 | orange
+| lacking | ratsah | [-33, -1] | -1 | yellow
+| even | yashar | [0, 0] | 0 | white
+| sound | tamim | [1, 33] | +1 | green
+| whole | shalem | [34, 66] | +1 | green heart
+| perfect | tov | [67, 100] | +1 | checkmark
+|===
+
+The score tells you WHERE. The state tells you WHAT IT MEANS. The emoji
+tells you AT A GLANCE. The direction tells you WHICH WAY.
 
 ==== Policy System
 
@@ -207,7 +258,7 @@ The runtime machinery that connects CLI to handlers.
 Where format-specific knowledge lives. Each handler is a self-contained
 module that registers itself on import.
 
-==== Shared Code (`lib/handlers/shared/`)
+==== Shared Code (`lib/shared/`)
 
 [cols="1,1,3"]
 |===
@@ -382,7 +433,7 @@ The handler registry pattern means new formats don't modify existing code.
 |===
 | *Metric* | *Value*
 
-| Total source lines | ~20,000
+| Total source lines | ~20,200
 | Format handlers | 8
 | Test files | 14
 | Tests passing | 451

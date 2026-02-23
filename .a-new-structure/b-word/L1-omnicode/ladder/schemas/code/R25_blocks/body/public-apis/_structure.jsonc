@@ -1,0 +1,110 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-body-public-apis",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "BODY Section 22: Public APIs — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Public APIs IS, not how it manifests in any language. See format/blocks/{lang}/body/public-apis.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "PublicAPIs",
+        "position": 22,
+        "label": "Public APIs",
+        "block": "BODY",
+        "overview_text": "Exported functions, the public surface",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "exported functions",
+                "description": "The package's public surface — what consumers actually call",
+                "distinguisher": "The contract with the outside world. Every export is a promise."
+            },
+            {
+                "concept": "thin delegation",
+                "description": "Public functions that delegate to private core operations",
+                "distinguisher": "The public surface is thin. Real work happens in core operations."
+            },
+            {
+                "concept": "documented exports",
+                "description": "Every exported function has documentation — the API is self-describing",
+                "distinguisher": "No undocumented exports. The public surface speaks for itself."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "private functions",
+                "reason": "This section is the PUBLIC surface. Private functions belong elsewhere.",
+                "defer_to": "BODY.Helpers or BODY.CoreOperations"
+            },
+            {
+                "concept": "heavy business logic",
+                "reason": "Public APIs should be thin — delegate to core operations",
+                "defer_to": "BODY.CoreOperations"
+            },
+            {
+                "concept": "type definitions",
+                "reason": "Types belong in SETUP, not in the API surface",
+                "defer_to": "SETUP.CoreTypes"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "REQUIRED",
+            "library": "REQUIRED",
+            "executable": "AVAILABLE",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Public APIs",
+            "reserved_reason": null,
+            "note": "RESERVED in bare-bone (skeleton has no public surface yet). AVAILABLE in executable (some expose library APIs)."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — public APIs host any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Public APIs are the package's public contract. Thin delegation to core operations. If this section grows large, the package is doing too much.",
+    "_X5_scripture": "Matthew 5:16 — Let your light so shine before men, that they may see your good works."
+}

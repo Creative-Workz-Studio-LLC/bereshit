@@ -1,0 +1,98 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-metadata-subtypes-module",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "sub-container",
+    "_P5_title": "Subtypes — Module Form",
+    "_P5_brief": "Module form. Focused internal unit. Primarily for Rust (src/*.rs) — Go packages ARE modules, so Go rarely uses this form. Has METADATA, SETUP with imports and types, BODY with core logic, CLOSING with tests.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "sub_container": {
+        "tag": "module",
+        "label": "Module — Internal Unit Form",
+        "parent": "Subtypes",
+        "I2_subtype": "module",
+
+        "purpose": "Focused internal unit. One concern, well-bounded. Rust: src/*.rs files. Note: Go packages ARE modules — this form is primarily for Rust.",
+        "distinguisher": "Internal, not public-facing. Has tests (Cv) but no public API surface. A member of the body, not the body itself.",
+
+        "has_public_api": false,
+        "has_tests_block": true,
+
+        "language_notes": {
+            "rust": "Primary consumer. src/*.rs files that are mod-declared by lib.rs. Each module is one concern.",
+            "go": "Go packages ARE modules by nature. A Go file in a package is implicitly module-form. Rarely needs explicit module subtype — use library for package roots."
+        },
+
+        "section_availability": {
+
+            "METADATA": {
+                "Directives":      "REQUIRED",
+                "CommentBlock":    "REQUIRED",
+                "DocComments":     "AVAILABLE",
+                "PragmaIdentity":  "REQUIRED",
+                "MetadataContext":  "REQUIRED",
+                "Subtypes":        "REQUIRED"
+            },
+
+            "SETUP": {
+                "Imports":       "REQUIRED",
+                "Modules":       "AVAILABLE",
+                "Constants":     "REQUIRED",
+                "Statics":       "AVAILABLE",
+                "TypeAliases":   "AVAILABLE",
+                "ErrorTypes":    "AVAILABLE",
+                "CoreTypes":     "REQUIRED",
+                "TraitDefs":     "AVAILABLE",
+                "Macros":        "AVAILABLE",
+                "FeatureGates":  "AVAILABLE"
+            },
+
+            "BODY": {
+                "IdentityAccess":       "AVAILABLE",
+                "TraitImplementations": "AVAILABLE",
+                "Constructors":         "AVAILABLE",
+                "CoreLogic":            "REQUIRED",
+                "Queries":              "AVAILABLE",
+                "OutputDisplay":        "AVAILABLE",
+                "FreeFunctions":        "AVAILABLE",
+                "Helpers":              "AVAILABLE",
+                "Tests":                "RESERVED"
+            },
+
+            "CLOSING": {
+                "Cv": "REQUIRED",
+                "Ce": "RESERVED",
+                "Cc": "AVAILABLE",
+                "X1": "REQUIRED",
+                "X2": "AVAILABLE",
+                "X3": "AVAILABLE",
+                "X4": "REQUIRED",
+                "X5": "REQUIRED"
+            }
+        },
+
+        "cascade": {
+            "note": "Module form is the focused worker. Many sections AVAILABLE but fewer REQUIRED than library. DocComments AVAILABLE (not REQUIRED) because internal modules may document for teammates but don't have a public API contract. Cv REQUIRED — modules must prove their own correctness.",
+            "principle": "The body is not one member, but many. Each module is one member — focused, bounded, tested. The body works because each part does its own work well."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Module is the focused member. Not the whole body, but an essential part. One concern, well-bounded, self-tested. The body works because each member does its work faithfully.",
+    "_X5_scripture": "1 Corinthians 12:14 — For the body is not one member, but many."
+}

@@ -1,0 +1,149 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-container-code",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "container-manifest",
+    "_P2_role": "schema-root",
+    "_P5_title": "Code Schema System — Root Container",
+    "_P5_brief": "The entry point. Everything in this directory tree serves one purpose: defining how OmniCode 4-block code files are structured, what their content looks like, and how to detect alignment at every granularity level.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "container": {
+        "name": "code",
+        "structure_type": "4-block",
+        "description": "Root of the OmniCode code schema system. Four granularity levels, four blocks, five forms, two languages (growing). This file is the map — read it to know where everything is.",
+
+        // ─────────────────────────────────────
+        // Siblings at this level
+        // ─────────────────────────────────────
+
+        "files": {
+            "_container.jsonc": "This file — the map of the tree",
+            "_structure.jsonc": "4-block skeleton — WHAT blocks exist, their order, their purpose",
+            "_content.jsonc": "Code content character — WHAT code IS across all languages",
+            "go.jsonc": "Go placement map (R[10]) — WHERE Go constructs belong",
+            "rust.jsonc": "Rust placement map (R[10]) — WHERE Rust constructs belong"
+        },
+
+        // ─────────────────────────────────────
+        // Detection Granularity Chain
+        // ─────────────────────────────────────
+        //
+        // Each level validates assumptions for the next.
+        // Failure at a coarser level cascades neutral to finer levels.
+        // Genesis 1 order — light before creatures, boundaries before content.
+
+        "granularity": {
+            "R50": {
+                "resolution": "Whole file",
+                "question": "Is this an OmniCode code file? Are all 4 blocks present and ordered?",
+                "failure_cascade": "If blocks are missing or disordered, everything below is neutral.",
+                "location": "Checked by linter at file level, not a directory here"
+            },
+
+            "R25": {
+                "resolution": "Block containers (sections)",
+                "question": "Is each section present, correctly ordered, populated with the right content?",
+                "failure_cascade": "If a section is absent, its content and pattern checks cascade neutral.",
+                "location": "R25_blocks/",
+                "containers": 42,
+                "sub_containers": 16,
+                "blocks": {
+                    "metadata": { "containers": 6, "positions": "1-6", "sub_containers": 16 },
+                    "setup": { "containers": 15, "positions": "1-10 (universal), 11-15 (extended)" },
+                    "body": { "containers": 13, "positions": "0-8 (universal), 9-17 (test subsections), 20-22 (extended)" },
+                    "closing": { "containers": 8, "positions": "1-3 (code zones Cv/Ce/Cc), X1-X5 (doc sections)" }
+                }
+            },
+
+            "R10": {
+                "resolution": "Container content (content kinds)",
+                "question": "Does each construct (import, struct, fn, test) appear in the correct container?",
+                "failure_cascade": "If content is in the wrong container, pattern analysis lacks context.",
+                "location": "go.jsonc, rust.jsonc (placement maps)"
+            },
+
+            "R5": {
+                "resolution": "Code patterns (concepts)",
+                "question": "Do function_call, method_call, self_access, etc. appear where the concept_map expects them?",
+                "failure_cascade": "Terminal — finest granularity. Misaligned patterns produce detection_weight drift.",
+                "location": "R5_patterns/",
+                "concepts": 11
+            }
+        },
+
+        // ─────────────────────────────────────
+        // Children
+        // ─────────────────────────────────────
+
+        "children": {
+            "R25_blocks": {
+                "purpose": "Block-level containers — one directory per section within each block",
+                "granularity": "R[25]",
+                "structure": {
+                    "metadata": ["directives", "doc-comments", "comment-block", "pragma-identity", "metadata-context", "subtypes"],
+                    "setup": ["imports", "modules", "constants", "statics", "type-aliases", "error-types", "core-types", "trait-defs", "macros", "feature-gates", "variables", "interface-defs", "type-methods", "code-generation", "build-tags"],
+                    "body": ["org-chart", "identity-access", "trait-implementations", "constructors", "core-logic", "queries", "output-display", "free-functions", "helpers", "core-operations", "error-handling", "public-apis", "tests"],
+                    "closing": ["validation", "execution", "cleanup", "modification-policy", "extension-points", "troubleshooting", "reference", "closing-note"]
+                },
+                "per_container_files": {
+                    "_structure.jsonc": "Placement rules — can/cannot/defer, concept_map, detection_weight, forms",
+                    "_content.jsonc": "Content character — invariants, content_forms per language, transpilation_role",
+                    "{lang}.jsonc": "Language-specific content (e.g., rust.jsonc)"
+                }
+            },
+
+            "R5_patterns": {
+                "purpose": "Concept-level patterns — one directory per R[5] concept",
+                "granularity": "R[5]",
+                "concepts": ["function-call", "method-call", "self-access", "variable-binding", "conditional-if", "conditional-match", "return-value", "error-propagation", "err-wrap", "ok-wrap", "string-format"],
+                "root_files": {
+                    "concepts.jsonc": "Concept registry — defines all 11 R[5] concepts with container_maps",
+                    "rust-to-go.jsonc": "Cross-language concept mapping"
+                }
+            },
+
+            "forms": {
+                "purpose": "Form definitions — what sections are active/reserved per subtype",
+                "forms": ["bare-bone", "module", "library", "executable", "demo-test"]
+            },
+
+            "index": {
+                "purpose": "Cross-reference indices for the schema system",
+                "files": {
+                    "manifest.jsonc": "Master list of all schema files",
+                    "targets/": "Linter target configurations"
+                }
+            }
+        },
+
+        // ─────────────────────────────────────
+        // The Triangle
+        // ─────────────────────────────────────
+
+        "triangle": {
+            "description": "Schema = Template = Linter. Three views of the same truth.",
+            "schema": "This directory tree — defines structure, content, and patterns",
+            "template": "seed/code/L0/{lang}/ — instantiates what the schema defines",
+            "linter": "cws-struct — validates what the template instantiates against what the schema defines",
+            "collapsed": "A change to schema should be visible in templates and enforced by linters. One source, three expressions."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "This is the map. Before you dig into any directory, read this to know where you are. 42 containers, 16 sub-containers, 11 concepts, 5 forms, 4 granularity levels. One system. One truth about how code files are structured.",
+    "_X5_scripture": "Proverbs 24:3-4 — Through wisdom is an house builded; and by understanding it is established: And by knowledge shall the chambers be filled with all precious and pleasant riches."
+}

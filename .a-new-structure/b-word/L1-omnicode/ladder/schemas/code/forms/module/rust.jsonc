@@ -1,0 +1,104 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-molded-rust-module",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "form-content-schema",
+    "_P2_role": "content-molded",
+    "_P5_title": "Rust Module Form Content — Focused Member",
+    "_P5_brief": "Rust-specific content expectations for module form. Defines the Rust patterns, visibility rules, and import conventions that distinguish a module file from library or executable. Content is REAL code, not commented-out skeleton.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends_structure": "structure/molded/module.jsonc",
+    "extends_content": "content/whole/code.jsonc",
+    "format": "rust",
+    "form": "module",
+
+    "content_expectations": {
+
+        "pragma": "//omni:code --rust -module",
+
+        "content_state": "REAL — all code is live, uncommented. Unlike bare-bone where content is commented-out skeleton.",
+
+        "METADATA": {
+            "directive": "//omni:code --rust -module",
+            "identity_construct": "static PRAGMA: &[(&str, &str)] and static METADATA: &[(&str, &str)] slices",
+            "I2_subtype": "module",
+            "I2_role": "File-specific (parser, config, handler, types, etc.)",
+            "doc_comments": "//! inner doc comments describing module's focused purpose",
+            "visibility": "N/A — METADATA is identity, not API"
+        },
+
+        "SETUP": {
+            "import_pattern": {
+                "primary": "use super:: (parent module items) and use crate:: (crate-internal items)",
+                "secondary": "use std:: (standard library), use {external_crate}:: (when needed)",
+                "grouping": "std → parent/sibling → crate → external",
+                "note": "Modules import INWARD (super::, crate::) more than OUTWARD (external crates). The crate root re-exports what modules need."
+            },
+
+            "visibility_pattern": {
+                "types": "pub(crate) for internal types, pub for crate-public types. The crate root decides what to pub use re-export.",
+                "functions": "pub(crate) for internal API, pub for crate-public functions",
+                "constants": "pub(crate) or private. Shared constants should live in a common module.",
+                "errors": "pub for error types (they propagate up via From impls)"
+            },
+
+            "error_pattern": "Module errors convert to crate-level errors via impl From. Design for composability — typed variants, not strings.",
+
+            "type_pattern": "Focused types for single concern. If >3 types, module may need splitting. pub(crate) default — crate root decides public surface."
+        },
+
+        "BODY": {
+            "ordering": "type_lifecycle",
+            "section_content": {
+                "B1_IdentityAccess": "4 accessor functions: pragma(), pragma_get(), metadata(), metadata_get(). IDENTICAL implementation across all forms.",
+                "B2_TraitImplementations": "impl Trait for Type blocks. Group by TYPE, not by TRAIT. Often implements traits from parent/sibling modules.",
+                "B3_Constructors": "new(), try_new(), from_config(). Often takes parent-provided config/context as parameters.",
+                "B4_CoreLogic": "The module's raison d'etre. State transitions, data processing, validation. If >200 lines, consider splitting.",
+                "B5_Queries": "&self methods — field accessors, boolean predicates, computed values. Pure observation, no mutation.",
+                "B7_FreeFunctions": "Thin — most logic lives in type methods. NO register_identity() (crate root handles that). NO output helpers."
+            },
+
+            "reserved_content": {
+                "B6_Output": "Modules return data; callers format it. A parser returns AST nodes, not formatted messages."
+            }
+        },
+
+        "CLOSING": {
+            "Cv_pattern": {
+                "structure": "#[cfg(test)] mod tests { use super::*; ... }",
+                "organization": "// -- B1 Identity Access ---- through // -- B7 Free Functions ---- (skip B6)",
+                "assertions": "assert!(), assert_eq!(), assert_ne!(), assert!(matches!())",
+                "note": "Tests organized by BODY section. Skip B6 header since Output is reserved."
+            },
+
+            "Ce_pattern": "Always empty — // Ce — Execution (empty — modules have no entry point)",
+
+            "X1_pattern": {
+                "safe": "Additive changes (new pub fns, new error variants, new trait impls, new tests)",
+                "careful": "Interface changes (struct fields, method signatures, visibility changes)",
+                "never": "Structural invariants (4-block, PRAGMA/METADATA layout)",
+                "note": "Module changes have narrower blast radius than library — affect crate, not external consumers."
+            },
+
+            "X5_pattern": "Domain-specific scripture connecting module's focused purpose to eternal truth. A parser: Ecclesiastes 12:11. A config: Psalm 139."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust modules are focused craftsmen. pub(crate) by default, use super:: for imports, From impls for error propagation. Every Rust convention serves the module's role as a member of the crate body.",
+    "_X5_scripture": "For we are his workmanship, created in Christ Jesus unto good works, which God hath before ordained that we should walk in them. — Ephesians 2:10"
+}

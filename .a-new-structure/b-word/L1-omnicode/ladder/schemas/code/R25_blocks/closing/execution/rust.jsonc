@@ -1,0 +1,100 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-closing-execution",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section Ce: Execution — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Ce (Execution). Entry points — fn main() for executables, empty for libraries and modules.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/closing/execution.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "fn main() { ... } (executable form only)",
+                "description": "Program entry point — calls run() and handles top-level errors",
+                "patterns": [
+                    "fn main() {\n    if let Err(e) = run() {\n        eprintln!(\"Error: {}\", e);\n        std::process::exit(1);\n    }\n}",
+                    "fn main() -> Result<(), Box<dyn std::error::Error>> {\n    run()?;\n    Ok(())\n}"
+                ],
+                "visibility": "N/A — main is the entry point",
+                "note": "Executable form ONLY. Library and module forms have empty Ce."
+            },
+            {
+                "construct": "fn run() -> Result<(), Error> (executable form only)",
+                "description": "Testable entry point — main() delegates to run() so the logic is testable",
+                "patterns": [
+                    "fn run() -> Result<(), Error> {\n    let args = parse_args()?;\n    let config = Config::from_file(&args.config)?;\n    process(&config)?;\n    Ok(())\n}"
+                ],
+                "visibility": "N/A — called by main()",
+                "note": "The main-run split enables testing the program logic without starting a process."
+            },
+            {
+                "construct": "// section header (library/module form)",
+                "description": "Structural marker indicating Ce is present but empty",
+                "patterns": [
+                    "// Ce — Execution (empty — libraries have no entry point)",
+                    "// Ce — Execution (empty — modules have no entry point)"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "fn main() in library or module form",
+                "reason": "Libraries and modules are not executables — they have no entry point",
+                "defer_to": "N/A — Ce stays empty",
+                "rust_signal": "fn\\s+main\\s*\\("
+            },
+            {
+                "construct": "business logic directly in main()",
+                "reason": "main() delegates to run(). Logic goes in run() or BODY. main() only handles top-level error reporting.",
+                "defer_to": "Ce.run() or BODY.CoreLogic",
+                "rust_signal": "fn\\s+main.*\\{[^}]{200,}"
+            },
+            {
+                "construct": "register_identity() in module form",
+                "reason": "Modules don't register independently — the crate root handles identity registration",
+                "defer_to": "N/A — only in library form",
+                "rust_signal": "register_identity"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "fn\\s+main\\s*\\(",
+                "to": "N/A — Ce is the correct location (but only for executable form)",
+                "confidence": "high",
+                "why": "main() found outside Ce"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// Ce — Execution (empty — modules have no entry point)",
+            "empty_library": "// Ce — Execution (empty — libraries have no entry point)",
+            "comment_skeleton": "// fn main() {\n//     if let Err(e) = run() {\n//         eprintln!(\"Error: {}\", e);\n//         std::process::exit(1);\n//     }\n// }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Ce (Execution): the entry point. main() delegates to run() for testability. Library and module forms leave Ce empty — they are building blocks, not programs.",
+    "_X5_scripture": "Ecclesiastes 3:1 — To every thing there is a season, and a time to every purpose under the heaven."
+}

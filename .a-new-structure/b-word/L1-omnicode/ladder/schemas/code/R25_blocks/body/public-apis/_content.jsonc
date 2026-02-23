@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-public-apis",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.PublicAPIs Content Character — What Public API Content IS",
+    "_P5_brief": "Format-independent definition of public API content character. Public APIs are the exported surface — the functions and methods that consumers call. They are thin delegators: accepting input, calling core operations, returning results. Syntax varies; the thin-surface-delegating-to-core pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "public-apis",
+        "block": "BODY",
+        "position": 22,
+        "nature": "surface",
+
+        "description": "Public API content is the package's contract with the outside world. Every exported function is a promise: these are the inputs I accept, this is what I return, these are the errors I can produce. Public APIs are deliberately thin — they validate inputs, delegate to core operations, and return results. The heavy lifting happens elsewhere.",
+
+        "invariants": {
+            "description": "Properties true of ALL public API content, regardless of language.",
+
+            "exported": "Every function in this section is visible to external callers. No private functions. No internal helpers. If it is here, it is part of the public contract.",
+            "thin": "Public API functions contain minimal logic. They validate inputs, call core operations, and format returns. If significant logic creeps in, extract it to CoreOperations.",
+            "documented": "Every public API function has documentation. The documentation IS the contract — input expectations, return values, error conditions, usage examples. No undocumented exports.",
+            "stable": "Public APIs change rarely and carefully. Removing or changing a public function breaks consumers. Stability is a design requirement, not an accident.",
+            "input-validating": "Public APIs are the system boundary where external input enters. They validate before delegating — never pass unvalidated input to core operations."
+        },
+
+        "content_forms": {
+            "description": "What public API content looks like across languages. Thin exported delegation is invariant; the syntax of exports and documentation varies.",
+
+            "rust": {
+                "syntax": "/// Parse the given input string into a validated `Config`.\\n///\\n/// # Errors\\n/// Returns `ParseError` if the input is malformed.\\npub fn parse(input: &str) -> Result<Config, ParseError> { let raw = validate(input)?; Config::from_raw(raw) }",
+                "grouping": "Primary API functions first, then convenience variants, then deprecated functions (with #[deprecated])",
+                "notes": "Rust public APIs use pub fn with /// doc comments. Error types documented in # Errors section. Examples in # Examples. Visibility is compiler-enforced — pub means exported."
+            },
+
+            "go": {
+                "syntax": "// Parse parses the given input string into a validated Config.\\n// It returns a ParseError if the input is malformed.\\nfunc Parse(input string) (*Config, error) { raw, err := validate(input); if err != nil { return nil, err }; return configFromRaw(raw) }",
+                "grouping": "Primary API functions first, then convenience variants, then deprecated functions (with // Deprecated: comment)",
+                "notes": "Go public APIs are uppercase-named functions with // comments. godoc renders the first sentence as the summary. Error documentation in the comment body."
+            },
+
+            "c": {
+                "syntax": "/**\\n * Parse the given input string into a validated Config.\\n * @param input  The raw input string\\n * @param out    Output parameter for the parsed config\\n * @return 0 on success, error code on failure\\n */\\nint parse(const char* input, Config** out) { ... }",
+                "grouping": "Primary API functions first, then convenience variants, then deprecated functions (with @deprecated tag)",
+                "notes": "C public APIs are functions declared in the header file. Doxygen comments document parameters and return values. The header IS the public surface — what is in the header is exported."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, public API content preserves the contract surface. The same functions accept the same conceptual inputs and produce the same outputs — only the export mechanism and documentation syntax change.",
+            "invariant": ["API surface (which functions are exported)", "input/output contracts (what each function accepts and returns)", "documentation content (what each function promises to do)"],
+            "variable": ["export mechanism (pub vs uppercase vs header declaration)", "documentation syntax (/// vs // vs /** */)", "error representation (Result vs error return vs return code)", "deprecation marking (#[deprecated] vs comment vs @deprecated)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — public APIs host any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Public APIs are promises. Every export says: 'I will do this, given that.' The discipline of keeping APIs thin ensures that promises are easy to understand and easy to keep. A bloated public API is a package making too many promises — and promises unkept erode trust.",
+    "_X5_scripture": "Matthew 5:37 — But let your communication be, Yea, yea; Nay, nay: for whatsoever is more than these cometh of evil."
+}

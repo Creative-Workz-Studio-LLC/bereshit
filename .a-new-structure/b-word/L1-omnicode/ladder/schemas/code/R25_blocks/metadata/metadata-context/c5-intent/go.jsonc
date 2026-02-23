@@ -1,0 +1,63 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-metadata-context-c5-intent",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Metadata Context -- C5 Intent (Design Intent) -- Go Content",
+    "_P5_brief": "Go-specific content for C5 Intent fields. purpose, philosophy carried in var Metadata = [][2]string slice. The design intention that survives refactoring.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/metadata-context/c5-intent.jsonc",
+    "format": "go",
+
+    "sub_container": {
+        "tag": "C5",
+        "label": "C5 Intent -- Design Intent (Go)",
+        "parent": "MetadataContext",
+
+        "go_construct": "C5 entries in var Metadata = [][2]string{...}",
+        "go_visibility": "exported -- within exported Metadata var",
+        "go_note": "C5 fields are defined (not required) -- intent can be implicit in simple files. When present, they capture WHY the code was designed this way.",
+
+        "field_format": {
+            "key_pattern": "C5.{field}",
+            "examples": ["C5.purpose", "C5.philosophy"],
+            "note": "C5 section follows C4 in the Metadata slice."
+        },
+
+        "can": [
+            {
+                "construct": "C5 fields in Metadata slice",
+                "description": "Intent entries -- design purpose and philosophy",
+                "patterns": [
+                    "\t// C5 Intent -- design purpose",
+                    "\t{\"C5.purpose\", \"Provide session lifecycle management for Claude Code hooks\"},",
+                    "\t{\"C5.philosophy\", \"Thin orchestration -- delegate to libraries\"},"
+                ],
+                "note": "Section comment '// C5 Intent -- design purpose' precedes the C5 entries."
+            }
+        ],
+
+        "scaffold": {
+            "c5_fields": "\t// C5 Intent -- design purpose\n\t{\"C5.purpose\", \"{purpose}\"},"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "C5 Intent in Go -- the counsel. purpose, philosophy in [][2]string pairs. Code without intent is code without direction -- it works, but nobody knows why it was built that way.",
+    "_X5_scripture": "Proverbs 19:21 -- There are many devices in a man's heart; nevertheless the counsel of the LORD, that shall stand."
+}

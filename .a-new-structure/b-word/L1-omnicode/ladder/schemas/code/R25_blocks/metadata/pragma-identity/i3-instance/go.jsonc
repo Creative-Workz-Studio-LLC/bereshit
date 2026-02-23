@@ -1,0 +1,73 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-pragma-identity-i3-instance",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Pragma Identity -- I3 Instance (File Specifics) -- Go Content",
+    "_P5_brief": "Go-specific content for I3 Instance fields. file, title, brief carried in Pragma slice. Go identity delegation -- doc.go holds Pragma and Metadata, other files inherit.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/pragma-identity/i3-instance.jsonc",
+    "format": "go",
+
+    "sub_container": {
+        "tag": "I3",
+        "label": "I3 Instance -- File Specifics (Go)",
+        "parent": "PragmaIdentity",
+
+        "go_construct": "I3 entries in var Pragma = [][2]string{...}",
+        "go_visibility": "exported -- within exported Pragma var",
+        "go_note": "I3 gives THIS file its name, title, and brief. In Go, doc.go carries the Pragma for the package; other .go files inherit identity from doc.go.",
+
+        "field_format": {
+            "key_pattern": "I3.{field}",
+            "examples": ["I3.file", "I3.title", "I3.brief"],
+            "note": "I3 section follows I2 in the Pragma slice."
+        },
+
+        "can": [
+            {
+                "construct": "I3 fields in Pragma slice",
+                "description": "File-specific entries -- the individual identity",
+                "patterns": [
+                    "\t{\"I3.file\", \"doc.go\"},",
+                    "\t{\"I3.title\", \"Session Start Hook\"},",
+                    "\t{\"I3.brief\", \"Initializes session context and health tracking\"},"
+                ],
+                "note": "I3.file is the filename. I3.title is the human name. I3.brief is the one-liner."
+            },
+            {
+                "construct": "doc.go identity delegation",
+                "description": "Package identity convention -- doc.go holds Pragma and Metadata",
+                "patterns": [
+                    "// doc.go holds Pragma and Metadata for this package.",
+                    "// Other files in the package inherit identity from doc.go."
+                ],
+                "visibility": "N/A -- convention",
+                "note": "Go package identity lives in doc.go. Other files in the package don't need their own Pragma/Metadata."
+            }
+        ],
+
+        "scaffold": {
+            "i3_fields": "\t{\"I3.file\", \"{file}\"},\n\t{\"I3.title\", \"{title}\"},\n\t{\"I3.brief\", \"{brief}\"},"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "I3 Instance in Go -- the individual. file, title, brief in [][2]string pairs. doc.go carries Pragma for the package; other files inherit. When you grep across a codebase, I3 is how you find the one file you need.",
+    "_X5_scripture": "Isaiah 43:1 -- I have called thee by thy name; thou art mine."
+}

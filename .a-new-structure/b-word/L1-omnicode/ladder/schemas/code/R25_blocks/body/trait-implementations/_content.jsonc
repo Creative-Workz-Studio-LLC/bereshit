@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-trait-implementations",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.TraitImplementations Content Character — What Trait Implementation Content IS",
+    "_P5_brief": "Format-independent definition of trait implementation content character. Trait implementations are contract fulfillment — making types honor the behavioral promises defined in SETUP. Syntax varies (impl Trait for Type, interface satisfaction, function pointer tables); the promise-keeping pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "trait-implementations",
+        "block": "BODY",
+        "position": 2,
+        "nature": "contract-fulfillment",
+
+        "description": "Trait implementation content is where types keep their promises. SETUP defines behavioral contracts (traits, interfaces, vtable shapes). This section delivers on those contracts by implementing every required method. The content is fulfillment: 'this type can do what was promised.'",
+
+        "invariants": {
+            "description": "Properties true of ALL trait implementation content, regardless of language.",
+
+            "contractual": "Every impl block fulfills a contract defined elsewhere — in SETUP traits, in standard library interfaces, or in external crate requirements. No orphan implementations.",
+            "type-bound": "Trait implementations are always attached to a specific type. The impl block names both the contract and the type. No free-floating contract fulfillment.",
+            "complete": "A trait implementation must implement ALL required methods of the contract. Partial implementation is a compile error in typed languages and a runtime error in dynamic ones.",
+            "grouped-by-contract": "Implementations are grouped by which contract they fulfill, not by which type they attach to. All Display impls together, all Error impls together.",
+            "non-originating": "Trait implementations never define new behavior — they fulfill existing contracts. The contract shape comes from SETUP; the implementation comes here."
+        },
+
+        "content_forms": {
+            "description": "What trait implementation content looks like across languages. Contract fulfillment is invariant; the syntax of binding type to contract varies.",
+
+            "rust": {
+                "syntax": "impl Display for MyType { fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, \"...\") } }",
+                "grouping": "Standard library traits first (Display, Debug, Error, From), then custom project traits, then external crate traits",
+                "notes": "Rust trait impls are explicit — 'impl Trait for Type' blocks. Derive macros handle trivial cases (#[derive(Debug, Clone)]). Orphan rules constrain which impls are allowed. Blanket impls rare in application code."
+            },
+
+            "go": {
+                "syntax": "func (t *MyType) String() string { return fmt.Sprintf(\"...\", t.field) }",
+                "grouping": "Standard interfaces first (Stringer, error), then project interfaces, then external interfaces",
+                "notes": "Go interface satisfaction is implicit — no 'implements' keyword. Methods with matching signatures automatically satisfy interfaces. Group methods by which interface they serve, with comments marking the contract."
+            },
+
+            "c": {
+                "syntax": "static void my_type_display(const MyType* self, char* buf, size_t len) { snprintf(buf, len, \"...\", self->field); }",
+                "grouping": "Function pointer table implementations grouped by vtable contract",
+                "notes": "C has no native trait/interface system. Contracts are vtables (structs of function pointers). Implementations are static functions assigned to those vtables. Convention and discipline replace compiler enforcement."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, trait implementation content preserves the contract-fulfillment relationship. The same contracts get fulfilled for the same types — only the syntax of expressing 'this type does this' changes.",
+            "invariant": ["contract-type pairings (which types fulfill which contracts)", "method signatures (input/output types of each fulfilled method)", "behavioral semantics (what each implementation actually does)"],
+            "variable": ["impl syntax (impl Trait for Type vs implicit satisfaction vs vtable assignment)", "derive mechanisms (Rust #[derive] vs Go embedding vs C macros)", "orphan rules (Rust enforces, Go ignores, C has none)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — trait implementations host any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Trait implementations are promise-keeping. SETUP says 'this type CAN display itself.' This section proves it. The gap between declaring capability and delivering it is where trust lives — and trait implementations close that gap.",
+    "_X5_scripture": "Matthew 5:37 — But let your communication be, Yea, yea; Nay, nay: for whatsoever is more than these cometh of evil."
+}

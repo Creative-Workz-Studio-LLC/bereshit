@@ -1,0 +1,140 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-body-helpers",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 2: Helpers — Go Content",
+    "_P5_brief": "Go-specific content rules for Helpers. Private lowercase functions serving core operations and public APIs. Focused utility — each does one thing. Extends the base structure at blocks/body/helpers.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/body/helpers.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "func helperName(params) returnType { ... }",
+                "description": "Private helper function — lowercase, unexported, serves core operations or public APIs",
+                "patterns": [
+                    "func parseConfig(raw []byte) (*Config, error) {\n\tvar cfg Config\n\tif err := json.Unmarshal(raw, &cfg); err != nil {\n\t\treturn nil, fmt.Errorf(\"parseConfig: %w\", err)\n\t}\n\treturn &cfg, nil\n}",
+                    "func validatePort(port int) error {\n\tif port < 1 || port > 65535 {\n\t\treturn fmt.Errorf(\"invalid port: %d\", port)\n\t}\n\treturn nil\n}"
+                ],
+                "visibility": "unexported (lowercase) — package-internal only"
+            },
+            {
+                "construct": "func (r *Receiver) helperMethod(params) returnType { ... }",
+                "description": "Private method on a type — internal operation that supports public methods",
+                "patterns": [
+                    "func (s *Server) buildRoutes() {\n\ts.mux.HandleFunc(\"/health\", s.handleHealth)\n\ts.mux.HandleFunc(\"/api/v1/\", s.handleAPI)\n}"
+                ],
+                "visibility": "unexported (lowercase)"
+            },
+            {
+                "construct": "argument/input processing helpers",
+                "description": "Functions that parse, validate, or transform inputs before core logic consumes them",
+                "patterns": [
+                    "func parseArgs(args []string) (options, error) {\n\tif len(args) < 1 {\n\t\treturn options{}, fmt.Errorf(\"usage: %s <input>\", os.Args[0])\n\t}\n\treturn options{input: args[0]}, nil\n}"
+                ],
+                "visibility": "unexported"
+            },
+            {
+                "construct": "output formatting helpers",
+                "description": "Functions that format data for display or serialization",
+                "patterns": [
+                    "func formatDuration(d time.Duration) string {\n\tif d < time.Second {\n\t\treturn fmt.Sprintf(\"%dms\", d.Milliseconds())\n\t}\n\treturn fmt.Sprintf(\"%.1fs\", d.Seconds())\n}"
+                ],
+                "visibility": "unexported"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "exported (uppercase) functions",
+                "reason": "Helpers are private by definition. Exported functions belong in B5 Public APIs.",
+                "defer_to": "BODY.PublicAPIs",
+                "go_signal": "^func\\s+[A-Z]"
+            },
+            {
+                "construct": "main() or run() entry points",
+                "reason": "Entry points belong in CLOSING Ce — not in helpers",
+                "defer_to": "CLOSING.Execution",
+                "go_signal": "func\\s+(main|run)\\s*\\("
+            },
+            {
+                "construct": "test helper functions (t.Helper())",
+                "reason": "Test helpers belong in demo-test files, not production helpers",
+                "defer_to": "CLOSING.Cv or demo-test B2",
+                "go_signal": "t\\.Helper\\(\\)"
+            },
+            {
+                "construct": "type definitions",
+                "reason": "Helpers are functions, not type declarations — types belong in SETUP",
+                "defer_to": "SETUP.CoreTypes",
+                "go_signal": "^type\\s+\\w+\\s+(struct|interface)"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "^func\\s+[A-Z]",
+                "to": "BODY.PublicAPIs",
+                "confidence": "high",
+                "why": "Exported function — public API surface, not helper"
+            },
+            {
+                "pattern": "func\\s+(main|run)\\s*\\(",
+                "to": "CLOSING.Execution or BODY.CoreOperations",
+                "confidence": "high",
+                "why": "Entry point function — not a helper"
+            },
+            {
+                "pattern": "^type\\s+\\w+\\s+struct",
+                "to": "SETUP.CoreTypes",
+                "confidence": "high",
+                "why": "Type definition in helper section"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// 2. Helpers\n//\n// Private utility functions supporting core operations.\n// Each helper does one thing. If a helper grows complex,\n// extract to its own file.",
+            "empty_executable": "// 2. Helpers\n//\n// Private functions supporting run().\n// Argument parsing, config loading, output formatting.",
+            "empty_demo_test": "// 2. Helpers\n//\n// Test helper functions — setup, teardown, fixtures.\n// Each helper calls t.Helper() for clean stack traces.",
+            "comment_skeleton": "// 2. Helpers\n// func helperName(params) returnType { ... }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Helpers: private lowercase functions that serve the core. Each does one thing. If it grows complex, extract. If it serves many callers, it might be a free function or belong in a library package.",
+    "_X5_scripture": "Nehemiah 4:6 — So built we the wall; for the people had a mind to work."
+}

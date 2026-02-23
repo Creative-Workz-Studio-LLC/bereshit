@@ -1,0 +1,158 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-setup-error-types",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 6: Error Types — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Error Types. What Rust code CAN, CANNOT, and SHOULD DEFER within this section. Extends the base structure at blocks/setup/error-types.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/error-types.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "pub enum {ErrorType} { Variant { field: Type }, ... }",
+                "description": "Error enum with domain-specific variants and typed fields",
+                "patterns": [
+                    "pub enum ConfigError {\n    NotFound { path: PathBuf },\n    ParseFailed { path: PathBuf, line: usize, msg: String },\n    Validation { field: &'static str, reason: String },\n}",
+                    "pub enum LoadError {\n    Io(io::Error),\n    Format { kind: FormatKind, detail: String },\n}"
+                ],
+                "visibility": "pub for library API errors, pub(crate) for module-internal errors"
+            },
+            {
+                "construct": "#[derive(Debug, Clone, PartialEq, Eq)]",
+                "description": "Testability derives — Debug always, Clone/PartialEq/Eq for assertion in tests",
+                "patterns": [
+                    "#[derive(Debug, Clone, PartialEq, Eq)]",
+                    "#[derive(Debug)]"
+                ],
+                "note": "Debug is minimum. Add Clone, PartialEq, Eq for testability. Add thiserror::Error for derive-based Display."
+            },
+            {
+                "construct": "impl fmt::Display for {ErrorType}",
+                "description": "Display implementation matching on all variants with meaningful messages",
+                "patterns": [
+                    "impl fmt::Display for ConfigError {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        match self {\n            Self::NotFound { path } => write!(f, \"config not found: {}\", path.display()),\n        }\n    }\n}"
+                ],
+                "note": "Every variant gets a meaningful message. No generic 'an error occurred'."
+            },
+            {
+                "construct": "impl std::error::Error for {ErrorType}",
+                "description": "Error trait implementation for error chaining",
+                "patterns": [
+                    "impl std::error::Error for ConfigError {}"
+                ],
+                "note": "Usually empty impl unless source() needs overriding for error chain"
+            },
+            {
+                "construct": "impl From<{SourceError}> for {ErrorType}",
+                "description": "Conversion from upstream errors (std::io::Error, toml::de::Error, etc.)",
+                "patterns": [
+                    "impl From<io::Error> for ConfigError {\n    fn from(e: io::Error) -> Self {\n        Self::Io(e)\n    }\n}",
+                    "impl From<toml::de::Error> for ConfigError {\n    fn from(e: toml::de::Error) -> Self {\n        Self::ParseFailed { line: 0, msg: e.to_string() }\n    }\n}"
+                ],
+                "note": "Enables ? operator for automatic error conversion"
+            },
+            {
+                "construct": "enum-typed fields (not stringly typed)",
+                "description": "Error variant fields use enums, not raw Strings, for matchable error details",
+                "patterns": [
+                    "FormatKind::Toml, FormatKind::Json — not format: String",
+                    "LoadOp::Read, LoadOp::Write — not op: String"
+                ],
+                "note": "Stringly-typed error fields force callers to match on string content. Enum fields enable exhaustive matching."
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "String-typed fields where enums would serve",
+                "reason": "op: String forces callers to match on string content — fragile and un-exhaustive",
+                "defer_to": "N/A — fix in place (define enum for the field)",
+                "rust_signal": "\\w+:\\s*String\\s*[,}]"
+            },
+            {
+                "construct": "anyhow::Error as the primary error type",
+                "reason": "anyhow is for binaries, not libraries/modules. Library errors are API contracts — callers match on them",
+                "defer_to": "N/A — design proper error enum",
+                "rust_signal": "anyhow::(Error|Result|bail|ensure)"
+            },
+            {
+                "construct": "error handling logic",
+                "reason": "SETUP defines error types. BODY handles errors (match, ?, recover). Define the shape here, use it in BODY.",
+                "defer_to": "BODY.CoreLogic",
+                "rust_signal": "match.*Err|if.*err|\\.unwrap\\(\\)|\\.expect\\("
+            },
+            {
+                "construct": "business logic / fn definitions",
+                "reason": "Error types section is purely type definitions and trait impls on those types",
+                "defer_to": "BODY.CoreLogic or BODY.FreeFunctions",
+                "rust_signal": "^(pub\\s+)?fn\\s+(?!fmt\\b)(?!from\\b)"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific Defer Signals
+        // ─────────────────────────────────────
+
+        "defer_signals": [
+            {
+                "pattern": "match.*Err\\(|if let Err\\(",
+                "to": "BODY.CoreLogic",
+                "confidence": "high",
+                "why": "Error handling logic — define here, handle in BODY"
+            },
+            {
+                "pattern": "\\.unwrap\\(\\)|\\.expect\\(",
+                "to": "BODY.CoreLogic or CLOSING.Cv",
+                "confidence": "medium",
+                "why": "unwrap/expect is error handling behavior, not type definition"
+            },
+            {
+                "pattern": "^pub\\s+struct\\s+(?!.*Error|.*Err)",
+                "to": "SETUP.CoreTypes",
+                "confidence": "high",
+                "why": "Non-error struct belongs in core types, not error types"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+
+        "scaffold": {
+            "empty_module": "#[derive(Debug, Clone, PartialEq, Eq)]\npub(crate) enum Error {\n    /// TODO: Add domain-specific error variants.\n    Unknown(String),\n}\n\nimpl fmt::Display for Error {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        match self {\n            Self::Unknown(msg) => write!(f, \"{}\", msg),\n        }\n    }\n}\n\nimpl std::error::Error for Error {}",
+            "empty_library": "#[derive(Debug, Clone, PartialEq, Eq)]\npub enum Error {\n    /// TODO: Add domain-specific error variants.\n    Unknown(String),\n}\n\nimpl fmt::Display for Error {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        match self {\n            Self::Unknown(msg) => write!(f, \"{}\", msg),\n        }\n    }\n}\n\nimpl std::error::Error for Error {}",
+            "comment_skeleton": "// #[derive(Debug, Clone, PartialEq, Eq)]\n// pub enum Error {\n//     /// Add domain-specific error variants.\n//     Unknown(String),\n// }\n//\n// impl fmt::Display for Error { ... }\n// impl std::error::Error for Error {}"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Error Types: error enums with typed variant fields. Errors are API contracts — callers match on them. Define the shape here; handle errors in BODY. Enum fields over String fields. Display with meaningful messages.",
+    "_X5_scripture": "James 1:5 — If any of you lack wisdom, let him ask of God, that giveth to all men liberally, and upbraideth not."
+}

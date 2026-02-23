@@ -1,0 +1,108 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-setup-build-tags",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "SETUP Section 15: Build Tags — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Build Tags IS, not how it manifests in any language. See format/blocks/{lang}/setup/build-tags.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "BuildTags",
+        "position": 15,
+        "label": "Build Tags",
+        "block": "SETUP",
+        "overview_text": "Build tag configuration",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "conditional compilation",
+                "description": "Sections of code included or excluded based on build tags",
+                "distinguisher": "The door that opens or closes at compile time. Tag present = code included."
+            },
+            {
+                "concept": "platform-specific paths",
+                "description": "Alternative implementations for different targets",
+                "distinguisher": "Same interface, different implementation per platform."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "runtime feature toggling",
+                "reason": "Build tags are compile-time. Runtime toggles are BODY logic.",
+                "defer_to": "BODY.CoreLogic"
+            },
+            {
+                "concept": "configuration loading",
+                "reason": "Reading config at runtime is not build tagging",
+                "defer_to": "BODY.CoreLogic"
+            }
+        ],
+
+        "defer": [
+            {
+                "signal": "file is not a build root or platform module",
+                "to": "RESERVED — build tags belong at project level",
+                "why": "Build tag configuration is project-level. Individual modules may be TAGGED, but don't ORGANIZE tags."
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "RESERVED",
+            "library": "AVAILABLE",
+            "executable": "AVAILABLE",
+            "demo-test": "RESERVED"
+        },
+
+        "ro": {
+            "available_label": "Build Tags",
+            "reserved_reason": "Build tags are project-level config, not leaf module concerns",
+            "reserved_explanation": "Build tags are defined at project level. Modules may be tagged but don't organize tags."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "granted",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.82,
+    "_weight_rationale": "|avg| of concept_map: 1G 10D. (1−10)/11 = −9/11 ≈ −0.82. conditional_if granted (build tags ARE conditional compilation).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Build tags are compile-time doors. They decide what code exists in the binary before it runs.",
+    "_X5_scripture": "Revelation 3:8 — Behold, I have set before thee an open door, and no man can shut it."
+}

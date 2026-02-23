@@ -1,0 +1,66 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-pragma-identity-i4-architecture",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Pragma Identity — I4 Architecture (Structural Context) — Rust Content",
+    "_P5_brief": "How Rust carries I4 Architecture fields (layer, position, pattern) in pub static PRAGMA slices. The address within the larger system architecture.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/pragma-identity/i4-architecture.jsonc",
+    "format": "rust",
+
+    "content": {
+        "tag": "I4",
+        "parent": "PragmaIdentity",
+        "static_name": "PRAGMA",
+
+        "can": {
+            "description": "I4 fields carried as key-value pairs in PRAGMA static slice, as the final I-section entries",
+            "patterns": [
+                "(\"I4.layer\", \"L2\"),",
+                "(\"I4.position\", \"foundation\"),",
+                "(\"I4.pattern\", \"builder\"),"
+            ],
+            "field_order": ["layer", "position", "pattern"],
+            "note": "All three I4 fields are defined (not required). Present when the crate participates in a formal layered architecture (L0-L5)."
+        },
+
+        "cannot": [
+            {
+                "construct": "I4 fields before I3 in PRAGMA",
+                "reason": "Section order is I1 -> I2 -> I3 -> I4. Architecture follows instance specifics.",
+                "rust_signal": "I4\\. appearing before I3\\."
+            },
+            {
+                "construct": "I4.layer outside L0-L5 range",
+                "reason": "Architectural layers are L0 (foundation) through L5 (application). Values outside this range are undefined.",
+                "rust_signal": "I4\\.layer.*L[6-9]"
+            }
+        ],
+
+        "scaffold": {
+            "slice_full": "(\"I4.layer\", \"{layer}\"),\n    (\"I4.position\", \"{position}\"),\n    (\"I4.pattern\", \"{pattern}\"),",
+            "slice_layer_only": "(\"I4.layer\", \"{layer}\"),",
+            "note": "I4 scaffold is optional. Most modules omit it. Crate roots in layered architectures should include at least layer."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "I4 in Rust: the architectural address. layer tells you the dependency tier (L0-L5), position tells you where in the chain, pattern tells you the design approach. Optional but powerful for architectural querying.",
+    "_X5_scripture": "1 Corinthians 3:10 — According to the grace of God which is given unto me, as a wise masterbuilder, I have laid the foundation."
+}

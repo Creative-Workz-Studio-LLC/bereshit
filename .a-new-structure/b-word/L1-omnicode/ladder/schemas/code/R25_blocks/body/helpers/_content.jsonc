@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-helpers",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.Helpers Content Character — What Helper Content IS",
+    "_P5_brief": "Format-independent definition of helper content character. Helpers are private support functions for the executable's run() entry point — they decompose the program's mission into manageable steps. Syntax varies; the private-support-for-execution pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "helpers",
+        "block": "BODY",
+        "position": 8,
+        "nature": "support",
+
+        "description": "Helper content is the supporting cast for the executable's entry point. Where run() orchestrates, helpers do the actual steps — parsing arguments, loading configuration, setting up resources. They are private functions that serve a single master: the run() function in CLOSING.Execution. Without run(), helpers have no purpose.",
+
+        "invariants": {
+            "description": "Properties true of ALL helper content, regardless of language.",
+
+            "private": "Helpers are never exported. They serve the current file's entry point only. If a helper is useful elsewhere, it belongs in FreeFunctions or a library.",
+            "execution-bound": "Helpers exist to support run(). They decompose the executable's mission — argument parsing, config loading, resource setup, result formatting. Remove run(), and helpers become orphans.",
+            "focused": "Each helper does one step of the execution flow. If a helper grows to handle multiple concerns, it should be split. Helpers are small by nature.",
+            "sequential": "Helpers typically execute in order — parse args, load config, run core logic, format output. The sequence reflects the program's lifecycle.",
+            "executable-only": "Helpers appear only in executable forms. Libraries, modules, and bare-bones have no run() and therefore no helpers. This section is RESERVED for non-executable forms."
+        },
+
+        "content_forms": {
+            "description": "What helper content looks like across languages. Private execution support is invariant; the syntax of private functions and argument handling varies.",
+
+            "rust": {
+                "syntax": "fn parse_args() -> Result<Args, Error> { ... } fn load_config(path: &Path) -> Result<Config, Error> { ... } fn setup_logging(level: Level) { ... }",
+                "grouping": "Argument parsing first, then configuration loading, then resource setup, then output formatting",
+                "notes": "Rust helpers are private fn (no pub). They typically return Result for error propagation to run(). Placed after core logic sections, before CLOSING. Closures may be used for one-off helpers."
+            },
+
+            "go": {
+                "syntax": "func parseArgs() (*Args, error) { ... } func loadConfig(path string) (*Config, error) { ... } func setupLogging(level string) { ... }",
+                "grouping": "Argument parsing first, then configuration, then resource setup, then formatting",
+                "notes": "Go helpers are unexported (lowercase). They return error for propagation to run(). May use the flag package for argument parsing. Placed in the same file as main()."
+            },
+
+            "c": {
+                "syntax": "static Args parse_args(int argc, char** argv) { ... } static Config* load_config(const char* path) { ... } static void setup_logging(int level) { ... }",
+                "grouping": "Argument parsing first, then configuration, then resource setup, then formatting",
+                "notes": "C helpers are static functions — file-scoped, invisible outside the translation unit. They receive argc/argv from main and return structured results. Error handling via return codes or errno."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, helper content preserves the execution decomposition pattern. The same steps get performed in the same order — only the syntax of private functions and error handling changes.",
+            "invariant": ["execution steps (what the program does on startup)", "step ordering (the sequence of initialization)", "error propagation (helpers report failures to run())"],
+            "variable": ["privacy mechanism (no pub vs lowercase vs static)", "argument parsing API (clap vs flag vs getopt)", "error handling (Result vs error return vs return codes)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "defer",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 10G 1F. 10/11 ≈ 0.91. self_access defers (helpers may or may not have receivers).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Helpers are the hands of the executable. run() is the mind that orchestrates; helpers are the hands that execute each step. They exist only because programs need to do things in order — and doing everything in run() would make run() unreadable.",
+    "_X5_scripture": "Nehemiah 4:6 — So built we the wall; for the people had a mind to work."
+}

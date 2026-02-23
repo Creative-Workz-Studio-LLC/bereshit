@@ -45,41 +45,89 @@
 import type {
   FormatHandler, LintResult, FixSuggestion, TransformOptions,
   AtomicAction, HealthScore, ContainerScore, BlockScore,
+  InspectResult, InspectBlock, InspectSection, InspectContent,
 } from "../foundation/mod.ts";
 import {
   error, warn, info,
   computeContainerScore, computeBlockScore, computeHealthScore,
-  loadCodeRules,
+  loadCodeRules, loadFormConstraints, loadCompositionFormConstraints,
+  buildFormConstraintsFromRegistry,
 } from "../foundation/mod.ts";
-import { registerFormat } from "../engine/mod.ts";
+import { registerFormat, loadFormContentCached, loadFormStructureCached } from "../engine/mod.ts";
+import { cascadeActionGroups, tagLayer } from "../engine/mod.ts";
+import {
+  isTrace,
+  traceEnter, traceExit,
+  debugLayerTransition,
+  traceResult,
+} from "../engine/mod.ts";
+import type { TransformPass, TransformContext } from "../engine/mod.ts";
+import {
+  UNIVERSAL_PASSES,
+  reorderClosingZonesPass,
+  createCodeMovePass,
+  createSubsectionScaffoldPass,
+  createSubsectionReorderPass,
+  runTransformPipeline,
+} from "../engine/mod.ts";
 
 // Shared 4-block types, constants, and functions
-import type { BlockPosition, DirectiveInfo, SubsectionRange, IdentityField, LanguageAdapter } from "./shared/mod.ts";
-import type { FieldContentRule } from "./shared/mod.ts";
+import type { BlockPosition, DirectiveInfo, SubsectionRange, IdentityField, LanguageAdapter } from "../shared/mod.ts";
+import type { FieldContentRule, ContentExpectations } from "../shared/mod.ts";
+import type { GenericChunk, BlockTarget, ScaffoldAdapter, ClosingFieldValues, ScaffoldOptions } from "../shared/mod.ts";
+import type { ChunkerConfig, BlockLintChain } from "../shared/mod.ts";
 import {
   BLOCKS, REQUIRED_DIRECTIVES, RECOMMENDED_DIRECTIVES,
   PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES,
-  BLOCK_SEPARATOR_WIDTH, SUBSECTION_SEPARATOR_WIDTH,
   BODY_SUBSECTION_PATTERN, BODY_SUBSECTION_LEGACY,
-  findBlocks, getBlockLines, findBlockRange,
+  findBlocks, getBlockLines,
   getSubsectionRanges as _getSubsectionRanges,
   checkSeparatorConsistency, checkClosingZoneOrder,
   checkClosingRequiredZones, checkClosingZoneContent,
   checkClosingX6TemplateOnly, checkClosingDocFieldContent,
+  extractClosingFields, stripBlockStructure,
+  structuralScaffold,
+  parseChunks, isOmniPragma, isSeparatorBanner, isRegularComment,
   checkSetupSubsectionOrder as _sharedCheckSetupOrder,
   checkBodySubsectionOrder as _sharedCheckBodyOrder,
   checkScalingSignals as _sharedCheckScaling,
   checkRequiredSetupSubsections as _sharedCheckRequiredSetup,
   checkRequiredBodySubsections as _sharedCheckRequiredBody,
   checkSubtypeEmphasis as _sharedCheckEmphasis,
+  validateICFields,
   validateICFieldContent,
+  parseReservedOmissions,
   validateTemplateVsDerived, validateSubtypeConsistency, validateFormatConsistency,
-} from "./shared/mod.ts";
+  // Content linting — schema-driven content expectations
+  checkBodyContentExpectations as _sharedCheckBodyContent,
+  checkClosingContentExpectations as _sharedCheckClosingContent,
+  checkSetupContentExpectations as _sharedCheckSetupContent,
+  checkMetadataContentExpectations as _sharedCheckMetadataContent,
+  runLintGrid,
+} from "../shared/mod.ts";
+
+// Data layer — form registry for form-aware transforms
+import { FORM_REGISTRY } from "../data/mod.ts";
+
+// Concept detection — R[5] per-container checks (shared across all code handlers)
+import { buildConceptContainers } from "../shared/concept-check.ts";
+import { loadConceptDetectors } from "../data/concept-detectors.ts";
 
 // Re-export for tests and schema alignment verification
 export { PRAGMA_CONTENT_RULES, METADATA_CONTENT_RULES };
-export { validateICFieldContent };
+export { validateICFields, validateICFieldContent };
 export { SETUP_SUBSECTIONS, BODY_CANONICAL_SUBSECTIONS };
+
+// Re-export chunking/scaffold functions for Go-specific chunker tests
+export {
+  classifyGoChunkLine,
+  parseGoCodeChunks,
+  goChunkToBlock,
+  goChunkToSetupSection,
+  goChunkToBodySection,
+  extractGoMetadataContext,
+  buildGoAdapter,
+};
 
 // ---------------------------------------------------------------------------
 // Constants — Go-specific (schema-driven + legacy enrichment)
@@ -92,6 +140,7 @@ export { SETUP_SUBSECTIONS, BODY_CANONICAL_SUBSECTIONS };
 //
 
 import type { Code4BlockRules } from "../foundation/mod.ts";
+import { registerCache } from "../foundation/cache-registry.ts";
 
 /** Lazily-loaded Go rules. Populated by ensureGoRules(). */
 let _goRules: Code4BlockRules | null = null;
@@ -103,9 +152,13 @@ let PRAGMA_FIELD_REQUIREMENTS: Record<string, import("../foundation/code-schema.
 // deno-lint-ignore prefer-const
 let METADATA_FIELD_REQUIREMENTS: Record<string, import("../foundation/code-schema.ts").SchemaFieldRequirement> = {};
 // deno-lint-ignore prefer-const
-let SETUP_SUBSECTIONS: import("./shared/types.ts").SubsectionDef[] = [];
+let SETUP_SUBSECTIONS: import("../foundation/types.ts").SubsectionDef[] = [];
 // deno-lint-ignore prefer-const
 let BODY_CANONICAL_SUBSECTIONS: Record<string, readonly string[]> = {};
+
+// Content expectations — loaded from forms/{form}/go.jsonc per subtype.
+// Populated lazily in ensureGoRules() for the first subtype, then on demand.
+const _goContentExpectations = new Map<string, ContentExpectations>();
 
 // Re-export schema-driven requirements for tests and schema alignment verification
 export { PRAGMA_FIELD_REQUIREMENTS, METADATA_FIELD_REQUIREMENTS };
@@ -163,7 +216,76 @@ export async function ensureGoRules(): Promise<void> {
   });
 }
 
+/**
+ * Load Go content expectations for a specific form/subtype.
+ *
+ * Lazy + cached: first call loads from schema pipeline, subsequent calls
+ * return cached result. Returns null if schema not found (graceful degradation).
+ */
+async function loadGoContentExpectations(
+  subtype: string,
+): Promise<ContentExpectations | null> {
+  const cached = _goContentExpectations.get(subtype);
+  if (cached) return cached;
+
+  try {
+    const content = await loadFormContentCached("go", subtype);
+    const exp = content.contentExpectations as ContentExpectations;
+    _goContentExpectations.set(subtype, exp);
+    return exp;
+  } catch {
+    // Tripwire: content schema not found — degrade gracefully
+    return null;
+  }
+}
+
+/** Cached structure schema sections per subtype — ALL blocks. */
+interface BlockSectionList { required: string[]; reserved: string[] }
+interface FullStructureSections {
+  SETUP: BlockSectionList;
+  BODY: BlockSectionList;
+  CLOSING: BlockSectionList;
+}
+const _goStructureSections = new Map<string, FullStructureSections>();
+
+/**
+ * Load ALL block section lists from structure schema.
+ * Returns required + reserved arrays per block for content linter and health scorer.
+ * Tripwire: if structure schema missing, returns undefined (degrade gracefully).
+ */
+async function loadGoStructureSections(
+  subtype: string,
+): Promise<FullStructureSections | undefined> {
+  const cached = _goStructureSections.get(subtype);
+  if (cached) return cached;
+
+  try {
+    const structure = await loadFormStructureCached(subtype);
+    const sections: FullStructureSections = {
+      SETUP: { required: structure.SETUP.required, reserved: structure.SETUP.reserved },
+      BODY: { required: structure.BODY.required, reserved: structure.BODY.reserved },
+      CLOSING: { required: structure.CLOSING.required, reserved: structure.CLOSING.reserved },
+    };
+    _goStructureSections.set(subtype, sections);
+    return sections;
+  } catch {
+    return undefined; // Tripwire: structure schema missing — degrade
+  }
+}
+
+/**
+ * Clear ALL Go handler caches. Exported for test isolation.
+ * Resets: rules singleton, content expectations, structure sections, sibling cache.
+ */
+export function clearGoHandlerCaches(): void {
+  _goRules = null;
+  _goContentExpectations.clear();
+  _goStructureSections.clear();
+  _goSiblingCache.clear();
+}
+
 /** Known //omni:code directive patterns. */
+registerCache("handlers/go", clearGoHandlerCaches);
 const KNOWN_CODE_DIRECTIVES = [
   "--go -library",
   "--go -executable",
@@ -210,7 +332,7 @@ let METADATA_FORBIDDEN: Set<string> = new Set();
 // ============================================================================
 
 // ---------------------------------------------------------------------------
-// Types — Go-specific (shared types imported from ./shared/mod.ts)
+// Types — Go-specific (shared types imported from ../shared/mod.ts)
 // ---------------------------------------------------------------------------
 
 /** File-level context gathered once, passed to all check functions. */
@@ -225,6 +347,7 @@ interface GoFileContext {
   directives: Map<string, DirectiveInfo>;
   pkgHasIdentity: boolean;     // sibling file has Pragma/Metadata identity vars
   subtype: string | null;      // "library" | "executable" | "demo-test" | null
+  typing: string | null;       // arrow refinement: -module->utility → "utility"
 }
 
 // ---------------------------------------------------------------------------
@@ -444,54 +567,7 @@ export function parseSliceFields(lines: string[], varName: string): IdentityFiel
  * Required fields produce warnings; defined fields produce info.
  * Handles nested keys (e.g., "C4.requires.stdlib" counts as "requires" present).
  */
-export function validateICFields(
-  file: string,
-  fields: IdentityField[],
-  requirements: Record<string, { required: string[]; defined: string[] }>,
-  varName: string,
-): LintResult[] {
-  const results: LintResult[] = [];
-
-  // Group fields by section, tracking base field names
-  const presentFields = new Map<string, Set<string>>();
-  for (const f of fields) {
-    if (!presentFields.has(f.section)) {
-      presentFields.set(f.section, new Set());
-    }
-    // For nested fields like "requires.stdlib", the base field "requires" counts as present
-    const baseField = f.field.split(".")[0]!;
-    presentFields.get(f.section)!.add(baseField);
-  }
-
-  // Check required fields in each section
-  for (const [section, req] of Object.entries(requirements)) {
-    const sectionFields = presentFields.get(section);
-
-    for (const field of req.required) {
-      if (!sectionFields?.has(field)) {
-        results.push(warn(file, `identity/${varName}/${section}.${field}`,
-          `Missing required field ${section}.${field} in ${varName} var`, {
-            description: `Add ${section}.${field} to ${varName}`,
-            toml: `\t{"${section}.${field}", ""},`,
-            location: `in ${varName}`,
-          }));
-      }
-    }
-
-    for (const field of req.defined) {
-      if (!sectionFields?.has(field)) {
-        results.push(info(file, `identity/${varName}/${section}.${field}`,
-          `Missing defined field ${section}.${field} in ${varName} var`, {
-            description: `Add ${section}.${field} to ${varName}`,
-            toml: `\t{"${section}.${field}", ""},`,
-            location: `in ${varName}`,
-          }));
-      }
-    }
-  }
-
-  return results;
-}
+// validateICFields — now in shared/code-4block.ts, imported above
 
 /**
  * Check if any sibling .go file in the same package has identity vars.
@@ -577,10 +653,12 @@ async function buildContext(filePath: string): Promise<GoFileContext> {
 
   // Detect subtype from directives, then PRAGMA I2.subtype if not found.
   // Sources (priority order):
-  //   1. //omni:code --go -<subtype>
-  //   2. #!omni template --go -<subtype>
-  //   3. PRAGMA I2.subtype field
+  //   1. //omni:code --go -<subtype>             (e.g., -library)
+  //   2. //omni:code --go -<subtype>-><typing>   (e.g., -module->utility)
+  //   3. #!omni template --go -<subtype>[-><typing>]
+  //   4. PRAGMA I2.subtype field
   let subtype: string | null = null;
+  let typing: string | null = null;
   const KNOWN_SUBTYPES = Object.keys(_goRules!.subtypeDefinitions);
 
   const codeDirective = directives.get("//omni:code")?.value ?? directives.get("#!omni:code")?.value ?? "";
@@ -588,9 +666,11 @@ async function buildContext(filePath: string): Promise<GoFileContext> {
 
   for (const directive of [codeDirective, templateDirective]) {
     if (!directive) continue;
-    const subtypeMatch = directive.match(/-(\w[\w-]*)$/);
+    // Match: -<subtype> or -<subtype>-><typing>
+    const subtypeMatch = directive.match(/-(\w[\w-]*)(?:->(\w[\w-]*))?$/);
     if (subtypeMatch && KNOWN_SUBTYPES.includes(subtypeMatch[1]!)) {
       subtype = subtypeMatch[1]!;
+      typing = subtypeMatch[2] ?? null;
       break;
     }
   }
@@ -615,6 +695,7 @@ async function buildContext(filePath: string): Promise<GoFileContext> {
     directives,
     pkgHasIdentity: await packageHasIdentityVars(filePath),
     subtype,
+    typing,
   };
 }
 
@@ -976,7 +1057,7 @@ function checkDocComments(ctx: GoFileContext): LintResult[] {
   return results;
 }
 
-// checkSeparatorConsistency — imported from ./shared/mod.ts
+// checkSeparatorConsistency — imported from ../shared/mod.ts
 
 // ---------------------------------------------------------------------------
 // Checks (new — a-02.00)
@@ -1026,19 +1107,51 @@ function checkBodySubsectionOrder(ctx: GoFileContext): LintResult[] {
   );
 }
 
-/** Check 10a: SETUP required subsections for detected subtype. */
+/** Check 10a: SETUP required subsections for detected subtype.
+ *  When typing arrow is present (e.g., -module->utility), pre-filter setup data
+ *  to exclude sections irrelevant for that typing. */
 function checkRequiredSetupSubsections(ctx: GoFileContext): LintResult[] {
   const setupLines = getBlockLines(ctx.lines, ctx.blocks, "SETUP");
+
+  // Typing arrow narrows REQUIRED checks to only typing-required sections.
+  // "Available" sections are optional — they should NOT produce required-subsection warnings.
+  let setupData = _goRules!.setupData;
+  if (ctx.typing && ctx.subtype) {
+    const typingProfile = _goRules!.typingMaps[ctx.subtype]?.[ctx.typing];
+    if (typingProfile) {
+      const norm = (s: string) => s.toLowerCase().replace(/\s+/g, "");
+      const required = new Set(typingProfile.SETUP.required.map(norm));
+      setupData = setupData.filter((s) => required.has(norm(s.tag)));
+    }
+  }
+
   return _sharedCheckRequiredSetup(
-    setupLines, SETUP_SUBSECTIONS, _goRules!.setupData, ctx.subtype,
+    setupLines, SETUP_SUBSECTIONS, setupData, ctx.subtype,
     ctx.blocks, ctx.filePath, ctx.isTemplate,
   );
 }
 
-/** Check 10b: BODY required subsections for detected subtype. */
+/** Check 10b: BODY required subsections for detected subtype.
+ *  When typing arrow is present, narrow what counts as "required" for this variant. */
 function checkRequiredBodySubsections(ctx: GoFileContext): LintResult[] {
   const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
-  const bodySubtype = ctx.subtype ? _goRules!.bodyData[ctx.subtype] : undefined;
+  let bodySubtype = ctx.subtype ? _goRules!.bodyData[ctx.subtype] : undefined;
+
+  // Typing arrow narrows REQUIRED checks: only typing-required sections flagged.
+  if (ctx.typing && ctx.subtype && bodySubtype) {
+    const typingProfile = _goRules!.typingMaps[ctx.subtype]?.[ctx.typing];
+    if (typingProfile) {
+      const norm = (s: string) => s.toLowerCase().replace(/\s+/g, "");
+      const required = new Set(typingProfile.BODY.required.map(norm));
+      bodySubtype = {
+        ...bodySubtype,
+        subsections: bodySubtype.subsections.filter((s) =>
+          required.has(norm(s.tag))
+        ),
+      };
+    }
+  }
+
   return _sharedCheckRequiredBody(
     bodyLines, bodySubtype, ctx.subtype,
     ctx.blocks, ctx.filePath, ctx.isTemplate, true, // includeLegacy for Go
@@ -1249,7 +1362,7 @@ function checkContentPlacement(ctx: GoFileContext): LintResult[] {
 }
 
 // ---------------------------------------------------------------------------
-// Check 12: CLOSING zone order — imported from ./shared/mod.ts
+// Check 12: CLOSING zone order — imported from ../shared/mod.ts
 
 // ---------------------------------------------------------------------------
 // Check 13: Identity registration
@@ -1443,8 +1556,23 @@ function checkBodySubtypeContent(ctx: GoFileContext): LintResult[] {
   if (ctx.isTemplate) return results;
   if (!ctx.subtype) return results;
 
-  const canonical = BODY_CANONICAL_SUBSECTIONS[ctx.subtype];
+  let canonical = BODY_CANONICAL_SUBSECTIONS[ctx.subtype];
   if (!canonical) return results;
+
+  // Typing arrow narrows canonical list: -module->utility keeps only relevant sections.
+  // The typing map is INCLUSIVE — only required + available sections matter.
+  // Anything not mentioned is implicitly irrelevant for this typing.
+  if (ctx.typing && ctx.subtype) {
+    const typingProfile = _goRules!.typingMaps[ctx.subtype]?.[ctx.typing];
+    if (typingProfile) {
+      const norm = (s: string) => s.toLowerCase().replace(/\s+/g, "");
+      const relevant = new Set([
+        ...typingProfile.BODY.required.map(norm),
+        ...typingProfile.BODY.available.map(norm),
+      ]);
+      canonical = canonical.filter((c) => relevant.has(norm(c)));
+    }
+  }
 
   const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
   if (bodyLines.length === 0) return results;
@@ -1475,12 +1603,22 @@ function checkBodySubtypeContent(ctx: GoFileContext): LintResult[] {
     !foundNames.some((f) => f.includes(c.toLowerCase())));
 
   if (missing.length > 0) {
-    const bodyBlock = ctx.blocks.find((b) => b.name === "BODY");
-    results.push(
-      info(file, "body/subtype-subsections",
-        `BODY for ${ctx.subtype} subtype missing canonical subsection(s): ${missing.join(", ")} — expected: ${canonical.join(", ")}`,
-        { line: bodyBlock?.line ?? 0 }),
-    );
+    // Filter out sections acknowledged in Reserved Omission
+    const omitted = parseReservedOmissions(bodyLines);
+    const trulyMissing = missing.filter((c) => {
+      const cNorm = c.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+      return !Array.from(omitted).some((o) =>
+        o.includes(cNorm) || cNorm.includes(o));
+    });
+
+    if (trulyMissing.length > 0) {
+      const bodyBlock = ctx.blocks.find((b) => b.name === "BODY");
+      results.push(
+        info(file, "body/subtype-subsections",
+          `BODY for ${ctx.subtype} subtype missing canonical subsection(s): ${trulyMissing.join(", ")} — expected: ${canonical.join(", ")}`,
+          { line: bodyBlock?.line ?? 0 }),
+      );
+    }
   }
 
   return results;
@@ -1508,57 +1646,195 @@ function checkScalingSignals(ctx: GoFileContext): LintResult[] {
 // ---------------------------------------------------------------------------
 
 async function lintGoFile(filePath: string): Promise<LintResult[]> {
+  traceEnter("lintGoFile", filePath);
   await ensureGoRules();
   let ctx: GoFileContext;
   try {
     ctx = await buildContext(filePath);
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
+    traceExit("lintGoFile", 1);
     return [error(filePath, "io/read", `Cannot read file: ${msg}`)];
   }
 
   // Quick check: is this a Go file with any structural markers?
   if (!ctx.hasAnyOmni && !ctx.hasAnyBlock) {
+    traceExit("lintGoFile", 1);
     return [
       info(filePath, "structure/skip",
         "No //omni: directives or block markers — not a 4-block file"),
     ];
   }
 
-  return [
-    ...checkDirectives(ctx),
-    ...checkBlockStructure(ctx),
-    ...checkPackageAndImports(ctx),
-    ...checkPragmaMetadata(ctx),
-    ...checkDocComments(ctx),
-    ...checkCommentMetadata(ctx),
-    ...checkSeparatorConsistency(ctx),
-    ...checkTemplateVsDerived(ctx),
-    ...checkSetupSubsectionOrder(ctx),
-    ...checkRequiredSetupSubsections(ctx),
-    ...checkSetupHeaderDoc(ctx),
-    ...checkIdentityRegistration(ctx),
-    ...checkDirectiveFormat(ctx),
-    ...checkContentPlacement(ctx),
-    ...checkBodySubsectionOrder(ctx),
-    ...checkRequiredBodySubsections(ctx),
-    ...checkBodySubtypeContent(ctx),
-    ...checkSubtypeEmphasis(ctx),
-    ...checkClosingZoneOrder(ctx, _goRules!.closingData),
-    ...checkClosingContentPlacement(ctx),
-    ...checkClosingRequiredZones(ctx, _goRules!.closingData),
-    ...checkClosingZoneContent(ctx, _goRules!.closingData),
-    ...checkClosingX6TemplateOnly(ctx, _goRules!.closingData),
-    ...checkClosingDocFieldContent(ctx, _goRules!.closingData),
-    ...checkScalingSignals(ctx),
-  ];
+  // ── Block × Layer Lint Grid ─────────────────────────────────────────────
+  //
+  //               METADATA    SETUP       BODY        CLOSING
+  // L0 (R[50])  | ─────────── whole-file (pre-gate) ──────────── |
+  // L1 (R[25])  | pragma    | pkg+imp   | subsec    | zones      |
+  // L2 (R[10])  | identity  | hdr-doc   | subtype   | zone-cnt   |
+  // L3 (R[5])   | content   | content   | content   | content    |
+  //
+  // Traversal: block-first (vertical). Pre-gate always runs.
+  // Cascade is handled in computeGoHealth(), not here — all executed
+  // checks run, and the health scorer neutralizes children when root
+  // causes fail. "Root cause already carries the weight."
+  //
+  // The --check flag slices the grid: block, layer, or both.
+  // ─────────────────────────────────────────────────────────────────────
+
+  // Pre-load content schemas (async) so closures can reference them
+  let contentExp: ContentExpectations | null = null;
+  let struct: FullStructureSections | null = null;
+  if (ctx.subtype) {
+    contentExp = await loadGoContentExpectations(ctx.subtype);
+    if (contentExp) {
+      struct = await loadGoStructureSections(ctx.subtype) ?? null;
+    }
+  }
+
+  // ── Concept detection — R[5] per-container checks ────────────────────────
+  // Same universal pipeline as Rust handler: detect patterns from R5_patterns
+  // schemas, compute containers for ALL 4 blocks uniformly.
+  // Go currently has emit-only schemas (no detect) — the loader gracefully
+  // returns empty detectors, so concept checks produce no results until
+  // Go detect patterns are added (Phase 0).
+  const conceptDetectors = await loadConceptDetectors("go");
+
+  // METADATA — all 6 sections are ALL_DENIED
+  const metadataLines = getBlockLines(ctx.lines, ctx.blocks, "METADATA");
+  const metadataConceptContainers = buildConceptContainers(
+    "metadata", ctx.filePath, metadataLines, [], conceptDetectors,
+  );
+
+  // SETUP — 15 sections with compiled SubsectionDef[]
+  const setupLines = getBlockLines(ctx.lines, ctx.blocks, "SETUP");
+  const setupRanges = _getSubsectionRanges(setupLines, SETUP_SUBSECTIONS);
+  const setupConceptContainers = buildConceptContainers(
+    "setup", ctx.filePath, setupLines, setupRanges, conceptDetectors,
+  );
+
+  // BODY — 13 sections with compiled SubsectionDef[] (universal detection)
+  const bodyLines = getBlockLines(ctx.lines, ctx.blocks, "BODY");
+  const bodyRanges = _getSubsectionRanges(bodyLines, _goRules!.bodySubsectionDefs);
+  const bodyConceptContainers = buildConceptContainers(
+    "body", ctx.filePath, bodyLines, bodyRanges, conceptDetectors,
+  );
+
+  // CLOSING — 8 sections (Cv/Ce/Cc code zones + X1-X5 doc zones)
+  const closingLines = getBlockLines(ctx.lines, ctx.blocks, "CLOSING");
+  const closingRanges = _getSubsectionRanges(closingLines, _goRules!.closingSubsectionDefs);
+  const closingConceptContainers = buildConceptContainers(
+    "closing", ctx.filePath, closingLines, closingRanges, conceptDetectors,
+  );
+
+  const chain: BlockLintChain = {
+    // ── Pre-gate: WHOLE FILE (Layer 0 / R[50]) ──────────────────────
+    // Does this file have OmniCode markers? Are all 4 blocks present
+    // and ordered? Do block separators follow spec? Template vs derived?
+    pregate: [
+      () => checkDirectives(ctx),
+      () => checkBlockStructure(ctx),
+      () => checkSeparatorConsistency(ctx),
+      () => checkTemplateVsDerived(ctx),
+    ],
+
+    blocks: [
+      // ── METADATA block ──────────────────────────────────────────
+      {
+        block: "metadata",
+        structure: [
+          () => checkPragmaMetadata(ctx),
+          () => checkDocComments(ctx),
+          () => checkCommentMetadata(ctx),
+        ],
+        crossContainer: [
+          () => checkIdentityRegistration(ctx),
+          () => checkDirectiveFormat(ctx),
+        ],
+        containers: metadataConceptContainers,
+        content: [
+          () => contentExp ? _sharedCheckMetadataContent(ctx, contentExp) : [],
+        ],
+      },
+      // ── SETUP block ─────────────────────────────────────────────
+      {
+        block: "setup",
+        structure: [
+          () => checkPackageAndImports(ctx),
+          () => checkSetupSubsectionOrder(ctx),
+          () => checkRequiredSetupSubsections(ctx),
+        ],
+        crossContainer: [
+          () => checkSetupHeaderDoc(ctx),
+          () => checkContentPlacement(ctx),
+          () => checkScalingSignals(ctx),
+        ],
+        containers: setupConceptContainers,
+        content: [
+          () => contentExp && struct
+            ? _sharedCheckSetupContent(ctx, contentExp, struct.SETUP.required, struct.SETUP.reserved)
+            : [],
+        ],
+      },
+      // ── BODY block ──────────────────────────────────────────────
+      {
+        block: "body",
+        structure: [
+          () => checkBodySubsectionOrder(ctx),
+          () => checkRequiredBodySubsections(ctx),
+        ],
+        crossContainer: [
+          () => checkBodySubtypeContent(ctx),
+          () => checkSubtypeEmphasis(ctx),
+        ],
+        containers: bodyConceptContainers,
+        content: [
+          () => contentExp && struct
+            ? _sharedCheckBodyContent(ctx, contentExp, struct.BODY.required, struct.BODY.reserved)
+            : [],
+        ],
+      },
+      // ── CLOSING block ───────────────────────────────────────────
+      {
+        block: "closing",
+        structure: [
+          () => checkClosingZoneOrder(ctx, _goRules!.closingData),
+          () => checkClosingRequiredZones(ctx, _goRules!.closingData),
+        ],
+        crossContainer: [
+          () => checkClosingContentPlacement(ctx),
+          () => checkClosingX6TemplateOnly(ctx, _goRules!.closingData),
+          () => checkClosingDocFieldContent(ctx, _goRules!.closingData),
+          () => checkClosingZoneContent(ctx, _goRules!.closingData),
+        ],
+        containers: closingConceptContainers,
+        content: [
+          () => contentExp && struct
+            ? _sharedCheckClosingContent(ctx, contentExp, struct.CLOSING.required, struct.CLOSING.reserved)
+            : [],
+        ],
+      },
+    ],
+  };
+
+  const results = await runLintGrid(chain);
+
+  // Trace: emit each result if --trace is on
+  if (isTrace()) {
+    for (const r of results) {
+      traceResult(r);
+    }
+  }
+
+  traceExit("lintGoFile", results.length);
+  return results;
 }
 
 // ---------------------------------------------------------------------------
 // Transformer helpers — block range detection, content moves
 // ---------------------------------------------------------------------------
 
-// BlockRange + findBlockRange — imported from ./shared/mod.ts
+// BlockRange + findBlockRange — imported from ../shared/mod.ts
 
 /**
  * Find Test functions (func TestXxx(*testing.T)) in a line range.
@@ -1623,107 +1899,6 @@ function findMainFuncInRange(
   return null;
 }
 
-/**
- * Parse CLOSING content lines into zones, then return them in canonical order
- * if reordering is needed. Returns null if already in correct order.
- *
- * Canonical order: code zones (Cv, Ce, Cc) then documentation (X1-X6).
- * Within each tier, canonical order applies.
- */
-function reorderClosingZones(
-  closingContent: string[],
-  schemaZones: ReadonlyArray<{ tag: string; kind: "code" | "doc"; pattern: RegExp }>,
-): string[] | null {
-  interface ZoneChunk {
-    tag: string;
-    kind: "code" | "doc";
-    lines: string[];
-    canonicalIdx: number;
-  }
-
-  // Canonical order derived from schema zone ordering
-  const canonicalOrder = schemaZones.map((z) => z.tag);
-
-  const zones: ZoneChunk[] = [];
-  let preambleLines: string[] = [];
-  let currentZone: ZoneChunk | null = null;
-
-  for (let i = 0; i < closingContent.length; i++) {
-    const trimmed = closingContent[i]!.trim();
-
-    let matchedZone: { tag: string; kind: "code" | "doc" } | null = null;
-    for (const zone of schemaZones) {
-      if (zone.pattern.test(trimmed)) {
-        matchedZone = { tag: zone.tag, kind: zone.kind };
-        break;
-      }
-    }
-
-    if (matchedZone) {
-      if (currentZone) {
-        zones.push(currentZone);
-      }
-
-      const newZoneLines: string[] = [];
-
-      // Grab the separator line that precedes this zone header
-      if (i > 0 && /^\/\/\s*[─=\-]{10,}\s*$/.test(closingContent[i - 1]!.trim())) {
-        if (currentZone && currentZone.lines.length > 0) {
-          newZoneLines.push(currentZone.lines.pop()!);
-        } else if (preambleLines.length > 0) {
-          newZoneLines.push(preambleLines.pop()!);
-        }
-        // Also grab the blank line before the separator
-        if (currentZone && currentZone.lines.length > 0 &&
-            currentZone.lines[currentZone.lines.length - 1]!.trim() === "") {
-          newZoneLines.unshift(currentZone.lines.pop()!);
-        } else if (!currentZone && preambleLines.length > 0 &&
-                   preambleLines[preambleLines.length - 1]!.trim() === "") {
-          newZoneLines.unshift(preambleLines.pop()!);
-        }
-      }
-
-      newZoneLines.push(closingContent[i]!);
-
-      currentZone = {
-        tag: matchedZone.tag,
-        kind: matchedZone.kind,
-        lines: newZoneLines,
-        canonicalIdx: canonicalOrder.indexOf(matchedZone.tag),
-      };
-    } else if (currentZone) {
-      currentZone.lines.push(closingContent[i]!);
-    } else {
-      preambleLines.push(closingContent[i]!);
-    }
-  }
-
-  if (currentZone) {
-    zones.push(currentZone);
-  }
-
-  if (zones.length < 2) return null;
-
-  let inOrder = true;
-  for (let i = 1; i < zones.length; i++) {
-    if (zones[i]!.canonicalIdx < zones[i - 1]!.canonicalIdx) {
-      inOrder = false;
-      break;
-    }
-  }
-
-  if (inOrder) return null;
-
-  zones.sort((a, b) => a.canonicalIdx - b.canonicalIdx);
-
-  const result: string[] = [...preambleLines];
-  for (const zone of zones) {
-    result.push(...zone.lines);
-  }
-
-  return result;
-}
-
 // ---------------------------------------------------------------------------
 // Transformer helpers — identity field scaffolding
 // ---------------------------------------------------------------------------
@@ -1772,16 +1947,21 @@ function findVarClosingLine(lines: string[], varName: string): number {
 /**
  * Transform a Go file to fix structural issues.
  *
- * Capabilities:
+ * Schema-driven pipeline — shared engine + Go-specific passes.
+ *
+ * Universal passes (from shared transform engine):
  *   1. Fix block separator widths (= → 76)
  *   2. Fix Unicode subsection separator widths (─ → 74)
  *   3. Convert ASCII dash subsection separators (----) to Unicode (────)
  *   4. Normalize subsection separator comment prefix to standard `// `
+ *
+ * Go-specific passes:
  *   5. Add //go:build ignore to template files
  *   6. Move test functions from BODY to CLOSING Cv zone
  *   7. Move func main() from BODY to CLOSING Ce zone
  *   8. Reorder CLOSING zones to canonical order (Cv → Ce → Cc → X1-X6)
  *   9. Scaffold missing identity fields in Pragma/Metadata vars
+ *  10. Scaffold missing SETUP subsection headers (--extensions)
  *
  * Does NOT inject missing block boundaries (too risky for arbitrary positions).
  * Lint first, fix structure manually, then transform for cleanup.
@@ -1791,397 +1971,241 @@ async function transformGoFile(
   opts: TransformOptions,
 ): Promise<LintResult[]> {
   await ensureGoRules();
-  const { dryRun, extensions } = opts;
-  const results: LintResult[] = [];
 
-  let text: string;
-  try {
-    text = await Deno.readTextFile(filePath);
-  } catch (e) {
-    return [error(filePath, "io/read", `Cannot read file: ${e}`)];
-  }
+  // Detect subtype from pragma for form-aware transforms
+  const fileText = await Deno.readTextFile(filePath);
+  const pragmaLine = fileText.split("\n").find((l: string) =>
+    /^\/\/\s+#!omni\b/.test(l.trim()) || /^\/\/omni:code\b/.test(l.trim()));
+  const pragmaArgs = pragmaLine
+    ? pragmaLine.replace(/^.*#!omni\s+/, "").trim().split(/\s+/)
+        .flatMap((a: string) => a.replace(/^-+/, "").split(",")).filter(Boolean)
+    : [];
+  const detectedSubtype = pragmaArgs.find(
+    (a: string) => a in (_goRules?.subtypeDefinitions ?? {}),
+  ) ?? "bare-bone";
+  const form = FORM_REGISTRY[detectedSubtype];
+  const setupFormStatus = form?.sections?.["setup"] ?? {};
 
-  const lines = text.split("\n");
-  let modified = false;
-  let wouldModify = false;
+  // --- Go-specific passes ---
 
-  // --- Transform 1: Fix block separator widths (= chars) ---
-  for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i]!.trim();
-    const eqMatch = trimmed.match(/^(\/\/\s+)(={4,})(\s*)$/);
-    if (eqMatch && eqMatch[2]!.length !== BLOCK_SEPARATOR_WIDTH) {
-      const newLine = `${eqMatch[1]}${"=".repeat(BLOCK_SEPARATOR_WIDTH)}`;
-      if (dryRun) {
-        wouldModify = true;
-        results.push(info(filePath, "transform/eq-width",
-          `Line ${i + 1}: would fix block separator ${eqMatch[2]!.length} → ${BLOCK_SEPARATOR_WIDTH} chars`));
-      } else {
-        lines[i] = newLine;
-        modified = true;
-        results.push(info(filePath, "transform/eq-width",
-          `Line ${i + 1}: fixed block separator ${eqMatch[2]!.length} → ${BLOCK_SEPARATOR_WIDTH} chars`));
-      }
-    }
-  }
+  // 0. Structural scaffold — DAR Recover step
+  // When a file has a pragma but NO block boundaries, generate full 4-block.
+  // With --force: strip existing blocks first, then re-scaffold.
+  // Runs BEFORE universal passes so separator fixes apply to scaffolded output.
+  const goStructuralScaffoldPass: TransformPass = {
+    name: "go-structural-scaffold",
+    async apply(ctx: TransformContext): Promise<void> {
+      const hasBlocks = findBlocks(ctx.lines).length > 0;
+      const pragmaLine = ctx.lines.find((l: string) => {
+        const t = l.trim();
+        return /^\s*\/\/\s+#!omni\b/.test(t) || /^\/\/omni:code\b/.test(t);
+      });
 
-  // --- Transform 2: Fix Unicode subsection separator widths (─ chars) ---
-  for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i]!.trim();
-    const boxMatch = trimmed.match(/^(\/\/\s+)(─{4,})(\s*)$/);
-    if (boxMatch && boxMatch[2]!.length !== SUBSECTION_SEPARATOR_WIDTH) {
-      const newLine = `${boxMatch[1]}${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`;
-      if (dryRun) {
-        wouldModify = true;
-        results.push(info(filePath, "transform/box-width",
-          `Line ${i + 1}: would fix subsection separator ${boxMatch[2]!.length} → ${SUBSECTION_SEPARATOR_WIDTH} ─ chars`));
-      } else {
-        lines[i] = newLine;
-        modified = true;
-        results.push(info(filePath, "transform/box-width",
-          `Line ${i + 1}: fixed subsection separator ${boxMatch[2]!.length} → ${SUBSECTION_SEPARATOR_WIDTH} ─ chars`));
-      }
-    }
-  }
-
-  // --- Transform 3: Convert ASCII dash separators to Unicode ─ ---
-  for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i]!.trim();
-    const dashMatch = trimmed.match(/^(\/\/\s*)(-{4,})(\s*)$/);
-    if (dashMatch) {
-      const newLine = `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`;
-      if (dryRun) {
-        wouldModify = true;
-        results.push(info(filePath, "transform/dash-to-unicode",
-          `Line ${i + 1}: would convert ${dashMatch[2]!.length} ASCII dashes → ${SUBSECTION_SEPARATOR_WIDTH} Unicode ─`));
-      } else {
-        lines[i] = newLine;
-        modified = true;
-        results.push(info(filePath, "transform/dash-to-unicode",
-          `Line ${i + 1}: converted ${dashMatch[2]!.length} ASCII dashes → ${SUBSECTION_SEPARATOR_WIDTH} Unicode ─`));
-      }
-    }
-  }
-
-  // --- Transform 4: Normalize subsection separator prefix to `// ` ---
-  for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i]!.trim();
-    const prefixMatch = trimmed.match(/^\/\/(\s{0}|\s{2,})(─{4,}|={4,})(\s*)$/);
-    if (prefixMatch) {
-      const newLine = `// ${prefixMatch[2]}`;
-      if (dryRun) {
-        wouldModify = true;
-        results.push(info(filePath, "transform/prefix-normalize",
-          `Line ${i + 1}: would normalize separator prefix to standard '// '`));
-      } else if (lines[i]!.trim() !== newLine) {
-        lines[i] = newLine;
-        modified = true;
-        const sepChar = prefixMatch[2]!.charAt(0);
-        results.push(info(filePath, "transform/prefix-normalize",
-          `Line ${i + 1}: normalized separator prefix to standard '// ' (${sepChar} separator)`));
-      }
-    }
-  }
-
-  // --- Transform 5: Add //go:build ignore to template files ---
-  const isTemplate = lines.some((l: string) => /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
-  const hasBuildIgnore = lines.some((l: string) => l.trim() === "//go:build ignore");
-
-  if (isTemplate && !hasBuildIgnore) {
-    if (dryRun) {
-      wouldModify = true;
-      results.push(info(filePath, "transform/build-ignore",
-        "Would add //go:build ignore at line 1"));
-    } else {
-      lines.unshift("//go:build ignore", "");
-      modified = true;
-      results.push(info(filePath, "transform/build-ignore",
-        "Added //go:build ignore at line 1"));
-    }
-  }
-
-  // --- Transform 6: Move test functions from BODY to CLOSING Cv ---
-  // Loop: Go test functions are individual (unlike Rust's #[cfg(test)] module),
-  // so we must find-and-move until BODY has no test functions left.
-  {
-    let moveCount = 0;
-    const allExtracted: string[][] = [];
-
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const bodyBlock = findBlockRange(lines, "BODY");
-      const closingBlock = findBlockRange(lines, "CLOSING");
-      if (!bodyBlock || !closingBlock) break;
-
-      const testRange = findTestFuncInRange(lines, bodyBlock.contentStart, bodyBlock.contentEnd);
-      if (!testRange) break;
-
-      let extractStart = testRange.start;
-      while (extractStart > bodyBlock.contentStart &&
-             (lines[extractStart - 1]!.trim() === "" ||
-              lines[extractStart - 1]!.trim().startsWith("// WRONG"))) {
-        extractStart--;
+      // --force: extract closing values, strip blocks, re-scaffold
+      let preservedClosing: ClosingFieldValues | undefined;
+      if (ctx.opts.force && pragmaLine && hasBlocks) {
+        preservedClosing = extractClosingFields(ctx.lines);
+        ctx.lines = stripBlockStructure(ctx.lines, goPreserveLine);
+        ctx.results.push(info(ctx.filePath, "transform/force-strip",
+          "Stripped existing block structure for re-scaffold (--force)"));
       }
 
-      const extractedLines = lines.slice(extractStart, testRange.end + 1);
+      const hasBlocksNow = findBlocks(ctx.lines).length > 0;
+      if (pragmaLine && !hasBlocksNow) {
+        // Parse pragma args → subtype
+        const pragmaArgsLocal = pragmaLine.replace(/^.*#!omni\s+/, "").trim().split(/\s+/)
+          .flatMap((a: string) => a.replace(/^-+/, "").split(",")).filter(Boolean);
+        const subtypeLocal = pragmaArgsLocal.find(
+          (a: string) => a in (_goRules?.subtypeDefinitions ?? {}),
+        );
 
-      if (dryRun) {
-        wouldModify = true;
-        results.push(info(filePath, "transform/move-tests",
-          `Lines ${extractStart + 1}–${testRange.end + 1}: would move test function from BODY to CLOSING Cv zone`));
-        break; // Dry-run: report first, don't loop (no mutation)
-      }
+        // Load form constraints — composition > form schema > registry fallback
+        const formName = subtypeLocal || "bare-bone";
+        const formConstraints =
+          await loadCompositionFormConstraints("go", formName)
+          ?? await loadFormConstraints("go", formName)
+          ?? buildFormConstraintsFromRegistry(formName);
 
-      // Remove from BODY (including trailing blank lines)
-      let removeEnd = testRange.end + 1;
-      while (removeEnd < bodyBlock.contentEnd && lines[removeEnd]!.trim() === "") {
-        removeEnd++;
-      }
-      lines.splice(extractStart, removeEnd - extractStart);
-      allExtracted.push(extractedLines);
-      moveCount++;
-    }
+        // Build adapter and delegate to universal scaffold pipeline
+        const adapter = buildGoAdapter();
+        const fillContent = _goRules?.fillContent;
+        const scaffoldOpts: ScaffoldOptions = {
+          stepsDir: ctx.opts.steps ? ctx.filePath + ".steps" : undefined,
+          dryRun: ctx.opts.dryRun,
+        };
 
-    // Insert all extracted tests into CLOSING Cv zone at once
-    if (!dryRun && allExtracted.length > 0) {
-      const closingBlock = findBlockRange(lines, "CLOSING");
-      if (closingBlock) {
-        const cvZone = [
-          "",
-          `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
-          "// Cv — Closing Validation",
-          `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
-          "",
-        ];
-        for (const extracted of allExtracted) {
-          cvZone.push(...extracted, "");
-        }
+        const scaffoldResult = await structuralScaffold(
+          adapter, ctx.filePath, ctx.lines, formConstraints,
+          subtypeLocal, fillContent, preservedClosing, scaffoldOpts,
+        );
 
-        lines.splice(closingBlock.contentStart, 0, ...cvZone);
-        modified = true;
-        results.push(info(filePath, "transform/move-tests",
-          `Moved ${moveCount} test function(s) from BODY to CLOSING Cv zone`));
-      }
-    }
-  }
-
-  // --- Transform 7: Move func main() from BODY to CLOSING Ce ---
-  {
-    const bodyBlock = findBlockRange(lines, "BODY");
-    const closingBlock = findBlockRange(lines, "CLOSING");
-
-    if (bodyBlock && closingBlock) {
-      const mainRange = findMainFuncInRange(lines, bodyBlock.contentStart, bodyBlock.contentEnd);
-      if (mainRange) {
-        let extractStart = mainRange.start;
-        while (extractStart > bodyBlock.contentStart &&
-               (lines[extractStart - 1]!.trim() === "" ||
-                lines[extractStart - 1]!.trim().startsWith("// WRONG"))) {
-          extractStart--;
-        }
-
-        const extractedLines = lines.slice(extractStart, mainRange.end + 1);
-
-        const ceZone = [
-          "",
-          `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
-          "// Ce — Closing Execution",
-          `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
-          "",
-          ...extractedLines,
-        ];
-
-        const insertIdx = closingBlock.contentStart;
-
-        if (dryRun) {
-          wouldModify = true;
-          results.push(info(filePath, "transform/move-main",
-            `Lines ${extractStart + 1}–${mainRange.end + 1}: would move func main() from BODY to CLOSING Ce zone`));
-        } else {
-          let removeEnd = mainRange.end + 1;
-          while (removeEnd < bodyBlock.contentEnd && lines[removeEnd]!.trim() === "") {
-            removeEnd++;
+        if (scaffoldResult) {
+          if (ctx.opts.dryRun) {
+            ctx.wouldModify = true;
+          } else {
+            ctx.lines = scaffoldResult.lines;
+            ctx.modified = true;
           }
-          lines.splice(extractStart, removeEnd - extractStart);
-          modified = true;
-
-          const shift = removeEnd - extractStart;
-          const newInsertIdx = insertIdx - shift;
-          lines.splice(newInsertIdx, 0, ...ceZone);
-
-          results.push(info(filePath, "transform/move-main",
-            `Moved func main() from BODY to CLOSING Ce zone (${extractedLines.length} lines)`));
+          ctx.results.push(...scaffoldResult.results);
         }
       }
-    }
-  }
+    },
+  };
 
-  // --- Transform 8: Reorder CLOSING zones ---
-  {
-    const closingBlock = findBlockRange(lines, "CLOSING");
-    if (closingBlock) {
-      const reordered = reorderClosingZones(
-        lines.slice(closingBlock.contentStart, closingBlock.contentEnd),
-        _goRules!.closingData.zones,
-      );
-      if (reordered) {
-        if (dryRun) {
-          wouldModify = true;
-          results.push(info(filePath, "transform/reorder-closing",
-            "CLOSING zones would be reordered to canonical order (Cv → Ce → Cc → X1-X6)"));
+  // 5. Add //go:build ignore to template files
+  const goBuildIgnorePass: TransformPass = {
+    name: "go-build-ignore",
+    apply(ctx: TransformContext): void {
+      const isTemplate = ctx.lines.some((l: string) =>
+        /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
+      const hasBuildIgnore = ctx.lines.some((l: string) =>
+        l.trim() === "//go:build ignore");
+
+      if (isTemplate && !hasBuildIgnore) {
+        if (ctx.opts.dryRun) {
+          ctx.wouldModify = true;
+          ctx.results.push(info(ctx.filePath, "transform/build-ignore",
+            "Would add //go:build ignore at line 1"));
         } else {
-          lines.splice(
-            closingBlock.contentStart,
-            closingBlock.contentEnd - closingBlock.contentStart,
-            ...reordered,
-          );
-          modified = true;
-          results.push(info(filePath, "transform/reorder-closing",
-            "Reordered CLOSING zones to canonical order (Cv → Ce → Cc → X1-X6)"));
+          ctx.lines.unshift("//go:build ignore", "");
+          ctx.modified = true;
+          ctx.results.push(info(ctx.filePath, "transform/build-ignore",
+            "Added //go:build ignore at line 1"));
         }
       }
-    }
-  }
+    },
+  };
 
-  // --- Transform 9: Scaffold missing identity fields ---
-  //
-  // Pipeline: parse existing fields → compare against requirements → insert missing.
-  // Required fields (warn-level) always scaffold. Defined fields (info-level)
-  // only scaffold with --extensions. Same k-factor pattern as TOML.
-  //
-  // Process Metadata BEFORE Pragma (bottom-up) so line indices stay valid.
-  if (!isTemplate) {
-    for (const varConfig of [
-      { varName: "Metadata", reqs: METADATA_FIELD_REQUIREMENTS },
-      { varName: "Pragma", reqs: PRAGMA_FIELD_REQUIREMENTS },
-    ] as const) {
-      const fields = parseSliceFields(lines, varConfig.varName);
-      if (fields.length === 0) continue;
+  // 6. Move test functions from BODY to CLOSING Cv (loop — multiple test funcs)
+  const goMoveTestsPass = createCodeMovePass({
+    description: "test function",
+    detector: findTestFuncInRange,
+    sourceBlock: "BODY",
+    targetBlock: "CLOSING",
+    zoneTag: "Cv",
+    zoneLabel: "Closing Validation",
+    loop: true,
+    resultTag: "transform/move-tests",
+  });
 
-      const presentFields = new Map<string, Set<string>>();
-      for (const f of fields) {
-        if (!presentFields.has(f.section)) presentFields.set(f.section, new Set());
-        presentFields.get(f.section)!.add(f.field.split(".")[0]!);
-      }
+  // 7. Move func main() from BODY to CLOSING Ce
+  const goMoveMainPass = createCodeMovePass({
+    description: "func main()",
+    detector: findMainFuncInRange,
+    sourceBlock: "BODY",
+    targetBlock: "CLOSING",
+    zoneTag: "Ce",
+    zoneLabel: "Closing Execution",
+    loop: false,
+    resultTag: "transform/move-main",
+  });
 
-      const snippets: string[] = [];
-      for (const [section, req] of Object.entries(varConfig.reqs)) {
-        const sectionSet = presentFields.get(section);
-        for (const field of req.required) {
-          if (!sectionSet?.has(field)) {
-            snippets.push(`\t{"${section}.${field}", ""},`);
-          }
+  // 9. Scaffold missing identity fields in Pragma/Metadata vars
+  const goIdentityScaffoldPass: TransformPass = {
+    name: "go-identity-scaffold",
+    apply(ctx: TransformContext): void {
+      // Skip templates — they already have placeholder fields
+      const isTemplate = ctx.lines.some((l: string) =>
+        /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
+      if (isTemplate) return;
+
+      // Process Metadata BEFORE Pragma (bottom-up) so line indices stay valid
+      for (const varConfig of [
+        { varName: "Metadata", reqs: METADATA_FIELD_REQUIREMENTS },
+        { varName: "Pragma", reqs: PRAGMA_FIELD_REQUIREMENTS },
+      ] as const) {
+        const fields = parseSliceFields(ctx.lines, varConfig.varName);
+        if (fields.length === 0) continue;
+
+        const presentFields = new Map<string, Set<string>>();
+        for (const f of fields) {
+          if (!presentFields.has(f.section)) presentFields.set(f.section, new Set());
+          presentFields.get(f.section)!.add(f.field.split(".")[0]!);
         }
-        if (extensions) {
-          for (const field of req.defined) {
+
+        const scaffoldItems: Array<{ snippet: string; field: string; level: "required" | "defined" }> = [];
+        for (const [section, req] of Object.entries(varConfig.reqs)) {
+          const sectionSet = presentFields.get(section);
+          for (const field of req.required) {
             if (!sectionSet?.has(field)) {
-              snippets.push(`\t{"${section}.${field}", ""},`);
+              scaffoldItems.push({
+                snippet: `\t{"${section}.${field}", ""},`,
+                field: `${section}.${field}`,
+                level: "required",
+              });
+            }
+          }
+          if (ctx.opts.extensions) {
+            for (const field of req.defined) {
+              if (!sectionSet?.has(field)) {
+                scaffoldItems.push({
+                  snippet: `\t{"${section}.${field}", ""},`,
+                  field: `${section}.${field}`,
+                  level: "defined",
+                });
+              }
             }
           }
         }
-      }
 
-      if (snippets.length === 0) continue;
+        if (scaffoldItems.length === 0) continue;
 
-      const closingIdx = findVarClosingLine(lines, varConfig.varName);
-      if (closingIdx < 0) continue;
+        const closingIdx = findVarClosingLine(ctx.lines, varConfig.varName);
+        if (closingIdx < 0) continue;
 
-      if (dryRun) {
-        wouldModify = true;
-        for (const s of snippets) {
-          results.push(info(filePath, "transform/identity-scaffold",
-            `Would add to ${varConfig.varName}: ${s.trim()}`));
-        }
-      } else {
-        lines.splice(closingIdx, 0, ...snippets);
-        modified = true;
-        results.push(info(filePath, "transform/identity-scaffold",
-          `Added ${snippets.length} field(s) to ${varConfig.varName}`));
-      }
-    }
-  }
-
-  // --- Transform 10: Scaffold missing SETUP subsection headers ---
-  //
-  // When content exists in SETUP without a subsection header above it,
-  // scaffold the appropriate header. Only runs with --extensions (k-factor:
-  // errors only → scaffold toward fullness).
-  //
-  // Strategy: Work bottom-up within SETUP to keep line indices stable.
-  // Find declarations before any subsection header, classify them, and
-  // insert the expected subsection header.
-  //
-  if (extensions) {
-    const blocks = findBlocks(lines);
-    const setupBlock = blocks.find((b) => b.name === "SETUP");
-    if (setupBlock) {
-      const setupRange = findBlockRange(lines, "SETUP");
-      if (setupRange) {
-        const setupLines = lines.slice(setupRange.contentStart, setupRange.contentEnd);
-        const subsections = getSubsectionRanges(setupLines);
-
-        // Find declarations that appear before the first subsection header
-        // (orphaned content with no subsection container).
-        const firstSubIdx = subsections.length > 0 ? subsections[0]!.startIdx : setupLines.length;
-        const orphanedKinds = new Map<string, number>(); // subsection tag → first line index
-
-        for (let i = 0; i < firstSubIdx; i++) {
-          const trimmed = setupLines[i]!.trim();
-          if (trimmed === "" || trimmed.startsWith("//")) continue;
-          const kind = classifyGoLine(trimmed);
-          const targetSub = SUBSECTION_PLACEMENT[kind];
-          if (targetSub && !orphanedKinds.has(targetSub)) {
-            orphanedKinds.set(targetSub, i);
+        if (ctx.opts.dryRun) {
+          ctx.wouldModify = true;
+          for (const item of scaffoldItems) {
+            ctx.results.push(info(ctx.filePath, "transform/identity-scaffold",
+              `Would add ${item.field} to ${varConfig.varName} (${item.level}, per field registry)`));
           }
-        }
-
-        if (orphanedKinds.size > 0) {
-          // Sort by expected canonical order so we insert in sequence
-          const canonicalOrder = SETUP_SUBSECTIONS.map((s) => s.tag);
-          const sorted = [...orphanedKinds.entries()]
-            .sort((a, b) => canonicalOrder.indexOf(a[0]) - canonicalOrder.indexOf(b[0]));
-
-          // Insert headers bottom-up to keep indices stable
-          let insertCount = 0;
-          for (let si = sorted.length - 1; si >= 0; si--) {
-            const [tag] = sorted[si]!;
-            const num = canonicalOrder.indexOf(tag) + 1;
-            const header = [
-              "",
-              `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
-              `// ${num}. ${tag}`,
-              `// ${"─".repeat(SUBSECTION_SEPARATOR_WIDTH)}`,
-              "",
-            ];
-            const absoluteIdx = setupRange.contentStart + sorted[si]![1];
-
-            if (dryRun) {
-              wouldModify = true;
-              results.push(info(filePath, "transform/reserve-scaffold",
-                `Would scaffold "${tag}" subsection header before line ${absoluteIdx + 1}`));
-            } else {
-              lines.splice(absoluteIdx, 0, ...header);
-              modified = true;
-              insertCount++;
-            }
-          }
-          if (!dryRun && insertCount > 0) {
-            results.push(info(filePath, "transform/reserve-scaffold",
-              `Scaffolded ${insertCount} missing SETUP subsection header(s)`));
-          }
+        } else {
+          ctx.lines.splice(closingIdx, 0, ...scaffoldItems.map((i) => i.snippet));
+          ctx.modified = true;
+          const reqCount = scaffoldItems.filter((i) => i.level === "required").length;
+          const defCount = scaffoldItems.filter((i) => i.level === "defined").length;
+          const parts: string[] = [];
+          if (reqCount > 0) parts.push(`${reqCount} required`);
+          if (defCount > 0) parts.push(`${defCount} defined`);
+          ctx.results.push(info(ctx.filePath, "transform/identity-scaffold",
+            `Added ${scaffoldItems.length} field(s) to ${varConfig.varName} (${parts.join(", ")})`));
         }
       }
-    }
-  }
+    },
+  };
 
-  // --- Write if modified ---
-  if (modified && !dryRun) {
-    await Deno.writeTextFile(filePath, lines.join("\n"));
-    results.push(info(filePath, "transform/written", "File updated"));
-  } else if (!modified && !wouldModify) {
-    results.push(info(filePath, "transform/clean", "No changes needed"));
-  }
+  // 10. Scaffold missing SETUP subsection headers (--extensions only)
+  // Schema-driven: reads subsection defs and placement maps from Code4BlockRules
+  const goSubsectionScaffoldPass = createSubsectionScaffoldPass({
+    block: "SETUP",
+    canonicalOrder: SETUP_SUBSECTIONS.map((s) => s.tag),
+    subsectionDefs: SETUP_SUBSECTIONS,
+    classifyLine: classifyGoLine,
+    kindToSubsection: SUBSECTION_PLACEMENT,
+    formStatus: setupFormStatus,
+  });
 
-  return results;
+  // 11. Reorder SETUP subsections to canonical order (--extensions only)
+  const goSetupReorderPass = createSubsectionReorderPass({
+    block: "SETUP",
+    canonicalOrder: SETUP_SUBSECTIONS.map((s) => s.tag),
+    subsectionDefs: SETUP_SUBSECTIONS,
+  });
+
+  // --- Compose pipeline: structural scaffold + universal + Go-specific ---
+  const allPasses: TransformPass[] = [
+    goStructuralScaffoldPass,   // FIRST — may replace entire file content
+    ...UNIVERSAL_PASSES,
+    goBuildIgnorePass,
+    goMoveTestsPass,
+    goMoveMainPass,
+    reorderClosingZonesPass,    // shared, reads from Code4BlockRules.closingData
+    goIdentityScaffoldPass,
+    goSubsectionScaffoldPass,
+    goSetupReorderPass,         // reorder after scaffold (needs headers to exist)
+  ];
+
+  return runTransformPipeline(filePath, _goRules!, opts, allPasses, lintGoFile);
 }
 
 // ---------------------------------------------------------------------------
@@ -2212,11 +2236,17 @@ async function computeGoHealth(
   const basename = filePath.split("/").pop() ?? "";
   const isDocGo = basename === "doc.go";
   let isTemplate = false;
+  let detectedSubtype: string | undefined;
   try {
     const content = await Deno.readTextFile(filePath);
     const firstLines = content.split("\n").slice(0, 15);
     isTemplate = firstLines.some((l) =>
       /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
+    // Detect subtype from //omni:code directive for per-section content scoring
+    for (const line of firstLines) {
+      const m = line.match(/\/\/omni:code\s+--go\s+-(\S+)/);
+      if (m) { detectedSubtype = m[1]; break; }
+    }
   } catch { /* best-effort — defaults to non-template */ }
 
   // ── Build failure index ────────────────────────────────────────
@@ -2247,17 +2277,11 @@ async function computeGoHealth(
    * Cascade: set aligned actions to neutral (not assessable).
    * Root cause already carries the weight — children don't pile on.
    * The 0 balances things out: one root failure, not 30 cascaded failures.
+   *
+   * Uses shared cascade logic from engine/cascade.ts.
    */
   function cascade(groups: AtomicAction[][], reason: string): void {
-    for (const group of groups) {
-      for (const a of group) {
-        if (a.direction > 0) {
-          (a as { direction: -1 | 0 | 1 }).direction = 0;
-          a.impact = "info";
-          a.reason = reason;
-        }
-      }
-    }
+    cascadeActionGroups(groups, reason, 0);
   }
 
   // ── STRUCTURAL block ──────────────────────────────────────────
@@ -2394,6 +2418,57 @@ async function computeGoHealth(
     closingContentActions.push(...acts("closing/X5-content", "zone-content", "closing"));
   }
 
+  // ── CONTENT EXPECTATIONS (schema-driven content linting) ─────
+  // Layer 2 scoring — the content layer sits on top of the structure layer.
+  // Each block gets its own content-expectations container for proper
+  // traceback: structure tells you the skeleton, content tells you the flesh.
+  //
+  // Per-section atomic scoring:
+  //   Required section present → +1 aligned (no lint result = pass)
+  //   Required section missing → -1 misaligned (lint result = fail)
+  //   Reserved section absent → +1 aligned (reserve omission = correct)
+  //   Reserved section with code → -1 misaligned (reserve violation)
+  //
+  // This gives true 1-point-per-section granularity on the -100/+100 scale.
+  const contentExpActions: AtomicAction[] = [];
+  if (!isTemplate && !isDocGo) {
+    // ── METADATA: per-check atomic (directive + 2 identity sections) ──
+    contentExpActions.push(...acts("content/metadata-check/directive", "content-expectations", "metadata"));
+    contentExpActions.push(...acts("content/metadata-check/Pragma", "content-expectations", "metadata"));
+    contentExpActions.push(...acts("content/metadata-check/Metadata", "content-expectations", "metadata"));
+
+    // ── ALL BLOCKS: per-section atomic from structure schema ──
+    if (detectedSubtype) {
+      const struct = await loadGoStructureSections(detectedSubtype);
+      if (struct) {
+        // SETUP: imports check + per-reserved-section
+        contentExpActions.push(...acts("content/setup-section/Imports", "content-expectations", "setup"));
+        for (const section of struct.SETUP.reserved) {
+          contentExpActions.push(
+            ...acts(`content/setup-reserve/${section}`, "content-expectations", "setup"));
+        }
+
+        // BODY: per-required + per-reserved section
+        for (const section of struct.BODY.required) {
+          contentExpActions.push(
+            ...acts(`content/body-required/${section}`, "content-expectations", "body"));
+        }
+        for (const section of struct.BODY.reserved) {
+          contentExpActions.push(
+            ...acts(`content/body-reserve/${section}`, "content-expectations", "body"));
+        }
+
+        // CLOSING: per-zone (Ce, Cv) + per-reserved zone
+        contentExpActions.push(...acts("content/closing-zone/Ce", "content-expectations", "closing"));
+        contentExpActions.push(...acts("content/closing-zone/Cv", "content-expectations", "closing"));
+        for (const zone of struct.CLOSING.reserved) {
+          contentExpActions.push(
+            ...acts(`content/closing-reserve/${zone}`, "content-expectations", "closing"));
+        }
+      }
+    }
+  }
+
   // ── Scaling signals (spans setup + body) ───────────────────────
   const scalingActions: AtomicAction[] = [];
   if (!isTemplate) {
@@ -2401,31 +2476,66 @@ async function computeGoHealth(
     scalingActions.push(...acts("scaling/body-size", "scaling", "body"));
   }
 
+  // ── TAG LAYERS: stamp pipeline layer on each action group ─────
+  // Layer 0 (R[50]) — Whole file: blocks, separators, Go-specific
+  tagLayer(blockActions, 0);
+  tagLayer(sepActions, 0);
+  tagLayer(goActions, 0);
+
+  // Layer 1 (R[25]) — Structure: directives, identity, ordering
+  tagLayer(directiveActions, 1);
+  tagLayer(identityActions, 1);
+  tagLayer(fieldValueActions, 1);
+  tagLayer(commentActions, 1);
+  tagLayer(templateDerivedActions, 1);
+  tagLayer(setupActions, 1);
+  tagLayer(bodyOrderActions, 1);
+  tagLayer(closingActions, 1);
+
+  // Layer 2 (R[10]) — Container: content placement, zone content
+  tagLayer(setupContentActions, 2);
+  tagLayer(contentActions, 2);
+  tagLayer(bodyContentActions, 2);
+  tagLayer(closingContentActions, 2);
+  tagLayer(scalingActions, 2);
+
+  // Layer 3 (R[5]) — Content: schema-driven expectations
+  tagLayer(contentExpActions, 3);
+
   // ── CASCADE: missing blocks → all children fail ───────────────
   const blockMissing = (name: string) => failuresByRule.has(`block/${name}`);
 
+  // Filter content-expectations actions by block for per-block cascade
+  const contentExpByBlock = (block: string) =>
+    contentExpActions.filter((a) => a.block === block);
+
   if (blockMissing("METADATA")) {
     cascade(
-      [directiveActions, identityActions, fieldValueActions, commentActions, templateDerivedActions],
+      [directiveActions, identityActions, fieldValueActions, commentActions,
+       templateDerivedActions, contentExpByBlock("metadata")],
       "METADATA block missing — all metadata checks fail",
     );
   }
   if (blockMissing("SETUP")) {
     cascade(
       [setupActions, setupContentActions, contentActions,
+       contentExpByBlock("setup"),
        scalingActions.filter((a) => a.check === "scaling/setup-size")],
       "SETUP block missing — all setup checks fail",
     );
   }
   if (blockMissing("BODY")) {
     cascade(
-      [bodyOrderActions, bodyContentActions,
+      [bodyOrderActions, bodyContentActions, contentExpByBlock("body"),
        scalingActions.filter((a) => a.check === "scaling/body-size")],
       "BODY block missing — all body checks fail",
     );
   }
   if (blockMissing("CLOSING")) {
-    cascade([closingActions, closingContentActions], "CLOSING block missing — all closing checks fail");
+    cascade(
+      [closingActions, closingContentActions, contentExpByBlock("closing")],
+      "CLOSING block missing — all closing checks fail",
+    );
   }
 
   // ── SUB-CASCADE: empty identity vars → field + value checks neutral ──
@@ -2508,6 +2618,7 @@ async function computeGoHealth(
     ...contentActions,
     ...bodyOrderActions, ...bodyContentActions,
     ...closingActions, ...closingContentActions,
+    ...contentExpActions,
     ...scalingActions,
   ];
 
@@ -2619,6 +2730,413 @@ export const goAdapter: LanguageAdapter = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// Scaffold Adapter — universal chunker → structural scaffold pipeline
+// ---------------------------------------------------------------------------
+
+/**
+ * Chunking classifier for Go — finer-grained than classifyGoLine.
+ *
+ * Distinguishes single-line declarations from block forms:
+ *   - `import "path"` (import_decl) vs `import (` (import_block)
+ *   - `const X = 1` (const_decl) vs `const (` (const_block)
+ *   - `var X int` (var_decl) vs `var (` (var_block)
+ *   - `type Foo int` (type_alias) vs `type Foo struct {` (type_block)
+ *
+ * Block forms go into balancedKinds; single-line forms are either
+ * import-grouped or treated as individual chunks.
+ */
+function classifyGoChunkLine(trimmed: string): string {
+  if (trimmed === "") return "blank";
+  if (trimmed.startsWith("//")) return "comment";
+  if (trimmed.startsWith("package ")) return "package_decl";
+
+  // Import: single-line vs block
+  if (trimmed === "import (" || /^import\s+\(/.test(trimmed)) return "import_block";
+  if (trimmed.startsWith("import ")) return "import_decl";
+
+  // Functions: always balanced (have { eventually)
+  if (/^func\s+init\s*\(/.test(trimmed)) return "init_func";
+  if (/^func\s+\([^)]+\)\s+\w+/.test(trimmed)) return "method_decl";
+  if (/^func\s+\w+/.test(trimmed)) return "func_decl";
+
+  // Types: struct/interface → balanced block; simple alias → single-line
+  if (/^type\s+\w/.test(trimmed) || trimmed === "type (") {
+    if (trimmed === "type (" || /\b(struct|interface)\b/.test(trimmed)) return "type_block";
+    return "type_alias";
+  }
+
+  // Const/var: block vs single
+  if (trimmed === "const (" || /^const\s+\(/.test(trimmed)) return "const_block";
+  if (/^const\s+\w/.test(trimmed)) return "const_decl";
+  if (trimmed === "var (" || /^var\s+\(/.test(trimmed)) return "var_block";
+  if (/^var\s+\w/.test(trimmed)) return "var_decl";
+
+  return "other";
+}
+
+/**
+ * Go-specific chunker configuration.
+ *
+ * Key Go differences from Rust:
+ *   - No `//!` file docs (fileDoc returns false)
+ *   - No `///` item docs (itemDoc returns false — Go uses regular `//` comments)
+ *   - No `#[attr]` attributes (attribute returns false)
+ *   - No `#[cfg(test)]` test blocks (testBlock returns false)
+ *   - singleLineIfNoDelimiter = true (Go has no semicolons)
+ *   - Both `{}` and `()` balanced blocks
+ */
+const goChunkerConfig: ChunkerConfig = {
+  classifyLine: classifyGoChunkLine,
+
+  patterns: {
+    pragma: isOmniPragma,
+    fileDoc: () => false,        // Go has no file-level doc syntax
+    separator: isSeparatorBanner,
+    comment: isRegularComment,
+    itemDoc: () => false,        // Go doc comments are just regular // comments
+    attribute: () => false,      // Go has no attributes
+    testBlock: () => false,      // Go tests are individual funcs, not blocks
+  },
+
+  balancedKinds: new Set([
+    "func_decl", "method_decl", "init_func",  // always have {}
+    "import_block", "const_block", "var_block", // have ()
+    "type_block",                               // struct/interface with {}
+  ]),
+
+  importKinds: new Set(["import_decl"]),  // single-line `import "path"`
+
+  kindToCategory: (kind: string, trimmed: string): string => {
+    switch (kind) {
+      case "func_decl":
+        return /^func\s+main\s*\(/.test(trimmed) ? "main_fn" : "fn_decl";
+      case "method_decl":    return "fn_decl";
+      case "init_func":      return "fn_decl";
+      case "import_block":   return "import";
+      case "import_decl":    return "import";
+      case "const_block":    return "const";
+      case "const_decl":     return "const";
+      case "var_block":      return "var";
+      case "var_decl":       return "var";
+      case "type_block":     return "type_def";
+      case "type_alias":     return "type_def";
+      case "package_decl":   return "package";
+      default:               return "other";
+    }
+  },
+
+  singleLineIfNoDelimiter: true,
+};
+
+/** Parse Go source into semantic chunks using the universal engine. */
+function parseGoCodeChunks(lines: string[]): GenericChunk[] {
+  return parseChunks(lines, goChunkerConfig);
+}
+
+/**
+ * Map a Go chunk to its target block.
+ * Uses the same logic as BLOCK_PLACEMENT from the schema.
+ */
+function goChunkToBlock(chunk: GenericChunk): BlockTarget {
+  switch (chunk.category) {
+    case "pragma":
+    case "doc_comment":
+    case "package":
+      return "METADATA";
+    case "import":
+    case "const":
+    case "var":
+    case "type_def":
+      return "SETUP";
+    case "fn_decl":
+      return "BODY";
+    case "main_fn":
+      return "CLOSING";
+    case "separator":
+    case "comment":
+    case "blank":
+    case "other":
+      return "BODY"; // Default: orphaned content → BODY
+  }
+  return "BODY";
+}
+
+/**
+ * Map a SETUP chunk to its subsection tag.
+ * Mirrors SUBSECTION_PLACEMENT from the Go schema.
+ */
+function goChunkToSetupSection(chunk: GenericChunk): string {
+  switch (chunk.category) {
+    case "import":   return "Imports";
+    case "const":    return "Constants";
+    case "var":      return "Variables";
+    case "type_def": return "Types";
+    default:         return "Imports"; // fallback
+  }
+}
+
+/**
+ * Map a BODY chunk to its section tag.
+ * Without AST, simple heuristic — functions → helpers or core logic.
+ */
+function goChunkToBodySection(chunk: GenericChunk): string {
+  // Check if it looks like a helper (unexported, no receiver)
+  const firstLine = chunk.lines[0]?.trim() ?? "";
+  if (/^func\s+[a-z]/.test(firstLine)) return "Helpers";
+  return "CoreLogic";
+}
+
+/**
+ * Extract context from existing Go metadata chunks for METADATA block generation.
+ *
+ * Extracts identity values from pragma directives, doc comments, and package
+ * declarations for populating scaffolded METADATA block content.
+ */
+function extractGoMetadataContext(
+  metadataChunks: GenericChunk[],
+  filePath: string,
+  subtype: string | undefined,
+  allLines?: string[],
+): Record<string, string> {
+  const ctx: Record<string, string> = {};
+
+  // Extract from directives and pragma
+  for (const chunk of metadataChunks) {
+    for (const line of chunk.lines) {
+      const trimmed = line.trim();
+
+      // //omni:key B-...
+      const keyMatch = trimmed.match(/^\/\/omni:key\s+(.+)/);
+      if (keyMatch) ctx["key"] = keyMatch[1]!.trim();
+
+      // //omni:version a-01.00
+      const verMatch = trimmed.match(/^\/\/omni:version\s+(.+)/);
+      if (verMatch) ctx["version"] = verMatch[1]!.trim();
+
+      // package name
+      const pkgMatch = trimmed.match(/^package\s+(\w+)/);
+      if (pkgMatch && !ctx["package"]) ctx["package"] = pkgMatch[1]!;
+    }
+  }
+
+  // Filename from path
+  const pathParts = filePath.replace(/\\/g, "/").split("/");
+  ctx["filename"] = pathParts[pathParts.length - 1] ?? "";
+
+  // Subtype
+  if (subtype) ctx["subtype"] = subtype;
+
+  // I3.path — relative path from repo root
+  const normalized = filePath.replace(/\\/g, "/");
+  const repoMarkers = [".a-new-structure/", "bereshit/", "src/"];
+  for (const marker of repoMarkers) {
+    const idx = normalized.indexOf(marker);
+    if (idx >= 0) {
+      ctx["path"] = normalized.slice(idx);
+      break;
+    }
+  }
+  if (!ctx["path"]) {
+    const segments = normalized.split("/").filter(Boolean);
+    ctx["path"] = segments.slice(-3).join("/");
+  }
+
+  // I3.component — derive from filename (strip .go)
+  const stem = ctx["filename"]?.replace(/\.go$/, "") ?? "";
+  if (stem === "main") {
+    ctx["component"] = "binary entry point";
+  } else if (stem === "doc") {
+    ctx["component"] = "package documentation";
+  } else if (stem) {
+    ctx["component"] = stem.replace(/_/g, " ");
+  }
+
+  // I3.provides — scan for exported symbols
+  if (allLines) {
+    const pubItems: string[] = [];
+    for (const line of allLines) {
+      const trimmed = line.trim();
+      // Exported function: func Name(
+      const fnMatch = trimmed.match(/^func\s+([A-Z]\w*)\s*\(/);
+      if (fnMatch) { pubItems.push(fnMatch[1]!); continue; }
+      // Exported type: type Name
+      const typeMatch = trimmed.match(/^type\s+([A-Z]\w*)\s/);
+      if (typeMatch) { pubItems.push(typeMatch[1]!); continue; }
+    }
+    if (pubItems.length > 0) {
+      ctx["provides"] = pubItems.join(", ");
+    }
+  }
+
+  return ctx;
+}
+
+/**
+ * Line preservation predicate for Go scaffold --force mode.
+ *
+ * Lines we want to keep when stripping block structure:
+ *   - //go:build directives (compiler directives)
+ *   - //go:generate directives
+ */
+function goPreserveLine(line: string): boolean {
+  const trimmed = line.trim();
+  return trimmed.startsWith("//go:");
+}
+
+/**
+ * Build a ScaffoldAdapter for Go files.
+ *
+ * Maps Go-specific parsing/classification functions into the universal
+ * ScaffoldAdapter interface. The shared structuralScaffold pipeline calls
+ * these through the adapter — only content words change per language.
+ */
+function buildGoAdapter(): ScaffoldAdapter {
+  return {
+    format: "go",
+    fileExtension: ".go",
+
+    parseChunks: (lines: string[]) => parseGoCodeChunks(lines),
+
+    chunkToBlock: (chunk) => goChunkToBlock(chunk),
+
+    chunkToSetupSection: (chunk) => goChunkToSetupSection(chunk),
+
+    chunkToBodySection: (chunk) => goChunkToBodySection(chunk),
+
+    extractMetadataContext: (metadataChunks, filePath, subtype, allLines) =>
+      extractGoMetadataContext(metadataChunks, filePath, subtype, allLines),
+
+    isTestChunk: (chunk) => {
+      // Go test functions: func TestXxx(t *testing.T)
+      const firstLine = chunk.lines[0]?.trim() ?? "";
+      return /^func\s+Test\w+\s*\(\s*\w+\s+\*testing\.T/.test(firstLine);
+    },
+
+    isMainChunk: (chunk) => chunk.category === "main_fn",
+
+    isOrphanChunk: (chunk) =>
+      chunk.category === "separator" ||
+      chunk.category === "blank" ||
+      chunk.category === "comment",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Inspect — show parsed structure without checks
+// ---------------------------------------------------------------------------
+
+async function inspectGoFile(filePath: string): Promise<InspectResult> {
+  await ensureGoRules();
+  const ctx = await buildContext(filePath);
+
+  // Blocks — BlockPosition has { name, line, endLine } (all 1-based)
+  const blocks: InspectBlock[] = ctx.blocks.map((b) => ({
+    name: b.name,
+    startLine: b.line,
+    endLine: b.endLine || b.line,
+    separatorLine: b.line,
+  }));
+
+  // Sections — from SETUP and BODY subsection detection
+  const sections: InspectSection[] = [];
+  const setupBlock = ctx.blocks.find((b) => b.name === "SETUP");
+  if (setupBlock) {
+    // getBlockLines expects 0-based start/end, but BlockPosition is 1-based
+    const setupLines = ctx.lines.slice(setupBlock.line - 1, (setupBlock.endLine || ctx.lines.length));
+    const setupSubs = getSubsectionRanges(setupLines);
+    for (let i = 0; i < setupSubs.length; i++) {
+      const s = setupSubs[i]!;
+      sections.push({
+        name: s.tag,
+        block: "SETUP",
+        line: (setupBlock.line - 1) + s.startIdx + 1,
+        position: i + 1,
+      });
+    }
+  }
+
+  const bodyBlock = ctx.blocks.find((b) => b.name === "BODY");
+  if (bodyBlock) {
+    const bodyStart = bodyBlock.line - 1;
+    const bodyEnd = bodyBlock.endLine || ctx.lines.length;
+    const bodyLines = ctx.lines.slice(bodyStart, bodyEnd);
+    // Body subsections use numeric pattern
+    let bodyPos = 0;
+    for (let i = 0; i < bodyLines.length; i++) {
+      const line = bodyLines[i]!.trim();
+      const numMatch = line.match(BODY_SUBSECTION_PATTERN);
+      const legMatch = !numMatch ? line.match(BODY_SUBSECTION_LEGACY) : null;
+      if (numMatch || legMatch) {
+        bodyPos++;
+        const name = numMatch
+          ? line.replace(/^\/\/\s*/, "").trim()
+          : (legMatch ? legMatch[0]!.replace(/^\/\/\s*/, "").trim() : "unknown");
+        sections.push({
+          name,
+          block: "BODY",
+          line: bodyStart + i + 1,
+          position: bodyPos,
+        });
+      }
+    }
+  }
+
+  // Content classification — count Go constructs per block
+  const contentMap = new Map<string, { count: number; blocks: Set<string> }>();
+  const addContent = (category: string, blockName: string) => {
+    const existing = contentMap.get(category);
+    if (existing) {
+      existing.count++;
+      existing.blocks.add(blockName);
+    } else {
+      contentMap.set(category, { count: 1, blocks: new Set([blockName]) });
+    }
+  };
+
+  for (const block of ctx.blocks) {
+    const bStart = block.line - 1;
+    const bEnd = block.endLine || ctx.lines.length;
+    for (let i = bStart; i < bEnd; i++) {
+      const line = ctx.lines[i]?.trim() ?? "";
+      if (/^func\s/.test(line)) addContent("functions", block.name);
+      else if (/^import\s/.test(line) || line === "import (") addContent("imports", block.name);
+      else if (/^type\s/.test(line)) addContent("type declarations", block.name);
+      else if (/^const\s/.test(line) || line === "const (") addContent("constants", block.name);
+      else if (/^var\s/.test(line) || line === "var (") addContent("variables", block.name);
+      else if (/^\/\/omni:/.test(line)) addContent("omni directives", block.name);
+    }
+  }
+
+  const content: InspectContent[] = [];
+  for (const [category, data] of contentMap) {
+    content.push({ category, count: data.count, blocks: [...data.blocks] });
+  }
+
+  // Directives
+  const directives: Record<string, string> = {};
+  for (const [key, info] of ctx.directives) {
+    directives[key] = info.value;
+  }
+
+  // Pragma
+  const pragmaDir = ctx.directives.get("//omni:code") || ctx.directives.get("#!omni:code");
+  const pragma = pragmaDir ? `//omni:code ${pragmaDir.value}` : undefined;
+
+  return {
+    filePath,
+    format: "go",
+    subtype: ctx.subtype ?? undefined,
+    isTemplate: ctx.isTemplate,
+    lineCount: ctx.lines.length,
+    blocks,
+    sections,
+    content,
+    directives,
+    pragma,
+  };
+}
+
 // ============================================================================
 // CLOSING
 // ============================================================================
@@ -2635,6 +3153,7 @@ const goHandler: FormatHandler = {
   lint: lintGoFile,
   computeHealth: computeGoHealth,
   transform: transformGoFile,
+  inspect: inspectGoFile,
 };
 
 registerFormat(goHandler);

@@ -1,0 +1,65 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-subtypes-container",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 6: Subtypes -- Go Content Container",
+    "_P5_brief": "Parent container for Go-specific subtype definitions. Four Go forms: bare-bone, library, executable, demo-test. No module form -- Go packages ARE modules. Sub-containers: one per form.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/subtypes/_container.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Why No Module Form
+        // -----------------------------------------
+
+        "no_module_form": {
+            "reason": "Go packages ARE modules. Unlike Rust where src/*.rs files are submodules within a crate, every .go file in a Go package is a peer -- they share the package namespace. There's no structural distinction between 'the module' and 'a file in the module'.",
+            "alternative": "Use -library for all package files. doc.go carries identity; other files carry focused functionality.",
+            "note": "This is a genuine Go/Rust difference, not an omission."
+        },
+
+        // -----------------------------------------
+        // Form-to-Section Cascade
+        // -----------------------------------------
+
+        "cascade": {
+            "note": "I2.subtype drives the form system. Same flow as Rust: pragma directive -> I2.subtype -> form constraints -> section availability.",
+            "flow": "pragma directive -> I2.subtype -> form constraints -> section availability",
+            "package_principle": "Go package = Go module. Identity delegation (doc.go) means most files only carry directives + comment block.",
+            "go_forms": ["bare-bone", "library", "executable", "demo-test"]
+        },
+
+        // -----------------------------------------
+        // Sub-containers
+        // -----------------------------------------
+
+        "sub_containers": {
+            "bare-bone": { "file": "bare-bone.jsonc", "purpose": "Foundation -- minimum valid Go file" },
+            "library": { "file": "library.jsonc", "purpose": "Library -- Go package exposing public API" },
+            "executable": { "file": "executable.jsonc", "purpose": "Executable -- Go main.go entry point" },
+            "demo-test": { "file": "demo-test.jsonc", "purpose": "Demo/Test -- Go *_test.go validation" }
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go subtypes container -- four forms, no module. bare-bone is the anchor, library exposes APIs, executable orchestrates via main.go, demo-test proves claims in *_test.go. Go's package system IS the module system.",
+    "_X5_scripture": "1 Corinthians 12:18 -- But now hath God set the members every one of them in the body, as it hath pleased him."
+}

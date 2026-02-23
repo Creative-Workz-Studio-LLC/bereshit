@@ -1,0 +1,95 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-structure-whole-3block",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-skeleton-schema",
+    "_P2_role": "structure-whole",
+    "_P5_title": "3-Block Structure Skeleton — Data Files",
+    "_P5_brief": "Format-agnostic definition of the 3-block (data) structure. METADATA declares identity, CONTENT holds data, CLOSING validates and documents. The simplest block pattern — for files that describe, not execute.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "skeleton": {
+        "name": "3-block",
+        "type": "data",
+        "block_count": 3,
+
+        "blocks": {
+            "type": "array",
+            "const": ["METADATA", "CONTENT", "CLOSING"],
+            "description": "Canonical block order — never changes. The 3-block structure is the pattern for data files."
+        },
+
+        "principle": "Data files describe — they don't act. METADATA says WHO. CONTENT says WHAT. CLOSING says SO WHAT. The simplest expression of boundaries before content.",
+
+        "METADATA": {
+            "position": 1,
+            "purpose": "Identity and context — WHO this data is, WHERE it fits, WHY it exists",
+            "required": true,
+            "nature": "declarative",
+            "contains": "Identity fields (I1-I4), context fields (C1-C7), format-specific identity constructs",
+            "note": "Shared I/C metadata definitions are the same as 4-block and 5-block METADATA. The identity contract is structure-invariant."
+        },
+
+        "CONTENT": {
+            "position": 2,
+            "purpose": "The actual data — configurations, settings, mappings, definitions",
+            "required": true,
+            "nature": "declarative",
+            "contains": "Format-specific data content — TOML tables, JSON objects, YAML mappings, schema definitions",
+            "subsection_patterns": {
+                "Cc": { "name": "Configurations", "purpose": "Settings, parameters, options" },
+                "Co": { "name": "Operations",     "purpose": "Data that drives behavior — rules, mappings, registries" },
+                "Cv": { "name": "Validation",     "purpose": "Constraints, schemas, verification data" }
+            },
+            "note": "CONTENT subsections (Cc/Co/Cv) are guidance, not hard requirements. Data files organize content by what serves the data's consumers."
+        },
+
+        "CLOSING": {
+            "position": 3,
+            "purpose": "Documentation, validation, closing anchor — the file's accountability",
+            "required": true,
+            "nature": "documentary",
+            "contains": "Policy (X1), extension points (X2), troubleshooting (X3), references (X4), closing note (X5)",
+            "documentation_sections": {
+                "X1": { "name": "Policy",          "required": true,  "purpose": "Modification guidelines" },
+                "X2": { "name": "Extension",       "required": false, "purpose": "Growth points" },
+                "X3": { "name": "Troubleshooting", "required": false, "purpose": "Common problems" },
+                "X4": { "name": "Reference",       "required": false, "purpose": "Related files and dependencies" },
+                "X5": { "name": "Note",            "required": true,  "purpose": "Closing scripture anchor" }
+            },
+            "note": "3-block CLOSING has no code zones (Cv/Ce/Cc) — data files don't execute. Only documentation sections."
+        },
+
+        "placement_rules": {
+            "METADATA": {
+                "must_contain": ["Identity fields", "Context fields"],
+                "must_not_contain": ["Actual data content", "Validation rules as data"]
+            },
+            "CONTENT": {
+                "must_contain": ["The data this file exists to hold"],
+                "must_not_contain": ["Identity fields (belongs in METADATA)", "Documentation (belongs in CLOSING)"]
+            },
+            "CLOSING": {
+                "must_contain": ["Policy documentation (X1)", "Closing note (X5)"],
+                "must_not_contain": ["Data content", "Identity fields"]
+            }
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Data files are the simplest expression of structure. They describe, they don't act. Three blocks — identity, content, accountability — are enough to hold any data with dignity. The form matches the function.",
+    "_X5_scripture": "A just weight and balance are the LORD's: all the weights of the bag are his work. — Proverbs 16:11"
+}

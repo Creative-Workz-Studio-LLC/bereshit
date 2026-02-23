@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-variables",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.Variables Content Character — What Variable Content IS",
+    "_P5_brief": "Format-independent definition of variable content character. Variables are package-level mutable state — values that can change at runtime. The most dangerous SETUP section. Every variable must justify why it cannot be a constant, a static, or a local. Syntax varies (var, static mut, file-scope); the mutable-shared-state nature doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "variables",
+        "block": "SETUP",
+        "position": 11,
+        "nature": "mutable-state",
+
+        "description": "Variable content is package-level mutable state. It is the most dangerous content in SETUP because mutability at package scope creates shared state that any function in the package can modify. Every variable here must justify its existence: why not a constant (immutable, compile-time)? Why not a static (immutable after init)? Why not a local variable (scoped, short-lived)? The valid answers are sentinel errors, synchronization primitives, and registries that genuinely require package-level mutability.",
+
+        "invariants": {
+            "description": "Properties true of ALL variable content, regardless of language.",
+
+            "mutable": "Variables can change at runtime. This is their defining characteristic and their danger. Unlike constants and statics, variables have no immutability guarantee.",
+            "justified": "Every variable must explain why a constant or local would not suffice. Package-level mutable state is a design decision that demands explicit justification.",
+            "package-scoped": "Variables declared here have package lifetime and package visibility. They are accessible to all code in the package, which means all code in the package can mutate them.",
+            "synchronized": "If accessed concurrently, variables must be protected by synchronization primitives. Unprotected mutable shared state is a data race waiting to happen.",
+            "initialized": "Variables have explicit initial values or zero values. Uninitialized variables are undefined behavior in some languages and bugs waiting to happen in all of them."
+        },
+
+        "content_forms": {
+            "description": "What variable content looks like across languages. Syntax varies; the mutable-shared-state nature is invariant.",
+
+            "rust": {
+                "syntax": "static mut COUNTER: u32 = 0; // UNSAFE — prefer AtomicU32 or Mutex<u32>  static REGISTRY: Mutex<HashMap<String, Handler>> = Mutex::new(HashMap::new());",
+                "grouping": "Atomic variables first, then Mutex-protected state, then unsafe static mut (with justification comment). Grouped by synchronization mechanism.",
+                "notes": "Rust makes mutable statics painful on purpose — static mut requires unsafe blocks for every access. The language pushes toward AtomicXxx, Mutex, or RwLock wrappers instead. If you need static mut, the design likely needs rethinking."
+            },
+
+            "go": {
+                "syntax": "var ( ErrNotFound = errors.New(\"not found\"); ErrTimeout = errors.New(\"timeout\") )  var ( mu       sync.RWMutex; registry = make(map[string]Handler) )",
+                "grouping": "Sentinel errors first (var Err*), then synchronization primitives with their protected state, then registries. Grouped by purpose.",
+                "notes": "Go var declarations at package level are the primary mutable state mechanism. Sentinel errors (var Err*) are the most common and most justified use case. Mutex + protected state should be grouped together. init() functions for complex initialization."
+            },
+
+            "c": {
+                "syntax": "static int counter = 0;  static pthread_mutex_t registry_lock = PTHREAD_MUTEX_INITIALIZER;  static HashMap *registry = NULL;",
+                "grouping": "Simple counters and flags first, then mutex/lock declarations, then protected data structures. Grouped by lock domain.",
+                "notes": "C file-scope static variables are mutable by default. Thread safety requires explicit pthread primitives. No language-level enforcement of lock discipline — programmer must ensure all access paths acquire the lock."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, variables change synchronization mechanisms but preserve the mutable state and its access patterns. The same shared state exists in every language — only how mutation is controlled changes.",
+            "invariant": ["state identity (what mutable values exist)", "access patterns (which functions read/write which variables)", "synchronization requirements (which variables need concurrent protection)", "initial values (what state starts as)"],
+            "variable": ["syntax (var vs static mut vs file-scope static)", "synchronization mechanism (Mutex vs sync.RWMutex vs pthread_mutex)", "safety enforcement (compiler-enforced vs convention-enforced vs unsafe)", "initialization mechanism (literal vs init() vs constructor)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "defer",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "granted",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "defer"
+    },
+
+    "detection_weight": 0.64,
+    "_weight_rationale": "|avg| of concept_map: 1G 2F 8D. (1−8)/11 = −7/11 ≈ −0.64. variable_binding granted (variables ARE bindings). function_call and string_format defer.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Variables are the most dangerous SETUP content because they introduce mutability at the widest scope. Every variable is a promise that this mutable state is genuinely necessary and properly guarded. Constancy is the default; mutability is the exception that must prove itself.",
+    "_X5_scripture": "Hebrews 13:8 — Jesus Christ the same yesterday, and to day, and for ever."
+}

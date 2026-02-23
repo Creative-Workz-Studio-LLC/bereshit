@@ -1,0 +1,110 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-comment-block",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 3: Comment Block — Rust Content",
+    "_P5_brief": "Rust-specific content rules for the METADATA comment block. // comment fields that identify the file when opened. Secondary to PRAGMA/METADATA statics. Extends the base structure at structure/parts/metadata/comment-block.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/comment-block.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "// file: {filename}",
+                "description": "File identity — what file is this",
+                "patterns": ["// file: exists.rs", "// file: lib.rs", "// file: main.rs"],
+                "visibility": "N/A — comments"
+            },
+            {
+                "construct": "// key: {key}",
+                "description": "OmniCode key — unique identifier in the system",
+                "patterns": ["// key: B-core-identity-exists"],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// purpose: {description}",
+                "description": "What this file does and why it exists",
+                "patterns": ["// purpose: Existence verification — the foundation type"],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// biblical_foundation: {verse}",
+                "description": "The truth this file stands on",
+                "patterns": ["// biblical_foundation: Exodus 3:14 — I AM THAT I AM"],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// version: / // status:",
+                "description": "Lifecycle tracking — where this file has been",
+                "patterns": ["// version: a-01.00", "// status: active"],
+                "visibility": "N/A"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "executable code in comment block area",
+                "reason": "The METADATA comment block is documentation. Code belongs in SETUP or BODY.",
+                "defer_to": "SETUP or BODY",
+                "rust_signal": "^(pub\\s+)?(fn|struct|enum|trait|type|const|static|use)\\s+"
+            },
+            {
+                "construct": "duplicate identity fields",
+                "reason": "Each comment field appears once. When PRAGMA/METADATA statics exist, comment fields are secondary — don't repeat what statics already carry.",
+                "defer_to": "METADATA.PragmaIdentity or METADATA.MetadataContext",
+                "rust_signal": "N/A"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Severity & Downgrade Rules
+        // ─────────────────────────────────────
+
+        "field_severity": {
+            "Key": { "required": true, "severity": "warn", "downgrade_when": "file has PRAGMA static with I1.key" },
+            "Purpose": { "required": true, "severity": "warn", "downgrade_when": "file has METADATA static with C5.purpose" },
+            "Biblical/Scripture": { "recommended": true, "severity": "info", "downgrade_when": "file has METADATA static with C3.scripture" },
+            "Version": { "recommended": true, "severity": "info", "downgrade_when": "file has METADATA static with C1.version" }
+        },
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+
+        "scaffold": {
+            "full": "// file: {filename}\n// key: {key}\n// title: {title}\n// type: {type}\n// purpose: {purpose}\n// biblical_foundation: {scripture}\n// version: {version}\n// status: {status}\n// created: {date}\n// updated: {date}\n// authors: {authors}",
+            "minimal": "// file: {filename}\n// key: {key}\n// purpose: {purpose}",
+            "comment_skeleton": "// // file: {filename}\n// // key: {key}\n// // purpose: {purpose}"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust comment block: the file's nameplate. When you open a file, you know immediately what it is, who wrote it, and what truth it stands on. Secondary to statics when they exist — but always present for human readability.",
+    "_X5_scripture": "Proverbs 22:1 — A good name is rather to be chosen than great riches."
+}

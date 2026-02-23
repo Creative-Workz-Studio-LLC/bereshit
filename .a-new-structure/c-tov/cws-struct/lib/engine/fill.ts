@@ -34,11 +34,15 @@ import type {
 } from "../foundation/mod.ts";
 
 import { loadCodeRules, clearCodeCache } from "../foundation/mod.ts";
+import { ToolError } from "../foundation/mod.ts";
 
 import {
   BLOCK_SEPARATOR_WIDTH,
   SUBSECTION_SEPARATOR_WIDTH,
-} from "../handlers/shared/types.ts";
+} from "../shared/mod.ts";
+
+import { FORM_REGISTRY } from "../data/mod.ts";
+import type { FormDefinition } from "../data/mod.ts";
 
 // ---------------------------------------------------------------------------
 // 2. Types
@@ -208,11 +212,15 @@ function generateMetadata(
 /**
  * Generate the SETUP block.
  *
- * Uses setupData from rules to emit subsection headers per subtype.
+ * Uses setupData from rules, filtered by form status. Reserved sections
+ * are skipped — only required and available sections are emitted.
+ *
+ * @param rules - Loaded Code4BlockRules with setupData
+ * @param form - Form definition for section filtering (if undefined, all emitted)
  */
 function generateSetup(
-  ctx: FillContext,
   rules: Code4BlockRules,
+  form: FormDefinition | undefined,
 ): string[] {
   const lines: string[] = [];
 
@@ -221,13 +229,24 @@ function generateSetup(
   lines.push("// SETUP");
   lines.push(BLOCK_SEP);
 
-  // Emit SETUP subsections from schema
+  // Emit SETUP subsections — filtered by form when available
+  const setupStatus = form?.sections?.["setup"];
   const subsections = rules.setupData;
+
   if (subsections.length > 0) {
     for (const sub of subsections) {
+      // Form-aware filtering: skip reserved sections
+      if (setupStatus) {
+        // setupData uses display labels (e.g., "Imports"), but form sections
+        // use kebab-case tags (e.g., "imports"). Normalize for lookup.
+        const kebabTag = sub.pattern.toLowerCase().replace(/\s+/g, "-");
+        const status = setupStatus[kebabTag];
+        if (status === "reserved") continue;
+      }
+
       lines.push("");
       lines.push(SUB_SEP);
-      lines.push(`// ${sub.tag}. ${sub.pattern}`);
+      lines.push(`// ${sub.position}. ${sub.pattern}`);
       lines.push(SUB_SEP);
       lines.push("");
       lines.push(`// (${sub.purpose})`);
@@ -246,6 +265,8 @@ function generateSetup(
  * Generate the BODY block.
  *
  * Uses bodyData from rules to emit subsection headers per subtype.
+ * bodyData is keyed by form name (e.g., "bare-bone", "library") and
+ * already filtered to required/available sections by code-schema.ts.
  */
 function generateBody(
   ctx: FillContext,
@@ -258,14 +279,14 @@ function generateBody(
   lines.push("// BODY");
   lines.push(BLOCK_SEP);
 
-  // Emit BODY subsections from schema per subtype
-  const subtypeKey = ctx.subtype.replace("-", "_");
-  const bodySubtype = rules.bodyData[subtypeKey];
+  // Emit BODY subsections from schema per subtype.
+  // bodyData is keyed by form name (hyphenated), NOT underscored.
+  const bodySubtype = rules.bodyData[ctx.subtype];
   if (bodySubtype) {
     for (const sub of bodySubtype.subsections) {
       lines.push("");
       lines.push(SUB_SEP);
-      lines.push(`// ${sub.tag}. ${sub.pattern}`);
+      lines.push(`// ${sub.position}. ${sub.pattern}`);
       lines.push(SUB_SEP);
       lines.push("");
       lines.push(`// (${sub.purpose})`);
@@ -363,6 +384,10 @@ function generateClosing(
  * This is the proof: if generateFile() produces output that lint()
  * validates with 0 errors, the schema IS the complete specification.
  *
+ * Form-aware: resolves ctx.subtype to a FormDefinition from FORM_REGISTRY.
+ * SETUP sections are filtered by form status (reserved sections skipped).
+ * BODY sections are already form-filtered by code-schema.ts bodyData.
+ *
  * @param ctx - Fill context with all placeholder values
  * @returns Array of lines forming a complete 4-block file
  */
@@ -371,17 +396,17 @@ export async function generateFile(ctx: FillContext): Promise<string[]> {
   const rules = await loadCodeRules(ctx.format);
 
   if (!rules.fillContent) {
-    throw new Error(
-      `Schema for ${ctx.format} has no fill_content section — cannot generate file.\n` +
-      `Add fill_content to the ${ctx.format} schema to enable generation.`,
-    );
+    throw new ToolError("CWS-T00-050", { format: ctx.format });
   }
+
+  // Resolve form definition — graceful degradation if unknown subtype
+  const form = FORM_REGISTRY[ctx.subtype];
 
   const fill = rules.fillContent;
   const lines: string[] = [];
 
   lines.push(...generateMetadata(ctx, fill));
-  lines.push(...generateSetup(ctx, rules));
+  lines.push(...generateSetup(rules, form));
   lines.push(...generateBody(ctx, rules));
   lines.push(...generateClosing(ctx, rules, fill));
   lines.push(""); // Trailing newline

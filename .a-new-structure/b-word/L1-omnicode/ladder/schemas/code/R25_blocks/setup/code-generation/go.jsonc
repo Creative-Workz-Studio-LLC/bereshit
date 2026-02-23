@@ -1,0 +1,139 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-setup-code-generation",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 9: Code Generation -- Go Content",
+    "_P5_brief": "Go-specific content rules for Code Generation. //go:generate directives for stringer, mockgen, protoc. In test files: assertion helpers with t.Helper(). Go's equivalent of Rust macros. Extends the base structure at blocks/setup/macros.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/macros.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "//go:generate tool args",
+                "description": "Code generation directives -- triggers external tooling on go generate",
+                "patterns": [
+                    "//go:generate stringer -type=Format",
+                    "//go:generate mockgen -source=handler.go -destination=mock_handler.go",
+                    "//go:generate protoc --go_out=. --go-grpc_out=. service.proto"
+                ],
+                "visibility": "N/A -- directives, not declarations",
+                "note": "Place near the type or interface the directive generates code for. Document what each directive produces."
+            },
+            {
+                "construct": "//go:generate comment explaining output",
+                "description": "Document what each directive generates -- generated files, their purpose",
+                "patterns": [
+                    "// Generates format_string.go with String() method for Format enum.\n//go:generate stringer -type=Format",
+                    "// Generates mock_handler.go for testing.\n//go:generate mockgen -source=handler.go -destination=mock_handler.go"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "t.Helper() assertion functions (test files)",
+                "description": "Test assertion helpers that report failures at the caller's line, not the helper's",
+                "patterns": [
+                    "func assertEqual(t *testing.T, got, want any) {\n\tt.Helper()\n\tif got != want {\n\t\tt.Errorf(\"got %v, want %v\", got, want)\n\t}\n}",
+                    "func requireNoError(t *testing.T, err error) {\n\tt.Helper()\n\tif err != nil {\n\t\tt.Fatalf(\"unexpected error: %v\", err)\n\t}\n}"
+                ],
+                "visibility": "unexported -- test helpers are file/package-private",
+                "note": "t.Helper() is essential -- without it, test failures report the wrong line. Go's equivalent of Rust assertion macros."
+            },
+            {
+                "construct": "test fixture constructors",
+                "description": "Factory functions creating pre-configured test data",
+                "patterns": [
+                    "func newTestConfig(t *testing.T) *Config {\n\tt.Helper()\n\treturn &Config{Path: t.TempDir() + \"/test.toml\"}\n}"
+                ],
+                "visibility": "unexported -- test-only",
+                "note": "t.Helper() + t.TempDir() for self-cleaning fixtures. No manual cleanup needed."
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "//go:generate without documentation",
+                "reason": "Every directive must document what it generates and why. Undocumented generation is unmaintainable.",
+                "defer_to": "N/A -- add documentation",
+                "go_signal": "N/A"
+            },
+            {
+                "construct": "generated code checked into the source tree without marker",
+                "reason": "Generated files must have the // Code generated... DO NOT EDIT. marker at the top.",
+                "defer_to": "N/A -- add the marker to generated files",
+                "go_signal": "N/A"
+            },
+            {
+                "construct": "test helpers without t.Helper()",
+                "reason": "Without t.Helper(), test failures report the helper's line, not the caller's. This makes debugging impossible.",
+                "defer_to": "N/A -- add t.Helper() as first line",
+                "go_signal": "func\\s+\\w+\\(t\\s+\\*testing\\.T(?!.*t\\.Helper\\(\\))"
+            },
+            {
+                "construct": "complex business logic in test helpers",
+                "reason": "Assertion helpers should be thin wrappers. Complex logic in helpers hides what's being tested.",
+                "defer_to": "BODY.Helpers",
+                "go_signal": "N/A -- design judgment"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "^func\\s+Test\\w+\\(",
+                "to": "BODY.TestFunctions or CLOSING.Cv",
+                "confidence": "high",
+                "why": "Test function -- belongs in BODY B5 (demo-test) or CLOSING Cv (library/executable)"
+            },
+            {
+                "pattern": "^func\\s+Benchmark\\w+\\(",
+                "to": "BODY.TestFunctions or CLOSING.Cv",
+                "confidence": "high",
+                "why": "Benchmark function -- belongs in BODY B5 (demo-test) or CLOSING Cv"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// No code generation directives needed.",
+            "empty_executable": "// No code generation directives needed.",
+            "comment_skeleton": "// //go:generate stringer -type=TypeName"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Code Generation: //go:generate for stringer, mockgen, protoc. t.Helper() assertion helpers in test files. Go has no compile-time macros -- code generation and helper functions fill that role. Document what each directive generates.",
+    "_X5_scripture": "Ecclesiastes 3:1 -- To every thing there is a season, and a time to every purpose under the heaven."
+}

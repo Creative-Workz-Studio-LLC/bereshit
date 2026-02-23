@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-queries",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.Queries Content Character — What Query Content IS",
+    "_P5_brief": "Format-independent definition of query content character. Queries are pure observation — read-only functions that return state without changing it. Syntax varies (& self getters, value receivers, const pointer reads); the observation-without-mutation pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "queries",
+        "block": "BODY",
+        "position": 5,
+        "nature": "observation",
+
+        "description": "Query content is pure observation. Queries look at state and report what they see. They never change what they observe. This is Command-Query Separation at the section level — core logic commands, queries query. The content is descriptive: 'here is what IS, unchanged by the looking.'",
+
+        "invariants": {
+            "description": "Properties true of ALL query content, regardless of language.",
+
+            "side-effect-free": "Queries never modify state. No mutation, no I/O, no logging, no network calls. The system is identical before and after a query runs.",
+            "deterministic": "Given the same internal state, a query always returns the same result. No randomness, no external dependencies, no time-sensitive behavior.",
+            "type-attached": "Queries operate on a type's internal state via immutable self/receiver. They need access to the instance to observe it. Module-level read-only functions belong in FreeFunctions.",
+            "named-as-questions": "Query functions are named as questions or descriptions — is_valid(), len(), name(), has_children(). The name reveals that this reads, not writes.",
+            "cheap": "Queries should be inexpensive. If computing the answer requires heavy work, cache it in core logic and expose the cached value as a query."
+        },
+
+        "content_forms": {
+            "description": "What query content looks like across languages. Observation-without-mutation is invariant; the syntax of immutable access varies.",
+
+            "rust": {
+                "syntax": "pub fn is_valid(&self) -> bool { self.state == State::Valid } pub fn len(&self) -> usize { self.items.len() }",
+                "grouping": "Boolean checks (is_/has_) first, then scalar accessors (len, name, key), then computed properties (derived values)",
+                "notes": "Rust queries use &self (immutable borrow). The borrow checker enforces no mutation — if it compiles with &self, it cannot mutate. Returning references (&str, &[T]) avoids cloning."
+            },
+
+            "go": {
+                "syntax": "func (t *MyType) IsValid() bool { return t.state == StateValid } func (t *MyType) Len() int { return len(t.items) }",
+                "grouping": "Boolean checks (IsX/HasX) first, then scalar accessors, then computed properties",
+                "notes": "Go queries use value or pointer receivers. Convention, not compiler, enforces no mutation — pointer receivers CAN mutate but SHOULD NOT in query methods. Exported (uppercase) names."
+            },
+
+            "c": {
+                "syntax": "bool my_type_is_valid(const MyType* self) { return self->state == STATE_VALID; } size_t my_type_len(const MyType* self) { return self->count; }",
+                "grouping": "Boolean checks first, then scalar accessors, then computed properties",
+                "notes": "C queries take const pointer to self. The const qualifier is the compiler-enforced guarantee of no mutation. Return by value for scalars, by const pointer for complex data."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, query content preserves the read-only observation semantics. The same questions get asked about the same state with the same answers — only the syntax of immutable access and naming conventions change.",
+            "invariant": ["observation semantics (no mutation, no side effects)", "query set (which questions can be asked about the type)", "return types (what each query reveals about internal state)"],
+            "variable": ["immutability mechanism (&self vs const* vs convention)", "naming convention (is_valid vs IsValid vs my_type_is_valid)", "return semantics (borrowed reference vs copy vs pointer)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — queries host any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Queries are the safe window into state. You can call any query at any time, in any order, as many times as you want, and the system remains unchanged. This safety is what makes queries the foundation of testing — assert the observable, trust the internal.",
+    "_X5_scripture": "Psalm 139:1-2 — O LORD, thou hast searched me, and known me. Thou knowest my downsitting and mine uprising, thou understandest my thought afar off."
+}

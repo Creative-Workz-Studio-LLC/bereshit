@@ -149,21 +149,27 @@
     "tasks": {
 
         // ── Lint: per-format (append targets after task name) ────
-        "lint": "deno run --allow-read mod.ts lint",
-        "lint:go": "deno run --allow-read mod.ts lint go",
-        "lint:rust": "deno run --allow-read mod.ts lint rust",
-        "lint:toml": "deno run --allow-read mod.ts lint toml",
-        "lint:json": "deno run --allow-read mod.ts lint json",
-        "lint:makefile": "deno run --allow-read mod.ts lint makefile",
-        "lint:dotfiles": "deno run --allow-read mod.ts lint dotfiles",
-        "lint:omni": "deno run --allow-read mod.ts lint omni",
-        "lint:ofd": "deno run --allow-read mod.ts lint ofd",
+        // Note: --allow-ffi and --allow-write needed when --db is used
+        "lint": "deno run --allow-read --allow-write --allow-ffi --allow-env mod.ts lint",
+        "lint:go": "deno run --allow-read --allow-write --allow-ffi --allow-env mod.ts lint go",
+        "lint:rust": "deno run --allow-read --allow-write --allow-ffi --allow-env mod.ts lint rust",
+        "lint:toml": "deno run --allow-read --allow-write --allow-ffi --allow-env mod.ts lint toml",
+        "lint:json": "deno run --allow-read --allow-write --allow-ffi --allow-env mod.ts lint json",
+        "lint:makefile": "deno run --allow-read --allow-write --allow-ffi --allow-env mod.ts lint makefile",
+        "lint:dotfiles": "deno run --allow-read --allow-write --allow-ffi --allow-env mod.ts lint dotfiles",
+        "lint:omni": "deno run --allow-read --allow-write --allow-ffi --allow-env mod.ts lint omni",
+        "lint:ofd": "deno run --allow-read --allow-write --allow-ffi --allow-env mod.ts lint ofd",
 
         // ── Lint: output modes (append format + targets) ─────────
         "lint:verbose": "deno run --allow-read mod.ts lint --verbose",
         "lint:errors": "deno run --allow-read mod.ts lint --errors-only",
         "lint:summary": "deno run --allow-read mod.ts lint --summary",
         "lint:json-out": "deno run --allow-read mod.ts lint --json",
+        "lint:changed": "deno run --allow-read --allow-run mod.ts lint --changed",
+        "lint:staged": "deno run --allow-read --allow-run mod.ts lint --staged",
+
+        // ── Watch: monitor and re-lint on change ─────────────────
+        "watch": "deno run --allow-read --allow-run mod.ts watch",
 
         // ── Transform: per-format (append targets) ───────────────
         "transform": "deno run --allow-read --allow-write mod.ts transform",
@@ -179,6 +185,17 @@
         "create:rust": "deno run --allow-read --allow-write mod.ts create rust",
         "create:dry": "deno run --allow-read mod.ts create --dry-run",
 
+        // ── Query: database queries (append --db <path>) ──────────
+        "query": "deno run --allow-read --allow-ffi mod.ts query",
+        "query:health": "deno run --allow-read --allow-ffi mod.ts query health",
+        "query:worst": "deno run --allow-read --allow-ffi mod.ts query worst",
+        "query:best": "deno run --allow-read --allow-ffi mod.ts query best",
+        "query:patterns": "deno run --allow-read --allow-ffi mod.ts query patterns",
+        "query:trend": "deno run --allow-read --allow-ffi mod.ts query trend",
+        "query:instance": "deno run --allow-read --allow-ffi mod.ts query instance",
+        "query:session": "deno run --allow-read --allow-ffi mod.ts query session",
+        "query:stats": "deno run --allow-read --allow-ffi mod.ts query stats",
+
         // ── Verify, Check, Info ──────────────────────────────────
         "verify": "deno run --allow-read --allow-run mod.ts verify env",
         "verify:verbose": "deno run --allow-read --allow-run mod.ts verify env --verbose",
@@ -187,46 +204,93 @@
         "help": "deno run --allow-read mod.ts help",
 
         // ── Test: full suite ─────────────────────────────────────
-        "test": "deno test --allow-read --allow-write --allow-run --allow-env tests/",
-        "test:watch": "deno test --allow-read --allow-write --allow-run --allow-env --watch tests/",
+        "test": "deno test --allow-read --allow-write --allow-run --allow-env --ignore=tests/data/database_test.ts --ignore=tests/T00/R10/api/health_query_test.ts tests/",
+        "test:watch": "deno test --allow-read --allow-write --allow-run --allow-env --watch --ignore=tests/data/database_test.ts --ignore=tests/T00/R10/api/health_query_test.ts tests/",
+        "test:db": "deno test --allow-read --allow-write --allow-env --allow-ffi --allow-net tests/data/database_test.ts",
 
-        // ── Test: by handler ─────────────────────────────────────
-        "test:go": "deno test --allow-read --allow-write --allow-run tests/handlers/go_test.ts",
-        "test:rust": "deno test --allow-read --allow-write --allow-run tests/handlers/rust_test.ts",
-        "test:toml": "deno test --allow-read --allow-write --allow-run tests/handlers/toml_test.ts",
+        // ── Test: by handler (all R[n] layers for one handler) ───
+        "test:go": "deno test --allow-read --allow-write --allow-run tests/*/go/",
+        "test:rust": "deno test --allow-read --allow-write --allow-run tests/*/rust/",
+        "test:toml": "deno test --allow-read --allow-write --allow-run tests/*/toml/",
 
-        // ── Test: by layer ───────────────────────────────────────
-        "test:foundation": "deno test --allow-read --allow-write --allow-run tests/foundation/",
-        "test:engine": "deno test --allow-read --allow-write --allow-run tests/engine/",
+        // ── Test: by T00 domain (tool infrastructure) ────────────
+        "test:foundation": "deno test --allow-read --allow-write --allow-run --allow-env tests/T00/*/foundation/",
+        "test:engine": "deno test --allow-read --allow-write --allow-run --allow-env tests/T00/*/engine/",
+        "test:data": "deno test --allow-read --allow-write --allow-run --allow-env tests/T00/*/data/",
         "test:cli": "deno test --allow-read --allow-write --allow-run --allow-env tests/cli/",
-        "test:verify": "deno test --allow-read --allow-run tests/verify/",
+        "test:verify": "deno test --allow-read --allow-run tests/T00/verify/",
         "test:integration": "deno test --allow-read tests/integration_test.ts",
 
-        // ── Test: by concern (cross-handler) ─────────────────────
-        "test:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/handlers/",
-        "test:consistency": "deno test --allow-read --allow-write --allow-run --filter 'consistency/' tests/handlers/",
-        "test:metadata": "deno test --allow-read --allow-write --allow-run --filter 'metadata/' tests/handlers/",
-        "test:setup": "deno test --allow-read --allow-write --allow-run --filter 'setup/' tests/handlers/",
-        "test:body": "deno test --allow-read --allow-write --allow-run --filter 'body/' tests/handlers/",
-        "test:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/handlers/",
-        "test:format": "deno test --allow-read --allow-write --allow-run --filter 'format/' tests/handlers/",
-        "test:form": "deno test --allow-read --allow-write --allow-run --filter 'form/' tests/handlers/",
-        "test:unit": "deno test --allow-read --allow-write --allow-run --filter 'unit/' tests/handlers/",
-        "test:transform": "deno test --allow-read --allow-write --allow-run --filter 'transform/' tests/handlers/",
+        // ── Test: by R[n] detection layer (directory-based) ───────
+        "test:R50": "deno test --allow-read --allow-write --allow-run tests/R50/",
+        "test:R25": "deno test --allow-read --allow-write --allow-run tests/R25/",
+        "test:R10": "deno test --allow-read --allow-write --allow-run tests/R10/",
+        "test:R05": "deno test --allow-read --allow-write --allow-run tests/R05/",
+        "test:unit": "deno test --allow-read --allow-write --allow-run --allow-env tests/unit/",
+        "test:integ": "deno test --allow-read --allow-write --allow-run tests/integration/",
+
+        // ── Test: T00 tool infrastructure (R[n]-organized) ────────
+        "test:T00": "deno test --allow-read --allow-write --allow-run --allow-env --ignore=tests/T00/R10/api/health_query_test.ts tests/T00/",
+        "test:T00:R50": "deno test --allow-read --allow-write --allow-run --allow-env tests/T00/R50/",
+        "test:T00:R25": "deno test --allow-read --allow-write --allow-run --allow-env tests/T00/R25/",
+        "test:T00:R10": "deno test --allow-read --allow-write --allow-run --allow-env --ignore=tests/T00/R10/api/health_query_test.ts tests/T00/R10/",
+        "test:T00:R05": "deno test --allow-read --allow-write --allow-run --allow-env tests/T00/R05/",
+        "test:T00:verify": "deno test --allow-read --allow-run tests/T00/verify/",
+        "test:T00:data": "deno test --allow-read --allow-write --allow-run --allow-env tests/T00/*/data/",
+        "test:T00:engine": "deno test --allow-read --allow-write --allow-run --allow-env tests/T00/*/engine/",
+        "test:T00:foundation": "deno test --allow-read --allow-write --allow-run --allow-env tests/T00/*/foundation/",
+        "test:T00:api": "deno test --allow-read --allow-write --allow-run --allow-env --ignore=tests/T00/R10/api/health_query_test.ts tests/T00/*/api/",
+        "test:T00:shared": "deno test --allow-read --allow-write --allow-run --allow-env tests/T00/*/shared/",
+
+        // ── Test: by concern (cross-handler, R[n]-routed) ────────
+        "test:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/R50/",
+        "test:consistency": "deno test --allow-read --allow-write --allow-run --filter 'consistency/' tests/R25/",
+        "test:metadata": "deno test --allow-read --allow-write --allow-run --filter 'metadata/' tests/R25/",
+        "test:setup": "deno test --allow-read --allow-write --allow-run --filter 'setup/' tests/R25/",
+        "test:body": "deno test --allow-read --allow-write --allow-run --filter 'body/' tests/R25/",
+        "test:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/R25/ tests/R10/",
+        "test:format": "deno test --allow-read --allow-write --allow-run --filter 'format/' tests/R50/",
+        "test:form": "deno test --allow-read --allow-write --allow-run --filter 'form/' tests/R05/",
+        "test:transform": "deno test --allow-read --allow-write --allow-run tests/integration/",
+
+        // ── Test: handler x R[n] (directory-based) ────────────────
+        "test:go:R50": "deno test --allow-read --allow-write --allow-run tests/R50/go/",
+        "test:go:R25": "deno test --allow-read --allow-write --allow-run tests/R25/go/",
+        "test:go:R10": "deno test --allow-read --allow-write --allow-run tests/R10/go/",
+        "test:go:R05": "deno test --allow-read --allow-write --allow-run tests/R05/go/",
+        "test:rust:R50": "deno test --allow-read --allow-write --allow-run tests/R50/rust/",
+        "test:rust:R25": "deno test --allow-read --allow-write --allow-run tests/R25/rust/",
+        "test:rust:R10": "deno test --allow-read --allow-write --allow-run tests/R10/rust/",
+        "test:rust:R05": "deno test --allow-read --allow-write --allow-run tests/R05/rust/",
+        "test:toml:R50": "deno test --allow-read --allow-write --allow-run tests/R50/toml/",
+        "test:toml:R25": "deno test --allow-read --allow-write --allow-run tests/R25/toml/",
+        "test:toml:R10": "deno test --allow-read --allow-write --allow-run tests/R10/toml/",
+        "test:toml:R05": "deno test --allow-read --allow-write --allow-run tests/R05/toml/",
 
         // ── Test: handler x concern (targeted debugging) ─────────
-        "test:rust:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/handlers/rust_test.ts",
-        "test:rust:form": "deno test --allow-read --allow-write --allow-run --filter 'form/' tests/handlers/rust_test.ts",
-        "test:rust:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/handlers/rust_test.ts",
-        "test:go:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/handlers/go_test.ts",
-        "test:go:form": "deno test --allow-read --allow-write --allow-run --filter 'form/' tests/handlers/go_test.ts",
-        "test:go:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/handlers/go_test.ts",
-        "test:toml:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/handlers/toml_test.ts",
-        "test:toml:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/handlers/toml_test.ts",
+        "test:rust:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/R50/rust/",
+        "test:rust:form": "deno test --allow-read --allow-write --allow-run --filter 'form/' tests/R05/rust/",
+        "test:rust:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/R25/rust/ tests/R10/rust/",
+        "test:go:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/R50/go/",
+        "test:go:form": "deno test --allow-read --allow-write --allow-run --filter 'form/' tests/R05/go/",
+        "test:go:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/R25/go/ tests/R10/go/",
+        "test:toml:structure": "deno test --allow-read --allow-write --allow-run --filter 'structure/' tests/R50/toml/",
+        "test:toml:closing": "deno test --allow-read --allow-write --allow-run --filter 'closing/' tests/R25/toml/ tests/R10/toml/",
+
+        // ── Test: shared layer (logic/concept/grid) ───────────────
+        "test:shared": "deno test --allow-read --allow-write --allow-run tests/T00/*/shared/",
+        "test:concept": "deno test --allow-read --allow-write --allow-run --filter 'concept/' tests/",
+        "test:errors": "deno test --allow-read --allow-write --allow-env --allow-ffi --allow-net tests/T00/R50/data/errors_test.ts",
+
+        // ── Witness coverage ────────────────────────────────────
+        "witness": "deno run --allow-read scripts/witness.ts",
+        "witness:verbose": "deno run --allow-read scripts/witness.ts --verbose",
+        "witness:grid": "deno run --allow-read scripts/witness.ts --grid",
+        "witness:full": "deno run --allow-read scripts/witness.ts --grid --verbose --files",
 
         // ── Dev workflow ─────────────────────────────────────────
-        "dev": "deno check mod.ts && deno test --allow-read --allow-write --allow-run --allow-env tests/",
-        "ci": "deno check mod.ts && deno test --allow-read --allow-write --allow-run --allow-env tests/",
+        "dev": "deno check mod.ts && deno test --allow-read --allow-write --allow-run --allow-env --ignore=tests/data/database_test.ts --ignore=tests/T00/R10/api/health_query_test.ts tests/",
+        "ci": "deno check mod.ts && deno test --allow-read --allow-write --allow-run --allow-env --ignore=tests/data/database_test.ts --ignore=tests/T00/R10/api/health_query_test.ts tests/",
 
         // ── Studio & Build ───────────────────────────────────────
         "studio": "deno run --allow-read --allow-write --allow-run --allow-net mod.ts studio",
@@ -239,12 +303,33 @@
         "@std/fs": "jsr:@std/fs@1",
         "@std/path": "jsr:@std/path@1",
         "@std/fmt": "jsr:@std/fmt@1",
-        "@std/async": "jsr:@std/async@1"
+        "@std/async": "jsr:@std/async@1",
+        "@db/sqlite": "jsr:@db/sqlite@0.12",
+        "@lib/": "./lib/",
+        "@test/": "./tests/"
     },
 
     "compilerOptions": {
         "strict": true,
         "noUncheckedIndexedAccess": true
+    },
+
+    // ───────────────────────────────────────────────────────────
+    // Ct — Content Tool Config [TOOL]
+    // ───────────────────────────────────────────────────────────
+    //
+    // Config-driven values for cws-struct. Deno ignores _ prefixed keys.
+    // Each value has a hardcoded default — partial or missing is safe.
+
+    "_Ct": "─────────────────────────────────────────────────────────────",
+    "_Ct_tag": "Ct — Content Tool Config [TOOL]",
+
+    "_cwsStruct": {
+        "concurrency": 8,
+        "maxFiles": 10000,
+        "maxFileSize": 1048576,
+        "excludedDirs": [".git", "node_modules", ".cache", "__pycache__", "target", "bin"],
+        "impactWeights": { "error": 2.0, "warn": 1.0, "info": 0.25 }
     },
 
     // ───────────────────────────────────────────────────────────

@@ -1,0 +1,70 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-pragma-identity-i3-instance",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Pragma Identity — I3 Instance (File Specifics) — Rust Content",
+    "_P5_brief": "How Rust carries I3 Instance fields (file, title, component, path, provides, brief) in pub static PRAGMA slices. This particular file's name, purpose, and contribution.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/pragma-identity/i3-instance.jsonc",
+    "format": "rust",
+
+    "content": {
+        "tag": "I3",
+        "parent": "PragmaIdentity",
+        "static_name": "PRAGMA",
+
+        "can": {
+            "description": "I3 fields carried as key-value pairs in PRAGMA static slice, immediately after I2",
+            "patterns": [
+                "(\"I3.file\", \"exists.rs\"),",
+                "(\"I3.title\", \"Existence Verification\"),",
+                "(\"I3.component\", \"identity\"),",
+                "(\"I3.path\", \"src/identity/exists.rs\"),",
+                "(\"I3.provides\", \"file_exists(), path_valid()\"),",
+                "(\"I3.brief\", \"Verifies file existence before operations\"),"
+            ],
+            "field_order": ["file", "title", "component", "path", "provides", "brief"],
+            "note": "file and title are required. component, path, provides, brief are defined (present when meaningful). provides lists exported symbols."
+        },
+
+        "cannot": [
+            {
+                "construct": "I3.file mismatching actual filename",
+                "reason": "I3.file must match the actual filename. A file that lies about its name breaks traceability.",
+                "rust_signal": "I3\\.file value != actual filename"
+            },
+            {
+                "construct": "I3 fields before I2 in PRAGMA",
+                "reason": "Section order is I1 -> I2 -> I3 -> I4. Instance specifics follow classification.",
+                "rust_signal": "I3\\. appearing before I2\\."
+            }
+        ],
+
+        "scaffold": {
+            "slice_full": "(\"I3.file\", \"{file}\"),\n    (\"I3.title\", \"{title}\"),\n    (\"I3.component\", \"{component}\"),\n    (\"I3.path\", \"{path}\"),\n    (\"I3.provides\", \"{provides}\"),\n    (\"I3.brief\", \"{brief}\"),",
+            "slice_minimal": "(\"I3.file\", \"{file}\"),\n    (\"I3.title\", \"{title}\"),",
+            "slice_with_brief": "(\"I3.file\", \"{file}\"),\n    (\"I3.title\", \"{title}\"),\n    (\"I3.brief\", \"{brief}\"),",
+            "note": "Minimal scaffold requires file and title. Full scaffold includes all six I3 fields. Libraries should use full; modules can use minimal."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "I3 in Rust: the individual. file is the actual filename, title is the human-readable name, provides lists what the file exports. When grepping across thousands of files, I3 is how you find the one you need.",
+    "_X5_scripture": "Isaiah 43:1 — I have called thee by thy name; thou art mine."
+}

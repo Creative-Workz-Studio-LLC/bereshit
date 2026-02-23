@@ -1,0 +1,134 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-index-targets-go-library",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "composition-target",
+    "_P2_role": "index-target",
+    "_P5_title": "Go Library Composition Target",
+    "_P5_brief": "Composition recipe for building a Go library file (doc.go + package files). The public API surface — Uppercase exports, Pragma/Metadata [][2]string identity, error sentinels and typed errors, interface-based extensibility. 9 SETUP sections (no modules — Go uses packages), 5 BODY sections, 8 CLOSING sections. The linker's instruction set for //omni:code --go -library.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "target": {
+        "pragma": "//omni:code --go -library",
+        "format": "go",
+        "form": "library",
+        "block_pattern": "4-block",
+
+        "composition": {
+
+            "structure": {
+                "whole": "R50_codefile/universal/_structure.jsonc",
+                "molded": "forms/library/_structure.jsonc",
+                "parts": {
+                    "setup": [
+                        "R25_blocks/setup/imports/_structure.jsonc",
+                        "R25_blocks/setup/constants/_structure.jsonc",
+                        "R25_blocks/setup/statics/_structure.jsonc",
+                        "R25_blocks/setup/type-aliases/_structure.jsonc",
+                        "R25_blocks/setup/error-types/_structure.jsonc",
+                        "R25_blocks/setup/core-types/_structure.jsonc",
+                        "R25_blocks/setup/trait-defs/_structure.jsonc",
+                        "R25_blocks/setup/macros/_structure.jsonc",
+                        "R25_blocks/setup/feature-gates/_structure.jsonc"
+                    ],
+                    "body": [
+                        "R25_blocks/body/identity-access/_structure.jsonc",
+                        "R25_blocks/body/helpers/_structure.jsonc",
+                        "R25_blocks/body/core-logic/_structure.jsonc",
+                        "R25_blocks/body/queries/_structure.jsonc"
+                    ],
+                    "closing": [
+                        "R25_blocks/closing/validation/_structure.jsonc",
+                        "R25_blocks/closing/execution/_structure.jsonc",
+                        "R25_blocks/closing/cleanup/_structure.jsonc",
+                        "R25_blocks/closing/modification-policy/_structure.jsonc",
+                        "R25_blocks/closing/extension-points/_structure.jsonc",
+                        "R25_blocks/closing/troubleshooting/_structure.jsonc",
+                        "R25_blocks/closing/reference/_structure.jsonc",
+                        "R25_blocks/closing/closing-note/_structure.jsonc"
+                    ]
+                }
+            },
+
+            "content": {
+                "whole": "R50_codefile/universal/_content.jsonc",
+                "molded": "forms/library/go.jsonc",
+                "parts": {
+                    "setup": [
+                        "R25_blocks/setup/imports/go.jsonc",
+                        "R25_blocks/setup/constants/go.jsonc",
+                        "R25_blocks/setup/variables/go.jsonc",
+                        "R25_blocks/setup/type-aliases/go.jsonc",
+                        "R25_blocks/setup/error-types/go.jsonc",
+                        "R25_blocks/setup/core-types/go.jsonc",
+                        "R25_blocks/setup/interface-defs/go.jsonc",
+                        "R25_blocks/setup/type-methods/go.jsonc",
+                        "R25_blocks/setup/code-generation/go.jsonc",
+                        "R25_blocks/setup/build-tags/go.jsonc"
+                    ],
+                    "body": [
+                        "R25_blocks/body/org-chart/go.jsonc",
+                        "R25_blocks/body/helpers/go.jsonc",
+                        "R25_blocks/body/core-operations/go.jsonc",
+                        "R25_blocks/body/error-handling/go.jsonc",
+                        "R25_blocks/body/public-apis/go.jsonc"
+                    ],
+                    "closing": [
+                        "R25_blocks/closing/validation/go.jsonc",
+                        "R25_blocks/closing/execution/go.jsonc",
+                        "R25_blocks/closing/cleanup/go.jsonc",
+                        "R25_blocks/closing/modification-policy/go.jsonc",
+                        "R25_blocks/closing/extension-points/go.jsonc",
+                        "R25_blocks/closing/troubleshooting/go.jsonc",
+                        "R25_blocks/closing/reference/go.jsonc",
+                        "R25_blocks/closing/closing-note/go.jsonc"
+                    ]
+                }
+            }
+        },
+
+        "active_sections": {
+            "SETUP": {
+                "required": ["Imports", "Constants", "ErrorTypes", "CoreTypes"],
+                "available": ["Variables", "TypeAliases", "InterfaceDefs", "TypeMethods", "CodeGeneration", "BuildTags"],
+                "reserved": []
+            },
+            "BODY": {
+                "required": ["OrgChart", "CoreOperations", "PublicAPIs"],
+                "available": ["Helpers", "ErrorHandling"],
+                "ordering": "execution_flow"
+            },
+            "CLOSING": {
+                "required": ["Cv", "Ce", "X1", "X4", "X5"],
+                "available": ["Cc", "X2", "X3"],
+                "reserved": []
+            }
+        },
+
+        "resolution_order": [
+            "1. Load _structure.jsonc — block skeleton",
+            "2. Load forms/library/_structure.jsonc — form section rules",
+            "3. Load _content.jsonc — base code nature",
+            "4. Load forms/library/go.jsonc — Go library expectations",
+            "5. For each active section: load R25_blocks/{block}/{section}/_structure + {lang}",
+            "6. Merge: structure contracts + content specifics = complete rules"
+        ]
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The Go library is the package's public face — Uppercase exports define the contract. 9 SETUP sections (no modules — Go organizes by package, not mod declarations). 10 content parts map to 9 structure parts because interface-defs and type-methods both extend trait-defs (Go separates interface definition from method implementation; the structure recognizes both serve the same contract role). 4 unique BODY structure parts serve 5 content parts (core-operations and error-handling both extend core-logic). The composition loader's Map deduplicates structure paths automatically.",
+    "_X5_scripture": "Now ye are the body of Christ, and members in particular. — 1 Corinthians 12:27"
+}

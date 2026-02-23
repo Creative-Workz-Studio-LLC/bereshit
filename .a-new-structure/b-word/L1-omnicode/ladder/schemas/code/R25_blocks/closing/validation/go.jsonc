@@ -1,0 +1,147 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-closing-validation",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section Cv: Validation (Tests) — Go Content",
+    "_P5_brief": "Go-specific content rules for Cv (Validation/Tests). Table-driven tests with t.Run() subtests, t.Helper() for clean stack traces, organized by BODY section. Extends the base structure at blocks/closing/validation.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/closing/validation.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "func TestName(t *testing.T) { ... }",
+                "description": "Test functions — Go convention: Test prefix + PascalCase name describing what's tested",
+                "patterns": [
+                    "func TestOpen_ValidPath(t *testing.T) {\n\tdb, err := Open(\"testdata/valid.db\")\n\tif err != nil {\n\t\tt.Fatalf(\"Open: unexpected error: %v\", err)\n\t}\n\tdefer db.Close()\n\tif db == nil {\n\t\tt.Fatal(\"Open: returned nil\")\n\t}\n}"
+                ],
+                "visibility": "N/A — test function"
+            },
+            {
+                "construct": "table-driven tests with t.Run() subtests",
+                "description": "Go's canonical test pattern — define cases as a slice, iterate with subtests",
+                "patterns": [
+                    "func TestValidate(t *testing.T) {\n\ttests := []struct {\n\t\tname    string\n\t\tinput   string\n\t\twantErr bool\n\t}{\n\t\t{\"valid\", \"hello\", false},\n\t\t{\"empty\", \"\", true},\n\t\t{\"too long\", strings.Repeat(\"a\", 256), true},\n\t}\n\tfor _, tt := range tests {\n\t\tt.Run(tt.name, func(t *testing.T) {\n\t\t\terr := Validate(tt.input)\n\t\t\tif (err != nil) != tt.wantErr {\n\t\t\t\tt.Errorf(\"Validate(%q) error = %v, wantErr %v\", tt.input, err, tt.wantErr)\n\t\t\t}\n\t\t})\n\t}\n}"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "t.Helper() in helper functions",
+                "description": "Marks function as test helper — failures report caller's line, not the helper's",
+                "patterns": [
+                    "func assertNoError(t *testing.T, err error) {\n\tt.Helper()\n\tif err != nil {\n\t\tt.Fatalf(\"unexpected error: %v\", err)\n\t}\n}",
+                    "func requireEqual(t *testing.T, got, want interface{}) {\n\tt.Helper()\n\tif got != want {\n\t\tt.Errorf(\"got %v, want %v\", got, want)\n\t}\n}"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// -- B{N} Section Name ---- organized by BODY section",
+                "description": "Test groups organized by the BODY section they verify",
+                "patterns": [
+                    "// -- B1 Org Chart ----",
+                    "// -- B2 Helpers ----",
+                    "// -- B3 Core Operations ----",
+                    "// -- B4 Error Handling ----",
+                    "// -- B5 Public APIs ----"
+                ],
+                "note": "Organize tests by the BODY section they prove."
+            },
+            {
+                "construct": "testify assertions (when used)",
+                "description": "Third-party assertion library — require.* for fatal, assert.* for non-fatal",
+                "patterns": [
+                    "require.NoError(t, err)\nassert.Equal(t, expected, actual)\nassert.Contains(t, output, \"expected substring\")"
+                ],
+                "visibility": "N/A",
+                "note": "Standard library assertions preferred. testify acceptable for large test suites."
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "tests in production files (non _test.go)",
+                "reason": "Go convention: tests go in *_test.go files or in CLOSING Cv of the same file",
+                "defer_to": "N/A — use _test.go files for integration tests",
+                "go_signal": "N/A — architecture decision"
+            },
+            {
+                "construct": "shared mutable state between tests",
+                "reason": "go test runs subtests and test functions potentially in parallel. Shared mutable state causes race conditions detected by -race.",
+                "defer_to": "N/A — use fresh state per test",
+                "go_signal": "var\\s+\\w+\\s*=.*// shared"
+            },
+            {
+                "construct": "tests with ordering dependencies",
+                "reason": "Test execution order is not guaranteed. Each test must be self-contained.",
+                "defer_to": "N/A — make tests independent",
+                "go_signal": "N/A"
+            },
+            {
+                "construct": "production functions",
+                "reason": "Cv is for tests only — production code belongs in BODY",
+                "defer_to": "BODY (based on function purpose)",
+                "go_signal": "^func\\s+(?!Test)(?!Benchmark)(?!assert)(?!require)\\w+\\("
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "^func\\s+(?!Test)(?!Benchmark)(?!assert)(?!require)[A-Z]\\w+\\(",
+                "to": "BODY.PublicAPIs",
+                "confidence": "high",
+                "why": "Exported non-test function in Cv — production code"
+            },
+            {
+                "pattern": "^func\\s+(?!Test)(?!Benchmark)[a-z]\\w+\\((?!t\\s+\\*testing)",
+                "to": "BODY.Helpers or BODY.CoreOperations",
+                "confidence": "medium",
+                "why": "Non-test private function without testing.T — likely production code"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// Cv -- Closing Validation\n\n// -- B1 Org Chart ----\n\nfunc TestPragmaGet_ReturnsValue(t *testing.T) {\n\tgot := PragmaGet(\"I1.key\")\n\tif got == \"\" {\n\t\tt.Error(\"PragmaGet(\\\"I1.key\\\") returned empty\")\n\t}\n}\n\n// -- B2 Helpers ----\n\n// -- B3 Core Operations ----\n\n// -- B4 Error Handling ----\n\n// -- B5 Public APIs ----",
+            "empty_executable": "// Cv -- Closing Validation\n\nfunc TestRun_Success(t *testing.T) {\n\terr := run()\n\tif err != nil {\n\t\tt.Fatalf(\"run: unexpected error: %v\", err)\n\t}\n}",
+            "empty_demo_test": "// Cv -- Closing Validation\n//\n// Meta-validation — tests that verify test infrastructure.\n// Use sparingly — most validation happens in the test functions themselves.",
+            "comment_skeleton": "// Cv -- Closing Validation\n// func TestName(t *testing.T) { ... }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Cv (Validation): table-driven tests organized by BODY section. t.Run() for subtests, t.Helper() for clean stack traces. Tests are the code's testimony — they prove the logic holds under scrutiny.",
+    "_X5_scripture": "Proverbs 17:3 — The fining pot is for silver, and the furnace for gold: but the LORD trieth the hearts."
+}

@@ -1,0 +1,67 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-metadata-context-c1-state",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Metadata Context — C1 State (Lifecycle) — Rust Content",
+    "_P5_brief": "How Rust carries C1 State fields (version, status, created, updated) in pub static METADATA slices. The timeline in compiled statics.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/metadata-context/c1-state.jsonc",
+    "format": "rust",
+
+    "content": {
+        "tag": "C1",
+        "parent": "MetadataContext",
+        "static_name": "METADATA",
+
+        "can": {
+            "description": "C1 fields carried as key-value pairs in METADATA static slice, as the first C-section entries",
+            "patterns": [
+                "(\"C1.version\", \"a-01.00\"),",
+                "(\"C1.status\", \"active\"),",
+                "(\"C1.created\", \"2026-01-15\"),",
+                "(\"C1.updated\", \"2026-02-21\"),"
+            ],
+            "field_order": ["version", "status", "created", "updated"],
+            "note": "version and status are required. created and updated are defined (present when meaningful). version uses living versioning format (stage-phase.completion)."
+        },
+
+        "cannot": [
+            {
+                "construct": "C1 fields after C2 in METADATA",
+                "reason": "C1 is the first context section. Lifecycle comes before attribution.",
+                "rust_signal": "C2\\. appearing before C1\\."
+            },
+            {
+                "construct": "C1.version not matching living versioning format",
+                "reason": "Version must follow stage-phase.completion (e.g., a-01.00, b-02.50, c-01.00).",
+                "rust_signal": "C1\\.version.*[^abc]-\\d{2}\\.\\d{2}"
+            }
+        ],
+
+        "scaffold": {
+            "slice_full": "// C1 State — lifecycle\n    (\"C1.version\", \"{version}\"),\n    (\"C1.status\", \"{status}\"),\n    (\"C1.created\", \"{created}\"),\n    (\"C1.updated\", \"{updated}\"),",
+            "slice_minimal": "(\"C1.version\", \"{version}\"),\n    (\"C1.status\", \"{status}\"),",
+            "note": "Full scaffold includes section comment and all four fields. Minimal omits dates for simple files."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "C1 in Rust: the heartbeat. version tells you how far, status tells you where in lifecycle, created tells you when born, updated tells you when last changed. Without C1, the file exists outside time.",
+    "_X5_scripture": "Ecclesiastes 3:1 — To every thing there is a season, and a time to every purpose under the heaven."
+}

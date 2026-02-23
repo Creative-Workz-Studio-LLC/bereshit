@@ -1,0 +1,173 @@
+{
+  "name": "omnicode-language",
+  "displayName": "OmniCode Language",
+  "description": "Full language support for OmniCode (.omni) and OmniFold (.ofd) files — syntax highlighting, structural alignment linting via cws-struct, health scoring, and QuickFix code actions",
+  "version": "0.3.0",
+  "publisher": "creativeworkzstudio",
+  "author": {
+    "name": "CreativeWorkzStudio LLC",
+    "url": "https://github.com/Creative-Workz-Studio-LLC"
+  },
+  "license": "Proprietary",
+  "icon": "icon.png",
+  "main": "./out/extension.js",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:omnicode",
+    "onLanguage:omnifold",
+    "onLanguage:go",
+    "onLanguage:rust",
+    "onLanguage:toml",
+    "onLanguage:json",
+    "onLanguage:jsonc",
+    "onLanguage:makefile",
+    "workspaceContains:**/*.omni",
+    "workspaceContains:**/*.ofd"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "omnicode.lintFile",
+        "title": "OmniCode: Lint Current File",
+        "icon": "$(search-refresh)"
+      },
+      {
+        "command": "omnicode.lintAllFiles",
+        "title": "OmniCode: Lint All Open Files"
+      },
+      {
+        "command": "omnicode.showHealthDetails",
+        "title": "OmniCode: Show Health Details"
+      },
+      {
+        "command": "omnicode.showOutput",
+        "title": "OmniCode: Show Output Channel"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        { "command": "omnicode.lintFile", "when": "editorIsOpen" },
+        { "command": "omnicode.lintAllFiles" },
+        { "command": "omnicode.showHealthDetails", "when": "editorIsOpen" },
+        { "command": "omnicode.showOutput" }
+      ]
+    },
+    "languages": [
+      {
+        "id": "omnicode",
+        "aliases": ["OmniCode", "omnicode", "Omni"],
+        "extensions": [".omni"],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon.png"
+        }
+      },
+      {
+        "id": "omnifold",
+        "aliases": ["OmniFold", "omnifold", "OFD"],
+        "extensions": [".ofd"],
+        "configuration": "./omnifold-language-configuration.json",
+        "icon": {
+          "light": "./ofd-icon.png",
+          "dark": "./ofd-icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "omnicode",
+        "scopeName": "source.omnicode",
+        "path": "./syntaxes/omnicode.tmLanguage.json"
+      },
+      {
+        "language": "omnifold",
+        "scopeName": "source.json.omnifold",
+        "path": "./syntaxes/omnifold.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "OmniCode Language",
+      "properties": {
+        "omnicode.cwsStructPath": {
+          "type": "string",
+          "default": "cws-struct",
+          "description": "Path to cws-struct binary. Searched in PATH, then ~/.local/share/claude/bin/",
+          "order": 1
+        },
+        "omnicode.lintOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run structural alignment lint on file save",
+          "order": 2
+        },
+        "omnicode.lintOnOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run structural alignment lint when opening files",
+          "order": 3
+        },
+        "omnicode.policy": {
+          "type": "string",
+          "enum": ["strict", "balanced", "growth"],
+          "enumDescriptions": [
+            "Strict (-1): tighten severity — info→warn, warn→error",
+            "Balanced (0): severity as declared — development default",
+            "Growth (+1): loosen severity — error→warn, warn→info"
+          ],
+          "default": "balanced",
+          "description": "Ternary lint policy controlling severity thresholds",
+          "order": 4
+        },
+        "omnicode.debounceMs": {
+          "type": "number",
+          "default": 300,
+          "minimum": 0,
+          "maximum": 5000,
+          "description": "Milliseconds to wait after save before linting",
+          "order": 5
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --target=node18",
+    "watch": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --target=node18 --watch",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^18.0.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Creative-Workz-Studio-LLC/workspace"
+  },
+  "homepage": "https://github.com/Creative-Workz-Studio-LLC/workspace",
+  "bugs": {
+    "url": "https://github.com/Creative-Workz-Studio-LLC/workspace/issues"
+  },
+  "keywords": [
+    "omnicode",
+    "omnifold",
+    "syntax-highlighting",
+    "block-structure",
+    "linter",
+    "structural-alignment",
+    "cws-struct",
+    "kingdom-technology",
+    "creativeworkzstudio"
+  ],
+  "galleryBanner": {
+    "color": "#1E1E2E",
+    "theme": "dark"
+  }
+}

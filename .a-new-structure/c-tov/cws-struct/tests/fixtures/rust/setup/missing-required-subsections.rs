@@ -7,8 +7,8 @@
 //
 // Key:     B-test-fixture-missing-required-setup-rust
 // Purpose: Test fixture — library subtype missing required SETUP subsections.
-//          Has Imports but missing Modules (S2), ErrorTypes (S6), and
-//          CoreTypes (S7) which the schema marks as requiredIn: ["library"].
+//          Has Imports but missing Constants (S3), Error Types (S6), and
+//          Core Types (S7) which the form schema marks as required for library.
 //          Should trigger setup/required-subsection warnings.
 //
 // ============================================================================
@@ -25,7 +25,7 @@
 
 // (none — fixture)
 
-// NOTE: Missing S2 Modules, S6 ErrorTypes, S7 CoreTypes — all required for library.
+// NOTE: Missing S3 Constants, S6 Error Types, S7 Core Types — all required for library.
 
 // ============================================================================
 // END SETUP

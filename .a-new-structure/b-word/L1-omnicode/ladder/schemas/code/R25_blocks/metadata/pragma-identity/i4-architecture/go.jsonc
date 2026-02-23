@@ -1,0 +1,63 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-pragma-identity-i4-architecture",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Pragma Identity -- I4 Architecture (Structural Context) -- Go Content",
+    "_P5_brief": "Go-specific content for I4 Architecture fields. layer, position, pattern carried in Pragma slice. Enables architectural-level querying across Go packages.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/pragma-identity/i4-architecture.jsonc",
+    "format": "go",
+
+    "sub_container": {
+        "tag": "I4",
+        "label": "I4 Architecture -- Structural Context (Go)",
+        "parent": "PragmaIdentity",
+
+        "go_construct": "I4 entries in var Pragma = [][2]string{...}",
+        "go_visibility": "exported -- within exported Pragma var",
+        "go_note": "I4 fields are optional (defined, not required). When present, they enable architectural-level querying -- which Go packages sit at which layer, in which position of the dependency chain.",
+
+        "field_format": {
+            "key_pattern": "I4.{field}",
+            "examples": ["I4.layer", "I4.position", "I4.pattern"],
+            "note": "I4 section follows I3 in the Pragma slice. Last I-section."
+        },
+
+        "can": [
+            {
+                "construct": "I4 fields in Pragma slice",
+                "description": "Architectural context entries -- layer, position, pattern",
+                "patterns": [
+                    "\t{\"I4.layer\", \"L1\"},",
+                    "\t{\"I4.position\", \"foundation\"},",
+                    "\t{\"I4.pattern\", \"service-layer\"},"
+                ],
+                "note": "I4 fields are the last identity entries before the Pragma slice closes. Not every Go file needs I4 -- but when present, it places the package in the architecture."
+            }
+        ],
+
+        "scaffold": {
+            "i4_fields": "\t{\"I4.layer\", \"{layer}\"},\n\t{\"I4.position\", \"{position}\"},\n\t{\"I4.pattern\", \"{pattern}\"},"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "I4 Architecture in Go -- the structural address. layer, position, pattern in [][2]string pairs. Optional but powerful -- enables querying which Go packages sit at which architectural tier.",
+    "_X5_scripture": "1 Corinthians 3:10 -- According to the grace of God which is given unto me, as a wise masterbuilder, I have laid the foundation."
+}

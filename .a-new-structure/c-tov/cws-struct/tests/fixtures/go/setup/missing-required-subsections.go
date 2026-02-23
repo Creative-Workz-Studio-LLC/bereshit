@@ -10,9 +10,9 @@ package fixture
 //
 // Key:     B-test-fixture-missing-required-setup
 // Purpose: Test fixture — library subtype missing required SETUP subsections.
-//          Has Imports but missing ErrorTypes (S5) and CoreTypes (S6) which
-//          the schema marks as requiredIn: ["library"]. Should trigger
-//          setup/required-subsection warnings.
+//          Has Imports and Constants but missing Error Types (S6) and
+//          Core Types (S7) which the schema marks as requiredIn for library.
+//          Should trigger setup/required-subsection warnings.
 //
 
 var Pragma = [][2]string{
@@ -51,12 +51,12 @@ var Metadata = [][2]string{
 import "fmt"
 
 // ──────────────────────────────────────────────────────────────────────────
-// 2. Constants
+// 3. Constants
 // ──────────────────────────────────────────────────────────────────────────
 
 const Version = "1.0.0"
 
-// NOTE: Missing S5 ErrorTypes and S6 CoreTypes — both required for library.
+// NOTE: Missing Error Types (pos 6) and Core Types (pos 7) — both required for library.
 
 // ============================================================================
 // END SETUP

@@ -1,0 +1,98 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-setup-type-aliases",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 5: Type Aliases — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Type Aliases. Domain vocabulary shortcuts for complex types. AVAILABLE in library and module forms.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/type-aliases.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "pub type Result<T> = std::result::Result<T, Error>;",
+                "description": "Crate-level Result alias — the canonical example",
+                "patterns": [
+                    "pub type Result<T> = std::result::Result<T, Error>;",
+                    "pub(crate) type Result<T> = std::result::Result<T, Error>;"
+                ],
+                "visibility": "pub for library, pub(crate) for module"
+            },
+            {
+                "construct": "type {Name} = {ComplexType};",
+                "description": "Domain vocabulary aliases — simplifying complex type expressions",
+                "patterns": [
+                    "type HandlerMap = HashMap<String, Box<dyn Handler>>;",
+                    "type Callback = Box<dyn Fn(&Event) -> Result<()>>;"
+                ],
+                "visibility": "varies"
+            },
+            {
+                "construct": "/// doc comment explaining what the alias simplifies",
+                "description": "Each alias documents what it replaces and why",
+                "patterns": [
+                    "/// Crate-level result type using our error enum."
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "type aliases that hide important information",
+                "reason": "Alias should clarify, not obscure. If the full type carries meaning the alias loses, don't alias.",
+                "defer_to": "N/A — use the full type",
+                "rust_signal": "N/A — design judgment"
+            },
+            {
+                "construct": "aliases used in only one place",
+                "reason": "Wait until 3+ uses before aliasing. One-use alias is just indirection.",
+                "defer_to": "N/A — wait for repetition",
+                "rust_signal": "N/A"
+            },
+            {
+                "construct": "struct / enum definitions",
+                "reason": "Type aliases are `type Name = ...;` — not struct/enum declarations",
+                "defer_to": "SETUP.CoreTypes",
+                "rust_signal": "^(pub\\s+)?(struct|enum)\\s+"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "^(pub\\s+)?(struct|enum)\\s+",
+                "to": "SETUP.CoreTypes",
+                "confidence": "high",
+                "why": "Struct/enum definition — not a type alias"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// No module-level type aliases needed.",
+            "empty_library": "/// Crate-level result type.\npub type Result<T> = std::result::Result<T, Error>;",
+            "comment_skeleton": "// pub type Result<T> = std::result::Result<T, Error>;"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Type Aliases: vocabulary for complex types. type Result<T> is the canonical example — every function says Result instead of spelling the error type each time. Aliases should clarify, never obscure.",
+    "_X5_scripture": "Proverbs 25:11 — A word fitly spoken is like apples of gold in pictures of silver."
+}

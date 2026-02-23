@@ -1,0 +1,132 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-R50-languages-go-non-code",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "non-code-schema",
+    "_P2_role": "language-non-code",
+    "_P5_title": "Go Non-Code Elements Schema (R[50])",
+    "_P5_brief": "Go-specific non-code elements: documentation patterns, comments, directives, blanks, separators. Everything the chunking engine must recognize that ISN'T executable Go code. The handler handles language exceptions; this schema defines what those exceptions ARE.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "language": "go",
+    "purpose": "Define non-code elements for the universal chunking engine",
+
+    "chunk_categories": {
+        "note": "These are the non-code chunk categories the chunker produces. Code categories come from content_kinds in go.jsonc.",
+
+        "pragma": {
+            "description": "OmniCode pragma directives — machine-readable identity markers",
+            "start_pattern": "^//\\s+#!omni\\b",
+            "continuation": "^//omni:",
+            "multi_line": true,
+            "block_target": "METADATA"
+        },
+
+        "doc_comment": {
+            "description": "Documentation comments immediately before declarations",
+            "start_pattern": "^//",
+            "continuation": "^//",
+            "multi_line": true,
+            "attaches_to": "next_declaration",
+            "detection_method": "contextual",
+            "note": "Go doc comments use the same // prefix as regular comments — no special syntax like Rust's ///. Detection is CONTEXTUAL, not pattern-based: a // comment block immediately preceding a declaration (no blank line between) is a doc comment. The chunker config sets itemDoc=false because Go doc attachment happens in content_kind lookahead, not in the universal engine's pattern matching."
+        },
+
+        "comment": {
+            "description": "Regular comments (not doc, not pragma, not separator)",
+            "start_pattern": "^//",
+            "excludes": ["pragma", "doc_comment", "separator"],
+            "multi_line": true,
+            "standalone": true
+        },
+
+        "separator": {
+            "description": "Block and subsection separator lines (===, ---, ═══, ───)",
+            "patterns": [
+                "^//\\s*[═=]{10,}",
+                "^//\\s*[─\\-]{10,}"
+            ],
+            "may_include_title": true,
+            "structure": "separator_line + optional_title_line + separator_line",
+            "note": "Includes Unicode box-drawing characters: ═ (U+2550, double horizontal) and ─ (U+2500, light horizontal) alongside ASCII = and -. isSeparatorBanner() recognizes all four."
+        },
+
+        "blank": {
+            "description": "Empty lines — whitespace only",
+            "pattern": "^\\s*$",
+            "multi_line": true,
+            "role": "visual_separation"
+        },
+
+        "build_tag": {
+            "description": "Go build constraints (//go:build and legacy // +build)",
+            "patterns": [
+                "^//go:build\\b",
+                "^//\\s+\\+build\\b"
+            ],
+            "placement": "Before package declaration, first line of file after pragma",
+            "block_target": "METADATA",
+            "note": "//go:build replaced // +build in Go 1.17. Both forms should be recognized. Build tags are file-level identity — they belong in METADATA, not SETUP."
+        },
+
+        "generate_directive": {
+            "description": "Go code generation directives (//go:generate)",
+            "pattern": "^//go:generate\\b",
+            "placement": "SETUP, near imports",
+            "block_target": "SETUP",
+            "examples": ["//go:generate stringer -type=Pill", "//go:generate mockgen -source=service.go"]
+        },
+
+        "compiler_directive": {
+            "description": "Go compiler directives (//go:noinline, //go:nosplit, //go:linkname, etc.)",
+            "patterns": [
+                "^//go:noinline\\b",
+                "^//go:nosplit\\b",
+                "^//go:linkname\\b",
+                "^//go:noescape\\b",
+                "^//go:nowritebarrier\\b",
+                "^//go:systemstack\\b",
+                "^//go:uintptrescapes\\b"
+            ],
+            "attaches_to": "next_declaration",
+            "note": "Compiler directives modify the next function declaration. Similar to Rust #[inline] attributes. Preserved during scaffold --force via goPreserveLine().",
+            "examples": ["//go:noinline", "//go:linkname localName pkg.RemoteName"]
+        }
+    },
+
+    "chunking_rules": {
+        "doc_comment_attachment": {
+            "description": "How to determine if a // comment is a doc comment",
+            "rule": "A comment block immediately preceding a declaration (no blank line between) is a doc comment. It attaches to that declaration's chunk.",
+            "exception": "If a blank line separates the comment from the declaration, it's a standalone comment."
+        },
+
+        "separator_grouping": {
+            "description": "How to group separator lines",
+            "rule": "A separator (=== or ---) followed by a title line (// WORD) followed by another separator is ONE chunk. Partial separators (just the line) are also one chunk."
+        },
+
+        "package_special": {
+            "description": "package declaration is always first code line",
+            "rule": "package_decl is its own chunk, never grouped with other declarations",
+            "category": "package_decl"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Non-code is not nothing. It's the connective tissue — the comments that explain, the separators that organize, the pragmas that identify, the blanks that let code breathe. The chunker must see all of it, classify all of it, and route all of it. Everything that isn't Go code is still structure.",
+    "_X5_scripture": "The eye cannot say unto the hand, I have no need of thee. — 1 Corinthians 12:21"
+}

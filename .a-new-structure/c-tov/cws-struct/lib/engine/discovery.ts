@@ -33,22 +33,25 @@ import { detectFormat, getFormat } from "./registry.ts";
 /**
  * Maximum number of files to discover per run.
  * Prevents memory exhaustion on excessively large directory trees.
+ * Configurable via setDiscoveryLimits().
  */
-const MAX_DISCOVERED_FILES = 10_000;
+let MAX_DISCOVERED_FILES = 10_000;
 
 /**
  * Maximum file size to accept (1MB).
  * Source files should never be this large — anything bigger is almost certainly
  * generated, vendored, or binary. Skip with a warning.
+ * Configurable via setDiscoveryLimits().
  */
-const MAX_FILE_SIZE = 1_048_576;
+let MAX_FILE_SIZE = 1_048_576;
 
 /**
  * Regex patterns for directories always excluded from walking — version control,
  * dependencies, build artifacts. These are never structural source files.
  * Used with @std/fs/walk's `skip` option which takes RegExp[].
+ * Configurable via setDiscoveryLimits().
  */
-const EXCLUDED_DIR_PATTERNS: RegExp[] = [
+let EXCLUDED_DIR_PATTERNS: RegExp[] = [
   /[/\\]\.git$/,
   /[/\\]node_modules$/,
   /[/\\]\.cache$/,
@@ -56,6 +59,24 @@ const EXCLUDED_DIR_PATTERNS: RegExp[] = [
   /[/\\]target$/,   // Rust/Cargo build output
   /[/\\]bin$/,       // compiled binaries
 ];
+
+/**
+ * Configure discovery limits from tool config. Call before dispatching to commands.
+ * Follows the same module-level setter pattern as setGlobalPolicy().
+ */
+export function setDiscoveryLimits(opts: {
+  maxFiles?: number;
+  maxFileSize?: number;
+  excludedDirs?: string[];
+}): void {
+  if (opts.maxFiles !== undefined) MAX_DISCOVERED_FILES = opts.maxFiles;
+  if (opts.maxFileSize !== undefined) MAX_FILE_SIZE = opts.maxFileSize;
+  if (opts.excludedDirs !== undefined) {
+    EXCLUDED_DIR_PATTERNS = opts.excludedDirs.map(
+      (dir) => new RegExp(`[/\\\\]${dir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`),
+    );
+  }
+}
 
 // ============================================================================
 // BODY

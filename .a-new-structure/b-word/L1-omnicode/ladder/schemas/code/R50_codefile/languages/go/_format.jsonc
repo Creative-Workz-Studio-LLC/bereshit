@@ -1,0 +1,102 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-R50-languages-go-format",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "format-schema",
+    "_P2_role": "language-formatting",
+    "_P5_title": "Go Language Formatting Rules (R[50])",
+    "_P5_brief": "Go-specific formatting additions that build ON universal _format.jsonc. Defines Go comment syntax, pragma expression, identity construct format, and Go-specific structural patterns. Inherits universal, never replaces.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "language": "go",
+    "inherits": "../universal/_format.jsonc",
+
+    "comment_syntax": {
+        "line": "//",
+        "block_open": "/*",
+        "block_close": "*/",
+        "doc_comment": null,
+        "inner_doc": null,
+        "note": "Go has no dedicated doc comment syntax. Documentation is plain // comments immediately preceding declarations. godoc extracts these by convention, not by syntax."
+    },
+
+    "pragma_expression": {
+        "pragma_line": "// #!omni code --go",
+        "directive_prefix": "//omni:",
+        "examples": {
+            "key": "//omni:key B-example-key",
+            "version": "//omni:version a-01.00",
+            "pragma": "//omni:pragma Pragma",
+            "metadata": "//omni:metadata Metadata"
+        }
+    },
+
+    "identity_constructs": {
+        "pragma_var": {
+            "pattern": "var Pragma = [][2]string{",
+            "type": "[][2]string",
+            "description": "Go Pragma var: ordered pairs of {\"I1.key\", \"value\"}. Slice of 2-element string arrays.",
+            "field_pattern": "{\"<section>.<field>\", \"<value>\"}"
+        },
+        "metadata_var": {
+            "pattern": "var Metadata = [][2]string{",
+            "type": "[][2]string",
+            "description": "Go Metadata var: ordered pairs of {\"C1.version\", \"value\"}. Same format as Pragma.",
+            "field_pattern": "{\"<section>.<field>\", \"<value>\"}"
+        }
+    },
+
+    "separator_expression": {
+        "block_separator": "// ============================================================================",
+        "subsection_separator": "// ---------------------------------------------------------------------------",
+        "width_includes_prefix": false,
+        "note": "Go separators include // prefix. The separator width is measured AFTER the prefix."
+    },
+
+    "block_tags": {
+        "metadata": "// METADATA",
+        "setup": "// SETUP",
+        "body": "// BODY",
+        "closing": "// CLOSING",
+        "end_prefix": "// END "
+    },
+
+    "go_specific": {
+        "build_tags": {
+            "modern": "//go:build <constraint>",
+            "legacy": "// +build <constraint>",
+            "placement": "Before package declaration, after blank line"
+        },
+        "generate_directives": {
+            "pattern": "//go:generate <command>",
+            "placement": "SETUP, typically near imports"
+        },
+        "package_declaration": {
+            "pattern": "package <name>",
+            "required": true,
+            "placement": "Top of file, after build tags if present"
+        },
+        "import_block": {
+            "single": "import \"path\"",
+            "grouped": "import (\n    \"path1\"\n    \"path2\"\n)",
+            "convention": "stdlib first, blank line, external packages, blank line, internal packages"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go formatting is Go. gofmt handles whitespace. We handle structure. The comment-based separators, identity vars as [][2]string slices, package declaration requirement — these are how the universal 4-block pattern speaks Go.",
+    "_X5_scripture": "Let all things be done decently and in order. — 1 Corinthians 14:40"
+}

@@ -1,0 +1,91 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-closing-troubleshooting",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section X3: Troubleshooting — Go Content",
+    "_P5_brief": "Go-specific content rules for X3 (Troubleshooting). Common problems and solutions. AVAILABLE in library and executable forms.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/closing/troubleshooting.jsonc",
+    "format": "go",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "// Problem -> Solution pairs",
+                "description": "Common issues encountered when using or modifying this file",
+                "patterns": [
+                    "// X3 — Troubleshooting\n//\n// Problem: go build fails with 'imported and not used'\n// Solution: Remove the unused import, or use _ blank import if side-effect is needed\n//\n// Problem: go vet reports 'composite literal uses unkeyed fields'\n// Solution: Use named fields in struct literals (Config{Name: \"x\"} not Config{\"x\"})"
+                ],
+                "visibility": "N/A — documentation"
+            },
+            {
+                "construct": "// Common Mistakes -> Correct approaches",
+                "description": "Patterns developers commonly get wrong with this code",
+                "patterns": [
+                    "// Common Mistake: Ignoring returned errors (_, _ = fn())\n// Correct: Handle every error explicitly — if err != nil { return err }\n//\n// Common Mistake: Exported types with unexported fields that need external construction\n// Correct: Provide a New() constructor or use exported fields"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// Race condition guidance",
+                "description": "Go-specific concurrency pitfalls relevant to this file",
+                "patterns": [
+                    "// Problem: go test -race reports data race\n// Solution: Protect shared state with sync.Mutex or use channels.\n//          Run go test -race regularly — races are non-deterministic."
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "executable Go code",
+                "reason": "X3 is documentation — diagnostic guidance, not implementation",
+                "defer_to": "BODY or CLOSING Cv",
+                "go_signal": "^(func|type|var|const|import)\\s+"
+            },
+            {
+                "construct": "known bugs without workarounds",
+                "reason": "If there's no workaround, it's an issue to fix, not a troubleshooting entry",
+                "defer_to": "N/A — fix the bug or document the workaround",
+                "go_signal": "N/A"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "^(func|type|var|const)\\s+",
+                "to": "BODY",
+                "confidence": "high",
+                "why": "Executable code in documentation section"
+            }
+        ],
+
+        "scaffold": {
+            "empty_library": "// X3 — Troubleshooting\n//\n// (No known issues. Add Problem/Solution pairs as they arise.)",
+            "empty_executable": "// X3 — Troubleshooting\n//\n// (No known issues. Add Problem/Solution pairs as they arise.)",
+            "empty_demo_test": "// X3 — Troubleshooting\n//\n// (No known issues. Add Problem/Solution pairs as they arise.)",
+            "comment_skeleton": "// X3 — Troubleshooting\n// Problem: ...\n// Solution: ..."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go X3 (Troubleshooting): saves debugging time. Problem/Solution pairs for common Go issues. Go's explicit error handling means many problems are caught at write-time, but race conditions and interface satisfaction are runtime concerns.",
+    "_X5_scripture": "Proverbs 24:16 — For a just man falleth seven times, and riseth up again."
+}

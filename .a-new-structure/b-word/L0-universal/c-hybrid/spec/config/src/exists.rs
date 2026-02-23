@@ -1,6 +1,6 @@
-// #!omni code --rust -module
+// #!omni code --rust -module->utility
 //omni:key B-L0-hybrid-config-exists
-//omni:code --rust -module
+//omni:code --rust -module->utility
 //omni:version b-03.00
 //! Filesystem predicates — single source of truth for existence checks.
 //!
@@ -308,10 +308,14 @@ pub fn ensure_dir(path: &Path) -> io::Result<()> {
 // ──────────────────────────────────────────────────────────────────────────
 //
 // Available (not needed in this module):
-//   Trait Implementations  — No types implementing traits
+//   Org Chart               — Four functions, one concern; structure is self-evident
+//   Trait Implementations   — No types implementing traits
 //   Constructors & Builders — No types requiring construction
 //   Core Logic              — Stateless utility functions live in Free Functions
+//   Core Operations         — Same as Core Logic; no stateful operations
 //   Queries & Accessors     — No types with observable state
+//   Error Handling          — Uses std::io::Error directly; no custom error types
+//   Public APIs             — All public functions live in Free Functions (§7)
 //
 // Reserved (structural — not used in module form):
 //   Output & Display — Belongs to the crate's output layer; modules return data.

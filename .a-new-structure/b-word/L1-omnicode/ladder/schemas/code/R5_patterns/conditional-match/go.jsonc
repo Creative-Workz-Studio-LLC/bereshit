@@ -1,0 +1,60 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-conditional-match",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — Conditional Match (Switch)",
+
+    "concept": "conditional_match",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "switch_value",
+            "emit": "switch {scrutinee} {\n{cases}\n}",
+            "when": "matching against a value — Rust match on value",
+            "notes": "Go switch: no fallthrough by default (opposite of C).",
+            "priority": 1
+        },
+        {
+            "id": "switch_type",
+            "emit": "switch {scrutinee}.(type) {\n{cases}\n}",
+            "when": "matching against type — Rust match on enum variant",
+            "notes": "Type switch for interface type assertion.",
+            "priority": 2
+        },
+        {
+            "id": "case_with_guard",
+            "emit": "case {pattern}:\n\tif {guard} {\n\t\t{body}\n\t}",
+            "when": "Rust arm with guard → Go case + inner if",
+            "notes": "Go has no case guards — use nested if inside case body.",
+            "priority": 3
+        },
+        {
+            "id": "case_simple",
+            "emit": "case {pattern}:\n\t{body}",
+            "when": "simple case without guard",
+            "priority": 4
+        },
+        {
+            "id": "case_default",
+            "emit": "default:\n\t{body}",
+            "when": "wildcard/default case — Rust _ => ...",
+            "priority": 5
+        }
+    ],
+
+    "rust_match_translation": {
+        "Ok(val) if guard =>": "Guard becomes nested if inside case. val bound via type assertion or error check.",
+        "Ok(_) =>": "Catch-all success case — 'default:' or explicit nil error check.",
+        "Err(e) if e.kind() == X =>": "Error kind check becomes 'if errors.Is(err, os.ErrExist)' or similar.",
+        "Err(e) =>": "Catch-all error — 'default:' in error-handling switch.",
+        "match on Result": "Go has no Result type — translate to if err != nil pattern or switch on error."
+    },
+
+    "_X5_note": "Go switch: no fallthrough by default, no parens needed, no break needed."
+}

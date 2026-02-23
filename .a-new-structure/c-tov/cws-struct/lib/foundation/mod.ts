@@ -18,10 +18,18 @@
 export type {
   Severity,
   LintPolicy,
+  LintLayer,
+  BlockName,
+  LintGridOptions,
   FixAction,
   FixSuggestion,
   LintResult,
   LintSummary,
+  InspectBlock,
+  InspectSection,
+  SubsectionDef,
+  InspectContent,
+  InspectResult,
   FormatHandler,
   TransformOptions,
   CliOptions,
@@ -34,11 +42,15 @@ export {
   policySeverity,
   setGlobalPolicy,
   getGlobalPolicy,
+  setLintFocus,
+  getLintFocus,
   summarize,
 } from "./types.ts";
 
 // Health scoring
 export type {
+  HebrewState,
+  HebrewDirection,
   AtomicAction,
   ContainerScore,
   BlockScore,
@@ -47,6 +59,14 @@ export type {
 
 export {
   IMPACT_WEIGHT,
+  setImpactWeights,
+  TRITE_POSITIONS,
+  trueToLevel,
+  levelToEmoji,
+  levelToDirection,
+  normalizeBase50,
+  encodeHealthTrite,
+  decodeHealthTrite,
   computeContainerScore,
   computeBlockScore,
   computeHealthScore,
@@ -101,6 +121,8 @@ export type {
   SchemaFillContent,
   Code4BlockRules,
   CodeFormat,
+  TypingProfile,
+  TypingBlockProfile,
   // Form constraint types
   FormSectionConstraint,
   FormReservedSection,
@@ -109,14 +131,48 @@ export type {
 } from "./code-schema.ts";
 
 export {
-  parseCodeSchema,
+  assembleCodeRules,
   loadCodeRules,
   clearCodeCache,
   // Form schema loader
   parseFormSchema,
   loadFormConstraints,
   clearFormCache,
+  // Composition bridge
+  compositionToFormConstraints,
+  loadCompositionFormConstraints,
+  // Registry fallback
+  buildFormConstraintsFromRegistry,
 } from "./code-schema.ts";
+
+// Tool configuration
+export type { ToolConfig } from "./config.ts";
+export { loadConfig } from "./config.ts";
+
+// Structured tool errors
+export { ToolError } from "./tool-error.ts";
+
+// Cache registry
+export { registerCache, clearAllCaches, listCaches } from "./cache-registry.ts";
+
+// Composition loader (three-cord architecture)
+export type {
+  CompositionParts,
+  CompositionSide,
+  CompositionBlockSections,
+  CompositionActiveSections,
+  CompositionTarget,
+  LoadedSchema,
+  ResolvedComposition,
+} from "./composition-loader.ts";
+
+export {
+  parseCompositionTarget,
+  loadComposition,
+  loadCompositionCached,
+  listCompositionTargets,
+  clearCompositionCache,
+} from "./composition-loader.ts";
 
 // ============================================================================
 // CLOSING

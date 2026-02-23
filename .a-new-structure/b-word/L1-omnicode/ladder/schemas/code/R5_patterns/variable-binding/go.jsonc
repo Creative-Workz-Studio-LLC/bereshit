@@ -1,0 +1,40 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-variable-binding",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — Variable Binding",
+
+    "concept": "variable_binding",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "short_declaration",
+            "emit": "{name} := {expr}",
+            "when": "inside function body, first assignment to this name",
+            "notes": "Short variable declaration — Go's most common form.",
+            "priority": 1
+        },
+        {
+            "id": "typed_declaration",
+            "emit": "var {name} {type} = {expr}",
+            "when": "explicit type needed, package-level, or reassignment with new type",
+            "notes": "Explicit type — used when type inference isn't sufficient.",
+            "priority": 2
+        },
+        {
+            "id": "zero_value",
+            "emit": "var {name} {type}",
+            "when": "declaring without initialization (uses zero value)",
+            "notes": "Zero-value declaration — Go initializes to zero value of type.",
+            "priority": 3
+        }
+    ],
+
+    "_X5_note": "Go variables — all mutable, no mut keyword. Short := is idiomatic inside functions."
+}

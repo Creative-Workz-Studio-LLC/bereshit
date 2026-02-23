@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-modules",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.Modules Content Character — What Module Declaration Content IS",
+    "_P5_brief": "Format-independent definition of module declaration content character. Modules declare the tree structure — what children exist under this file's scope. Syntax varies (mod, package); the hierarchy doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "modules",
+        "block": "SETUP",
+        "position": 2,
+        "nature": "hierarchy-declaration",
+
+        "description": "Module content declares the tree structure of a codebase. It names children that exist beneath this file's scope and curates which of those children are visible externally. No logic executes here — modules only establish that subordinate units exist and optionally re-export their contents.",
+
+        "invariants": {
+            "description": "Properties true of ALL module declaration content, regardless of language.",
+
+            "hierarchical": "Module declarations establish parent-child relationships. This file is a branch; declared modules are its leaves or sub-branches.",
+            "non-executable": "No computation occurs in module declarations. They are purely structural — declaring existence, not performing work.",
+            "visibility-controlling": "Module declarations determine what the outside world sees. Public vs private module exposure is a design decision made here.",
+            "root-exclusive": "Only tree roots and branches declare children. Leaf files never contain module declarations — they ARE the declared modules.",
+            "order-independent": "The order of module declarations does not affect semantics. Unlike imports, there is no conventional ordering beyond readability."
+        },
+
+        "content_forms": {
+            "description": "What module declaration content looks like across languages. Syntax varies; the tree structure is invariant.",
+
+            "rust": {
+                "syntax": "mod child; pub mod public_child; pub use child::ReExported;",
+                "grouping": "Private modules first, then public modules, then re-exports (pub use). Grouped by visibility.",
+                "notes": "Rust module declarations in lib.rs/mod.rs are the canonical example. mod declares existence; pub mod adds visibility; pub use curates the public API surface."
+            },
+
+            "go": {
+                "syntax": "package parent // (Go uses directory structure, not in-file module declarations)",
+                "grouping": "Go packages are declared by directory, not by in-file statements. The package statement names the current module, not children.",
+                "notes": "Go has no in-file child module declaration. The directory IS the module tree. This section is largely RESERVED for Go — the filesystem handles what Rust does with mod statements."
+            },
+
+            "c": {
+                "syntax": "// Module structure defined by header hierarchy and include paths",
+                "grouping": "C has no formal module system. Header files and include paths create an implicit hierarchy.",
+                "notes": "C approximates modules through header organization and forward declarations. The closest equivalent is a header that includes sub-headers, establishing a hierarchy."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, module declarations change mechanism but preserve hierarchy. The tree structure of the codebase remains the same — only how it's expressed changes.",
+            "invariant": ["hierarchy (parent-child relationships)", "visibility decisions (what's public vs private)", "re-export surface (what's curated for external use)"],
+            "variable": ["declaration mechanism (mod vs directory vs headers)", "syntax (mod child vs package child)", "re-export syntax (pub use vs package-level exports)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — no code patterns in module declarations.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Module declarations are the skeleton of code organization. They declare that children exist without defining what those children do. The tree is visible here; the fruit grows elsewhere.",
+    "_X5_scripture": "Psalm 1:3 — And he shall be like a tree planted by the rivers of water, that bringeth forth his fruit in his season."
+}

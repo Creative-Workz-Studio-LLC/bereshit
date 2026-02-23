@@ -1,0 +1,77 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-body-helpers",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 8: Helpers — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Helpers. Support functions for run() in executable form. RESERVED in library and module forms — they don't have run().",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/body/helpers.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "fn helper_name(args) -> Result<T, Error>",
+                "description": "Private support functions called by run() — executable form only",
+                "patterns": [
+                    "fn parse_args() -> Result<Args, Error> { ... }",
+                    "fn setup_logging(verbose: bool) -> Result<(), Error> { ... }",
+                    "fn validate_environment() -> Result<(), Error> { ... }"
+                ],
+                "visibility": "private (no pub) — only called by run()",
+                "note": "Executable form ONLY. Libraries and modules RESERVE this section."
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "any code in library or module form",
+                "reason": "Helpers serve run(). Libraries and modules don't have run(). Section is RESERVED for non-executable forms.",
+                "defer_to": "BODY.CoreLogic or BODY.FreeFunctions",
+                "rust_signal": "N/A — form-level constraint"
+            },
+            {
+                "construct": "pub functions",
+                "reason": "Helpers are implementation details of run(), not public API",
+                "defer_to": "BODY.FreeFunctions",
+                "rust_signal": "pub\\s+fn\\s+"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "pub\\s+fn\\s+",
+                "to": "BODY.FreeFunctions",
+                "confidence": "high",
+                "why": "Public function — helpers are private"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// RESERVED — module form does not have run() helpers",
+            "empty_library": "// RESERVED — library form does not have run() helpers",
+            "comment_skeleton": "// fn parse_args() -> Result<Args, Error> { ... }\n// fn setup_logging(verbose: bool) -> Result<(), Error> { ... }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Helpers: support functions for executable run(). Private, focused, called only by run(). Reserved in library and module forms because they have no entry point to support.",
+    "_X5_scripture": "Ecclesiastes 4:9 — Two are better than one; because they have a good reward for their labour."
+}

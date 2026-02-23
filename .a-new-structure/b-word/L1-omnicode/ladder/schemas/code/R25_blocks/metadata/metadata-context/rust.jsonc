@@ -1,0 +1,106 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-metadata-context-container",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 5: Metadata Context (C1-C7) — Rust Content Container",
+    "_P5_brief": "Parent container for Rust-specific METADATA context content. How Rust carries C1-C7 context in pub static slices or BTreeMap statics. Extends the base structure container.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/metadata-context/_container.jsonc",
+    "format": "rust",
+
+    "overview": {
+        "section": "MetadataContext",
+        "description": "Rust carries METADATA context as pub static &[(&str, &str)] slices (default) or LazyLock<BTreeMap<&str, &str>> (when runtime lookup needed). Mirrors PRAGMA pattern for consistency. C4 uses dot-nested keys for dependency categories.",
+        "static_name": "METADATA",
+        "key_pattern": "C{section}.{field}",
+        "nested_pattern": "C4.requires.{category}"
+    },
+
+    "sub_containers": {
+        "c1-state": { "file": "c1-state.jsonc", "purpose": "Rust C1 content — version, status, created, updated in slice" },
+        "c2-attribution": { "file": "c2-attribution.jsonc", "purpose": "Rust C2 content — organization, architect, implementation, copyright in slice" },
+        "c3-grounding": { "file": "c3-grounding.jsonc", "purpose": "Rust C3 content — scripture, principle, anchor in slice" },
+        "c4-dependencies": { "file": "c4-dependencies.jsonc", "purpose": "Rust C4 content — requires (nested), consumers, integration, if_missing in slice" },
+        "c5-intent": { "file": "c5-intent.jsonc", "purpose": "Rust C5 content — purpose, philosophy in slice" },
+        "c6-roadmap": { "file": "c6-roadmap.jsonc", "purpose": "Rust C6 content — current, planned, limitations in slice" },
+        "c7-classification": { "file": "c7-classification.jsonc", "purpose": "Rust C7 content — tags, category, domain, paradigm in slice" }
+    },
+
+    "cannot": [
+        {
+            "construct": "METADATA as String-owning",
+            "reason": "Context is compile-time known. Using String/HashMap adds unnecessary allocation.",
+            "defer_to": "N/A — use &str slices or BTreeMap<&str, &str>",
+            "rust_signal": "HashMap<String,\\s*String>"
+        },
+        {
+            "construct": "C-sections out of order",
+            "reason": "C-sections must appear in order: C1 -> C2 -> C3 -> C4 -> C5 -> C6 -> C7.",
+            "defer_to": "N/A — reorder fields",
+            "rust_signal": "N/A"
+        },
+        {
+            "construct": "I-section fields in METADATA static",
+            "reason": "Identity (I) lives in PRAGMA. Context (C) lives in METADATA. Separation of concerns.",
+            "defer_to": "METADATA.PragmaIdentity",
+            "rust_signal": "\"I\\d\\."
+        }
+    ],
+
+    "severity": {
+        "crate_root": "warn",
+        "module": "not checked — context delegated to lib.rs",
+        "note": "Only crate roots carry METADATA statics. Modules inherit context from their crate."
+    },
+
+    "can_patterns": {
+        "note": "Format-level CAN patterns shared across all C-sections. Individual sub-containers define section-specific scaffolds.",
+        "constructs": [
+            {
+                "construct": "pub static METADATA: &[(&str, &str)]",
+                "description": "Slice pattern — lightweight context for most crates",
+                "visibility": "pub static — exported for downstream consumers",
+                "note": "Slice pattern is the DEFAULT. Mirrors PRAGMA pattern for consistency."
+            },
+            {
+                "construct": "static METADATA: LazyLock<BTreeMap<&str, &str>>",
+                "description": "BTreeMap pattern — runtime-queryable context",
+                "visibility": "pub or private",
+                "note": "Use when runtime key lookup needed. Same pattern as PRAGMA BTreeMap."
+            },
+            {
+                "construct": "C4 nested dependency keys",
+                "description": "Dependency graph edges — what this file needs and what needs it",
+                "visibility": "within METADATA static",
+                "note": "C4 uses dot-nested keys for dependency categories. This is the dependency graph in static form."
+            }
+        ]
+    },
+
+    "field_format": {
+        "key_pattern": "C{section}.{field}",
+        "nested_pattern": "C4.requires.{category}",
+        "examples": ["C1.version", "C2.organization", "C3.scripture", "C4.requires.stdlib"],
+        "note": "Dot notation within string keys. The C prefix distinguishes context from identity (I). C4 supports nested category keys."
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust METADATA context container: the parent for C1-C7 Rust content. Seven C-sections answering everything except WHO (that's PRAGMA). Together with PRAGMA, they form the complete identity contract.",
+    "_X5_scripture": "Proverbs 16:11 — A just weight and balance are the LORD's: all the weights of the bag are his work."
+}

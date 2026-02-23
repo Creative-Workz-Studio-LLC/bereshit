@@ -1,0 +1,142 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-body-core-operations",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 3: Core Operations — Go Content",
+    "_P5_brief": "Go-specific content rules for Core Operations. Primary business logic — state transitions, computations, the run() pattern. The engine room. Extends the base structure at blocks/body/core-logic.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/body/core-logic.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "func run() error { ... } (executable form)",
+                "description": "Testable entry point — main() delegates to run() so business logic is testable without os.Exit",
+                "patterns": [
+                    "func run() error {\n\targs, err := parseArgs(os.Args[1:])\n\tif err != nil {\n\t\treturn err\n\t}\n\tcfg, err := loadConfig(args.configPath)\n\tif err != nil {\n\t\treturn fmt.Errorf(\"config: %w\", err)\n\t}\n\treturn process(cfg)\n}"
+                ],
+                "visibility": "unexported — called by main()",
+                "note": "The main-run split enables testing program logic without starting a process."
+            },
+            {
+                "construct": "func (r *Receiver) Operation(params) (result, error) { ... }",
+                "description": "Method receivers performing state transitions — the type's core behavior",
+                "patterns": [
+                    "func (s *Server) Start(ctx context.Context) error {\n\tln, err := net.Listen(\"tcp\", s.addr)\n\tif err != nil {\n\t\treturn fmt.Errorf(\"Server.Start: %w\", err)\n\t}\n\ts.listener = ln\n\treturn s.serve(ctx)\n}",
+                    "func (p *Parser) Parse(input []byte) (*AST, error) {\n\tp.reset()\n\tfor p.pos < len(input) {\n\t\tif err := p.parseNode(); err != nil {\n\t\t\treturn nil, err\n\t\t}\n\t}\n\treturn p.ast, nil\n}"
+                ],
+                "visibility": "Exported methods for library API, unexported for internal"
+            },
+            {
+                "construct": "state transition functions",
+                "description": "Functions that transform internal state — the verbs of the system",
+                "patterns": [
+                    "func (m *Machine) Transition(event Event) error {\n\tnext, ok := m.transitions[m.state][event]\n\tif !ok {\n\t\treturn fmt.Errorf(\"no transition from %s on %s\", m.state, event)\n\t}\n\tm.state = next\n\treturn nil\n}"
+                ],
+                "visibility": "varies"
+            },
+            {
+                "construct": "complex construction with validation",
+                "description": "Constructors that do more than field assignment — validation, I/O, computed defaults",
+                "patterns": [
+                    "func NewServer(opts ...Option) (*Server, error) {\n\ts := &Server{port: 8080, host: \"localhost\"}\n\tfor _, opt := range opts {\n\t\topt(s)\n\t}\n\tif s.port < 1 || s.port > 65535 {\n\t\treturn nil, fmt.Errorf(\"invalid port: %d\", s.port)\n\t}\n\treturn s, nil\n}"
+                ],
+                "visibility": "Exported for library API",
+                "note": "Simple field-only New*() stays in SETUP S6. Complex construction with validation belongs here."
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "main() function",
+                "reason": "main() is the entry point — belongs in CLOSING Ce. run() stays here.",
+                "defer_to": "CLOSING.Execution",
+                "go_signal": "func\\s+main\\s*\\("
+            },
+            {
+                "construct": "simple New*() that only assigns fields",
+                "reason": "Field-only construction stays in SETUP S6 CoreTypes. Core Operations is for construction with LOGIC.",
+                "defer_to": "SETUP.CoreTypes",
+                "go_signal": "func\\s+New\\w*\\(.*\\)\\s+\\*?\\w+\\s*\\{\\s*return\\s+&?\\w+\\{.*\\}\\s*\\}"
+            },
+            {
+                "construct": "type definitions (struct, interface)",
+                "reason": "Types declare existence — SETUP makes things EXIST, BODY makes things HAPPEN",
+                "defer_to": "SETUP.CoreTypes or SETUP.InterfaceDefs",
+                "go_signal": "^type\\s+\\w+\\s+(struct|interface)"
+            },
+            {
+                "construct": "error type definitions",
+                "reason": "Error TYPES go in SETUP S5. Error HANDLING goes in B4.",
+                "defer_to": "SETUP.ErrorTypes",
+                "go_signal": "^type\\s+\\w+Error\\s+struct"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "func\\s+main\\s*\\(",
+                "to": "CLOSING.Execution",
+                "confidence": "high",
+                "why": "Entry point — belongs in CLOSING Ce"
+            },
+            {
+                "pattern": "^type\\s+\\w+\\s+(struct|interface)",
+                "to": "SETUP.CoreTypes or SETUP.InterfaceDefs",
+                "confidence": "high",
+                "why": "Type definition — declarations belong in SETUP"
+            },
+            {
+                "pattern": "func\\s+Test\\w+\\(",
+                "to": "CLOSING.Cv",
+                "confidence": "high",
+                "why": "Test function — belongs in validation zone"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// 3. Core Operations\n//\n// Primary business logic — state transitions, transformations.\n// Methods take receivers. Complex constructors live here.\n// If this section exceeds ~200 lines, extract into a separate file.",
+            "empty_executable": "// 3. Core Operations\n\nfunc run() error {\n\t// Initialize -> Execute -> Output -> Return\n\treturn nil\n}",
+            "empty_demo_test": "// 3. Core Operations\n//\n// Core test operations — shared test logic, table-driven runners,\n// common assertion sequences.",
+            "comment_skeleton": "// 3. Core Operations\n// func run() error { ... }\n// func (r *Type) Operation() error { ... }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Core Operations: the engine room. run() for executables, method receivers for libraries, state transitions for both. SETUP declares, Core Operations transforms. If it exceeds ~200 lines, the file is doing too much.",
+    "_X5_scripture": "Ecclesiastes 9:10 — Whatsoever thy hand findeth to do, do it with thy might."
+}

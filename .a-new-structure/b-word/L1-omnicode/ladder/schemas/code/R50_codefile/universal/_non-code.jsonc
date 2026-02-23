@@ -1,0 +1,128 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-R50-universal-non-code",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "non-code-schema",
+    "_P2_role": "universal-non-code",
+    "_P5_title": "Universal Non-Code Elements Schema (R[50])",
+    "_P5_brief": "Language-agnostic non-code categories for the universal chunking engine. These are the categories EVERY language has — pragma, separator, comment, blank, doc_comment. Language-specific _non-code.jsonc files ADD categories (Go adds build_tag/generate_directive, Rust adds inner_doc/attribute/inner_attribute) and OVERRIDE patterns (each language's comment prefix differs). The chunker reads universal first, then language overlay.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "scope": "all code formats",
+    "purpose": "Define the universal non-code categories every language shares",
+
+    "chunk_categories": {
+        "note": "Universal categories present in ALL languages. Language _non-code.jsonc files inherit these and add language-specific ones. Patterns use <comment_prefix> placeholder — the language _format.jsonc supplies the actual prefix.",
+
+        "pragma": {
+            "description": "OmniCode pragma directives — machine-readable identity markers",
+            "start_pattern": "^<comment_prefix>\\s+#!omni\\b",
+            "continuation": "^<comment_prefix>omni:",
+            "multi_line": true,
+            "block_target": "METADATA",
+            "priority": "highest",
+            "note": "Pragmas are always the first non-blank content in a file. They identify the file to the OmniCode system. Every language expresses them through its comment syntax."
+        },
+
+        "separator": {
+            "description": "Block and subsection separator lines (structural scaffolding)",
+            "patterns": [
+                "^<comment_prefix>\\s*[═=]{10,}",
+                "^<comment_prefix>\\s*[─\\-]{10,}"
+            ],
+            "may_include_title": true,
+            "structure": "separator_line + optional_title_line + separator_line",
+            "role": "structural_boundary",
+            "note": "Separators are the skeleton — they define where blocks and subsections begin. =/═ for blocks, -/─ for subsections. Includes Unicode box-drawing characters (═ U+2550, ─ U+2500) and their ASCII equivalents. The chunker treats separator groups (line + title + line) as single structural chunks."
+        },
+
+        "doc_comment": {
+            "description": "Documentation comments that attach to the next declaration",
+            "pattern": "<language_specific>",
+            "multi_line": true,
+            "attaches_to": "next_declaration",
+            "universal_rule": "A comment block immediately preceding a declaration with no blank line between is a doc comment. It belongs to the declaration's chunk.",
+            "note": "Every language has doc comments, but the syntax varies: Go uses plain //, Rust uses ///, C uses /** */. The universal rule (attach to next item) is constant; the pattern is language-specific."
+        },
+
+        "comment": {
+            "description": "Regular comments — not pragma, not doc, not separator",
+            "pattern": "<language_specific>",
+            "excludes": ["pragma", "doc_comment", "separator"],
+            "multi_line": true,
+            "standalone": true,
+            "note": "Standalone comments that don't attach to declarations. Section headers, inline notes, TODOs, etc."
+        },
+
+        "blank": {
+            "description": "Empty lines — whitespace only",
+            "pattern": "^\\s*$",
+            "multi_line": true,
+            "role": "visual_separation",
+            "note": "Blank lines are semantic in chunking: they separate chunks. A single blank between declaration chunks is absorbed; multiple blanks create a visual break. Blanks between a doc comment and its declaration are noise (single) or separation (multiple)."
+        }
+    },
+
+    "chunking_rules": {
+        "note": "Universal rules that every language follows. Language _non-code.jsonc files can add rules but should not contradict these.",
+
+        "doc_comment_attachment": {
+            "description": "Universal rule for attaching doc comments to declarations",
+            "rule": "A comment block immediately preceding a declaration (no blank line between) is a doc comment. It attaches to that declaration's chunk.",
+            "single_blank_exception": "A single blank line between comment and declaration is formatting noise — the comment still attaches. Multiple blank lines always separate.",
+            "applies_to": "All languages"
+        },
+
+        "separator_grouping": {
+            "description": "Universal rule for grouping separator lines",
+            "rule": "A separator line (=== or ---) followed by a title line followed by another separator line is ONE structural chunk. A standalone separator line is also one chunk.",
+            "applies_to": "All languages"
+        },
+
+        "pragma_capture": {
+            "description": "Universal rule for pragma chunk boundaries",
+            "rule": "Pragma starts at #!omni line, continues through all //omni: directive lines. First non-pragma line ends the chunk. Pragma is always the first content in a valid OmniCode file.",
+            "applies_to": "All languages"
+        },
+
+        "blank_absorption": {
+            "description": "Universal rule for blank line handling",
+            "rule": "Blanks between chunks are boundary markers, not chunks themselves. The chunker uses blanks to delimit chunk boundaries but does not emit blank-only chunks. Trailing blanks after a chunk belong to the gap, not the chunk.",
+            "applies_to": "All languages"
+        },
+
+        "classification_priority": {
+            "description": "When a line could match multiple categories, use this priority",
+            "order": ["pragma", "separator", "doc_comment", "comment", "blank"],
+            "note": "Language-specific categories (build_tag, attribute, inner_doc, etc.) insert into this priority chain via the language _non-code.jsonc. The universal priority handles the base cases."
+        }
+    },
+
+    "language_extension_contract": {
+        "description": "How language _non-code.jsonc files extend these universal definitions",
+        "rules": [
+            "Language files ADD new chunk_categories (Go: build_tag, generate_directive; Rust: inner_doc, attribute, inner_attribute)",
+            "Language files OVERRIDE pattern fields with concrete regex (replacing <comment_prefix> and <language_specific> placeholders)",
+            "Language files ADD chunking_rules for language-specific behavior (Rust: attribute_stacking, test_module_capture; Go: package_special)",
+            "Language files NEVER remove or contradict universal categories or rules",
+            "Language files MAY add 'note' fields for language-specific context"
+        ]
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Non-code is the connective tissue of every source file. Pragmas identify, separators organize, comments explain, doc comments document, blanks let code breathe. The universal chunking engine must see ALL of it — classify, group, and route. What's universal stays here; what's language-specific lives in the language overlay. The contract is: every language shares these 5 base categories, adds its own, and the chunker processes both.",
+    "_X5_scripture": "For as the body is one, and hath many members, and all the members of that one body, being many, are one body: so also is Christ. — 1 Corinthians 12:12"
+}

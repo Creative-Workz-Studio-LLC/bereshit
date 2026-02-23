@@ -1,0 +1,109 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-doc-comments",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 2: Doc Comments — Rust Content",
+    "_P5_brief": "Rust-specific content rules for doc comments. //! for crate/module-level documentation that rustdoc consumes. Extends the base structure at structure/parts/metadata/doc-comments.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/doc-comments.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "//! crate-level doc comment",
+                "description": "Inner doc comments describing the crate as a whole — consumed by rustdoc",
+                "patterns": [
+                    "//! # Crate Name",
+                    "//! Purpose description paragraph.",
+                    "//! ## Examples",
+                    "//! ```rust",
+                    "//! use crate_name::Type;",
+                    "//! ```"
+                ],
+                "visibility": "N/A — doc comments are metadata",
+                "note": "//! (inner doc) documents the enclosing item. At crate root (lib.rs), this IS the crate documentation."
+            },
+            {
+                "construct": "//! module-level doc comment",
+                "description": "Inner doc comments in module files describing the module's purpose",
+                "patterns": [
+                    "//! Module-level purpose description.",
+                    "//! This module handles..."
+                ],
+                "visibility": "N/A",
+                "note": "Module files use //! to describe the module itself. Less critical than crate root docs."
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "/// on crate-level items",
+                "reason": "/// (outer doc) documents the NEXT item. For crate/module documentation, use //! (inner doc).",
+                "defer_to": "N/A — change to //!",
+                "rust_signal": "^///\\s+"
+            },
+            {
+                "construct": "implementation details in doc comments",
+                "reason": "Doc comments describe WHAT and WHY, not HOW. Implementation belongs in inline comments within BODY.",
+                "defer_to": "BODY inline comments",
+                "rust_signal": "N/A"
+            },
+            {
+                "construct": "identity fields in doc prose",
+                "reason": "Structured identity (key, version) belongs in PRAGMA/METADATA statics, not doc comment prose.",
+                "defer_to": "METADATA.PragmaIdentity or METADATA.MetadataContext",
+                "rust_signal": "N/A"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Severity
+        // ─────────────────────────────────────
+
+        "severity": {
+            "crate_root": "warn",
+            "module": "info",
+            "note": "Libraries REQUIRE doc comments (they publish APIs). Modules benefit from them but aren't penalized for absence."
+        },
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+
+        "scaffold": {
+            "library": "//! # {crate_name}\n//!\n//! {brief_description}.\n//!\n//! ## Design\n//!\n//! {design_notes}",
+            "module": "//! {module_description}.",
+            "comment_skeleton": "// //! # {crate_name}\n// //!\n// //! {brief_description}."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust doc comments: //! tells rustdoc what this crate or module IS. The inner doc comment (//!) documents the enclosing item. Libraries must have them — they publish APIs. Modules benefit from them. The compiler reads them, docs.rs publishes them.",
+    "_X5_scripture": "Habakkuk 2:2 — Write the vision, and make it plain upon tables, that he may run that readeth it."
+}

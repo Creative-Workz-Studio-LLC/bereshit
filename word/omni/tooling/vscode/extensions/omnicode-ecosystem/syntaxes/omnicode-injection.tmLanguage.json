@@ -1,0 +1,98 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "OmniCode Ecosystem Injection",
+  "scopeName": "omnicode.ecosystem.injection",
+  "injectionSelector": "L:comment",
+  "patterns": [
+    { "include": "#block-boundaries" },
+    { "include": "#section-boundaries" },
+    { "include": "#block-headers" },
+    { "include": "#block-ends" },
+    { "include": "#section-headers" },
+    { "include": "#tags" },
+    { "include": "#section-addressing" },
+    { "include": "#pragma-in-comment" }
+  ],
+  "repository": {
+
+    "block-boundaries": {
+      "patterns": [
+        {
+          "comment": "Block boundary: ═══ in comments",
+          "name": "omnicode.structure.block-boundary",
+          "match": "[═]{3,}"
+        }
+      ]
+    },
+
+    "section-boundaries": {
+      "patterns": [
+        {
+          "comment": "Section boundary: ─── in comments",
+          "name": "omnicode.structure.section-boundary",
+          "match": "[─]{3,}"
+        }
+      ]
+    },
+
+    "block-headers": {
+      "patterns": [
+        {
+          "comment": "Block header name: OMNICODE PRAGMA, METADATA BLOCK, etc.",
+          "name": "omnicode.block-name",
+          "match": "\\b(OMNICODE PRAGMA|METADATA BLOCK|CONTENT BLOCK|CLOSING BLOCK|HEADER BLOCK|CONTEXT BLOCK|SETUP BLOCK|BODY BLOCK|FOOTER BLOCK)\\b"
+        }
+      ]
+    },
+
+    "block-ends": {
+      "patterns": [
+        {
+          "comment": "END markers: END PRAGMA, END METADATA, etc.",
+          "name": "omnicode.block-name",
+          "match": "\\bEND\\s+(PRAGMA|METADATA|CONTENT|CLOSING|HEADER|CONTEXT|SETUP|BODY|FOOTER)\\b"
+        }
+      ]
+    },
+
+    "section-headers": {
+      "patterns": [
+        {
+          "comment": "Section headers with em dash: P.1 CORE — Identity, Cc — Content Configurations",
+          "name": "omnicode.section-header",
+          "match": "(?:P\\.[1-5]|M\\.[1-5]|X\\.[1-5]|Cc|Co|Cv)\\s+[A-Z]+"
+        }
+      ]
+    },
+
+    "tags": {
+      "patterns": [
+        {
+          "comment": "Block and section tags: [PRAGMA], [METADATA], [CONFIG], etc.",
+          "name": "omnicode.tag",
+          "match": "\\[(PRAGMA|METADATA|CONTENT|CLOSING|HEADER|CONTEXT|SETUP|BODY|FOOTER|END|CORE|FAMILY|INSTANCE|ARCH|SUMMARY|IDENTITY|STATE|ATTRIBUTION|GROUNDING|DEPENDENCIES|CONFIG|OPS|VALIDATE|POLICY|EXTENSION|TROUBLESHOOTING|REFERENCE|NOTE|ROLE|PURPOSE)\\]"
+        }
+      ]
+    },
+
+    "section-addressing": {
+      "patterns": [
+        {
+          "comment": "Section addresses: P.1, M.1, X.1, Cc, Co, Cv",
+          "name": "omnicode.section-address",
+          "match": "\\b(?:P\\.[1-5]|M\\.[1-5]|X\\.[1-5]|Cc|Co|Cv)\\b"
+        }
+      ]
+    },
+
+    "pragma-in-comment": {
+      "patterns": [
+        {
+          "comment": "#!omni shebang inside a comment (e.g., JSONC, TOML)",
+          "name": "omnicode.pragma",
+          "match": "#!omni\\s+\\w+(?:\\s+--\\w+)*"
+        }
+      ]
+    }
+  }
+}

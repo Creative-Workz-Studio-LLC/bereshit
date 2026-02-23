@@ -1,0 +1,82 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-closing-troubleshooting",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section X3: Troubleshooting — Rust Content",
+    "_P5_brief": "Rust-specific content rules for X3 (Troubleshooting). Common problems and solutions. AVAILABLE in library and module forms.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/closing/troubleshooting.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "// Problem -> Solution pairs",
+                "description": "Common issues encountered when using or modifying this file",
+                "patterns": [
+                    "// X3 — Troubleshooting\n//\n// Problem: cargo build fails with 'unresolved import'\n// Solution: Check that the module is declared in lib.rs (mod name;)\n//\n// Problem: tests fail with 'poisoned lock'\n// Solution: A previous test panicked while holding a RwLock.\n//          Use unwrap_or_else(|e| e.into_inner()) for poison recovery."
+                ],
+                "visibility": "N/A — documentation"
+            },
+            {
+                "construct": "// Common Mistakes -> Correct approaches",
+                "description": "Patterns developers commonly get wrong with this code",
+                "patterns": [
+                    "// Common Mistake: Using .unwrap() on Option/Result in production code\n// Correct: Use ? operator or match for explicit handling\n//\n// Common Mistake: Adding pub to everything 'just in case'\n// Correct: Start private, promote visibility as needed"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "executable Rust code",
+                "reason": "X3 is documentation — diagnostic guidance, not implementation",
+                "defer_to": "BODY or CLOSING Cv",
+                "rust_signal": "^(pub\\s+)?(fn|impl|struct|enum|trait|const|static|type|use|mod)\\s+"
+            },
+            {
+                "construct": "known bugs without workarounds",
+                "reason": "If there's no workaround, it's an issue to fix, not a troubleshooting entry",
+                "defer_to": "N/A — fix the bug or document the workaround",
+                "rust_signal": "N/A"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "^(pub\\s+)?(fn|impl|struct|enum)\\s+",
+                "to": "BODY",
+                "confidence": "high",
+                "why": "Executable code in documentation section"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// X3 — Troubleshooting\n//\n// (No known issues. Add Problem/Solution pairs as they arise.)",
+            "empty_library": "// X3 — Troubleshooting\n//\n// (No known issues. Add Problem/Solution pairs as they arise.)",
+            "comment_skeleton": "// X3 — Troubleshooting\n// Problem: ...\n// Solution: ..."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust X3 (Troubleshooting): saves debugging time. Problem/Solution pairs for common issues. Common Mistake/Correct pairs for patterns developers get wrong. Each entry is a lesson someone learned the hard way.",
+    "_X5_scripture": "Proverbs 24:16 — For a just man falleth seven times, and riseth up again."
+}

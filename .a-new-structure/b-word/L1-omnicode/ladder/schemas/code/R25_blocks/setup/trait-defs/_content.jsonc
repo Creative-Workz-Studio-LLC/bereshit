@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-trait-defs",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.TraitDefs Content Character — What Trait Definition Content IS",
+    "_P5_brief": "Format-independent definition of trait definition content character. Trait definitions declare behavioral contracts — what types CAN do without specifying HOW. Syntax varies (trait, interface, abstract class); the contract-without-implementation pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "trait-defs",
+        "block": "SETUP",
+        "position": 8,
+        "nature": "contract",
+
+        "description": "Trait definition content declares behavioral contracts. It specifies method signatures that types must implement, optionally providing default implementations for common cases. Trait definitions answer 'what can types DO?' without answering 'HOW do they do it?' The contract is established here; fulfillment happens in BODY. This is the Rust-centric version of behavioral contracts — for Go's implicit interface satisfaction, see InterfaceDefs.",
+
+        "invariants": {
+            "description": "Properties true of ALL trait/behavioral contract content, regardless of language.",
+
+            "contractual": "Traits define obligations. Any type claiming to satisfy a trait must provide the required methods. The contract is enforceable at compile time.",
+            "abstract": "Trait method signatures specify shape (name, parameters, return type) without specifying implementation. The 'what' is fixed; the 'how' is deferred to implementors.",
+            "composable": "Traits can extend other traits (supertraits) and be combined (trait bounds). Behavioral contracts compose into richer contracts.",
+            "defaultable": "Traits may provide default implementations that implementors can override. Sensible defaults reduce boilerplate while preserving customizability.",
+            "non-implementing": "Trait definitions do not contain concrete implementations for specific types. Implementing a trait for a type is BODY's job (impl Trait for Type)."
+        },
+
+        "content_forms": {
+            "description": "What trait definition content looks like across languages. Syntax varies; the behavioral contract pattern is invariant.",
+
+            "rust": {
+                "syntax": "pub trait Validate { fn validate(&self) -> Result<(), Error>; fn is_valid(&self) -> bool { self.validate().is_ok() } }",
+                "grouping": "One trait per logical concern. Required methods first, then default methods. Supertraits declared in trait bounds (trait Foo: Bar).",
+                "notes": "Rust traits are the canonical example — explicit contracts with optional defaults. Associated types and constants within traits for contract-level type parameters. Trait objects (dyn Trait) enable dynamic dispatch."
+            },
+
+            "go": {
+                "syntax": "// Go interfaces go in InterfaceDefs section, not TraitDefs",
+                "grouping": "N/A — Go's implicit interfaces are structurally different from Rust traits. See InterfaceDefs.",
+                "notes": "This section is primarily for Rust. Go achieves the same goal through InterfaceDefs with implicit satisfaction rather than explicit implementation. During transpilation, Rust traits map to Go interfaces but the mechanism differs fundamentally."
+            },
+
+            "c": {
+                "syntax": "typedef struct { int (*validate)(const void *self); int (*is_valid)(const void *self); } ValidateVTable;",
+                "grouping": "VTable structs (function pointer tables) grouped by behavioral concern. One VTable per trait-equivalent.",
+                "notes": "C approximates traits through VTable patterns — structs of function pointers that types populate. Manual dispatch rather than compiler-enforced contracts. The pattern is the same; the enforcement mechanism is absent."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, trait definitions change enforcement mechanism but preserve the behavioral contract. The same methods are required in every language — only how the compiler ensures compliance changes.",
+            "invariant": ["method signatures (required behavior)", "default implementations (common-case behavior)", "composition relationships (which contracts extend which)", "associated types/constants (contract-level parameters)"],
+            "variable": ["enforcement mechanism (explicit impl vs implicit satisfaction vs manual vtable)", "syntax (trait vs interface vs vtable struct)", "dispatch mechanism (static vs dynamic vs manual)", "default method syntax"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "defer",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 1F 10D. −10/11 ≈ −0.91. method_call defers (traits define method signatures).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Trait definitions are promises about behavior. SETUP declares what types CAN do; BODY shows HOW they do it. The promise precedes the fulfillment — contract before compliance.",
+    "_X5_scripture": "2 Timothy 2:13 — If we believe not, yet he abideth faithful: he cannot deny himself."
+}

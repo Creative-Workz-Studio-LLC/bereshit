@@ -1,0 +1,112 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-body-tests",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "BODY Sections 9-17: Test Subsections — Structure",
+    "_P5_brief": "Format-agnostic structure definition covering all BODY test subsections (B9-B17). These are RESERVED in most forms — tests go in CLOSING Cv. Active only in demo-test form.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "Tests",
+        "position": [9, 10, 11, 12, 13, 14, 15, 16, 17],
+        "label": "Test Subsections",
+        "block": "BODY",
+        "overview_text": "Dedicated test sections (demo-test form only)",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "subsections": [
+            { "tag": "ConstructorTests",   "position": 9,  "label": "Constructor Tests",    "tests_section": "BODY.Constructors" },
+            { "tag": "BuilderTests",       "position": 10, "label": "Builder Tests",        "tests_section": "BODY.Constructors (builders)" },
+            { "tag": "TransitionTests",    "position": 11, "label": "Transition Tests",     "tests_section": "BODY.CoreLogic (state changes)" },
+            { "tag": "QueryTests",         "position": 12, "label": "Query Tests",          "tests_section": "BODY.Queries" },
+            { "tag": "IdentityTests",      "position": 13, "label": "Identity Tests",       "tests_section": "BODY.IdentityAccess" },
+            { "tag": "ErrorTests",         "position": 14, "label": "Error Tests",          "tests_section": "SETUP.ErrorTypes" },
+            { "tag": "EdgeCaseTests",      "position": 15, "label": "Edge Case Tests",      "tests_section": "Cross-cutting boundary conditions" },
+            { "tag": "TableDrivenTests",   "position": 16, "label": "Table-Driven Tests",   "tests_section": "Parameterized exhaustive coverage" },
+            { "tag": "IntegrationTests",   "position": 17, "label": "Integration Tests",    "tests_section": "Cross-section interaction verification" }
+        ],
+
+        "can": [
+            {
+                "concept": "organized test coverage",
+                "description": "Tests broken into named subsections mapping to BODY/SETUP sections",
+                "distinguisher": "Each subsection tests a specific section. Coverage becomes a checklist."
+            },
+            {
+                "concept": "demo validation",
+                "description": "Proving the template's patterns work before downstream files copy them",
+                "distinguisher": "The template proves itself. Demo-test is the proof."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "production logic",
+                "reason": "Test sections contain only test code. No production paths.",
+                "defer_to": "BODY.CoreLogic"
+            },
+            {
+                "concept": "shared test utilities",
+                "reason": "Reusable test helpers should be in a test utility module",
+                "defer_to": "Separate test utility file"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "RESERVED",
+            "library": "RESERVED",
+            "executable": "RESERVED",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Test Subsections (B9-B17)",
+            "reserved_reason": "Tests belong in CLOSING Cv for non-demo forms",
+            "reserved_explanation": "In normal forms, all tests live in CLOSING Cv organized by section headers. Demo-test form promotes them to dedicated BODY subsections for exhaustive template validation."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "defer",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 10G 1F. 10/11 ≈ 0.91. self_access defers (tests may or may not use self/receivers).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Test subsections are the demo-test form's proof. 9 dedicated sections that validate each aspect of the template. In all other forms, tests consolidate into CLOSING Cv.",
+    "_X5_scripture": "1 Thessalonians 5:21 — Prove all things; hold fast that which is good."
+}

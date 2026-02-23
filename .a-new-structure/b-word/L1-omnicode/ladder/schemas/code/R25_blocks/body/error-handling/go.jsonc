@@ -1,0 +1,148 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-body-error-handling",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "BODY Section 4: Error Handling — Go Content",
+    "_P5_brief": "Go-specific content rules for Error Handling. Error processing, wrapping, recovery, exit code mapping. Error TYPES go in SETUP S5 — error HANDLING functions go here. Extends the base structure at blocks/body/core-logic.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/body/core-logic.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "fmt.Errorf(\"package.Method: %w\", err) wrapping pattern",
+                "description": "Consistent error wrapping with context — package.Function prefix for traceable error chains",
+                "patterns": [
+                    "func (s *Server) loadConfig(path string) error {\n\tdata, err := os.ReadFile(path)\n\tif err != nil {\n\t\treturn fmt.Errorf(\"Server.loadConfig: %w\", err)\n\t}\n\treturn json.Unmarshal(data, &s.config)\n}"
+                ],
+                "visibility": "varies — wrapping pattern applies everywhere"
+            },
+            {
+                "construct": "error type switching / errors.Is / errors.As",
+                "description": "Error classification functions — routing errors to appropriate handlers",
+                "patterns": [
+                    "func handleError(err error) {\n\tvar validErr *ValidationError\n\tswitch {\n\tcase errors.Is(err, ErrNotFound):\n\t\tlog.Printf(\"not found: %v\", err)\n\tcase errors.As(err, &validErr):\n\t\tlog.Printf(\"validation failed: field=%s msg=%s\", validErr.Field, validErr.Message)\n\tdefault:\n\t\tlog.Printf(\"unexpected error: %v\", err)\n\t}\n}"
+                ],
+                "visibility": "typically unexported"
+            },
+            {
+                "construct": "func exitCode(err error) int",
+                "description": "Maps internal errors to OS exit codes — used by main() in executables",
+                "patterns": [
+                    "func exitCode(err error) int {\n\tif err == nil {\n\t\treturn 0\n\t}\n\tvar validErr *ValidationError\n\tswitch {\n\tcase errors.Is(err, ErrNotFound):\n\t\treturn ExitNotFound\n\tcase errors.As(err, &validErr):\n\t\treturn ExitValidation\n\tdefault:\n\t\treturn ExitGeneral\n\t}\n}"
+                ],
+                "visibility": "unexported — called by main()",
+                "note": "Exit code constants defined in SETUP S2 Constants."
+            },
+            {
+                "construct": "error recovery functions",
+                "description": "Functions that attempt to recover from errors — retry logic, fallback strategies",
+                "patterns": [
+                    "func withRetry(attempts int, delay time.Duration, fn func() error) error {\n\tvar lastErr error\n\tfor i := 0; i < attempts; i++ {\n\t\tif err := fn(); err != nil {\n\t\t\tlastErr = err\n\t\t\ttime.Sleep(delay)\n\t\t\tcontinue\n\t\t}\n\t\treturn nil\n\t}\n\treturn fmt.Errorf(\"failed after %d attempts: %w\", attempts, lastErr)\n}"
+                ],
+                "visibility": "unexported typically"
+            },
+            {
+                "construct": "user-facing error formatting",
+                "description": "Functions that format errors for human consumption — stderr output, log messages",
+                "patterns": [
+                    "func formatUserError(err error) string {\n\tvar validErr *ValidationError\n\tif errors.As(err, &validErr) {\n\t\treturn fmt.Sprintf(\"Error: %s (field: %s)\", validErr.Message, validErr.Field)\n\t}\n\treturn fmt.Sprintf(\"Error: %v\", err)\n}"
+                ],
+                "visibility": "unexported"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "error type definitions (type XError struct)",
+                "reason": "Error TYPES go in SETUP S5 ErrorTypes. This section handles errors, not defines them.",
+                "defer_to": "SETUP.ErrorTypes",
+                "go_signal": "^type\\s+\\w*(Error|Err)\\w*\\s+struct"
+            },
+            {
+                "construct": "sentinel error declarations (var ErrX = errors.New(...))",
+                "reason": "Sentinel errors are declarations — they belong in SETUP S3 Variables or S5 ErrorTypes",
+                "defer_to": "SETUP.Variables or SETUP.ErrorTypes",
+                "go_signal": "^var\\s+Err\\w+\\s*=\\s*errors\\.New"
+            },
+            {
+                "construct": "Error() string method implementations",
+                "reason": "Error() completes the error type — it belongs with the type in SETUP S8 TypeMethods",
+                "defer_to": "SETUP.TypeMethods",
+                "go_signal": "func\\s+\\(\\w+\\s+\\*?\\w*Error\\w*\\)\\s+Error\\(\\)\\s+string"
+            },
+            {
+                "construct": "core business logic",
+                "reason": "Error handling processes errors — it doesn't perform primary operations",
+                "defer_to": "BODY.CoreOperations",
+                "go_signal": "N/A — design judgment"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "^type\\s+\\w*Error\\s+struct",
+                "to": "SETUP.ErrorTypes",
+                "confidence": "high",
+                "why": "Error type definition — belongs in SETUP"
+            },
+            {
+                "pattern": "^var\\s+Err\\w+\\s*=",
+                "to": "SETUP.Variables or SETUP.ErrorTypes",
+                "confidence": "high",
+                "why": "Sentinel error declaration — belongs in SETUP"
+            },
+            {
+                "pattern": "func\\s+\\(.*\\)\\s+Error\\(\\)\\s+string",
+                "to": "SETUP.TypeMethods",
+                "confidence": "high",
+                "why": "Error() method — completes type, belongs in SETUP"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// 4. Error Handling\n//\n// Error processing, wrapping, recovery.\n// Error TYPES are in SETUP S5. This section HANDLES them.\n// Pattern: fmt.Errorf(\"package.Method: %w\", err)",
+            "empty_executable": "// 4. Error Handling\n\nfunc exitCode(err error) int {\n\tif err == nil {\n\t\treturn 0\n\t}\n\treturn 1\n}",
+            "empty_demo_test": "// 4. Error Handling\n//\n// Error test helpers — assertError(), requireError(),\n// custom error matchers for test validation.",
+            "comment_skeleton": "// 4. Error Handling\n// func exitCode(err error) int { ... }\n// func handleError(err error) { ... }"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Error Handling: how the package responds to failure. Error TYPES (SETUP S5) define what CAN go wrong. Error HANDLING (here) defines what HAPPENS when it does. The distinction matters — definition vs. response.",
+    "_X5_scripture": "Proverbs 24:16 — For a just man falleth seven times, and riseth up again."
+}

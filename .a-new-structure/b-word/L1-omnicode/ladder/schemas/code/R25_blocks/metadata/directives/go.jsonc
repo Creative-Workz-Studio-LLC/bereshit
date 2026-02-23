@@ -1,0 +1,110 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-directives",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 1: Directives — Go Content",
+    "_P5_brief": "Go-specific content rules for OmniCode directives. How Go files declare their identity at line 1. Extends the base structure at structure/parts/metadata/directives.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/directives.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "//omni:code --go -{subtype}",
+                "description": "Instantiated file directive -- this file IS OmniCode Go code",
+                "patterns": [
+                    "//omni:code --go -library",
+                    "//omni:code --go -executable",
+                    "//omni:code --go -demo-test"
+                ],
+                "visibility": "N/A -- directives are comments",
+                "note": "Must be line 1. No space after //. Go has three subtypes (no separate module form -- Go packages ARE modules)."
+            },
+            {
+                "construct": "// #!omni template --go -{subtype}",
+                "description": "Template file directive -- this file is an OmniCode Go template",
+                "patterns": [
+                    "// #!omni template --go -library",
+                    "// #!omni template --go -executable",
+                    "// #!omni template --go -demo-test"
+                ],
+                "visibility": "N/A",
+                "note": "Templates use #! shebang-style with space after //."
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "//omni:code --go (no subtype)",
+                "reason": "Every Go file must declare its form. The subtype drives section availability.",
+                "defer_to": "N/A -- add subtype flag",
+                "go_signal": "^//omni:code\\s+--go\\s*$"
+            },
+            {
+                "construct": "//omni:code --go -module",
+                "reason": "Go has no separate module subtype. Go packages ARE modules. Use -library for package files.",
+                "defer_to": "N/A -- use -library instead",
+                "go_signal": "//omni:code\\s+--go\\s+-module"
+            },
+            {
+                "construct": "directive on line other than 1",
+                "reason": "The pragma directive MUST be line 1.",
+                "defer_to": "N/A -- move to line 1",
+                "go_signal": "N/A"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "^package\\s+",
+                "to": "METADATA.CommentBlock",
+                "confidence": "medium",
+                "why": "Package declaration found before METADATA comment block is established"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "library": "//omni:code --go -library",
+            "executable": "//omni:code --go -executable",
+            "demo_test": "//omni:code --go -demo-test"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go directives: line 1 is identity. //omni:code --go -{subtype} declares what this file IS. Go has three forms (library, executable, demo-test) -- no module form because Go packages are inherently modular.",
+    "_X5_scripture": "Genesis 1:3 -- And God said, Let there be light: and there was light."
+}

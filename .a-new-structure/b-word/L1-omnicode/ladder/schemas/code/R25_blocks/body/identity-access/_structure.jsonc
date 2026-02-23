@@ -1,0 +1,110 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-body-identity-access",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "BODY Section 1: Identity Access — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Identity Access IS, not how it manifests in any language. See format/blocks/{lang}/body/identity-access.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "IdentityAccess",
+        "position": 1,
+        "label": "Identity Access",
+        "block": "BODY",
+        "overview_text": "OmniCode static accessor functions",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "PRAGMA accessors",
+                "description": "Functions that expose compile-time PRAGMA identity at runtime",
+                "distinguisher": "The bridge between METADATA and BODY. Identity becomes queryable."
+            },
+            {
+                "concept": "METADATA accessors",
+                "description": "Functions that expose compile-time METADATA fields at runtime",
+                "distinguisher": "Same bridge, different statics. PRAGMA is core identity; METADATA is context."
+            },
+            {
+                "concept": "key lookup",
+                "description": "Retrieve a specific field by name from identity statics",
+                "distinguisher": "Point access. Ask for one thing, get one answer."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "identity mutation",
+                "reason": "Identity statics are immutable. You can read them, not change them.",
+                "defer_to": "Never — identity is fixed"
+            },
+            {
+                "concept": "derived computations",
+                "reason": "Accessors are pure reads. Computing FROM identity is logic, not access.",
+                "defer_to": "BODY.CoreLogic"
+            },
+            {
+                "concept": "non-identity functions",
+                "reason": "This section is exclusively for PRAGMA/METADATA access. Nothing else.",
+                "defer_to": "BODY.FreeFunctions or BODY.CoreLogic"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "REQUIRED",
+            "module": "REQUIRED",
+            "library": "REQUIRED",
+            "executable": "REQUIRED",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Identity Access",
+            "reserved_reason": null,
+            "note": "Identity Access is REQUIRED in all forms. Every OmniCode file exposes its identity at runtime."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — identity access hosts any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Identity Access bridges compile-time identity into runtime. METADATA says who you are; these functions let the running code know.",
+    "_X5_scripture": "Exodus 3:14 — And God said unto Moses, I AM THAT I AM."
+}

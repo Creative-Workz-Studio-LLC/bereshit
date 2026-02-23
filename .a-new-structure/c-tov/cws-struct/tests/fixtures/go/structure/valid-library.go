@@ -53,7 +53,7 @@ var Metadata = [][2]string{
 	{"C1.version", "a-01.00"},
 	{"C1.status", "draft"},
 	{"C1.created", "2026-02-17"},
-	{"C1.updated", "2026-02-17"},
+	{"C1.updated", "2026-02-22"},
 	// C2: Attribution
 	{"C2.organization", "CreativeWorkzStudio LLC"},
 	{"C2.architect", "Nova Dawn"},
@@ -64,7 +64,7 @@ var Metadata = [][2]string{
 	{"C3.principle", "Tests prove truth. Fixtures embody it."},
 	{"C3.anchor", "Genesis 1:1"},
 	// C4: Dependencies
-	{"C4.requires.stdlib", "none"},
+	{"C4.requires.stdlib", "fmt"},
 	{"C4.requires.external", "none"},
 	{"C4.requires.internal", "none"},
 	{"C4.consumers", "tests/handlers/go_test.ts"},
@@ -96,19 +96,19 @@ var Metadata = [][2]string{
 import "fmt"
 
 // ──────────────────────────────────────────────────────────────────────────
-// 2. Constants
+// 2. Modules
+// ──────────────────────────────────────────────────────────────────────────
+
+// No submodules — single-file library fixture.
+
+// ──────────────────────────────────────────────────────────────────────────
+// 3. Constants
 // ──────────────────────────────────────────────────────────────────────────
 
 const Version = "0.1.0"
 
 // ──────────────────────────────────────────────────────────────────────────
-// 3. Variables
-// ──────────────────────────────────────────────────────────────────────────
-
-var defaultConfig = Config{Name: "test", Version: Version}
-
-// ──────────────────────────────────────────────────────────────────────────
-// 5. Error Types
+// 6. Error Types
 // ──────────────────────────────────────────────────────────────────────────
 
 type ConfigError struct {
@@ -117,13 +117,19 @@ type ConfigError struct {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// 6. Core Types
+// 7. Core Types
 // ──────────────────────────────────────────────────────────────────────────
 
 type Config struct {
 	Name    string
 	Version string
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// 11. Variables
+// ──────────────────────────────────────────────────────────────────────────
+
+var defaultConfig = Config{Name: "test", Version: Version}
 
 // ============================================================================
 // END SETUP
@@ -134,23 +140,21 @@ type Config struct {
 // ============================================================================
 
 // ──────────────────────────────────────────────────────────────────────────
-// 2. Helpers
+// 0. Org Chart
 // ──────────────────────────────────────────────────────────────────────────
 
-func formatConfig(c Config) string {
-	return fmt.Sprintf("%s v%s", c.Name, c.Version)
-}
+// fixture — test library with Config type.
+// Provides NewConfig, GetVersion, formatConfig.
 
 // ──────────────────────────────────────────────────────────────────────────
-// 3. Core Operations
+// 1. Identity Access
 // ──────────────────────────────────────────────────────────────────────────
 
-func NewConfig(name string) Config {
-	return Config{Name: name, Version: Version}
-}
+func Key() string     { return Pragma[0][1] }
+func Format() string  { return Pragma[1][1] }
 
 // ──────────────────────────────────────────────────────────────────────────
-// 4. Type Methods
+// 2. Trait Implementations
 // ──────────────────────────────────────────────────────────────────────────
 
 func (e *ConfigError) Error() string {
@@ -158,12 +162,72 @@ func (e *ConfigError) Error() string {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// 5. Public APIs
+// 3. Constructors
 // ──────────────────────────────────────────────────────────────────────────
 
-// GetVersion returns the library version string.
+func NewConfig(name string) Config {
+	return Config{Name: name, Version: Version}
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 4. Core Logic
+// ──────────────────────────────────────────────────────────────────────────
+
+func formatConfig(c Config) string {
+	return fmt.Sprintf("%s v%s", c.Name, c.Version)
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 5. Queries
+// ──────────────────────────────────────────────────────────────────────────
+
+func (c Config) GetName() string { return c.Name }
+
+// ──────────────────────────────────────────────────────────────────────────
+// 6. Output Display
+// ──────────────────────────────────────────────────────────────────────────
+
+func (c Config) String() string {
+	return fmt.Sprintf("Config{%s}", c.Name)
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 7. Free Functions
+// ──────────────────────────────────────────────────────────────────────────
+
 func GetVersion() string {
 	return Version
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 20. Core Operations
+// ──────────────────────────────────────────────────────────────────────────
+
+func ValidateConfig(c Config) error {
+	if c.Name == "" {
+		return &ConfigError{Field: "Name", Message: "cannot be empty"}
+	}
+	return nil
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 21. Error Handling
+// ──────────────────────────────────────────────────────────────────────────
+
+func WrapConfigError(field string, err error) *ConfigError {
+	return &ConfigError{Field: field, Message: err.Error()}
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 22. Public APIs
+// ──────────────────────────────────────────────────────────────────────────
+
+func LoadConfig(name string) (Config, error) {
+	c := NewConfig(name)
+	if err := ValidateConfig(c); err != nil {
+		return Config{}, err
+	}
+	return c, nil
 }
 
 // ============================================================================

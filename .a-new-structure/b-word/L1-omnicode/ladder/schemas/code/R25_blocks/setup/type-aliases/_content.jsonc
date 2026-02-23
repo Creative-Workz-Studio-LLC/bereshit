@@ -1,0 +1,92 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-setup-type-aliases",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "SETUP.TypeAliases Content Character — What Type Alias Content IS",
+    "_P5_brief": "Format-independent definition of type alias content character. Type aliases rename complex type expressions with short, domain-meaningful names. Syntax varies (type X = Y, typedef); the renaming-without-creating-new-structure doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "type-aliases",
+        "block": "SETUP",
+        "position": 5,
+        "nature": "vocabulary",
+
+        "description": "Type alias content is vocabulary for the file's domain. It takes complex, generic, or verbose type expressions and gives them short, meaningful names. Aliases do not create new types — they create new names for existing types. The aliased type and the original are interchangeable. Type aliases exist to make code readable, not to add type safety.",
+
+        "invariants": {
+            "description": "Properties true of ALL type alias content, regardless of language.",
+
+            "renaming": "Type aliases create new names, not new types. The alias and the original are structurally identical and interchangeable at the type level.",
+            "simplifying": "Every alias must reduce complexity. If the alias is longer or no clearer than what it replaces, it has no purpose.",
+            "domain-carrying": "Aliases carry domain intent. Result<T, Error> becomes ParseResult<T>. The alias communicates what the generic type means in this context.",
+            "multiply-used": "An alias must be used at least three times to justify its existence. Single-use aliases add indirection without reducing repetition."
+        },
+
+        "content_forms": {
+            "description": "What type alias content looks like across languages. Syntax varies; the renaming relationship is invariant.",
+
+            "rust": {
+                "syntax": "type ParseResult<T> = Result<T, ParseError>; type Callback = Box<dyn Fn(Event) -> Response>;",
+                "grouping": "Related aliases grouped together. Result aliases first, then callback/function type aliases, then collection aliases.",
+                "notes": "Rust type aliases are transparent — the compiler sees through them. They do not create newtype wrappers. For type-safe wrappers, use struct Wrapper(Inner) in CoreTypes instead."
+            },
+
+            "go": {
+                "syntax": "type ParseResult = Result[any]; type HandlerFunc = func(http.ResponseWriter, *http.Request)",
+                "grouping": "Grouped in type blocks. Function type aliases first, then generic specializations.",
+                "notes": "Go 1.18+ supports type aliases with = syntax. Go also has type definitions (without =) which create NEW types — those belong in CoreTypes, not TypeAliases. The distinction matters: alias = interchangeable, definition = distinct."
+            },
+
+            "c": {
+                "syntax": "typedef int (*CompareFunc)(const void *, const void *); typedef struct Node* NodePtr;",
+                "grouping": "Function pointer typedefs first, then struct pointer typedefs, then convenience typedefs.",
+                "notes": "C typedef is the only aliasing mechanism. It creates a new name but not a new type. Function pointer typedefs are the most common use case — they make callback signatures readable."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, type aliases change syntax but preserve the naming relationship. The same complex type gets the same short name — only the underlying type expression and alias syntax change.",
+            "invariant": ["naming relationship (which complex type gets which short name)", "domain semantics (what the alias communicates)", "usage sites (where the alias appears in signatures)"],
+            "variable": ["syntax (type X = Y vs typedef Y X)", "alias vs definition distinction (Rust/Go have both; C only has typedef)", "generic parameter syntax", "function pointer syntax"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "defer",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 1F 10D. −10/11 ≈ −0.91. variable_binding defers (type aliases are a form of naming).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Type aliases are the vocabulary of a file's domain. A good alias makes the complex readable and the generic specific. Like naming — the right name reveals what a thing is for.",
+    "_X5_scripture": "Proverbs 22:1 — A good name is rather to be chosen than great riches."
+}

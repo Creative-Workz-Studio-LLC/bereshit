@@ -1,0 +1,124 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-molded-go-demo-test",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "form-content-schema",
+    "_P2_role": "content-molded",
+    "_P5_title": "Go Demo-Test Form Content — The Proving Ground",
+    "_P5_brief": "Go-specific content expectations for demo-test form (*_test.go). The accountability layer — proves claims through table-driven tests, t.Run() subtests, t.Helper() fixtures. package xxx_test (external) or package xxx (internal). concern_coverage ordering because tests validate by aspect, not by execution order.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends_structure": "structure/molded/demo-test.jsonc",
+    "extends_content": "content/whole/code.jsonc",
+    "format": "go",
+    "form": "demo-test",
+
+    "content_expectations": {
+
+        "pragma": "//omni:code --go -demo-test",
+
+        "content_state": "REAL — all code is live, uncommented.",
+
+        "METADATA": {
+            "directive": "//omni:code --go -demo-test",
+            "identity_construct": "var Pragma = [][2]string{...} and var Metadata = [][2]string{...} slices — I1-I4 identity, C1-C7 context",
+            "I2_subtype": "demo-test",
+            "I2_role": "Test file — validates package behavior, proves claims",
+            "doc_comments": "// test-level doc comments — what aspects are tested, testing strategy, coverage goals",
+            "visibility": "N/A — METADATA is identity, not API",
+            "package_convention": "package xxx_test (external — tests public API only) or package xxx (internal — tests unexported functions). External preferred for library tests; internal when testing implementation details."
+        },
+
+        "SETUP": {
+            "import_pattern": {
+                "primary": "testing (always required), the package under test (import path)",
+                "secondary": "std: fmt, strings, os, io (test I/O). External: testify, cmp if used.",
+                "grouping": "std (testing first) → package under test → external test deps",
+                "note": "Test files import the package they're testing. External test packages (xxx_test) see only exported API. Dot imports (. \"pkg\") are acceptable in test files for readability but not required."
+            },
+
+            "visibility_pattern": {
+                "types": "Unexported (lowercase). Test types are internal — testCase structs, mock types, fixture types.",
+                "functions": "Test*() and Benchmark*() are the only 'exported' pattern — required by testing framework. All helpers are unexported.",
+                "constants": "Unexported. Expected values, golden data, test configuration. Every magic value in a test should be a named constant here.",
+                "errors": "Unexported. Expected error values for comparison. var errExpected = errors.New(...) for test assertions."
+            },
+
+            "S1_import_pattern": {
+                "structure": "import block with testing first, then package under test, then helpers",
+                "example": "import (\n\t\"testing\"\n\t\"fmt\"\n\n\t\"mypackage\"\n\n\t\"github.com/stretchr/testify/assert\"\n)",
+                "note": "testing is the foundation — always first in the std group."
+            },
+
+            "S6_core_types_pattern": {
+                "structure": "Test case structs for table-driven tests, mock types, fixture types",
+                "example": "type testCase struct {\n\tname     string\n\tinput    string\n\texpected string\n\twantErr  bool\n}",
+                "note": "Table-driven test case types are the Go test vocabulary. Keep them focused — one struct per concern."
+            },
+
+            "S9_assertion_helpers_pattern": {
+                "structure": "Functions with t.Helper() call — the Go equivalent of assertion macros",
+                "example": "func assertNoError(t *testing.T, err error) {\n\tt.Helper()\n\tif err != nil {\n\t\tt.Fatalf(\"unexpected error: %v\", err)\n\t}\n}",
+                "note": "t.Helper() marks the function so test failures report the CALLER's line, not the helper's. Essential for readable test output."
+            },
+
+            "error_pattern": "Expected error values for comparison. Sentinel errors (var errExpected = errors.New(...)) for errors.Is checks. Type assertions for errors.As checks.",
+
+            "type_pattern": "Test infrastructure types — testCase structs, mock implementations, fixture builders. These are the testing vocabulary. If test types grow complex, the code under test may need a better API."
+        },
+
+        "BODY": {
+            "ordering": "concern_coverage",
+            "section_content": {
+                "B1_OrgChart": "Test structure overview — what's being tested, test organization, coverage strategy. Documents which aspects are proven and which are deferred.",
+                "B2_Helpers": "Test helper functions with t.Helper() — setup(), teardown(), temporary file creators, fixture builders. Keep focused — a test helper that does too much hides what's actually being tested.",
+                "B3_CoreOperations": "Shared test operations — table-driven test runner wrappers, benchmark setup, common assertion sequences. Functions that multiple Test*() functions call.",
+                "B4_ErrorHandling": "Error test helpers — assertError(), requireError(), custom error matchers. Validates both that errors occur and that they carry the right context.",
+                "B5_TestFunctions": "Test*() and Benchmark*() functions — the actual test cases. Name pattern: Test{Aspect}_{Scenario} (e.g., TestOpen_InvalidPath). Use subtests (t.Run) for table-driven patterns. Each test should be independent — no ordering dependency."
+            },
+
+            "note": "Concern coverage: OrgChart → Helpers (fixtures) → CoreOps (shared logic) → ErrorHandling (error validation) → TestFunctions (the actual tests). Tests are organized by what they prove, not by execution order."
+        },
+
+        "CLOSING": {
+            "Cv_pattern": {
+                "structure": "Meta-validation — tests that verify test infrastructure itself",
+                "organization": "Tests that the test helpers work correctly, fixture builders produce valid fixtures, etc.",
+                "note": "Most test files won't need Cv — the test functions ARE the validation. Cv is for when test infrastructure is complex enough to need its own tests."
+            },
+
+            "Ce_pattern": {
+                "structure": "func TestMain(m *testing.M) { ... os.Exit(m.Run()) }",
+                "content": "TestMain() for global test setup/teardown — database connections, temp directories, server startup. Thin — most tests should be independent.",
+                "note": "TestMain is the test file's entry point. Only use when global setup/teardown is genuinely needed. Independent tests are preferred."
+            },
+
+            "Cc_pattern": "Test fixture teardown — cleanup functions, temp dir removal, mock server shutdown. t.Cleanup() is preferred over manual teardown for per-test cleanup. Cc handles package-level cleanup that TestMain manages.",
+
+            "X1_pattern": {
+                "safe": "New test cases, new test helpers, new benchmarks, expanding table-driven test tables",
+                "careful": "Changing test infrastructure (helpers, fixtures) — affects all tests that use them",
+                "never": "Structural invariants (4-block, Pragma/Metadata layout), removing tests without replacement"
+            },
+
+            "X5_pattern": "Scripture grounding the test file's role as proving ground — truth revealed through testing."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The Go test file is the proving ground — where claims become evidence. Table-driven tests (Go's signature pattern) organize assertions by concern. t.Helper() marks the support structure. t.Run() names each sub-proof. t.Cleanup() handles the aftermath. The test file mirrors the package it tests: every exported function has a Test counterpart, every error path has a negative test, every edge case has a table row. A package without tests is a package of unproven claims.",
+    "_X5_scripture": "Prove all things; hold fast that which is good. — 1 Thessalonians 5:21"
+}

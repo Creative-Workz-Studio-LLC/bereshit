@@ -3,40 +3,46 @@
   // ==========================================================================
   // METADATA
   // Key: B-vscode-settings
-  // Purpose: VSCode settings - thin wrapper pointing to Bereshit conventions
-  // Version: a-01.00
+  // Purpose: VSCode workspace settings for Bereshit — conventions + tooling
+  // Version: a-02.00
   // ==========================================================================
+
   // ─────────────────────────────────────────────────────────────────────────
   // AsciiDoc (Documentation)
   // ─────────────────────────────────────────────────────────────────────────
   "asciidoc.preview.style": "word/seed/documentation/adoc/styles/cws-asciidoctor.css",
   "asciidoc.preview.useEditorStyle": false,
+
   // ─────────────────────────────────────────────────────────────────────────
-  // File Associations
+  // File Associations (workspace overrides)
   // ─────────────────────────────────────────────────────────────────────────
   "files.associations": {
-    "*.omni": "plaintext",
+    "*.omni": "omnicode",
+    "*.ofd": "omnicode",
     "*.adoc": "asciidoc",
     "*.work": "go",
     "Makefile": "makefile"
   },
+
   // ─────────────────────────────────────────────────────────────────────────
-  // Editor Defaults (Unix conventions)
+  // Editor Defaults (Unix conventions — tabs for Go/C, per-language)
   // ─────────────────────────────────────────────────────────────────────────
   "files.eol": "\n",
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "editor.tabSize": 4,
   "editor.insertSpaces": false,
+
   // ─────────────────────────────────────────────────────────────────────────
-  // C/C++ (libtrit)
+  // C/C++ (libtrit — tabs, 4-wide)
   // ─────────────────────────────────────────────────────────────────────────
   "[c]": {
     "editor.tabSize": 4,
     "editor.insertSpaces": false
   },
+
   // ─────────────────────────────────────────────────────────────────────────
-  // Go
+  // Go (tabs, format on save, gofumpt via gopls)
   // ─────────────────────────────────────────────────────────────────────────
   "[go]": {
     "editor.formatOnSave": true,
@@ -48,15 +54,29 @@
   "gopls": {
     "ui.semanticTokens": true
   },
+
   // ─────────────────────────────────────────────────────────────────────────
-  // Search Exclusions (build artifacts)
+  // Deno (enable for cws-struct subdirectory)
+  // NOTE: Deno is off globally, can be enabled per-folder if needed
+  // ─────────────────────────────────────────────────────────────────────────
+  "deno.enablePaths": [
+    ".a-new-structure/c-tov/cws-struct"
+  ],
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Search Exclusions (build artifacts, compiled output)
   // ─────────────────────────────────────────────────────────────────────────
   "search.exclude": {
     "**/build/**": true,
     "**/bin/**": true,
     "**/*.a": true,
-    "**/*.o": true
+    "**/*.o": true,
+    "**/.steps/**": true,
+    "**/.build/**": true,
+    "**/go.sum": true,
+    "**/node_modules/**": true
   },
+
   // ─────────────────────────────────────────────────────────────────────────
   // Files to Hide in Explorer
   // ─────────────────────────────────────────────────────────────────────────
@@ -66,12 +86,12 @@
     "**/*.a": true,
     "**/go.sum": true
   },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Git: Disable auto-refresh — prevents index.lock conflicts with CLI
+  // This repo is large; VSCode polling takes 8s+ per status call.
+  // Manual refresh in SCM view when needed.
+  // ─────────────────────────────────────────────────────────────────────────
   "git.ignoreLimitWarning": true,
-  // ─────────────────────────────────────────────────────────────────────────
-  // Git: Disable auto-refresh to prevent lock contention with CLI
-  // VSCode's constant git status polling (8s+ per call on this repo)
-  // creates index.lock conflicts when using git from terminal.
-  // Use manual refresh in SCM view when needed.
-  // ─────────────────────────────────────────────────────────────────────────
   "git.autorefresh": false
 }

@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-metadata-subtypes",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "METADATA.Subtypes Content Character — What Subtype Content IS",
+    "_P5_brief": "Format-independent definition of subtype content character. Subtypes are the form classification system — a declaration that determines which sections exist in the file. The I2.subtype value drives the entire form cascade: bare-bone, module, library, executable, or demo-test. This is content that constrains content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "subtypes",
+        "block": "METADATA",
+        "position": 6,
+        "nature": "form-classification",
+
+        "description": "Subtype content is the file's form declaration — a single classification value that cascades through the entire file structure. When I2.subtype says 'library', the file gains module declarations, trait definitions, public API sections, and Drop implementations. When it says 'bare-bone', those sections become Reserved Omissions. The subtype doesn't contain complex data — it contains a choice that determines what other content is allowed to exist.",
+
+        "invariants": {
+            "description": "Properties true of ALL subtype content, regardless of language.",
+
+            "declared_in_pragma": "The subtype is carried as the I2.subtype field in the PRAGMA identity static. It is not a separate data structure — it is one field within pragma identity that has outsized structural consequences.",
+            "drives_form_cascade": "The subtype value determines which sections are REQUIRED, AVAILABLE, or RESERVED across the entire file. This cascade flows: pragma directive -> I2.subtype -> form constraints -> section availability. One value, system-wide consequences.",
+            "bare_bone_is_anchor": "bare-bone is the foundation form. Every other form (module, library, executable, demo-test) is bare-bone PLUS additional sections. No form removes what bare-bone provides — forms only add. This is the additive-only constraint.",
+            "compile_time_classification": "The subtype is a compile-time declaration. It does not change at runtime. A library file does not become an executable file during execution. The form is fixed when the file is authored.",
+            "one_form_per_file": "Every file has exactly one subtype. A file cannot be both a library and an executable. Dual-purpose files (lib.rs with integration tests) are handled by the form system, not by dual classification."
+        },
+
+        "content_forms": {
+            "description": "What subtype content looks like across languages. The subtype declaration lives within the pragma identity structure — it is a single field, not a standalone section.",
+
+            "rust": {
+                "syntax": "// In PRAGMA static:\\n(\"I2.subtype\", \"library\"),\\n// In directive line:\\n// #!omni code --rust -library",
+                "grouping": "The subtype appears in two places: the directive pragma line (as -library flag) and the PRAGMA static (as I2.subtype field). Both must agree.",
+                "notes": "In Rust, the subtype also manifests structurally: library form means pub static, pub fn, pub trait are present. Executable form means fn main() exists. demo-test form means #[cfg(test)] sections are primary. The subtype is a declaration that the file structure fulfills."
+            },
+
+            "go": {
+                "syntax": "// In Pragma var:\\n{\"I2.subtype\", \"library\"},\\n// In directive line:\\n// #!omni code --go -library",
+                "grouping": "Same dual presence: directive line (-library flag) and Pragma var (I2.subtype field).",
+                "notes": "In Go, subtype manifests through package-level structure: library means exported functions and types. Executable means package main with func main(). demo-test means _test.go file with TestXxx functions. Go's file-per-concern convention means the subtype often matches the filename pattern."
+            },
+
+            "c": {
+                "syntax": "// In @omni comment:\\n/// @omni:inh subtype = source\\n// Or in pragma define:\\n#define PRAGMA_I2_SUBTYPE \"source\"",
+                "grouping": "C subtype appears in the @omni comment block and optionally in preprocessor defines.",
+                "notes": "C has its own subtype vocabulary: 'source' (implementation .c file), 'header' (declaration .h file), 'type-header' (type-only .h file). These map to but differ from the standard form names. A C 'source' is analogous to a module or library depending on what it exports. Headers have no direct equivalent in Rust/Go's module systems."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, the subtype classification must be mapped between language-specific form vocabularies. A Rust 'library' becomes a Go 'library' directly, but a C 'header' has no Rust equivalent — it maps to pub items in a library crate. The structural consequences of the subtype (which sections exist) must be re-derived for the target language.",
+            "invariant": ["the concept of form classification (every file declares its form)", "additive-from-bare-bone principle", "single form per file", "form drives section availability"],
+            "variable": ["form vocabulary (library/executable/module vs source/header)", "structural manifestation (pub fn vs func main vs #include guard)", "form-to-section mapping (which sections each form enables)", "file naming conventions (lib.rs vs _test.go vs .h vs .c)", "multi-file patterns (C header+source pairs vs Rust single lib.rs)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — no code patterns belong in subtype declarations.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The subtype is a small declaration with large consequences. One field in the pragma static determines the entire shape of the file — which sections exist, which are reserved, what content is allowed. This is the principle of identity determining structure. The file declares what it is, and the standard responds by telling it what it can contain. Like the members of a body, each has its place and purpose.",
+    "_X5_scripture": "1 Corinthians 12:18 — But now hath God set the members every one of them in the body, as it hath pleased him. Each form has its place."
+}

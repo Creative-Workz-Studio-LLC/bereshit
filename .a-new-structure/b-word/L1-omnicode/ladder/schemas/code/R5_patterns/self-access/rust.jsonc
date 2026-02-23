@@ -1,0 +1,35 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-self-access",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Self Access",
+
+    "concept": "self_access",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "self_method",
+            "syntax": "self.{method}({args})",
+            "detect": "self\\.(\\w+)\\(([^)]*)\\)",
+            "captures": { "method": 1, "args": 2 },
+            "notes": "Method call on self — self.process(), self.validate(input).",
+            "priority": 1
+        },
+        {
+            "id": "self_field",
+            "syntax": "self.{field}",
+            "detect": "self\\.(\\w+)(?!\\()",
+            "captures": { "field": 1 },
+            "notes": "Field access on self — self.name, self.config.",
+            "priority": 2
+        }
+    ],
+
+    "_X5_note": "Rust self access — always explicit 'self' keyword."
+}

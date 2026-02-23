@@ -1,0 +1,172 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-setup-imports",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 1: Imports -- Go Content",
+    "_P5_brief": "Go-specific content rules for Imports. Four-tier grouping: std -> external -> internal -> package-internal. goimports enforces formatting. Extends the base structure at blocks/setup/imports.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/imports.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "import \"std/package\"",
+                "description": "Standard library imports -- the foundation layer",
+                "patterns": [
+                    "\"fmt\"",
+                    "\"os\"",
+                    "\"path/filepath\"",
+                    "\"strings\"",
+                    "\"sync\"",
+                    "\"io\""
+                ],
+                "visibility": "N/A -- imports have no visibility modifier"
+            },
+            {
+                "construct": "import \"external/module/package\"",
+                "description": "External module imports from go.mod dependencies",
+                "patterns": [
+                    "\"github.com/spf13/cobra\"",
+                    "\"github.com/BurntSushi/toml\"",
+                    "\"golang.org/x/tools/go/analysis\""
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "import \"module/internal/package\"",
+                "description": "Internal module imports for cross-package access within the module",
+                "patterns": [
+                    "\"github.com/org/project/internal/config\"",
+                    "\"github.com/org/project/pkg/types\""
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "import _ \"package\" // side-effect",
+                "description": "Blank imports for side effects -- must include purpose comment",
+                "patterns": [
+                    "_ \"image/png\" // register PNG decoder",
+                    "_ \"net/http/pprof\" // register pprof handlers",
+                    "_ \"github.com/lib/pq\" // register PostgreSQL driver"
+                ],
+                "visibility": "N/A",
+                "note": "Every blank import MUST have a comment explaining the side effect. Undocumented blank imports are a code smell."
+            },
+            {
+                "construct": "// Group comment headers",
+                "description": "Import grouping markers for readability within the import block",
+                "patterns": [
+                    "// goimports enforces blank-line grouping:",
+                    "// Group 1: Standard Library",
+                    "// Group 2: External",
+                    "// Group 3: Internal"
+                ],
+                "note": "Group ordering: std -> external -> internal -> package-internal. goimports handles blank-line separation automatically."
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": ". \"package\" (dot import)",
+                "reason": "Dot imports pollute the namespace and obscure where identifiers come from. Only acceptable in test files using testing frameworks that rely on it.",
+                "defer_to": "N/A -- use qualified names",
+                "go_signal": "\\.\\s+\"[^\"]+\""
+            },
+            {
+                "construct": "dead imports",
+                "reason": "Every import must be referenced. The Go compiler enforces this -- unused imports are compile errors.",
+                "defer_to": "N/A -- remove unused",
+                "go_signal": "N/A -- compiler error"
+            },
+            {
+                "construct": "imports outside group ordering",
+                "reason": "Maintain std -> external -> internal ordering. goimports enforces this automatically.",
+                "defer_to": "N/A -- run goimports",
+                "go_signal": "N/A"
+            },
+            {
+                "construct": "const / var / type / func declarations",
+                "reason": "Imports section is exclusively import statements. All declarations belong in subsequent SETUP sections or BODY.",
+                "defer_to": "SETUP.Constants or SETUP.CoreTypes or BODY",
+                "go_signal": "^(const|var|type|func)\\s+"
+            },
+            {
+                "construct": "aliased imports without justification",
+                "reason": "Import aliases (name \"pkg\") should only be used when two packages share the same base name. Gratuitous aliasing obscures the real package name.",
+                "defer_to": "N/A -- use the real package name",
+                "go_signal": "\\w+\\s+\"[^\"]+\""
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "^type\\s+",
+                "to": "SETUP.CoreTypes",
+                "confidence": "high",
+                "why": "Type definition found in imports section"
+            },
+            {
+                "pattern": "^func\\s+",
+                "to": "BODY.CoreOperations",
+                "confidence": "high",
+                "why": "Function definition found in imports section"
+            },
+            {
+                "pattern": "^const\\s+",
+                "to": "SETUP.Constants",
+                "confidence": "high",
+                "why": "Constant definition found in imports section"
+            },
+            {
+                "pattern": "^var\\s+",
+                "to": "SETUP.Variables",
+                "confidence": "high",
+                "why": "Variable declaration found in imports section"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "import (\n\t\"fmt\"\n)",
+            "empty_executable": "import (\n\t\"fmt\"\n\t\"os\"\n)",
+            "comment_skeleton": "// import (\n// \t\"fmt\"\n// )"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Imports: the dependency graph edges. Every import declares a relationship -- what this file needs from the outside world. goimports enforces grouping and removes the dead. Four tiers: std, external, internal, package-internal.",
+    "_X5_scripture": "Proverbs 27:17 -- Iron sharpeneth iron; so a man sharpeneth the countenance of his friend."
+}

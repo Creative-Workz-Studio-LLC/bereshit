@@ -1,0 +1,111 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-molded-rust-executable",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "form-content-schema",
+    "_P2_role": "content-molded",
+    "_P5_title": "Rust Executable Form Content — The Doorway",
+    "_P5_brief": "Rust-specific content expectations for executable form (main.rs). The entry point — thin orchestrator bridging CLI to library. main() -> run() -> Result pattern, argument parsing via clap/structopt, exit code mapping. No pub API — everything serves the binary.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends_structure": "structure/molded/executable.jsonc",
+    "extends_content": "content/whole/code.jsonc",
+    "format": "rust",
+    "form": "executable",
+
+    "content_expectations": {
+
+        "pragma": "//omni:code --rust -executable",
+
+        "content_state": "REAL — all code is live, uncommented.",
+
+        "METADATA": {
+            "directive": "//omni:code --rust -executable",
+            "identity_construct": "static PRAGMA: &[(&str, &str)] and static METADATA: &[(&str, &str)] slices",
+            "I2_subtype": "executable",
+            "I2_role": "Binary entry point — the door between human and system",
+            "doc_comments": "//! binary-level doc comments — what the tool does, usage, examples",
+            "visibility": "N/A — METADATA is identity, not API"
+        },
+
+        "SETUP": {
+            "import_pattern": {
+                "primary": "use {crate_name}:: (the library this binary drives)",
+                "secondary": "use std::process::ExitCode (exit handling), use clap:: (arg parsing), use std::io (output)",
+                "grouping": "std → crate library → external (clap, etc.)",
+                "note": "Executables import their own library crate as the primary dependency. External imports are thin — arg parsing, I/O, process control. Most types come FROM the library."
+            },
+
+            "visibility_pattern": {
+                "types": "Private or pub(crate). Executables expose no public API — the binary IS the interface.",
+                "functions": "Private. run() is crate-private. main() has no visibility keyword.",
+                "constants": "Private. EXIT_SUCCESS, EXIT_FAILURE, app-level defaults.",
+                "errors": "Private enum CliError or reuse library's Error type. Wraps library errors + CLI-specific errors (bad args, I/O)."
+            },
+
+            "error_pattern": "Thin error layer: CliError wrapping library::Error + arg parse errors + I/O errors. Or use anyhow::Result for simple binaries. Error display is for humans, not machines.",
+
+            "type_pattern": "Minimal types — Args struct (clap derive), Config if needed. Most types live in the library. If the executable has many types, logic should move to a library."
+        },
+
+        "BODY": {
+            "ordering": "execution_flow",
+            "section_content": {
+                "B1_IdentityAccess": "4 accessor functions. Same pattern as all forms. PRAGMA values identify this as the binary.",
+                "B5_Helpers": "Argument parsing (parse_args() or Args::parse()), config loading (load_config()), output formatting helpers (fatal(), error(), warn()). Everything that sets up run().",
+                "B4_CoreLogic": "The run() function — fn run(args: Args) -> Result<()>. Receives parsed args, calls library, returns Result. This is the executable's single verb. main() delegates here; all orchestration lives here."
+            },
+
+            "reserved_content": {
+                "B2_TraitImplementations": "Executables consume traits, they don't implement them meaningfully.",
+                "B3_Constructors": "Types are constructed in Helpers (Args::parse) or the library.",
+                "B5_Queries": "Nothing to query — executables transform input to output in one pass.",
+                "B6_Output": "Output happens in Helpers (fatal/error/warn) and run(). No separate output layer.",
+                "B7_FreeFunctions": "No public API to expose. register_identity() lives in the library."
+            },
+
+            "note": "Execution flow: Identity → Helpers (parse, configure) → Core (run). The code reads in the order it executes. If run() exceeds 50 lines, logic should move to the library."
+        },
+
+        "CLOSING": {
+            "Cv_pattern": {
+                "structure": "#[cfg(test)] mod tests { use super::*; ... }",
+                "organization": "// -- B1 Identity Access ---- and // -- B5 Helpers ---- (skip reserved sections)",
+                "focus": "Test arg parsing, config loading, error formatting. Do NOT test library logic — that's the library's job.",
+                "note": "Executable tests are thin. Test the bridge, not what's on either side."
+            },
+
+            "Ce_pattern": {
+                "structure": "fn main() -> ExitCode { ... } or fn main() { std::process::exit(exit_code(run())); }",
+                "content": "main() is the HEAVY Ce for executables. Calls run(), maps Result to exit code. Thin — typically 3-5 lines.",
+                "exit_code_mapping": "Ok(()) → 0 (EXIT_SUCCESS), Err(e) → eprintln + 1 (EXIT_FAILURE). Custom codes for specific error types if needed.",
+                "note": "Ce is where the rubber meets the road. The thinnest possible bridge between the OS and run()."
+            },
+
+            "X1_pattern": {
+                "safe": "Additive changes (new CLI flags, new output formats, new error messages)",
+                "careful": "Exit code changes (scripts depend on them), arg name changes (users depend on them)",
+                "never": "Structural invariants (4-block, PRAGMA/METADATA layout, main() -> run() pattern)"
+            },
+
+            "X5_pattern": "Scripture grounding the executable's role as doorway — serving the human who enters."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The Rust executable is a doorway — thin, well-framed, serving those who pass through. main() receives the human's request, run() translates it into library calls, exit codes report the result. If the doorway is getting thick, the logic belongs in the library. A good executable is measured by how little it does itself.",
+    "_X5_scripture": "I am the door: by me if any man enter in, he shall be saved, and shall go in and out, and find pasture. — John 10:9"
+}

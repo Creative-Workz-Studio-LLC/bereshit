@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-metadata-metadata-context",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "METADATA.MetadataContext Content Character — What Metadata Context Content IS",
+    "_P5_brief": "Format-independent definition of metadata context content character. Metadata context is everything about the file EXCEPT who it is — seven C-sections covering lifecycle, attribution, grounding, dependencies, intent, roadmap, and classification. The structured complement to pragma identity.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "metadata-context",
+        "block": "METADATA",
+        "position": 5,
+        "nature": "structured-context",
+
+        "description": "Metadata context content is the file's situational awareness. Where pragma identity answers WHO (I-sections), metadata context answers everything else: WHEN was it created and updated (C1), WHO made it (C2), WHY does it exist in Kingdom terms (C3), WHAT does it depend on (C4), WHAT is its goal (C5), WHERE is it going (C6), and HOW is it discovered (C7). Like pragma identity, this is a compile-time static data structure — but carrying context rather than identity.",
+
+        "invariants": {
+            "description": "Properties true of ALL metadata context content, regardless of language.",
+
+            "compile_time_static": "Like pragma identity, metadata context is initialized at compile time or package load. Context fields do not change during execution. Version, status, authorship, dependencies — all fixed when the file was last edited, not computed at runtime.",
+            "seven_section_structure": "Context content is organized into exactly seven sections: C1 (State), C2 (Attribution), C3 (Grounding), C4 (Dependencies), C5 (Intent), C6 (Roadmap), C7 (Classification). This is the complete context taxonomy — no section is redundant, no essential context is missing.",
+            "key_value_pairs": "Like pragma identity, context content is a collection of key-value pairs with C{N}.{field} naming. C1.version, C3.scripture, C4.requires — the dotted notation is the universal addressing scheme.",
+            "separated_from_identity": "Identity (I-sections) and context (C-sections) are deliberately separate data structures, even though they follow the same pattern. This separation encodes a theological principle: WHO you are and WHAT surrounds you are distinct concerns. A file's identity doesn't change when its dependencies change.",
+            "grounding_present": "C3 (Grounding) is always present with at least a scripture reference and anchor. Every file in the project stands on biblical truth — this is not optional decoration but foundational context. The grounding connects the technical to the eternal."
+        },
+
+        "content_forms": {
+            "description": "What metadata context content looks like across languages. Follows the same patterns as pragma identity but carries C-section fields.",
+
+            "rust": {
+                "syntax": "pub static METADATA: &[(&str, &str)] = &[\\n    (\"C1.version\", \"a-01.00\"),\\n    (\"C1.status\", \"Active\"),\\n    (\"C2.organization\", \"CreativeWorkzStudio LLC\"),\\n    (\"C3.scripture\", \"...\"),\\n    (\"C4.requires.stdlib\", \"none\"),\\n    ...\\n];",
+                "grouping": "Static slice of string tuples, grouped by C-section with // C1: State, // C2: Attribution comment headers. Preceded by /// doc comment with section table.",
+                "notes": "Same data structure pattern as PRAGMA (pub static &[(&str, &str)]). Separate static for separation of concerns. Accessor functions metadata() and metadata_get() in BODY mirror the pragma accessors."
+            },
+
+            "go": {
+                "syntax": "var Metadata = [][2]string{\\n    {\"C1.version\", \"a-01.00\"},\\n    {\"C1.status\", \"Active\"},\\n    {\"C2.organization\", \"CreativeWorkzStudio LLC\"},\\n    {\"C3.scripture\", \"...\"},\\n    {\"C4.requires.stdlib\", \"none\"},\\n    ...\\n}",
+                "grouping": "Package-level var of [][2]string, grouped by C-section with // C1: State comment headers. Preceded by // doc comment with section table.",
+                "notes": "Same data structure pattern as Pragma (var [][2]string). Exported (capital M). MetadataGet() accessor in BODY. C4 dependency fields use dotted sub-keys (C4.requires.stdlib, C4.requires.external)."
+            },
+
+            "c": {
+                "syntax": "C carries context in the comment block alongside identity (@omni tags) or as a separate const array. Static arrays: static const char* metadata[][2] = {{\"C1.version\", \"a-01.00\"}, ...};",
+                "grouping": "When using arrays: grouped by C-section with /* C1: State */ comment headers. More commonly, context stays in Doxygen comments (@version, @author, @date, @brief).",
+                "notes": "C's Doxygen tags (@version, @author, @date) naturally carry some C-section data. Full C1-C7 coverage requires either a const array or extended @omni comment tags. In practice, C files blend Doxygen standard tags with @omni custom tags for complete context."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, metadata context content preserves all context values and their seven-section structure but adapts the data carrier to the target language's idioms. C1-C7 field values remain identical across languages.",
+            "invariant": ["context values (all C1-C7 field values)", "seven-section structure (C1 -> C2 -> C3 -> C4 -> C5 -> C6 -> C7)", "key naming convention (C{N}.{field})", "separation from identity (METADATA distinct from PRAGMA)", "biblical grounding in C3 (always present)"],
+            "variable": ["data structure type (static slice vs var slice vs const array vs comment tags)", "accessor function signatures", "documentation syntax around the static", "sub-key representation (C4.requires.stdlib vs nested structures)", "Doxygen tag mapping (C uses @version for C1.version, @author for C2.architect)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "defer",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 10D + 1F. variable_binding defers (metadata fields are bound values). −10/11 ≈ −0.91.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Metadata context is the file's awareness of its own situation. Identity answers WHO; context answers everything else. Seven sections, seven aspects of situational truth. When a file knows its dependencies, its purpose, its grounding, and its trajectory — it can be maintained, evolved, and trusted. Context without identity is anonymous. Identity without context is isolated. Together they form the complete self-knowledge of a code file.",
+    "_X5_scripture": "Proverbs 16:11 — A just weight and balance are the LORD's: all the weights of the bag are his work. Every context field is a measured weight of truth."
+}

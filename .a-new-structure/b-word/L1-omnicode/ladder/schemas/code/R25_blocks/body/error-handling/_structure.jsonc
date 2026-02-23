@@ -1,0 +1,120 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-body-error-handling",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "BODY Section 21: Error Handling — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Error Handling IS, not how it manifests in any language. See format/blocks/{lang}/body/error-handling.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "ErrorHandling",
+        "position": 21,
+        "label": "Error Handling",
+        "block": "BODY",
+        "overview_text": "Error processing, wrapping, recovery",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "error wrapping",
+                "description": "Adding context to errors as they propagate up the call stack",
+                "distinguisher": "The chain of context. Each layer adds information."
+            },
+            {
+                "concept": "error classification",
+                "description": "Routing errors to appropriate handlers based on type or value",
+                "distinguisher": "Triage. Different errors need different responses."
+            },
+            {
+                "concept": "error recovery",
+                "description": "Retry logic, fallback strategies, graceful degradation",
+                "distinguisher": "Resilience. Trying again, failing gracefully."
+            },
+            {
+                "concept": "exit code mapping",
+                "description": "Translating internal errors to OS exit codes for executables",
+                "distinguisher": "The interface between internal truth and OS convention."
+            },
+            {
+                "concept": "user-facing error formatting",
+                "description": "Making errors readable for humans",
+                "distinguisher": "Internal errors are precise. User errors are helpful."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "error type definitions",
+                "reason": "Error TYPES go in SETUP. This section HANDLES errors, not defines them.",
+                "defer_to": "SETUP.ErrorTypes"
+            },
+            {
+                "concept": "sentinel error declarations",
+                "reason": "Sentinel errors are declarations — belong in SETUP",
+                "defer_to": "SETUP.Variables or SETUP.ErrorTypes"
+            },
+            {
+                "concept": "core business logic",
+                "reason": "Error handling processes errors — it doesn't perform primary operations",
+                "defer_to": "BODY.CoreOperations"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "REQUIRED",
+            "library": "REQUIRED",
+            "executable": "REQUIRED",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Error Handling",
+            "reserved_reason": null,
+            "note": "RESERVED in bare-bone (skeleton has no errors to handle yet). REQUIRED in all declared forms."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — error handling hosts any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Error Handling is how the package responds to failure. Error TYPES define what CAN go wrong. Error HANDLING defines what HAPPENS when it does.",
+    "_X5_scripture": "Proverbs 24:16 — For a just man falleth seven times, and riseth up again."
+}

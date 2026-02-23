@@ -1,0 +1,722 @@
+{
+  "name": "omnicode-ecosystem",
+  "displayName": "OmniCode Ecosystem",
+  "description": "OmniCode structural patterns across all file types — block markers, section tags, and operator conventions injected into comments of Go, C, Rust, TOML, JSONC, and more",
+  "version": "0.2.1",
+  "publisher": "creativeworkzstudio",
+  "author": {
+    "name": "CreativeWorkzStudio LLC",
+    "url": "https://github.com/Creative-Workz-Studio-LLC"
+  },
+  "license": "Proprietary",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Creative-Workz-Studio-LLC/workspace"
+  },
+  "homepage": "https://github.com/Creative-Workz-Studio-LLC/workspace",
+  "bugs": {
+    "url": "https://github.com/Creative-Workz-Studio-LLC/workspace/issues"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Themes"
+  ],
+  "keywords": [
+    "omnicode",
+    "omnifold",
+    "ecosystem",
+    "injection-grammar",
+    "syntax-highlighting",
+    "block-structure",
+    "creativeworkzstudio"
+  ],
+  "galleryBanner": {
+    "color": "#1E1E2E",
+    "theme": "dark"
+  },
+  "contributes": {
+    "configuration": {
+      "title": "OmniCode Ecosystem",
+      "properties": {
+
+        "omnicode.colors.structure.blockBoundary": {
+          "type": "string",
+          "format": "color",
+          "default": "#6A9955",
+          "description": "Block boundaries (═══) — the structural separators between major blocks",
+          "order": 1
+        },
+        "omnicode.colors.structure.sectionBoundary": {
+          "type": "string",
+          "format": "color",
+          "default": "#4E7A46",
+          "description": "Section boundaries (───) — lighter separators within blocks",
+          "order": 2
+        },
+        "omnicode.colors.structure.tags": {
+          "type": "string",
+          "format": "color",
+          "default": "#DCDCAA",
+          "description": "Block and section tags — [PRAGMA], [METADATA], [CONTENT], [CLOSING], [END]",
+          "order": 3
+        },
+        "omnicode.colors.structure.blockNames": {
+          "type": "string",
+          "format": "color",
+          "default": "#4EC9B0",
+          "description": "Block names — METADATA BLOCK, CONTENT BLOCK, END METADATA, etc.",
+          "order": 4
+        },
+        "omnicode.colors.structure.sectionAddresses": {
+          "type": "string",
+          "format": "color",
+          "default": "#9CDCFE",
+          "description": "Section addressing — P.1, M.1, X.1, Cc, Co, Cv",
+          "order": 5
+        },
+
+        "omnicode.colors.pragma.shebang": {
+          "type": "string",
+          "format": "color",
+          "default": "#C586C0",
+          "description": "Pragma shebang (#!omni) — the declaration line at the top of every .omni file",
+          "order": 10
+        },
+        "omnicode.colors.pragma.type": {
+          "type": "string",
+          "format": "color",
+          "default": "#4EC9B0",
+          "description": "Pragma type (folder, spec, template, document, etc.)",
+          "order": 11
+        },
+        "omnicode.colors.pragma.flags": {
+          "type": "string",
+          "format": "color",
+          "default": "#CE9178",
+          "description": "Pragma flags (--jsonc, --toml, --md, etc.)",
+          "order": 12
+        },
+
+        "omnicode.colors.operators.directives": {
+          "type": "string",
+          "format": "color",
+          "default": "#C586C0",
+          "description": "Directives — @key, @type, @version, @authors, @status",
+          "order": 20
+        },
+        "omnicode.colors.operators.anchor": {
+          "type": "string",
+          "format": "color",
+          "default": "#FFD700",
+          "description": "Anchor declarations (#anchor) — gold for the foundation point",
+          "order": 21
+        },
+        "omnicode.colors.operators.anchorValue": {
+          "type": "string",
+          "format": "color",
+          "default": "#D4A76A",
+          "description": "Anchor values — the text following #anchor",
+          "order": 22
+        },
+        "omnicode.colors.operators.containment": {
+          "type": "string",
+          "format": "color",
+          "default": "#569CD6",
+          "description": "Containment operators — >> (child), => (provides), <- (derives)",
+          "order": 23
+        },
+        "omnicode.colors.operators.typeBinding": {
+          "type": "string",
+          "format": "color",
+          "default": "#D4D4D4",
+          "description": "Type binding operator (::) — binds a name to its type",
+          "order": 24
+        },
+        "omnicode.colors.operators.controlFlow": {
+          "type": "string",
+          "format": "color",
+          "default": "#C586C0",
+          "description": "Control flow symbols — --> (proceed), ->| (halt), \\-> (await), <-- (backward)",
+          "order": 25
+        },
+        "omnicode.colors.operators.direction": {
+          "type": "string",
+          "format": "color",
+          "default": "#D4D4D4",
+          "description": "Direction arrow (->) and branch pipe (|)",
+          "order": 26
+        },
+        "omnicode.colors.operators.filePaths": {
+          "type": "string",
+          "format": "color",
+          "default": "#CE9178",
+          "description": "File and path names referenced in containment declarations",
+          "order": 27
+        },
+
+        "omnicode.colors.language.controlKeywords": {
+          "type": "string",
+          "format": "color",
+          "default": "#C586C0",
+          "description": "Control keywords — HALT, PROCEED, AWAIT, PIVOT",
+          "order": 30
+        },
+        "omnicode.colors.language.declarationKeywords": {
+          "type": "string",
+          "format": "color",
+          "default": "#569CD6",
+          "description": "Declaration keywords — this, is, a, folder, and entity-level words",
+          "order": 31
+        },
+        "omnicode.colors.language.flowKeywords": {
+          "type": "string",
+          "format": "color",
+          "default": "#C586C0",
+          "description": "Flow keywords (lower-case) — when, then, from, through, repeat",
+          "order": 32
+        },
+        "omnicode.colors.language.primitiveTypes": {
+          "type": "string",
+          "format": "color",
+          "default": "#4EC9B0",
+          "description": "Primitive types — trit, tryte, word, byte, truth, falsehood",
+          "order": 33
+        },
+        "omnicode.colors.language.exports": {
+          "type": "string",
+          "format": "color",
+          "default": "#DCDCAA",
+          "description": "Export names in containment declarations",
+          "order": 34
+        },
+
+        "omnicode.colors.response.affirm": {
+          "type": "string",
+          "format": "color",
+          "default": "#6A9955",
+          "description": "Affirmation responses — YES, CONFIRMED, GRANTED",
+          "order": 40
+        },
+        "omnicode.colors.response.negate": {
+          "type": "string",
+          "format": "color",
+          "default": "#F44747",
+          "description": "Negation responses — NO, DENIED, REJECTED",
+          "order": 41
+        },
+        "omnicode.colors.response.acknowledge": {
+          "type": "string",
+          "format": "color",
+          "default": "#9CDCFE",
+          "description": "Acknowledgment responses — NOTED, UNDERSTOOD, RECEIVED",
+          "order": 42
+        },
+
+        "omnicode.colors.attention.critical": {
+          "type": "string",
+          "format": "color",
+          "default": "#F44747",
+          "description": "Critical attention markers (>!!! !!!>) — highest severity",
+          "order": 50
+        },
+        "omnicode.colors.attention.warning": {
+          "type": "string",
+          "format": "color",
+          "default": "#FF8C00",
+          "description": "Warning attention markers (>!! !!>) — medium severity",
+          "order": 51
+        },
+        "omnicode.colors.attention.notice": {
+          "type": "string",
+          "format": "color",
+          "default": "#DCDCAA",
+          "description": "Notice attention markers (>! !>) — informational",
+          "order": 52
+        },
+        "omnicode.colors.attention.emphasis": {
+          "type": "string",
+          "format": "color",
+          "default": "#FF8C00",
+          "description": "Emphasis keywords — BAM, ATTENTION, IMPORTANT",
+          "order": 53
+        },
+
+        "omnicode.colors.cpisi.hebrewStates": {
+          "type": "string",
+          "format": "color",
+          "default": "#FFD700",
+          "description": "Hebrew cognitive states — shavar, chaser, ratsah, yashar, tamim, shalem, tov",
+          "order": 60
+        },
+        "omnicode.colors.cpisi.keywords": {
+          "type": "string",
+          "format": "color",
+          "default": "#4FC1FF",
+          "description": "CPI-SI keywords — health states, DAR operations, witness declarations",
+          "order": 61
+        },
+        "omnicode.colors.cpisi.covenantValues": {
+          "type": "string",
+          "format": "color",
+          "default": "#B5CEA8",
+          "description": "Covenant values — granted, deferred, denied",
+          "order": 62
+        },
+        "omnicode.colors.cpisi.ternaryValues": {
+          "type": "string",
+          "format": "color",
+          "default": "#B5CEA8",
+          "description": "Ternary values — +1, -1, balanced ternary constants",
+          "order": 63
+        },
+
+        "omnicode.colors.meta.fields": {
+          "type": "string",
+          "format": "color",
+          "default": "#808080",
+          "description": "Meta fields (_ prefix) — _pragma, _P1_key, _metadata in JSONC files",
+          "order": 70
+        },
+        "omnicode.colors.meta.legendParameters": {
+          "type": "string",
+          "format": "color",
+          "default": "#9CDCFE",
+          "description": "Legend parameters — named values in legend blocks",
+          "order": 71
+        },
+
+        "omnicode.colors.omnifold.headerKeys": {
+          "type": "string",
+          "format": "color",
+          "default": "#FFD700",
+          "description": "OmniFold format header keys — ofd, source, compiled",
+          "order": 80
+        },
+        "omnicode.colors.omnifold.requiredKeys": {
+          "type": "string",
+          "format": "color",
+          "default": "#4EC9B0",
+          "description": "OmniFold required section keys — identity, state, attribution, children",
+          "order": 81
+        },
+        "omnicode.colors.omnifold.recommendedKeys": {
+          "type": "string",
+          "format": "color",
+          "default": "#569CD6",
+          "description": "OmniFold recommended section keys — grounding, dependencies, metadata",
+          "order": 82
+        },
+        "omnicode.colors.omnifold.optionalKeys": {
+          "type": "string",
+          "format": "color",
+          "default": "#9CDCFE",
+          "description": "OmniFold optional section keys — declarations, observations, navigation",
+          "order": 83
+        },
+        "omnicode.colors.omnifold.identityFields": {
+          "type": "string",
+          "format": "color",
+          "default": "#4EC9B0",
+          "description": "OmniFold identity section fields — key, subtype, structure",
+          "order": 84
+        },
+        "omnicode.colors.omnifold.stateFields": {
+          "type": "string",
+          "format": "color",
+          "default": "#9CDCFE",
+          "description": "OmniFold state section fields — version, status, created, updated",
+          "order": 85
+        }
+      }
+    },
+    "grammars": [
+      {
+        "scopeName": "omnicode.ecosystem.injection",
+        "injectTo": [
+          "source.go",
+          "source.c",
+          "source.cpp",
+          "source.rust",
+          "source.ts",
+          "source.tsx",
+          "source.js",
+          "source.jsx",
+          "source.python",
+          "source.shell",
+          "source.makefile",
+          "source.toml",
+          "source.yaml",
+          "source.json.comments",
+          "source.css",
+          "source.csharp"
+        ],
+        "path": "./syntaxes/omnicode-injection.tmLanguage.json"
+      },
+      {
+        "scopeName": "omnicode.ecosystem.jsonc-meta",
+        "injectTo": [
+          "source.json.comments",
+          "source.json"
+        ],
+        "path": "./syntaxes/omnicode-jsonc-meta.tmLanguage.json"
+      }
+    ],
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "name": "OmniCode — Block Boundaries (═══)",
+            "scope": "markup.heading.block-boundary.omnicode, omnicode.structure.block-boundary",
+            "settings": {
+              "foreground": "#6A9955",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Section Boundaries (───)",
+            "scope": "comment.line.section-boundary.omnicode, omnicode.structure.section-boundary",
+            "settings": {
+              "foreground": "#4E7A46"
+            }
+          },
+          {
+            "name": "OmniCode — Block/Section Tags [TAG]",
+            "scope": "keyword.control.block.tag.omnicode, keyword.control.section.tag.omnicode, omnicode.tag",
+            "settings": {
+              "foreground": "#DCDCAA",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Block Names (METADATA BLOCK, etc.)",
+            "scope": "keyword.control.block.name.omnicode, keyword.control.block.end.omnicode, omnicode.block-name",
+            "settings": {
+              "foreground": "#4EC9B0",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Section Addressing (P.1, M.1, Cc, etc.)",
+            "scope": "entity.name.section.pragma.omnicode, entity.name.section.metadata.omnicode, entity.name.section.closing.omnicode, entity.name.section.content.omnicode, omnicode.section-address",
+            "settings": {
+              "foreground": "#9CDCFE",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Pragma Shebang (#!omni)",
+            "scope": "keyword.control.pragma.shebang.omnicode",
+            "settings": {
+              "foreground": "#C586C0",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Pragma Type (folder, spec, template, etc.)",
+            "scope": "entity.name.type.pragma.omnicode",
+            "settings": {
+              "foreground": "#4EC9B0"
+            }
+          },
+          {
+            "name": "OmniCode — Flags (--jsonc, --toml, etc.)",
+            "scope": "keyword.operator.flag.omnicode",
+            "settings": {
+              "foreground": "#CE9178"
+            }
+          },
+          {
+            "name": "OmniCode — Directives (@key, @type, @version, etc.)",
+            "scope": "keyword.control.directive.omnicode",
+            "settings": {
+              "foreground": "#C586C0"
+            }
+          },
+          {
+            "name": "OmniCode — Anchor (#anchor)",
+            "scope": "keyword.control.anchor.omnicode",
+            "settings": {
+              "foreground": "#FFD700",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Anchor Value",
+            "scope": "string.unquoted.anchor.omnicode",
+            "settings": {
+              "foreground": "#D4A76A"
+            }
+          },
+          {
+            "name": "OmniCode — Type Binding (::)",
+            "scope": "keyword.operator.type-binding.omnicode",
+            "settings": {
+              "foreground": "#D4D4D4",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Containment (>>, =>, <-)",
+            "scope": "keyword.operator.containment.child.omnicode, keyword.operator.containment.provides.omnicode, keyword.operator.containment.derives.omnicode",
+            "settings": {
+              "foreground": "#569CD6",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — File/Path Names",
+            "scope": "entity.name.filename.omnicode, string.unquoted.path.omnicode",
+            "settings": {
+              "foreground": "#CE9178"
+            }
+          },
+          {
+            "name": "OmniCode — Export Names",
+            "scope": "variable.other.export.omnicode",
+            "settings": {
+              "foreground": "#DCDCAA"
+            }
+          },
+          {
+            "name": "OmniCode — Control Flow Symbols (-->, ->|, \\->)",
+            "scope": "keyword.control.proceed.omnicode, keyword.control.halt.omnicode, keyword.control.await.omnicode, keyword.control.backward.omnicode",
+            "settings": {
+              "foreground": "#C586C0",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Direction (->)",
+            "scope": "keyword.operator.arrow.forward.omnicode",
+            "settings": {
+              "foreground": "#D4D4D4"
+            }
+          },
+          {
+            "name": "OmniCode — Branch (|)",
+            "scope": "keyword.operator.branch.omnicode",
+            "settings": {
+              "foreground": "#D4D4D4"
+            }
+          },
+          {
+            "name": "OmniCode — Control Keywords (HALT, PROCEED, AWAIT)",
+            "scope": "keyword.control.halt.omnicode, keyword.control.proceed.omnicode, keyword.control.await.omnicode, keyword.control.pivot.omnicode",
+            "settings": {
+              "foreground": "#C586C0"
+            }
+          },
+          {
+            "name": "OmniCode — Response Affirm (YES, CONFIRMED)",
+            "scope": "constant.language.affirm.omnicode",
+            "settings": {
+              "foreground": "#6A9955"
+            }
+          },
+          {
+            "name": "OmniCode — Response Negate (NO, DENIED)",
+            "scope": "constant.language.negate.omnicode",
+            "settings": {
+              "foreground": "#F44747"
+            }
+          },
+          {
+            "name": "OmniCode — Response Acknowledge (NOTED, UNDERSTOOD)",
+            "scope": "constant.language.acknowledge.omnicode",
+            "settings": {
+              "foreground": "#9CDCFE"
+            }
+          },
+          {
+            "name": "OmniCode — Emphasis (BAM, ATTENTION, IMPORTANT)",
+            "scope": "markup.bold.emphasis.omnicode",
+            "settings": {
+              "foreground": "#FF8C00",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Attention Critical (>!!! !!!>)",
+            "scope": "markup.bold.attention.critical.omnicode",
+            "settings": {
+              "foreground": "#F44747",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Attention Warning (>!! !!>)",
+            "scope": "markup.bold.attention.warning.omnicode",
+            "settings": {
+              "foreground": "#FF8C00",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Attention Notice (>! !>)",
+            "scope": "markup.bold.attention.notice.omnicode",
+            "settings": {
+              "foreground": "#DCDCAA"
+            }
+          },
+          {
+            "name": "OmniCode — Hebrew States",
+            "scope": "support.type.hebrew.omnicode",
+            "settings": {
+              "foreground": "#FFD700"
+            }
+          },
+          {
+            "name": "OmniCode — Primitive Types",
+            "scope": "support.type.primitive.omnicode",
+            "settings": {
+              "foreground": "#4EC9B0"
+            }
+          },
+          {
+            "name": "OmniCode — Covenant Values (granted, deferred, denied)",
+            "scope": "constant.language.covenant.omnicode",
+            "settings": {
+              "foreground": "#B5CEA8"
+            }
+          },
+          {
+            "name": "OmniCode — Ternary Values (+1, -1)",
+            "scope": "constant.numeric.trit.omnicode",
+            "settings": {
+              "foreground": "#B5CEA8",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniCode — Meta Fields (_ prefix)",
+            "scope": "variable.other.meta.omnicode, omnicode.jsonc.meta-key",
+            "settings": {
+              "foreground": "#808080",
+              "fontStyle": "italic"
+            }
+          },
+          {
+            "name": "OmniCode — Legend Parameters",
+            "scope": "variable.parameter.legend.omnicode",
+            "settings": {
+              "foreground": "#9CDCFE",
+              "fontStyle": "italic"
+            }
+          },
+          {
+            "name": "OmniCode — Flow Keywords (lower-case)",
+            "scope": "keyword.control.flow.omnicode",
+            "settings": {
+              "foreground": "#C586C0"
+            }
+          },
+          {
+            "name": "OmniCode — Declaration Keywords",
+            "scope": "keyword.declaration.omnicode",
+            "settings": {
+              "foreground": "#569CD6"
+            }
+          },
+          {
+            "name": "OmniCode — CPI-SI Keywords",
+            "scope": "keyword.cpisi.health.omnicode, keyword.cpisi.state.omnicode, keyword.cpisi.dar.omnicode, keyword.cpisi.witness.omnicode, keyword.cpisi.operation.omnicode",
+            "settings": {
+              "foreground": "#4FC1FF"
+            }
+          },
+          {
+            "name": "OmniCode — High-level Entity Keywords (this, is, a, folder)",
+            "scope": "keyword.control.entity.omnicode",
+            "settings": {
+              "foreground": "#569CD6"
+            }
+          },
+
+          {
+            "name": "OmniFold — Format Header Keys (ofd, source, compiled)",
+            "scope": "entity.name.tag.header.omnifold",
+            "settings": {
+              "foreground": "#FFD700",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniFold — Required Section Keys (identity, state, attribution, children)",
+            "scope": "entity.name.tag.section.required.omnifold",
+            "settings": {
+              "foreground": "#4EC9B0",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "name": "OmniFold — Recommended Section Keys (grounding, dependencies, metadata)",
+            "scope": "entity.name.tag.section.recommended.omnifold",
+            "settings": {
+              "foreground": "#569CD6"
+            }
+          },
+          {
+            "name": "OmniFold — Optional Section Keys (declarations, observations, navigation)",
+            "scope": "entity.name.tag.section.optional.omnifold",
+            "settings": {
+              "foreground": "#9CDCFE"
+            }
+          },
+          {
+            "name": "OmniFold — Identity Field Keys (key, subtype, structure)",
+            "scope": "support.type.property-name.identity.omnifold",
+            "settings": {
+              "foreground": "#4EC9B0"
+            }
+          },
+          {
+            "name": "OmniFold — State Field Keys (version, status, created, updated)",
+            "scope": "support.type.property-name.state.omnifold",
+            "settings": {
+              "foreground": "#9CDCFE"
+            }
+          },
+          {
+            "name": "OmniFold — Attribution Field Keys (architect, implementation, organization)",
+            "scope": "support.type.property-name.attribution.omnifold",
+            "settings": {
+              "foreground": "#CE9178"
+            }
+          },
+          {
+            "name": "OmniFold — Grounding Field Keys (scriptures, principle)",
+            "scope": "support.type.property-name.grounding.omnifold",
+            "settings": {
+              "foreground": "#FFD700"
+            }
+          },
+          {
+            "name": "OmniFold — Dependency Field Keys (from, provides, derives)",
+            "scope": "support.type.property-name.dependency.omnifold",
+            "settings": {
+              "foreground": "#569CD6"
+            }
+          },
+          {
+            "name": "OmniFold — Child Field Keys (path, description)",
+            "scope": "support.type.property-name.child.omnifold",
+            "settings": {
+              "foreground": "#CE9178"
+            }
+          },
+          {
+            "name": "OmniFold — Detail Field Keys (text, reference, translation, role, design)",
+            "scope": "support.type.property-name.detail.omnifold",
+            "settings": {
+              "foreground": "#D4D4D4"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

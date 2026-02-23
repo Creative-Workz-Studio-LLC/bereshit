@@ -1,0 +1,80 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-whole-code",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-whole",
+    "_P5_title": "Code Content Character — What Code IS",
+    "_P5_brief": "Format-independent definition of what code content is. Code is executable, typed, compiled or interpreted. It imports, declares, implements, validates. This schema defines the NATURE of code content — what all code has in common regardless of language.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "code",
+        "structure": "4-block",
+        "nature": "executable",
+
+        "description": "Code content is instructions to a machine. It imports dependencies, declares types, implements logic, and validates correctness. Unlike data (which describes) and documentation (which explains), code ACTS.",
+
+        "invariants": {
+            "description": "Properties true of ALL code content, regardless of format (language).",
+
+            "executable": "Code produces behavior when processed — compiled or interpreted, it runs.",
+            "typed": "Code operates on types — primitives, structures, enums, interfaces. Even dynamically typed languages have types at runtime.",
+            "imported": "Code depends on other code — standard libraries, external packages, internal modules. No code is an island.",
+            "scoped": "Code has visibility — public, private, internal. What's exposed and what's hidden is a design decision.",
+            "testable": "Code can be verified — unit tests, integration tests, property tests. If you can't test it, it's not code, it's hope.",
+            "versioned": "Code has identity — OmniCode pragma carries key, version, format, form. Every code file knows who it is."
+        },
+
+        "content_patterns": {
+            "description": "What code content looks like in each block, regardless of language.",
+
+            "METADATA": {
+                "pattern": "Identity constructs — language-specific representation of pragma and metadata fields",
+                "examples": "Rust: static PRAGMA/METADATA slices. Go: var maps. C: comment blocks. Python: module-level dicts.",
+                "invariant": "Every code file has identity. The representation varies; the requirement doesn't."
+            },
+
+            "SETUP": {
+                "pattern": "Declarations — things that EXIST. Types, constants, imports, errors.",
+                "examples": "Rust: use, const, static, struct, enum, trait. Go: import, const, var, type, interface. C: #include, #define, typedef, struct.",
+                "invariant": "SETUP content never executes. It declares existence. The dependency chain (S1-S10) is universal."
+            },
+
+            "BODY": {
+                "pattern": "Implementations — things that HAPPEN. Functions, methods, logic, operations.",
+                "examples": "Rust: fn, impl, pub fn. Go: func. C: function definitions. Python: def.",
+                "invariant": "BODY content is where computation occurs. Every code file does something — BODY is where."
+            },
+
+            "CLOSING": {
+                "pattern": "Accountability — prove it works, run it, clean up, document policy.",
+                "examples": "Rust: #[cfg(test)] mod tests, fn main(), impl Drop. Go: func Test*, func main(). C: main(), test functions.",
+                "invariant": "Every code file has a closing contract. Tests, entry points, and policy documentation are universal needs."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation (e.g., Rust → Go), code content character stays constant. The NATURE of the content (executable, typed, imported) doesn't change — only the SYNTAX changes.",
+            "invariant_during_transpilation": ["structure (4-block skeleton)", "form (module, library, etc.)", "semantic content (what the code DOES)"],
+            "variable_during_transpilation": ["syntax (language-specific keywords)", "type system details", "comment conventions", "import mechanisms"]
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Code is unique among the three types because it ACTS. Data describes. Documentation explains. Code transforms. This is both its power and its danger — code that acts wrongly causes harm. The 4-block structure channels this power: SETUP constrains WHAT can exist, BODY constrains WHAT can happen, CLOSING constrains HOW we verify. Structure tames action.",
+    "_X5_scripture": "For as the body without the spirit is dead, so faith without works is dead also. — James 2:26"
+}

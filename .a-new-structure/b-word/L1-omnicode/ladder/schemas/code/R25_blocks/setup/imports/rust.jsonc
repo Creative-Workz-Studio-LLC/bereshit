@@ -1,0 +1,158 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-setup-imports",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 1: Imports — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Imports. What Rust code CAN, CANNOT, and SHOULD DEFER within this section. Extends the base structure at blocks/setup/imports.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/imports.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "use std::{module};",
+                "description": "Standard library imports — the foundation layer",
+                "patterns": [
+                    "use std::fmt;",
+                    "use std::sync::{Arc, RwLock, LazyLock};",
+                    "use std::collections::HashMap;",
+                    "use std::path::{Path, PathBuf};",
+                    "use std::io::{self, Read, Write};"
+                ],
+                "visibility": "N/A — imports have no visibility modifier"
+            },
+            {
+                "construct": "use {external_crate}::{item};",
+                "description": "External crate imports from Cargo.toml dependencies",
+                "patterns": [
+                    "use serde::{Serialize, Deserialize};",
+                    "use toml::Value;",
+                    "use clap::Parser;"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "use crate::{module}::{item};",
+                "description": "Crate-internal imports for cross-module access",
+                "patterns": [
+                    "use crate::config::Config;",
+                    "use crate::error::Error;"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "use super::{item};",
+                "description": "Parent module imports — primary pattern for module form",
+                "patterns": [
+                    "use super::Config;",
+                    "use super::shared::helpers;"
+                ],
+                "visibility": "N/A",
+                "note": "Modules use super:: as their PRIMARY import path. Libraries use external crate:: paths more heavily."
+            },
+            {
+                "construct": "// Group comment headers",
+                "description": "Import grouping markers for readability",
+                "patterns": [
+                    "// --- Standard Library ---",
+                    "// --- External Crates ---",
+                    "// --- Internal / Crate ---",
+                    "// --- Parent / Sibling ---"
+                ],
+                "note": "Group ordering: std -> external -> internal/crate -> parent/sibling"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "use foo::*;",
+                "reason": "Wildcard glob imports obscure what's being used. Import what you need explicitly.",
+                "defer_to": "N/A — fix in place",
+                "rust_signal": "use\\s+\\w+::\\*"
+            },
+            {
+                "construct": "dead imports",
+                "reason": "Every use statement must be referenced. clippy enforces this.",
+                "defer_to": "N/A — remove unused",
+                "rust_signal": "clippy::unused_imports"
+            },
+            {
+                "construct": "imports outside group ordering",
+                "reason": "Maintain std -> external -> internal -> crate ordering for readability",
+                "defer_to": "N/A — reorder in place",
+                "rust_signal": "N/A"
+            },
+            {
+                "construct": "const / static / type / fn / struct / enum / trait",
+                "reason": "Imports section is exclusively use statements and group comments",
+                "defer_to": "SETUP.Constants or SETUP.CoreTypes or BODY",
+                "rust_signal": "^(pub\\s+)?(const|static|type|fn|struct|enum|trait)\\s+"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific Defer Signals
+        // ─────────────────────────────────────
+
+        "defer_signals": [
+            {
+                "pattern": "^(pub\\s+)?struct\\s+",
+                "to": "SETUP.CoreTypes",
+                "confidence": "high",
+                "why": "Type definition found in imports section"
+            },
+            {
+                "pattern": "^(pub\\s+)?fn\\s+",
+                "to": "BODY.CoreLogic",
+                "confidence": "high",
+                "why": "Function definition found in imports section"
+            },
+            {
+                "pattern": "^(pub\\s+)?const\\s+",
+                "to": "SETUP.Constants",
+                "confidence": "high",
+                "why": "Constant definition found in imports section"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+
+        "scaffold": {
+            "empty_module": "// --- Standard Library ---\n\n// --- Parent / Sibling ---\n// use super::{Item}; — import what you need",
+            "empty_library": "// --- Standard Library ---\nuse std::fmt;\n\n// --- External Crates ---\n\n// --- Internal ---",
+            "comment_skeleton": "// // --- Standard Library ---\n// use std::fmt;\n//\n// // --- External Crates ---\n//\n// // --- Internal ---"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Imports: the dependency graph edges. Every use statement declares a relationship — what this file needs from the outside world. Group them to show where the dependencies come from.",
+    "_X5_scripture": "Proverbs 27:17 — Iron sharpeneth iron; so a man sharpeneth the countenance of his friend."
+}

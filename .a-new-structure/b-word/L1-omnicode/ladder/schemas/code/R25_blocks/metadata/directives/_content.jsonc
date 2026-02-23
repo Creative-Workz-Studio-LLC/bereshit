@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-metadata-directives",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "METADATA.Directives Content Character — What Directive Content IS",
+    "_P5_brief": "Format-independent definition of directive content character. Directives are machine-readable identity markers — //omni: lines that declare what a file IS to every tool that reads it. Syntax varies by comment convention; the identity contract doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "directives",
+        "block": "METADATA",
+        "position": 1,
+        "nature": "identity-declaration",
+
+        "description": "Directive content is the file's identity contract with the toolchain. It is the first thing any OmniCode-aware tool reads — a set of key-value markers that declare the file's type, key, version, and derivation chain. No prose, no logic, no ambiguity. Directives are purely declarative: 'I am this. I came from that. I am at this version.'",
+
+        "invariants": {
+            "description": "Properties true of ALL directive content, regardless of language.",
+
+            "first_position": "Directives appear at the very top of the file, before any code, before any documentation, before anything. They are line 1 (or line 2 in Go where //go:build may precede them). Position is non-negotiable.",
+            "machine_readable": "Directive content is designed for tool consumption, not human reading. Every directive follows a strict key = value pattern that can be parsed without natural language understanding.",
+            "declarative": "Directives only declare facts. They never execute, never compute, never branch. The pragma directive declares type; the key directive declares identity; the version directive declares lifecycle state.",
+            "ordered": "Directives follow a fixed sequence: pragma first (what am I?), then key (who am I?), then version (where am I in lifecycle?), then from (what did I derive from?). This order mirrors the priority of identity questions.",
+            "singular": "Each directive appears exactly once per file. There is one pragma, one key, one version, one from. Duplication is an error — a file cannot have two identities."
+        },
+
+        "content_forms": {
+            "description": "What directive content looks like across languages. The comment prefix varies; the directive payload is invariant.",
+
+            "rust": {
+                "syntax": "// #!omni code --rust -library | // #!omni meta.key = B-... | // #!omni meta.at = a-01.00 | // #!omni meta.from = ...",
+                "grouping": "All directives contiguous at file top, one per line, each prefixed with // #!omni or //omni:",
+                "notes": "Rust uses // line comments for directives. The #!omni pragma is a shebang-style declaration. Remaining directives use //omni: prefix or // #!omni meta.* form. Inner doc comments (//!) appear AFTER directives."
+            },
+
+            "go": {
+                "syntax": "// #!omni code --go -library | // #!omni meta.key = B-... | // #!omni meta.at = a-01.00 | // #!omni meta.from = ...",
+                "grouping": "Directives at file top, after optional //go:build line but before package declaration and doc comment",
+                "notes": "Go may have //go:build constraint on line 1, pushing OmniCode directives to line 2+. The package doc comment (// Package foo...) follows directives. This is the only language where directives are not guaranteed line 1."
+            },
+
+            "c": {
+                "syntax": "/// @omni code --source | /// @omni:req key = B-... | /// @omni:req at = template | /// @omni:req from = ...",
+                "grouping": "Directives inside a #if 0 block at file top (template) or as /// @omni Doxygen-style comments",
+                "notes": "C uses Doxygen-compatible /// @omni syntax. Templates wrap directives in #if 0...#endif so they compile away. The @omni prefix integrates with Doxygen tooling. Annotation qualifiers (:req, :inh, :ins) indicate field requirement level."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, directive content changes comment syntax but preserves the identity contract. The file's declared type, key, version, and derivation chain remain the same — only the comment characters around them change.",
+            "invariant": ["identity values (key, version, from)", "directive ordering (pragma -> key -> version -> from)", "one directive per identity fact", "machine-parseable key=value structure"],
+            "variable": ["comment prefix (// vs /// @omni vs /* */)", "shebang syntax (#!omni vs @omni vs other)", "annotation qualifiers (Rust: none, C: :req/:inh/:ins)", "position offset (Go: line 2+ due to build constraints)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — no code patterns belong in directives.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Directives are the covenant between file and toolchain. Before the file speaks a word of code, it declares its name. This is the pattern of Genesis — identity precedes action. God names before He fills. The directive answers the first question any tool asks: what IS this?",
+    "_X5_scripture": "Genesis 1:3 — And God said, Let there be light: and there was light. Declaration precedes existence."
+}

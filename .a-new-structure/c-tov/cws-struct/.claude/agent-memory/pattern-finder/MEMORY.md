@@ -95,3 +95,21 @@ Content schemas at `schemas/code/format/blocks/rust/{setup,body,closing}/*.jsonc
 - SETUP: 10 files (imports, modules, constants, statics, type-aliases, error-types, core-types, trait-defs, macros, feature-gates)
 - BODY: 9 files (identity-access, trait-implementations, constructors, core-logic, queries, output-display, free-functions, helpers, tests)
 - CLOSING: 8 files (validation, execution, cleanup, modification-policy, extension-points, troubleshooting, reference, closing-note)
+
+## Data Layer Registries Pattern Analysis (2026-02-22)
+
+### 42 Content Character Schemas — Three Clusters
+- **ALL-DENIED (17)**: No code patterns. All METADATA, imports, modules, code-gen, org-chart, X1-X5
+- **ALL-GRANTED (13)**: All code patterns. identity-access, trait-impls, core-logic, queries, output-display, core-ops, error-handling, public-apis, validation, execution, cleanup
+- **MIXED (12)**: Partial signatures. All remaining SETUP + constructors, helpers, tests, free-functions
+
+### Key Findings
+- Block != Cluster. Nature (code vs docs) drives clustering, not block position
+- variable_binding has 8 defers (most varied concept) — best discriminator in SETUP
+- self_access separates free-functions from methods in BODY
+- 71% of sections have weight 1.00 (binary certainty)
+- Macros is singular outlier at 0.09 (10 defers)
+- detection_weight = |sum of ternary values| / 11, verified across all 42 files
+- SETUP has 12 distinct signatures in 15 sections — highest discrimination value
+- Schema path: `R25_blocks/{block}/{section}/_content.jsonc`
+- 42 _content.jsonc + rust.jsonc per section + go.jsonc per section (where exists)

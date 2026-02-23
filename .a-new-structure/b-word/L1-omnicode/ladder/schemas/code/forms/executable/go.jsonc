@@ -1,0 +1,113 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-molded-go-executable",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "form-content-schema",
+    "_P2_role": "content-molded",
+    "_P5_title": "Go Executable Form Content — The Doorway",
+    "_P5_brief": "Go-specific content expectations for executable form (main.go). The entry point — thin orchestrator bridging CLI to library. package main, main() -> run() -> error pattern, flag/cobra argument parsing, exit code mapping via os.Exit(). No exported API — everything serves the binary.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends_structure": "structure/molded/executable.jsonc",
+    "extends_content": "content/whole/code.jsonc",
+    "format": "go",
+    "form": "executable",
+
+    "content_expectations": {
+
+        "pragma": "//omni:code --go -executable",
+
+        "content_state": "REAL — all code is live, uncommented.",
+
+        "METADATA": {
+            "directive": "//omni:code --go -executable",
+            "identity_construct": "var Pragma = [][2]string{...} and var Metadata = [][2]string{...} slices — I1-I4 identity, C1-C7 context",
+            "I2_subtype": "executable",
+            "I2_role": "Binary entry point — the door between human and system",
+            "doc_comments": "// binary-level doc comments — what the tool does, usage, examples. Package main doc comment is the binary's man page.",
+            "visibility": "N/A — METADATA is identity, not API"
+        },
+
+        "SETUP": {
+            "import_pattern": {
+                "primary": "The library package this binary drives (internal import path)",
+                "secondary": "std: os, fmt, flag/cobra (arg parsing), io (output). External: CLI frameworks if used.",
+                "grouping": "std → library package → external (flag libs, etc.)",
+                "note": "Executables import their own library as the primary dependency. External imports are thin — arg parsing, I/O, process control. Most types come FROM the library."
+            },
+
+            "visibility_pattern": {
+                "types": "Unexported (lowercase). Executables expose no public API — the binary IS the interface.",
+                "functions": "Unexported. run() is unexported. main() has no visibility keyword.",
+                "constants": "Unexported. exitSuccess, exitFailure, app-level defaults. Exit codes defined in S2 Constants.",
+                "errors": "Unexported. Thin error layer wrapping library errors + CLI-specific errors (bad args, I/O). Or use fmt.Errorf wrapping for simple binaries."
+            },
+
+            "S2_constants_pattern": {
+                "structure": "const block with exit codes, defaults, version strings",
+                "example": "const (\n\texitSuccess = 0\n\texitFailure = 1\n\tdefaultTimeout = 30\n)",
+                "note": "Every magic number in run() should be a named constant here."
+            },
+
+            "error_pattern": "Thin error layer: custom error type wrapping library errors + arg parse errors + I/O errors. Error display is for humans, not machines. fmt.Errorf with %w for wrapping.",
+
+            "type_pattern": "Minimal types — args struct (flag or cobra), config if needed. Most types live in the library. If the executable has many types, logic should move to a library package."
+        },
+
+        "BODY": {
+            "ordering": "execution_flow",
+            "section_content": {
+                "B1_OrgChart": "Command flow overview — for CLI tools: documents the command tree. For servers: documents route/handler structure.",
+                "B2_Helpers": "Argument parsing (parseArgs() or flag.Parse()), config loading (loadConfig()), output formatting helpers (fatal(), errorf(), warn()). Everything that sets up run().",
+                "B3_CoreOperations": "The run() function — func run() error (or func run(args Args) error). Receives parsed args, calls library, returns error. This is the executable's single verb. main() delegates here; all orchestration lives here.",
+                "B4_ErrorHandling": "Error processing and exit code mapping for the binary. Pattern: func exitCode(err error) int. Maps internal errors to user-facing messages.",
+                "B5_PublicAPIs": "Most executables have no public APIs. When present, they allow the binary's logic to be used as a library. Consider extracting to a separate package."
+            },
+
+            "note": "Execution flow: OrgChart → Helpers (parse, configure) → Core (run) → ErrorHandling (map) → PublicAPIs (rare). The code reads in the order it executes. If run() exceeds ~50 lines, logic should move to the library."
+        },
+
+        "CLOSING": {
+            "Cv_pattern": {
+                "structure": "func Test*() in Cv zone — test arg parsing, config loading, error formatting",
+                "organization": "Tests for helpers and run() — skip testing library logic (that's the library's job)",
+                "focus": "Test the bridge, not what's on either side. Exit code mapping, error messages, arg validation.",
+                "note": "Executable tests are thin. The binary is a thin adapter — its tests verify the adaptation, not the logic."
+            },
+
+            "Ce_pattern": {
+                "structure": "func main() { os.Exit(run()) } or func main() { if err := run(); err != nil { fmt.Fprintf(os.Stderr, ...) ; os.Exit(1) } }",
+                "content": "main() is the HEAVY Ce for executables. Calls run(), maps Result to exit code. Thin — typically 3-7 lines.",
+                "exit_code_mapping": "nil → 0 (exitSuccess), error → fmt.Fprintf(os.Stderr, ...) + 1 (exitFailure). Custom codes for specific error types via type switch if needed.",
+                "note": "Ce is where the rubber meets the road. The thinnest possible bridge between the OS and run()."
+            },
+
+            "Cc_pattern": "Process cleanup — temp files, buffer flushing, DB connections. defer statements in run() handle most cleanup; Cc captures anything that needs explicit shutdown.",
+
+            "X1_pattern": {
+                "safe": "Additive changes (new CLI flags, new output formats, new error messages)",
+                "careful": "Exit code changes (scripts depend on them), flag name changes (users depend on them)",
+                "never": "Structural invariants (4-block, Pragma/Metadata layout, main() -> run() pattern)"
+            },
+
+            "X5_pattern": "Scripture grounding the executable's role as doorway — serving the human who enters."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "The Go executable is a doorway — thin, well-framed, serving those who pass through. main() receives the human's request, run() translates it into library calls, os.Exit() reports the result. If the doorway is getting thick, the logic belongs in a library package. A good executable is measured by how little it does itself. Go's main() -> run() -> error pattern keeps the entry point testable and the binary minimal.",
+    "_X5_scripture": "I am the door: by me if any man enter in, he shall be saved, and shall go in and out, and find pasture. — John 10:9"
+}

@@ -1,0 +1,113 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-body-helpers",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "BODY Section 8: Helpers — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Helpers IS, not how it manifests in any language. See format/blocks/{lang}/body/helpers.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "Helpers",
+        "position": 8,
+        "label": "Helpers",
+        "block": "BODY",
+        "overview_text": "Executable helpers (run support)",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "run() support functions",
+                "description": "Private helpers that break down the executable's run() into manageable steps",
+                "distinguisher": "Serves the entry point. Without run(), these have no purpose."
+            },
+            {
+                "concept": "argument processing",
+                "description": "Parsing, validating, and transforming CLI arguments before core logic",
+                "distinguisher": "The bridge between user input and program operation."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "type methods",
+                "reason": "Helpers are free functions serving run(), not type operations",
+                "defer_to": "BODY.CoreLogic"
+            },
+            {
+                "concept": "reusable utilities",
+                "reason": "If it's useful beyond this executable, it's a free function or belongs in a library",
+                "defer_to": "BODY.FreeFunctions"
+            },
+            {
+                "concept": "the entry point itself",
+                "reason": "main() and run() live in CLOSING.Execution",
+                "defer_to": "CLOSING.Execution"
+            }
+        ],
+
+        "defer": [
+            {
+                "signal": "file is not an executable (no main/run)",
+                "to": "RESERVED — helpers serve run(), which only executables have",
+                "why": "Libraries and modules don't have entry points to help"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "RESERVED",
+            "library": "RESERVED",
+            "executable": "REQUIRED",
+            "demo-test": "RESERVED"
+        },
+
+        "ro": {
+            "available_label": "Helpers",
+            "reserved_reason": "Helpers serve run() — only executables have run()",
+            "reserved_explanation": "Libraries and modules don't have entry points. No run() means no helpers needed."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "defer",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 10G 1F. 10/11 ≈ 0.91. self_access defers (helpers may or may not have receivers).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Helpers break down the executable's mission into manageable steps. They serve run() and only run().",
+    "_X5_scripture": "Nehemiah 4:6 — So built we the wall; for the people had a mind to work."
+}

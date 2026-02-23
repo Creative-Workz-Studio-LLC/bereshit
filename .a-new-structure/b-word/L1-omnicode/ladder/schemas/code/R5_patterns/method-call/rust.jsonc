@@ -1,0 +1,43 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-method-call",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Method Call",
+
+    "concept": "method_call",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "method_chain",
+            "syntax": "{receiver}.{method}({args}).{next}",
+            "detect": "(\\w[\\w.()]*?)\\.(\\w+)\\(([^)]*)\\)\\.(\\w+)",
+            "captures": { "receiver": 1, "method": 2, "args": 3, "next": 4 },
+            "notes": "Method chain — a.b().c(). Captured as chain, each step resolved.",
+            "priority": 1
+        },
+        {
+            "id": "method_call",
+            "syntax": "{receiver}.{method}({args})",
+            "detect": "(\\w[\\w.]*?)\\.(\\w+)\\(([^)]*)\\)",
+            "captures": { "receiver": 1, "method": 2, "args": 3 },
+            "notes": "Single method call: path.exists(), meta.is_dir(), e.kind().",
+            "priority": 2
+        },
+        {
+            "id": "field_access",
+            "syntax": "{receiver}.{field}",
+            "detect": "(\\w+)\\.(\\w+)(?!\\()",
+            "captures": { "receiver": 1, "field": 2 },
+            "notes": "Field access (no parens) — self.name, meta.len. Distinguished from method by no ().",
+            "priority": 3
+        }
+    ],
+
+    "_X5_note": "Rust method calls: receiver.method(args) — dot syntax, &self implicit."
+}

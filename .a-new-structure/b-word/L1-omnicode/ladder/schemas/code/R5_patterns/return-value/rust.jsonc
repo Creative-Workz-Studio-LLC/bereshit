@@ -1,0 +1,45 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-return-value",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Return Value",
+
+    "concept": "return_value",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "explicit_return",
+            "syntax": "return {expr};",
+            "detect": "^\\s*return\\s+(.+);",
+            "captures": { "expr": 1 },
+            "explicit": true,
+            "priority": 1
+        },
+        {
+            "id": "implicit_return_ref",
+            "syntax": "&{expr}",
+            "detect": "^\\s*&(\\w+)\\s*$",
+            "captures": { "expr": 1 },
+            "explicit": false,
+            "notes": "Implicit return of a reference — last expression without semicolon",
+            "priority": 2
+        },
+        {
+            "id": "implicit_return_expr",
+            "syntax": "{expr}",
+            "detect": "^\\s*([^;{}]+)\\s*$",
+            "captures": { "expr": 1 },
+            "explicit": false,
+            "notes": "Implicit return — last expression in block without semicolon. Must be checked last (broad match).",
+            "priority": 10
+        }
+    ],
+
+    "_X5_note": "Rust returns: explicit 'return expr;' or implicit last expression without semicolon."
+}

@@ -1,0 +1,69 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-pragma-identity-i2-family",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Pragma Identity -- I2 Family (Classification) -- Go Content",
+    "_P5_brief": "Go-specific content for I2 Family classification fields. type, structure, subtype, role carried in Pragma slice. I2.subtype drives the Go form system (library, executable, demo-test -- no module).",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/pragma-identity/i2-family.jsonc",
+    "format": "go",
+
+    "sub_container": {
+        "tag": "I2",
+        "label": "I2 Family -- Classification (Go)",
+        "parent": "PragmaIdentity",
+
+        "go_construct": "I2 entries in var Pragma = [][2]string{...}",
+        "go_visibility": "exported -- within exported Pragma var",
+        "go_note": "I2.subtype drives the form system. Go forms: library, executable, demo-test. No module form -- Go packages ARE modules.",
+
+        "field_format": {
+            "key_pattern": "I2.{field}",
+            "examples": ["I2.type", "I2.structure", "I2.subtype", "I2.role"],
+            "note": "I2 section follows I1 in the Pragma slice."
+        },
+
+        "can": [
+            {
+                "construct": "I2 fields in Pragma slice",
+                "description": "Classification entries -- type, structure, subtype, role",
+                "patterns": [
+                    "\t{\"I2.type\", \"code\"},",
+                    "\t{\"I2.structure\", \"4-block\"},",
+                    "\t{\"I2.subtype\", \"library\"},",
+                    "\t{\"I2.role\", \"package-root\"},"
+                ],
+                "note": "I2.subtype values for Go: library, executable, demo-test, bare-bone. No module -- Go packages are inherently modular."
+            }
+        ],
+
+        "cascade": {
+            "note": "I2.subtype drives the ENTIRE Go form system. pragma directive -> I2.subtype -> form constraints -> section availability. Same cascade as Rust, but no module form.",
+            "go_subtypes": ["bare-bone", "library", "executable", "demo-test"]
+        },
+
+        "scaffold": {
+            "i2_fields": "\t{\"I2.type\", \"code\"},\n\t{\"I2.structure\", \"4-block\"},\n\t{\"I2.subtype\", \"{subtype}\"},\n\t{\"I2.role\", \"{role}\"},"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "I2 Family in Go -- the classifier. type, structure, subtype, role. I2.subtype drives the form system: library, executable, demo-test. No module form because Go packages ARE modules.",
+    "_X5_scripture": "Genesis 1:21 -- And God created... every living creature that moveth... after their kind."
+}

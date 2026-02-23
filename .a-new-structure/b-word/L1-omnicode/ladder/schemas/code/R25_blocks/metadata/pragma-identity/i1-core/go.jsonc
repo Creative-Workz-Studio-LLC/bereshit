@@ -1,0 +1,67 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-metadata-pragma-identity-i1-core",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Pragma Identity -- I1 Core (Unique Identity) -- Go Content",
+    "_P5_brief": "Go-specific content for I1 Core identity fields. key, format, from, at carried in var Pragma = [][2]string slice with exported visibility.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/pragma-identity/i1-core.jsonc",
+    "format": "go",
+
+    "sub_container": {
+        "tag": "I1",
+        "label": "I1 Core -- Unique Identity (Go)",
+        "parent": "PragmaIdentity",
+
+        "go_construct": "var Pragma = [][2]string{...}",
+        "go_visibility": "exported -- Go convention: uppercase = exported",
+        "go_note": "I1 fields are the first entries in the Pragma slice. Zero-allocation, compile-time-known.",
+
+        "field_format": {
+            "key_pattern": "I1.{field}",
+            "examples": ["I1.key", "I1.format", "I1.from", "I1.at"],
+            "note": "Same dot notation as Rust. The I1 prefix scopes to core identity."
+        },
+
+        "can": [
+            {
+                "construct": "I1 fields in Pragma slice",
+                "description": "Core identity entries -- first four pairs in the Pragma var",
+                "patterns": [
+                    "var Pragma = [][2]string{",
+                    "\t{\"I1.key\", \"B-my-package-key\"},",
+                    "\t{\"I1.format\", \"go\"},",
+                    "\t{\"I1.from\", \"B-seed-code-L0-go-library\"},",
+                    "\t{\"I1.at\", \"a-01.00\"},",
+                    "\t// ... I2, I3, I4 follow",
+                    "}"
+                ],
+                "note": "I1 always appears first in the slice. key is the address, format is the language, from is the lineage, at is the birth version."
+            }
+        ],
+
+        "scaffold": {
+            "i1_fields": "\t{\"I1.key\", \"{key}\"},\n\t{\"I1.format\", \"go\"},\n\t{\"I1.from\", \"{from}\"},\n\t{\"I1.at\", \"{at}\"},"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "I1 Core in Go -- the four fields that make a file findable. key, format, from, at in [][2]string pairs. Exported Pragma var, first entries in the slice.",
+    "_X5_scripture": "Genesis 2:19 -- And whatsoever Adam called every living creature, that was the name thereof."
+}

@@ -1,0 +1,130 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-setup-modules",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 2: Modules — Rust Content",
+    "_P5_brief": "Rust-specific content rules for Modules. Module tree and re-exports — the crate's public surface. REQUIRED in library form, RESERVED in module form (only crate root declares submodules).",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/modules.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "mod {name};",
+                "description": "Private submodule declarations — internal implementation",
+                "patterns": [
+                    "mod parser;",
+                    "mod config;",
+                    "mod handler;"
+                ],
+                "visibility": "private (no pub)"
+            },
+            {
+                "construct": "pub mod {name};",
+                "description": "Public submodule declarations — exposed API surface",
+                "patterns": [
+                    "pub mod types;",
+                    "pub mod error;"
+                ],
+                "visibility": "pub"
+            },
+            {
+                "construct": "pub use {name}::{Type};",
+                "description": "Re-exports for consumer convenience — flattening the public surface",
+                "patterns": [
+                    "pub use parser::Parser;",
+                    "pub use config::Config;",
+                    "pub use error::Error;"
+                ],
+                "visibility": "pub"
+            },
+            {
+                "construct": "pub(crate) use {name}::{Type};",
+                "description": "Crate-internal re-exports for convenience within the crate",
+                "patterns": [
+                    "pub(crate) use internal::SharedState;"
+                ],
+                "visibility": "pub(crate)"
+            },
+            {
+                "construct": "#[cfg(test)] mod test_utils;",
+                "description": "Test support modules — cfg-gated to exclude from non-test builds",
+                "patterns": [
+                    "#[cfg(test)] mod test_utils;",
+                    "#[cfg(test)] mod fixtures;"
+                ],
+                "visibility": "N/A — cfg-gated"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "inline module bodies (mod name { ... }) for non-trivial code",
+                "reason": "Non-trivial logic belongs in separate files. Inline modules are for small cfg-gated collections only.",
+                "defer_to": "N/A — create separate .rs file",
+                "rust_signal": "mod\\s+\\w+\\s*\\{[^}]{100,}"
+            },
+            {
+                "construct": "circular module dependencies",
+                "reason": "Module tree is a DAG — cycles indicate architectural confusion",
+                "defer_to": "N/A — restructure modules",
+                "rust_signal": "N/A — detected by compiler"
+            },
+            {
+                "construct": "re-exports of private items",
+                "reason": "If re-exported, the source should be pub(crate) or pub",
+                "defer_to": "N/A — fix source visibility",
+                "rust_signal": "N/A"
+            },
+            {
+                "construct": "mod declarations without corresponding files",
+                "reason": "Every mod needs its .rs file — dangling mod is a compile error",
+                "defer_to": "N/A — create the file",
+                "rust_signal": "N/A — compiler error"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "^use\\s+",
+                "to": "SETUP.Imports",
+                "confidence": "high",
+                "why": "Import statement in modules section — belongs in S1"
+            },
+            {
+                "pattern": "^(pub\\s+)?struct\\s+",
+                "to": "SETUP.CoreTypes",
+                "confidence": "high",
+                "why": "Type definition in modules section — belongs in S7"
+            }
+        ],
+
+        "scaffold": {
+            "empty_module": "// RESERVED — module form does not declare submodules",
+            "empty_library": "// --- Submodule Declarations ---\n// mod name;\n\n// --- Re-exports ---\n// pub use name::Type;",
+            "comment_skeleton": "// // --- Submodule Declarations ---\n// // mod name;\n// // --- Re-exports ---\n// // pub use name::Type;"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust Modules: the crate's architecture made visible. mod declarations create boundaries, pub use re-exports create ergonomic access. The module tree IS the API structure. Library-only — modules are leaves, not branches.",
+    "_X5_scripture": "1 Corinthians 12:18 — But now hath God set the members every one of them in the body, as it hath pleased him."
+}

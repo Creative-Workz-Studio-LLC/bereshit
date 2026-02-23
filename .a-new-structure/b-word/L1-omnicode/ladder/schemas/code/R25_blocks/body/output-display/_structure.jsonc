@@ -1,0 +1,128 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-body-output-display",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "BODY Section 6: Output & Display — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Output & Display IS, not how it manifests in any language. See format/blocks/{lang}/body/output-display.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "OutputDisplay",
+        "position": 6,
+        "label": "Output & Display",
+        "block": "BODY",
+        "overview_text": "Formatting and display output",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "human-readable formatting",
+                "description": "Transforming internal state into presentation for users",
+                "distinguisher": "The presentation layer. Internal truth made visible."
+            },
+            {
+                "concept": "severity-leveled output",
+                "description": "fatal(), error(), warn(), info() — output with semantic weight",
+                "distinguisher": "Not just printing — communicating with appropriate gravity."
+            },
+            {
+                "concept": "structured output",
+                "description": "JSON, table, or machine-readable output formatting",
+                "distinguisher": "Output for other programs, not just humans."
+            },
+            {
+                "concept": "builder-pattern formatters",
+                "description": "TableBuilder, ReportBuilder — complex output assembled in stages via method chaining",
+                "distinguisher": "When output is complex enough to warrant construction. Build the report, then print it."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "business logic",
+                "reason": "Output formats results. It doesn't compute them.",
+                "defer_to": "BODY.CoreLogic"
+            },
+            {
+                "concept": "state queries",
+                "reason": "Reading state is observation (Queries). Formatting state is output.",
+                "defer_to": "BODY.Queries"
+            },
+            {
+                "concept": "error handling decisions",
+                "reason": "Output displays errors. It doesn't decide how to handle them.",
+                "defer_to": "BODY.CoreLogic"
+            },
+            {
+                "concept": "Display::fmt implementations",
+                "reason": "Display is a completing impl — it COMPLETES the type. Removing Display makes the type incomplete, not just less capable. Custom formatting that GOES BEYOND Display::fmt lives here.",
+                "defer_to": "SETUP.CoreTypes or SETUP.ErrorTypes (completing impls stay with the type)"
+            }
+        ],
+
+        "defer": [
+            {
+                "signal": "file is a focused internal module, not crate root",
+                "to": "RESERVED — output belongs at the crate or executable level",
+                "why": "Modules return data; callers format it. Separation of concerns."
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "RESERVED",
+            "library": "REQUIRED",
+            "executable": "REQUIRED",
+            "demo-test": "AVAILABLE"
+        },
+
+        "ro": {
+            "available_label": "Output & Display",
+            "reserved_reason": "Modules return data — the crate's output layer formats it",
+            "reserved_explanation": "A parser returns AST nodes, not formatted messages. A config module returns structs, not pretty-printed tables. Output belongs at the boundary, not inside the machine."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — output/display hosts any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Output & Display is the presentation layer. CoreLogic computes truth. Output makes truth visible.",
+    "_X5_scripture": "Matthew 5:16 — Let your light so shine before men, that they may see your good works."
+}

@@ -1,0 +1,121 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-concepts-function-call",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "concept-definition",
+    "_P2_role": "schema",
+    "_P5_title": "Concept — Function Call",
+    "_P5_brief": "Universal concept: invoking a free function (not a method on a receiver). Module-qualified or imported.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "concept": "function_call",
+    "description": "Invoke a free function (not bound to a receiver/object)",
+
+    "universal_shape": {
+        "module": "optional module/package qualifier",
+        "function": "the function name being called",
+        "args": "argument expressions passed to the function",
+        "result": "optional variable receiving the return value"
+    },
+
+    "semantic_notes": [
+        "Rust: module::function(args) — path-qualified with double-colon.",
+        "Go: package.Function(args) — dot-qualified, function capitalized if exported.",
+        "C: function(args) — no module qualifier (headers provide declarations).",
+        "Some calls are used for their return value, others for side effects.",
+        "Constructor calls (Type::new()) may be a function_call or a distinct concept."
+    ],
+
+    "container_map": {
+        "_note": "granted (+1) = belongs here. denied (-1) = does not belong. defer (0) = context-dependent.",
+
+        "METADATA": {
+            "directives": "denied",
+            "doc-comments": "denied",
+            "comment-block": "denied",
+            "pragma-identity": "denied",
+            "metadata-context": "denied",
+            "subtypes": "denied"
+        },
+
+        "SETUP": {
+            "imports": "denied",
+            "modules": "denied",
+            "constants": "denied",
+            "statics": "defer",
+            "type-aliases": "denied",
+            "error-types": "denied",
+            "core-types": "denied",
+            "trait-defs": "denied",
+            "macros": "defer",
+            "feature-gates": "denied",
+            "build-tags": "denied",
+            "code-generation": "denied",
+            "interface-defs": "denied",
+            "type-methods": "denied",
+            "variables": "defer"
+        },
+
+        "BODY": {
+            "identity-access": "granted",
+            "trait-implementations": "granted",
+            "constructors": "granted",
+            "core-logic": "granted",
+            "core-operations": "granted",
+            "queries": "granted",
+            "output-display": "granted",
+            "free-functions": "granted",
+            "helpers": "granted",
+            "org-chart": "denied",
+            "public-apis": "granted",
+            "error-handling": "granted",
+            "tests": "granted"
+        },
+
+        "CLOSING": {
+            "validation": "granted",
+            "execution": "granted",
+            "cleanup": "granted",
+            "modification-policy": "denied",
+            "extension-points": "denied",
+            "troubleshooting": "denied",
+            "reference": "denied",
+            "closing-note": "denied"
+        }
+    },
+
+    "concept_relations": {
+        "_note": "granted = high co-occurrence (finding one strongly predicts the other). denied = anti-correlation. defer = context-dependent. Asymmetric: P(B|A) ≠ P(A|B).",
+
+        "variable_binding": "granted",
+        "return_value": "granted",
+        "method_call": "defer",
+        "conditional_if": "defer",
+        "conditional_match": "defer",
+        "error_propagation": "defer",
+        "err_wrap": "defer",
+        "ok_wrap": "defer",
+        "string_format": "defer",
+        "self_access": "denied"
+    },
+
+    "detection_weight": 0.76,
+    "_weight_rationale": "4-block derived: (B − avg(M,S,C)) / 2. B=11/13, M=−6/6, S=−12/15, C=−2/8. 3 SETUP defers (statics, macros, variables).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Function calls are the verbs of programming — they make things happen.",
+    "_X5_scripture": "James 2:17 — Faith without works is dead. A function not called does nothing."
+}

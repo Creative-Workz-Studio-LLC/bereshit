@@ -1,0 +1,70 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-pragma-identity-i2-family",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Pragma Identity — I2 Family (Classification) — Rust Content",
+    "_P5_brief": "How Rust carries I2 Family fields (type, structure, subtype, role) in pub static PRAGMA slices. The taxonomy that drives the form system.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/pragma-identity/i2-family.jsonc",
+    "format": "rust",
+
+    "content": {
+        "tag": "I2",
+        "parent": "PragmaIdentity",
+        "static_name": "PRAGMA",
+
+        "can": {
+            "description": "I2 fields carried as key-value pairs in PRAGMA static slice, immediately after I1",
+            "patterns": [
+                "(\"I2.type\", \"code\"),",
+                "(\"I2.structure\", \"4-block\"),",
+                "(\"I2.subtype\", \"library\"),",
+                "(\"I2.role\", \"crate-root\"),"
+            ],
+            "field_order": ["type", "structure", "subtype", "role"],
+            "note": "type is always \"code\" for Rust files. structure is always \"4-block\". subtype drives the form system. role is optional but recommended."
+        },
+
+        "cannot": [
+            {
+                "construct": "I2.type other than \"code\" for .rs files",
+                "reason": "Rust source files are always code type. Data and document types use other formats.",
+                "rust_signal": "I2\\.type.*(?!code)"
+            },
+            {
+                "construct": "I2.structure other than \"4-block\" for .rs files",
+                "reason": "All Rust code files use 4-block structure (METADATA, SETUP, BODY, CLOSING).",
+                "rust_signal": "I2\\.structure.*(?!4-block)"
+            }
+        ],
+
+        "scaffold": {
+            "slice_library": "(\"I2.type\", \"code\"),\n    (\"I2.structure\", \"4-block\"),\n    (\"I2.subtype\", \"library\"),\n    (\"I2.role\", \"{role}\"),",
+            "slice_executable": "(\"I2.type\", \"code\"),\n    (\"I2.structure\", \"4-block\"),\n    (\"I2.subtype\", \"executable\"),\n    (\"I2.role\", \"{role}\"),",
+            "slice_module": "(\"I2.type\", \"code\"),\n    (\"I2.structure\", \"4-block\"),\n    (\"I2.subtype\", \"module\"),",
+            "slice_demo_test": "(\"I2.type\", \"code\"),\n    (\"I2.structure\", \"4-block\"),\n    (\"I2.subtype\", \"demo-test\"),",
+            "slice_bare_bone": "(\"I2.type\", \"code\"),\n    (\"I2.structure\", \"4-block\"),\n    (\"I2.subtype\", \"bare-bone\"),",
+            "note": "I2 scaffold varies by subtype. type and structure are fixed for Rust; subtype and role vary per form."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "I2 in Rust: the classifier. type is always code, structure is always 4-block. The real variance is subtype — library, executable, module, demo-test, bare-bone — which drives the entire form system downstream.",
+    "_X5_scripture": "Genesis 1:21 — And God created... every living creature that moveth... after their kind."
+}

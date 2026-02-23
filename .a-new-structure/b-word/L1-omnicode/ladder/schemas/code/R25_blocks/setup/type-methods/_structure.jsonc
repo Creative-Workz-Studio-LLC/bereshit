@@ -1,0 +1,105 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-setup-type-methods",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "SETUP Section 13: Type Methods — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Type Methods IS, not how it manifests in any language. See format/blocks/{lang}/setup/type-methods.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "TypeMethods",
+        "position": 13,
+        "label": "Type Methods",
+        "block": "SETUP",
+        "overview_text": "Structural completers (identity methods, not capability)",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "structural completers",
+                "description": "Methods that complete a type's identity — removing them makes the type incomplete",
+                "distinguisher": "Error(), String(), MarshalJSON(). The type is incomplete without these."
+            },
+            {
+                "concept": "interface satisfaction checks",
+                "description": "Compile-time assertions that types satisfy interfaces",
+                "distinguisher": "Catches missing method implementations at compile time, not runtime."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "business logic methods",
+                "reason": "Methods that add CAPABILITY belong in BODY. TypeMethods are structural COMPLETERS.",
+                "defer_to": "BODY.CoreOperations"
+            },
+            {
+                "concept": "getter/setter methods",
+                "reason": "Accessor patterns add capability, not identity",
+                "defer_to": "BODY.CoreOperations"
+            },
+            {
+                "concept": "methods with side effects",
+                "reason": "Side-effectful methods are business logic, not type completion",
+                "defer_to": "BODY.CoreOperations"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "AVAILABLE",
+            "library": "AVAILABLE",
+            "executable": "AVAILABLE",
+            "demo-test": "AVAILABLE"
+        },
+
+        "ro": {
+            "available_label": "Type Methods",
+            "reserved_reason": null,
+            "note": "RESERVED in bare-bone (skeleton has no types to complete). AVAILABLE in module/library/executable/demo-test — use when types need structural completion."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "defer",
+        "self_access": "defer",
+        "variable_binding": "defer",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 0.73,
+    "_weight_rationale": "|avg| of concept_map: 3F 8D. −8/11 ≈ −0.73. method_call, self_access, and variable_binding defer (type methods involve all three).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Type methods are structural completers. The test: if removing the method makes the type INCOMPLETE (not just less capable), it belongs here.",
+    "_X5_scripture": "Ecclesiastes 3:11 — He hath made every thing beautiful in his time."
+}

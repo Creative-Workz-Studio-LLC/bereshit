@@ -1,0 +1,67 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-metadata-context-c2-attribution",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "sub-container",
+    "_P5_title": "Metadata Context — C2 Attribution (Credit) — Rust Content",
+    "_P5_brief": "How Rust carries C2 Attribution fields (organization, architect, implementation, copyright) in pub static METADATA slices. Names on the work in compiled statics.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/metadata-context/c2-attribution.jsonc",
+    "format": "rust",
+
+    "content": {
+        "tag": "C2",
+        "parent": "MetadataContext",
+        "static_name": "METADATA",
+
+        "can": {
+            "description": "C2 fields carried as key-value pairs in METADATA static slice, immediately after C1",
+            "patterns": [
+                "(\"C2.organization\", \"CreativeWorkzStudio LLC\"),",
+                "(\"C2.architect\", \"Nova Dawn\"),",
+                "(\"C2.implementation\", \"Nova Dawn\"),",
+                "(\"C2.copyright\", \"2026 CreativeWorkzStudio LLC\"),"
+            ],
+            "field_order": ["organization", "architect", "implementation", "copyright"],
+            "note": "organization is required (always CreativeWorkzStudio LLC for CWS projects). architect, implementation, and copyright are defined."
+        },
+
+        "cannot": [
+            {
+                "construct": "C2 fields before C1 in METADATA",
+                "reason": "Section order: C1 -> C2. Attribution follows lifecycle.",
+                "rust_signal": "C2\\. appearing before C1\\."
+            },
+            {
+                "construct": "C2.organization missing from METADATA",
+                "reason": "Every file must declare its owning organization. Work without attribution is work without accountability.",
+                "rust_signal": "METADATA missing C2\\.organization"
+            }
+        ],
+
+        "scaffold": {
+            "slice_full": "// C2 Attribution — credit\n    (\"C2.organization\", \"CreativeWorkzStudio LLC\"),\n    (\"C2.architect\", \"{architect}\"),\n    (\"C2.implementation\", \"{implementation}\"),\n    (\"C2.copyright\", \"{copyright}\"),",
+            "slice_minimal": "(\"C2.organization\", \"CreativeWorkzStudio LLC\"),\n    (\"C2.architect\", \"{architect}\"),",
+            "note": "organization defaults to CreativeWorkzStudio LLC. Minimal scaffold includes org + architect."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "C2 in Rust: the ledger. organization tells you who owns it, architect tells you who designed it, implementation tells you who built it, copyright tells you who holds the rights. Work without attribution is work without accountability.",
+    "_X5_scripture": "1 Chronicles 4:23 — These were the potters, and those that dwelt among plants and hedges: there they dwelt with the king for his work."
+}

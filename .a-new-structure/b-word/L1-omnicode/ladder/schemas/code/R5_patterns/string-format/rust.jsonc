@@ -1,0 +1,53 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-string-format",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — String Format",
+
+    "concept": "string_format",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "format_macro",
+            "syntax": "format!(\"{template}\", {args})",
+            "detect": "format!\\(\"([^\"]+)\"(?:,\\s*(.+))?\\)",
+            "captures": { "template": 1, "args": 2 },
+            "placeholder_syntax": "{}",
+            "notes": "format! macro — {} placeholders use Display trait.",
+            "priority": 1
+        },
+        {
+            "id": "println_macro",
+            "syntax": "println!(\"{template}\", {args})",
+            "detect": "println!\\(\"([^\"]+)\"(?:,\\s*(.+))?\\)",
+            "captures": { "template": 1, "args": 2 },
+            "placeholder_syntax": "{}",
+            "notes": "println! macro — format + newline to stdout.",
+            "priority": 2
+        },
+        {
+            "id": "eprintln_macro",
+            "syntax": "eprintln!(\"{template}\", {args})",
+            "detect": "eprintln!\\(\"([^\"]+)\"(?:,\\s*(.+))?\\)",
+            "captures": { "template": 1, "args": 2 },
+            "placeholder_syntax": "{}",
+            "notes": "eprintln! macro — format + newline to stderr.",
+            "priority": 3
+        }
+    ],
+
+    "placeholder_mapping": {
+        "{}": "Display trait — maps to Go %v or %s",
+        "{:?}": "Debug trait — maps to Go %+v",
+        "{:#?}": "Pretty Debug — maps to Go %#v",
+        "{:.2}": "Precision float — maps to Go %.2f"
+    },
+
+    "_X5_note": "Rust format macros — {} placeholder with Display/Debug traits."
+}

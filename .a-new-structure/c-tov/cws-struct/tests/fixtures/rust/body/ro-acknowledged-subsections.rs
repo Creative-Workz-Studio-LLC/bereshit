@@ -7,6 +7,8 @@
 //
 // Key:     B-test-fixture-body-ro-acknowledged
 // Purpose: Test fixture — module with absent subsections acknowledged in Reserved Omission.
+//          Has Identity Access (#1) and Free Functions (#7). All other canonical module
+//          sections acknowledged in RO using exact canonical labels.
 //          Should NOT trigger body/subtype-subsections info (RO counts as acknowledgment).
 //
 // ============================================================================
@@ -46,10 +48,14 @@
 // ──────────────────────────────────────────────────────────────────────────
 // Reserved Omission
 // ──────────────────────────────────────────────────────────────────────────
-//   Trait Implementations  — No types implementing traits
-//   Constructors & Builders — No types requiring construction
+//   Org Chart               — No submodule hierarchy to document
+//   Trait Implementations   — No types implementing traits
+//   Constructors            — No types requiring construction
 //   Core Logic              — Stateless utility functions live in Free Functions
-//   Queries & Accessors     — No types with observable state
+//   Queries                 — No types with observable state
+//   Core Operations         — No primary business logic layer
+//   Error Handling          — No error processing needed
+//   Public APIs             — No exported functions beyond Free Functions
 
 // ============================================================================
 // END BODY

@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-constructors",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.Constructors Content Character — What Constructor Content IS",
+    "_P5_brief": "Format-independent definition of constructor content character. Constructors are creation functions — they take parameters and return new instances of types defined in SETUP. Syntax varies (new(), From impl, struct literal, malloc+init); the creation-from-parameters pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "constructors",
+        "block": "BODY",
+        "position": 3,
+        "nature": "creation",
+
+        "description": "Constructor content is where types come into existence as instances. SETUP defines the shape — the struct fields, the enum variants. Constructors take parameters, validate invariants, and return living instances. The content is generative: 'given these inputs, this type now exists.'",
+
+        "invariants": {
+            "description": "Properties true of ALL constructor content, regardless of language.",
+
+            "generative": "Constructors always produce a new instance. They take inputs and return an initialized value. The output is always an instance of a type defined in SETUP.",
+            "validating": "Non-trivial constructors enforce invariants before returning. A try_new() that accepts invalid state is a bug. Construction is the first line of defense.",
+            "parameterized": "Constructors accept external input — arguments, configuration, other instances. What they accept defines what the type needs to exist.",
+            "fallible-or-infallible": "Every constructor is explicitly one or the other. Infallible (new) always succeeds. Fallible (try_new, from) can fail with a meaningful error. The distinction is part of the API contract.",
+            "non-mutating": "Constructors create, they do not modify existing instances. Once new() returns, the instance is complete. Further changes belong in CoreLogic."
+        },
+
+        "content_forms": {
+            "description": "What constructor content looks like across languages. Creation-from-parameters is invariant; the mechanism of initialization varies.",
+
+            "rust": {
+                "syntax": "pub fn new(field: Type) -> Self { Self { field } } pub fn try_new(input: &str) -> Result<Self, Error> { ... }",
+                "grouping": "Infallible constructors first (new), then fallible (try_new, try_from), then builders (Builder::new().field().build())",
+                "notes": "Rust constructors are associated functions (no self parameter). new() is conventional but not enforced by the language. Builder pattern uses a separate Builder type with chained methods. From/TryFrom impls may live here or in TraitImplementations."
+            },
+
+            "go": {
+                "syntax": "func NewMyType(field Type) *MyType { return &MyType{field: field} } func NewMyTypeFromConfig(cfg *Config) (*MyType, error) { ... }",
+                "grouping": "Simple NewX() first, then NewXFromY() variants, then functional options pattern",
+                "notes": "Go constructors are package-level functions prefixed with New. Return pointer and optional error. Functional options (WithTimeout, WithLogger) provide builder-like flexibility. No language-level constructor concept."
+            },
+
+            "c": {
+                "syntax": "MyType* my_type_new(int field) { MyType* t = malloc(sizeof(MyType)); t->field = field; return t; } int my_type_init(MyType* t, int field) { ... }",
+                "grouping": "Heap constructors (_new) first, then stack initializers (_init), then complex construction with error codes",
+                "notes": "C constructors are either allocating (_new returns pointer) or initializing (_init takes pre-allocated pointer). The caller decides heap vs stack. Error handling via return codes, not exceptions. Must pair with _free/_destroy."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, constructor content preserves the creation semantics. The same types get constructed from the same inputs with the same validation — only the allocation and initialization syntax changes.",
+            "invariant": ["parameter sets (what inputs each constructor requires)", "validation rules (what invariants are checked before returning)", "fallibility (which constructors can fail and which cannot)"],
+            "variable": ["allocation mechanism (stack vs heap vs arena)", "syntax (associated fn vs package function vs prefixed function)", "error reporting (Result vs error return vs int return code)", "builder pattern shape (method chaining vs functional options vs explicit steps)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "defer",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 0.91,
+    "_weight_rationale": "|avg| of concept_map: 10G 1F. 10/11 ≈ 0.91. self_access defers (constructors create, not access existing self).",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Constructors are birth. SETUP defines the blueprint. Constructors bring blueprints to life. The quality of construction determines the quality of everything that follows — a poorly constructed instance poisons all downstream operations.",
+    "_X5_scripture": "Genesis 2:7 — And the LORD God formed man of the dust of the ground, and breathed into his nostrils the breath of life; and man became a living soul."
+}

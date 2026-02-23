@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-identity-access",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.IdentityAccess Content Character — What Identity Access Content IS",
+    "_P5_brief": "Format-independent definition of identity access content character. Identity access functions are runtime bridges to compile-time identity — they read PRAGMA and METADATA statics and return them to callers. Syntax varies (static slices, const maps, comment-embedded data); the bridge pattern doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "identity-access",
+        "block": "BODY",
+        "position": 1,
+        "nature": "runtime-bridge",
+
+        "description": "Identity access content is the bridge between compile-time identity and runtime inquiry. METADATA declares who this file IS (key, version, format). Identity access functions expose those declarations to running code. The content is purely reflective: 'I know who I am, and I can tell you.'",
+
+        "invariants": {
+            "description": "Properties true of ALL identity access content, regardless of language.",
+
+            "read-only": "Identity access functions never modify identity. They are pure reads against immutable statics — PRAGMA and METADATA values are fixed at compile time.",
+            "complete": "The set of accessors covers all PRAGMA fields and relevant METADATA fields. No identity field goes unexposed.",
+            "deterministic": "Calling an identity accessor always returns the same value. Identity does not change at runtime.",
+            "thin": "Identity accessors contain minimal logic — a lookup or return, not computation. If it computes FROM identity, it belongs in CoreLogic.",
+            "self-referential": "Identity access is the only section that refers back to the file's own METADATA block. Every other BODY section looks outward; this one looks inward."
+        },
+
+        "content_forms": {
+            "description": "What identity access content looks like across languages. The bridge pattern is invariant; the statics mechanism varies.",
+
+            "rust": {
+                "syntax": "pub fn pragma_key() -> &'static str { PRAGMA_KEY } pub fn pragma_version() -> &'static str { PRAGMA_AT }",
+                "grouping": "PRAGMA accessors first, then METADATA accessors, then key-lookup dispatchers",
+                "notes": "Rust identity access returns &'static str from static slices defined in METADATA block. Functions are trivial — one-line returns. pub visibility required for all accessors."
+            },
+
+            "go": {
+                "syntax": "func PragmaKey() string { return pragmaKey } func MetadataField(name string) string { return metadata[name] }",
+                "grouping": "Exported PragmaX() functions first, then MetadataX() functions, then lookup helpers",
+                "notes": "Go identity access returns strings from package-level var maps defined in METADATA. Exported (uppercase) functions. May include a generic lookup by field name."
+            },
+
+            "c": {
+                "syntax": "const char* pragma_key(void) { return PRAGMA_KEY; } const char* metadata_field(const char* name) { ... }",
+                "grouping": "pragma_ prefixed functions first, then metadata_ prefixed, then lookup",
+                "notes": "C identity access returns const char* pointers to string constants defined in METADATA. Header declares; source implements. Include guards protect the declarations."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, identity access content preserves the bridge pattern. The PRAGMA/METADATA values themselves stay identical — only the statics mechanism and function syntax change.",
+            "invariant": ["accessor set (which identity fields are exposed)", "return values (the actual identity strings)", "read-only semantics (no mutation, no side effects)"],
+            "variable": ["statics mechanism (static slices vs var maps vs #define constants)", "function syntax (fn vs func vs return-type name)", "visibility keywords (pub vs Exported vs header declaration)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — identity access hosts any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Identity access is the file knowing itself at runtime. METADATA declares identity at rest. These functions make identity alive — queryable, inspectable, present. Without them, identity is latent. With them, every running file can answer: who am I?",
+    "_X5_scripture": "Exodus 3:14 — And God said unto Moses, I AM THAT I AM: and he said, Thus shalt thou say unto the children of Israel, I AM hath sent me unto you."
+}

@@ -29,6 +29,8 @@
 // ============================================================================
 
 import { join } from "@std/path";
+import { ToolError } from "./tool-error.ts";
+import { registerCache } from "./cache-registry.ts";
 
 // ============================================================================
 // BODY
@@ -140,16 +142,11 @@ export class SchemaPipeline {
       }
     }
 
-    // No source found — build diagnostic error
-    throw new Error(
-      `Schema not found: ${schemaId}\n` +
-      `Searched ${tried.length} source(s):\n` +
-      tried.map((s) => `  - ${s}`).join("\n") + "\n" +
-      `Hints:\n` +
-      `  - Set CWS_STRUCT_SCHEMA_DIR to override the schema directory\n` +
-      `  - Place schemas in .cws-struct/schemas/ in your project root\n` +
-      `  - Ensure the default schema directory exists relative to cws-struct`,
-    );
+    // No source found — structured error with diagnostics
+    throw new ToolError("CWS-T00-001", {
+      schemaId,
+      sources: tried.join(", "),
+    });
   }
 
   /** List registered sources (for diagnostics and testing). */
@@ -238,6 +235,7 @@ export function clearPipeline(): void {
     _pipeline = null;
   }
 }
+registerCache("schema-pipeline", clearPipeline);
 
 // ============================================================================
 // CLOSING

@@ -1,0 +1,136 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-R50-languages-rust-non-code",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "non-code-schema",
+    "_P2_role": "language-non-code",
+    "_P5_title": "Rust Non-Code Elements Schema (R[50])",
+    "_P5_brief": "Rust-specific non-code elements: doc comments, inner docs, attributes, separators, blanks. Everything the chunking engine must recognize that ISN'T executable Rust code. More exceptions than Go — Rust's richer syntax means more non-code categories.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "language": "rust",
+    "purpose": "Define non-code elements for the universal chunking engine",
+
+    "chunk_categories": {
+        "note": "Non-code chunk categories for the universal chunker. Code categories come from content_kinds in rust.jsonc.",
+
+        "pragma": {
+            "description": "OmniCode pragma directives",
+            "start_pattern": "^//\\s+#!omni\\b",
+            "continuation": "^//omni:",
+            "multi_line": true,
+            "block_target": "METADATA"
+        },
+
+        "doc_comment": {
+            "description": "Outer doc comments (/// prefix) — attach to NEXT item",
+            "start_pattern": "^///",
+            "continuation": "^///",
+            "multi_line": true,
+            "attaches_to": "next_declaration",
+            "note": "Rust /// doc comments are semantic — rustdoc processes them. They MUST immediately precede the item they document."
+        },
+
+        "inner_doc": {
+            "description": "Inner doc comments (//! prefix) — describe the ENCLOSING module",
+            "start_pattern": "^//!",
+            "continuation": "^//!",
+            "multi_line": true,
+            "block_target": "METADATA",
+            "note": "//! comments at the top of a file describe the module/crate. They're part of METADATA identity, not standalone documentation."
+        },
+
+        "comment": {
+            "description": "Regular comments (not doc, not pragma, not separator)",
+            "start_pattern": "^//[^/!]|^//$",
+            "excludes": ["pragma", "doc_comment", "inner_doc", "separator"],
+            "multi_line": true,
+            "standalone": true
+        },
+
+        "separator": {
+            "description": "Block and subsection separator lines (===, ---, ═══, ───)",
+            "patterns": [
+                "^//\\s*[═=]{10,}",
+                "^//\\s*[─\\-]{10,}"
+            ],
+            "may_include_title": true,
+            "structure": "separator_line + optional_title_line + separator_line",
+            "note": "Includes Unicode box-drawing characters: ═ (U+2550) and ─ (U+2500) alongside ASCII = and -."
+        },
+
+        "blank": {
+            "description": "Empty lines",
+            "pattern": "^\\s*$",
+            "multi_line": true,
+            "role": "visual_separation"
+        },
+
+        "attribute": {
+            "description": "Outer attributes (#[...]) — attach to NEXT item",
+            "start_pattern": "^#\\[",
+            "multi_line": false,
+            "attaches_to": "next_declaration",
+            "special_cases": {
+                "cfg_test": {
+                    "pattern": "#[cfg(test)]",
+                    "triggers": "test_module category for the ENTIRE following mod block"
+                },
+                "derive": {
+                    "pattern": "#[derive(...)]",
+                    "attaches_to": "next struct/enum"
+                }
+            }
+        },
+
+        "inner_attribute": {
+            "description": "Inner attributes (#![...]) — describe the ENCLOSING item",
+            "start_pattern": "^#!\\[",
+            "multi_line": false,
+            "block_target": "METADATA",
+            "examples": ["#![allow(dead_code)]", "#![feature(async_fn)]"]
+        }
+    },
+
+    "chunking_rules": {
+        "doc_comment_attachment": {
+            "description": "How to attach /// comments to declarations",
+            "rule": "A /// block immediately preceding a declaration attaches to it. A blank line between them separates them — but if the blank is a single line and the comment is ///, the blank is formatting noise and should be absorbed.",
+            "exception": "Multiple blank lines always separate."
+        },
+
+        "attribute_stacking": {
+            "description": "Multiple attributes before one item",
+            "rule": "#[attr1]\\n#[attr2]\\n... all attach to the NEXT item. Collect all consecutive attributes as a prefix to the declaration chunk.",
+            "interaction_with_docs": "Attributes can interleave with /// doc comments. Both attach to the same item."
+        },
+
+        "test_module_capture": {
+            "description": "How to handle #[cfg(test)] mod tests",
+            "rule": "#[cfg(test)] triggers special handling: capture the ENTIRE following mod block (including nested content) as a single test_module chunk. Track brace depth to find the end.",
+            "category": "test_module"
+        },
+
+        "separator_grouping": {
+            "description": "Same as Go — separator + title + separator = one chunk",
+            "rule": "Identical to universal rule."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust has more non-code categories than Go: doc comments (///), inner docs (//!), outer attributes (#[...]), inner attributes (#![...]), plus all the universal ones (pragma, comment, separator, blank). Each is a language exception the handler must process. The schema names them; the chunker groups them; the handler knows what they mean.",
+    "_X5_scripture": "The eye cannot say unto the hand, I have no need of thee. — 1 Corinthians 12:21"
+}

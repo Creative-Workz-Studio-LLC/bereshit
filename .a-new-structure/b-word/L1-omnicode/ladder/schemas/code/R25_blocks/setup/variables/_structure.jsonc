@@ -1,0 +1,110 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-blocks-setup-variables",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-schema",
+    "_P2_role": "container-structure",
+    "_P5_title": "SETUP Section 11: Variables — Structure",
+    "_P5_brief": "Format-agnostic structure definition. What Variables IS, not how it manifests in any language. See format/blocks/{lang}/setup/variables.jsonc for language-specific content.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "section": {
+        "tag": "Variables",
+        "position": 11,
+        "label": "Variables",
+        "block": "SETUP",
+        "overview_text": "Package-level mutable state",
+
+        "header": {
+            "section_comment": "// {position}. {label}",
+            "bracket_format": "[{position}]  {label}{padding}— {overview_text}",
+            "separator_style": "dash-72"
+        },
+
+        "can": [
+            {
+                "concept": "sentinel errors",
+                "description": "Package-level error values for comparison",
+                "distinguisher": "Named errors for programmatic matching. The bridge between variables and error types."
+            },
+            {
+                "concept": "synchronization primitives",
+                "description": "Sync primitives for concurrent access to package-level state",
+                "distinguisher": "Mutexes, Once, Maps — protecting shared state."
+            },
+            {
+                "concept": "package-level registries",
+                "description": "Shared state with package lifetime — maps, slices, caches",
+                "distinguisher": "Global to this package but justified — every var must explain why not const or local."
+            }
+        ],
+
+        "cannot": [
+            {
+                "concept": "compile-time constants",
+                "reason": "If the value is known at compile time, use Constants",
+                "defer_to": "SETUP.Constants"
+            },
+            {
+                "concept": "identity variables (PRAGMA/METADATA)",
+                "reason": "Identity declarations live in METADATA block, not SETUP",
+                "defer_to": "METADATA"
+            },
+            {
+                "concept": "complex initialization logic",
+                "reason": "Variables with complex initialization belong in init() or constructor functions",
+                "defer_to": "BODY or CLOSING"
+            }
+        ],
+
+        "forms": {
+            "bare-bone": "RESERVED",
+            "module": "AVAILABLE",
+            "library": "AVAILABLE",
+            "executable": "AVAILABLE",
+            "demo-test": "REQUIRED"
+        },
+
+        "ro": {
+            "available_label": "Variables",
+            "reserved_reason": null,
+            "note": "RESERVED in bare-bone (skeleton has no runtime state). REQUIRED in demo-test. AVAILABLE in module/library/executable — use when package-level mutable state is needed."
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "defer",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "granted",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "defer"
+    },
+
+    "detection_weight": 0.64,
+    "_weight_rationale": "|avg| of concept_map: 1G 2F 8D. (1−8)/11 = −7/11 ≈ −0.64. variable_binding granted (variables ARE bindings). function_call and string_format defer.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Variables are package-level mutable state. Every var must justify why a const or local would not suffice.",
+    "_X5_scripture": "Hebrews 13:8 — Jesus Christ the same yesterday, and to day, and for ever."
+}

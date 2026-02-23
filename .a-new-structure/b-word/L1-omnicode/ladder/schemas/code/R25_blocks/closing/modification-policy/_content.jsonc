@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-closing-modification-policy",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "CLOSING.Modification Policy Content Character — What Modification Policy Content IS",
+    "_P5_brief": "Format-independent definition of modification policy content character. Modification policy is guardrail documentation — three-tier classification (never/careful/safe) that protects future maintainers from unintended damage. Always comments, never code.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "modification-policy",
+        "block": "CLOSING",
+        "position": "X1",
+        "nature": "guardrail",
+
+        "description": "Modification policy content is today's author protecting tomorrow's maintainer. It classifies every significant element in the file into three tiers: never change (structural invariants), change carefully (cascading dependencies), and safe to change (local-only impact). This is pure documentation — comment blocks that communicate risk, blast radius, and dependency chains. No executable code.",
+
+        "invariants": {
+            "description": "Properties true of ALL modification policy content, regardless of language.",
+
+            "documentary": "Modification policy is comments only. No executable code, no compile-time artifacts. The content is human-readable guidance expressed in the language's comment syntax.",
+            "three_tiered": "Every policy uses the never/careful/safe classification. This taxonomy is invariant — risk levels don't change across languages.",
+            "specific": "Policies reference concrete elements — section tags, function names, type names. 'Be careful' is not a policy. 'Changing S7 fields cascades to B3 constructors' is.",
+            "blast_radius_aware": "Each careful-tier item documents what else is affected. The cascading impact is made explicit — not left for the maintainer to discover.",
+            "file_specific": "Policies describe THIS file's modification risks. Generic advice copied between files is worse than useless — it's noise."
+        },
+
+        "content_forms": {
+            "description": "What modification policy content looks like across languages. Comment syntax varies; the three-tier classification is invariant.",
+
+            "rust": {
+                "syntax": "// [X1] Modification Policy\n// NEVER: Public trait signatures (breaking change to all implementors)\n// CAREFUL: Error enum variants — adding is safe, removing/renaming breaks match arms\n// SAFE: Private helper functions, internal constants, doc comments",
+                "grouping": "Line comments (//) organized by tier. Each tier lists affected elements with brief rationale. Specific to Rust concepts: trait signatures, enum variants, visibility modifiers.",
+                "notes": "Rust's strict type system means many 'never' items relate to public API surface. Semver compatibility is the primary concern. Adding enum variants can be breaking if #[non_exhaustive] is missing."
+            },
+
+            "go": {
+                "syntax": "// [X1] Modification Policy\n// NEVER: Exported interface signatures (breaking change to all implementations)\n// CAREFUL: Exported struct fields — adding is safe, removing/renaming breaks consumers\n// SAFE: Unexported functions, internal variables, comments",
+                "grouping": "Line comments (//) organized by tier. Each tier lists affected elements with brief rationale. Specific to Go concepts: exported vs unexported, interface contracts, struct fields.",
+                "notes": "Go's exported/unexported distinction maps directly to API surface. Interface changes affect all implementations. Struct field changes affect all consumers using field names."
+            },
+
+            "c": {
+                "syntax": "/* [X1] Modification Policy\n * NEVER: Public header struct layouts (breaks ABI compatibility)\n * CAREFUL: Enum values — adding at end is safe, reordering breaks serialized data\n * SAFE: Static functions, local variables, implementation details in .c files */",
+                "grouping": "Block comments (/* */) organized by tier. Each tier lists affected elements with brief rationale. Specific to C concepts: ABI stability, header vs source, struct layout.",
+                "notes": "C's modification risks center on ABI compatibility. Header changes affect all includers. Struct layout changes break binary compatibility. Enum value reordering breaks serialized data and switch statements."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, modification policy content changes language-specific references but preserves the risk classification. What is never/careful/safe changes based on language semantics — the three-tier structure doesn't.",
+            "invariant": ["three-tier classification (never/careful/safe)", "blast radius documentation", "specificity requirement (concrete element references)", "documentary nature (comments only)"],
+            "variable": ["language-specific risk items (trait signatures vs exported interfaces vs header structs)", "comment syntax (// vs /* */)", "API surface concepts (pub vs exported vs header-visible)", "breaking change semantics (semver vs import compatibility vs ABI)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — modification policy is documentation, not code.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Modification policy content is a gift to the future. The author who wrote the code knows its risks intimately. X1 captures that knowledge before it walks out the door. Three tiers, specific elements, explicit blast radius — the maintainer inherits wisdom, not just code.",
+    "_X5_scripture": "Proverbs 22:28 — Remove not the ancient landmark, which thy fathers have set."
+}

@@ -1,0 +1,116 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-closing-reference",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "CLOSING Section X4: Reference — Go Content",
+    "_P5_brief": "Go-specific content rules for X4 (Reference). Navigation map — dependencies, dependents, template source, schema, validation commands.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/closing/reference.jsonc",
+    "format": "go",
+
+    "content": {
+
+        "can": [
+            {
+                "construct": "// Dependencies",
+                "description": "What this file depends on — std packages, internal packages, external modules",
+                "patterns": [
+                    "// X4 — Reference\n//\n// Dependencies:\n//   std: fmt, sync, errors, context\n//   internal: pkg/config, pkg/types\n//   external: github.com/example/lib"
+                ],
+                "visibility": "N/A — documentation"
+            },
+            {
+                "construct": "// Dependents (library form)",
+                "description": "Other packages that import from this one",
+                "patterns": [
+                    "// Dependents:\n//   cmd/server — uses Config from this package\n//   pkg/handler — uses Error types from this package"
+                ],
+                "visibility": "N/A",
+                "note": "Library form emphasizes which packages consume the exported API. Executable form has no dependents (it's the end of the chain)."
+            },
+            {
+                "construct": "// Template",
+                "description": "Source template this file was instantiated from",
+                "patterns": [
+                    "// Template: b-word/seed/code/L0/go/library.go",
+                    "// Template: b-word/seed/code/L0/go/executable.go"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// Derives from / Schema",
+                "description": "The form schema that constrains this file",
+                "patterns": [
+                    "// Derives from: library.go (parent pattern)",
+                    "// Schema: schemas/code/format/go-4block-schema.jsonc"
+                ],
+                "visibility": "N/A"
+            },
+            {
+                "construct": "// Validation commands",
+                "description": "How to verify this file is correct",
+                "patterns": [
+                    "// Validation:\n//   go build ./...    — compilation\n//   go test ./...     — all tests pass\n//   go vet ./...      — correctness checks\n//   staticcheck ./... — advanced static analysis"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        "cannot": [
+            {
+                "construct": "executable Go code",
+                "reason": "X4 is navigation documentation — comments only",
+                "defer_to": "BODY",
+                "go_signal": "^(func|type|var|const|import)\\s+"
+            },
+            {
+                "construct": "placeholder values",
+                "reason": "References must be real — no 'TODO: add dependencies'. If unknown, investigate.",
+                "defer_to": "N/A — fill with real values",
+                "go_signal": "TODO|placeholder|TBD"
+            },
+            {
+                "construct": "outdated dependency information",
+                "reason": "References must be current — stale dependency lists mislead developers",
+                "defer_to": "N/A — update when dependencies change",
+                "go_signal": "N/A"
+            }
+        ],
+
+        "defer_signals": [
+            {
+                "pattern": "^(func|type|var|const)\\s+",
+                "to": "BODY",
+                "confidence": "high",
+                "why": "Executable code in reference section"
+            }
+        ],
+
+        "scaffold": {
+            "empty_library": "// X4 — Reference\n//\n// Dependencies: std (fmt, errors), internal packages, external modules\n// Dependents: (list packages that import from this one)\n// Template: b-word/seed/code/L0/go/library.go\n// Schema: schemas/code/format/go-4block-schema.jsonc\n// Validation: go build && go test && go vet && staticcheck",
+            "empty_executable": "// X4 — Reference\n//\n// Dependencies: std (fmt, os, flag), internal packages\n// Template: b-word/seed/code/L0/go/executable.go\n// Schema: schemas/code/format/go-4block-schema.jsonc\n// Validation: go build && go test && go vet && staticcheck",
+            "empty_demo_test": "// X4 — Reference\n//\n// Dependencies: testing, assert helpers, package under test\n// Tests: (list which package this test file covers)\n// Template: b-word/seed/code/L0/go/demo-test.go\n// Schema: schemas/code/format/go-4block-schema.jsonc\n// Validation: go test -v -race ./...",
+            "comment_skeleton": "// X4 — Reference\n// Dependencies: ...\n// Template: ...\n// Validation: go build && go test && go vet"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go X4 (Reference): the navigation map. Dependencies (std → internal → external, matching import group order), dependents, template source, schema, validation commands. Go's import grouping convention mirrors the dependency listing order.",
+    "_X5_scripture": "Proverbs 4:26 — Ponder the path of thy feet, and let all thy ways be established."
+}

@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-core-operations",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.CoreOperations Content Character — What Core Operations Content IS",
+    "_P5_brief": "Format-independent definition of core operations content character. Core operations are the primary business logic — state transitions, data processing, and the essential work this module performs. Syntax varies; the operational nature doesn't.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "core-operations",
+        "block": "BODY",
+        "position": 20,
+        "nature": "operational",
+
+        "description": "Core operations content is the module's primary business logic. Where CoreLogic emphasizes the algorithm (the computation), CoreOperations emphasizes the operation (the business action). This is where state transitions happen, data gets processed, and the module fulfills its stated purpose. In forms that use CoreOperations instead of CoreLogic, this IS the engine room.",
+
+        "invariants": {
+            "description": "Properties true of ALL core operations content, regardless of language.",
+
+            "state-changing": "Core operations mutate state. They take the system from one valid state to another. Unlike queries (pure reads), operations have side effects that ARE the purpose.",
+            "business-driven": "Every operation maps to a domain concept. Not utility computation, not infrastructure plumbing — the actual work the module was created to do.",
+            "sequenceable": "Operations can be composed into workflows. One operation's output feeds another's input. The ordering matters and is part of the API contract.",
+            "validated": "Operations validate preconditions before mutating. An operation that corrupts state on invalid input is a bug, not a feature.",
+            "observable": "Every operation produces effects visible through Queries. If an operation runs but nothing changes observably, it is either dead code or a bug."
+        },
+
+        "content_forms": {
+            "description": "What core operations content looks like across languages. Business operations are invariant; the syntax of state mutation and method organization varies.",
+
+            "rust": {
+                "syntax": "pub fn execute(&mut self, cmd: Command) -> Result<(), Error> { self.validate(&cmd)?; self.apply(cmd); Ok(()) }",
+                "grouping": "Primary operations first, then complex construction (validated creation), then state transitions",
+                "notes": "Rust core operations use &mut self for mutation. Result types for fallibility. Operations may include complex constructors when creation requires I/O or computed defaults."
+            },
+
+            "go": {
+                "syntax": "func (s *Service) Execute(cmd Command) error { if err := s.validate(cmd); err != nil { return err }; s.apply(cmd); return nil }",
+                "grouping": "Primary operations first, then complex construction, then state transitions",
+                "notes": "Go core operations use pointer receivers. Error returns are idiomatic. Operations may delegate to private methods for readability."
+            },
+
+            "c": {
+                "syntax": "int service_execute(Service* self, const Command* cmd) { if (service_validate(self, cmd) != 0) return -1; service_apply(self, cmd); return 0; }",
+                "grouping": "Primary operations first, then complex construction, then internal state transitions (static helpers)",
+                "notes": "C core operations pass self explicitly. Error codes for fallibility. Static helper functions for complex internal steps."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, core operations content preserves the business logic and state transitions. The same operations occur in the same order with the same validation — only the syntax of mutation and error handling changes.",
+            "invariant": ["operation semantics (what each operation does to state)", "precondition checks (what must be true before operating)", "operation ordering constraints (which operations must precede which)", "error conditions (what failures are possible)"],
+            "variable": ["mutation syntax (&mut self vs *receiver vs explicit pointer)", "error handling (Result vs error return vs int codes)", "method organization (impl blocks vs receiver methods vs prefixed functions)", "validation patterns (guard clauses vs early returns vs error aggregation)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "granted",
+        "method_call": "granted",
+        "self_access": "granted",
+        "variable_binding": "granted",
+        "conditional_if": "granted",
+        "conditional_match": "granted",
+        "return_value": "granted",
+        "error_propagation": "granted",
+        "err_wrap": "granted",
+        "ok_wrap": "granted",
+        "string_format": "granted"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns granted — core operations host any code pattern.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Core operations is where the module earns its existence. SETUP defines capability. Constructors create capacity. Core operations exercise both. If core operations is thin, the module's purpose is questionable. If it's bloated, the module is doing too much.",
+    "_X5_scripture": "Ecclesiastes 9:10 — Whatsoever thy hand findeth to do, do it with thy might; for there is no work, nor device, nor knowledge, nor wisdom, in the grave, whither thou goest."
+}

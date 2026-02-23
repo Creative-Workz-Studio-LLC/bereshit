@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-body-org-chart",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "BODY.OrgChart Content Character — What Org Chart Content IS",
+    "_P5_brief": "Format-independent definition of org chart content character. Org Chart is structural documentation — comments and navigation aids that describe how the package is organized. This is the exception in BODY: it contains no executable code, only structural commentary.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "org-chart",
+        "block": "BODY",
+        "position": 0,
+        "nature": "navigational",
+
+        "description": "Org chart content is the BODY's table of contents. It is the one section in BODY that contains NO executable code — only comments, structural documentation, and navigation aids. Where every other BODY section does something, org chart tells you WHERE things are done. It is the map, not the territory.",
+
+        "invariants": {
+            "description": "Properties true of ALL org chart content, regardless of language.",
+
+            "non-executable": "Org chart contains zero executable statements. No function calls, no variable bindings, no logic. Purely commentary. This is what makes it unique in BODY — it is the only section where all concept_map patterns are denied.",
+            "structural": "Content describes file organization — what sections exist, what each section contains, how they relate. It is a map of the file's architecture.",
+            "navigational": "The purpose is helping readers find what they need. A developer scanning the file reads the org chart first to orient before diving into specific sections.",
+            "accurate": "The org chart must match reality. If it says 'Section 4: Core Logic — state transforms' but core logic actually does parsing, the org chart is lying. Accuracy is the single most important quality.",
+            "concise": "Org chart content is terse — section labels and brief descriptions. Not documentation paragraphs, not tutorials. A table of contents, not a textbook."
+        },
+
+        "content_forms": {
+            "description": "What org chart content looks like across languages. Structural commentary is invariant; the comment syntax varies.",
+
+            "rust": {
+                "syntax": "//! # Module Structure\\n//! \\n//! - **SETUP**: Types, traits, error definitions\\n//! - **BODY**: Constructors, core logic, queries\\n//! - **CLOSING**: Tests, entry point",
+                "grouping": "Module-level doc comment (//!) with block overview, then section-level navigation comments before each section",
+                "notes": "Rust org charts use //! (inner doc comments) at module top for the structural overview. Section headers use // comments. rustdoc renders //! as module documentation."
+            },
+
+            "go": {
+                "syntax": "// Package mypackage provides ...\\n//\\n// # Structure\\n//\\n// SETUP: Types, interfaces, error definitions\\n// BODY: Constructors, core operations, queries\\n// CLOSING: Tests, entry point",
+                "grouping": "Package doc comment with structure section, then section-level navigation comments",
+                "notes": "Go org charts live in the package doc comment (// Package ...). Go doc conventions use # headers. A doc.go file may contain the package-level org chart for complex packages."
+            },
+
+            "c": {
+                "syntax": "/**\\n * @file myfile.c\\n * @brief Module structure:\\n *   SETUP: Types, macros, declarations\\n *   BODY: Implementation functions\\n *   CLOSING: Tests, main\\n */",
+                "grouping": "File-level Doxygen comment with structure overview, then section-level block comments",
+                "notes": "C org charts use Doxygen-style comments (/** */) at file top. Section separators use block comments with visual dividers. No doc generation standard is universal — Doxygen is convention."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, org chart content preserves the structural description. The same sections get documented in the same way — only the comment syntax and documentation convention change. Since org chart is non-executable, transpilation is purely syntactic.",
+            "invariant": ["structural description (what sections exist and their purposes)", "navigation intent (helping readers orient)", "accuracy requirement (must match actual file structure)"],
+            "variable": ["comment syntax (//! vs // Package vs /** */)", "documentation convention (rustdoc vs godoc vs Doxygen)", "section divider style (visual separators vary by language convention)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — org-chart is structural, not behavioral.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Org chart is the exception that proves the rule. Every other BODY section contains executable code. Org chart contains only commentary. It exists because code without navigation is a maze — and a maze with a map is just a building with interesting architecture.",
+    "_X5_scripture": "Genesis 1:1 — In the beginning God created the heaven and the earth. Before content, there was structure. Before the earth was filled, the heavens and earth were separated."
+}

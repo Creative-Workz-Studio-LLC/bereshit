@@ -1,0 +1,96 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-structure-molded-demo-test",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "form-structure-schema",
+    "_P2_role": "structure-molded",
+    "_P5_title": "Demo-Test Form Structure — The Proving Ground",
+    "_P5_brief": "Format-agnostic structural definition of demo-test form. Test file — validates behavior, proves claims. The widest BODY (9 test sections, concern_coverage ordering). All 10 SETUP sections available. Heavy CLOSING (Cv meta-validates, TestCoverageSummary tracks).",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "form": {
+        "name": "demo-test",
+        "extends": "structure/whole/4-block.jsonc",
+        "derives_from": "structure/molded/bare-bone.jsonc",
+        "is_foundation": false,
+        "purpose": "Test file — validates behavior, proves claims",
+
+        "principle": "Tests are the accountability mechanism. Every claim in BODY is proved in Cv. Every type in SETUP is exercised. Demo-test form gives tests the space they need — 9 BODY sections organized by concern, from construction through integration.",
+
+        "SETUP": {
+            "required": ["Imports", "Constants", "ErrorTypes", "CoreTypes"],
+            "available": ["Modules", "Statics", "TypeAliases", "TraitDefs", "Macros", "FeatureGates"],
+            "reserved": [],
+            "required_count": 4,
+            "available_count": 6,
+            "reserved_count": 0,
+            "total": 10,
+
+            "promotes_from_bare_bone": {
+                "to_available": ["Modules", "Statics", "TypeAliases", "TraitDefs", "Macros", "FeatureGates"]
+            },
+
+            "note": "Demo-test has ALL 10 SETUP sections available — test files may need fixtures (Statics), test-only types (CoreTypes), test macros (Macros), and feature-gated test paths (FeatureGates)."
+        },
+
+        "BODY": {
+            "required": ["ConstructorTests", "BuilderTests", "TransitionTests", "QueryTests", "IdentityTests", "ErrorTests", "EdgeCaseTests", "TableDrivenTests", "IntegrationTests"],
+            "reserved": ["IdentityAccess", "TraitImplementations", "Constructors", "CoreLogic", "Queries", "Output", "Helpers", "FreeFunctions"],
+            "required_count": 9,
+            "reserved_count": 8,
+            "total": 17,
+            "ordering": "concern_coverage",
+            "ordering_sequence": ["ConstructorTests", "BuilderTests", "TransitionTests", "QueryTests", "IdentityTests", "ErrorTests", "EdgeCaseTests", "TableDrivenTests", "IntegrationTests"],
+
+            "promotes_from_bare_bone": {
+                "to_required": ["ConstructorTests", "BuilderTests", "TransitionTests", "QueryTests", "IdentityTests", "ErrorTests", "EdgeCaseTests", "TableDrivenTests", "IntegrationTests"]
+            },
+
+            "reserves_specifically": {
+                "reason": "Demo-test BODY contains TESTS, not implementations. The standard BODY sections (IdentityAccess, TraitImplementations, Constructors, CoreLogic, Queries, Output, Helpers, FreeFunctions) are implementation concerns — they belong in library/module/executable forms."
+            },
+
+            "note": "Concern coverage: Constructor → Builder → Transition → Query → Identity → Error → EdgeCase → TableDriven → Integration. Mirrors how the crate/package is built and used."
+        },
+
+        "CLOSING": {
+            "required": ["Cv", "Ce", "X1", "X4", "X5"],
+            "available": ["Cc", "TestCoverageSummary", "X2", "X3"],
+            "reserved": ["X6"],
+            "required_count": 5,
+            "available_count": 4,
+            "reserved_count": 1,
+            "total": 10,
+            "emphasis": { "heavy": ["Cv", "Cc"], "light": ["Ce"] },
+
+            "promotes_from_bare_bone": {
+                "to_available": ["Cc", "TestCoverageSummary", "X2", "X3"]
+            },
+
+            "removes": {
+                "X6": "Demo-test is a derived file, not a template."
+            },
+
+            "cv_note": "Cv in demo-test is META-VALIDATION — tests verifying the test infrastructure itself (fixtures, helpers).",
+            "cc_note": "Cc in demo-test handles test fixture teardown — cleanup helpers, resource deallocation.",
+            "ce_note": "Ce is structurally required but typically empty for test files — the test harness is the entry point."
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Tests are the accountability mechanism. Every claim is proved. Every type is exercised. Every edge case is explored. The 9-section BODY gives tests the space to be thorough — from construction through integration, nothing is skipped. Tests don't lie. That's their value.",
+    "_X5_scripture": "Prove all things; hold fast that which is good. — 1 Thessalonians 5:21"
+}

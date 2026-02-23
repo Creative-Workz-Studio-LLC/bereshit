@@ -1,0 +1,144 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-go-setup-build-tags",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "SETUP Section 10: Build Tags -- Go Content",
+    "_P5_brief": "Go-specific content rules for Build Tags. //go:build constraints for conditional compilation. Platform code, integration tests, debug tooling. Go equivalent of Rust feature gates. Extends the base structure at blocks/setup/feature-gates.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/setup/feature-gates.jsonc",
+    "format": "go",
+
+    "content": {
+
+        // -----------------------------------------
+        // Go-specific CAN
+        // -----------------------------------------
+
+        "can": [
+            {
+                "construct": "//go:build constraint",
+                "description": "Build constraints controlling what gets compiled -- the new syntax (Go 1.17+)",
+                "patterns": [
+                    "//go:build linux",
+                    "//go:build darwin || linux",
+                    "//go:build !windows",
+                    "//go:build integration"
+                ],
+                "visibility": "N/A -- compiler directive, not code",
+                "note": "Use the new //go:build syntax, not the legacy // +build syntax. //go:build supports boolean expressions (&&, ||, !) naturally."
+            },
+            {
+                "construct": "//go:build ignore",
+                "description": "Exclude file from compilation entirely -- used for templates and code generators",
+                "patterns": [
+                    "//go:build ignore"
+                ],
+                "visibility": "N/A",
+                "note": "Required for OmniCode template files. Prevents the Go compiler from trying to build template code."
+            },
+            {
+                "construct": "platform-specific declarations",
+                "description": "Types, constants, or variables that only exist on certain platforms",
+                "patterns": [
+                    "// In file_linux.go (filename convention):\n//go:build linux\n\nconst defaultConfigPath = \"/etc/app/config.toml\"",
+                    "// In file_windows.go:\n//go:build windows\n\nconst defaultConfigPath = `C:\\ProgramData\\app\\config.toml`"
+                ],
+                "visibility": "varies",
+                "note": "Go also supports GOOS/GOARCH filename conventions (_linux.go, _amd64.go). Both approaches are valid; //go:build is more flexible for complex conditions."
+            },
+            {
+                "construct": "//go:build integration || e2e",
+                "description": "Test tag gating -- separate integration/e2e tests from unit tests",
+                "patterns": [
+                    "//go:build integration\n\npackage mypackage_test",
+                    "//go:build e2e\n\npackage mypackage_test"
+                ],
+                "visibility": "N/A",
+                "note": "Run with: go test -tags=integration. Unit tests run by default; integration tests require explicit opt-in."
+            },
+            {
+                "construct": "// Comment explaining what each constraint enables",
+                "description": "Every build constraint documents what it controls and why it is conditional",
+                "patterns": [
+                    "// Build constraint: linux-only syscall wrappers.\n//go:build linux",
+                    "// Build constraint: integration tests requiring database connection.\n//go:build integration"
+                ],
+                "visibility": "N/A"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific CANNOT
+        // -----------------------------------------
+
+        "cannot": [
+            {
+                "construct": "// +build (legacy syntax)",
+                "reason": "Legacy build tag syntax. Use //go:build (Go 1.17+) which supports proper boolean expressions.",
+                "defer_to": "N/A -- migrate to //go:build syntax",
+                "go_signal": "^//\\s*\\+build\\s+"
+            },
+            {
+                "construct": "build constraints on core functionality",
+                "reason": "If needed for the basic API, it should not be conditional. Core functionality must work on all supported platforms.",
+                "defer_to": "N/A -- make it unconditional",
+                "go_signal": "N/A -- design judgment"
+            },
+            {
+                "construct": "undocumented custom build tags",
+                "reason": "Every custom build tag (integration, e2e, debug) must be documented -- how to enable, what it activates",
+                "defer_to": "N/A -- document the tag",
+                "go_signal": "N/A"
+            },
+            {
+                "construct": "build tags used to hide incomplete code",
+                "reason": "Build tags are for legitimate conditional compilation, not for hiding unfinished work",
+                "defer_to": "N/A -- finish the code or remove it",
+                "go_signal": "N/A -- design judgment"
+            }
+        ],
+
+        // -----------------------------------------
+        // Go-specific Defer Signals
+        // -----------------------------------------
+
+        "defer_signals": [
+            {
+                "pattern": "^//\\s*\\+build\\s+",
+                "to": "N/A -- migrate to //go:build syntax",
+                "confidence": "high",
+                "why": "Legacy build tag syntax -- use //go:build (Go 1.17+)"
+            }
+        ],
+
+        // -----------------------------------------
+        // Code Generation Templates
+        // -----------------------------------------
+
+        "scaffold": {
+            "empty_library": "// No build-tagged items needed.",
+            "empty_executable": "// No build-tagged items needed.",
+            "comment_skeleton": "// //go:build linux\n// platform-specific code here"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Go Build Tags: conditional compilation via //go:build constraints. Last in SETUP because they modify what earlier subsections declared. Core API works without tags. Integration tests opt-in via custom tags. Use the new syntax (Go 1.17+), not the legacy // +build.",
+    "_X5_scripture": "1 Corinthians 9:22 -- I am made all things to all men, that I might by all means save some."
+}

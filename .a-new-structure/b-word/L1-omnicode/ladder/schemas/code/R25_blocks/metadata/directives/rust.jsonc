@@ -1,0 +1,116 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-format-blocks-rust-metadata-directives",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "block-section-content",
+    "_P2_role": "container-content",
+    "_P5_title": "METADATA Section 1: Directives — Rust Content",
+    "_P5_brief": "Rust-specific content rules for OmniCode directives. How Rust files declare their identity at line 1. Extends the base structure at structure/parts/metadata/directives.jsonc.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "extends": "structure/parts/metadata/directives.jsonc",
+    "format": "rust",
+
+    "content": {
+
+        // ─────────────────────────────────────
+        // Rust-specific CAN
+        // ─────────────────────────────────────
+
+        "can": [
+            {
+                "construct": "//omni:code --rust -{subtype}",
+                "description": "Instantiated file directive — this file IS OmniCode Rust code",
+                "patterns": [
+                    "//omni:code --rust -library",
+                    "//omni:code --rust -executable",
+                    "//omni:code --rust -module",
+                    "//omni:code --rust -demo-test",
+                    "//omni:code --rust -bare-bone"
+                ],
+                "visibility": "N/A — directives are comments",
+                "note": "Must be line 1. The pragma directive is the file's identity declaration. No space after //."
+            },
+            {
+                "construct": "// #!omni template --rust -{subtype}",
+                "description": "Template file directive — this file is an OmniCode Rust template",
+                "patterns": [
+                    "// #!omni template --rust -library",
+                    "// #!omni template --rust -executable",
+                    "// #!omni template --rust -module",
+                    "// #!omni template --rust -demo-test",
+                    "// #!omni template --rust -bare-bone"
+                ],
+                "visibility": "N/A",
+                "note": "Templates use #! shebang-style. Space after //. Template → instantiated drops the space and changes 'template' to format prefix."
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific CANNOT
+        // ─────────────────────────────────────
+
+        "cannot": [
+            {
+                "construct": "//omni:code --rust (no subtype)",
+                "reason": "Every Rust file must declare its form. The subtype drives which sections are required, available, or reserved.",
+                "defer_to": "N/A — add subtype flag",
+                "rust_signal": "^//omni:code\\s+--rust\\s*$"
+            },
+            {
+                "construct": "directive on line other than 1",
+                "reason": "The pragma directive MUST be line 1. Tools and linters expect it there.",
+                "defer_to": "N/A — move to line 1",
+                "rust_signal": "N/A"
+            },
+            {
+                "construct": "multiple pragma directives",
+                "reason": "One file, one identity. A file cannot be both library and executable.",
+                "defer_to": "N/A — remove duplicates",
+                "rust_signal": "N/A"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Rust-specific Defer Signals
+        // ─────────────────────────────────────
+
+        "defer_signals": [
+            {
+                "pattern": "^//!\\s+",
+                "to": "METADATA.DocComments",
+                "confidence": "high",
+                "why": "Crate-level doc comment found in directives area — belongs in doc comments section"
+            }
+        ],
+
+        // ─────────────────────────────────────
+        // Code Generation Templates
+        // ─────────────────────────────────────
+
+        "scaffold": {
+            "library": "//omni:code --rust -library",
+            "executable": "//omni:code --rust -executable",
+            "module": "//omni:code --rust -module",
+            "demo_test": "//omni:code --rust -demo-test",
+            "bare_bone": "//omni:code --rust -bare-bone"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Rust directives: line 1 is identity. //omni:code --rust -{subtype} declares what this file IS. The no-space format (//omni) distinguishes instantiated code from templates (// #!omni). The subtype flag drives the entire form system.",
+    "_X5_scripture": "Genesis 1:3 — And God said, Let there be light: and there was light."
+}

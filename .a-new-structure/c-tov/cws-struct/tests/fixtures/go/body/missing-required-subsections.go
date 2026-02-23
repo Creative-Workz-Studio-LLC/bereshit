@@ -9,10 +9,11 @@ package fixture
 // ============================================================================
 //
 // Key:     B-test-fixture-missing-required-body
-// Purpose: Test fixture — library subtype missing required BODY subsections.
-//          Has Helpers and Core Operations but missing Public APIs (B5) which
-//          the schema marks as requiredIn: ["library"]. Should trigger
-//          body/required-subsection warning.
+// Purpose: Test fixture — library subtype missing ALL required BODY subsections.
+//          Has Helpers (reserved for library) and Core Operations (available).
+//          All 7 required sections (Identity Access, Trait Implementations,
+//          Constructors, Core Logic, Queries, Output Display, Free Functions)
+//          are missing. Should trigger body/required-subsection warnings.
 //
 
 var Pragma = [][2]string{
@@ -70,7 +71,7 @@ func Process(s string) string {
 	return formatName(s)
 }
 
-// NOTE: Missing B5 Public APIs — required for library subtype.
+// NOTE: Missing all 7 required body sections — Helpers is reserved, Core Operations is available.
 
 // ============================================================================
 // END BODY

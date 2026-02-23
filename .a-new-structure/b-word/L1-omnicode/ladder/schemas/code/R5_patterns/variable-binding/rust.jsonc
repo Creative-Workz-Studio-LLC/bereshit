@@ -1,0 +1,51 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-variable-binding",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Variable Binding",
+
+    "concept": "variable_binding",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "typed_mutable",
+            "syntax": "let mut {name}: {type} = {expr};",
+            "detect": "^\\s*let\\s+mut\\s+(\\w+):\\s*([^=]+)\\s*=\\s*(.+);",
+            "captures": { "name": 1, "type": 2, "expr": 3 },
+            "mutable": true,
+            "priority": 1
+        },
+        {
+            "id": "typed_immutable",
+            "syntax": "let {name}: {type} = {expr};",
+            "detect": "^\\s*let\\s+(\\w+):\\s*([^=]+)\\s*=\\s*(.+);",
+            "captures": { "name": 1, "type": 2, "expr": 3 },
+            "mutable": false,
+            "priority": 2
+        },
+        {
+            "id": "mutable",
+            "syntax": "let mut {name} = {expr};",
+            "detect": "^\\s*let\\s+mut\\s+(\\w+)\\s*=\\s*(.+);",
+            "captures": { "name": 1, "expr": 2 },
+            "mutable": true,
+            "priority": 3
+        },
+        {
+            "id": "immutable",
+            "syntax": "let {name} = {expr};",
+            "detect": "^\\s*let\\s+(\\w+)\\s*=\\s*(.+);",
+            "captures": { "name": 1, "expr": 2 },
+            "mutable": false,
+            "priority": 4
+        }
+    ],
+
+    "_X5_note": "Rust variable bindings — immutable by default, explicit mut for mutability."
+}

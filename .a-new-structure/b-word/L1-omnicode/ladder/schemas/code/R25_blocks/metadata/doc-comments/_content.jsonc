@@ -1,0 +1,93 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-content-metadata-doc-comments",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "content-character-schema",
+    "_P2_role": "content-section",
+    "_P5_title": "METADATA.DocComments Content Character — What Doc Comment Content IS",
+    "_P5_brief": "Format-independent definition of doc comment content character. Doc comments are language-native documentation consumed by tools, IDEs, and documentation generators. They describe WHAT a file does and WHY it exists in prose that compilers and toolchains understand.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "character": {
+        "name": "doc-comments",
+        "block": "METADATA",
+        "position": 2,
+        "nature": "tool-readable-prose",
+
+        "description": "Doc comment content is the bridge between human understanding and tool consumption. Unlike regular comments (which are invisible to toolchains), doc comments are first-class language constructs that compilers parse, IDEs display, and documentation generators publish. The content is prose — but structured prose with sections, examples, and cross-references that tools can extract and present.",
+
+        "invariants": {
+            "description": "Properties true of ALL doc comment content, regardless of language.",
+
+            "tool_visible": "Doc comments are parsed by language toolchains — rustdoc, godoc, Doxygen. They are not ignored like regular comments. This means their content has consequences: malformed doc comments cause warnings or errors in documentation builds.",
+            "descriptive_not_procedural": "Doc comments describe WHAT and WHY, never HOW. Implementation details belong in inline comments within BODY. Doc comments answer: what does this file do? Why does it exist? How do you use it? — not: how does it work internally?",
+            "positioned_before_subject": "Doc comments attach to the item that follows them. In METADATA, they attach to the file/module/package as a whole. Placement is syntactically significant — moving a doc comment changes what it documents.",
+            "structured_prose": "Doc comments follow language-specific section conventions (Rust: # headers, Go: paragraph-based, C: @brief/@details). This structure enables tools to extract specific parts (e.g., the brief for tooltips, examples for testing).",
+            "publishable": "Doc comment content may appear in generated documentation that external users read. This means accuracy, clarity, and completeness matter — doc comments are part of the public API surface."
+        },
+
+        "content_forms": {
+            "description": "What doc comment content looks like across languages. Each language has its own doc comment syntax and conventions.",
+
+            "rust": {
+                "syntax": "//! # Crate Title\\n//!\\n//! Description paragraph.\\n//!\\n//! ## Design\\n//!\\n//! Architecture notes.\\n//!\\n//! ## Usage\\n//!\\n//! ```rust\\n//! example_code();\\n//! ```",
+                "grouping": "Inner doc comments (//!) for module/crate-level docs. Placed after directives, before any code. Markdown formatting with # headers, code fences, tables.",
+                "notes": "Rust //! (inner) doc comments attach to the enclosing item (the module/crate). //! is used ONLY in METADATA for file-level docs. /// (outer) doc comments attach to the next item and appear elsewhere (on PRAGMA static, on types, on functions). rustdoc compiles examples as tests."
+            },
+
+            "go": {
+                "syntax": "// Package mypackage provides [functionality].\\n//\\n// Description paragraph.\\n//\\n// # Design\\n//\\n// Architecture notes.\\n//\\n//\\tcopy_template_example()",
+                "grouping": "Package doc comment immediately before the package clause. Plain // comments (not ///) with paragraph separation by blank comment lines. Indented lines become preformatted code.",
+                "notes": "Go doc comments are plain // comments, distinguished only by position (immediately before package clause). godoc uses paragraph-based structure — no Markdown, no special syntax. Indented lines (tab after //) become code examples. The first sentence becomes the package summary in listings."
+            },
+
+            "c": {
+                "syntax": "/**\\n * @file source.c\\n * @brief One-line description.\\n *\\n * Detailed description paragraph.\\n *\\n * @details Architecture notes.\\n */",
+                "grouping": "Doxygen /** ... */ block comment at file top. @file, @brief, @details, @author, @date tags provide structured sections.",
+                "notes": "C uses Doxygen conventions for doc comments. The /** marker (double-star) distinguishes doc comments from regular /* comments. @file declares the documented file. @brief provides the one-liner. @details provides extended description. @see creates cross-references."
+            }
+        },
+
+        "transpilation_role": {
+            "description": "During transpilation, doc comment content preserves the description and structure but adapts to the target language's documentation conventions. A Rust //! section becomes a Go package comment or a C Doxygen block.",
+            "invariant": ["described purpose and design intent", "presence of usage examples", "cross-references to related components", "separation of brief vs detailed description"],
+            "variable": ["comment syntax (//! vs // vs /** */)", "formatting system (Markdown vs plain text vs Doxygen tags)", "section conventions (# headers vs paragraphs vs @tags)", "example syntax (```rust vs tab-indent vs @code/@endcode)", "attachment mechanism (inner vs positional vs @file)"]
+        }
+    },
+
+    "concept_map": {
+        "_note": "Transposed from R[5] concept container_maps. granted = pattern expected here. denied = not expected. defer = context-dependent.",
+
+        "function_call": "denied",
+        "method_call": "denied",
+        "self_access": "denied",
+        "variable_binding": "denied",
+        "conditional_if": "denied",
+        "conditional_match": "denied",
+        "return_value": "denied",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "denied"
+    },
+
+    "detection_weight": 1.00,
+    "_weight_rationale": "|avg| of concept_map. All 11 R[5] patterns denied — no code patterns belong in doc-comments.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Doc comments are the file's voice to the outside world. They are how the file introduces itself to developers who have never read its code. Good doc comments make the purpose visible without reading the implementation — they are the file's testimony of its own reason for being.",
+    "_X5_scripture": "Habakkuk 2:2 — Write the vision, and make it plain upon tables, that he may run that readeth it."
+}
