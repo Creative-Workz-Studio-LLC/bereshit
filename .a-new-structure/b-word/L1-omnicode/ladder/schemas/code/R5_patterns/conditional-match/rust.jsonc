@@ -17,6 +17,7 @@
             "id": "match_expr",
             "syntax": "match {scrutinee} {",
             "detect": "^\\s*match\\s+(.+)\\s*\\{",
+            "emit": "match {scrutinee} {\n    {arms}\n}",
             "captures": { "scrutinee": 1 },
             "notes": "Match header — arms follow inside braces.",
             "priority": 1
@@ -25,6 +26,7 @@
             "id": "arm_with_guard_and_binding",
             "syntax": "{pattern}({binding}) if {guard} => {body}",
             "detect": "^\\s*(\\w+)\\(([^)]+)\\)\\s+if\\s+(.+)\\s*=>\\s*(.+)",
+            "emit": "{pattern}({binding}) if {guard} => {body}",
             "captures": { "pattern": 1, "binding": 2, "guard": 3, "body": 4 },
             "notes": "e.g., Ok(meta) if meta.is_dir() => Ok(()). Binding + guard.",
             "priority": 2
@@ -33,6 +35,7 @@
             "id": "arm_with_binding",
             "syntax": "{pattern}({binding}) => {body}",
             "detect": "^\\s*(\\w+)\\(([^)]+)\\)\\s*=>\\s*(.+)",
+            "emit": "{pattern}({binding}) => {body}",
             "captures": { "pattern": 1, "binding": 2, "body": 3 },
             "notes": "e.g., Ok(_) => ..., Err(e) => Err(e). Binding without guard.",
             "priority": 3
@@ -41,6 +44,7 @@
             "id": "arm_simple",
             "syntax": "{pattern} => {body}",
             "detect": "^\\s*([^=]+)\\s*=>\\s*(.+)",
+            "emit": "{pattern} => {body}",
             "captures": { "pattern": 1, "body": 2 },
             "notes": "Simple arm without binding — value match or wildcard.",
             "priority": 4
@@ -49,11 +53,19 @@
             "id": "arm_wildcard",
             "syntax": "_ => {body}",
             "detect": "^\\s*_\\s*=>\\s*(.+)",
+            "emit": "_ => {body}",
             "captures": { "body": 1 },
             "notes": "Wildcard / default arm.",
             "priority": 5
         }
     ],
+
+    "go_to_rust_mapping": {
+        "switch scrutinee {": "match scrutinee { — switch → match",
+        "case pattern:": "pattern => — case → arm with =>",
+        "default:": "_ => — default → wildcard arm",
+        "switch v.(type) { case T:": "match on enum variant — type switch → enum match"
+    },
 
     "_X5_note": "Rust match: exhaustive pattern matching with destructuring and guards."
 }

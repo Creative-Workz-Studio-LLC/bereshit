@@ -1,0 +1,53 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-loop-iteration",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — Loop Iteration",
+
+    "concept": "loop_iteration",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "for_range",
+            "syntax": "for {key}, {value} := range {collection} { ... }",
+            "detect": "for\\s+(?:(\\w+),\\s*)?(\\w+)\\s*:=\\s*range\\s+(.+?)\\s*\\{",
+            "emit": "for {key}, {value} := range {collection} {",
+            "captures": { "key": 1, "value": 2, "collection": 3 },
+            "notes": "Range loop — iterates over slice, map, string, channel.",
+            "priority": 1
+        },
+        {
+            "id": "for_classical",
+            "syntax": "for {init}; {cond}; {post} { ... }",
+            "detect": "for\\s+\\w+\\s*:?=\\s*.+?;\\s*.+?;\\s*.+?\\s*\\{",
+            "emit": "for {init}; {cond}; {post} {",
+            "captures": {},
+            "notes": "Classical for loop — C-style three-clause.",
+            "priority": 2
+        },
+        {
+            "id": "for_condition",
+            "syntax": "for {condition} { ... }",
+            "detect": "for\\s+(?!.*:=\\s*range)(?!.*:?=.*;)(.+?)\\s*\\{",
+            "emit": "for {condition} {",
+            "captures": { "condition": 1 },
+            "notes": "Conditional loop — Go's equivalent of while.",
+            "priority": 3
+        }
+    ],
+
+    "rust_to_go_mapping": {
+        "for item in &collection": "for _, item := range collection",
+        "for (key, value) in map": "for key, value := range m",
+        "while condition": "for condition",
+        "loop": "for { ... }"
+    },
+
+    "_X5_note": "Go uses 'for' for all loop forms — range, classical, and conditional."
+}

@@ -132,14 +132,14 @@ function checkTopLevel(file: string, data: Record<string, unknown>): LintResult[
   // Recommended top-level fields
   for (const field of RECOMMENDED_TOP) {
     if (!hasField(data, field)) {
-      results.push(warn(file, `top/${field}`, `Missing recommended field: ${field}`));
+      results.push(warn(file, `top/${field}/recommended`, `Missing recommended field: ${field}`));
     }
   }
 
   // Optional top-level fields
   for (const field of OPTIONAL_TOP) {
     if (!hasField(data, field)) {
-      results.push(info(file, `top/${field}`, `Missing optional field: ${field}`));
+      results.push(info(file, `top/${field}/optional`, `Missing optional field: ${field}`));
     }
   }
 
@@ -153,7 +153,7 @@ function checkIdentity(file: string, data: Record<string, unknown>): LintResult[
 
   for (const field of REQUIRED_IDENTITY) {
     if (!hasField(identity, field)) {
-      results.push(error(file, `identity/${field}`, `Missing required identity field: ${field}`));
+      results.push(error(file, `identity/${field}/required`, `Missing required identity field: ${field}`));
     } else if (typeof identity[field] !== "string") {
       results.push(error(file, `identity/${field}_type`, `Field 'identity.${field}' must be a string`));
     }
@@ -161,7 +161,7 @@ function checkIdentity(file: string, data: Record<string, unknown>): LintResult[
 
   for (const field of RECOMMENDED_IDENTITY) {
     if (!hasField(identity, field)) {
-      results.push(warn(file, `identity/${field}`, `Missing recommended identity field: ${field}`));
+      results.push(warn(file, `identity/${field}/recommended`, `Missing recommended identity field: ${field}`));
     }
   }
 
@@ -175,7 +175,7 @@ function checkState(file: string, data: Record<string, unknown>): LintResult[] {
 
   for (const field of REQUIRED_STATE) {
     if (!hasField(state, field)) {
-      results.push(error(file, `state/${field}`, `Missing required state field: ${field}`));
+      results.push(error(file, `state/${field}/required`, `Missing required state field: ${field}`));
     } else if (typeof state[field] !== "string") {
       results.push(error(file, `state/${field}_type`, `Field 'state.${field}' must be a string`));
     }
@@ -183,7 +183,7 @@ function checkState(file: string, data: Record<string, unknown>): LintResult[] {
 
   for (const field of RECOMMENDED_STATE) {
     if (!hasField(state, field)) {
-      results.push(warn(file, `state/${field}`, `Missing recommended state field: ${field}`));
+      results.push(warn(file, `state/${field}/recommended`, `Missing recommended state field: ${field}`));
     }
   }
 
@@ -197,7 +197,7 @@ function checkAttribution(file: string, data: Record<string, unknown>): LintResu
 
   for (const field of REQUIRED_ATTRIBUTION) {
     if (!hasField(attr, field)) {
-      results.push(error(file, `attribution/${field}`, `Missing required attribution field: ${field}`));
+      results.push(error(file, `attribution/${field}/required`, `Missing required attribution field: ${field}`));
     } else if (typeof attr[field] !== "string") {
       results.push(error(file, `attribution/${field}_type`, `Field 'attribution.${field}' must be a string`));
     }
@@ -205,7 +205,7 @@ function checkAttribution(file: string, data: Record<string, unknown>): LintResu
 
   for (const field of RECOMMENDED_ATTRIBUTION) {
     if (!hasField(attr, field)) {
-      results.push(info(file, `attribution/${field}`, `Missing optional attribution field: ${field}`));
+      results.push(info(file, `attribution/${field}/optional`, `Missing optional attribution field: ${field}`));
     }
   }
 

@@ -15,24 +15,28 @@
     "patterns": [
         {
             "id": "qualified_call",
+            "syntax": "{package}.{Function}({args})",
+            "detect": "([a-zA-Z_]\\w*)\\.([A-Z]\\w*)\\(([^)]*)\\)",
             "emit": "{package}.{Function}({args})",
-            "when": "calling an exported function from another package",
-            "notes": "Go uses dot (not ::) for package qualification. Function name PascalCase.",
+            "captures": { "package": 1, "function": 2, "args": 3 },
+            "notes": "Package-qualified call — PascalCase function means exported. e.g., os.Stat(path).",
             "priority": 1
         },
         {
             "id": "unqualified_call",
+            "syntax": "{function}({args})",
+            "detect": "(?<!\\.)(\\b[a-z_]\\w*)\\(([^)]*)\\)",
             "emit": "{function}({args})",
-            "when": "calling a function in the current package",
-            "notes": "No package qualifier needed for same-package functions.",
+            "captures": { "function": 1, "args": 2 },
+            "notes": "Unqualified call — same-package function or builtin (make, len, append).",
             "priority": 2
         }
     ],
 
     "rust_to_go_mapping": {
-        "fs::metadata(path)": "os.Stat(path)",
-        "fs::create_dir_all(path)": "os.MkdirAll(path, 0755)",
-        "io::Error::new(kind, msg)": "fmt.Errorf(\"%s\", msg) or errors.New(msg)"
+        "pkg::function(args)": "pkg.Function(args) — :: to dot, PascalCase for exported",
+        "function(args)": "function(args) — same for unqualified, keep camelCase",
+        "format!(tmpl, args)": "fmt.Sprintf(tmpl, args) — Rust macro → Go fmt package"
     },
 
     "_X5_note": "Go function calls — dot-qualified, PascalCase for exported functions."

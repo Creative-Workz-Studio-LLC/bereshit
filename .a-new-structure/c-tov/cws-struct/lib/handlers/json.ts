@@ -171,7 +171,7 @@ function checkPragma(file: string, data: JsonData): LintResult[] {
   // Check required pragma keys (flat convention)
   for (const key of REQUIRED_PRAGMA_KEYS) {
     if (!has(data, key)) {
-      results.push(error(file, `pragma/${key}`, `Missing ${key} — REQUIRED`));
+      results.push(error(file, `pragma/${key}/required`, `Missing ${key} — REQUIRED`));
     }
   }
 
@@ -182,7 +182,7 @@ function checkPragma(file: string, data: JsonData): LintResult[] {
       const prefix = key.slice(0, 3); // _P1, _P2, _P3, _P4
       if (hasKeyWithPrefix(data, prefix + "_")) {
         results.push(
-          warn(file, `pragma/${key}`, `Missing ${key} — recommended`),
+          warn(file, `pragma/${key}/recommended`, `Missing ${key} — recommended`),
         );
       }
     }
@@ -234,7 +234,7 @@ function checkMetadata(file: string, data: JsonData): LintResult[] {
   for (const key of REQUIRED_METADATA) {
     if (!has(data, key)) {
       results.push(
-        error(file, `metadata/${key}`, `Missing ${key} — REQUIRED`),
+        error(file, `metadata/${key}/required`, `Missing ${key} — REQUIRED`),
       );
     } else if (!isObject(data[key])) {
       results.push(
@@ -384,7 +384,7 @@ function checkClosing(file: string, data: JsonData): LintResult[] {
   for (const key of REQUIRED_CLOSING) {
     if (!has(data, key)) {
       results.push(
-        error(file, `closing/${key}`, `Missing ${key} — REQUIRED`),
+        error(file, `closing/${key}/required`, `Missing ${key} — REQUIRED`),
       );
     }
   }
@@ -395,7 +395,7 @@ function checkClosing(file: string, data: JsonData): LintResult[] {
       results.push(
         info(
           file,
-          `closing/${key}`,
+          `closing/${key}/defined`,
           `Missing ${key} — optional closing section`,
         ),
       );

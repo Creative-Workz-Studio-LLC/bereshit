@@ -17,6 +17,7 @@
             "id": "if_else",
             "syntax": "if {condition} { {then_body} } else { {else_body} }",
             "detect": "^\\s*if\\s+(.+)\\s*\\{",
+            "emit": "if {condition} {\n    {then_body}\n} else {\n    {else_body}\n}",
             "captures": { "condition": 1 },
             "notes": "Body captured by brace matching, not regex. else/else if detected by continuation lines.",
             "priority": 1
@@ -25,6 +26,7 @@
             "id": "else_if",
             "syntax": "} else if {condition} {",
             "detect": "^\\s*\\}\\s*else\\s+if\\s+(.+)\\s*\\{",
+            "emit": "} else if {condition} {\n    {body}\n}",
             "captures": { "condition": 1 },
             "notes": "Continuation of an if chain.",
             "priority": 2
@@ -33,11 +35,18 @@
             "id": "else",
             "syntax": "} else {",
             "detect": "^\\s*\\}\\s*else\\s*\\{",
+            "emit": "} else {\n    {body}\n}",
             "captures": {},
             "notes": "Final else branch.",
             "priority": 3
         }
     ],
+
+    "go_to_rust_mapping": {
+        "if condition {": "if condition { — same syntax, no parens in either",
+        "if init; condition {": "let init; if condition { — Go init statement → separate let binding",
+        "} else if condition {": "} else if condition { — identical syntax"
+    },
 
     "_X5_note": "Rust if: no parens around condition, braces required, can be expression."
 }

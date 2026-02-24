@@ -124,7 +124,23 @@
                 "BODY": {
                     "required": ["FreeFunctions"],
                     "available": ["IdentityAccess", "CoreLogic"],
-                    "irrelevant": ["TraitImplementations", "Constructors", "Queries"]
+                    "irrelevant": ["TraitImplementations", "Constructors", "Queries"],
+                    // Concept overrides for required sections.
+                    // Utility = stateless pure functions. Only function_call, method_call,
+                    // return_value are reliably present. Everything else is variable —
+                    // a utility module MAY have conditionals, error propagation, etc.,
+                    // but their absence is not noteworthy.
+                    "concept_overrides": {
+                        "FreeFunctions": {
+                            "variable_binding": "defer",
+                            "conditional_if": "defer",
+                            "conditional_match": "defer",
+                            "error_propagation": "defer",
+                            "err_wrap": "defer",
+                            "ok_wrap": "defer",
+                            "string_format": "defer"
+                        }
+                    }
                 }
             },
 

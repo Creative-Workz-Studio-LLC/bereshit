@@ -243,7 +243,7 @@ function checkPragma(file: string, lines: string[]): LintResult[] {
   for (const field of REQUIRED_PRAGMA_FIELDS) {
     if (!fields.has(field)) {
       results.push(
-        error(file, `pragma/${field}`, `Missing required pragma field: ${field}`),
+        error(file, `pragma/${field}/required`, `Missing required pragma field: ${field}`),
       );
     }
   }
@@ -252,7 +252,7 @@ function checkPragma(file: string, lines: string[]): LintResult[] {
   for (const field of RECOMMENDED_PRAGMA_FIELDS) {
     if (!fields.has(field)) {
       results.push(
-        info(file, `pragma/${field}`, `Missing recommended pragma field: ${field}`),
+        info(file, `pragma/${field}/recommended`, `Missing recommended pragma field: ${field}`),
       );
     }
   }
@@ -302,7 +302,7 @@ function checkMetadata(file: string, lines: string[]): LintResult[] {
   for (const n of REQUIRED_METADATA) {
     if (!sections.has(n)) {
       results.push(
-        error(file, `metadata/M${n}`, `Missing required metadata section M${n}`),
+        error(file, `metadata/M${n}/required`, `Missing required metadata section M${n}`),
       );
     }
   }
@@ -311,7 +311,7 @@ function checkMetadata(file: string, lines: string[]): LintResult[] {
   for (const n of RECOMMENDED_METADATA) {
     if (!sections.has(n)) {
       results.push(
-        warn(file, `metadata/M${n}`, `Missing recommended metadata section M${n}`),
+        warn(file, `metadata/M${n}/recommended`, `Missing recommended metadata section M${n}`),
       );
     }
   }
@@ -320,7 +320,7 @@ function checkMetadata(file: string, lines: string[]): LintResult[] {
   for (const n of EXTENSION_METADATA) {
     if (!sections.has(n)) {
       results.push(
-        info(file, `metadata/M${n}`, `Missing extension metadata section M${n}`),
+        info(file, `metadata/M${n}/extension`, `Missing extension metadata section M${n}`),
       );
     }
   }
@@ -386,7 +386,7 @@ function checkClosing(file: string, lines: string[]): LintResult[] {
   for (const tag of REQUIRED_CLOSING_TAGS) {
     if (!tags.has(tag)) {
       results.push(
-        error(file, `closing/${tag}`, `Missing required closing section: ${tag}`),
+        error(file, `closing/section/${tag}/required`, `Missing required closing section: ${tag}`),
       );
     }
   }

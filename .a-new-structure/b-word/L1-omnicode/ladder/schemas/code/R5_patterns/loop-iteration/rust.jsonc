@@ -1,0 +1,46 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-loop-iteration",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Loop Iteration",
+
+    "concept": "loop_iteration",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "for_in",
+            "syntax": "for {binding} in {iterator} { ... }",
+            "detect": "for\\s+(\\w+|\\([^)]+\\))\\s+in\\s+(.+?)\\s*\\{",
+            "emit": "for {binding} in {iterator} {",
+            "captures": { "binding": 1, "iterator": 2 },
+            "notes": "For-in loop — iterates over anything implementing IntoIterator.",
+            "priority": 1
+        },
+        {
+            "id": "while_loop",
+            "syntax": "while {condition} { ... }",
+            "detect": "while\\s+(.+?)\\s*\\{",
+            "emit": "while {condition} {",
+            "captures": { "condition": 1 },
+            "notes": "While loop — condition checked before each iteration.",
+            "priority": 2
+        },
+        {
+            "id": "loop_infinite",
+            "syntax": "loop { ... }",
+            "detect": "loop\\s*\\{",
+            "emit": "loop {",
+            "captures": {},
+            "notes": "Infinite loop — must break explicitly. Often used with break returning a value.",
+            "priority": 3
+        }
+    ],
+
+    "_X5_note": "Rust loops — for-in is the workhorse, loop is the infinite, while is the conditional."
+}

@@ -1,0 +1,52 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-type-construction",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Type Construction",
+
+    "concept": "type_construction",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "struct_literal",
+            "syntax": "{Type} { {field}: {value}, ... }",
+            "detect": "([A-Z]\\w*)\\s*\\{[^}]*\\w+\\s*:",
+            "emit": "{Type} {{ {field}: {value} }}",
+            "captures": { "type": 1 },
+            "notes": "Struct literal — named fields. Most common construction form.",
+            "priority": 1
+        },
+        {
+            "id": "tuple_struct",
+            "syntax": "{Type}({value}, ...)",
+            "detect": "([A-Z]\\w*)\\((?!\\))(.+?)\\)(?!\\s*\\{)",
+            "emit": "{Type}({values})",
+            "captures": { "type": 1, "values": 2 },
+            "notes": "Tuple struct — positional fields. Also enum variant construction.",
+            "priority": 2
+        },
+        {
+            "id": "struct_update",
+            "syntax": "{Type} { {field}: {value}, ..{base} }",
+            "detect": "([A-Z]\\w*)\\s*\\{[^}]*\\.\\.[^}]+\\}",
+            "emit": "{Type} {{ {field}: {value}, ..{base} }}",
+            "captures": { "type": 1 },
+            "notes": "Struct update syntax — fill remaining fields from another instance.",
+            "priority": 3
+        }
+    ],
+
+    "go_to_rust_mapping": {
+        "Type{Field: value}": "Type { field: value }",
+        "Type{value1, value2}": "Type(value1, value2)",
+        "&Type{Field: value}": "Type { field: value } (Rust uses ownership, not pointers)"
+    },
+
+    "_X5_note": "Rust type construction — struct literals with named fields, tuple structs, update syntax."
+}

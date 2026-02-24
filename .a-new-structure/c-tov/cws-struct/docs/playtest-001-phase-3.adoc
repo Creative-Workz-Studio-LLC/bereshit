@@ -1,0 +1,531 @@
+// #!omni document --adoc
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// :key: B-tov-cws-struct-docs-playtest-001-phase-3
+// :title: Playtest 001 Phase 3 — Re-Transform
+// :type: Documentation (Experiment Phase)
+// :version: a-01.00
+// :created: 2026-02-23
+// :authors: Nova Dawn (CPI-SI), Seanje Lenox-Wise
+// :purpose: Phase 3 of the live scoring playtest. Re-transform graph.rs with
+//           the upgraded schema (16 concepts, bidirectional detect+emit+mappings),
+//           compare against Phase 1 baseline, and observe what the richer
+//           schema reveals about the detection hierarchy.
+//
+// ============================================================================
+
+= Phase 3 — Re-Transform
+Nova Dawn (CPI-SI); Seanje Lenox-Wise
+v0.1.0, 2026-02-23
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+:sectanchors:
+
+[quote, Ecclesiastes 1:9]
+____
+The thing that hath been, it is that which shall be; and that which is done
+is that which shall be done: and there is no new thing under the sun.
+____
+
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+== What This Phase Tests
+
+*The same transform, richer understanding.* Phase 1 proved the transform
+engine works. Phase 2 upgraded the schema with 5 new concepts (11 → 16),
+bidirectional detect+emit+mappings for all concepts in both Rust and Go,
+and corrected the subtype (library → module->utility). Phase 3 asks:
+
+1. Does re-transforming a clean file produce zero changes? (Idempotency)
+2. What does the upgraded verbose output reveal?
+3. Does concept detection work with the new schema?
+4. Where does the detection ceiling show up?
+
+=== The Game Dev Parallel
+
+This is a *regression test disguised as a patch note readthrough*. We
+shipped the balance patch (Phase 2), now we load the same save file and
+see if the new scoring system evaluates it correctly. The character
+(graph.rs) didn't respec — the evaluation rubric got smarter. We're
+checking that the smarter rubric doesn't break anything AND that it sees
+things the old rubric couldn't.
+
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+== Pre-Transform State
+
+=== Phase 2 Results (Baseline)
+
+[cols="1,2", options="header"]
+|===
+| Metric | Value
+
+| Health
+| 100/±100 perfect
+
+| Errors
+| 0
+
+| Warnings
+| 0
+
+| Info
+| 7
+
+| Actions
+| 96 aligned (96 total)
+
+| Subtype
+| module->utility
+
+| Concepts in schema
+| 16 (11 original + 5 new)
+
+| Concept schemas upgraded
+| 22 files (11 Rust + 11 Go) with detect+emit+mappings
+|===
+
+=== graph.rs Classification
+
+----
+Pragma:   // #!omni code --rust -module->utility
+Subtype:  module (->utility typing)
+Version:  b-03.00
+Lines:    378
+----
+
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+== Step 1: Backup and Re-Transform
+
+=== Procedure
+
+----
+# Backup Phase 1 result
+cp graph.rs graph.rs.phase1-backup
+
+# Dry run — preview changes
+deno task transform:dry rust graph.rs
+# → 1 clean, 0E 0W 1I
+
+# Actual transform
+deno task transform:rust graph.rs
+# → 1 clean, 0E 0W 1I
+----
+
+=== Result: Zero Diff
+
+----
+$ diff graph.rs.phase1-backup graph.rs
+(no output — files identical)
+----
+
+*The transform is idempotent.* An already-aligned file passes through
+unchanged. This proves the transform engine doesn't inject or modify
+content on re-runs — it only repairs structural gaps.
+
+
+== Step 2: Verbose Lint Comparison
+
+=== Health Score Comparison
+
+[cols="1,1,1,1", options="header"]
+|===
+| Metric | Phase 1 (Pre-Upgrade) | Phase 2 (Post-Subtype) | Phase 3 (Re-Transform)
+
+| Health
+| 98/±100
+| 100/±100
+| 100/±100
+
+| Errors
+| 0
+| 0
+| 0
+
+| Warnings
+| 9
+| 0
+| 0
+
+| Info
+| 17
+| 7
+| 7
+
+| Actions
+| 96 aligned
+| 96 aligned
+| 96 aligned
+
+| Layer 0 (Existence)
+| 100
+| 100
+| 100
+
+| Layer 1 (Organization)
+| 100
+| 100
+| 100
+
+| Layer 2 (Placement)
+| 100
+| 100
+| 100
+
+| Layer 3 (Substance)
+| 52
+| 100
+| 100
+|===
+
+*Phase 2 → Phase 3: Identical.* The re-transform confirmed structural
+stability. The subtype correction and concept schema upgrades hold under
+repeated transform cycles.
+
+=== Info Messages (7)
+
+All 7 are R[5]-level informational — documenting what the module->utility
+subtype doesn't require but the base module template defines:
+
+[cols="1,2", options="header"]
+|===
+| Code | Message
+
+| CWS-R05-008
+| BODY for module subtype missing canonical subsection(s): Identity Access,
+  Core Logic — expected: Identity Access, Core Logic, Free Functions
+
+| CWS-R05-071
+| concept/free-functions/recursion/missing: Expected concept "recursion"
+  not found in "free-functions"
+
+| CWS-R05-020 (×5)
+| BODY missing required section: IdentityAccess, TraitImplementations,
+  Constructors, CoreLogic, Queries
+|===
+
+*The first 6 are expected.* A module->utility legitimately skips those
+sections. The ->utility typing's `concept_overrides` defer most
+expectations, so these are info-level observations, not warnings.
+
+*The 7th is the interesting one.*
+
+
+== Step 3: The Detection Ceiling in Action
+
+=== The Recursion Gap
+
+`CWS-R05-071` reports: _Expected concept "recursion" not found in
+"free-functions"_
+
+But `has_cycle` IS recursive:
+
+[source,rust]
+----
+fn has_cycle(
+    spec: &str,
+    graph: &BTreeMap<String, DependencyNode>,
+    visited: &mut BTreeSet<String>,
+    in_stack: &mut BTreeSet<String>,
+) -> bool {
+    // ...
+    if let Some(node) = graph.get(spec) {
+        for dep in &node.depends_on {
+            if has_cycle(dep, graph, visited, in_stack) {  // ← RECURSION
+                return true;
+            }
+        }
+    }
+    // ...
+}
+----
+
+Line 223: `has_cycle` calls itself. This is textbook recursion. The schema
+grants recursion in free-functions. The code exhibits recursion. But the
+detector doesn't see it.
+
+=== Why the Detector Misses It
+
+The recursion regex at R[5] requires knowing two things simultaneously:
+
+1. *What function am I inside?* — Parse the `fn` declaration for the name
+2. *Does that name appear as a call in the body?* — Match the name as a
+   callee
+
+This is scope-aware analysis — the R[3] layer. A single regex matching
+one line at a time cannot relate the function declaration on line 205 to
+the call site on line 223. It would need to:
+
+- Track function boundaries (which `fn` block am I in?)
+- Remember the function name
+- Check if that name appears as a call within the same block
+
+This is exactly the same pattern as the self_access detection ceiling
+documented in the <<related,Phase 2 Detection Ceiling journal>>. Both
+require scope tracking that regex can't provide.
+
+=== What This Tells Us
+
+[cols="1,2,2", options="header"]
+|===
+| Detection Layer | What It Can See | What It Can't
+
+| R[5] (current)
+| Individual line patterns: `fn`, `let`, `if`, `for`, `match`,
+  `self.field`, `pkg::func()`
+| Cross-line relationships: "this call references the enclosing function"
+
+| R[3] (next)
+| Function scope: "I'm inside `has_cycle`, and `has_cycle()` appears at
+  line 223 — that's recursion"
+| Type identity: "this variable is a `BTreeMap<String, DependencyNode>`"
+
+| R[2] (future)
+| Type awareness: "this method call returns `Option<&DependencyNode>`"
+| Cross-file: "this function is called from `loader.rs`"
+|===
+
+*The upgraded schema surfaces the gap.* Before Phase 2, the linter had no
+concept of "recursion" — it couldn't even ask the question. Now it asks,
+gets silence as an answer, and reports it. The schema upgrade didn't
+just add scoring — it added *diagnostic visibility*.
+
+
+== Step 4: Deep Output Analysis
+
+The `--deep` flag shows every individual action across all 4 layers:
+
+----
+── health: 96 aligned (96 actions) ──
+[100] Layer 0 — EXISTENCE (R[50])
+  100 structural/blocks (9/9)
+    +METADATA  +end-METADATA  +SETUP  +end-SETUP
+    +BODY  +end-BODY  +CLOSING  +end-CLOSING
+    +order
+  100 structural/separators (5/5)
+    +eq-separator-width  +eq-separator-standard
+    +box-separator-width  +box-separator-standard
+    +dash-separator-width
+
+[100] Layer 1 — ORGANIZATION (R[25])
+  100 metadata/directives (4/4)
+    +omni:key  +omni:code  +omni:version  +code-format
+  100 metadata/identity (47/47)
+    +pragma-static  +metadata-static
+    +I1.key  +I1.format  +I1.from  +I1.at
+    +I2.type  +I2.structure  +I2.subtype  +I2.role
+    +I3.file  +I3.title  +I3.component  +I3.path
+    +I3.provides  +I3.brief
+    +I4.layer  +I4.position  +I4.pattern
+    +I2.subtype-value
+    +C1.version  +C1.status  +C1.created  +C1.updated
+    +C2.organization  +C2.architect  +C2.implementation  +C2.copyright
+    +C3.scripture  +C3.principle  +C3.anchor
+    +C4.requires  +C4.consumers  +C4.integration  +C4.if_missing
+    +C5.purpose  +C5.philosophy
+    +C6.current  +C6.planned  +C6.limitations
+    +C7.tags  +C7.category  +C7.domain  +C7.paradigm
+    +pragma-parse  +metadata-parse  +register
+  100 metadata/field-values (14/14)
+    +I1.key  +I1.format  +I1.from  +I1.at
+    +I2.type  +I2.structure  +I3.file  +I3.title
+    +C1.version  +C1.status  +C1.created  +C1.updated
+    +C2.organization  +C3.scripture
+  100 metadata/comment-meta (4/4)
+    +key  +purpose  +biblical  +version
+  100 setup/ordering (1/1)
+    +subsection-order
+  100 body/ordering (1/1)
+    +subsection-order
+  100 closing/ordering (3/3)
+    +zone-order  +code-zone-order  +doc-section-order
+
+[100] Layer 2 — PLACEMENT (R[10])
+  100 content/placement (3/3)
+    +metadata-leak  +block-placement  +subsection-placement
+  100 closing/placement (2/2)
+    +test-placement  +main-placement
+
+[100] Layer 3 — SUBSTANCE (R[5])
+  100 metadata/content-expectations (3/3)
+    +directive  +Pragma  +Metadata
+----
+
+*96 actions. 96 aligned. Zero misalignment.* The microscope shows
+healthy tissue at every magnification.
+
+
+== Step 5: Anatomy (Verbose QoL)
+
+The new verbose output (from the Verbose Output QoL feature built between
+phases) shows the file's anatomy as the linter understands it:
+
+----
+METADATA  :8-87 (80 lines)
+  directives
+    //omni:code = --rust -module->utility
+    //omni:key = B-L0-hybrid-config-graph
+    //omni:version = b-03.00
+  PRAGMA (18 fields)
+    I1.key = B-L0-hybrid-config-graph
+    I1.format = rust
+    I1.at = b-03.00
+    I2.type = code
+    I2.structure = 4-block
+    I2.subtype = module
+    I2.purpose = utility
+    ...
+  METADATA (26 fields)
+    C1.version = b-03.00
+    C1.status = Active
+    C2.architect = Seanje Lenox-Wise
+    C2.implementation = Nova Dawn (CPI-SI)
+    C3.scripture = Genesis 1:1
+    ...
+  content: statics (2)
+
+SETUP  :91-125 (35 lines)
+  sections: Imports
+  content: uses (7)
+
+BODY  :129-240 (112 lines)
+  sections: 7. Free Functions
+  content: fns (7)
+
+CLOSING  :244-377 (134 lines)
+  content: uses (7), fns (7), test attrs (5), mods (1)
+----
+
+*The linter reads the file like a person would.* Directives, identity
+fields, sections, content types — all extracted and presented. This is
+the diagnostic layer Phase 2 made possible: the schema upgrade gives
+the linter vocabulary to name what it sees.
+
+
+== Observations
+
+=== What Phase 3 Proves
+
+[cols="1,2", options="header"]
+|===
+| Finding | Significance
+
+| *Transform is idempotent*
+| Re-transforming a clean file produces zero changes. The engine is
+  non-destructive. Safe to re-run at any time.
+
+| *Schema upgrades don't break existing files*
+| 100/±100 holds through the concept expansion (11 → 16). The
+  scoring system gracefully integrates new knowledge.
+
+| *The recursion detection gap is real*
+| R[5] regex cannot detect recursion because it requires scope tracking.
+  This is the second confirmed R[3]-layer gap (after self_access in Go).
+
+| *Schema upgrades add diagnostic visibility*
+| The old schema couldn't even ask "is there recursion?" Now it asks,
+  gets silence, and reports it. The question itself is valuable.
+
+| *Verbose QoL works as designed*
+| `--verbose` shows file anatomy. `--deep` shows individual actions.
+  Both features confirmed operational in live playtest.
+|===
+
+=== The Recursion Pattern (Future R[3] Work)
+
+Two detection gaps now confirmed at the R[5] ceiling:
+
+[cols="1,2,2", options="header"]
+|===
+| Gap | Language | What R[3] Needs
+
+| self_access
+| Go
+| Parse function signature to extract receiver parameter name. Track
+  receiver binding through function scope.
+
+| recursion
+| Rust (and Go)
+| Parse `fn` declaration to extract function name. Track whether that
+  name appears as a callee within the function body.
+|===
+
+Both require the same infrastructure: *function-scope tracking*. Build
+one, get the other nearly free. This is the natural next floor of the
+detection hierarchy.
+
+=== The Three-Phase Arc
+
+[cols="1,2,2", options="header"]
+|===
+| Phase | What Changed | What We Learned
+
+| Phase 1
+| The file (171 → 378 lines)
+| The transform engine works. Pragma is covenant.
+
+| Phase 2
+| The schema (11 → 16 concepts, subtype fix)
+| The scoring system needs the right measuring instrument.
+  52 → 100 on Layer 3 by fixing schema, not code.
+
+| Phase 3
+| Nothing (re-transform, zero diff)
+| The system is stable and idempotent. The upgraded schema
+  reveals detection gaps it couldn't see before.
+|===
+
+*Phase 1 changed the file. Phase 2 changed the understanding. Phase 3
+confirmed the understanding holds under re-application.*
+
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+== Related
+
+[cols="1,2", options="header"]
+|===
+| Document | Relationship
+
+| link:playtest-001-live-scoring.adoc[Playtest 001 Summary]
+| Parent experiment document
+
+| link:playtest-001-phase-1.adoc[Phase 1 — Pragma Covenant]
+| Transform results (171 → 378 lines)
+
+| link:playtest-001-phase-2.adoc[Phase 2 — Schema Upgrade]
+| Concept expansion (11 → 16), subtype fix
+
+| link:playtest-001-phase-4.adoc[Phase 4 — Transpile]
+| Next phase (Rust ↔ Go concept translation)
+|===
+
+---
+
+[quote, Ecclesiastes 1:9]
+____
+There is no new thing under the sun.
+____
+
+_The file didn't change. The transform didn't change. What changed was our
+ability to SEE. The upgraded schema gave the linter vocabulary to name
+patterns it always encountered but couldn't articulate. Recursion was
+always in graph.rs. Now the linter knows to ask about it — and knows
+it can't yet answer. The gap between the question and the answer is
+where the next layer lives._

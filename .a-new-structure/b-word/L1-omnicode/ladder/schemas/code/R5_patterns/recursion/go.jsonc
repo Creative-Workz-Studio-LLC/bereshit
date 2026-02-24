@@ -1,0 +1,42 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-recursion",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — Recursion",
+
+    "concept": "recursion",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "direct_recursion",
+            "syntax": "func {name}(...) { ... {name}(...) ... }",
+            "detect": "func\\s+(\\w+)\\s*\\([^)]*\\)[^{]*\\{[\\s\\S]*?\\1\\s*\\(",
+            "emit": "func {name}({params}) {return_type} {{ ... {name}({args}) ... }}",
+            "captures": { "function": 1 },
+            "notes": "Direct recursion — function calls itself by name. No tail call optimization in Go.",
+            "priority": 1
+        },
+        {
+            "id": "recursive_call_site",
+            "syntax": "{name}({args})",
+            "detect": "(?<=\\n\\s*)(?:if|return)?\\s*(\\w+)\\s*\\(([^)]+)\\)",
+            "emit": "{name}({modified_args})",
+            "captures": { "function": 1, "args": 2 },
+            "notes": "Recursive call site — the specific invocation point within the function body.",
+            "priority": 2
+        }
+    ],
+
+    "rust_to_go_mapping": {
+        "fn name(params) { name(args) }": "func name(params) { name(args) }",
+        "name(args) (implicit return)": "return name(args)"
+    },
+
+    "_X5_note": "Go recursion — no tail call optimization. Goroutine stack grows dynamically but has limits."
+}

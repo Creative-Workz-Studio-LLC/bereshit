@@ -36,6 +36,7 @@ import { parse as parseJsonc } from "@std/jsonc";
 // Direct imports — barrel would create cycle: foundation/mod → code-schema → data/mod → concept-detectors
 import { getDefaultPipeline } from "../foundation/schema-pipeline.ts";
 import { registerCache } from "../foundation/cache-registry.ts";
+import { ToolError } from "../foundation/tool-error.ts";
 import { CONCEPT_REGISTRY, CONCEPT_ORDER } from "./concepts.ts";
 
 // ============================================================================
@@ -151,12 +152,22 @@ interface RawConceptSchema {
 /**
  * Compile a raw schema pattern into a ConceptPattern with a real RegExp.
  *
- * @param raw - Raw pattern from the schema
+ * @param raw       - Raw pattern from the schema
+ * @param conceptId - Concept identifier (for error reporting)
  * @returns Compiled ConceptPattern
- * @throws Error if the detect regex is invalid
+ * @throws ToolError(T00-064) if the detect regex is invalid
  */
-function compilePattern(raw: RawSchemaPattern): ConceptPattern {
-  const regex = new RegExp(raw.detect!);
+function compilePattern(raw: RawSchemaPattern, conceptId: string): ConceptPattern {
+  let regex: RegExp;
+  try {
+    regex = new RegExp(raw.detect!);
+  } catch (e) {
+    throw new ToolError("CWS-T00-064", {
+      concept: conceptId,
+      pattern: raw.id,
+      error: e instanceof Error ? e.message : String(e),
+    });
+  }
   return {
     id: raw.id,
     syntax: raw.syntax ?? raw.emit ?? raw.id,
@@ -184,7 +195,7 @@ function compileDetector(schema: RawConceptSchema, language: string): ConceptDet
     // Skip patterns without detect field (emit-only for transpiler)
     if (!raw.detect) continue;
 
-    patterns.push(compilePattern(raw));
+    patterns.push(compilePattern(raw, schema.concept));
   }
 
   // Sort by priority ascending (1 = most specific, higher = more general)
@@ -202,6 +213,18 @@ function compileDetector(schema: RawConceptSchema, language: string): ConceptDet
 // ---------------------------------------------------------------------------
 
 const detectorCache = new Map<string, ConceptDetector[]>();
+
+/** Concept IDs that had no detect patterns (missing schema or emit-only). Keyed by language. */
+const detectorGaps = new Map<string, string[]>();
+
+/**
+ * Get concepts missing detect patterns for a language.
+ * Populated after loadConceptDetectors() runs.
+ * Returns empty array if not yet loaded or all concepts have patterns.
+ */
+export function getDetectorGaps(language: string): string[] {
+  return detectorGaps.get(language) ?? [];
+}
 
 /**
  * Load all concept detectors for a language from R5_patterns schemas.
@@ -226,6 +249,7 @@ export async function loadConceptDetectors(language: string): Promise<ConceptDet
 
   const pipeline = getDefaultPipeline();
   const detectors: ConceptDetector[] = [];
+  const gaps: string[] = [];
 
   for (const conceptId of CONCEPT_ORDER) {
     const entry = CONCEPT_REGISTRY[conceptId];
@@ -253,12 +277,25 @@ export async function loadConceptDetectors(language: string): Promise<ConceptDet
         ...detector,
         conceptId,
       });
-    } catch {
+
+      // T00-065: Schema loaded but has zero detect patterns (emit-only)
+      if (detector.patterns.length === 0) {
+        gaps.push(conceptId);
+      }
+    } catch (e) {
+      // T00-064 (invalid regex) should propagate — it's a schema author bug
+      if (e instanceof ToolError) throw e;
+
       // Schema not found or unreadable — graceful degradation.
-      // This is expected when a language hasn't added detect patterns yet
-      // (e.g., Go currently has emit-only patterns).
+      // This is expected when a language hasn't added detect patterns yet.
       detectors.push({ conceptId, language, patterns: [] });
+      gaps.push(conceptId);
     }
+  }
+
+  // Store diagnostics: T00-065 gaps and T00-063 summary
+  if (gaps.length > 0) {
+    detectorGaps.set(language, gaps);
   }
 
   detectorCache.set(language, detectors);
@@ -320,9 +357,10 @@ export async function detectCoverage(language: string): Promise<{
   };
 }
 
-/** Clear concept detector cache. */
+/** Clear concept detector cache and diagnostics. */
 export function clearConceptDetectorCache(): void {
   detectorCache.clear();
+  detectorGaps.clear();
 }
 registerCache("data/concept-detectors", clearConceptDetectorCache);
 

@@ -15,26 +15,39 @@
     "patterns": [
         {
             "id": "short_declaration",
+            "syntax": "{name} := {expr}",
+            "detect": "^\\s*(\\w+)\\s*:=\\s*(.+)",
             "emit": "{name} := {expr}",
-            "when": "inside function body, first assignment to this name",
-            "notes": "Short variable declaration — Go's most common form.",
+            "captures": { "name": 1, "expr": 2 },
+            "notes": "Short variable declaration — Go's most common form. Inside function body, first assignment.",
             "priority": 1
         },
         {
             "id": "typed_declaration",
+            "syntax": "var {name} {type} = {expr}",
+            "detect": "^\\s*var\\s+(\\w+)\\s+(\\S+)\\s*=\\s*(.+)",
             "emit": "var {name} {type} = {expr}",
-            "when": "explicit type needed, package-level, or reassignment with new type",
-            "notes": "Explicit type — used when type inference isn't sufficient.",
+            "captures": { "name": 1, "type": 2, "expr": 3 },
+            "notes": "Explicit type — used when type inference insufficient or at package level.",
             "priority": 2
         },
         {
             "id": "zero_value",
+            "syntax": "var {name} {type}",
+            "detect": "^\\s*var\\s+(\\w+)\\s+(\\S+)\\s*$",
             "emit": "var {name} {type}",
-            "when": "declaring without initialization (uses zero value)",
+            "captures": { "name": 1, "type": 2 },
             "notes": "Zero-value declaration — Go initializes to zero value of type.",
             "priority": 3
         }
     ],
+
+    "rust_to_go_mapping": {
+        "let name = expr;": "name := expr — immutable let → short declaration (Go all-mutable)",
+        "let mut name = expr;": "name := expr — mut let → short declaration (Go all-mutable)",
+        "let name: Type = expr;": "var name Type = expr — typed let → var declaration",
+        "let mut name: Type = expr;": "var name Type = expr — typed mut let → var declaration"
+    },
 
     "_X5_note": "Go variables — all mutable, no mut keyword. Short := is idiomatic inside functions."
 }

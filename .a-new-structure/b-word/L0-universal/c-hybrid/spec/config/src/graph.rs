@@ -1,13 +1,150 @@
+// #!omni code --rust -module->utility
 //! Dependency graph — DAG construction and cycle detection.
-
-//omni:code --rust -library
+//omni:code --rust -module->utility
 //omni:key B-L0-hybrid-config-graph
 //omni:version b-03.00
+
+// ============================================================================
+// METADATA BLOCK [METADATA]
+// ============================================================================
+//
+// Key:     B-L0-hybrid-config-graph
+// Purpose: Dependency graph — DAG construction and cycle detection.
+//
+
+// ──────────────────────────────────────────────────────────────────────────
+// Identity (I1-I4)
+// ──────────────────────────────────────────────────────────────────────────
+
+/// OmniCode identity for this module.
+pub static PRAGMA: &[(&str, &str)] = &[
+    // I1: Core
+    ("I1.key",       "B-L0-hybrid-config-graph"),
+    ("I1.format",    "rust"),
+    ("I1.from",      "[from]"),
+    ("I1.at",        "b-03.00"),
+    // I2: Family
+    ("I2.type",      "code"),
+    ("I2.structure", "4-block"),
+    ("I2.subtype",   "module"),
+    ("I2.purpose",   "utility"),
+    ("I2.role",      "[role]"),
+    // I3: Instance
+    ("I3.file",      "graph.rs"),
+    ("I3.title",     "Dependency graph"),
+    ("I3.component", "graph"),
+    ("I3.path",      ".a-new-structure/b-word/L0-universal/c-hybrid/spec/config/src/graph.rs"),
+    ("I3.provides",  "[provides]"),
+    ("I3.brief",     "Dependency graph — DAG construction and cycle detection."),
+    // I4: Architecture
+    ("I4.layer",     "[layer]"),
+    ("I4.position",  "[position]"),
+    ("I4.pattern",   "[pattern]"),
+];
+
+// ──────────────────────────────────────────────────────────────────────────
+// Context (C1-C7)
+// ──────────────────────────────────────────────────────────────────────────
+
+/// OmniCode context for this module.
+pub static METADATA: &[(&str, &str)] = &[
+    // C1: State
+    ("C1.version",           "b-03.00"),
+    ("C1.status",            "Active"),
+    ("C1.created",           "2026-02-24"),
+    ("C1.updated",           "2026-02-24"),
+    // C2: Attribution
+    ("C2.architect",         "Seanje Lenox-Wise"),
+    ("C2.implementation",    "Nova Dawn (CPI-SI)"),
+    ("C2.organization",      "CreativeWorkzStudio LLC"),
+    ("C2.copyright",         "CreativeWorkzStudio LLC"),
+    // C3: Grounding
+    ("C3.scripture",         "Genesis 1:1"),
+    ("C3.principle",         "[principle]"),
+    ("C3.anchor",            "Genesis 1:1"),
+    // C4: Dependencies
+    ("C4.requires.stdlib",   "none"),
+    ("C4.requires.external", "[requires_external]"),
+    ("C4.requires.internal", "[requires_internal]"),
+    ("C4.consumers",         "[consumers]"),
+    ("C4.integration",       "[integration]"),
+    ("C4.if_missing",        "[if_missing]"),
+    // C5: Intent
+    ("C5.purpose",           "Dependency graph — DAG construction and cycle detection."),
+    ("C5.philosophy",        "[philosophy]"),
+    // C6: Roadmap
+    ("C6.current",           "b-03.00 — Dependency graph — DAG construction and cycle detection."),
+    ("C6.planned",           "[planned]"),
+    ("C6.limitations",       "[limitations]"),
+    // C7: Classification
+    ("C7.tags",              "[tags]"),
+    ("C7.category",          "[category]"),
+    ("C7.domain",            "bereshit"),
+    ("C7.paradigm",          "CPI-SI"),
+];
+
+// ============================================================================
+// END METADATA [END]
+// ============================================================================
+
+// ============================================================================
+// SETUP BLOCK [SETUP]
+// ============================================================================
+//
+// SETUP makes things EXIST. BODY makes things HAPPEN.
+//
+// Section order (dependency chain — each layer uses only what's above):
+//
+//     [1] Imports           — What this file depends on
+//     [2] Modules           — Submodule declarations
+//     [3] Constants         — Compile-time fixed values
+//     [4] Statics           — Runtime-initialized fixed values
+//     [5] Type Aliases      — Shorthand for complex signatures
+//     [6] Error Types       — enum + Display + Error + From impls
+//     [7] Core Types        — struct/enum + derives + completing trait impls
+//     [8] Trait Defs        — Behavioral contracts (shape, not fulfillment)
+//     [9] Macros            — macro_rules! declarations
+//     [10] Feature Gates     — Conditional compilation (cfg)
+
+// ──────────────────────────────────────────────────────────────────────────
+// 1. Imports
+// ──────────────────────────────────────────────────────────────────────────
 
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::error::{ConfigError, DepKind};
 use crate::types::{DependencyNode, IndexManifest};
+
+// ──────────────────────────────────────────────────────────────────────────
+// Reserved Omission
+// ──────────────────────────────────────────────────────────────────────────
+// Available (not needed in this module):
+//   Modules, Statics, Type Aliases, Trait Defs, Macros, Feature Gates
+
+// ============================================================================
+// END SETUP [END]
+// ============================================================================
+
+// ============================================================================
+// BODY BLOCK [BODY]
+// ============================================================================
+//
+// BODY makes things HAPPEN. SETUP made things EXIST.
+//
+// Subsection order follows the type lifecycle — from identity through
+// // creation, operation, observation, to output.
+//
+//     [1] Identity Access   — OmniCode static accessor functions
+//     [2] Trait Implementations — Fulfilling contracts from SETUP
+//     [3] Constructors
+//     [4] Core Logic        — Primary operations, state transforms
+//     [5] Queries
+//     [6] Output
+//     [7] Free Functions    — Module-level public utilities
+
+// ──────────────────────────────────────────────────────────────────────────
+// 7. Free Functions
+// ──────────────────────────────────────────────────────────────────────────
 
 /// Build a dependency graph from the manifest.
 pub(crate) fn build_dependency_graph(manifest: &IndexManifest) -> BTreeMap<String, DependencyNode> {
@@ -93,6 +230,40 @@ fn has_cycle(
     false
 }
 
+// ──────────────────────────────────────────────────────────────────────────
+// Reserved Omission
+// ──────────────────────────────────────────────────────────────────────────
+// Available (not needed in this module):
+//   Identity Access, Trait Implementations, Constructors, Core Logic, Queries
+//
+// Reserved (structural — not used in library form):
+//   Helpers, Constructor Tests, Builder Tests, Transition Tests, Query Tests, Identity Tests, Error Tests, Edge Case Tests, Table Driven Tests, Integration Tests — Reserved in composition target.
+
+// ============================================================================
+// END BODY [END]
+// ============================================================================
+
+// ============================================================================
+// CLOSING BLOCK [CLOSING]
+// ============================================================================
+//
+// Closing ensures correctness, documents constraints, and anchors the file.
+//
+// Section order:
+//
+//     [Cv] Closing Validation (tests)
+//     [Ce] Closing Execution (entry point or absence)
+//     [Cc] Closing Cleanup (resource teardown)
+//     [X1] Modification Policy
+//     [X2] Extension Points
+//     [X3] Troubleshooting
+//     [X4] Reference
+//     [X5] Closing Note
+
+// ──────────────────────────────────────────────────────────────────────────
+// Cv — Closing Validation
+// ──────────────────────────────────────────────────────────────────────────
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -167,3 +338,44 @@ depends_on = ["sys/a.toml"]
         );
     }
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// Ce — Closing Execution
+// ──────────────────────────────────────────────────────────────────────────
+
+// No entry point — this is a module.
+
+// ──────────────────────────────────────────────────────────────────────────
+// X1: Modification Policy
+// ──────────────────────────────────────────────────────────────────────────
+// policy: Modification guidelines
+// scripture: "Proverbs 22:28 (WEB) — Don't move the ancient boundary stone."
+// never: Break 4-block structure, Remove block boundaries, Remove identity statics
+// careful: Function signatures (breaks callers), Error types (breaks match arms)
+// safe: Function bodies, New functions, Comments, Tests
+
+// ──────────────────────────────────────────────────────────────────────────
+// X4: Reference
+// ──────────────────────────────────────────────────────────────────────────
+// related_files: [Cargo.toml]
+// validate: cargo test
+
+// ──────────────────────────────────────────────────────────────────────────
+// X5: Closing Note
+// ──────────────────────────────────────────────────────────────────────────
+// note: "graph.rs — structural scaffold generated by cws-struct transform."
+// scripture: "Psalm 139:7-8 — Whither shall I go from thy spirit?"
+// anchor: "TODO: Module purpose statement."
+
+// ──────────────────────────────────────────────────────────────────────────
+// Reserved Omission
+// ──────────────────────────────────────────────────────────────────────────
+// Available (not needed in this module):
+//   Cc, X2, X3
+//
+// Reserved (structural — not used in library form):
+//   Test Coverage Summary, X6 — Reserved in composition target.
+
+// ============================================================================
+// END CLOSING [END]
+// ============================================================================

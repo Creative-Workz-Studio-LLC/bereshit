@@ -182,6 +182,53 @@ export interface LintResult {
   container?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Parsed Anatomy — what the handler actually sees in the file
+// ---------------------------------------------------------------------------
+//
+// The handler parses directives, identity fields, block boundaries, sections.
+// This data already exists during lint — ParsedAnatomy surfaces it to output
+// so verbose mode can show the file's true content, not just pass/fail.
+//
+// Same hierarchy everywhere: schema → test → linter → output.
+// Block → container → content. The system knows itself.
+
+/** A block's physical location in the file. */
+export interface AnatomyBlock {
+  /** Block name: "METADATA", "SETUP", "BODY", "CLOSING". */
+  name: string;
+  /** Start line (1-indexed). */
+  startLine: number;
+  /** End line (1-indexed, inclusive). */
+  endLine: number;
+  /** Line count. */
+  lines: number;
+}
+
+/** A section detected within a block. */
+export interface AnatomySection {
+  /** Section name (e.g., "Imports", "Free Functions", "Cv"). */
+  name: string;
+  /** Parent block. */
+  block: string;
+  /** Start line (1-indexed). */
+  line: number;
+}
+
+/** Parsed file anatomy — what the handler sees before judging. */
+export interface ParsedAnatomy {
+  /** Directive key-value pairs from pragma/omni parsing. */
+  directives: Record<string, string>;
+  /** Block positions — physical boundaries. */
+  blocks: AnatomyBlock[];
+  /** Identity fields grouped by source (PRAGMA, METADATA, etc.). */
+  identity: Record<string, Array<{ key: string; value: string }>>;
+  /** Detected sections within each block. */
+  sections: Record<string, AnatomySection[]>;
+  /** Content summary per block (e.g., imports, functions, types found). */
+  content?: Record<string, string[]>;
+}
+
 /** Aggregated results for one file. */
 export interface LintSummary {
   file: string;
@@ -193,6 +240,8 @@ export interface LintSummary {
   health?: HealthScore;
   /** The //omni: pragma directive from line 1 (e.g. "//omni:code --go -library"). */
   pragma?: string;
+  /** Parsed file anatomy — the handler's full view of file structure and content. */
+  anatomy?: ParsedAnatomy;
 }
 
 // ---------------------------------------------------------------------------
@@ -285,6 +334,8 @@ export interface InspectResult {
   directives: Record<string, string>;
   /** OmniCode pragma line (if present). */
   pragma?: string;
+  /** Identity fields grouped by source (e.g., "PRAGMA", "METADATA"). */
+  identity?: Record<string, Array<{ key: string; value: string }>>;
 }
 
 /** Every format registers a handler that satisfies this interface. */
@@ -373,6 +424,8 @@ export interface CliOptions {
   inspect: boolean;
   /** Why mode: trace each result to its data layer source. */
   why: boolean;
+  /** Deep mode (-vv/--deep): show per-action checks within each container. */
+  deep: boolean;
   /** Diff-aware: only lint files changed since last commit (or --since ref). */
   changed: boolean;
   /** Git ref for diff-aware linting: `git diff --name-only <since>`. */
@@ -381,6 +434,8 @@ export interface CliOptions {
   staged: boolean;
   /** Quick-fix suggestion count. undefined = off, 0 = default (5), N = show N. */
   suggest?: number;
+  /** Help topic: lint, transform, create, transpile, query, options, layers, testing, witness, examples. */
+  helpTopic?: string;
 }
 
 // ============================================================================

@@ -15,45 +15,57 @@
     "patterns": [
         {
             "id": "switch_value",
+            "syntax": "switch {scrutinee} {\n{cases}\n}",
+            "detect": "^\\s*switch\\s+(.+)\\s*\\{",
             "emit": "switch {scrutinee} {\n{cases}\n}",
-            "when": "matching against a value — Rust match on value",
-            "notes": "Go switch: no fallthrough by default (opposite of C).",
+            "captures": { "scrutinee": 1 },
+            "notes": "Value switch — no fallthrough by default (opposite of C).",
             "priority": 1
         },
         {
             "id": "switch_type",
+            "syntax": "switch {scrutinee}.(type) {\n{cases}\n}",
+            "detect": "^\\s*switch\\s+(.+)\\.\\(type\\)\\s*\\{",
             "emit": "switch {scrutinee}.(type) {\n{cases}\n}",
-            "when": "matching against type — Rust match on enum variant",
-            "notes": "Type switch for interface type assertion.",
+            "captures": { "scrutinee": 1 },
+            "notes": "Type switch — interface type assertion. Maps to Rust match on enum variant.",
             "priority": 2
         },
         {
             "id": "case_with_guard",
+            "syntax": "case {pattern}:\n\tif {guard} {\n\t\t{body}\n\t}",
+            "detect": "^\\s*case\\s+(.+):",
             "emit": "case {pattern}:\n\tif {guard} {\n\t\t{body}\n\t}",
-            "when": "Rust arm with guard → Go case + inner if",
-            "notes": "Go has no case guards — use nested if inside case body.",
+            "captures": { "pattern": 1 },
+            "notes": "Go has no case guards — Rust arm guards become nested if inside case body.",
             "priority": 3
         },
         {
             "id": "case_simple",
+            "syntax": "case {pattern}:\n\t{body}",
+            "detect": "^\\s*case\\s+(.+):",
             "emit": "case {pattern}:\n\t{body}",
-            "when": "simple case without guard",
+            "captures": { "pattern": 1 },
+            "notes": "Simple case without guard.",
             "priority": 4
         },
         {
             "id": "case_default",
+            "syntax": "default:\n\t{body}",
+            "detect": "^\\s*default:",
             "emit": "default:\n\t{body}",
-            "when": "wildcard/default case — Rust _ => ...",
+            "captures": {},
+            "notes": "Default case — maps to Rust wildcard _ => arm.",
             "priority": 5
         }
     ],
 
-    "rust_match_translation": {
-        "Ok(val) if guard =>": "Guard becomes nested if inside case. val bound via type assertion or error check.",
-        "Ok(_) =>": "Catch-all success case — 'default:' or explicit nil error check.",
-        "Err(e) if e.kind() == X =>": "Error kind check becomes 'if errors.Is(err, os.ErrExist)' or similar.",
-        "Err(e) =>": "Catch-all error — 'default:' in error-handling switch.",
-        "match on Result": "Go has no Result type — translate to if err != nil pattern or switch on error."
+    "rust_to_go_mapping": {
+        "match scrutinee {": "switch scrutinee { — match → switch",
+        "pattern => body": "case pattern: body — arm → case",
+        "_ => body": "default: body — wildcard → default",
+        "Ok(val) if guard =>": "case with nested if — Go has no case guards",
+        "match on Result": "if err != nil pattern or switch on error — Go has no Result type"
     },
 
     "_X5_note": "Go switch: no fallthrough by default, no parens needed, no break needed."

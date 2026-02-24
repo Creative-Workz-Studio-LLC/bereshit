@@ -55,7 +55,7 @@ export {
 // ---------------------------------------------------------------------------
 
 // Phase 0.2: Section + form registries
-export { SECTION_REGISTRY, SECTION_ORDER } from "./sections.ts";
+export { SECTION_REGISTRY, SECTION_ORDER, computeDetectionWeight } from "./sections.ts";
 export { FORM_REGISTRY } from "./forms.ts";
 
 // Phase 0.3: Concept + placement registries
@@ -83,6 +83,13 @@ export {
   DOMAIN_CODES,
   CATALOG_SIZE,
   LAYER_COUNTS,
+  // QoL: self-documenting catalog access
+  codeSummary,
+  explain,
+  search,
+  related,
+  catalogReport,
+  LAYER_DESCRIPTIONS,
 } from "./errors.ts";
 
 // Phase 2: SQLite persistence
@@ -168,6 +175,7 @@ export {
   matchConceptPattern,
   loadConceptDetectors,
   getConceptDetector,
+  getDetectorGaps,
   detectCoverage,
   clearConceptDetectorCache,
 } from "./concept-detectors.ts";

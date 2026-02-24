@@ -17,6 +17,7 @@
             "id": "format_macro",
             "syntax": "format!(\"{template}\", {args})",
             "detect": "format!\\(\"([^\"]+)\"(?:,\\s*(.+))?\\)",
+            "emit": "format!(\"{template}\", {args})",
             "captures": { "template": 1, "args": 2 },
             "placeholder_syntax": "{}",
             "notes": "format! macro — {} placeholders use Display trait.",
@@ -26,6 +27,7 @@
             "id": "println_macro",
             "syntax": "println!(\"{template}\", {args})",
             "detect": "println!\\(\"([^\"]+)\"(?:,\\s*(.+))?\\)",
+            "emit": "println!(\"{template}\", {args})",
             "captures": { "template": 1, "args": 2 },
             "placeholder_syntax": "{}",
             "notes": "println! macro — format + newline to stdout.",
@@ -35,6 +37,7 @@
             "id": "eprintln_macro",
             "syntax": "eprintln!(\"{template}\", {args})",
             "detect": "eprintln!\\(\"([^\"]+)\"(?:,\\s*(.+))?\\)",
+            "emit": "eprintln!(\"{template}\", {args})",
             "captures": { "template": 1, "args": 2 },
             "placeholder_syntax": "{}",
             "notes": "eprintln! macro — format + newline to stderr.",
@@ -47,6 +50,15 @@
         "{:?}": "Debug trait — maps to Go %+v",
         "{:#?}": "Pretty Debug — maps to Go %#v",
         "{:.2}": "Precision float — maps to Go %.2f"
+    },
+
+    "go_to_rust_mapping": {
+        "fmt.Sprintf(tmpl, args)": "format!(tmpl, args) — Sprintf → format!",
+        "fmt.Printf(tmpl, args)": "print!(tmpl, args) or println! — Printf → print!/println!",
+        "fmt.Fprintf(os.Stderr, tmpl, args)": "eprint!(tmpl, args) or eprintln! — Fprintf stderr → eprint!",
+        "%v": "{} — default verb → Display trait",
+        "%+v": "{:?} — detailed → Debug trait",
+        "%#v": "{:#?} — Go-syntax repr → pretty Debug"
     },
 
     "_X5_note": "Rust format macros — {} placeholder with Display/Debug traits."

@@ -1,0 +1,52 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-field-access",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — Field Access",
+
+    "concept": "field_access",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "direct_field",
+            "syntax": "{instance}.{Field}",
+            "detect": "([a-zA-Z_]\\w*)\\.(\\w+)(?!\\s*\\()",
+            "emit": "{instance}.{Field}",
+            "captures": { "instance": 1, "field": 2 },
+            "notes": "Direct field access — PascalCase = exported, lowercase = unexported. Requires alpha start to exclude decimals.",
+            "priority": 1
+        },
+        {
+            "id": "chained_field",
+            "syntax": "{instance}.{Field1}.{Field2}",
+            "detect": "([a-zA-Z_]\\w*)\\.(\\w+)\\.(\\w+)(?!\\s*\\()",
+            "emit": "{instance}.{Field1}.{Field2}",
+            "captures": { "instance": 1, "field1": 2, "field2": 3 },
+            "notes": "Chained field access — Go auto-derefs pointers in field chains. Requires alpha start.",
+            "priority": 2
+        },
+        {
+            "id": "embedded_field",
+            "syntax": "{instance}.{EmbeddedType}.{Field}",
+            "detect": "(\\w+)\\.([A-Z]\\w+)\\.([A-Z]\\w+)(?!\\s*\\()",
+            "emit": "{instance}.{EmbeddedType}.{Field}",
+            "captures": { "instance": 1, "embedded": 2, "field": 3 },
+            "notes": "Embedded struct field access — disambiguating promoted fields.",
+            "priority": 3
+        }
+    ],
+
+    "rust_to_go_mapping": {
+        "instance.field": "instance.Field (PascalCase if exported)",
+        "instance.nested.field": "instance.Nested.Field",
+        "&instance.field": "instance.Field (Go auto-derefs)"
+    },
+
+    "_X5_note": "Go field access — dot notation, auto-deref for pointers, PascalCase for exported."
+}

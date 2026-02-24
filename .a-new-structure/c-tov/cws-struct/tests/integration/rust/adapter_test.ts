@@ -16,7 +16,7 @@
 // ============================================================================
 
 import { assertEquals, assert } from "jsr:@std/assert";
-import { rustAdapter } from "../../../lib/handlers/rust.ts";
+import { rustAdapter } from "@lib/handlers/rust.ts";
 
 // ============================================================================
 // BODY
@@ -26,7 +26,7 @@ import { rustAdapter } from "../../../lib/handlers/rust.ts";
 // adapter/ — RustAdapter implements LanguageAdapter
 // ---------------------------------------------------------------------------
 
-Deno.test("adapter/rust: format is 'rust'", () => {
+Deno.test("[CWS-T00-110] adapter/rust: format is 'rust'", () => {
   assertEquals(rustAdapter.format, "rust");
 });
 

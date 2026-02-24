@@ -17,6 +17,7 @@
             "id": "qualified_call",
             "syntax": "{module}::{function}({args})",
             "detect": "([\\w:]+)::(\\w+)\\(([^)]*)\\)",
+            "emit": "{module}::{function}({args})",
             "captures": { "module": 1, "function": 2, "args": 3 },
             "notes": "Module-qualified call: fs::metadata(path), io::Error::new(kind, msg).",
             "priority": 1
@@ -25,11 +26,18 @@
             "id": "unqualified_call",
             "syntax": "{function}({args})",
             "detect": "(?<!\\.)(?<!::)(\\w+)\\(([^)]*)\\)",
+            "emit": "{function}({args})",
             "captures": { "function": 1, "args": 2 },
             "notes": "Unqualified call — function imported into scope.",
             "priority": 2
         }
     ],
+
+    "go_to_rust_mapping": {
+        "pkg.Function(args)": "pkg::function(args) — dot to ::, snake_case function name",
+        "function(args)": "function(args) — same for unqualified, snake_case in Rust",
+        "fmt.Sprintf(tmpl, args)": "format!(tmpl, args) — Go fmt → Rust format! macro"
+    },
 
     "_X5_note": "Rust function calls use :: for module qualification, not dots."
 }

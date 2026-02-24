@@ -1,0 +1,42 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-recursion",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Recursion",
+
+    "concept": "recursion",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "direct_recursion",
+            "syntax": "fn {name}(...) { ... {name}(...) ... }",
+            "detect": "fn\\s+(\\w+)\\s*\\([^)]*\\)[^{]*\\{[\\s\\S]*?\\1\\s*\\(",
+            "emit": "fn {name}({params}) -> {return_type} {{ ... {name}({args}) ... }}",
+            "captures": { "function": 1 },
+            "notes": "Direct recursion — function calls itself by name. Regex is approximate; semantic analysis is more reliable.",
+            "priority": 1
+        },
+        {
+            "id": "recursive_call_site",
+            "syntax": "{name}({args})",
+            "detect": "(?<=\\n\\s*)(?:if|return)?\\s*(\\w+)\\s*\\(([^)]+)\\)\\s*(?:;|\\{|$)",
+            "emit": "{name}({modified_args})",
+            "captures": { "function": 1, "args": 2 },
+            "notes": "Recursive call site — the specific invocation point. Usually guarded by a conditional.",
+            "priority": 2
+        }
+    ],
+
+    "go_to_rust_mapping": {
+        "func name(params) { name(args) }": "fn name(params) { name(args) }",
+        "return name(args)": "name(args) (implicit return if last expression)"
+    },
+
+    "_X5_note": "Rust recursion — no tail call optimization guaranteed. Stack depth is the practical limit."
+}

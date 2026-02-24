@@ -168,7 +168,7 @@ const R50: [string, ErrorCodeEntry][] = [
     "checkDirectives"),
 
   E("CWS-R50-011", 0, "directive", "error",
-    "directive/{{directive}}",
+    "directive/{{directive}}/required",
     "Missing {{directive}} — REQUIRED",
     "Add the required OmniCode directive",
     "checkDirectives"),
@@ -489,7 +489,7 @@ const R25: [string, ErrorCodeEntry][] = [
     "Add cargo section to validation schema",
     "checkCargoLayout"),
 
-  E("CWS-R25-004", 1, "language", "error",
+  E("CWS-R25-004", 1, "language", "warn",
     "cargo/{{section}}",
     "Cargo section {{section}}: {{message}}",
     "Fix cargo section layout per schema",
@@ -539,13 +539,13 @@ const R25: [string, ErrorCodeEntry][] = [
     "Ensure METADATA entries follow key-value format",
     "checkPragmaMetadata"),
 
-  E("CWS-R25-017", 1, "identity", "warn",
+  E("CWS-R25-017", 1, "identity", "info",
     "comment-meta/key",
     "Missing Key: in METADATA comment block",
     "Add Key: field to METADATA comment block",
     "checkCommentMetadata"),
 
-  E("CWS-R25-018", 1, "identity", "warn",
+  E("CWS-R25-018", 1, "identity", "info",
     "comment-meta/purpose",
     "Missing Purpose: in METADATA comment block",
     "Add Purpose: field to METADATA comment block",
@@ -665,7 +665,7 @@ const R25: [string, ErrorCodeEntry][] = [
     "Add the required pragma field",
     "checkPragmaFields"),
 
-  E("CWS-R25-045", 1, "metadata", "info",
+  E("CWS-R25-045", 1, "metadata", "warn",
     "pragma/{{field}}/recommended",
     "Missing recommended pragma field: {{field}}",
     "Add the recommended pragma field",
@@ -704,7 +704,7 @@ const R25: [string, ErrorCodeEntry][] = [
     "checkClosingFields"),
 
   E("CWS-R25-052", 1, "closing", "error",
-    "closing/{{tag}}/required",
+    "closing/section/{{tag}}/required",
     "Missing required closing section: {{tag}}",
     "Add the required closing section",
     "checkClosingSections"),
@@ -779,23 +779,19 @@ const R25: [string, ErrorCodeEntry][] = [
     "Review C7 classification tags",
     "checkMetadataFields"),
 
-  E("CWS-R25-071", 1, "format", "error",
+  E("CWS-R25-071", 1, "format", "info",
     "pragma/{{key}}",
     "Missing pragma key: {{key}}",
     "Add the required pragma field",
     "checkPragma"),
 
-  E("CWS-R25-072", 1, "format", "error",
-    "metadata/{{key}}",
-    "Missing metadata section: {{key}}",
-    "Add the required metadata section",
-    "checkMetadata"),
+  // R25-072 REMOVED: "metadata/{{key}}" was an old 2-segment pattern.
+  // Handlers now emit 3-segment rules (metadata/M1/required, etc.)
+  // which match specific codes R25-040, R25-046, R25-047.
 
-  E("CWS-R25-073", 1, "format", "error",
-    "closing/{{key}}",
-    "Missing closing section: {{key}}",
-    "Add the required closing section",
-    "checkClosing"),
+  // R25-073 REMOVED: "closing/{{key}}" was an old 2-segment pattern.
+  // Handlers now emit 3-segment rules (closing/section/POLICY/required, etc.)
+  // which match specific code R25-052.
 
   E("CWS-R25-074", 1, "format", "warn",
     "metadata/M1/{{field}}",
@@ -1046,11 +1042,9 @@ const R10: [string, ErrorCodeEntry][] = [
     "Informational — extension fields are allowed",
     "checkClosingKeys"),
 
-  E("CWS-R10-026", 2, "validation", "error",
-    "{{path}}/{{field}}",
-    "Missing {{path}}.{{field}}",
-    "Add the required field",
-    "checkSchemaFields"),
+  // R10-026 REMOVED: "{{path}}/{{field}}" was a placeholder catch-all.
+  // No handler ever called checkSchemaFields. Specific codes exist for each
+  // format's field validation (R25-040, R25-044, R25-090, etc.).
 
   // --- 030-039: Value checks ---
 
@@ -1165,19 +1159,19 @@ const R05: [string, ErrorCodeEntry][] = [
 
   // --- 001-009: Documentation ---
 
-  E("CWS-R05-001", 3, "doc", "info",
+  E("CWS-R05-001", 3, "doc", "warn",
     "doc/package",
     "Package doc comment: {{details}}",
     "Add or improve package documentation comment",
     "checkDocComments"),
 
-  E("CWS-R05-002", 3, "doc", "info",
+  E("CWS-R05-002", 3, "doc", "warn",
     "doc/pragma-var",
     "Pragma variable doc comment: {{details}}",
     "Add documentation comment before Pragma variable",
     "checkDocComments"),
 
-  E("CWS-R05-003", 3, "doc", "info",
+  E("CWS-R05-003", 3, "doc", "warn",
     "doc/metadata-var",
     "Metadata variable doc comment: {{details}}",
     "Add documentation comment before Metadata variable",
@@ -1385,23 +1379,21 @@ const R05: [string, ErrorCodeEntry][] = [
     "Fix the field value to match expected format/enum",
     "validateICFieldContent"),
 
-  E("CWS-R05-081", 3, "value", "warn",
+  E("CWS-R05-081", 3, "value", "info",
     "values/{{group}}/{{field}}",
     "Invalid value for {{group}}/{{field}}",
     "Fix the field value to match expected format/enum",
     "validateTomlFieldValues"),
 
-  E("CWS-R05-082", 3, "value", "info",
+  E("CWS-R05-082", 3, "value", "warn",
     "values/consistency/{{field}}",
     "Cross-field consistency check: {{field}}",
     "Review field value for consistency with related fields",
     "validateTomlFieldValues"),
 
-  E("CWS-R05-083", 3, "scaling", "info",
-    "structure/scaling",
-    "Structure scaling signal: {{details}}",
-    "Review file size relative to expected — consider splitting",
-    "checkScalingSignals"),
+  // R05-083 REMOVED: "structure/scaling" was orphaned — handler emits
+  // scaling/setup-size (R10-041) and scaling/body-size (R10-042) instead.
+  // No handler ever emitted the "structure/scaling" rule string.
 ];
 
 // ---------------------------------------------------------------------------
@@ -1515,17 +1507,13 @@ const T00: [string, ErrorCodeEntry][] = [
 
   // --- 060-069: Data validation ---
 
-  E("CWS-T00-060", 4, "data", "error",
-    "tool/data/missing-concept",
-    "Section '{{section}}' missing concept '{{concept}}' in conceptMap",
-    "All sections must have all 11 concept values — add the missing concept",
-    "buildConceptRegistry"),
+  // T00-060 REMOVED: "tool/data/missing-concept" was dead code.
+  // No buildConceptRegistry() function exists. Re-add when concept registry
+  // validation is implemented.
 
-  E("CWS-T00-061", 4, "data", "error",
-    "tool/data/concept-count",
-    "Concept '{{concept}}' has {{actual}} container entries but expected {{expected}}",
-    "Verify all sections are present in the concept's containerMap",
-    "buildConceptRegistry"),
+  // T00-061 REMOVED: "tool/data/concept-count" was dead code.
+  // No buildConceptRegistry() function exists. Re-add when concept registry
+  // validation is implemented.
 
   E("CWS-T00-062", 4, "data", "error",
     "tool/data/duplicate-section",
@@ -1551,13 +1539,283 @@ const T00: [string, ErrorCodeEntry][] = [
     "Add detect patterns to the R5_patterns schema for bidirectional support",
     "loadConceptDetectors"),
 
-  // --- 070-079: Database ---
+  // --- 070-079: Data layer integrity (machinery soundness) ---
 
-  E("CWS-T00-070", 4, "database", "error",
-    "tool/database/migration-failed",
-    "Migration v{{version}} failed: {{error}}",
-    "Check migration SQL syntax and database permissions",
-    "runMigrations"),
+  E("CWS-T00-070", 4, "integrity", "error",
+    "tool/integrity/catalog",
+    "Error catalog integrity failure: {{details}}",
+    "Run deno task test --filter='T00-070' to diagnose",
+    "errors_test.ts"),
+
+  E("CWS-T00-071", 4, "integrity", "error",
+    "tool/integrity/format-rules",
+    "Format rules loading failure: {{details}}",
+    "Check _format.jsonc schema files in schemas/",
+    "format_rules_test.ts"),
+
+  E("CWS-T00-072", 4, "integrity", "error",
+    "tool/integrity/non-code-loader",
+    "Non-code category loading failure: {{details}}",
+    "Check _non-code.jsonc schema files in schemas/",
+    "non_code_test.ts"),
+
+  E("CWS-T00-073", 4, "integrity", "error",
+    "tool/integrity/type-guards",
+    "Data type guard failure: {{details}}",
+    "Check type guard functions in lib/data/types.ts",
+    "types_test.ts"),
+
+  E("CWS-T00-074", 4, "integrity", "error",
+    "tool/integrity/registries",
+    "Registry integrity failure: {{details}}",
+    "Check section/form/placement/concept registries in lib/data/",
+    "registries_test.ts"),
+
+  E("CWS-T00-075", 4, "integrity", "error",
+    "tool/integrity/concept-detectors",
+    "Concept detector integrity failure: {{details}}",
+    "Check concept detector schemas in schemas/R5_patterns/",
+    "concept_detectors_test.ts"),
+
+  E("CWS-T00-076", 4, "integrity", "error",
+    "tool/integrity/format-integration",
+    "Format integration failure: {{details}}",
+    "Check format data pipeline — schema load + compose + validate",
+    "format_integration_test.ts"),
+
+  E("CWS-T00-077", 4, "integrity", "error",
+    "tool/integrity/non-code-integration",
+    "Non-code integration failure: {{details}}",
+    "Check non-code pipeline — load + compose + pattern match",
+    "non_code_integration_test.ts"),
+
+  // --- 080-089: Engine integrity ---
+
+  E("CWS-T00-080", 4, "integrity", "error",
+    "tool/integrity/format-registry",
+    "Format handler registry failure: {{details}}",
+    "Check registerFormat/getFormat/detectFormat in lib/engine/registry.ts",
+    "registry_test.ts"),
+
+  E("CWS-T00-081", 4, "integrity", "error",
+    "tool/integrity/pipeline-contract",
+    "Pipeline layer contract failure: {{details}}",
+    "Check PIPELINE_LAYERS and layer checks in lib/data/pipeline.ts",
+    "pipeline_test.ts"),
+
+  E("CWS-T00-082", 4, "integrity", "error",
+    "tool/integrity/cascade",
+    "Cascade chain mechanics failure: {{details}}",
+    "Check cascade functions in lib/engine/cascade.ts",
+    "cascade_test.ts"),
+
+  E("CWS-T00-083", 4, "integrity", "error",
+    "tool/integrity/discovery",
+    "File discovery failure: {{details}}",
+    "Check discovery logic in lib/engine/",
+    "discovery_test.ts"),
+
+  E("CWS-T00-084", 4, "integrity", "error",
+    "tool/integrity/transform",
+    "Transform pipeline failure: {{details}}",
+    "Check transform functions in lib/engine/transform.ts",
+    "transform_test.ts"),
+
+  E("CWS-T00-085", 4, "integrity", "error",
+    "tool/integrity/output",
+    "Output formatting failure: {{details}}",
+    "Check output functions in lib/engine/output.ts",
+    "output_test.ts"),
+
+  E("CWS-T00-086", 4, "integrity", "error",
+    "tool/integrity/logging",
+    "Logging system failure: {{details}}",
+    "Check logging functions in lib/engine/logging.ts",
+    "logging_test.ts"),
+
+  E("CWS-T00-087", 4, "integrity", "error",
+    "tool/integrity/transpiler-mappings",
+    "Transpiler mapping integrity failure: {{details}}",
+    "Check transpiler mapping loader in lib/engine/transpiler-mappings.ts",
+    "transpiler_test.ts"),
+
+  E("CWS-T00-088", 4, "integrity", "error",
+    "tool/integrity/fill-engine",
+    "Fill engine integrity failure: {{details}}",
+    "Check fill/generation functions in lib/engine/fill.ts",
+    "fill_test.ts"),
+
+  E("CWS-T00-089", 4, "integrity", "error",
+    "tool/integrity/debug-tools",
+    "Debug/inspect/suggest tool failure: {{details}}",
+    "Check debug tools in lib/engine/debug.ts, inspect.ts, suggest.ts",
+    "debug_test.ts"),
+
+  // --- 090-099: Foundation integrity ---
+
+  E("CWS-T00-090", 4, "integrity", "error",
+    "tool/integrity/result-builders",
+    "Result constructor contract failure: {{details}}",
+    "Check error/warn/info/summarize in lib/foundation/types.ts",
+    "types_test.ts"),
+
+  E("CWS-T00-091", 4, "integrity", "error",
+    "tool/integrity/health-scoring",
+    "Health scoring algorithm failure: {{details}}",
+    "Check computeContainerScore/computeBlockScore/computeHealthScore",
+    "health_test.ts"),
+
+  E("CWS-T00-092", 4, "integrity", "error",
+    "tool/integrity/config",
+    "Configuration loading failure: {{details}}",
+    "Check config loading in lib/foundation/config.ts",
+    "config_test.ts"),
+
+  E("CWS-T00-093", 4, "integrity", "error",
+    "tool/integrity/code-schema",
+    "Code schema contract failure: {{details}}",
+    "Check code schema loader in lib/foundation/code-schema.ts",
+    "code_schema_test.ts"),
+
+  E("CWS-T00-094", 4, "integrity", "error",
+    "tool/integrity/composition-loader",
+    "Composition loader failure: {{details}}",
+    "Check composition-loader.ts contracts",
+    "composition_test.ts"),
+
+  E("CWS-T00-095", 4, "integrity", "error",
+    "tool/integrity/api-surface",
+    "API surface contract failure: {{details}}",
+    "Check public API exports in lib/api/",
+    "api_test.ts"),
+
+  E("CWS-T00-096", 4, "integrity", "error",
+    "tool/integrity/schema-contract",
+    "Schema contract failure: {{details}}",
+    "Check schema loading in lib/foundation/schema.ts",
+    "schema_test.ts"),
+
+  // --- 100-109: Shared utilities ---
+
+  E("CWS-T00-100", 4, "integrity", "error",
+    "tool/integrity/chunker",
+    "Line chunker failure: {{details}}",
+    "Check chunkLines/classifyChunks in shared/",
+    "chunker_test.ts"),
+
+  E("CWS-T00-101", 4, "integrity", "error",
+    "tool/integrity/go-chunker",
+    "Go-specific chunker failure: {{details}}",
+    "Check Go-specific chunk classification",
+    "go_chunker_test.ts"),
+
+  E("CWS-T00-102", 4, "integrity", "error",
+    "tool/integrity/non-code-patterns",
+    "Non-code pattern matching failure: {{details}}",
+    "Check non-code pattern recognition in shared/",
+    "non_code_patterns_test.ts"),
+
+  E("CWS-T00-103", 4, "integrity", "error",
+    "tool/integrity/format-config",
+    "Format configuration failure: {{details}}",
+    "Check format config composition in shared/",
+    "format_config_test.ts"),
+
+  E("CWS-T00-104", 4, "integrity", "error",
+    "tool/integrity/lint-grid",
+    "Lint grid failure: {{details}}",
+    "Check lint grid operations in shared/",
+    "lint_grid_test.ts"),
+
+  E("CWS-T00-105", 4, "integrity", "error",
+    "tool/integrity/concept-check",
+    "Concept detection failure: {{details}}",
+    "Check concept detection in shared/concept-check",
+    "concept_check_test.ts"),
+
+  E("CWS-T00-106", 4, "integrity", "error",
+    "tool/integrity/scope-analysis",
+    "Scope analysis failure: {{details}}",
+    "Check scope analysis in shared/scope-analysis",
+    "scope_analysis_test.ts"),
+
+  E("CWS-T00-107", 4, "integrity", "error",
+    "tool/integrity/go-handler-functions",
+    "Go handler function failure: {{details}}",
+    "Check classifyGoLine, getTopLevelDeclarations, etc. in go.ts",
+    "functions_test.ts"),
+
+  E("CWS-T00-108", 4, "integrity", "error",
+    "tool/integrity/rust-handler-functions",
+    "Rust handler function failure: {{details}}",
+    "Check classifyRustLine, detectRustBlocks, etc. in rust.ts",
+    "functions_test.ts"),
+
+  E("CWS-T00-109", 4, "integrity", "error",
+    "tool/integrity/toml-handler-functions",
+    "TOML handler function failure: {{details}}",
+    "Check TOML parsing/validation functions in toml.ts",
+    "functions_test.ts"),
+
+  // --- 110-119: Integration ---
+
+  E("CWS-T00-110", 4, "integrity", "error",
+    "tool/integrity/adapter",
+    "Handler adapter contract failure: {{details}}",
+    "Check adapter integration in integration/",
+    "adapter_test.ts"),
+
+  E("CWS-T00-111", 4, "integrity", "error",
+    "tool/integrity/regression",
+    "Regression test failure: {{details}}",
+    "Check regression fixtures in integration/",
+    "regression_test.ts"),
+
+  E("CWS-T00-112", 4, "integrity", "error",
+    "tool/integrity/transform-integration",
+    "Transform integration failure: {{details}}",
+    "Check transform integration in integration/",
+    "transform_test.ts"),
+
+  E("CWS-T00-113", 4, "integrity", "error",
+    "tool/integrity/pipeline-integration",
+    "Pipeline integration failure: {{details}}",
+    "Check pipeline integration in integration/pipeline/",
+    "pipeline_integration_test.ts"),
+
+  E("CWS-T00-114", 4, "integrity", "error",
+    "tool/integrity/root-integration",
+    "Root integration test failure: {{details}}",
+    "Check end-to-end integration in integration/root/",
+    "integration_test.ts"),
+
+  // --- 120-129: CLI ---
+
+  E("CWS-T00-120", 4, "integrity", "error",
+    "tool/integrity/cli-entry",
+    "CLI entry point failure: {{details}}",
+    "Check CLI parsing and dispatch in mod.ts",
+    "mod_test.ts"),
+
+  E("CWS-T00-121", 4, "integrity", "error",
+    "tool/integrity/diff-aware",
+    "Diff-aware filtering failure: {{details}}",
+    "Check diff-aware logic in cli/diff-aware",
+    "diff_aware_test.ts"),
+
+  // --- 130-139: Environment & Structure ---
+
+  E("CWS-T00-130", 4, "integrity", "error",
+    "tool/integrity/environment",
+    "Environment verification failure: {{details}}",
+    "Check verifyEnvironment in lib/verify/env.ts",
+    "env_test.ts"),
+
+  E("CWS-T00-131", 4, "integrity", "error",
+    "tool/integrity/test-structure",
+    "Test directory structure failure: {{details}}",
+    "Check test directory mirrors detection hierarchy",
+    "mod_test.ts"),
 ];
 
 // ---------------------------------------------------------------------------
@@ -1650,6 +1908,7 @@ export const CATEGORY_DOMAIN: Readonly<Record<string, string>> = {
   fill: "FIL",
   data: "DAT",
   database: "DBA",
+  integrity: "INT",
 };
 
 /** Reverse map: domain code → category names. */
@@ -1754,9 +2013,10 @@ export function matchRule(rule: string): ErrorCodeEntry | undefined {
     try {
       const regex = new RegExp(regexStr);
       if (regex.test(rule)) {
-        // Score by number of static (non-placeholder) segments
-        const staticParts = pattern.split("{{").length - 1;
-        const score = pattern.length - staticParts * 10; // Prefer longer static prefixes
+        // Score by literal character count — more literals = more specific.
+        // "metadata/M{{n}}/required" (20 literal chars) beats
+        // "metadata/{{key}}/required" (18 literal chars).
+        const score = pattern.replace(/\{\{[^}]+\}\}/g, "").length;
         if (score > bestScore) {
           bestScore = score;
           bestMatch = entry;
@@ -1883,6 +2143,238 @@ export const LAYER_COUNTS: Readonly<Record<string, number>> = {
   R05: R05.length,
   T00: T00.length,
 };
+
+// ---------------------------------------------------------------------------
+// QoL — Self-Documenting Error Codes
+// ---------------------------------------------------------------------------
+//
+// The catalog doesn't just store codes — it EXPLAINS them.
+// These functions make the catalog the first place you go when
+// you encounter a code, not the last.
+//
+// codeSummary() → one-liner for embedding in messages
+// explain()     → multiline human explanation
+// search()      → find codes by keyword across all fields
+// related()     → structural neighbors in the catalog
+// ---------------------------------------------------------------------------
+
+/** Layer number → human-readable description. */
+export const LAYER_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  R50: "EXISTENCE — Does the file have the right shape?",
+  R25: "ORGANIZATION — Are sections present and ordered?",
+  R10: "CONTAINER — Is content in the right place?",
+  R05: "CONTENT — Are code patterns correct?",
+  T00: "TOOL — Schema pipeline and composition",
+};
+
+/**
+ * Rich single-line summary of an error code.
+ *
+ * Format: `CODE [DIM] (SEVERITY) CATEGORY — "TEMPLATE"`
+ *
+ * Examples:
+ *   CWS-R50-020 [R50.BLK.020] (error) block — "Missing required block: {{block}}"
+ *   CWS-R25-023 [R25.ORD.023] (warn) ordering — "Subsection out of order"
+ *
+ * Returns "(unknown code)" if code not found.
+ */
+export function codeSummary(code: string): string {
+  const entry = ERROR_CODES.get(code);
+  if (!entry) return `${code} (unknown code)`;
+  const dim = dimensionalCode(entry);
+  return `${entry.code} [${dim}] (${entry.severity}) ${entry.category} — "${entry.messageTemplate}"`;
+}
+
+/**
+ * Multiline explanation of an error code.
+ *
+ * Shows every field in human-readable format — what it is, why it fires,
+ * what to do about it, and how to find it in the codebase.
+ *
+ * This is the function you call when a user says "what is CWS-R50-020?"
+ */
+export function explain(code: string): string {
+  const entry = ERROR_CODES.get(code);
+  if (!entry) {
+    return [
+      `${code} — not found in catalog.`,
+      "",
+      `The catalog has ${CATALOG_SIZE} codes across ${Object.keys(LAYER_COUNTS).length} layers.`,
+      `Did you mean one of these?`,
+      ...nearbySequences(code).map(c => `  ${codeSummary(c)}`),
+    ].join("\n");
+  }
+
+  const dim = dimensionalCode(entry);
+  const domain = categoryToDomain(entry.category);
+  const layerDesc = LAYER_DESCRIPTIONS[entry.layerName] ?? entry.layerName;
+
+  return [
+    `${entry.code} [${dim}]`,
+    `${"─".repeat(40)}`,
+    `Layer:      ${entry.layerName} — ${layerDesc}`,
+    `Domain:     ${domain} (${entry.category})`,
+    `Severity:   ${entry.severity}`,
+    `Message:    "${entry.messageTemplate}"`,
+    `Suggestion: "${entry.suggestionTemplate}"`,
+    `Check:      ${entry.checkFunction}`,
+    "",
+    `Test filter: deno test --filter='${entry.code}'`,
+    `Witness tag: [${entry.code}]`,
+  ].join("\n");
+}
+
+/**
+ * Search the catalog by keyword.
+ *
+ * Matches against: messageTemplate, suggestionTemplate, category,
+ * checkFunction, and code itself. Case-insensitive.
+ *
+ * Results are sorted by relevance: code match first, then category match,
+ * then message match, then suggestion match.
+ *
+ * Examples:
+ *   search("missing block")  → codes about missing blocks
+ *   search("identity")       → all identity-related codes
+ *   search("R50")            → all R50 layer codes
+ *   search("template")       → template-related codes
+ */
+export function search(queryStr: string): ErrorCodeEntry[] {
+  const q = queryStr.toLowerCase();
+  const scored: Array<{ entry: ErrorCodeEntry; score: number }> = [];
+
+  for (const [_, entry] of ALL_ENTRIES) {
+    let score = 0;
+
+    // Exact code match (highest)
+    if (entry.code.toLowerCase().includes(q)) score += 100;
+    // Layer name match
+    if (entry.layerName.toLowerCase().includes(q)) score += 50;
+    // Category match
+    if (entry.category.toLowerCase().includes(q)) score += 40;
+    // Domain match
+    if (categoryToDomain(entry.category).toLowerCase().includes(q)) score += 30;
+    // Check function match
+    if (entry.checkFunction.toLowerCase().includes(q)) score += 20;
+    // Message template match
+    if (entry.messageTemplate.toLowerCase().includes(q)) score += 10;
+    // Suggestion match
+    if (entry.suggestionTemplate.toLowerCase().includes(q)) score += 5;
+
+    if (score > 0) scored.push({ entry, score });
+  }
+
+  // Sort by relevance (descending), then by code (ascending) for stability
+  scored.sort((a, b) => b.score - a.score || a.entry.code.localeCompare(b.entry.code));
+
+  return scored.map(s => s.entry);
+}
+
+/**
+ * Find codes structurally related to this code.
+ *
+ * Returns:
+ *   sameCategory — codes in the same category (e.g., all "block" codes)
+ *   sameLayer    — codes at the same detection layer (e.g., all R50)
+ *   sameCheck    — codes produced by the same check function
+ *   nearby       — codes with adjacent sequence numbers (same layer, ±5)
+ *
+ * Useful for understanding the neighborhood of an error code.
+ * "I see CWS-R25-023 — what else is in this area?"
+ */
+export function related(code: string): {
+  sameCategory: ErrorCodeEntry[];
+  sameLayer: ErrorCodeEntry[];
+  sameCheck: ErrorCodeEntry[];
+  nearby: ErrorCodeEntry[];
+} {
+  const entry = ERROR_CODES.get(code);
+  if (!entry) {
+    return { sameCategory: [], sameLayer: [], sameCheck: [], nearby: [] };
+  }
+
+  const sameCategory = ALL_ENTRIES
+    .filter(([_, e]) => e.category === entry.category && e.code !== code)
+    .map(([_, e]) => e);
+
+  const sameLayer = ALL_ENTRIES
+    .filter(([_, e]) => e.layer === entry.layer && e.code !== code)
+    .map(([_, e]) => e);
+
+  const sameCheck = ALL_ENTRIES
+    .filter(([_, e]) => e.checkFunction === entry.checkFunction && e.code !== code)
+    .map(([_, e]) => e);
+
+  // Nearby: same layer, sequence within ±5
+  const seqStr = code.split("-")[2] ?? "0";
+  const seq = parseInt(seqStr, 10);
+  const nearby = ALL_ENTRIES
+    .filter(([_, e]) => {
+      if (e.code === code || e.layer !== entry.layer) return false;
+      const eSeqStr = e.code.split("-")[2] ?? "0";
+      const eSeq = parseInt(eSeqStr, 10);
+      return Math.abs(eSeq - seq) <= 5;
+    })
+    .map(([_, e]) => e);
+
+  return { sameCategory, sameLayer, sameCheck, nearby };
+}
+
+/**
+ * Find codes with nearby sequence numbers (helper for explain()).
+ * Returns codes in the same layer with sequences within ±3 of the queried code.
+ */
+function nearbySequences(code: string): string[] {
+  // Parse: CWS-R50-020 → layer "R50", seq 20
+  const parts = code.split("-");
+  if (parts.length !== 3) return [];
+
+  const layerPrefix = parts[1] ?? ""; // "R50"
+  const seqStr = parts[2] ?? "0";
+  const seq = parseInt(seqStr, 10);
+  if (isNaN(seq)) return [];
+
+  const nearby: string[] = [];
+  for (const [_, entry] of ALL_ENTRIES) {
+    if (entry.layerName !== layerPrefix) continue;
+    const entrySeqStr = entry.code.split("-")[2] ?? "0";
+    const entrySeq = parseInt(entrySeqStr, 10);
+    if (Math.abs(entrySeq - seq) <= 3 && entry.code !== code) {
+      nearby.push(entry.code);
+    }
+  }
+
+  return nearby.slice(0, 5); // Cap at 5 suggestions
+}
+
+/**
+ * Pretty-print the catalog structure as a formatted string.
+ *
+ * Shows layer × domain grid with counts — the 3D shape of the catalog.
+ * Useful for understanding coverage gaps or planning new error codes.
+ */
+export function catalogReport(): string {
+  const structure = catalogStructure();
+  const lines: string[] = [
+    `Error Catalog — ${CATALOG_SIZE} codes across ${Object.keys(LAYER_COUNTS).length} layers`,
+    "─".repeat(60),
+    "",
+  ];
+
+  for (const [layer, domains] of Object.entries(structure)) {
+    const desc = LAYER_DESCRIPTIONS[layer] ?? layer;
+    const total = LAYER_COUNTS[layer] ?? 0;
+    lines.push(`${layer} (${total} codes) — ${desc}`);
+
+    const domainEntries = Object.entries(domains).sort((a, b) => b[1] - a[1]);
+    for (const [domain, count] of domainEntries) {
+      lines.push(`  ${domain}: ${count}`);
+    }
+    lines.push("");
+  }
+
+  return lines.join("\n");
+}
 
 // ============================================================================
 // CLOSING

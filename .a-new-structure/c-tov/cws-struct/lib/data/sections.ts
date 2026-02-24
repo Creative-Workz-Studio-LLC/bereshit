@@ -37,7 +37,7 @@ import { ToolError } from "../foundation/tool-error.ts";
 // Concept map presets — named patterns reduce repetition and errors
 // ---------------------------------------------------------------------------
 
-/** All 11 concepts denied — pure declaration, no code patterns. */
+/** All concepts denied — pure declaration, no code patterns. */
 const ALL_DENIED: Record<string, TernaryValue> = {
   function_call: "denied",
   method_call: "denied",
@@ -50,9 +50,14 @@ const ALL_DENIED: Record<string, TernaryValue> = {
   err_wrap: "denied",
   ok_wrap: "denied",
   string_format: "denied",
+  loop_iteration: "denied",
+  collection_mutation: "denied",
+  type_construction: "denied",
+  field_access: "denied",
+  recursion: "denied",
 };
 
-/** All 11 concepts granted — full code patterns expected. */
+/** All concepts granted — full code patterns expected. */
 const ALL_GRANTED: Record<string, TernaryValue> = {
   function_call: "granted",
   method_call: "granted",
@@ -65,9 +70,14 @@ const ALL_GRANTED: Record<string, TernaryValue> = {
   err_wrap: "granted",
   ok_wrap: "granted",
   string_format: "granted",
+  loop_iteration: "granted",
+  collection_mutation: "granted",
+  type_construction: "granted",
+  field_access: "granted",
+  recursion: "granted",
 };
 
-/** 10 granted, self_access deferred — methods that may or may not use self. */
+/** All granted except self_access deferred — methods that may or may not use self. */
 const GRANTED_DEFER_SELF: Record<string, TernaryValue> = {
   ...ALL_GRANTED,
   self_access: "defer",
@@ -89,6 +99,30 @@ const ALL_REQUIRED: FormStatusMap = {
 };
 
 // ---------------------------------------------------------------------------
+// Detection weight — COMPUTED from concept map, never manual
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute detection weight from concept map: |sum / count|
+ * where granted = +1, denied = -1, defer = 0.
+ *
+ * Exported so tests can verify the computation itself,
+ * not hardcoded expected values.
+ */
+export function computeDetectionWeight(
+  conceptMap: Record<string, TernaryValue>,
+): number {
+  const values = Object.values(conceptMap);
+  if (values.length === 0) return 1.00;
+  const sum = values.reduce((acc, v) => {
+    if (v === "granted") return acc + 1;
+    if (v === "denied") return acc - 1;
+    return acc; // defer = 0
+  }, 0);
+  return Math.round(Math.abs(sum / values.length) * 100) / 100;
+}
+
+// ---------------------------------------------------------------------------
 // Section builder helper
 // ---------------------------------------------------------------------------
 
@@ -99,7 +133,6 @@ function section(
   nature: string,
   description: string,
   conceptMap: Record<string, TernaryValue>,
-  detectionWeight: number,
   formStatus: FormStatusMap,
   overviewText?: string,
 ): SectionEntry {
@@ -110,7 +143,7 @@ function section(
     nature,
     description,
     conceptMap: { ...conceptMap },
-    detectionWeight,
+    detectionWeight: computeDetectionWeight(conceptMap),
     formStatus: { ...formStatus },
     overviewText,
   };
@@ -129,7 +162,7 @@ const METADATA_SECTIONS: SectionEntry[] = [
     "directives", "metadata", 1,
     "identity-declaration",
     "Machine-readable identity markers — OmniCode pragma and format directives.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     ALL_REQUIRED,
     "Machine-readable identity markers",
   ),
@@ -137,7 +170,7 @@ const METADATA_SECTIONS: SectionEntry[] = [
     "doc-comments", "metadata", 2,
     "tool-readable-prose",
     "Language-native documentation for tools and IDEs.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     {
       "bare-bone": "available",
       "module": "available",
@@ -151,7 +184,7 @@ const METADATA_SECTIONS: SectionEntry[] = [
     "comment-block", "metadata", 3,
     "human-readable-identity",
     "Human-readable identity in comments — file, key, title, version, purpose.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     ALL_REQUIRED,
     "Human-readable identity in comments",
   ),
@@ -159,7 +192,7 @@ const METADATA_SECTIONS: SectionEntry[] = [
     "pragma-identity", "metadata", 4,
     "structured-identity",
     "Structured identity — WHO this file is. I1-I4 fields: core, family, instance, architecture.",
-    { ...ALL_DENIED, variable_binding: "defer" }, 0.91,
+    { ...ALL_DENIED, variable_binding: "defer" },
     ALL_REQUIRED,
     "Structured identity — WHO this file is",
   ),
@@ -167,7 +200,7 @@ const METADATA_SECTIONS: SectionEntry[] = [
     "metadata-context", "metadata", 5,
     "structured-context",
     "Structured context — WHEN, WHO MADE, WHY, NEEDS, GOAL, NEXT, TAGS. C1-C7 fields.",
-    { ...ALL_DENIED, variable_binding: "defer" }, 0.91,
+    { ...ALL_DENIED, variable_binding: "defer" },
     ALL_REQUIRED,
     "Structured context — WHEN, WHO MADE, WHY, NEEDS, GOAL, NEXT, TAGS",
   ),
@@ -175,7 +208,7 @@ const METADATA_SECTIONS: SectionEntry[] = [
     "subtypes", "metadata", 6,
     "form-classification",
     "Form classifications driven by I2.subtype — determines which form rules apply.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     ALL_REQUIRED,
     "Form classifications driven by I2.subtype",
   ),
@@ -190,7 +223,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
     "imports", "setup", 1,
     "dependency-declaration",
     "What this file depends on — external packages, standard library, internal modules.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     ALL_REQUIRED,
     "What this file depends on",
   ),
@@ -198,7 +231,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
     "modules", "setup", 2,
     "hierarchy-declaration",
     "Submodule declarations and public re-exports.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     {
       "bare-bone": "reserved",
       "module": "reserved",
@@ -216,7 +249,8 @@ const SETUP_SECTIONS: SectionEntry[] = [
       ...ALL_DENIED,
       variable_binding: "granted",
       string_format: "defer",
-    }, 0.73,
+      type_construction: "defer",
+    },
     ALL_REQUIRED,
     "Compile-time fixed values",
   ),
@@ -229,7 +263,8 @@ const SETUP_SECTIONS: SectionEntry[] = [
       function_call: "defer",
       variable_binding: "granted",
       string_format: "defer",
-    }, 0.64,
+      type_construction: "defer",
+    },
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -243,7 +278,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
     "type-aliases", "setup", 5,
     "vocabulary",
     "Shorthand for complex signatures — vocabulary that makes the rest of the file readable.",
-    { ...ALL_DENIED, variable_binding: "defer" }, 0.91,
+    { ...ALL_DENIED, variable_binding: "defer" },
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -261,7 +296,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
       ...ALL_DENIED,
       variable_binding: "defer",
       err_wrap: "defer",
-    }, 0.82,
+    },
     ALL_REQUIRED,
     "Error definitions with display and conversion",
   ),
@@ -269,7 +304,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
     "core-types", "setup", 7,
     "existence-declaration",
     "Primary data structures and enumerations — the types this file defines.",
-    { ...ALL_DENIED, variable_binding: "defer" }, 0.91,
+    { ...ALL_DENIED, variable_binding: "defer" },
     ALL_REQUIRED,
     "Primary data structures and enumerations",
   ),
@@ -277,7 +312,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
     "trait-defs", "setup", 8,
     "contract",
     "Behavioral contracts (shape, not fulfillment) — interfaces/traits declaring capability.",
-    { ...ALL_DENIED, method_call: "defer" }, 0.91,
+    { ...ALL_DENIED, method_call: "defer" },
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -303,7 +338,12 @@ const SETUP_SECTIONS: SectionEntry[] = [
       err_wrap: "defer",
       ok_wrap: "defer",
       string_format: "defer",
-    }, 0.09,
+      loop_iteration: "defer",
+      collection_mutation: "defer",
+      type_construction: "defer",
+      field_access: "defer",
+      recursion: "defer",
+    },
     {
       "bare-bone": "reserved",
       "module": "reserved",
@@ -320,7 +360,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
     {
       ...ALL_DENIED,
       conditional_if: "granted",
-    }, 0.82,
+    },
     {
       "bare-bone": "reserved",
       "module": "reserved",
@@ -339,7 +379,8 @@ const SETUP_SECTIONS: SectionEntry[] = [
       function_call: "defer",
       variable_binding: "granted",
       string_format: "defer",
-    }, 0.64,
+      type_construction: "defer",
+    },
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -353,7 +394,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
     "interface-defs", "setup", 12,
     "implicit-contract",
     "Behavioral contracts (shape, not fulfillment) — Go interfaces, implicit contracts.",
-    { ...ALL_DENIED, method_call: "defer" }, 0.91,
+    { ...ALL_DENIED, method_call: "defer" },
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -372,7 +413,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
       method_call: "defer",
       self_access: "defer",
       variable_binding: "defer",
-    }, 0.73,
+    },
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -386,7 +427,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
     "code-generation", "setup", 14,
     "meta-directive",
     "Code generation directives and test helpers — derive macros, go:generate.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     {
       "bare-bone": "reserved",
       "module": "reserved",
@@ -403,7 +444,7 @@ const SETUP_SECTIONS: SectionEntry[] = [
     {
       ...ALL_DENIED,
       conditional_if: "granted",
-    }, 0.82,
+    },
     {
       "bare-bone": "reserved",
       "module": "reserved",
@@ -424,7 +465,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "org-chart", "body", 0,
     "navigational",
     "Module structure overview — package navigation, org chart comment.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     {
       "bare-bone": "available",
       "module": "available",
@@ -438,7 +479,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "identity-access", "body", 1,
     "runtime-bridge",
     "OmniCode static accessor functions — runtime access to compile-time identity.",
-    ALL_GRANTED, 1.00,
+    { ...ALL_GRANTED, recursion: "denied" },
     ALL_REQUIRED,
     "OmniCode static accessor functions",
   ),
@@ -446,7 +487,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "trait-implementations", "body", 2,
     "contract-fulfillment",
     "Fulfilling contracts from SETUP — impl blocks for traits/interfaces.",
-    ALL_GRANTED, 1.00,
+    ALL_GRANTED,
     {
       "bare-bone": "reserved",
       "module": "required",
@@ -460,7 +501,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "constructors", "body", 3,
     "creation",
     "Constructor content — new(), builders, typestate transitions. Types come into existence.",
-    GRANTED_DEFER_SELF, 0.91,
+    { ...GRANTED_DEFER_SELF, recursion: "denied" },
     {
       "bare-bone": "reserved",
       "module": "required",
@@ -474,7 +515,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "core-logic", "body", 4,
     "computation",
     "Primary operations, state transforms — the essential computation this file provides.",
-    ALL_GRANTED, 1.00,
+    ALL_GRANTED,
     ALL_REQUIRED,
     "Primary operations, state transforms",
   ),
@@ -482,7 +523,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "queries", "body", 5,
     "observation",
     "Read-only observation methods — side-effect-free inspection of state.",
-    ALL_GRANTED, 1.00,
+    { ...ALL_GRANTED, collection_mutation: "denied" },
     {
       "bare-bone": "reserved",
       "module": "required",
@@ -496,7 +537,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "output-display", "body", 6,
     "presentation",
     "Formatting and display output — how this file's types present themselves.",
-    ALL_GRANTED, 1.00,
+    { ...ALL_GRANTED, collection_mutation: "denied", recursion: "denied" },
     {
       "bare-bone": "reserved",
       "module": "reserved",
@@ -513,7 +554,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     {
       ...ALL_GRANTED,
       self_access: "denied",
-    }, 0.82,
+    },
     ALL_REQUIRED,
     "Module-level public utilities",
   ),
@@ -521,7 +562,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "helpers", "body", 8,
     "support",
     "Executable helpers — run support functions for the executable form.",
-    GRANTED_DEFER_SELF, 0.91,
+    GRANTED_DEFER_SELF,
     {
       "bare-bone": "reserved",
       "module": "reserved",
@@ -535,7 +576,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "tests", "body", 9,
     "verification",
     "Dedicated test sections — constructor, builder, transition, query, identity, error, edge-case, table-driven, integration tests.",
-    GRANTED_DEFER_SELF, 0.91,
+    GRANTED_DEFER_SELF,
     {
       "bare-bone": "reserved",
       "module": "reserved",
@@ -549,7 +590,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "core-operations", "body", 20,
     "operational",
     "Primary business logic, state transitions — the core operational layer.",
-    ALL_GRANTED, 1.00,
+    ALL_GRANTED,
     {
       "bare-bone": "available",
       "module": "available",
@@ -563,7 +604,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "error-handling", "body", 21,
     "resilience",
     "Error processing, wrapping, recovery — how this file handles failures.",
-    ALL_GRANTED, 1.00,
+    ALL_GRANTED,
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -577,7 +618,7 @@ const BODY_SECTIONS: SectionEntry[] = [
     "public-apis", "body", 22,
     "surface",
     "Exported functions — the public surface. What consumers see and use.",
-    ALL_GRANTED, 1.00,
+    ALL_GRANTED,
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -599,7 +640,7 @@ const CLOSING_SECTIONS: SectionEntry[] = [
     "validation", "closing", 1,
     "proof",
     "Tests and correctness checks — Cv zone. BODY makes claims; validation proves them.",
-    ALL_GRANTED, 1.00,
+    ALL_GRANTED,
     ALL_REQUIRED,
     "Tests and correctness checks",
   ),
@@ -607,7 +648,7 @@ const CLOSING_SECTIONS: SectionEntry[] = [
     "execution", "closing", 2,
     "entry-point",
     "Entry point or absence — Ce zone. main() or explicit 'library, no entry point.'",
-    ALL_GRANTED, 1.00,
+    ALL_GRANTED,
     ALL_REQUIRED,
     "Entry point or absence",
   ),
@@ -615,7 +656,7 @@ const CLOSING_SECTIONS: SectionEntry[] = [
     "cleanup", "closing", 3,
     "resource-release",
     "Resource teardown — Cc zone. defer, Drop, cleanup functions.",
-    ALL_GRANTED, 1.00,
+    ALL_GRANTED,
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -631,7 +672,7 @@ const CLOSING_SECTIONS: SectionEntry[] = [
     "modification-policy", "closing", "X1",
     "guardrail",
     "What to never, carefully, or safely change — modification guidance.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     ALL_REQUIRED,
     "What to never, carefully, or safely change",
   ),
@@ -639,7 +680,7 @@ const CLOSING_SECTIONS: SectionEntry[] = [
     "extension-points", "closing", "X2",
     "growth-map",
     "Where and how to extend — planned growth points.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -653,7 +694,7 @@ const CLOSING_SECTIONS: SectionEntry[] = [
     "troubleshooting", "closing", "X3",
     "experience-capture",
     "Common issues and solutions — accumulated debugging wisdom.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     {
       "bare-bone": "reserved",
       "module": "available",
@@ -667,7 +708,7 @@ const CLOSING_SECTIONS: SectionEntry[] = [
     "reference", "closing", "X4",
     "navigation",
     "Related files and validation commands — how to find more and verify this file.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     ALL_REQUIRED,
     "Related files and validation commands",
   ),
@@ -675,7 +716,7 @@ const CLOSING_SECTIONS: SectionEntry[] = [
     "closing-note", "closing", "X5",
     "anchor",
     "Anchoring scripture and summary — the file's final word.",
-    ALL_DENIED, 1.00,
+    ALL_DENIED,
     ALL_REQUIRED,
     "Anchoring scripture and summary",
   ),

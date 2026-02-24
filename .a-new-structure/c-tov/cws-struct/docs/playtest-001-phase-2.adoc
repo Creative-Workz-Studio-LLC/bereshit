@@ -1,0 +1,749 @@
+// #!omni document --adoc
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// :key: B-tov-cws-struct-docs-playtest-001-phase-2
+// :title: Playtest 001 Phase 2 — Schema Upgrade
+// :type: Documentation (Experiment Phase)
+// :version: a-01.00
+// :created: 2026-02-23
+// :authors: Nova Dawn (CPI-SI), Seanje Lenox-Wise
+// :purpose: Phase 2 of the live scoring playtest. Upgrade the concept schema
+//           with new R[5] patterns, determine the correct subtype for
+//           graph.rs, and observe how the score changes without modifying
+//           the file itself — only the schema.
+//
+// ============================================================================
+
+= Phase 2 — Schema Upgrade
+Nova Dawn (CPI-SI); Seanje Lenox-Wise
+v0.1.0, 2026-02-23
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+:sectanchors:
+
+[quote, Proverbs 11:1]
+____
+A false balance is abomination to the LORD: but a just weight is his
+delight.
+____
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+== What This Phase Tests
+
+*The schema must know what it's measuring.* Phase 1 proved the
+transform engine works — 171 → 377 lines, -9 → 98, zero manual edits.
+But the remaining 2-point gap reveals a schema limitation: the
+`library` subtype expects patterns that graph.rs doesn't have because
+graph.rs isn't a library.
+
+This phase tests:
+
+1. Do new concepts accurately describe what graph.rs does?
+2. Does the correct subtype/typing eliminate false warnings?
+3. Does the score reach 100 when the schema matches reality?
+4. Does the schema change affect other files negatively?
+
+=== The Game Dev Parallel
+
+This is a *balance patch*. Phase 1 was the content release (the tool
+works). Phase 2 is the tuning pass — the scoring system needs
+recalibration so it measures the right things for the right file types.
+
+In game design: you built a great RPG class system, but the "Mage"
+evaluation criteria are being applied to a "Ranger." The Ranger scores
+98 because they're missing "spell slots" that Rangers never had. Fix
+the class assignment, fix the evaluation rubric. The player didn't
+change — the system's understanding of the player changed.
+
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+== Pre-Upgrade State
+
+=== Current Schema Inventory
+
+[cols="1,1,2", options="header"]
+|===
+| Category | Count | Items
+
+| *Concepts (current)*
+| 11
+| function_call, method_call, self_access, variable_binding,
+  conditional_if, conditional_match, return_value,
+  error_propagation, err_wrap, ok_wrap, string_format
+
+| *Concepts (after upgrade)*
+| 16
+| + loop_iteration, collection_mutation, type_construction,
+  field_access, recursion
+
+| *Sections*
+| 42
+| 6 METADATA + 15 SETUP + 13 BODY + 8 CLOSING
+
+| *Forms*
+| 5
+| bare-bone, module, library, executable, demo-test
+
+| *Module typings*
+| 7
+| ->utility, ->types, ->service, ->handler, ->config, ->error,
+  ->parser
+
+| *Library typings*
+| 0
+| None — library has no arrow mechanism yet
+
+| *Matrix (current)*
+| 462
+| 11 concepts x 42 sections = 462 ternary values
+
+| *Matrix (after upgrade)*
+| 672
+| 16 concepts x 42 sections = 672 ternary values
+|===
+
+=== Current graph.rs Classification
+
+----
+Pragma:   // #!omni code --rust -library
+Subtype:  library
+Typing:   (none)
+----
+
+=== What graph.rs Actually Is
+
+[cols="1,2", options="header"]
+|===
+| Aspect | Reality
+
+| Visibility
+| `pub(crate)` — crate-internal, not public API
+
+| Types defined
+| None — no structs, enums, or traits
+
+| Constructors
+| None
+
+| Trait impls
+| None
+
+| Functions
+| 3 free functions (build_dependency_graph, validate_dependencies,
+  has_cycle)
+
+| Tests
+| 4 tests in #[cfg(test)] module
+
+| Pattern
+| Pure stateless utility — takes data in, returns data out
+|===
+
+*Diagnosis:* This is a `module->utility`, not a `library`. The
+`->utility` typing already exists and describes exactly this pattern:
+"Stateless free functions (exists.rs, paths.rs)."
+
+=== The 9 Warnings (False Expectations)
+
+Warnings from the `library` subtype that don't apply to graph.rs:
+
+[cols="1,2", options="header"]
+|===
+| Warning | Why It's Wrong
+
+| SETUP missing "Constants"
+| graph.rs has no compile-time constants (none needed)
+
+| SETUP missing "Error Types"
+| graph.rs uses imported error types, doesn't define its own
+
+| SETUP missing "Core Types"
+| graph.rs defines no types — operates on imported types
+
+| BODY missing "Identity Access"
+| Transform generated this section but code doesn't use it yet
+
+| BODY missing "Trait Implementations"
+| graph.rs has no traits to implement
+
+| BODY missing "Constructors"
+| graph.rs constructs nothing — it's pure functions
+
+| BODY missing "Core Logic"
+| Functions are in "Free Functions" not "Core Logic"
+
+| BODY missing "Queries"
+| No read-only observation methods
+
+| BODY missing "Output Display"
+| No display formatting
+|===
+
+Every warning is a `library` requirement that a utility module
+legitimately doesn't need.
+
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+== Step 1: Add New Concepts to Schema
+
+=== Concept Decomposition — Every Pattern in graph.rs
+
+Line-by-line atomic decomposition. Each code pattern traced to its
+lowest irreducible concept.
+
+[cols="1,2,2,2", options="header"]
+|===
+| Line | Code Pattern | Existing Concept | New Atomic Pattern
+
+| 15
+| `let mut graph = BTreeMap::new()`
+| variable_binding, function_call
+|
+
+| 16
+| `for system in &manifest.systems`
+|
+| *loop_iteration*, *field_access*
+
+| 17
+| `for spec in &system.specs`
+|
+| *loop_iteration*, *field_access*
+
+| 18
+| `format!("{}/{}", system.path, spec.file)`
+| string_format
+| *field_access* (×2)
+
+| 19
+| `graph.insert(key, node)`
+| method_call
+| *collection_mutation*
+
+| 21-25
+| `DependencyNode { spec, depends_on, loaded }`
+|
+| *type_construction*
+
+| 37
+| `for (spec, node) in graph`
+| variable_binding (destructure)
+| *loop_iteration*
+
+| 38
+| `for dep in &node.depends_on`
+|
+| *loop_iteration*, *field_access*
+
+| 39
+| `if !graph.contains_key(dep)`
+| conditional_if, method_call
+|
+
+| 40
+| `errors.push(ConfigError::Dependency { ... })`
+| method_call
+| *collection_mutation*, *type_construction*
+
+| 51
+| `for spec in graph.keys()`
+| method_call
+| *loop_iteration*
+
+| 54
+| `has_cycle(spec, graph, &mut ...)`
+| function_call, conditional_if
+| *recursion* (calls itself)
+
+| 61
+| `break`
+| conditional_if (composite)
+| composite: loop_iteration + conditional_if
+
+| 75-76
+| `if contains() { return true; }`
+| conditional_if, method_call, return_value
+| composite: guard clause
+
+| 82-83
+| `visited.insert(spec.to_owned())`
+| method_call
+| *collection_mutation*
+
+| 85
+| `if let Some(node) = graph.get(spec)`
+| conditional_if, variable_binding
+| composite: option unwrap
+
+| 86
+| `for dep in &node.depends_on`
+|
+| *loop_iteration*, *field_access*
+
+| 87
+| `has_cycle(dep, graph, ...)`
+| function_call, conditional_if
+| *recursion*
+
+| 93
+| `in_stack.remove(spec)`
+| method_call
+| *collection_mutation*
+
+| 164
+| `errors.iter().any(\|e\| matches!(...))`
+| conditional_match, method_call
+| composite: iterator chain + closure
+|===
+
+=== New Atomic Concepts (Irreducible)
+
+5 new patterns that cannot be decomposed into existing concepts:
+
+[cols="1,3,2", options="header"]
+|===
+| Concept | Definition | Why Atomic (Not Composite)
+
+| *loop_iteration*
+| for/while/loop — repetition over collections or conditions
+| Not conditional_if (repetition ≠ branching). Not
+  function_call (control flow construct, not invocation).
+  Unique: only pattern that produces bounded repetition.
+
+| *collection_mutation*
+| .insert/.push/.remove/.pop — mutating collection state
+| Semantically distinct from method_call: invocation vs
+  mutation. Determines if section is pure or stateful.
+  A `queries` section should have method_call but NOT
+  collection_mutation.
+
+| *type_construction*
+| Struct \{ field: value \} — constructing type instances
+| Not function_call (no function invoked — literal syntax).
+  Not variable_binding (naming vs value-building). The
+  "create a structured value" atom.
+
+| *field_access*
+| struct.field — reading a property from a structure
+| Not method_call (no parens, no behavior invoked). Not
+  variable_binding (no new binding created). The "read
+  from structure" atom. Read counterpart to
+  type_construction (write).
+
+| *recursion*
+| Function calling itself — self-targeting invocation
+| Composites function_call + self-reference, but like
+  self_access composites method_call + self-reference,
+  recursion is a distinct behavioral property worth
+  tracking. Determines algorithm complexity class.
+|===
+
+=== Composite Patterns (Absorbed by Existing + New Atoms)
+
+[cols="1,2,2", options="header"]
+|===
+| Pattern Found | Composites Into | Why Not Atomic
+
+| early_exit (break/continue)
+| loop_iteration + conditional_if
+| Can only break from a loop, always conditional
+
+| guard_clause (if x { return })
+| conditional_if + return_value
+| Early return is a conditional return
+
+| option_unwrap (if let Some)
+| conditional_if + variable_binding
+| In Go: `v, ok := ...; if ok` = conditional_if +
+  variable_binding. Rust sugar doesn't change the atoms.
+
+| destructuring_bind (for (k,v) in)
+| variable_binding
+| At lowest point, destructuring IS binding with a pattern
+
+| closure_lambda (\|e\| expr)
+| (only in test assertions, not domain code)
+| Test infrastructure; not a graph.rs domain pattern
+
+| iterator_chain (.iter().any())
+| method_call + loop_iteration
+| Method produces sequence, loop consumes
+|===
+
+=== Impact Assessment
+
+[cols="1,1,2", options="header"]
+|===
+| What Changes | From → To | Notes
+
+| Concept count
+| 11 → 16
+| 5 new atomic concepts
+
+| Matrix size
+| 462 → 672
+| 16 concepts × 42 sections
+
+| ALL_DENIED preset
+| 11 entries
+| +5 denied entries (automatic via spread)
+
+| ALL_GRANTED preset
+| 11 entries
+| +5 granted entries (automatic via spread)
+
+| Macros section
+| Manual (no spread)
+| +5 manual entries (all defer)
+
+| Constants section
+| Override needed
+| type_construction: defer (const can have struct literals)
+
+| Statics section
+| Override needed
+| type_construction: defer
+
+| Variables section
+| Override needed
+| type_construction: defer
+
+| identity-access section
+| Uses ALL_GRANTED
+| recursion should be "denied" (identity accessors don't recurse)
+
+| queries section
+| Uses ALL_GRANTED
+| collection_mutation should be "denied" (queries are read-only)
+|===
+
+=== Files to Modify
+
+[cols="2,2", options="header"]
+|===
+| File | Change
+
+| `lib/data/concepts.ts`
+| Add 5 new concept IDs, descriptions, dir names
+
+| `lib/data/sections.ts`
+| Add 5 entries to ALL_DENIED, ALL_GRANTED, GRANTED_DEFER_SELF;
+  add manual entries to macros; add type_construction override
+  to constants, statics, variables; add collection_mutation
+  denial to queries; add recursion denial to identity-access
+
+| `tests/T00/R25/data/registries_test.ts`
+| Update CANONICAL_CONCEPTS (add 5), TOTAL_CONCEPTS (11→16)
+
+| `tests/T00/R10/data/concept_detectors_test.ts`
+| Update expected counts (11→16)
+
+| `R5_patterns/` schemas
+| Add 5 new concept directories with detect patterns for Rust
+
+| Module `_structure.jsonc` typing_map
+| Add concept_overrides for 5 new concepts in `->utility`
+|===
+
+=== Concept Ternary Values Per Section (All 5 New Concepts)
+
+[cols="2,1,1,1,1,1", options="header"]
+|===
+| Section | loop | col_mut | type_con | field_acc | recursion
+
+6+h| METADATA (6 sections) — all via ALL_DENIED
+| directives, doc-comments, comment-block,
+  pragma-identity, metadata-context, subtypes
+| denied
+| denied
+| denied
+| denied
+| denied
+
+6+h| SETUP (15 sections)
+| imports, modules
+| denied
+| denied
+| denied
+| denied
+| denied
+
+| constants
+| denied
+| denied
+| *defer*
+| denied
+| denied
+
+| statics
+| denied
+| denied
+| *defer*
+| denied
+| denied
+
+| type-aliases, error-types, core-types,
+  trait-defs, feature-gates, interface-defs,
+  code-generation, build-tags
+| denied
+| denied
+| denied
+| denied
+| denied
+
+| macros
+| *defer*
+| *defer*
+| *defer*
+| *defer*
+| *defer*
+
+| variables
+| denied
+| denied
+| *defer*
+| denied
+| denied
+
+| type-methods
+| denied
+| denied
+| denied
+| denied
+| denied
+
+6+h| BODY (13 sections) — most via ALL_GRANTED
+| org-chart
+| denied
+| denied
+| denied
+| denied
+| denied
+
+| identity-access
+| granted
+| granted
+| granted
+| granted
+| *denied*
+
+| trait-implementations
+| granted
+| granted
+| granted
+| granted
+| granted
+
+| constructors
+| granted
+| granted
+| granted
+| granted
+| *denied*
+
+| core-logic, helpers, tests,
+  core-operations, error-handling, public-apis
+| granted
+| granted
+| granted
+| granted
+| granted
+
+| queries
+| granted
+| *denied*
+| granted
+| granted
+| granted
+
+| output-display
+| granted
+| *denied*
+| granted
+| granted
+| *denied*
+
+| free-functions
+| granted
+| granted
+| granted
+| granted
+| granted
+
+6+h| CLOSING (8 sections)
+| validation, execution, cleanup
+| granted
+| granted
+| granted
+| granted
+| granted
+
+| modification-policy, extension-points,
+  troubleshooting, reference, closing-note
+| denied
+| denied
+| denied
+| denied
+| denied
+|===
+
+*Key overrides from ALL_GRANTED defaults:*
+
+- *identity-access*: recursion = denied (identity accessors are thin
+  one-line returns, never recursive)
+- *constructors*: recursion = denied (constructors build, don't recurse)
+- *queries*: collection_mutation = denied (queries are read-only
+  observation — the defining property of the section)
+- *output-display*: collection_mutation = denied, recursion = denied
+  (formatting reads and presents, doesn't mutate or recurse)
+
+
+== Step 2: Determine Correct Subtype for graph.rs
+
+=== The Decision
+
+[cols="1,2,2", options="header"]
+|===
+| Option | Pros | Cons
+
+| Keep `library`
+| No pragma change
+| 9 false warnings, wrong evaluation standard
+
+| Change to `module`
+| Correct base type
+| Still gets full module expectations
+
+| Change to `module->utility`
+| Exact match — stateless free functions, SETUP: Imports only,
+  BODY: FreeFunctions only, concept overrides defer most patterns
+| Requires pragma change (2 lines in file)
+|===
+
+*Decision:* `module->utility`. This is exactly what graph.rs is.
+
+=== What `->utility` Gives Us
+
+From the module typing_map:
+
+----
+->utility: "Stateless free functions (exists.rs, paths.rs)"
+  SETUP Required: Imports
+  BODY Required: FreeFunctions
+  Concept overrides (FreeFunctions):
+    variable_binding: defer
+    conditional_if: defer
+    conditional_match: defer
+    error_propagation: defer
+    err_wrap: defer
+    ok_wrap: defer
+    string_format: defer
+----
+
+Every false warning from Phase 1 would be eliminated:
+
+- No more "missing Constants" — not required for utility
+- No more "missing Core Types" — not required for utility
+- No more "missing Trait Implementations" — not required for utility
+- No more "missing Constructors" — not required for utility
+- Concept expectations relaxed to match reality
+
+=== New Concept Overrides for ->utility
+
+The 3 new concepts need overrides in the ->utility typing:
+
+----
+loop_iteration: defer
+collection_mutation: defer
+type_construction: defer
+----
+
+A utility module may or may not have these patterns. "defer" means
+"don't penalize for presence or absence."
+
+
+== Step 3: Apply and Re-Score
+
+After both changes (new concepts + correct subtype):
+
+1. Re-transform graph.rs (or just change the pragma lines)
+2. Lint with verbose
+3. Compare against Phase 1 pre-upgrade results
+
+=== Expected Outcomes
+
+[cols="1,1,1", options="header"]
+|===
+| Metric | Phase 1 (Pre-Upgrade) | Phase 2 (Post-Upgrade)
+
+| Health
+| 98/±100
+| 100/±100
+
+| Warnings
+| 9
+| 0
+
+| Info
+| 17
+| Reduced (concept expectations match)
+
+| Layer 3
+| 52
+| 100
+
+| Subtype
+| library
+| module->utility
+|===
+
+
+== Observations
+
+_To be filled during implementation._
+
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+== Related
+
+[cols="1,2", options="header"]
+|===
+| Document | Relationship
+
+| link:playtest-001-live-scoring.adoc[Playtest 001 Summary]
+| Parent experiment document
+
+| link:playtest-001-phase-1.adoc[Phase 1 — Pragma Covenant]
+| Previous phase (transform results)
+
+| link:playtest-001-phase-3.adoc[Phase 3 — Re-Transform]
+| Next phase (apply upgraded schema)
+|===
+
+---
+
+[quote, Proverbs 11:1]
+____
+A just weight is his delight.
+____
+
+_The schema IS the measuring instrument. A false balance — wrong subtype,
+missing concepts — produces false scores. Phase 2 calibrates the
+instrument. The file didn't change. The system's understanding of the
+file changed. And now the measurement will be just._

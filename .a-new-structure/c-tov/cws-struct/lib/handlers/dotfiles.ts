@@ -223,7 +223,7 @@ function checkPragma(file: string, lines: string[]): LintResult[] {
   for (const field of REQUIRED_PRAGMA_FIELDS) {
     if (!fields.has(field)) {
       results.push(
-        error(file, `pragma/${field}`, `Missing required pragma field: ${field}`),
+        error(file, `pragma/${field}/required`, `Missing required pragma field: ${field}`),
       );
     }
   }
@@ -232,7 +232,7 @@ function checkPragma(file: string, lines: string[]): LintResult[] {
   for (const field of RECOMMENDED_PRAGMA_FIELDS) {
     if (!fields.has(field)) {
       results.push(
-        info(file, `pragma/${field}`, `Missing recommended pragma field: ${field}`),
+        info(file, `pragma/${field}/recommended`, `Missing recommended pragma field: ${field}`),
       );
     }
   }
@@ -368,7 +368,7 @@ function checkClosing(file: string, lines: string[]): LintResult[] {
   for (const tag of REQUIRED_CLOSING_TAGS) {
     if (!tags.has(tag)) {
       results.push(
-        error(file, `closing/${tag}`, `Missing required closing section: ${tag}`),
+        error(file, `closing/section/${tag}/required`, `Missing required closing section: ${tag}`),
       );
     }
   }

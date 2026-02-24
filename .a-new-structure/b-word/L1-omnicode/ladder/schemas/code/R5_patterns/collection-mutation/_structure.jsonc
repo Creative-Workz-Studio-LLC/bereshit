@@ -1,0 +1,127 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-concepts-collection-mutation",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "concept-definition",
+    "_P2_role": "schema",
+    "_P5_title": "Concept — Collection Mutation",
+    "_P5_brief": "Universal concept: mutating collection state via insert, push, remove, pop, delete.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "concept": "collection_mutation",
+    "description": "Mutating collection state — insert, push, remove, pop, delete operations",
+
+    "universal_shape": {
+        "collection": "the collection being mutated",
+        "operation": "the mutation (insert, push, remove, pop, delete)",
+        "key_or_value": "what is being added or removed",
+        "result": "optional return from mutation (removed value, success bool)"
+    },
+
+    "semantic_notes": [
+        "Rust: .insert(), .push(), .remove(), .pop() on Vec, HashMap, BTreeMap, BTreeSet.",
+        "Go: map[key] = value (insert), append(slice, value), delete(map, key).",
+        "C: array assignment, linked list manipulation, realloc patterns.",
+        "Semantically distinct from method_call: invocation vs mutation intent.",
+        "Determines if a section is pure (no mutation) or stateful (has mutation).",
+        "A 'queries' section should have method_call but NOT collection_mutation."
+    ],
+
+    "container_map": {
+        "_note": "granted (+1) = belongs here. denied (-1) = does not belong. defer (0) = context-dependent.",
+
+        "METADATA": {
+            "directives": "denied",
+            "doc-comments": "denied",
+            "comment-block": "denied",
+            "pragma-identity": "denied",
+            "metadata-context": "denied",
+            "subtypes": "denied"
+        },
+
+        "SETUP": {
+            "imports": "denied",
+            "modules": "denied",
+            "constants": "denied",
+            "statics": "denied",
+            "type-aliases": "denied",
+            "error-types": "denied",
+            "core-types": "denied",
+            "trait-defs": "denied",
+            "macros": "defer",
+            "feature-gates": "denied",
+            "build-tags": "denied",
+            "code-generation": "denied",
+            "interface-defs": "denied",
+            "type-methods": "denied",
+            "variables": "denied"
+        },
+
+        "BODY": {
+            "identity-access": "granted",
+            "trait-implementations": "granted",
+            "constructors": "granted",
+            "core-logic": "granted",
+            "core-operations": "granted",
+            "queries": "denied",
+            "output-display": "denied",
+            "free-functions": "granted",
+            "helpers": "granted",
+            "org-chart": "denied",
+            "public-apis": "granted",
+            "error-handling": "granted",
+            "tests": "granted"
+        },
+
+        "CLOSING": {
+            "validation": "granted",
+            "execution": "granted",
+            "cleanup": "granted",
+            "modification-policy": "denied",
+            "extension-points": "denied",
+            "troubleshooting": "denied",
+            "reference": "denied",
+            "closing-note": "denied"
+        }
+    },
+
+    "concept_relations": {
+        "_note": "granted = high co-occurrence. denied = anti-correlation. defer = context-dependent.",
+
+        "loop_iteration": "granted",
+        "variable_binding": "granted",
+        "method_call": "granted",
+        "conditional_if": "defer",
+        "function_call": "defer",
+        "type_construction": "defer",
+        "field_access": "defer",
+        "return_value": "defer",
+        "self_access": "defer",
+        "conditional_match": "denied",
+        "error_propagation": "defer",
+        "err_wrap": "defer",
+        "ok_wrap": "defer",
+        "string_format": "denied",
+        "recursion": "defer"
+    },
+
+    "detection_weight": 0.76,
+    "_weight_rationale": "Body-heavy with key denials: queries and output-display explicitly deny mutation.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Collection mutation is the state-change primitive — it separates observers from actors.",
+    "_X5_scripture": "Proverbs 4:23 — Keep thy heart with all diligence; for out of it are the issues of life."
+}

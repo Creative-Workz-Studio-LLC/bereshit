@@ -17,6 +17,7 @@
             "id": "typed_mutable",
             "syntax": "let mut {name}: {type} = {expr};",
             "detect": "^\\s*let\\s+mut\\s+(\\w+):\\s*([^=]+)\\s*=\\s*(.+);",
+            "emit": "let mut {name}: {type} = {expr};",
             "captures": { "name": 1, "type": 2, "expr": 3 },
             "mutable": true,
             "priority": 1
@@ -25,6 +26,7 @@
             "id": "typed_immutable",
             "syntax": "let {name}: {type} = {expr};",
             "detect": "^\\s*let\\s+(\\w+):\\s*([^=]+)\\s*=\\s*(.+);",
+            "emit": "let {name}: {type} = {expr};",
             "captures": { "name": 1, "type": 2, "expr": 3 },
             "mutable": false,
             "priority": 2
@@ -33,6 +35,7 @@
             "id": "mutable",
             "syntax": "let mut {name} = {expr};",
             "detect": "^\\s*let\\s+mut\\s+(\\w+)\\s*=\\s*(.+);",
+            "emit": "let mut {name} = {expr};",
             "captures": { "name": 1, "expr": 2 },
             "mutable": true,
             "priority": 3
@@ -41,11 +44,19 @@
             "id": "immutable",
             "syntax": "let {name} = {expr};",
             "detect": "^\\s*let\\s+(\\w+)\\s*=\\s*(.+);",
+            "emit": "let {name} = {expr};",
             "captures": { "name": 1, "expr": 2 },
             "mutable": false,
             "priority": 4
         }
     ],
+
+    "go_to_rust_mapping": {
+        "name := expr": "let name = expr; — short decl → immutable let",
+        "var name Type = expr": "let name: Type = expr; — typed decl → typed let",
+        "var name Type": "let name: Type = Type::default(); — zero-value → explicit default",
+        "name = expr (reassign)": "let mut name = expr; or name = expr; — Go all-mutable, Rust needs mut"
+    },
 
     "_X5_note": "Rust variable bindings — immutable by default, explicit mut for mutability."
 }

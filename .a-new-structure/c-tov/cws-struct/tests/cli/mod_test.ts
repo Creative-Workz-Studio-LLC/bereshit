@@ -74,11 +74,11 @@ async function runCli(...args: string[]): Promise<CliResult> {
 // Subprocess 1: help/version/formats — non-lint commands
 // ---------------------------------------------------------------------------
 
-Deno.test("cli/help: --help exits 0 with usage, version, and formats info", async () => {
+Deno.test("[CWS-T00-120] cli/help: --help exits 0 with usage, version, and formats info", async () => {
   const result = await runCli("--help");
   assertEquals(result.code, 0);
   assert(result.stdout.includes("Usage"), "Should show usage information");
-  assert(result.stdout.includes("Operations"), "Should list operations");
+  assert(result.stdout.includes("Commands"), "Should list commands");
   assert(result.stdout.includes("cws-struct"), "Should mention tool name");
 });
 

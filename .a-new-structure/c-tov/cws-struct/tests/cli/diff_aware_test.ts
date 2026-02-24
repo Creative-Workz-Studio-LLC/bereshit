@@ -71,12 +71,16 @@ async function runCli(
 // 1. CLI parsing — help shows new flags (SINGLE subprocess)
 // ---------------------------------------------------------------------------
 
-Deno.test("cli/help: shows --changed, --since, --staged flags and watch command", async () => {
-  const { stdout } = await runCli(["help"]);
-  assertStringIncludes(stdout, "--changed");
-  assertStringIncludes(stdout, "--since");
-  assertStringIncludes(stdout, "--staged");
-  assertStringIncludes(stdout, "watch");
+Deno.test("[CWS-T00-121] cli/help: shows --changed, --since, --staged flags and watch command", async () => {
+  // Diff flags live in "help options" (or "help lint"), not main help.
+  // Watch appears in main help as a command.
+  const { stdout: mainHelp } = await runCli(["help"]);
+  assertStringIncludes(mainHelp, "watch");
+
+  const { stdout: optionsHelp } = await runCli(["help", "options"]);
+  assertStringIncludes(optionsHelp, "--changed");
+  assertStringIncludes(optionsHelp, "--since");
+  assertStringIncludes(optionsHelp, "--staged");
 });
 
 // ---------------------------------------------------------------------------

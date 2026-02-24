@@ -1,0 +1,61 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-collection-mutation",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Collection Mutation",
+
+    "concept": "collection_mutation",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "insert",
+            "syntax": "{collection}.insert({key}, {value})",
+            "detect": "(\\w+)\\.insert\\((.+?)\\)",
+            "emit": "{collection}.insert({key}, {value})",
+            "captures": { "collection": 1, "args": 2 },
+            "notes": "HashMap/BTreeMap insert — adds or replaces a key-value pair.",
+            "priority": 1
+        },
+        {
+            "id": "push",
+            "syntax": "{collection}.push({value})",
+            "detect": "(\\w+)\\.push\\((.+?)\\)",
+            "emit": "{collection}.push({value})",
+            "captures": { "collection": 1, "value": 2 },
+            "notes": "Vec push — appends to the end.",
+            "priority": 2
+        },
+        {
+            "id": "remove",
+            "syntax": "{collection}.remove({key})",
+            "detect": "(\\w+)\\.remove\\((.+?)\\)",
+            "emit": "{collection}.remove({key})",
+            "captures": { "collection": 1, "key": 2 },
+            "notes": "Remove by key (maps) or by value (sets).",
+            "priority": 3
+        },
+        {
+            "id": "pop",
+            "syntax": "{collection}.pop()",
+            "detect": "(\\w+)\\.pop\\(\\)",
+            "emit": "{collection}.pop()",
+            "captures": { "collection": 1 },
+            "notes": "Vec pop — removes and returns the last element.",
+            "priority": 4
+        }
+    ],
+
+    "go_to_rust_mapping": {
+        "m[key] = value": "map.insert(key, value)",
+        "append(slice, value)": "vec.push(value)",
+        "delete(m, key)": "map.remove(&key)"
+    },
+
+    "_X5_note": "Rust collection mutation — method calls on owned or &mut collections."
+}

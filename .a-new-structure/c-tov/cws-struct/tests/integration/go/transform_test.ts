@@ -17,7 +17,7 @@
 import { assertEquals, assert } from "jsr:@std/assert";
 import {
   fixture, lazyFormat, byRule, hasRule,
-} from "../../helpers.ts";
+} from "@test/helpers.ts";
 
 // ============================================================================
 // BODY
@@ -29,7 +29,7 @@ const go = lazyFormat("go");
 // transform/ — Valid files need no transforms
 // ---------------------------------------------------------------------------
 
-Deno.test("transform/valid-library: no changes needed (dry-run)", async () => {
+Deno.test("[CWS-T00-112] transform/valid-library: no changes needed (dry-run)", async () => {
   const f = fixture("go/structure/valid-library.go");
   const results = await go.transform!(f, { dryRun: true, extensions: false, force: false, steps: false });
   const moves = byRule(results, "move-tests").concat(

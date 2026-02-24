@@ -720,15 +720,19 @@ function checkDirectives(ctx: GoFileContext): LintResult[] {
   }
 
   // Derived files: check standard //omni: directives
+  // Note: strip leading // from directive names in rule strings to avoid
+  // embedded slashes breaking matchRule() pattern matching.
   for (const directive of REQUIRED_DIRECTIVES) {
     if (!ctx.directives.has(directive)) {
-      results.push(error(file, `directive/${directive}`, `Missing ${directive} — REQUIRED`));
+      const tag = directive.replace(/^\/\//, "");
+      results.push(error(file, `directive/${tag}/required`, `Missing ${directive} — REQUIRED`));
     }
   }
 
   for (const directive of RECOMMENDED_DIRECTIVES) {
     if (!ctx.directives.has(directive)) {
-      results.push(warn(file, `directive/${directive}`, `Missing ${directive} — recommended`));
+      const tag = directive.replace(/^\/\//, "");
+      results.push(warn(file, `directive/${tag}/recommended`, `Missing ${directive} — recommended`));
     }
   }
 
@@ -1174,10 +1178,13 @@ function checkDirectiveFormat(ctx: GoFileContext): LintResult[] {
   const results: LintResult[] = [];
   const file = ctx.filePath;
 
-  // Check //omni:code value for derived files
+  // Check //omni:code value for derived files.
+  // Arrow syntax: -subtype->role is valid if the base -subtype is known.
+  // e.g., "--go -library->api" is known because "--go -library" is known.
   const codeInfo = ctx.directives.get("//omni:code");
   if (codeInfo !== undefined && codeInfo.value !== "") {
-    const isKnown = KNOWN_CODE_DIRECTIVES.some((k) => codeInfo.value === k);
+    const baseValue = codeInfo.value.replace(/->[\w-]+$/, "");
+    const isKnown = KNOWN_CODE_DIRECTIVES.some((k) => baseValue === k);
     if (!isKnown) {
       results.push(
         info(file, "directive/code-format",
@@ -1187,10 +1194,12 @@ function checkDirectiveFormat(ctx: GoFileContext): LintResult[] {
     }
   }
 
-  // Check #!omni template value for template files
+  // Check #!omni template value for template files.
+  // Same arrow syntax applies to templates.
   const templateInfo = ctx.directives.get("#!omni:template");
   if (templateInfo !== undefined && templateInfo.value !== "") {
-    const isKnown = KNOWN_CODE_DIRECTIVES.some((k) => templateInfo.value === k);
+    const baseValue = templateInfo.value.replace(/->[\w-]+$/, "");
+    const isKnown = KNOWN_CODE_DIRECTIVES.some((k) => baseValue === k);
     if (!isKnown) {
       results.push(
         info(file, "directive/template-format",
@@ -1695,12 +1704,19 @@ async function lintGoFile(filePath: string): Promise<LintResult[]> {
   // ── Concept detection — R[5] per-container checks ────────────────────────
   // Same universal pipeline as Rust handler: detect patterns from R5_patterns
   // schemas, compute containers for ALL 4 blocks uniformly.
+  // When typing arrow is present, concept maps are overlaid per-section:
+  //   required → keep (+ concept_overrides), available → soften, irrelevant → skip.
   // Go currently has emit-only schemas (no detect) — the loader gracefully
   // returns empty detectors, so concept checks produce no results until
   // Go detect patterns are added (Phase 0).
   const conceptDetectors = await loadConceptDetectors("go");
 
-  // METADATA — all 6 sections are ALL_DENIED
+  // Resolve typing profile for concept map overlays.
+  const typingProfile = (ctx.typing && ctx.subtype)
+    ? _goRules!.typingMaps[ctx.subtype]?.[ctx.typing]
+    : undefined;
+
+  // METADATA — all 6 sections are ALL_DENIED. No typing overlay needed.
   const metadataLines = getBlockLines(ctx.lines, ctx.blocks, "METADATA");
   const metadataConceptContainers = buildConceptContainers(
     "metadata", ctx.filePath, metadataLines, [], conceptDetectors,
@@ -1711,6 +1727,7 @@ async function lintGoFile(filePath: string): Promise<LintResult[]> {
   const setupRanges = _getSubsectionRanges(setupLines, SETUP_SUBSECTIONS);
   const setupConceptContainers = buildConceptContainers(
     "setup", ctx.filePath, setupLines, setupRanges, conceptDetectors,
+    { typingBlock: typingProfile?.SETUP },
   );
 
   // BODY — 13 sections with compiled SubsectionDef[] (universal detection)
@@ -1718,13 +1735,16 @@ async function lintGoFile(filePath: string): Promise<LintResult[]> {
   const bodyRanges = _getSubsectionRanges(bodyLines, _goRules!.bodySubsectionDefs);
   const bodyConceptContainers = buildConceptContainers(
     "body", ctx.filePath, bodyLines, bodyRanges, conceptDetectors,
+    { typingBlock: typingProfile?.BODY },
   );
 
   // CLOSING — 8 sections (Cv/Ce/Cc code zones + X1-X5 doc zones)
+  // When typing is active, CLOSING gets softened (tests verify BODY, not primary code).
   const closingLines = getBlockLines(ctx.lines, ctx.blocks, "CLOSING");
   const closingRanges = _getSubsectionRanges(closingLines, _goRules!.closingSubsectionDefs);
   const closingConceptContainers = buildConceptContainers(
     "closing", ctx.filePath, closingLines, closingRanges, conceptDetectors,
+    typingProfile ? { typingBlock: { required: [], available: [], irrelevant: [] } } : undefined,
   );
 
   const chain: BlockLintChain = {

@@ -15,19 +15,24 @@
     "patterns": [
         {
             "id": "receiver_method",
+            "syntax": "{short}.{Method}({args})",
             "emit": "{short}.{Method}({args})",
-            "when": "calling a method through the receiver — Rust self.method(args)",
-            "notes": "Go receiver is short name (first letter of type, lowercase): e.g., 'e' for Exists.",
+            "notes": "Method through receiver — Go receiver names are short (1-3 chars, lowercase). e.g., e.Exists(). No detect: syntactically identical to any variable.Method() — requires function signature analysis.",
             "priority": 1
         },
         {
             "id": "receiver_field",
+            "syntax": "{short}.{Field}",
             "emit": "{short}.{Field}",
-            "when": "accessing a field through the receiver — Rust self.field",
-            "notes": "Exported fields PascalCase, unexported camelCase.",
+            "notes": "Field through receiver — PascalCase exported, camelCase unexported. No detect: same reason.",
             "priority": 2
         }
     ],
 
-    "_X5_note": "Go receiver access — short name convention, not 'self' or 'this'."
+    "rust_to_go_mapping": {
+        "self.method(args)": "r.Method(args) — self → short receiver name, snake_case → PascalCase",
+        "self.field": "r.Field — self → short receiver name, lowercase → PascalCase if exported"
+    },
+
+    "_X5_note": "Go receiver access — short name convention, not 'self' or 'this'. No detect: receiver vs local variable is semantic, not syntactic."
 }

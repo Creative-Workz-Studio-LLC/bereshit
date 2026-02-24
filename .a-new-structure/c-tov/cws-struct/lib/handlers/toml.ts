@@ -603,7 +603,7 @@ function checkMetadata(
       const fix = sectionFix(`_metadata.${key}`, key, r.metadataFields, after);
       const line = lineMap?.get(`_metadata.${key}`) ?? metaLine;
       results.push(
-        error(file, `metadata/${key}`, `Missing _metadata.${key} — REQUIRED`,
+        error(file, `metadata/${key}/required`, `Missing _metadata.${key} — REQUIRED`,
           line ? { line, fix } : fix),
       );
     }
@@ -616,7 +616,7 @@ function checkMetadata(
       const fix = sectionFix(`_metadata.${key}`, key, r.metadataFields, after);
       const line = lineMap?.get(`_metadata.${key}`) ?? metaLine;
       results.push(
-        warn(file, `metadata/${key}`, `Missing _metadata.${key} — extension identity`,
+        warn(file, `metadata/${key}/extension-identity`, `Missing _metadata.${key} — extension identity`,
           line ? { line, fix } : fix),
       );
     }
@@ -629,7 +629,7 @@ function checkMetadata(
       const fix = sectionFix(`_metadata.${key}`, key, r.metadataFields, after);
       const line = lineMap?.get(`_metadata.${key}`) ?? metaLine;
       results.push(
-        error(file, `metadata/${key}`, `Missing _metadata.${key} — REQUIRED`,
+        error(file, `metadata/${key}/required-context`, `Missing _metadata.${key} — REQUIRED`,
           line ? { line, fix } : fix),
       );
     }
@@ -642,7 +642,7 @@ function checkMetadata(
       const fix = sectionFix(`_metadata.${key}`, key, r.metadataFields, after);
       const line = lineMap?.get(`_metadata.${key}`) ?? metaLine;
       results.push(
-        warn(file, `metadata/${key}`, `Missing _metadata.${key} — extension context`,
+        warn(file, `metadata/${key}/extension-context`, `Missing _metadata.${key} — extension context`,
           line ? { line, fix } : fix),
       );
     }
@@ -968,7 +968,7 @@ function checkClosing(
       const fix = sectionFix(`_closing.${key}`, key, r.closingFields, after);
       const line = lineMap?.get(`_closing.${key}`) ?? closingLine;
       results.push(
-        error(file, `closing/${key}`, `Missing _closing.${key} — REQUIRED`,
+        error(file, `closing/${key}/required`, `Missing _closing.${key} — REQUIRED`,
           line ? { line, fix } : fix),
       );
     }
@@ -981,7 +981,7 @@ function checkClosing(
       const fix = sectionFix(`_closing.${key}`, key, r.closingFields, after);
       const line = lineMap?.get(`_closing.${key}`) ?? closingLine;
       results.push(
-        info(file, `closing/${key}`, `Missing _closing.${key} — defined closing section`,
+        info(file, `closing/${key}/defined`, `Missing _closing.${key} — defined closing section`,
           line ? { line, fix } : fix),
       );
     }
@@ -2926,7 +2926,7 @@ async function computeTomlHealth(
   // Required closing sections (X1, X5)
   for (const section of rules.requiredClosing) {
     const acts: AtomicAction[] = [];
-    acts.push(action(`${section} exists`, section, "closing", failures, `closing/${section}`));
+    acts.push(action(`${section} exists`, section, "closing", failures, `closing/${section}/required`));
     const fieldReqs = rules.closingFields[section];
     if (fieldReqs) {
       for (const f of fieldReqs.required) {
@@ -2946,7 +2946,7 @@ async function computeTomlHealth(
   // Defined closing sections (X2, X3, X4)
   for (const section of rules.definedClosing) {
     const acts: AtomicAction[] = [
-      action(`${section} exists`, section, "closing", failures, `closing/${section}`),
+      action(`${section} exists`, section, "closing", failures, `closing/${section}/defined`),
     ];
     const fieldReqs = rules.closingFields[section];
     if (fieldReqs) {

@@ -15,26 +15,39 @@
     "patterns": [
         {
             "id": "if_else",
+            "syntax": "if {condition} {\n\t{then_body}\n} else {\n\t{else_body}\n}",
+            "detect": "^\\s*if\\s+(.+)\\s*\\{",
             "emit": "if {condition} {\n\t{then_body}\n} else {\n\t{else_body}\n}",
-            "when": "branching with both true and false paths",
+            "captures": { "condition": 1 },
             "notes": "Go if: no parens, braces required, opening brace on same line.",
             "priority": 1
         },
         {
             "id": "if_only",
+            "syntax": "if {condition} {\n\t{then_body}\n}",
+            "detect": "^\\s*if\\s+(.+)\\s*\\{",
             "emit": "if {condition} {\n\t{then_body}\n}",
-            "when": "branching with only true path",
-            "notes": "Simple if without else.",
+            "captures": { "condition": 1 },
+            "notes": "Simple if without else — same detect as if_else, disambiguated by continuation.",
             "priority": 2
         },
         {
             "id": "if_init",
+            "syntax": "if {init}; {condition} {\n\t{then_body}\n}",
+            "detect": "^\\s*if\\s+(.+);\\s*(.+)\\s*\\{",
             "emit": "if {init}; {condition} {\n\t{then_body}\n}",
-            "when": "if with initialization statement (Go-specific)",
-            "notes": "Go allows an init statement before condition: if err := f(); err != nil { ... }",
+            "captures": { "init": 1, "condition": 2 },
+            "notes": "Go-specific: init statement before condition. e.g., if err := f(); err != nil { ... }",
             "priority": 3
         }
     ],
+
+    "rust_to_go_mapping": {
+        "if condition {": "if condition { — nearly identical syntax",
+        "} else if condition {": "} else if condition { — identical",
+        "if let Some(x) = expr {": "if x, ok := expr; ok { — if-let → init statement with ok check",
+        "let x = expr; if condition {": "if x := expr; condition { — separate let + if → init-if"
+    },
 
     "_X5_note": "Go if — no parens around condition, opening brace MUST be on same line as if."
 }

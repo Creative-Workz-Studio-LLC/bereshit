@@ -15,19 +15,28 @@
     "patterns": [
         {
             "id": "return_nil_error",
+            "syntax": "return nil",
+            "detect": "^\\s*return\\s+nil\\s*$",
             "emit": "return nil",
-            "when": "function returns only error — Ok(()) maps to return nil",
-            "notes": "Void success in Go: return nil (the error is nil).",
+            "captures": {},
+            "notes": "Void success — return nil (error is nil). Maps to Rust Ok(()).",
             "priority": 1
         },
         {
             "id": "return_value_nil",
+            "syntax": "return {expr}, nil",
+            "detect": "^\\s*return\\s+(.+),\\s*nil\\s*$",
             "emit": "return {expr}, nil",
-            "when": "function returns (T, error) — Ok(val) maps to return val, nil",
-            "notes": "Success with value: the pair (value, nil).",
+            "captures": { "expr": 1 },
+            "notes": "Success with value — the pair (value, nil). Maps to Rust Ok(val).",
             "priority": 2
         }
     ],
+
+    "rust_to_go_mapping": {
+        "Ok(())": "return nil — void Ok → nil error",
+        "Ok(val)": "return val, nil — value Ok → value + nil error"
+    },
 
     "_X5_note": "Go success — nil error means 'it worked'. No Result type wrapper."
 }

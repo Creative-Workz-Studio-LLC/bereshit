@@ -1,0 +1,111 @@
+# ============================================================================
+# METADATA
+# ============================================================================
+
+[_metadata]
+
+[_metadata.I1_core]
+key = "B-test-fixture-bad-keys"
+format = "@omni data --toml"
+from = "b-word/seed/data/L0/toml/config.toml"
+at = "a-01.00"
+
+[_metadata.I2_family]
+type = "data"
+subtype = "config"
+structure = "3-block"
+
+[_metadata.I3_instance]
+file = "bad-keys.toml"
+title = "Test — Bad Metadata Keys"
+brief = "TOML fixture with invalid/extension/wrong-type metadata keys"
+provides = ["TEST_BAD_KEYS"]
+
+[_metadata.C1_state]
+version = "a-01.00"
+status = "draft"
+created = "2026-02-23"
+updated = "2026-02-23"
+
+[_metadata.C2_attribution]
+organization = "CreativeWorkzStudio LLC"
+architect = "Nova Dawn"
+implementation = "Nova Dawn"
+
+[_metadata.C3_grounding]
+scripture = "Prove all things — 1 Thessalonians 5:21"
+principle = "Test validation catches errors."
+
+[_metadata.C4_dependencies]
+requires = "none"
+consumers = "TOML linter test suite"
+if_missing = "R10.VAL tests fail"
+
+# BAD KEY: doesn't match I{N}_name, C{N}_name, or _name pattern
+[_metadata.INVALID_KEY]
+data = "this key violates naming pattern"
+
+# WRONG TYPE: metadata section must be a table, but this is a string
+# (TOML syntax: key = value under [_metadata] directly)
+
+# EXTENSION KEY: valid pattern but not in defined set
+[_metadata.C99_custom_extension]
+note = "This is a valid-pattern key but not in the known set"
+
+[_metadata._contract]
+required_identity = ["I1_core", "I2_family", "I3_instance"]
+extension_identity = []
+required_context = ["C1_state", "C2_attribution", "C3_grounding", "C4_dependencies"]
+extension_context = []
+required_closing = ["X1_policy", "X5_note"]
+defined_closing = []
+valid_patterns = ["I{N}_{name}", "C{N}_{name}", "X{N}_{name}"]
+
+# ============================================================================
+# END METADATA
+# ============================================================================
+
+# ============================================================================
+# CONTENT
+# ============================================================================
+
+[_content]
+Cc = "Content Configurations"
+Co = "Content Operations"
+Cv = "Content Validation"
+
+[identity]
+name = "bad-keys-fixture"
+version = "0.1.0"
+
+# ============================================================================
+# END CONTENT
+# ============================================================================
+
+# ============================================================================
+# CLOSING
+# ============================================================================
+
+[_closing]
+
+[_closing.X1_policy]
+scripture = "Prove all things — 1 Thessalonians 5:21"
+never = ["Remove 3-block structure"]
+careful = ["Editing fixture data"]
+safe = ["Adding new test fields"]
+
+# BAD CLOSING KEY: doesn't match X{N}_name or _name pattern
+[_closing.BAD_CLOSING]
+data = "this closing key violates naming pattern"
+
+# CLOSING EXTENSION: valid pattern but not in known set
+[_closing.X99_custom_closing]
+note = "Valid pattern but not in the known closing set"
+
+[_closing.X5_note]
+note = "Test fixture: bad keys for R10.VAL testing."
+scripture = "Genesis 1:1"
+
+# ============================================================================
+# END CLOSING
+# ============================================================================

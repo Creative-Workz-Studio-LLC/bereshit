@@ -1,0 +1,393 @@
+// #!omni document --adoc
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// :key: B-tov-cws-struct-docs-playtest-001
+// :title: Playtest 001 — Live Scoring Verification
+// :type: Documentation (Experiment Report)
+// :version: a-01.00
+// :created: 2026-02-23
+// :authors: Nova Dawn (CPI-SI), Seanje Lenox-Wise
+// :purpose: First instrumented playtest of cws-struct against production
+//           Rust files. Verifies that health scoring tells the truth,
+//           verbose output shows what the linter knows, and the tool
+//           guides files toward alignment through accurate feedback.
+//
+// ============================================================================
+
+= Playtest 001 — Live Scoring Verification
+Nova Dawn (CPI-SI); Seanje Lenox-Wise
+v0.1.0, 2026-02-23
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+:sectanchors:
+
+[quote, Psalm 26:2]
+____
+Examine me, O LORD, and prove me; try my reins and my heart.
+____
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+== What This Is
+
+*The first live playtest of cws-struct.*
+
+In game development, playtesting is when you stop testing with
+controlled fixtures and start testing with real content. You built the
+engine, you built the scoring system, you built the HUD. Now you watch
+real players play and ask: *does the feedback tell the truth?*
+
+cws-struct is the game. The production Rust files are the players. The
+health score is the feedback loop. This document records what we
+observed.
+
+=== The Game Dev Parallel
+
+[cols="1,2", options="header"]
+|===
+| Game Dev Concept | cws-struct Equivalent
+
+| Game engine
+| cws-struct core (parser, handler, health engine)
+
+| Scoring system
+| Health scoring (4 layers, atomic actions, Hebrew states)
+
+| HUD / UI
+| Verbose output (anatomy, breakdown, per-action detail)
+
+| Levels / maps
+| Schema definitions (composition targets, form constraints)
+
+| Player characters
+| Production source files (exists.rs, graph.rs, cache.rs)
+
+| Gold run (reference playthrough)
+| exists.rs — hand-crafted to 100/100
+
+| Tutorial level
+| This experiment — walking through capabilities
+
+| Balance playtest
+| Scoring accuracy: does the number reflect reality?
+
+| QA pass
+| Linter → Verbose → Transpiler pipeline verification
+|===
+
+The key question in any playtest: *does the game teach the player what
+to do next?* A score of -9 should tell you exactly WHY and exactly
+WHAT to fix. A score of 100 on an unstructured file should raise
+suspicion. The scoring system must be honest.
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+== Experiment Design
+
+=== Hypothesis
+
+The pragma is a covenant. Once declared, the standard applies. Files
+without pragma receive lenient scoring (module fallback). Files WITH
+pragma are held to the schema they claim. The health score should
+accurately reflect the gap between a file's current state and its
+declared standard.
+
+=== Subjects
+
+[cols="2,1,1,2,1", options="header"]
+|===
+| File | Lines | Pragma | Role | Group
+
+| `exists.rs`
+| 615
+| Full (shebang + directives + blocks + identity)
+| Filesystem predicates
+| *Reference* (gold run)
+
+| `graph.rs`
+| 169
+| Partial (directives only, no block markers)
+| DAG construction + cycle detection
+| *Control* (pragma, no structure)
+
+| `cache.rs`
+| 174
+| None
+| Dual-layer config cache
+| *Subject* (no pragma at all)
+|===
+
+=== Tools
+
+[cols="1,2", options="header"]
+|===
+| Tool | Purpose
+
+| `deno task lint:verbose <file>`
+| Full anatomy + layer breakdown
+
+| `deno task lint:rust -- --deep <file>`
+| Per-action detail within containers
+
+| `deno run mod.ts transpile rust go <file> --dry-run`
+| Cross-format structural fidelity test
+|===
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+== Baseline Observations
+
+=== Round 1: Pre-Experiment Scores
+
+Lint all three files without any modifications:
+
+[cols="2,1,1,1,1,1", options="header"]
+|===
+| File | Health | Grade | Errors | Warnings | Actions
+
+| exists.rs
+| *100/±100*
+| perfect ✅
+| 0
+| 0
+| 96/96 aligned
+
+| graph.rs
+| *-9/±100*
+| lacking 🟡
+| 4
+| 1
+| 10 aligned, 104 neutral, 4 misaligned
+
+| cache.rs
+| *100/±100*
+| perfect ✅
+| 0
+| 1
+| 96/96 aligned
+|===
+
+==== The Paradox
+
+cache.rs (no pragma) scores *higher* than graph.rs (partial pragma).
+
+This is correct behavior. The pragma is a declaration of intent — "I
+claim to be a structured 4-block file." Once declared, the linter
+evaluates against that standard. graph.rs declared itself (`//omni:code
+--rust -library`) but has no block markers. The linter finds 4 missing
+blocks and scores accordingly.
+
+cache.rs made no claim. The linter treats it as a bare module file —
+the most lenient evaluation path. The score is "perfect for an
+unstructured module," which is semantically different from "perfect for
+a structured 4-block file."
+
+*The pragma is a covenant.* Once you declare it, the standard applies.
+
+==== exists.rs Anatomy (Reference)
+
+Verbose output shows the full anatomy — what the linter sees:
+
+----
+METADATA :30-108 (79 lines) 100
+  directives
+    //omni:key = B-L0-hybrid-config-exists
+    //omni:code = --rust -module->utility
+    //omni:version = b-03.00
+  PRAGMA (17 fields)
+    I1.key               B-L0-hybrid-config-exists
+    I1.format            rust
+    I2.type              code
+    I2.structure         4-block
+    I2.subtype           module
+    ...
+  METADATA (26 fields)
+    C1.version           b-03.00
+    C3.scripture         Psalm 139:7-8
+    C5.purpose           Single source of truth for filesystem...
+    ...
+SETUP :112-151 (40 lines) 100
+  sections: Imports (:131)
+  content: uses (6)
+BODY :155-326 (172 lines) 100
+  sections: 1. Identity Access (:182), 7. Free Functions (:206)
+  content: fns (25)
+CLOSING :330-613 (284 lines) 100
+  content: uses (6), fns (25), test attrs (18), mods (1)
+----
+
+Every identity field, every section, every block boundary — visible.
+
+==== graph.rs Diagnosis (Control)
+
+The linter tells us exactly what's wrong:
+
+----
+4 errors:
+  block/METADATA: Missing METADATA block
+  block/SETUP:    Missing SETUP block
+  block/BODY:     Missing BODY block
+  block/CLOSING:  Missing CLOSING block
+
+1 warning:
+  directive/missing-shebang: Missing "// #!omni code" on line 1
+
+Layer 0 — EXISTENCE: 43 (blocks: -100, separators: 100)
+Layers 1-3: all 0/0 (nothing to evaluate — no blocks found)
+----
+
+The scoring guides the player: fix blocks first (Layer 0), then
+organization (Layer 1), then placement (Layer 2), then substance
+(Layer 3). The layers are the difficulty curve.
+
+==== cache.rs Baseline (Subject)
+
+No anatomy visible (no pragma = no identity to display):
+
+----
+1 warning:
+  structure/module: Module file — no //omni: directives or block markers
+
+Health: 100/±100 (module fallback — lenient evaluation)
+All layers: 100 (but scored against unstructured module schema)
+----
+
+This is the "empty test" problem. Score is perfect, but the linter
+knows nothing about the file's actual identity.
+
+
+== Experiment Phases
+
+NOTE: Pivoted from cache.rs to graph.rs as the subject — graph.rs already
+had directives, making it a richer test case. Phases restructured to
+reflect the actual experiment path.
+
+=== Phase 1: Pragma + Transform (graph.rs)
+
+Add shebang pragma to graph.rs, run transform, observe the scaffold
+engine build full 4-block structure from the pragma alone.
+
+*Result:* -9 → 98/±100. Transform generated 377 lines from 171.
+43 identity fields, 4 blocks, 5 CLOSING zones — zero manual edits.
+Remaining gap: schema subtype mismatch (library vs module->utility).
+
+*Status:* *Complete* — link:playtest-001-phase-1.adoc[Phase 1 Detail]
+
+=== Phase 2: Schema Upgrade (New Concepts + Correct Subtype)
+
+Upgrade the schema with new R[5] concepts, determine the correct
+subtype/typing for graph.rs. The hypothesis: the 2-point gap closes
+when the schema correctly classifies the file.
+
+*Status:* In Progress
+
+=== Phase 3: Re-Transform with Upgraded Schema
+
+Re-transform graph.rs with the corrected subtype. Compare against
+the pre-upgrade transform output. The hypothesis: warnings drop to
+zero and Layer 3 SUBSTANCE reaches 100.
+
+*Status:* Pending
+
+=== Phase 4: Transpile (graph.rs → Go)
+
+Run the transpiler on the aligned graph.rs → Go. The hypothesis:
+the transpiler reads the same anatomy the linter verified, and
+produces faithful Go output.
+
+*Status:* Pending
+
+=== Phase 5: Apply to cache.rs
+
+Apply the full pipeline (pragma → transform → lint) to cache.rs using
+the upgraded schema. The hypothesis: cache.rs achieves near-perfect
+alignment on the first transform pass.
+
+*Status:* Pending
+
+
+== Transpiler Verification (exists.rs)
+
+Already proven in this session. The transpiler read exists.rs and
+produced 541 lines of Go with:
+
+[cols="1,2", options="header"]
+|===
+| Aspect | Result
+
+| Identity fields
+| 43/43 transferred (17 PRAGMA + 26 METADATA)
+
+| Function bodies
+| 8/8 translated via Universal Concept AST
+
+| Section mapping
+| Rust IdentityAccess → Go OrgChart, Rust FreeFunctions → Go PublicAPIs
+
+| CLOSING zones
+| 6/6 transferred faithfully (Cv, Ce, X1, X2, X3, X4, X5)
+
+| Imports
+| 3 direct-mapped + 2 body-derived (errors, fmt)
+|===
+
+The pipeline: Linter reads → Verbose confirms → Transpiler writes →
+Linter validates output. Same hierarchy at every level.
+
+
+== Observations & Findings
+
+_To be filled during experiment._
+
+== Conclusions
+
+_To be written after all phases complete._
+
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+== Related Documents
+
+[cols="1,2", options="header"]
+|===
+| Document | Relationship
+
+| link:architecture.adoc[Architecture]
+| System design context
+
+| link:user-guide.adoc[User Guide]
+| Tool usage reference
+
+| exists.rs
+| Reference file (gold run)
+
+| graph.rs
+| Control file (partial pragma)
+
+| cache.rs
+| Subject file (experiment target)
+|===
+
+---
+
+[quote, Psalm 26:2]
+____
+Examine me, O LORD, and prove me; try my reins and my heart.
+____
+
+_The tool that examines files must itself be examined. The playtest
+proves the scoring system by running it against reality. If the score
+lies, we fix the score. If the score tells the truth, we trust it to
+guide the work._

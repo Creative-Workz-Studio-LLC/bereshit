@@ -19,7 +19,7 @@
 import { assertEquals, assert, assertGreater } from "jsr:@std/assert";
 import {
   fixture, lazyFormat, byRule, hasRule, hasMessage,
-} from "../../helpers.ts";
+} from "@test/helpers.ts";
 
 // ============================================================================
 // BODY
@@ -31,7 +31,7 @@ const rust = lazyFormat("rust");
 // transform/separators — Separator normalization
 // ---------------------------------------------------------------------------
 
-Deno.test("transform/separators: dry-run detects ASCII dashes and prefix issues", async () => {
+Deno.test("[CWS-T00-112] transform/separators: dry-run detects ASCII dashes and prefix issues", async () => {
   const f = fixture("rust/format/transform-separators.rs");
   const results = await rust.transform!(f, { dryRun: true, extensions: false, force: false, steps: false });
   const dashRules = byRule(results, "dash-to-unicode");

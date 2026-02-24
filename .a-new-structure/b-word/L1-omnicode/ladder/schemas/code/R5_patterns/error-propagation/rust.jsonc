@@ -17,6 +17,7 @@
             "id": "question_mark_binding",
             "syntax": "let {name} = {expr}?;",
             "detect": "^\\s*let\\s+(\\w+)\\s*=\\s*(.+)\\?;",
+            "emit": "let {name} = {expr}?;",
             "captures": { "name": 1, "expr": 2 },
             "notes": "Bind the Ok value, early-return on Err.",
             "priority": 1
@@ -25,11 +26,17 @@
             "id": "question_mark_chain",
             "syntax": "{expr}?",
             "detect": "(.+)\\?",
+            "emit": "{expr}?",
             "captures": { "expr": 1 },
             "notes": "Inline ? — unwrap or propagate. May appear mid-expression.",
             "priority": 2
         }
     ],
+
+    "go_to_rust_mapping": {
+        "val, err := expr; if err != nil { return err }": "let val = expr?; — full if-err block → single ?",
+        "if err := expr; err != nil { return err }": "expr?; — inline init form → ? operator"
+    },
 
     "_X5_note": "Rust ? operator — the most concise error propagation in any systems language."
 }

@@ -17,6 +17,7 @@
             "id": "explicit_return",
             "syntax": "return {expr};",
             "detect": "^\\s*return\\s+(.+);",
+            "emit": "return {expr};",
             "captures": { "expr": 1 },
             "explicit": true,
             "priority": 1
@@ -25,6 +26,7 @@
             "id": "implicit_return_ref",
             "syntax": "&{expr}",
             "detect": "^\\s*&(\\w+)\\s*$",
+            "emit": "&{expr}",
             "captures": { "expr": 1 },
             "explicit": false,
             "notes": "Implicit return of a reference — last expression without semicolon",
@@ -34,12 +36,20 @@
             "id": "implicit_return_expr",
             "syntax": "{expr}",
             "detect": "^\\s*([^;{}]+)\\s*$",
+            "emit": "{expr}",
             "captures": { "expr": 1 },
             "explicit": false,
             "notes": "Implicit return — last expression in block without semicolon. Must be checked last (broad match).",
             "priority": 10
         }
     ],
+
+    "go_to_rust_mapping": {
+        "return expr": "return expr; or expr (implicit) — Go always explicit, Rust prefers implicit",
+        "return": "() or return; — void return, Rust uses unit type",
+        "return val, nil": "Ok(val) — success tuple → Result::Ok",
+        "return nil": "Ok(()) — nil error → Ok unit"
+    },
 
     "_X5_note": "Rust returns: explicit 'return expr;' or implicit last expression without semicolon."
 }

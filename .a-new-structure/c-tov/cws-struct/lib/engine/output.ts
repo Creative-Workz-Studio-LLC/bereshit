@@ -22,9 +22,15 @@
 // SETUP
 // ============================================================================
 
-import type { LintSummary, LintResult, Severity, HealthScore } from "../foundation/mod.ts";
+import type {
+  LintSummary, LintResult, Severity,
+  HealthScore, AtomicAction,
+} from "../foundation/mod.ts";
 import { trueToLevel, levelToEmoji } from "../foundation/mod.ts";
-import { matchRule } from "../data/mod.ts";
+import {
+  matchRule, getByCode, codeSummary, related,
+  CATALOG_SIZE, LAYER_COUNTS, LAYER_DESCRIPTIONS,
+} from "../data/mod.ts";
 
 // ---------------------------------------------------------------------------
 // Constants — ANSI colors
@@ -90,6 +96,7 @@ export function printFileSummary(
   verbose: boolean,
   check?: string,
   why?: boolean,
+  deep?: boolean,
 ): void {
   // Determine if this is a focused view (block, container, or layer)
   const { focusBlock, focusContainer } = parseFocusFromCheck(check);
@@ -148,13 +155,18 @@ export function printFileSummary(
 
     // --why: show reasoning chain for each result
     if (why) {
-      printWhyAnnotation(r);
+      printWhyAnnotation(r, deep);
     }
+  }
+
+  // Verbose: show file anatomy (directives, blocks, identity) before health
+  if (verbose && summary.health) {
+    printFileAnatomy(summary);
   }
 
   // Verbose: show health breakdown (layer-grouped, with optional block focus)
   if (verbose && summary.health) {
-    printHealthBreakdown(summary.health, focusBlock);
+    printHealthBreakdown(summary.health, focusBlock, deep);
   }
 
   if (show.length > 0 || (verbose && summary.health)) console.log("");
@@ -162,25 +174,38 @@ export function printFileSummary(
 
 /**
  * Print reasoning chain for a single lint result.
- * Shows: layer, category, suggestion, and check function (traceability).
+ * Shows: catalog summary, layer, category, suggestion, traceability.
+ * With --deep: also shows related codes (same category/layer).
  *
  * "Here's what I see, why I flagged it, and where the rule comes from."
  */
-function printWhyAnnotation(r: LintResult): void {
+function printWhyAnnotation(r: LintResult, deep?: boolean): void {
   const entry = matchRule(r.rule);
   if (!entry) {
     console.log(`    ${COLORS.dim}why: no catalog entry for '${r.rule}'${COLORS.reset}`);
     return;
   }
 
-  const layer = `Layer ${entry.layer} (${entry.layerName})`;
-  const cat = entry.category;
-  const suggestion = entry.suggestionTemplate;
-  const check = entry.checkFunction;
+  // One-liner summary from catalog
+  const summary = codeSummary(entry.code);
+  console.log(`    ${COLORS.dim}${summary}${COLORS.reset}`);
 
-  console.log(`    ${COLORS.dim}why: ${layer} / ${cat}${COLORS.reset}`);
-  console.log(`    ${COLORS.dim}fix: ${suggestion}${COLORS.reset}`);
-  console.log(`    ${COLORS.dim}src: ${check}()${COLORS.reset}`);
+  // Layer + category + suggestion
+  const layerDesc = LAYER_DESCRIPTIONS[entry.layerName] ?? entry.layerName;
+  console.log(`    ${COLORS.dim}why: ${layerDesc}${COLORS.reset}`);
+  console.log(`    ${COLORS.dim}fix: ${entry.suggestionTemplate}${COLORS.reset}`);
+  console.log(`    ${COLORS.dim}src: ${entry.checkFunction}()${COLORS.reset}`);
+
+  // Deep: show related codes in same category
+  if (deep) {
+    const neighbors = related(entry.code);
+    const sameCatCodes = neighbors.sameCategory.map((e) => e.code);
+    if (sameCatCodes.length > 0) {
+      const preview = sameCatCodes.slice(0, 4).join(", ");
+      const more = sameCatCodes.length > 4 ? ` (+${sameCatCodes.length - 4})` : "";
+      console.log(`    ${COLORS.dim}related: ${preview}${more}${COLORS.reset}`);
+    }
+  }
 }
 
 /**
@@ -235,6 +260,141 @@ function ruleMatchesBlock(rule: string, block: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// File anatomy — verbose: show what the linter sees
+// ---------------------------------------------------------------------------
+
+/**
+ * Print file anatomy — the linter's view of this file, block by block.
+ *
+ * When anatomy data is available (from inspect), shows the file's actual
+ * content hierarchy: block → container → content (with real values).
+ * Falls back to health action extraction when anatomy isn't populated.
+ *
+ * Same hierarchy everywhere: schema → test → linter → output.
+ * Block → container → content. The system knows itself.
+ *
+ * "Write the vision, and make it plain upon tables." — Habakkuk 2:2
+ */
+function printFileAnatomy(summary: LintSummary): void {
+  const anatomy = summary.anatomy;
+  const health = summary.health;
+
+  if (!health && !anatomy) return;
+
+  // ── Rich anatomy (from inspect — block by block with real values) ──
+  if (anatomy) {
+    for (const block of anatomy.blocks) {
+      // Block header with line range
+      const blockHealth = health?.blocks.find(
+        (b) => b.block === block.name.toLowerCase(),
+      );
+      const scoreStr = blockHealth
+        ? ` ${healthColor(blockHealth.score)}${blockHealth.score}${COLORS.reset}`
+        : "";
+      console.log(
+        `  ${COLORS.bold}${block.name}${COLORS.reset}` +
+        ` ${COLORS.dim}:${block.startLine}-${block.endLine} (${block.lines} lines)${COLORS.reset}${scoreStr}`,
+      );
+
+      // Block-specific content
+      const blockLower = block.name.toLowerCase();
+
+      // METADATA: directives, identity, field-values
+      if (blockLower === "metadata") {
+        // Directives with actual values
+        if (Object.keys(anatomy.directives).length > 0) {
+          console.log(`    ${COLORS.dim}directives${COLORS.reset}`);
+          for (const [key, value] of Object.entries(anatomy.directives)) {
+            // Skip internal shebang keys, show user-facing directives
+            if (key.startsWith("#!omni:")) continue;
+            const display = value ? ` = ${value}` : "";
+            console.log(`      ${key}${display}`);
+          }
+        }
+
+        // Identity fields with actual values
+        if (anatomy.identity && Object.keys(anatomy.identity).length > 0) {
+          for (const [source, fields] of Object.entries(anatomy.identity)) {
+            console.log(`    ${COLORS.dim}${source}${COLORS.reset} ${COLORS.dim}(${fields.length} fields)${COLORS.reset}`);
+            for (const f of fields) {
+              // Truncate long values for display
+              const val = f.value.length > 60
+                ? f.value.substring(0, 57) + "..."
+                : f.value;
+              console.log(`      ${COLORS.dim}${f.key.padEnd(20)}${COLORS.reset} ${val}`);
+            }
+          }
+        }
+      }
+
+      // SETUP / BODY / CLOSING: show detected sections
+      const blockSections = anatomy.sections[block.name];
+      if (blockSections && blockSections.length > 0) {
+        console.log(`    ${COLORS.dim}sections${COLORS.reset}`);
+        for (const s of blockSections) {
+          console.log(`      ${COLORS.dim}:${s.line}${COLORS.reset} ${s.name}`);
+        }
+      }
+
+      // Content summary for this block
+      const blockContent = anatomy.content?.[block.name];
+      if (blockContent && blockContent.length > 0) {
+        console.log(`    ${COLORS.dim}content${COLORS.reset}  ${blockContent.join(", ")}`);
+      }
+    }
+
+    console.log("");
+    return;
+  }
+
+  // ── Fallback: extract from health actions (no real values) ──
+  if (!health) return;
+
+  // Pragma
+  if (summary.pragma) {
+    console.log(`  ${COLORS.dim}── pragma ──${COLORS.reset}`);
+    console.log(`    ${summary.pragma}`);
+  }
+
+  // Blocks — from structural actions
+  const structuralBlock = health.blocks.find((b) => b.block === "structural");
+  if (structuralBlock) {
+    const blocksContainer = structuralBlock.containers.find((c) => c.section === "blocks");
+    if (blocksContainer && blocksContainer.actions.length > 0) {
+      console.log(`  ${COLORS.dim}── blocks ──${COLORS.reset}`);
+      const blockNames: string[] = [];
+      for (const action of blocksContainer.actions) {
+        const m = action.check.match(/^block\/([A-Z]+)$/);
+        if (m && m[1]) blockNames.push(m[1]);
+      }
+      if (blockNames.length > 0) {
+        const icons = blockNames.map((name) => {
+          const action = blocksContainer.actions.find((a) => a.check === `block/${name}`);
+          const icon = action && action.direction > 0
+            ? `${COLORS.green}+${COLORS.reset}`
+            : action && action.direction < 0
+              ? `${COLORS.red}-${COLORS.reset}`
+              : `${COLORS.dim}.${COLORS.reset}`;
+          return `${icon} ${name}`;
+        });
+        console.log(`    ${icons.join("  ")}`);
+      }
+    }
+  }
+
+  // Identity summary — from health actions
+  const metaBlock = health.blocks.find((b) => b.block === "metadata");
+  if (metaBlock) {
+    const idContainer = metaBlock.containers.find((c) => c.section === "identity");
+    if (idContainer && idContainer.actions.length > 0) {
+      console.log(`  ${COLORS.dim}── identity (${idContainer.aligned}/${idContainer.total}) ──${COLORS.reset}`);
+    }
+  }
+
+  console.log("");
+}
+
+// ---------------------------------------------------------------------------
 // Layer mapping — R[n] detection granularity
 // ---------------------------------------------------------------------------
 
@@ -275,7 +435,7 @@ function containerLayer(section: string): number {
  * When focusBlock is set, only shows containers belonging to that block —
  * the block viewed as its own world with the same 4-layer pattern.
  */
-function printHealthBreakdown(health: HealthScore, focusBlock?: string): void {
+function printHealthBreakdown(health: HealthScore, focusBlock?: string, deep?: boolean): void {
   // Collect all containers (optionally filtered to focused block)
   type LayerItem = { block: string; container: typeof health.blocks[0]["containers"][0] };
   const layers: [LayerItem[], LayerItem[], LayerItem[], LayerItem[]] =
@@ -344,6 +504,56 @@ function printHealthBreakdown(health: HealthScore, focusBlock?: string): void {
       console.log(
         `    ${cColor}${container.score}${COLORS.reset} ${label}${detail}`,
       );
+
+      // Deep mode: show individual actions within each container
+      if (deep && container.actions.length > 0) {
+        // Compact layout: ~4 checks per line for aligned, one per line for misaligned
+        const aligned: string[] = [];
+        const misaligned: AtomicAction[] = [];
+        const neutral: string[] = [];
+
+        for (const action of container.actions) {
+          const shortCheck = action.check.split("/").pop() ?? action.check;
+          if (action.direction > 0) {
+            aligned.push(`${COLORS.green}+${COLORS.reset}${shortCheck}`);
+          } else if (action.direction < 0) {
+            misaligned.push(action);
+          } else {
+            neutral.push(`${COLORS.dim}.${shortCheck}${COLORS.reset}`);
+          }
+        }
+
+        // Print aligned checks in compact rows (4 per line)
+        if (aligned.length > 0) {
+          for (let j = 0; j < aligned.length; j += 4) {
+            const row = aligned.slice(j, j + 4).join("  ");
+            console.log(`      ${row}`);
+          }
+        }
+
+        // Print misaligned checks with reason + catalog suggestion (one per line)
+        for (const action of misaligned) {
+          const shortCheck = action.check.split("/").pop() ?? action.check;
+          const reason = action.reason
+            ? `  ${COLORS.dim}${action.reason}${COLORS.reset}`
+            : "";
+          console.log(`      ${COLORS.red}-${shortCheck}${COLORS.reset}${reason}`);
+
+          // Catalog enrichment: show code + fix if available
+          const entry = matchRule(action.check);
+          if (entry) {
+            console.log(`        ${COLORS.dim}${entry.code} fix: ${entry.suggestionTemplate}${COLORS.reset}`);
+          }
+        }
+
+        // Print neutral checks in compact rows
+        if (neutral.length > 0) {
+          for (let j = 0; j < neutral.length; j += 4) {
+            const row = neutral.slice(j, j + 4).join("  ");
+            console.log(`      ${row}`);
+          }
+        }
+      }
     }
   }
 }
@@ -394,6 +604,11 @@ export function printTotals(summaries: LintSummary[]): void {
   // Top issues (only when errors exist and multiple files)
   if (totalErrors > 0 && summaries.length > 1) {
     printTopIssues(summaries);
+  }
+
+  // Catalog coverage — unique codes triggered across the run
+  if (summaries.length > 1) {
+    printCatalogCoverage(summaries);
   }
 
   if (totalErrors === 0) {
@@ -565,9 +780,72 @@ function printTopIssues(summaries: LintSummary[], limit = 5): void {
     const codeStr = issue.code
       ? `${COLORS.bold}${issue.code}${COLORS.reset} `
       : "";
+
+    // Catalog enrichment — show what this code means
+    const catalogEntry = issue.code ? getByCode(issue.code) : undefined;
+    const layerTag = catalogEntry
+      ? `${COLORS.dim}[${catalogEntry.layerName}]${COLORS.reset} `
+      : "";
+    const suggestion = catalogEntry?.suggestionTemplate;
+
     console.log(
-      `    ${COLORS.dim}${i + 1}.${COLORS.reset} ${codeStr}${issue.rule} ` +
+      `    ${COLORS.dim}${i + 1}.${COLORS.reset} ${layerTag}${codeStr}${issue.rule} ` +
         `${COLORS.dim}(${issue.count} file${issue.count !== 1 ? "s" : ""})${COLORS.reset}`,
+    );
+
+    // Show fix suggestion for each top issue
+    if (suggestion) {
+      console.log(`       ${COLORS.dim}fix: ${suggestion}${COLORS.reset}`);
+    }
+  }
+}
+
+/**
+ * Print catalog coverage — unique error codes triggered across all files.
+ * Shows per-layer breakdown: how many codes fired at each detection layer.
+ *
+ * "Count the cost." — Luke 14:28
+ */
+function printCatalogCoverage(summaries: LintSummary[]): void {
+  // Collect unique error codes across all results
+  const codeSet = new Set<string>();
+  const layerCodes = new Map<string, Set<string>>();
+
+  for (const s of summaries) {
+    for (const r of s.results) {
+      if (!r.errorCode) continue;
+      codeSet.add(r.errorCode);
+
+      const layer = r.layerName ?? "?";
+      let layerSet = layerCodes.get(layer);
+      if (!layerSet) {
+        layerSet = new Set<string>();
+        layerCodes.set(layer, layerSet);
+      }
+      layerSet.add(r.errorCode);
+    }
+  }
+
+  if (codeSet.size === 0) return;
+
+  console.log("");
+  console.log(
+    `  ${COLORS.bold}Catalog:${COLORS.reset} ${codeSet.size} unique codes triggered` +
+    ` ${COLORS.dim}(of ${CATALOG_SIZE} in catalog)${COLORS.reset}`,
+  );
+
+  // Per-layer code counts (sorted by layer resolution)
+  const layerOrder = ["R50", "R25", "R10", "R05", "T00"];
+  for (const layer of layerOrder) {
+    const codes = layerCodes.get(layer);
+    if (!codes) continue;
+    const total = LAYER_COUNTS[layer] ?? 0;
+    const percent = total > 0 ? Math.round((codes.size / total) * 100) : 0;
+    const desc = LAYER_DESCRIPTIONS[layer] ?? layer;
+    const barWidth = Math.round((codes.size / Math.max(total, 1)) * 20);
+    const bar = "\u2588".repeat(barWidth) + "\u2591".repeat(20 - barWidth);
+    console.log(
+      `    ${COLORS.dim}${layer}${COLORS.reset} ${bar} ${codes.size}/${total} (${percent}%) ${COLORS.dim}${desc}${COLORS.reset}`,
     );
   }
 }

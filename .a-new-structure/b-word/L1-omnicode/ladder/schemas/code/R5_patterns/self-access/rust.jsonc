@@ -17,6 +17,7 @@
             "id": "self_method",
             "syntax": "self.{method}({args})",
             "detect": "self\\.(\\w+)\\(([^)]*)\\)",
+            "emit": "self.{method}({args})",
             "captures": { "method": 1, "args": 2 },
             "notes": "Method call on self — self.process(), self.validate(input).",
             "priority": 1
@@ -25,11 +26,17 @@
             "id": "self_field",
             "syntax": "self.{field}",
             "detect": "self\\.(\\w+)(?!\\()",
+            "emit": "self.{field}",
             "captures": { "field": 1 },
             "notes": "Field access on self — self.name, self.config.",
             "priority": 2
         }
     ],
+
+    "go_to_rust_mapping": {
+        "r.Method(args)": "self.method(args) — receiver short name → self, snake_case",
+        "r.Field": "self.field — receiver short name → self, lowercase"
+    },
 
     "_X5_note": "Rust self access — always explicit 'self' keyword."
 }

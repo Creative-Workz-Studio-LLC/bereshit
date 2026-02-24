@@ -15,33 +15,47 @@
     "patterns": [
         {
             "id": "fmt_errorf",
+            "syntax": "fmt.Errorf(\"{message}\", {args})",
+            "detect": "fmt\\.Errorf\\(\"([^\"]+)\"(?:,\\s*(.+))?\\)",
             "emit": "fmt.Errorf(\"{message}\", {args})",
-            "when": "creating a new formatted error — Rust Err(io::Error::new(kind, format!(...)))",
-            "notes": "fmt.Errorf for formatted errors. Use %w to wrap inner errors.",
+            "captures": { "message": 1, "args": 2 },
+            "notes": "Formatted error — use %w to wrap inner errors. Maps to Rust Err(io::Error::new(kind, format!(...))).",
             "priority": 1
         },
         {
             "id": "errors_new",
+            "syntax": "errors.New(\"{message}\")",
+            "detect": "errors\\.New\\(\"([^\"]+)\"\\)",
             "emit": "errors.New(\"{message}\")",
-            "when": "creating a simple error with no formatting",
-            "notes": "errors.New for static error strings.",
+            "captures": { "message": 1 },
+            "notes": "Simple static error string. Maps to Rust Err(io::Error::new(kind, msg)).",
             "priority": 2
         },
         {
             "id": "return_err",
+            "syntax": "return err",
+            "detect": "return\\s+(\\w+)\\s*$",
             "emit": "return err",
-            "when": "propagating an existing error — Rust Err(e)",
-            "notes": "Direct propagation — just return the error as-is.",
+            "captures": { "err": 1 },
+            "notes": "Direct error propagation — return the error as-is. Maps to Rust Err(e).",
             "priority": 3
         },
         {
             "id": "return_zero_err",
+            "syntax": "return {zero_value}, err",
+            "detect": "return\\s+(.+),\\s*(\\w+)\\s*$",
             "emit": "return {zero_value}, err",
-            "when": "returning error from function with value+error return",
-            "notes": "Must include zero value for the non-error return.",
+            "captures": { "zero_value": 1, "err": 2 },
+            "notes": "Error from function with value+error return — must include zero value.",
             "priority": 4
         }
     ],
+
+    "rust_to_go_mapping": {
+        "Err(io::Error::new(kind, format!(msg, args)))": "fmt.Errorf(msg, args) — constructed Err → Errorf",
+        "Err(io::Error::new(kind, msg))": "errors.New(msg) — simple Err → errors.New",
+        "Err(e)": "return err — re-wrap → direct propagation"
+    },
 
     "rust_error_kind_mapping": {
         "io::ErrorKind::AlreadyExists": "os.ErrExist",

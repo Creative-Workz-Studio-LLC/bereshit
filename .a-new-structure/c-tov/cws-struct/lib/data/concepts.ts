@@ -10,9 +10,9 @@
 // created: 2026-02-22
 // updated: 2026-02-22
 // authors: Nova Dawn (CPI-SI)
-// purpose: Hand-compiled registry of all 11 R[5] concept entries — the
-//          TRANSPOSE of section concept_maps. 11 concepts x 42 containers
-//          = 462 ternary values, same data as sections.ts but indexed by
+// purpose: Hand-compiled registry of all 16 R[5] concept entries — the
+//          TRANSPOSE of section concept_maps. 16 concepts x 42 containers
+//          = 672 ternary values, same data as sections.ts but indexed by
 //          concept instead of container.
 //
 //          The concept registry answers: "For concept C, which containers
@@ -37,7 +37,7 @@ import { SECTION_REGISTRY } from "./sections.ts";
 import { ToolError } from "../foundation/tool-error.ts";
 
 // ---------------------------------------------------------------------------
-// Concept IDs — the 11 R[5] patterns
+// Concept IDs — the 16 R[5] patterns
 // ---------------------------------------------------------------------------
 
 const CONCEPT_IDS = [
@@ -52,6 +52,11 @@ const CONCEPT_IDS = [
   "err_wrap",
   "ok_wrap",
   "string_format",
+  "loop_iteration",
+  "collection_mutation",
+  "type_construction",
+  "field_access",
+  "recursion",
 ] as const;
 
 type ConceptId = typeof CONCEPT_IDS[number];
@@ -83,6 +88,16 @@ const CONCEPT_DESCRIPTIONS: Record<ConceptId, string> = {
     "Success wrapping — creating success values (Ok, Some).",
   string_format:
     "String formatting — format!, println!, fmt.Sprintf, template literals.",
+  loop_iteration:
+    "Loop iteration — for/while/loop bounded repetition over collections or conditions.",
+  collection_mutation:
+    "Collection mutation — .insert/.push/.remove/.pop mutating collection state.",
+  type_construction:
+    "Type construction — Struct { field: value } constructing type instances from literals.",
+  field_access:
+    "Field access — struct.field reading a property from a structure.",
+  recursion:
+    "Recursion — function calling itself, self-targeting invocation.",
 };
 
 // ---------------------------------------------------------------------------
@@ -101,6 +116,11 @@ const CONCEPT_DIR_NAMES: Record<ConceptId, string> = {
   err_wrap: "err-wrap",
   ok_wrap: "ok-wrap",
   string_format: "string-format",
+  loop_iteration: "loop-iteration",
+  collection_mutation: "collection-mutation",
+  type_construction: "type-construction",
+  field_access: "field-access",
+  recursion: "recursion",
 };
 
 // ============================================================================
@@ -111,8 +131,8 @@ const CONCEPT_DIR_NAMES: Record<ConceptId, string> = {
 // Transpose — build concept container maps from section concept maps
 // ---------------------------------------------------------------------------
 //
-// The section registry has 42 entries, each with a conceptMap of 11 values.
-// We transpose this to get 11 entries, each with a containerMap of 42 values.
+// The section registry has 42 entries, each with a conceptMap of 16 values.
+// We transpose this to get 16 entries, each with a containerMap of 42 values.
 //
 // The transpose is computed at module load time from the section registry.
 // This guarantees consistency — same data, two views, single source of truth.
@@ -165,10 +185,10 @@ function transposeSections(): Record<string, ConceptEntry> {
 // ---------------------------------------------------------------------------
 
 /**
- * All 11 concept entries keyed by concept ID.
+ * All 16 concept entries keyed by concept ID.
  *
  * Computed by transposing the section registry's concept maps.
- * Guaranteed consistent with SECTION_REGISTRY — same 462 ternary values.
+ * Guaranteed consistent with SECTION_REGISTRY — same 672 ternary values.
  */
 export const CONCEPT_REGISTRY: Record<string, ConceptEntry> = transposeSections();
 
@@ -183,7 +203,7 @@ export const CONCEPT_ORDER: readonly string[] = [...CONCEPT_IDS];
 // CLOSING
 // ============================================================================
 //
-// Concept registry — the transpose view of the 462-value ternary matrix.
+// Concept registry — the transpose view of the 672-value ternary matrix.
 // Built from sections.ts at module load time, guaranteed consistent.
 //
 // "For as the body is one, and hath many members, and all the members of

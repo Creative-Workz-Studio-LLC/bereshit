@@ -1,0 +1,52 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-rust-field-access",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Rust — Field Access",
+
+    "concept": "field_access",
+    "language": "rust",
+
+    "patterns": [
+        {
+            "id": "direct_field",
+            "syntax": "{instance}.{field}",
+            "detect": "([a-zA-Z_]\\w*)\\.(\\w+)(?!\\s*\\()",
+            "emit": "{instance}.{field}",
+            "captures": { "instance": 1, "field": 2 },
+            "notes": "Direct field access — no parens means field, not method. Requires alpha start to exclude decimals.",
+            "priority": 1
+        },
+        {
+            "id": "chained_field",
+            "syntax": "{instance}.{field1}.{field2}",
+            "detect": "([a-zA-Z_]\\w*)\\.(\\w+)\\.(\\w+)(?!\\s*\\()",
+            "emit": "{instance}.{field1}.{field2}",
+            "captures": { "instance": 1, "field1": 2, "field2": 3 },
+            "notes": "Chained field access — navigating nested structures. Requires alpha start.",
+            "priority": 2
+        },
+        {
+            "id": "ref_field",
+            "syntax": "&{instance}.{field}",
+            "detect": "&([a-zA-Z_]\\w*)\\.(\\w+)(?!\\s*\\()",
+            "emit": "&{instance}.{field}",
+            "captures": { "instance": 1, "field": 2 },
+            "notes": "Reference to field — borrowing a field value.",
+            "priority": 3
+        }
+    ],
+
+    "go_to_rust_mapping": {
+        "instance.Field": "instance.field (lowercase in Rust)",
+        "instance.nested.Field": "instance.nested.field",
+        "ptr.Field": "instance.field (Rust auto-derefs)"
+    },
+
+    "_X5_note": "Rust field access — dot notation, auto-deref, no visibility markers in syntax."
+}

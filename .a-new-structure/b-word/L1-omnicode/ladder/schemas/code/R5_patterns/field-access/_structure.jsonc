@@ -1,0 +1,126 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-concepts-field-access",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "concept-definition",
+    "_P2_role": "schema",
+    "_P5_title": "Concept — Field Access",
+    "_P5_brief": "Universal concept: reading a property from a structure via dot notation.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+
+    "concept": "field_access",
+    "description": "Reading a property from a structure — struct.field dot access without invocation",
+
+    "universal_shape": {
+        "receiver": "the struct/object being accessed",
+        "field": "the property name being read",
+        "result": "the value of the field"
+    },
+
+    "semantic_notes": [
+        "Rust: instance.field — direct field access, no parens.",
+        "Go: instance.Field — exported fields PascalCase, unexported lowercase.",
+        "C: instance.field or ptr->field — direct vs pointer access.",
+        "Distinct from method_call: no parens, no behavior invoked.",
+        "Distinct from variable_binding: no new binding created.",
+        "Read counterpart to type_construction (write). Together they form the struct I/O pair."
+    ],
+
+    "container_map": {
+        "_note": "granted (+1) = belongs here. denied (-1) = does not belong. defer (0) = context-dependent.",
+
+        "METADATA": {
+            "directives": "denied",
+            "doc-comments": "denied",
+            "comment-block": "denied",
+            "pragma-identity": "denied",
+            "metadata-context": "denied",
+            "subtypes": "denied"
+        },
+
+        "SETUP": {
+            "imports": "denied",
+            "modules": "denied",
+            "constants": "denied",
+            "statics": "denied",
+            "type-aliases": "denied",
+            "error-types": "denied",
+            "core-types": "denied",
+            "trait-defs": "denied",
+            "macros": "defer",
+            "feature-gates": "denied",
+            "build-tags": "denied",
+            "code-generation": "denied",
+            "interface-defs": "denied",
+            "type-methods": "denied",
+            "variables": "denied"
+        },
+
+        "BODY": {
+            "identity-access": "granted",
+            "trait-implementations": "granted",
+            "constructors": "granted",
+            "core-logic": "granted",
+            "core-operations": "granted",
+            "queries": "granted",
+            "output-display": "granted",
+            "free-functions": "granted",
+            "helpers": "granted",
+            "org-chart": "denied",
+            "public-apis": "granted",
+            "error-handling": "granted",
+            "tests": "granted"
+        },
+
+        "CLOSING": {
+            "validation": "granted",
+            "execution": "granted",
+            "cleanup": "granted",
+            "modification-policy": "denied",
+            "extension-points": "denied",
+            "troubleshooting": "denied",
+            "reference": "denied",
+            "closing-note": "denied"
+        }
+    },
+
+    "concept_relations": {
+        "_note": "granted = high co-occurrence. denied = anti-correlation. defer = context-dependent.",
+
+        "type_construction": "granted",
+        "variable_binding": "granted",
+        "loop_iteration": "granted",
+        "method_call": "defer",
+        "function_call": "defer",
+        "conditional_if": "defer",
+        "collection_mutation": "defer",
+        "return_value": "defer",
+        "self_access": "defer",
+        "conditional_match": "defer",
+        "error_propagation": "denied",
+        "err_wrap": "denied",
+        "ok_wrap": "denied",
+        "string_format": "defer",
+        "recursion": "denied"
+    },
+
+    "detection_weight": 0.76,
+    "_weight_rationale": "Body-heavy: field access is runtime behavior, never in pure METADATA/SETUP.",
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Field access is observation — reading what was constructed. The read side of the struct I/O pair.",
+    "_X5_scripture": "Proverbs 20:5 — Counsel in the heart of man is like deep water; but a man of understanding will draw it out."
+}

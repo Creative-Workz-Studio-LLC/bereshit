@@ -100,6 +100,17 @@ export interface TypingBlockProfile {
   required: string[];
   available: string[];
   irrelevant: string[];
+  /**
+   * Per-section concept overrides for required sections.
+   * Maps section tag (PascalCase from schema) → concept → ternary override.
+   *
+   * Used when a typing's required section needs narrower concept expectations
+   * than the base section concept map (e.g., FreeFunctions in a utility module
+   * doesn't expect variable_binding or error_propagation).
+   *
+   * Only CHANGES from the base concept map need to be listed.
+   */
+  conceptOverrides?: Record<string, Record<string, string>>;
 }
 
 /** Complete typing profile for a form subtype (e.g., "utility" under "module"). */
@@ -1037,8 +1048,10 @@ export async function assembleCodeRules(format: CodeFormat): Promise<Code4BlockR
           if (typingName.startsWith("_")) continue;
           // deno-lint-ignore no-explicit-any
           const td = typingData as Record<string, any>;
-          const setupBlock = td["SETUP"] as { required?: string[]; available?: string[]; irrelevant?: string[] } | undefined;
-          const bodyBlock = td["BODY"] as { required?: string[]; available?: string[]; irrelevant?: string[] } | undefined;
+          // deno-lint-ignore no-explicit-any
+          const setupBlock = td["SETUP"] as { required?: string[]; available?: string[]; irrelevant?: string[]; concept_overrides?: Record<string, Record<string, string>> } | undefined;
+          // deno-lint-ignore no-explicit-any
+          const bodyBlock = td["BODY"] as { required?: string[]; available?: string[]; irrelevant?: string[]; concept_overrides?: Record<string, Record<string, string>> } | undefined;
 
           if (setupBlock || bodyBlock) {
             formTypings[typingName] = {
@@ -1047,11 +1060,13 @@ export async function assembleCodeRules(format: CodeFormat): Promise<Code4BlockR
                 required: (setupBlock?.required ?? []).map(toLabel),
                 available: (setupBlock?.available ?? []).map(toLabel),
                 irrelevant: (setupBlock?.irrelevant ?? []).map(toLabel),
+                conceptOverrides: setupBlock?.concept_overrides,
               },
               BODY: {
                 required: (bodyBlock?.required ?? []).map(toLabel),
                 available: (bodyBlock?.available ?? []).map(toLabel),
                 irrelevant: (bodyBlock?.irrelevant ?? []).map(toLabel),
+                conceptOverrides: bodyBlock?.concept_overrides,
               },
             };
           }

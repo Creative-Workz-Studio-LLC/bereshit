@@ -17,6 +17,7 @@
             "id": "method_chain",
             "syntax": "{receiver}.{method}({args}).{next}",
             "detect": "(\\w[\\w.()]*?)\\.(\\w+)\\(([^)]*)\\)\\.(\\w+)",
+            "emit": "{receiver}.{method}({args}).{next}",
             "captures": { "receiver": 1, "method": 2, "args": 3, "next": 4 },
             "notes": "Method chain — a.b().c(). Captured as chain, each step resolved.",
             "priority": 1
@@ -25,6 +26,7 @@
             "id": "method_call",
             "syntax": "{receiver}.{method}({args})",
             "detect": "(\\w[\\w.]*?)\\.(\\w+)\\(([^)]*)\\)",
+            "emit": "{receiver}.{method}({args})",
             "captures": { "receiver": 1, "method": 2, "args": 3 },
             "notes": "Single method call: path.exists(), meta.is_dir(), e.kind().",
             "priority": 2
@@ -33,11 +35,18 @@
             "id": "field_access",
             "syntax": "{receiver}.{field}",
             "detect": "(\\w+)\\.(\\w+)(?!\\()",
+            "emit": "{receiver}.{field}",
             "captures": { "receiver": 1, "field": 2 },
             "notes": "Field access (no parens) — self.name, meta.len. Distinguished from method by no ().",
             "priority": 3
         }
     ],
+
+    "go_to_rust_mapping": {
+        "receiver.Method(args)": "receiver.method(args) — snake_case methods in Rust",
+        "receiver.Method1().Method2()": "receiver.method1().method2() — chaining common in Rust",
+        "receiver.Field": "receiver.field — lowercase fields in Rust"
+    },
 
     "_X5_note": "Rust method calls: receiver.method(args) — dot syntax, &self implicit."
 }

@@ -15,19 +15,28 @@
     "patterns": [
         {
             "id": "if_err_return",
+            "syntax": "{ok_binding}, err := {expr}\nif err != nil {\n\treturn {zero_values}, err\n}",
+            "detect": "if\\s+(\\w+)\\s*!=\\s*nil\\s*\\{",
             "emit": "{ok_binding}, err := {expr}\nif err != nil {\n\treturn {zero_values}, err\n}",
-            "when": "Rust expr? with binding — expand to full if err != nil",
+            "captures": { "errvar": 1 },
             "notes": "The Go equivalent of Rust ?. Always explicit. Always three lines minimum.",
             "priority": 1
         },
         {
             "id": "if_err_return_void",
+            "syntax": "if err := {expr}; err != nil {\n\treturn err\n}",
+            "detect": "if\\s+(\\w+)\\s*:=\\s*(.+);\\s*(\\w+)\\s*!=\\s*nil\\s*\\{",
             "emit": "if err := {expr}; err != nil {\n\treturn err\n}",
-            "when": "Rust expr? when return type is only error (no value)",
-            "notes": "Inline init form when we don't need the success value.",
+            "captures": { "errvar": 1, "expr": 2, "check": 3 },
+            "notes": "Inline init form when success value not needed. Compact single-expression check.",
             "priority": 2
         }
     ],
+
+    "rust_to_go_mapping": {
+        "let val = expr?;": "val, err := expr\\nif err != nil { return zero, err } — ? expands to full if-err",
+        "expr?;": "if err := expr; err != nil { return err } — inline ? → init-if pattern"
+    },
 
     "_X5_note": "Go error propagation — always explicit if err != nil. No syntactic sugar."
 }

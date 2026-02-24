@@ -15,23 +15,29 @@
     "patterns": [
         {
             "id": "sprintf",
+            "syntax": "fmt.Sprintf(\"{template}\", {args})",
+            "detect": "fmt\\.Sprintf\\(\"([^\"]+)\"(?:,\\s*(.+))?\\)",
             "emit": "fmt.Sprintf(\"{template}\", {args})",
-            "when": "building a formatted string — Rust format!(...)",
-            "notes": "fmt.Sprintf is Go's format! equivalent.",
+            "captures": { "template": 1, "args": 2 },
+            "notes": "String formatting — Go's format! equivalent. %v for default, %s for string.",
             "priority": 1
         },
         {
             "id": "printf",
+            "syntax": "fmt.Printf(\"{template}\\n\", {args})",
+            "detect": "fmt\\.Printf\\(\"([^\"]+)\"(?:,\\s*(.+))?\\)",
             "emit": "fmt.Printf(\"{template}\\n\", {args})",
-            "when": "printing formatted string to stdout — Rust println!(...)",
-            "notes": "fmt.Printf + \\n for Rust println!. Or fmt.Println for simple cases.",
+            "captures": { "template": 1, "args": 2 },
+            "notes": "Print to stdout — fmt.Printf + \\n for Rust println!. Or fmt.Println for simple.",
             "priority": 2
         },
         {
             "id": "fprintf_stderr",
+            "syntax": "fmt.Fprintf(os.Stderr, \"{template}\\n\", {args})",
+            "detect": "fmt\\.Fprintf\\(os\\.Stderr,\\s*\"([^\"]+)\"(?:,\\s*(.+))?\\)",
             "emit": "fmt.Fprintf(os.Stderr, \"{template}\\n\", {args})",
-            "when": "printing to stderr — Rust eprintln!(...)",
-            "notes": "Go has no built-in eprintln — use fmt.Fprintf to os.Stderr.",
+            "captures": { "template": 1, "args": 2 },
+            "notes": "Print to stderr — Go has no built-in eprintln. Maps to Rust eprintln!.",
             "priority": 3
         }
     ],
@@ -43,6 +49,15 @@
         "{:.2}": "%.2f",
         "{:x}": "%x",
         "{:b}": "%b"
+    },
+
+    "rust_to_go_mapping": {
+        "format!(tmpl, args)": "fmt.Sprintf(tmpl, args) — format! → Sprintf",
+        "println!(tmpl, args)": "fmt.Printf(tmpl+\"\\n\", args) or fmt.Println — println! → Printf",
+        "eprintln!(tmpl, args)": "fmt.Fprintf(os.Stderr, tmpl+\"\\n\", args) — eprintln! → Fprintf stderr",
+        "{}": "%v — Display → default verb",
+        "{:?}": "%+v — Debug → detailed verb",
+        "{:#?}": "%#v — pretty Debug → Go-syntax repr"
     },
 
     "_X5_note": "Go string formatting — fmt.Sprintf with %verb placeholders. Same concept, different syntax."

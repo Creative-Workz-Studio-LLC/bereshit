@@ -16,7 +16,7 @@
 // ============================================================================
 
 import { assertEquals, assert } from "jsr:@std/assert";
-import { goAdapter } from "../../../lib/handlers/go.ts";
+import { goAdapter } from "@lib/handlers/go.ts";
 
 // ============================================================================
 // BODY
@@ -26,7 +26,7 @@ import { goAdapter } from "../../../lib/handlers/go.ts";
 // GoAdapter implements LanguageAdapter
 // ---------------------------------------------------------------------------
 
-Deno.test("adapter/go: format is 'go'", () => {
+Deno.test("[CWS-T00-110] adapter/go: format is 'go'", () => {
   assertEquals(goAdapter.format, "go");
 });
 

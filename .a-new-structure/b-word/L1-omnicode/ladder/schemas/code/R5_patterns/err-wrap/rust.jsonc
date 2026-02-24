@@ -17,6 +17,7 @@
             "id": "err_new",
             "syntax": "Err({error_type}::new({kind}, {message}))",
             "detect": "Err\\(([\\w:]+)::new\\(([^,]+),\\s*(.+)\\)\\)",
+            "emit": "Err({error_type}::new({kind}, {message}))",
             "captures": { "error_type": 1, "kind": 2, "message": 3 },
             "notes": "Constructed error: Err(io::Error::new(ErrorKind::AlreadyExists, msg)).",
             "priority": 1
@@ -25,11 +26,21 @@
             "id": "err_propagate",
             "syntax": "Err({expr})",
             "detect": "Err\\(([^)]+)\\)",
+            "emit": "Err({expr})",
             "captures": { "expr": 1 },
             "notes": "Re-wrapping an existing error: Err(e).",
             "priority": 2
         }
     ],
+
+    "go_to_rust_mapping": {
+        "fmt.Errorf(msg, args)": "Err(io::Error::new(kind, format!(msg, args))) — fmt.Errorf → Err + format!",
+        "errors.New(msg)": "Err(io::Error::new(kind, msg)) — errors.New → Err with kind",
+        "return err": "Err(e) — direct error propagation",
+        "os.ErrExist": "io::ErrorKind::AlreadyExists",
+        "os.ErrNotExist": "io::ErrorKind::NotFound",
+        "os.ErrPermission": "io::ErrorKind::PermissionDenied"
+    },
 
     "_X5_note": "Rust Err() — wrapping in Result::Err variant."
 }

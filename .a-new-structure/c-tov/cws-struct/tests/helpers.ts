@@ -31,6 +31,11 @@ import type {
 import "../lib/handlers/go.ts";
 import "../lib/handlers/rust.ts";
 import "../lib/handlers/toml.ts";
+import "../lib/handlers/makefile.ts";
+import "../lib/handlers/dotfiles.ts";
+import "../lib/handlers/json.ts";
+import "../lib/handlers/ofd.ts";
+import "../lib/handlers/omni.ts";
 
 // Re-export registry for test files.
 export { getFormat } from "../lib/engine/mod.ts";
@@ -71,7 +76,12 @@ export function lazyFormat(name: string): FormatHandler {
 }
 
 // Re-export error catalog functions for test assertions.
-export { matchRule, getByCode, getByRule, getByLayer, getByCategory } from "../lib/data/errors.ts";
+export {
+  matchRule, getByCode, getByRule, getByLayer, getByCategory,
+  // QoL additions — self-documenting catalog
+  codeSummary, explain as explainCode, search as searchCatalog,
+  related as relatedCodes, catalogReport,
+} from "../lib/data/errors.ts";
 export type { ErrorCodeEntry } from "../lib/data/types.ts";
 
 // ============================================================================
@@ -230,6 +240,70 @@ export function errorCodeReport(results: LintResult[]): string {
 }
 
 // ---------------------------------------------------------------------------
+// Result grouping — organized views of lint output
+// ---------------------------------------------------------------------------
+
+/**
+ * Group results by detection layer.
+ *
+ * Returns a Map where keys are layer names (R50, R25, R10, R05, T00)
+ * and values are the results belonging to that layer.
+ * Results with no catalog match go under "UNCATALOGED".
+ *
+ * @example
+ *   const grouped = resultsByLayer(results);
+ *   grouped.get("R50")  → all existence-level findings
+ *   grouped.get("R25")  → all organization-level findings
+ */
+export function resultsByLayer(results: LintResult[]): Map<string, LintResult[]> {
+  const grouped = new Map<string, LintResult[]>();
+  for (const r of results) {
+    const entry = matchRule(r.rule);
+    const key = entry?.layerName ?? "UNCATALOGED";
+    const existing = grouped.get(key) ?? [];
+    existing.push(r);
+    grouped.set(key, existing);
+  }
+  return grouped;
+}
+
+/**
+ * Group results by severity → layer → rule for structured reporting.
+ *
+ * Returns a nested structure for drill-down diagnostics:
+ *   severity → layerName → rule[] (with counts)
+ *
+ * @example
+ *   const tree = resultTree(results);
+ *   tree.error.R50  → error findings at R50 level
+ *   tree.warn.R25   → warning findings at R25 level
+ */
+export function resultTree(results: LintResult[]): Record<string, Record<string, LintResult[]>> {
+  const tree: Record<string, Record<string, LintResult[]>> = {};
+  for (const r of results) {
+    const entry = matchRule(r.rule);
+    const layer = entry?.layerName ?? "UNCATALOGED";
+    const sevGroup = tree[r.severity] ?? {};
+    tree[r.severity] = sevGroup;
+    const layerGroup = sevGroup[layer] ?? [];
+    sevGroup[layer] = layerGroup;
+    layerGroup.push(r);
+  }
+  return tree;
+}
+
+/**
+ * Build a compact one-line summary: "3E 5W 12I (20 total, 4 fixtures)"
+ * Useful for test assertions that want a quick health check.
+ */
+export function resultOneLiner(results: LintResult[]): string {
+  const e = results.filter(r => r.severity === "error").length;
+  const w = results.filter(r => r.severity === "warn").length;
+  const i = results.filter(r => r.severity === "info").length;
+  return `${e}E ${w}W ${i}I (${results.length} total)`;
+}
+
+// ---------------------------------------------------------------------------
 // Mock builders — minimal contexts for unit testing
 // ---------------------------------------------------------------------------
 
@@ -303,12 +377,55 @@ export function createSubsectionRanges(
 //   deno test --filter='CWS-R50-020'   → run witnesses for that code
 //   G13 gate: every code has a witness  → no untested error paths
 //
-// The registry is populated by witnessFor() calls at test registration time.
-// It's a runtime structure — static analysis (scripts/witness.ts) also works.
+// Two approaches work together:
+//   1. Runtime:  witnessFor() calls populate WITNESS_REGISTRY during test runs
+//   2. Static:   scanStaticWitnesses() scans test files for [CWS-*] tags
+//
+// unwitnessedCodes() merges both sources — static scan fills the gaps when
+// witnessFor() hasn't been called explicitly. No redundant boilerplate needed.
 // ---------------------------------------------------------------------------
 
 /** Registry of error codes → test names that cover them. */
 const WITNESS_REGISTRY = new Map<string, string[]>();
+
+/** Cached result of static witness scan (lazy, populated once). */
+let _staticWitnesses: Set<string> | null = null;
+
+/**
+ * Scan test files for [CWS-XXX-NNN] bracket tags in test names.
+ * Returns the set of all error codes referenced in any test file.
+ * Result is cached — call clearWitnessRegistry() to reset.
+ */
+export function scanStaticWitnesses(): Set<string> {
+  if (_staticWitnesses) return _staticWitnesses;
+
+  const codes = new Set<string>();
+  const bracketPattern = /\[CWS-[RT]\d{2}-\d{3}\]/g;
+
+  // Walk tests/ directory recursively
+  function scanDir(dir: string): void {
+    for (const entry of Deno.readDirSync(dir)) {
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory) {
+        scanDir(path);
+      } else if (entry.name.endsWith("_test.ts")) {
+        const text = Deno.readTextFileSync(path);
+        for (const match of text.matchAll(bracketPattern)) {
+          codes.add(match[0].slice(1, -1)); // Remove brackets
+        }
+      }
+    }
+  }
+
+  try {
+    scanDir("tests");
+  } catch {
+    // If tests/ doesn't exist or can't be read, return empty set
+  }
+
+  _staticWitnesses = codes;
+  return codes;
+}
 
 /**
  * Register this test as a witness for an error code.
@@ -336,11 +453,15 @@ export function witnessesFor(code: string): string[] {
 
 /**
  * Get all error codes in the catalog that have no witness tests.
- * The G13 gate calls this — empty array = full coverage.
+ * Merges runtime registry AND static scan — a code is witnessed if
+ * either source covers it. The G13 gate calls this.
  */
 export function unwitnessedCodes(): string[] {
   const allCodes = [...ERROR_CODES.values()].map((e) => e.code);
-  return allCodes.filter((code: string) => !WITNESS_REGISTRY.has(code));
+  const staticCodes = scanStaticWitnesses();
+  return allCodes.filter(
+    (code: string) => !WITNESS_REGISTRY.has(code) && !staticCodes.has(code),
+  );
 }
 
 /**
@@ -353,16 +474,26 @@ export function diagnosticCommand(code: string): string {
 
 /** Get the total witness count (unique code→test pairs). */
 export function witnessCount(): { codes: number; tests: number } {
+  const staticCodes = scanStaticWitnesses();
+  const allCodes = new Set([
+    ...WITNESS_REGISTRY.keys(),
+    ...staticCodes,
+  ]);
   let tests = 0;
   for (const names of WITNESS_REGISTRY.values()) {
     tests += names.length;
   }
-  return { codes: WITNESS_REGISTRY.size, tests };
+  // Static witnesses count as 1 test each (the tagged test name)
+  for (const code of staticCodes) {
+    if (!WITNESS_REGISTRY.has(code)) tests++;
+  }
+  return { codes: allCodes.size, tests };
 }
 
 /** Reset the witness registry (for testing the witness system itself). */
 export function clearWitnessRegistry(): void {
   WITNESS_REGISTRY.clear();
+  _staticWitnesses = null;
 }
 
 // ============================================================================

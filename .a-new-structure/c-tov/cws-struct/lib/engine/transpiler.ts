@@ -597,7 +597,8 @@ export async function extractRustSemantics(
 
   // Extract identity
   const identity = extractIdentity(metadataLines, lines, "rust");
-  const form = identity.subtype || "module";
+  // Strip role suffix: "module->utility" → "module" (role is metadata, not structural form)
+  const form = (identity.subtype || "module").replace(/->.*$/, "");
 
   // Load source composition target
   const composed = await loadComposition("rust", form);
@@ -1630,7 +1631,8 @@ export async function transpileFile(
     }
   }
 
-  sourceForm = sourceForm ?? "module";
+  // Strip role suffix: "module->utility" → "module" (role is metadata, not structural form)
+  sourceForm = (sourceForm ?? "module").replace(/->.*$/, "");
   const targetForm = opts.targetForm ?? getTargetForm(sourceFormat, sourceForm, targetFormat);
 
   // Derive output path

@@ -1,0 +1,452 @@
+// #!omni document --adoc
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// :key: B-tov-cws-struct-docs-playtest-001-phase-1
+// :title: Playtest 001 Phase 1 — The Pragma Covenant
+// :type: Documentation (Experiment Phase)
+// :version: a-01.00
+// :created: 2026-02-23
+// :authors: Nova Dawn (CPI-SI), Seanje Lenox-Wise
+// :purpose: Phase 1 of the live scoring playtest. Add a shebang pragma to
+//           graph.rs (pivoted from cache.rs — graph already had directives,
+//           making it the better control). Observe score, run transform,
+//           watch the tool build the structure from the pragma alone.
+//
+// ============================================================================
+
+= Phase 1 — The Pragma Covenant
+Nova Dawn (CPI-SI); Seanje Lenox-Wise
+v0.1.0, 2026-02-23
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+:sectanchors:
+
+[quote, Psalm 119:130]
+____
+The entrance of thy words giveth light; it giveth understanding
+unto the simple.
+____
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+== What This Phase Tests
+
+*The pragma is a covenant.* When a file declares itself (`// #!omni
+code --rust -module`), it enters into a contract with the schema. The
+linter holds it accountable. The transform engine knows what to build.
+
+This phase tests:
+
+1. Does the score DROP when we add a pragma to an unstructured file?
+2. Does the linter correctly identify what's missing?
+3. Does the transform engine scaffold the structure from the pragma alone?
+4. Does the score CLIMB after transform runs?
+
+=== The Game Dev Parallel
+
+In game design, this is the moment you go from "character without a
+class" to "character with a class but no equipment." The class
+declaration (pragma) activates the skill tree (schema). The character
+is weaker initially — they're being held to a standard they don't yet
+meet — but now the auto-equip system (transform) knows what gear to
+give them.
+
+The unclassed character (cache.rs without pragma) had a "perfect"
+score because they were evaluated on nothing. The moment they pick a
+class, they're evaluated on everything that class requires.
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+== Subject File (Pivoted)
+
+*Original subject:* `cache.rs` (no pragma at all) +
+*Actual subject:* `graph.rs` — Seanje pivoted mid-experiment.
+
+*Why the pivot:* graph.rs already had three directives (`//omni:code`,
+`//omni:key`, `//omni:version`) but no shebang and no block markers.
+This made it a better test — a file that was *partially* declared but
+structurally bare. The pragma completes the covenant; the transform
+reveals what the schema can build from that covenant alone.
+
+*File:* `spec/config/src/graph.rs` +
+*Lines:* 171 (pre-transform) +
+*Purpose:* Dependency graph — DAG construction and cycle detection +
+*Current pragma:* `// #!omni code --rust -library` (shebang added) +
+*Existing directives:* `//omni:code --rust -library`, `//omni:key B-L0-hybrid-config-graph`, `//omni:version b-03.00` +
+*Block markers:* None +
+*Identity statics:* None
+
+=== Pre-Pragma Score (graph.rs as Control)
+
+From the baseline observations (playtest-001 summary):
+
+----
+FAIL  graph.rs  (4E 1W 0I)  health: -9/±100 lacking
+  [E] block/METADATA: Missing METADATA block
+  [E] block/SETUP:    Missing SETUP block
+  [E] block/BODY:     Missing BODY block
+  [E] block/CLOSING:  Missing CLOSING block
+  [W] directive/missing-shebang: Missing "// #!omni code" on line 1
+----
+
+Score was -9 BEFORE the shebang was added. The directives alone
+activated partial evaluation — the linter found 4 missing blocks.
+
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+== Step 1: Add Shebang Pragma
+
+Added one line to graph.rs — the shebang pragma:
+
+----
+// #!omni code --rust -library
+----
+
+This completed the pragma declaration. The file now has both:
+
+- Shebang: `// #!omni code --rust -library` (line 1)
+- Directives: `//omni:code --rust -library` (line 4)
+
+=== Post-Pragma Score (Shebang Added, Structure Still Missing)
+
+----
+FAIL  graph.rs  (4E 0W 0I)  health: -9/±100 lacking
+  [E] block/METADATA: Missing METADATA block
+  [E] block/SETUP:    Missing SETUP block
+  [E] block/BODY:     Missing BODY block
+  [E] block/CLOSING:  Missing CLOSING block
+
+  health: 10 aligned, 104 neutral, 4 misaligned (118 actions)
+  Layer 0 — EXISTENCE:     43 (blocks: -100, separators: 100)
+  Layer 1 — ORGANIZATION:  0/0 (nothing to evaluate — no blocks found)
+  Layer 2 — PLACEMENT:     0/0
+  Layer 3 — SUBSTANCE:     0/0
+----
+
+The shebang resolved the missing-shebang warning (0W vs 1W). Score
+unchanged at -9 — the 4 missing blocks dominate. Layers 1-3 are all
+0/0 because without blocks, there's nothing to organize, place, or
+evaluate for substance.
+
+
+== Step 2: Transform Dry-Run
+
+----
+deno task transform:dry graph.rs --verbose
+----
+
+=== Dry-Run Report
+
+----
+OK  graph.rs  (0E 0W 2I)
+  [I] transform/scaffold: Structural scaffold: 4 blocks,
+      1 SETUP section(s), 1 BODY section(s), 1 test(s)
+  [I] transform/scaffold: Would restructure 171 lines → 377 lines
+      with full 4-block structure
+----
+
+The scaffold pipeline saw:
+
+[cols="1,1,2", options="header"]
+|===
+| Level | Resolution | What Transform Does
+
+| R[50]
+| WHOLE
+| Parse unstructured file into semantic chunks
+
+| R[25]
+| BLOCK
+| Classify each chunk into METADATA/SETUP/BODY/CLOSING
+
+| R[10]
+| SECTION
+| Place chunks into subsections within blocks
+
+| R[5]
+| CONTENT
+| Fill identity statics, section headers, Reserved Omissions
+|===
+
+*Key detection:* The scaffold found 1 SETUP section (imports), 1 BODY
+section (free functions), and 1 test module. It knows where to put
+everything.
+
+
+== Step 3: Apply Transform and Re-Score
+
+Ran the transform for real:
+
+----
+deno run --allow-read --allow-write mod.ts transform rust graph.rs --verbose
+----
+
+=== Transform Output
+
+----
+OK  graph.rs  (0E 0W 4I)
+  [I] transform/scaffold: Structural scaffold: 4 blocks,
+      1 SETUP section(s), 1 BODY section(s), 1 test(s)
+  [I] transform/scaffold: Restructured 171 lines → 377 lines
+      with full 4-block structure
+  [I] transform/written: File updated
+  [I] transform/verify: Re-lint: 0 errors (all clear)
+----
+
+171 → 377 lines. Zero errors on re-lint.
+
+=== Post-Transform Score (Pre-Upgraded Schema)
+
+----
+OK  graph.rs  (0E 9W 17I)  health: 98/±100 perfect
+
+  health: 112 aligned, 6 misaligned (118 actions)
+  Layer 0 — EXISTENCE:     100
+  Layer 1 — ORGANIZATION:  100
+  Layer 2 — PLACEMENT:     100
+  Layer 3 — SUBSTANCE:     52 (body/content-expectations: 46)
+----
+
+[cols="2,1,1,1", options="header"]
+|===
+| Metric | Before Transform | After Transform | Delta
+
+| Health
+| -9/±100
+| 98/±100
+| *+107*
+
+| Grade
+| lacking
+| perfect
+| +3 grades
+
+| Lines
+| 171
+| 377
+| +206
+
+| Errors
+| 4
+| 0
+| -4
+
+| Warnings
+| 0
+| 9
+| +9 (new standard)
+
+| Info
+| 0
+| 17
+| +17 (new standard)
+
+| Actions aligned
+| 10
+| 112
+| +102
+
+| Identity fields
+| 0
+| 43
+| +43
+
+| Blocks
+| 0
+| 4
+| +4
+
+| CLOSING zones
+| 0
+| 5
+| +5
+|===
+
+=== What the Transform Generated (Zero Manual Code Edits)
+
+- *METADATA block* (:8-86, 79 lines) — PRAGMA static (17 fields I1-I4) +
+  METADATA static (26 fields C1-C7) — all populated from directives, filename,
+  and schema defaults
+- *SETUP block* (:90-124, 35 lines) — imports placed, Reserved Omission for
+  unused sections (Modules, Statics, Type Aliases, Trait Defs, Macros,
+  Feature Gates)
+- *BODY block* (:128-239, 112 lines) — all 3 functions placed under
+  "7. Free Functions", Reserved Omission for unused subsections
+- *CLOSING block* (:243-376, 134 lines) — test module moved to Cv,
+  Ce (no entry point), X1 (modification policy), X4 (reference),
+  X5 (closing note with scripture)
+- Section headers, block boundaries, full-width separators — all
+  structurally compliant
+
+
+== Step 4: Verbose Comparison
+
+=== Anatomy: graph.rs (Transformed) vs exists.rs (Reference)
+
+[cols="1,1,1", options="header"]
+|===
+| Aspect | exists.rs (reference) | graph.rs (transformed)
+
+| Health
+| 100/±100 perfect
+| 98/±100 perfect
+
+| Lines
+| 615
+| 377
+
+| Blocks
+| 4 (all present)
+| 4 (all present)
+
+| Directives
+| 3 (code, key, version)
+| 3 (code, key, version)
+
+| PRAGMA fields
+| 17/17
+| 17/17
+
+| METADATA fields
+| 26/26
+| 26/26
+
+| SETUP sections
+| 1 (Imports)
+| 1 (Imports)
+
+| BODY sections
+| 2 (Identity Access, Free Functions)
+| 1 (Free Functions only)
+
+| CLOSING zones
+| 6 (Cv, Ce, X1-X5)
+| 5 (Cv, Ce, X1, X4, X5)
+
+| Layer 0
+| 100
+| 100
+
+| Layer 1
+| 100
+| 100
+
+| Layer 2
+| 100
+| 100
+
+| Layer 3
+| 100
+| 52
+|===
+
+
+== Observations
+
+=== The Three Operations — Confirmed
+
+[cols="1,2,1", options="header"]
+|===
+| Operation | Direction | Analogy
+
+| *lint*
+| Schema → File → Score (read + evaluate)
+| Examining the player's stats
+
+| *transform*
+| Schema → File → File (read + repair)
+| Auto-equipping the player
+
+| *transpile*
+| Schema → File → New File (read + convert)
+| Respeccing to a new class
+|===
+
+All three share the same read pipeline. All three use the same schema
+hierarchy (R[50] → R[5]). The pragma activates all three.
+
+=== Transform Is the Superpower
+
+One command. -9 → 98. No manual code edits. The transform:
+
+1. Parsed the unstructured 171 lines
+2. Classified imports, functions, tests
+3. Built 4 blocks with proper boundaries
+4. Generated 43 identity fields from context
+5. Created section headers, Reserved Omissions, CLOSING zones
+6. Wrote 377 lines of fully structured output
+
+The pragma is the patient's chart. The transform is the surgeon.
+
+=== The 2-Point Gap — Schema Richness, Not Transform Capability
+
+The remaining gap (98 vs 100) lives in Layer 3 SUBSTANCE:
+
+*9 warnings* — `library` subtype expects subsections that graph.rs
+doesn't need:
+
+- SETUP: Constants, Error Types, Core Types (library expects them)
+- BODY: Identity Access, Trait Implementations, Constructors,
+  Core Logic, Queries, Output Display (library expects them)
+
+*17 info messages* — missing concepts and required sections. The schema
+expects code patterns (`conditional_match`, `error_propagation`, etc.)
+that don't exist in graph.rs because it's pure free functions.
+
+*Root cause:* graph.rs is typed as `library` but behaves as a
+`module->utility` — stateless free functions, no public API, no types.
+The schema's `library` form imposes expectations for a full library
+(traits, constructors, queries, output formatting) that a focused
+utility module doesn't need.
+
+=== The Diagnosis Points to Phase 2
+
+The linter told us what's wrong: *the subtype doesn't match the file's
+nature.* The transform built the structure perfectly — the remaining
+gap is schema classification, not structural capability.
+
+Phase 2: Upgrade the schema with new concepts, determine the correct
+subtype for graph.rs, and watch the last 2 points close.
+
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+== Related
+
+[cols="1,2", options="header"]
+|===
+| Document | Relationship
+
+| link:playtest-001-live-scoring.adoc[Playtest 001 Summary]
+| Parent experiment document
+
+| link:playtest-001-phase-2.adoc[Phase 2 — Schema Upgrade]
+| Next phase: new concepts + correct subtype
+
+| `graph.rs.pre-transform`
+| Backup of graph.rs before transform (171 lines, unstructured)
+|===
+
+---
+
+[quote, Psalm 119:130]
+____
+The entrance of thy words giveth light.
+____
+
+_One command. 171 → 377 lines. -9 → 98 health. Zero manual edits.
+The pragma is the covenant. The transform is the faithful servant.
+The 2-point gap is the schema whispering: "you gave me the wrong class."_

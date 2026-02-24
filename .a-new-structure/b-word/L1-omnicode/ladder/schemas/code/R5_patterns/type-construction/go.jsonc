@@ -1,0 +1,52 @@
+{
+    // #!omni data --jsonc
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-lang-go-type-construction",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "language-expression",
+    "_P2_role": "schema",
+    "_P5_title": "Go — Type Construction",
+
+    "concept": "type_construction",
+    "language": "go",
+
+    "patterns": [
+        {
+            "id": "composite_literal",
+            "syntax": "{Type}{{Field}: {value}, ...}",
+            "detect": "([A-Z]\\w*)\\{[^}]*\\w+\\s*:",
+            "emit": "{Type}{{{Field}: {value}}}",
+            "captures": { "type": 1 },
+            "notes": "Composite literal — named fields. Go's struct construction.",
+            "priority": 1
+        },
+        {
+            "id": "pointer_literal",
+            "syntax": "&{Type}{{Field}: {value}, ...}",
+            "detect": "&([A-Z]\\w*)\\{[^}]*\\w+\\s*:",
+            "emit": "&{Type}{{{Field}: {value}}}",
+            "captures": { "type": 1 },
+            "notes": "Pointer to composite literal — common for heap allocation.",
+            "priority": 2
+        },
+        {
+            "id": "slice_literal",
+            "syntax": "[]{Type}{{values}...}",
+            "detect": "\\[\\](\\w+)\\{",
+            "emit": "[]{Type}{{{values}}}",
+            "captures": { "type": 1 },
+            "notes": "Slice literal — constructing a typed slice inline.",
+            "priority": 3
+        }
+    ],
+
+    "rust_to_go_mapping": {
+        "Type { field: value }": "Type{Field: value}",
+        "Type(value)": "Type{Value: value} (Go uses named fields)",
+        "Type { field: value, ..base }": "Type{Field: value} (no update syntax in Go)"
+    },
+
+    "_X5_note": "Go type construction — composite literals with braces, pointer with &, slices with []."
+}

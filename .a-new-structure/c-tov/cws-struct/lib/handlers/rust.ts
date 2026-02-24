@@ -533,8 +533,17 @@ async function buildContext(filePath: string): Promise<RustFileContext> {
   const filename = filePath.split("/").pop() ?? "";
   const directives = findOmniDirectives(lines);
 
-  const isTemplate = directives.has("#!omni:template") ||
+  // Template vs Derived detection:
+  //   // #!omni template  →  key "#!omni:template"  →  TEMPLATE shebang
+  //   // #!omni code      →  key "#!omni:code"      →  DERIVED shebang
+  //   //omni:code         →  key "//omni:code"       →  format directive (both)
+  // A file with the code SHEBANG (// #!omni code) is definitively derived.
+  // A file with just the //omni:code DIRECTIVE could be either template or derived.
+  // R50-042 fires when a derived file has a leftover template shebang.
+  const hasCodeShebang = directives.has("#!omni:code");
+  const hasTemplateMarker = directives.has("#!omni:template") ||
     lines.some((l) => /^\/\/\s+#!omni\s+template\b/.test(l.trim()));
+  const isTemplate = hasTemplateMarker && !hasCodeShebang;
 
   const isCrateRoot = filename === "lib.rs" || filename === "main.rs";
 
@@ -709,10 +718,13 @@ function checkDirectives(ctx: RustFileContext): LintResult[] {
   }
 
   // Crate root or files with //omni: directives: check them
+  // Note: strip leading // from directive names in rule strings to avoid
+  // embedded slashes breaking matchRule() pattern matching.
   for (const directive of REQUIRED_DIRECTIVES) {
     if (!ctx.directives.has(directive)) {
       const level = ctx.isCrateRoot ? error : warn;
-      results.push(level(file, `directive/${directive}`,
+      const tag = directive.replace(/^\/\//, "");
+      results.push(level(file, `directive/${tag}/required`,
         ctx.isCrateRoot
           ? `Missing ${directive} — REQUIRED for crate root`
           : `Missing ${directive}`,
@@ -722,7 +734,8 @@ function checkDirectives(ctx: RustFileContext): LintResult[] {
 
   for (const directive of RECOMMENDED_DIRECTIVES) {
     if (!ctx.directives.has(directive)) {
-      results.push(warn(file, `directive/${directive}`, `Missing ${directive} — recommended`,
+      const tag = directive.replace(/^\/\//, "");
+      results.push(warn(file, `directive/${tag}/recommended`, `Missing ${directive} — recommended`,
         { line: 1 }));
     }
   }
@@ -1197,10 +1210,13 @@ function checkDirectiveFormat(ctx: RustFileContext): LintResult[] {
   const results: LintResult[] = [];
   const file = ctx.filePath;
 
-  // Check //omni:code value for derived files
+  // Check //omni:code value for derived files.
+  // Arrow syntax: -subtype->role is valid if the base -subtype is known.
+  // e.g., "--rust -module->utility" is known because "--rust -module" is known.
   const codeInfo = ctx.directives.get("//omni:code");
   if (codeInfo && codeInfo.value !== "") {
-    const isKnown = KNOWN_CODE_DIRECTIVES.some((k) => codeInfo.value === k);
+    const baseValue = codeInfo.value.replace(/->[\w-]+$/, "");
+    const isKnown = KNOWN_CODE_DIRECTIVES.some((k) => baseValue === k);
     if (!isKnown) {
       results.push(
         info(file, "directive/code-format",
@@ -1210,10 +1226,12 @@ function checkDirectiveFormat(ctx: RustFileContext): LintResult[] {
     }
   }
 
-  // Check #!omni template value for template files
+  // Check #!omni template value for template files.
+  // Same arrow syntax applies to templates.
   const templateInfo = ctx.directives.get("#!omni:template");
   if (templateInfo && templateInfo.value !== "") {
-    const isKnown = KNOWN_CODE_DIRECTIVES.some((k) => templateInfo.value === k);
+    const baseValue = templateInfo.value.replace(/->[\w-]+$/, "");
+    const isKnown = KNOWN_CODE_DIRECTIVES.some((k) => baseValue === k);
     if (!isKnown) {
       results.push(
         info(file, "directive/template-format",
@@ -1886,19 +1904,25 @@ async function lintRustFile(filePath: string): Promise<LintResult[]> {
   // 4 blocks uniformly: schema → SubsectionDef[] → getSubsectionRanges() →
   // buildConceptContainers(). Detection is universal; form filtering is separate.
   //
-  // Each block follows the same pipeline:
-  //   1. getBlockLines() → extract block's lines
-  //   2. _getSubsectionRanges(lines, defs) → find section boundaries
-  //   3. buildConceptContainers(block, file, lines, ranges, detectors) → checks
+  // When a typing arrow is present (-module->utility), the concept map is
+  // overlaid per-section: required sections keep their map (with possible
+  // concept_overrides), available sections soften (granted→defer), irrelevant
+  // sections skip entirely (all→defer). This is bidirectional verification.
   //
   const conceptDetectors = await loadConceptDetectors("rust");
 
-  // METADATA — all 6 sections are ALL_DENIED (no code expected)
-  const metadataLines = getBlockLines(ctx.lines, ctx.blocks, "METADATA");
+  // Resolve typing profile for concept map overlays.
+  // The typing maps narrow concept expectations from the generic form
+  // to the specific variant (e.g., utility only expects pure functions).
+  const typingProfile = (ctx.typing && ctx.subtype)
+    ? _rustRules!.typingMaps[ctx.subtype]?.[ctx.typing]
+    : undefined;
+
+  // METADATA — all 6 sections are ALL_DENIED (no code expected).
   // METADATA doesn't have subsection headers like SETUP/BODY — it's structured
   // by content type (directives, doc-comments, comment-block, pragma, context, subtypes).
-  // For R[5] concept detection, treat as a single container — any code pattern
-  // found in METADATA is a violation regardless of which sub-region it's in.
+  // No typing overlay for METADATA (all denied regardless of role).
+  const metadataLines = getBlockLines(ctx.lines, ctx.blocks, "METADATA");
   const metadataConceptContainers = buildConceptContainers(
     "metadata", ctx.filePath, metadataLines, [], conceptDetectors,
   );
@@ -1908,6 +1932,7 @@ async function lintRustFile(filePath: string): Promise<LintResult[]> {
   const setupRanges = _getSubsectionRanges(setupLines, SETUP_SUBSECTIONS);
   const setupConceptContainers = buildConceptContainers(
     "setup", ctx.filePath, setupLines, setupRanges, conceptDetectors,
+    { typingBlock: typingProfile?.SETUP },
   );
 
   // BODY — 13 sections with compiled SubsectionDef[] (universal detection)
@@ -1915,13 +1940,17 @@ async function lintRustFile(filePath: string): Promise<LintResult[]> {
   const bodyRanges = _getSubsectionRanges(bodyLines, _rustRules!.bodySubsectionDefs);
   const bodyConceptContainers = buildConceptContainers(
     "body", ctx.filePath, bodyLines, bodyRanges, conceptDetectors,
+    { typingBlock: typingProfile?.BODY },
   );
 
   // CLOSING — 8 sections (Cv/Ce/Cc code zones + X1-X5 doc zones)
+  // Typing maps don't cover CLOSING directly, but when typing IS active,
+  // the overlay function softens CLOSING (tests verify BODY, not primary code).
   const closingLines = getBlockLines(ctx.lines, ctx.blocks, "CLOSING");
   const closingRanges = _getSubsectionRanges(closingLines, _rustRules!.closingSubsectionDefs);
   const closingConceptContainers = buildConceptContainers(
     "closing", ctx.filePath, closingLines, closingRanges, conceptDetectors,
+    typingProfile ? { typingBlock: { required: [], available: [], irrelevant: [] } } : undefined,
   );
 
   const chain: BlockLintChain = {
@@ -3433,6 +3462,23 @@ async function inspectRustFile(filePath: string): Promise<InspectResult> {
   const pragmaDir = ctx.directives.get("//omni:code") || ctx.directives.get("#!omni:code");
   const pragma = pragmaDir ? `//omni:code ${pragmaDir.value}` : undefined;
 
+  // Identity fields — parse PRAGMA and METADATA statics
+  const identity: Record<string, Array<{ key: string; value: string }>> = {};
+  const pragmaFields = parseStaticFields(ctx.lines, "PRAGMA");
+  if (pragmaFields.length > 0) {
+    identity["PRAGMA"] = pragmaFields.map((f) => ({
+      key: `${f.section}.${f.field}`,
+      value: f.value,
+    }));
+  }
+  const metadataFields = parseStaticFields(ctx.lines, "METADATA");
+  if (metadataFields.length > 0) {
+    identity["METADATA"] = metadataFields.map((f) => ({
+      key: `${f.section}.${f.field}`,
+      value: f.value,
+    }));
+  }
+
   return {
     filePath,
     format: "rust",
@@ -3444,6 +3490,7 @@ async function inspectRustFile(filePath: string): Promise<InspectResult> {
     content,
     directives,
     pragma,
+    identity: Object.keys(identity).length > 0 ? identity : undefined,
   };
 }
 

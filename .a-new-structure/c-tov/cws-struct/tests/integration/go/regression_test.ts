@@ -17,7 +17,7 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
   fixture, lazyFormat, errors, warnings,
-} from "../../helpers.ts";
+} from "@test/helpers.ts";
 
 // ============================================================================
 // BODY
@@ -29,7 +29,7 @@ const go = lazyFormat("go");
 // regression/ — Existing fixtures still pass after new checks
 // ---------------------------------------------------------------------------
 
-Deno.test("regression/valid-library: still zero errors after content validation additions", async () => {
+Deno.test("[CWS-T00-111] regression/valid-library: still zero errors after content validation additions", async () => {
   const results = await go.lint(fixture("go/structure/valid-library.go"));
   const errs = errors(results);
   assertEquals(errs.length, 0, "Valid library should still have zero errors");

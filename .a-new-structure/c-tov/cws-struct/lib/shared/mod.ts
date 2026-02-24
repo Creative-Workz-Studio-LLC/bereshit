@@ -75,11 +75,20 @@ export {
 export type { ContentExpectations } from "./code-4block.ts";
 
 // Concept validation — R[5] per-container concept checks
-export type { ConceptCheckOptions } from "./concept-check.ts";
+export type { ConceptCheckOptions, ConceptContainerOptions } from "./concept-check.ts";
 export {
   validateContainerConcepts,
   buildConceptContainers,
 } from "./concept-check.ts";
+
+// Scope analysis — R[3] function-scope-aware concept detection
+export type { FunctionScope } from "./scope-analysis.ts";
+export {
+  parseFunctionScopes,
+  detectConceptMultiline,
+  detectConceptByScope,
+  hasR3Detection,
+} from "./scope-analysis.ts";
 
 // Format config — schema-driven replacement for hardcoded constants
 export type {

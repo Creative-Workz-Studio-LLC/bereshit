@@ -1,0 +1,273 @@
+{
+    // #!omni data --jsonc
+
+    // ===================================================================
+    // OMNICODE PRAGMA [PRAGMA]
+    // ===================================================================
+
+    "_pragma_format": "@omni data --jsonc",
+    "_P1_key": "B-L1-schemas-transform-compositions",
+    "_P1_at": "a-01.00",
+    "_P2_type": "data",
+    "_P2_subtype": "concept-compositions",
+    "_P2_role": "schema",
+    "_P5_title": "Concept Compositions — How Atomic Patterns Compose",
+    "_P5_brief": "Maps how 16 atomic concepts compose into recognizable higher-level code patterns. Each composition defines which concepts must co-occur, their typical spatial relationship, and the resulting idiom. Language-agnostic — compositions apply across Rust, Go, and future languages.",
+
+    // ===================================================================
+    // CONTENT BLOCK [CONTENT]
+    // ===================================================================
+    //
+    // Composition taxonomy:
+    //   CORE     — Universal patterns appearing in virtually all code
+    //   CONTROL  — Flow control compositions
+    //   DATA     — Data transformation patterns
+    //   IDIOM    — Language-characteristic but cross-language patterns
+    //
+    // Each composition has:
+    //   requires:  concepts that MUST be present (conjunction)
+    //   optional:  concepts that MAY enhance the pattern
+    //   spatial:   typical arrangement ("nested", "sequential", "wrapping")
+    //   frequency: how often this appears ("ubiquitous", "common", "occasional")
+    //   example_rust / example_go: concrete syntax
+    //
+
+    "compositions": {
+
+        // -----------------------------------------
+        // CORE — present in virtually all code
+        // -----------------------------------------
+
+        "bind_and_call": {
+            "description": "Call a function and bind the result to a variable.",
+            "category": "core",
+            "requires": ["function_call", "variable_binding"],
+            "optional": ["error_propagation"],
+            "spatial": "single-line",
+            "frequency": "ubiquitous",
+            "example_rust": "let data = fs::read_to_string(path)?;",
+            "example_go": "data, err := os.ReadFile(path)"
+        },
+
+        "method_chain": {
+            "description": "Call a method on an instance and optionally chain or bind the result.",
+            "category": "core",
+            "requires": ["method_call", "variable_binding"],
+            "optional": ["field_access", "self_access"],
+            "spatial": "single-line",
+            "frequency": "ubiquitous",
+            "example_rust": "let len = data.len();",
+            "example_go": "length := len(data)"
+        },
+
+        "guard_clause": {
+            "description": "Early return on invalid condition — prevents nesting.",
+            "category": "core",
+            "requires": ["conditional_if", "return_value"],
+            "optional": ["error_propagation", "err_wrap"],
+            "spatial": "sequential",
+            "frequency": "ubiquitous",
+            "example_rust": "if items.is_empty() { return Err(Error::Empty); }",
+            "example_go": "if len(items) == 0 { return fmt.Errorf(\"empty\") }"
+        },
+
+        // -----------------------------------------
+        // CONTROL — flow control compositions
+        // -----------------------------------------
+
+        "error_handling_block": {
+            "description": "Check for error, wrap with context, return or propagate.",
+            "category": "control",
+            "requires": ["error_propagation", "conditional_if", "return_value"],
+            "optional": ["err_wrap", "string_format"],
+            "spatial": "nested",
+            "frequency": "ubiquitous",
+            "notes": "In Rust this collapses to ? operator (single-line). In Go this expands to if err != nil {} (3-5 lines). Same composition, different spatial expression.",
+            "example_rust": "let data = fs::read(path).map_err(|e| Error::Io(e))?;",
+            "example_go": "data, err := os.ReadFile(path)\nif err != nil {\n    return nil, fmt.Errorf(\"read %s: %w\", path, err)\n}"
+        },
+
+        "match_dispatch": {
+            "description": "Branch on a value's variant and dispatch to different handlers.",
+            "category": "control",
+            "requires": ["conditional_match", "return_value"],
+            "optional": ["function_call", "variable_binding", "err_wrap"],
+            "spatial": "nested",
+            "frequency": "common",
+            "example_rust": "match severity {\n    Severity::Error => handle_error(msg),\n    Severity::Warn => handle_warn(msg),\n    _ => Ok(()),\n}",
+            "example_go": "switch severity {\ncase \"error\":\n    return handleError(msg)\ncase \"warn\":\n    return handleWarn(msg)\ndefault:\n    return nil\n}"
+        },
+
+        "conditional_assignment": {
+            "description": "Bind a variable to the result of a conditional expression.",
+            "category": "control",
+            "requires": ["conditional_if", "variable_binding"],
+            "optional": ["conditional_match"],
+            "spatial": "nested",
+            "frequency": "common",
+            "example_rust": "let color = if score >= 34 { \"green\" } else { \"red\" };",
+            "example_go": "color := \"red\"\nif score >= 34 {\n    color = \"green\"\n}"
+        },
+
+        "recursive_descent": {
+            "description": "Process a structure by recursively calling the same function on children.",
+            "category": "control",
+            "requires": ["recursion", "conditional_if", "function_call"],
+            "optional": ["return_value", "loop_iteration", "collection_mutation"],
+            "spatial": "nested",
+            "frequency": "occasional",
+            "notes": "Base case (conditional_if) + recursive step (function_call calling self). Often combined with collection_mutation to accumulate results.",
+            "example_rust": "fn walk(node: &Node) -> Vec<String> {\n    if node.is_leaf() { return vec![node.name()]; }\n    node.children().iter().flat_map(walk).collect()\n}",
+            "example_go": "func walk(node *Node) []string {\n    if node.IsLeaf() {\n        return []string{node.Name()}\n    }\n    var result []string\n    for _, child := range node.Children() {\n        result = append(result, walk(child)...)\n    }\n    return result\n}"
+        },
+
+        // -----------------------------------------
+        // DATA — data transformation patterns
+        // -----------------------------------------
+
+        "iterate_and_collect": {
+            "description": "Loop through a collection, transform items, accumulate results.",
+            "category": "data",
+            "requires": ["loop_iteration", "variable_binding", "collection_mutation"],
+            "optional": ["function_call", "conditional_if", "error_propagation"],
+            "spatial": "nested",
+            "frequency": "ubiquitous",
+            "example_rust": "let names: Vec<_> = items.iter().map(|i| i.name()).collect();",
+            "example_go": "names := make([]string, 0, len(items))\nfor _, item := range items {\n    names = append(names, item.Name())\n}"
+        },
+
+        "filter_and_collect": {
+            "description": "Loop with conditional filtering, collect matching items.",
+            "category": "data",
+            "requires": ["loop_iteration", "conditional_if", "collection_mutation"],
+            "optional": ["variable_binding", "field_access"],
+            "spatial": "nested",
+            "frequency": "common",
+            "example_rust": "let errors: Vec<_> = results.iter().filter(|r| r.severity == Error).collect();",
+            "example_go": "var errors []Result\nfor _, r := range results {\n    if r.Severity == Error {\n        errors = append(errors, r)\n    }\n}"
+        },
+
+        "construct_and_return": {
+            "description": "Build a new type instance and return it — the constructor pattern.",
+            "category": "data",
+            "requires": ["type_construction", "return_value"],
+            "optional": ["variable_binding", "field_access"],
+            "spatial": "sequential",
+            "frequency": "common",
+            "example_rust": "Self { name, score: 0, items: Vec::new() }",
+            "example_go": "return &Config{\n    Name:  name,\n    Score: 0,\n    Items: make([]string, 0),\n}"
+        },
+
+        "format_error": {
+            "description": "Create an error with formatted context message.",
+            "category": "data",
+            "requires": ["err_wrap", "string_format"],
+            "optional": ["return_value", "error_propagation"],
+            "spatial": "single-line",
+            "frequency": "common",
+            "example_rust": "Err(format!(\"parse {}: {}\", path.display(), e))",
+            "example_go": "return fmt.Errorf(\"parse %s: %w\", path, err)"
+        },
+
+        // -----------------------------------------
+        // IDIOM — language-characteristic but cross-language
+        // -----------------------------------------
+
+        "method_implementation": {
+            "description": "A method that accesses self/receiver fields and delegates to other methods.",
+            "category": "idiom",
+            "requires": ["self_access", "field_access"],
+            "optional": ["method_call", "return_value", "variable_binding"],
+            "spatial": "sequential",
+            "frequency": "common",
+            "notes": "The quintessential method body: read state, compute, return. In Rust, self.field is syntactically distinct. In Go, r.Field is syntactically identical to any variable access — hence the detection ceiling at R[5].",
+            "example_rust": "fn name(&self) -> &str { &self.name }",
+            "example_go": "func (c *Config) Name() string { return c.name }"
+        },
+
+        "builder_step": {
+            "description": "Set a field on self and return self for chaining.",
+            "category": "idiom",
+            "requires": ["self_access", "field_access", "return_value"],
+            "optional": ["variable_binding"],
+            "spatial": "sequential",
+            "frequency": "occasional",
+            "notes": "Rust builder pattern is pervasive. Go tends toward option functions instead, but the composition is the same concept.",
+            "example_rust": "fn with_name(mut self, name: String) -> Self {\n    self.name = name;\n    self\n}",
+            "example_go": "func (b *Builder) WithName(name string) *Builder {\n    b.name = name\n    return b\n}"
+        },
+
+        "ok_early_return": {
+            "description": "Handle the happy path by wrapping a success value and returning.",
+            "category": "idiom",
+            "requires": ["ok_wrap", "return_value"],
+            "optional": ["variable_binding", "type_construction"],
+            "spatial": "single-line",
+            "frequency": "common",
+            "notes": "The counterpart to error_handling_block — when everything succeeds. Rust Ok(value), Go return value, nil.",
+            "example_rust": "Ok(Config { name, items })",
+            "example_go": "return &Config{Name: name, Items: items}, nil"
+        },
+
+        "iterate_with_errors": {
+            "description": "Loop through items, process each with possible failure, collect errors.",
+            "category": "idiom",
+            "requires": ["loop_iteration", "error_propagation", "collection_mutation"],
+            "optional": ["function_call", "conditional_if", "err_wrap", "variable_binding"],
+            "spatial": "nested",
+            "frequency": "common",
+            "notes": "The \"collect errors, don't fail fast\" pattern. Common in linters, validators, batch processors.",
+            "example_rust": "let mut errors = Vec::new();\nfor item in items {\n    if let Err(e) = process(item) {\n        errors.push(e);\n    }\n}",
+            "example_go": "var errors []error\nfor _, item := range items {\n    if err := process(item); err != nil {\n        errors = append(errors, err)\n    }\n}"
+        }
+    },
+
+    // ===================================================================
+    // ANALYSIS — composition insights
+    // ===================================================================
+
+    "analysis": {
+        "concept_frequency": {
+            "description": "How often each concept appears across all compositions.",
+            "notes": "Concepts appearing in the most compositions are the 'glue' — they connect everything. Concepts in few compositions are 'specialists' — they add specific capability.",
+            "glue_concepts": [
+                "return_value (12/14 compositions)",
+                "variable_binding (10/14)",
+                "conditional_if (7/14)",
+                "function_call (6/14)",
+                "error_propagation (5/14)"
+            ],
+            "specialist_concepts": [
+                "recursion (1/14 — recursive_descent only)",
+                "conditional_match (2/14 — match_dispatch, conditional_assignment)",
+                "string_format (2/14 — format_error, error_handling_block)",
+                "type_construction (2/14 — construct_and_return, ok_early_return)"
+            ]
+        },
+
+        "composition_layers": {
+            "description": "Compositions have their own detection hierarchy.",
+            "notes": "Detecting a composition requires detecting its constituent concepts first — compositions are R[3] patterns built from R[5] atoms.",
+            "hierarchy": [
+                "R[5] — detect individual concepts (current: regex, 15/16 Go, 16/16 Rust)",
+                "R[3] — detect compositions (future: co-occurrence within scope)",
+                "R[2] — detect composition roles (future: type-aware composition classification)",
+                "R[1] — detect cross-file composition chains (future: call graph analysis)"
+            ]
+        },
+
+        "spatial_patterns": {
+            "description": "How concepts are spatially arranged within compositions.",
+            "single_line": "bind_and_call, method_chain, format_error, ok_early_return — compact, inline",
+            "sequential": "guard_clause, construct_and_return, method_implementation, builder_step — one after another",
+            "nested": "error_handling_block, match_dispatch, conditional_assignment, iterate_and_collect, filter_and_collect, recursive_descent, iterate_with_errors — contains within"
+        }
+    },
+
+    // ===================================================================
+    // CLOSING BLOCK [CLOSING]
+    // ===================================================================
+
+    "_X5_note": "Atomic concepts compose into recognizable patterns. The composition map is the bridge between R[5] concept detection (what patterns exist) and R[3] scope analysis (how patterns relate). Same hierarchy: atom → composition → program.",
+    "_X5_scripture": "1 Corinthians 12:14 — For the body is not one member, but many."
+}

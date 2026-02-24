@@ -15,33 +15,48 @@
     "patterns": [
         {
             "id": "return_value",
+            "syntax": "return {expr}",
+            "detect": "^\\s*return\\s+([^,]+)\\s*$",
             "emit": "return {expr}",
-            "when": "returning a computed value from a function",
-            "notes": "Go always uses explicit return keyword.",
+            "captures": { "expr": 1 },
+            "notes": "Single value return — always explicit return keyword in Go.",
             "priority": 1
         },
         {
             "id": "return_void",
+            "syntax": "return",
+            "detect": "^\\s*return\\s*$",
             "emit": "return",
-            "when": "void return — function has no return value",
+            "captures": {},
             "notes": "Bare return for void functions.",
             "priority": 2
         },
         {
             "id": "return_error_tuple",
+            "syntax": "return {value}, nil",
+            "detect": "^\\s*return\\s+(.+),\\s*nil\\s*$",
             "emit": "return {value}, nil",
-            "when": "returning success from a function that returns (T, error)",
-            "notes": "Success tuple — value with nil error.",
+            "captures": { "value": 1 },
+            "notes": "Success tuple — value with nil error. Maps to Rust Ok(val).",
             "priority": 3
         },
         {
             "id": "return_nil_only",
+            "syntax": "return nil",
+            "detect": "^\\s*return\\s+nil\\s*$",
             "emit": "return nil",
-            "when": "returning success from a function that returns only error",
-            "notes": "Void success — only the error return, and it's nil.",
+            "captures": {},
+            "notes": "Void success — only the error return, and it's nil. Maps to Rust Ok(()).",
             "priority": 4
         }
     ],
+
+    "rust_to_go_mapping": {
+        "return expr;": "return expr — explicit return translates directly",
+        "expr (implicit)": "return expr — Go always needs explicit return keyword",
+        "Ok(val)": "return val, nil — Result::Ok → value + nil error",
+        "Ok(())": "return nil — void Ok → nil error only"
+    },
 
     "_X5_note": "Go returns — always explicit keyword. No implicit last-expression returns."
 }

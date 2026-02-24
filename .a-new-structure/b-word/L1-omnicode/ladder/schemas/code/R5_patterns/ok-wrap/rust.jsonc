@@ -17,6 +17,7 @@
             "id": "ok_unit",
             "syntax": "Ok(())",
             "detect": "Ok\\(\\(\\)\\)",
+            "emit": "Ok(())",
             "captures": {},
             "void": true,
             "notes": "Void success — Ok(()) is Rust idiom for 'no error, no value'.",
@@ -26,12 +27,18 @@
             "id": "ok_expr",
             "syntax": "Ok({expr})",
             "detect": "Ok\\(([^)]+)\\)",
+            "emit": "Ok({expr})",
             "captures": { "expr": 1 },
             "void": false,
             "notes": "Success with value — Ok(result), Ok(vec), etc.",
             "priority": 2
         }
     ],
+
+    "go_to_rust_mapping": {
+        "return nil": "Ok(()) — nil error only → void success",
+        "return val, nil": "Ok(val) — value + nil error → Ok with value"
+    },
 
     "_X5_note": "Rust Ok() — wrapping in Result::Ok variant."
 }
