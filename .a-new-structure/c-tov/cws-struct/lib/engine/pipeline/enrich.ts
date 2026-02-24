@@ -20,8 +20,8 @@
 // SETUP
 // ============================================================================
 
-import type { LintResult } from "../foundation/mod.ts";
-import { matchRule } from "../data/mod.ts";
+import type { LintResult } from "../../foundation/mod.ts";
+import { matchRule } from "../../data/mod.ts";
 
 // ============================================================================
 // BODY

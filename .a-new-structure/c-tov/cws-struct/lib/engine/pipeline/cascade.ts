@@ -29,10 +29,10 @@
 // SETUP
 // ============================================================================
 
-import type { AtomicAction } from "../foundation/mod.ts";
-import type { LintResult } from "../foundation/mod.ts";
-import type { PipelineLayer } from "../data/mod.ts";
-import { isDebug, debugCascade } from "./debug.ts";
+import type { AtomicAction } from "../../foundation/mod.ts";
+import type { LintResult } from "../../foundation/mod.ts";
+import type { PipelineLayer } from "../../data/mod.ts";
+import { isDebug, debugCascade } from "../debug.ts";
 
 // ---------------------------------------------------------------------------
 // Cascade result types

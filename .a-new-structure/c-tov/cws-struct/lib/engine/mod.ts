@@ -9,15 +9,46 @@
 // version: a-01.00
 // created: 2026-02-17
 // authors: Nova Dawn (CPI-SI)
-// purpose: Re-export all engine modules — discovery, output, registry.
-//          The runtime machinery that drives format handlers.
+// purpose: Re-export all engine modules — organized by concern layers that
+//          mirror the R[n] architecture:
+//
+//          discover/  → REG domain — find files and formats (structural foundation)
+//          pipeline/  → PIP domain — cascade results through R[n] layers
+//          present/   → Output domain — human-facing presentation
+//          (root)     → Operations + cross-cutting utilities
+//          transpiler → TRN domain — extracted to lib/transpiler/
 //
 // ============================================================================
 
-// Discovery
-export { discoverFiles, discoverAllFiles, relativePaths, setDiscoveryLimits } from "./discovery.ts";
+// ─── discover/ — REG domain: find files and formats ─────────────────────────
 
-// Output
+export { discoverFiles, discoverAllFiles, relativePaths, setDiscoveryLimits } from "./discover/files.ts";
+export {
+  registerFormat,
+  getFormat,
+  listFormats,
+  listFormatDetails,
+  detectFormat,
+} from "./discover/registry.ts";
+
+// ─── pipeline/ — PIP domain: cascade results through R[n] layers ────────────
+
+export { resolveErrorCodes } from "./pipeline/enrich.ts";
+export {
+  cascadeActions,
+  cascadeActionGroups,
+  cascadeBlock,
+  hasStructuralFailure,
+  detectFailedBlocks,
+  tagLayer,
+} from "./pipeline/cascade.ts";
+export type {
+  LayerResult,
+  PipelineResult,
+} from "./pipeline/cascade.ts";
+
+// ─── present/ — Output domain: human-facing presentation ────────────────────
+
 export {
   COLORS,
   severityColor,
@@ -25,83 +56,29 @@ export {
   printFileSummary,
   printTotals,
   printHeader,
-} from "./output.ts";
-
-// Registry
+  emitJson,
+} from "./present/output.ts";
 export {
-  registerFormat,
-  getFormat,
-  listFormats,
-  listFormatDetails,
-  detectFormat,
-} from "./registry.ts";
+  formatLogEntry,
+  formatLogEntries,
+  writeLogHeader,
+  writeLogEntries,
+  formatTransformLogEntries,
+  writeTransformLogEntries,
+  emitHealthLog,
+} from "./present/logging.ts";
+export type { QuickFixSuggestion } from "./present/suggest.ts";
+export {
+  computeQuickFixes,
+  printQuickFixes,
+  printSuggestSummary,
+} from "./present/suggest.ts";
 
-// Fill engine (schema-driven file generation)
+// ─── root — Operations: fill, transform, inspect, git ───────────────────────
+
 export type { FillContext } from "./fill.ts";
 export { generateFile, generateFileText } from "./fill.ts";
 
-// Transpiler (three-cord format conversion)
-export type {
-  ExtractedIdentity,
-  ExtractedSemantics,
-  SemanticChunk,
-  ChunkItem,
-  TranspileOptions,
-  TranspileResult,
-  FormatFormMapping,
-} from "./transpiler-types.ts";
-
-export {
-  transpile,
-  transpileFile,
-  findMapping,
-  getTargetForm,
-  extractRustSemantics,
-  rustNameToGo,
-  rustTypeToGo,
-  rustImportToGo,
-  rustParamsToGo,
-} from "./transpiler.ts";
-
-// Transpiler schema-driven mappings (first principles)
-export type {
-  ResolvedMappings,
-  ConceptMappingPair,
-  LanguageConcept,
-  ConceptPattern,
-  FormStructure,
-  FormContent,
-  FormContentExpectations,
-  BlockSections,
-  BodyBlockSections,
-} from "./transpiler-mappings.ts";
-export {
-  loadTranspilerMappings,
-  loadTranspilerMappingsCached,
-  loadFormStructure,
-  loadFormStructureCached,
-  loadFormContent,
-  loadFormContentCached,
-  clearFormSchemaCache,
-  loadConceptMappings,
-  loadConceptMappingsCached,
-  loadLanguageConcept,
-  clearConceptCache,
-  convertType,
-  convertImport,
-  convertName,
-  convertParams,
-} from "./transpiler-mappings.ts";
-
-// Transpiler AST (universal concept body translation)
-export type { AstNode, BodyTranslation } from "./transpiler-ast.ts";
-export {
-  translateBody,
-  parseSourceBody,
-  emitTargetBody,
-} from "./transpiler-ast.ts";
-
-// Shared transform pipeline (schema-driven, handler-parameterized)
 export type {
   TransformContext,
   TransformPass,
@@ -124,53 +101,11 @@ export {
   runTransformPipeline,
 } from "./transform.ts";
 
-// Git integration (diff-aware file detection)
+export { formatInspectText, formatInspectJson, runInspect } from "./inspect.ts";
 export { getChangedFiles } from "./git.ts";
 
-// Structured health logging (TIMESTAMP|ACTION|DELTA|SOURCE|DETAIL)
-export {
-  formatLogEntry,
-  formatLogEntries,
-  writeLogHeader,
-  writeLogEntries,
-  formatTransformLogEntries,
-  writeTransformLogEntries,
-  emitHealthLog,
-} from "./logging.ts";
+// ─── root — T00 cross-cutting: debug/trace ──────────────────────────────────
 
-// Inspect pipeline (parsed structure without lint checks)
-export { formatInspectText, formatInspectJson, runInspect } from "./inspect.ts";
-
-// JSON output (machine-readable)
-export { emitJson } from "./output.ts";
-
-// Enrichment (rule → error code resolution)
-export { resolveErrorCodes } from "./enrich.ts";
-
-// Cascade logic (4-layer pipeline cascade)
-export {
-  cascadeActions,
-  cascadeActionGroups,
-  cascadeBlock,
-  hasStructuralFailure,
-  detectFailedBlocks,
-  tagLayer,
-} from "./cascade.ts";
-
-export type {
-  LayerResult,
-  PipelineResult,
-} from "./cascade.ts";
-
-// Quick-fix suggestions engine
-export type { QuickFixSuggestion } from "./suggest.ts";
-export {
-  computeQuickFixes,
-  printQuickFixes,
-  printSuggestSummary,
-} from "./suggest.ts";
-
-// Debug / trace diagnostic output
 export {
   initDebug,
   isDebug,
@@ -194,10 +129,63 @@ export {
   traceResult,
 } from "./debug.ts";
 
+// ─── transpiler — TRN domain: extracted to lib/transpiler/ ──────────────────
+
+export type {
+  ExtractedIdentity,
+  ExtractedSemantics,
+  SemanticChunk,
+  ChunkItem,
+  TranspileOptions,
+  TranspileResult,
+  FormatFormMapping,
+  ResolvedMappings,
+  ConceptMappingPair,
+  LanguageConcept,
+  ConceptPattern,
+  FormStructure,
+  FormContent,
+  FormContentExpectations,
+  BlockSections,
+  BodyBlockSections,
+  AstNode,
+  BodyTranslation,
+} from "../transpiler/mod.ts";
+export {
+  transpile,
+  transpileFile,
+  findMapping,
+  getTargetForm,
+  extractRustSemantics,
+  rustNameToGo,
+  rustTypeToGo,
+  rustImportToGo,
+  rustParamsToGo,
+  loadTranspilerMappings,
+  loadTranspilerMappingsCached,
+  loadFormStructure,
+  loadFormStructureCached,
+  loadFormContent,
+  loadFormContentCached,
+  clearFormSchemaCache,
+  loadConceptMappings,
+  loadConceptMappingsCached,
+  loadLanguageConcept,
+  clearConceptCache,
+  convertType,
+  convertImport,
+  convertName,
+  convertParams,
+  translateBody,
+  parseSourceBody,
+  emitTargetBody,
+} from "../transpiler/mod.ts";
+
 // ============================================================================
 // CLOSING
 // ============================================================================
 //
-// One import path for all engine machinery.
+// Engine barrel — organized by concern layers mirroring R[n] architecture.
+// discover/ (REG) → pipeline/ (PIP) → present/ (output) → operations (root)
 // "Seek, and ye shall find." — Matthew 7:7
 // ============================================================================

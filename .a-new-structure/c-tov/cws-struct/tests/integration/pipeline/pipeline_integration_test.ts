@@ -43,7 +43,7 @@ import type {
 } from "@lib/foundation/mod.ts";
 import { trueToLevel, levelToEmoji } from "@lib/foundation/mod.ts";
 import { resolveErrorCodes } from "@lib/engine/mod.ts";
-import { formatLogEntries } from "@lib/engine/logging.ts";
+import { formatLogEntries } from "@lib/engine/present/logging.ts";
 import { formatInspectText, formatInspectJson } from "@lib/engine/inspect.ts";
 import { generateFileText } from "@lib/engine/mod.ts";
 import type { FillContext } from "@lib/engine/mod.ts";

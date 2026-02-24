@@ -39,7 +39,7 @@ import {
   hasStructuralFailure,
   detectFailedBlocks,
   tagLayer,
-} from "@lib/engine/cascade.ts";
+} from "@lib/engine/pipeline/cascade.ts";
 
 // ---------------------------------------------------------------------------
 // Test fixtures

@@ -39,7 +39,7 @@ import {
 import {
   loadConceptMappingsCached,
   loadTranspilerMappingsCached,
-} from "@lib/engine/transpiler-mappings.ts";
+} from "@lib/transpiler/mappings.ts";
 
 // Register format handlers (side-effect imports — needed for lint validation)
 import "@lib/handlers/go.ts";
@@ -643,7 +643,7 @@ Deno.test("transpiler/transpileFile: format! translates to fmt.Sprintf", async (
 // 9. Schema-driven type conversion (convertType with loaded mappings)
 // ---------------------------------------------------------------------------
 
-import { convertType } from "@lib/engine/transpiler-mappings.ts";
+import { convertType } from "@lib/transpiler/mappings.ts";
 
 Deno.test("transpiler/convertType: Path → string (Go uses strings for paths)", async () => {
   const mappings = await loadTranspilerMappingsCached("rust", "go");

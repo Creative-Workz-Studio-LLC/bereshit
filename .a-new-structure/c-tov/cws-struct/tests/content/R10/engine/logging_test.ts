@@ -22,7 +22,7 @@
 // ============================================================================
 
 import { assertEquals } from "jsr:@std/assert";
-import { formatLogEntry, formatLogEntries } from "@lib/engine/logging.ts";
+import { formatLogEntry, formatLogEntries } from "@lib/engine/present/logging.ts";
 import type { AtomicAction } from "@lib/foundation/mod.ts";
 
 // ============================================================================

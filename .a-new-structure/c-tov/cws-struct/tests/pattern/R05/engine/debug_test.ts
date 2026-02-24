@@ -24,7 +24,7 @@ import {
   isDebug,
   isTrace,
 } from "@lib/engine/debug.ts";
-import { cascadeActions } from "@lib/engine/cascade.ts";
+import { cascadeActions } from "@lib/engine/pipeline/cascade.ts";
 import type { CliOptions } from "@lib/foundation/types.ts";
 import type { AtomicAction } from "@lib/foundation/health.ts";
 

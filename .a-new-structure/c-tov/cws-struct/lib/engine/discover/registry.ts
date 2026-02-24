@@ -22,8 +22,8 @@
 // SETUP
 // ============================================================================
 
-import type { FormatHandler } from "../foundation/mod.ts";
-import { ToolError } from "../foundation/mod.ts";
+import type { FormatHandler } from "../../foundation/mod.ts";
+import { ToolError } from "../../foundation/mod.ts";
 
 // ============================================================================
 // BODY

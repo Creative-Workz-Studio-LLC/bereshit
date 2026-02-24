@@ -24,7 +24,7 @@
 import { assertEquals, assert, assertStringIncludes } from "jsr:@std/assert";
 import { generateFile, generateFileText } from "@lib/engine/fill.ts";
 import type { FillContext } from "@lib/engine/fill.ts";
-import { getFormat } from "@lib/engine/registry.ts";
+import { getFormat } from "@lib/engine/discover/registry.ts";
 
 // Register format handlers (side-effect imports)
 import "@lib/handlers/go.ts";

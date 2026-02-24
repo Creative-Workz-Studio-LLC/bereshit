@@ -28,7 +28,7 @@ import {
 
 import {
   printTotals,
-} from "@lib/engine/output.ts";
+} from "@lib/engine/present/output.ts";
 
 import type {
   LintSummary,

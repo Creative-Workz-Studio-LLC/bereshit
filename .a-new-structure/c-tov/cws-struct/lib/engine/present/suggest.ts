@@ -33,9 +33,9 @@
 // SETUP
 // ============================================================================
 
-import type { LintSummary, LintResult, Severity } from "../foundation/mod.ts";
-import type { ErrorCodeEntry } from "../data/mod.ts";
-import { matchRule } from "../data/mod.ts";
+import type { LintSummary, LintResult, Severity } from "../../foundation/mod.ts";
+import type { ErrorCodeEntry } from "../../data/mod.ts";
+import { matchRule } from "../../data/mod.ts";
 import { COLORS } from "./output.ts";
 
 // ---------------------------------------------------------------------------

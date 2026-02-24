@@ -32,9 +32,9 @@
 // SETUP
 // ============================================================================
 
-import type { AtomicAction, LintSummary } from "../foundation/mod.ts";
-import { IMPACT_WEIGHT } from "../foundation/mod.ts";
-import type { LintResult } from "../foundation/mod.ts";
+import type { AtomicAction, LintSummary } from "../../foundation/mod.ts";
+import { IMPACT_WEIGHT } from "../../foundation/mod.ts";
+import type { LintResult } from "../../foundation/mod.ts";
 import { COLORS } from "./output.ts";
 
 // ============================================================================

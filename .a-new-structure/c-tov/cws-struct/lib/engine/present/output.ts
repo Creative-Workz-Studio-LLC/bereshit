@@ -25,12 +25,12 @@
 import type {
   LintSummary, LintResult, Severity,
   HealthScore, AtomicAction,
-} from "../foundation/mod.ts";
-import { trueToLevel, levelToEmoji } from "../foundation/mod.ts";
+} from "../../foundation/mod.ts";
+import { trueToLevel, levelToEmoji } from "../../foundation/mod.ts";
 import {
   matchRule, getByCode, codeSummary, related,
   CATALOG_SIZE, LAYER_COUNTS, LAYER_DESCRIPTIONS,
-} from "../data/mod.ts";
+} from "../../data/mod.ts";
 
 // ---------------------------------------------------------------------------
 // Constants — ANSI colors

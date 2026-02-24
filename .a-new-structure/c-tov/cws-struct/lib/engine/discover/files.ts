@@ -23,7 +23,7 @@
 
 import { walk } from "@std/fs/walk";
 import { resolve, basename, extname, relative } from "@std/path";
-import type { FormatHandler } from "../foundation/mod.ts";
+import type { FormatHandler } from "../../foundation/mod.ts";
 import { detectFormat, getFormat } from "./registry.ts";
 
 // ---------------------------------------------------------------------------

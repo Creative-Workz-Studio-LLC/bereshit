@@ -13,7 +13,7 @@
 // ============================================================================
 
 import { assertThrows } from "jsr:@std/assert";
-import { registerFormat } from "@lib/engine/registry.ts";
+import { registerFormat } from "@lib/engine/discover/registry.ts";
 import { ToolError } from "@lib/foundation/tool-error.ts";
 import type { FormatHandler } from "@lib/foundation/types.ts";
 

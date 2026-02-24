@@ -18,7 +18,7 @@ import {
   loadTranspilerMappings,
   loadFormStructure,
   loadFormContent,
-} from "@lib/engine/transpiler-mappings.ts";
+} from "@lib/transpiler/mappings.ts";
 
 // ============================================================================
 // BODY

@@ -23,7 +23,7 @@
 // ============================================================================
 
 import type { InspectResult, FormatHandler } from "../foundation/mod.ts";
-import { COLORS } from "./output.ts";
+import { COLORS } from "./present/output.ts";
 
 // ============================================================================
 // BODY

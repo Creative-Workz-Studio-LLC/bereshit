@@ -43,12 +43,12 @@ import type {
   TranspileDiagnostic,
   TranspileStats,
   FormatFormMapping,
-} from "./transpiler-types.ts";
+} from "./types.ts";
 
 import type { CodeFormat } from "../foundation/mod.ts";
 import { loadComposition } from "../foundation/mod.ts";
 
-import type { ResolvedMappings, FormStructure } from "./transpiler-mappings.ts";
+import type { ResolvedMappings, FormStructure } from "./mappings.ts";
 import {
   loadTranspilerMappingsCached,
   loadFormStructureCached,
@@ -56,9 +56,9 @@ import {
   convertImport,
   convertName,
   convertParams,
-} from "./transpiler-mappings.ts";
+} from "./mappings.ts";
 
-import { translateBody } from "./transpiler-ast.ts";
+import { translateBody } from "./ast.ts";
 
 import {
   findBlocks,

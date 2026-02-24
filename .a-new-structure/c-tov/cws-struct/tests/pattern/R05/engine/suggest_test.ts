@@ -21,8 +21,8 @@
 // ============================================================================
 
 import { assertEquals, assert } from "jsr:@std/assert";
-import { computeQuickFixes } from "@lib/engine/suggest.ts";
-import type { QuickFixSuggestion } from "@lib/engine/suggest.ts";
+import { computeQuickFixes } from "@lib/engine/present/suggest.ts";
+import type { QuickFixSuggestion } from "@lib/engine/present/suggest.ts";
 import type { LintSummary, LintResult } from "@lib/foundation/types.ts";
 
 // ---------------------------------------------------------------------------

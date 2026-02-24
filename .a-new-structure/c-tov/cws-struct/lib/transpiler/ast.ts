@@ -35,12 +35,12 @@ import type {
   ConceptMappingPair,
   LanguageConcept,
   ResolvedMappings,
-} from "./transpiler-mappings.ts";
+} from "./mappings.ts";
 import {
   loadConceptMappingsCached,
   convertType,
   convertName,
-} from "./transpiler-mappings.ts";
+} from "./mappings.ts";
 
 // ---------------------------------------------------------------------------
 // 2. Types — Concept AST

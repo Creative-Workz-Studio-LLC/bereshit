@@ -34,7 +34,7 @@ import {
   discoverAllFiles,
   getFormat,
 } from "../engine/mod.ts";
-import { writeTransformLogEntries } from "../engine/logging.ts";
+import { writeTransformLogEntries } from "../engine/present/logging.ts";
 import { identifyExplicitFiles } from "./parse.ts";
 import { TOOL_NAME, CONCURRENCY } from "./config.ts";
 
