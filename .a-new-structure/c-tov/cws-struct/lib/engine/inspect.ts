@@ -22,7 +22,7 @@
 // SETUP
 // ============================================================================
 
-import type { InspectResult } from "../foundation/mod.ts";
+import type { InspectResult, FormatHandler } from "../foundation/mod.ts";
 import { COLORS } from "./output.ts";
 
 // ============================================================================
@@ -158,11 +158,56 @@ export function formatInspectJson(result: InspectResult): string {
   return JSON.stringify(result, null, 2);
 }
 
+// ---------------------------------------------------------------------------
+// Inspect pipeline — run handler.inspect() and format output
+// ---------------------------------------------------------------------------
+
+/**
+ * Run inspect mode — show parsed structure without lint checks.
+ * Calls handler.inspect() for each file and formats the output.
+ *
+ * Engine-level function — any command can invoke inspect, not just lint.
+ */
+export async function runInspect(
+  handler: FormatHandler,
+  files: string[],
+  json: boolean,
+): Promise<boolean> {
+  if (!handler.inspect) {
+    console.error(
+      `${COLORS.yellow}--inspect not supported for format '${handler.name}' (no inspect method).${COLORS.reset}`,
+    );
+    return false;
+  }
+
+  const results: InspectResult[] = [];
+  for (const file of files) {
+    try {
+      const result = await handler.inspect(file);
+      results.push(result);
+      if (!json) {
+        console.log(formatInspectText(result));
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error(`${COLORS.red}Error inspecting ${file}: ${msg}${COLORS.reset}`);
+    }
+  }
+
+  if (json) {
+    console.log(results.length === 1
+      ? formatInspectJson(results[0]!)
+      : JSON.stringify(results, null, 2));
+  }
+
+  return true;
+}
+
 // ============================================================================
 // CLOSING
 // ============================================================================
 //
-// Inspect formatter — presents parsed structure without judgment.
+// Inspect formatter + pipeline — presents parsed structure without judgment.
 // The eyes that see before the mind that judges.
 //
 // "The hearing ear, and the seeing eye, the LORD hath made even both of them."

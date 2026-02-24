@@ -34,7 +34,8 @@
 // ---------------------------------------------------------------------------
 
 import { Database } from "@db/sqlite";
-import type { Severity, LintSummary } from "../foundation/mod.ts";
+import type { Severity } from "../types/core.ts";
+import type { LintSummary } from "../types/foundation.ts";
 // Direct import — barrel would create cycle: foundation/mod → code-schema → data/mod → database
 import { ToolError } from "../foundation/tool-error.ts";
 

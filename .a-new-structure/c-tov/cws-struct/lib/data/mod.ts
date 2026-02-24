@@ -92,6 +92,18 @@ export {
   LAYER_DESCRIPTIONS,
 } from "./errors.ts";
 
+// ---------------------------------------------------------------------------
+// Catalog binding — wire ToolError to the error catalog
+// ---------------------------------------------------------------------------
+//
+// ToolError (foundation/) needs getByCode (data/) for catalog-driven messages.
+// Static import would create foundation→data cycle. Instead, ToolError uses
+// setter injection — we bind the catalog here after both modules are loaded.
+//
+import { bindErrorCatalog } from "../foundation/tool-error.ts";
+import { getByCode as _catalogGetByCode } from "./errors.ts";
+bindErrorCatalog(_catalogGetByCode);
+
 // Phase 2: SQLite persistence
 // NOTE: CwsDatabase and detectInstance are NOT re-exported here because
 // database.ts triggers SQLite FFI loading at module level. Consumers that

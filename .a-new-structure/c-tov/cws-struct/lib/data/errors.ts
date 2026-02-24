@@ -48,7 +48,7 @@
 // Imports
 // ---------------------------------------------------------------------------
 
-import type { Severity } from "../foundation/mod.ts";
+import type { Severity } from "../types/core.ts";
 import type { ErrorCodeEntry } from "./types.ts";
 
 // ---------------------------------------------------------------------------

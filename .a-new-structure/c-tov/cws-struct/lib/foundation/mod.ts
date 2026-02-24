@@ -153,7 +153,7 @@ export type { ToolConfig } from "./config.ts";
 export { loadConfig } from "./config.ts";
 
 // Structured tool errors
-export { ToolError } from "./tool-error.ts";
+export { ToolError, bindErrorCatalog } from "./tool-error.ts";
 
 // Cache registry
 export { registerCache, clearAllCaches, listCaches } from "./cache-registry.ts";

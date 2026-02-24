@@ -32,9 +32,10 @@
 // SETUP
 // ============================================================================
 
-import type { AtomicAction } from "../foundation/mod.ts";
+import type { AtomicAction, LintSummary } from "../foundation/mod.ts";
 import { IMPACT_WEIGHT } from "../foundation/mod.ts";
 import type { LintResult } from "../foundation/mod.ts";
+import { COLORS } from "./output.ts";
 
 // ============================================================================
 // BODY
@@ -245,6 +246,46 @@ export async function writeTransformLogEntries(
   await Deno.writeTextFile(logPath, content, { append: true });
 }
 
+// ---------------------------------------------------------------------------
+// Health log emission — extract actions from summaries and write to log
+// ---------------------------------------------------------------------------
+
+/**
+ * Emit atomic health observations to a structured log file.
+ * Format: TIMESTAMP|ACTION|DELTA|SOURCE|DETAIL (from log.toml spec).
+ *
+ * Not lint-specific — any command that produces LintSummary with health
+ * can write its observations to the audit trail.
+ *
+ * "The books are opened." — Revelation 20:12
+ */
+export async function emitHealthLog(
+  logPath: string,
+  summaries: LintSummary[],
+  formatName: string,
+): Promise<void> {
+  for (const s of summaries) {
+    if (!s.health) continue;
+    // Collect all atomic actions from health blocks → containers → actions
+    const actions = s.health.blocks.flatMap((b) =>
+      b.containers.flatMap((c) => c.actions)
+    );
+    if (actions.length > 0) {
+      try {
+        await writeLogEntries(logPath, actions, formatName, s.file);
+      } catch (e) {
+        if (e instanceof Deno.errors.NotCapable || e instanceof Deno.errors.PermissionDenied) {
+          console.error(
+            `${COLORS.red}--log requires write permission. Run with: deno run --allow-read --allow-write mod.ts ...${COLORS.reset}`,
+          );
+          return; // Stop trying — permission won't change mid-run
+        }
+        throw e;
+      }
+    }
+  }
+}
+
 // ============================================================================
 // CLOSING
 // ============================================================================
@@ -253,6 +294,7 @@ export async function writeTransformLogEntries(
 // Uses the existing CPI-SI log format from log.toml.
 // Each AtomicAction becomes one log entry. Append-only.
 // Transform results also get logged for full audit trail.
+// Health log emission extracts from any command's summaries.
 // The books are opened. Every observation recorded.
 //
 // "And the books were opened." — Revelation 20:12

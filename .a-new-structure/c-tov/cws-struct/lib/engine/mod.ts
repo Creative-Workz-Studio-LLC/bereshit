@@ -124,6 +124,26 @@ export {
   runTransformPipeline,
 } from "./transform.ts";
 
+// Git integration (diff-aware file detection)
+export { getChangedFiles } from "./git.ts";
+
+// Structured health logging (TIMESTAMP|ACTION|DELTA|SOURCE|DETAIL)
+export {
+  formatLogEntry,
+  formatLogEntries,
+  writeLogHeader,
+  writeLogEntries,
+  formatTransformLogEntries,
+  writeTransformLogEntries,
+  emitHealthLog,
+} from "./logging.ts";
+
+// Inspect pipeline (parsed structure without lint checks)
+export { formatInspectText, formatInspectJson, runInspect } from "./inspect.ts";
+
+// JSON output (machine-readable)
+export { emitJson } from "./output.ts";
+
 // Enrichment (rule → error code resolution)
 export { resolveErrorCodes } from "./enrich.ts";
 

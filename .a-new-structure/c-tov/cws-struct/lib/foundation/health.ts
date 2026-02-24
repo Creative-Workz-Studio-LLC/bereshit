@@ -6,9 +6,9 @@
 // key:     B-tov-cws-struct-lib-foundation-health
 // title:   CWS Struct — Health Scoring (Ternary)
 // type:    Code (Library)
-// version: a-07.00
+// version: a-08.00
 // created: 2026-02-17
-// updated: 2026-02-21
+// updated: 2026-02-24
 // authors: Nova Dawn (CPI-SI)
 // purpose: Ternary health scoring system — atomic actions with direction.
 //          Each observation carries direction (-1, 0, +1) and impact weight.
@@ -50,6 +50,10 @@
 //          a specific atomic observation. The algorithm normalizes; it doesn't
 //          invent.
 //
+//          a-08.00: Type definitions extracted to lib/types/ during Phase 0
+//          reorganization. This file now re-exports types for backward
+//          compatibility and keeps all runtime scoring code.
+//
 // biblical_foundation: "Diverse weights, and diverse measures, both of them
 //   are alike abomination to the LORD." — Proverbs 20:10
 //
@@ -59,7 +63,28 @@
 // SETUP
 // ============================================================================
 
-import type { Severity } from "./types.ts";
+// ---------------------------------------------------------------------------
+// Type re-exports — canonical source is lib/types/
+// ---------------------------------------------------------------------------
+
+export type {
+  HebrewState,
+  HebrewDirection,
+  AtomicAction,
+  ContainerScore,
+  BlockScore,
+  HealthScore,
+} from "../types/mod.ts";
+
+// Types needed by runtime functions in this file
+import type {
+  HebrewState,
+  HebrewDirection,
+  AtomicAction,
+  ContainerScore,
+  BlockScore,
+  HealthScore,
+} from "../types/mod.ts";
 
 // ---------------------------------------------------------------------------
 // Constants — impact weights
@@ -96,28 +121,6 @@ export function setImpactWeights(weights: Record<string, number>): void {
 // ---------------------------------------------------------------------------
 // Constants — Hebrew state resolution (ALG-001)
 // ---------------------------------------------------------------------------
-
-/**
- * The 7 Hebrew states — from bereshit-base-algorithms.adoc.
- *
- * broken → wanting → lacking → even → sound → whole → perfect
- * Maps score ranges to discrete states. Each state carries direction.
- *
- * "There is a way which seemeth right unto a man, but the end thereof
- *  are the ways of death." — Proverbs 14:12
- * The states don't judge intent — they measure alignment.
- */
-export type HebrewState =
-  | "broken"   // [-100, -67] shavar — fully misaligned
-  | "wanting"  // [-66, -34]  chaser — significantly lacking
-  | "lacking"  // [-33, -1]   ratsah — slightly off
-  | "even"     // [0, 0]      yashar — neutral baseline
-  | "sound"    // [1, 33]     tamim  — slightly aligned
-  | "whole"    // [34, 66]    shalem — significantly aligned
-  | "perfect"; // [67, 100]   tov    — fully aligned
-
-/** Direction derived from state: -1 (misaligned), 0 (neutral), +1 (aligned). */
-export type HebrewDirection = -1 | 0 | 1;
 
 /**
  * State boundaries — exact ranges from log.toml [ternary.levels].
@@ -179,127 +182,9 @@ export const TRITE_POSITIONS = [
   "metadata", "setup/content", "body/unused", "closing", "file",
 ] as const;
 
-// ---------------------------------------------------------------------------
-// Types — Atomic Action (ternary)
-// ---------------------------------------------------------------------------
-
-/**
- * Single atomic observation — one check, three directions.
- *
- * direction: +1 = aligned (tov), 0 = neutral (yashar), -1 = misaligned (shavar)
- * impact: how much this observation weighs (error > warn > info)
- *
- * Every health score traces back to these atoms. The score is emergent
- * from observations, not assigned.
- */
-export interface AtomicAction {
-  /** What was checked: "I1_core.key", "SETUP/order", "X1_policy/never" */
-  check: string;
-  /** Which container: "I1_core", "SETUP", "structural" */
-  container: string;
-  /** Which block: "metadata", "content", "setup", "body", "closing" */
-  block: string;
-  /** Direction: +1 aligned, 0 neutral, -1 misaligned. */
-  direction: -1 | 0 | 1;
-  /** Impact tag — how much weight this observation carries. */
-  impact?: Severity;
-  /** Why (context for non-neutral directions). */
-  reason?: string;
-  /** Lint layer that produced this action: 0=whole, 1=structure, 2=container, 3=content. */
-  layer?: 0 | 1 | 2 | 3;
-}
-
-/** Per-section (container) score — drill-down to see exactly what's wrong. */
-export interface ContainerScore {
-  /** Section name: "I1_core", "X1_policy", "SETUP", etc. */
-  section: string;
-  /** Parent block: "metadata", "content", "setup", "body", "closing" */
-  block: string;
-  /** Total atomic actions in this container. */
-  total: number;
-  /** Actions aligned (direction > 0). */
-  aligned: number;
-  /** Actions neutral (direction === 0). */
-  neutral: number;
-  /** Actions misaligned (direction < 0). */
-  misaligned: number;
-  /** Computed score: -100 to +100. 0 = yashar. */
-  score: number;
-  /** Atomic action detail — the WHY for each observation. */
-  actions: AtomicAction[];
-}
-
-/** Per-block score — log-weighted from container actions. */
-export interface BlockScore {
-  /** Block name: "metadata", "content", "setup", "body", "closing" */
-  block: string;
-  /** Container scores within this block (linear, for drill-down). */
-  containers: ContainerScore[];
-  /** Block-level score: -100 to +100, log-weighted from all block actions. */
-  score: number;
-}
-
-/** File-level health — the true score. */
-export interface HealthScore {
-  /** Overall health: -100 to +100. 0 = yashar (neutral). */
-  total: number;
-  /** Resolved Hebrew state — 7 levels from broken to perfect. */
-  level: HebrewState;
-  /** Visual indicator for the state. */
-  emoji: string;
-  /** Direction derived from state: -1/0/+1. */
-  direction: HebrewDirection;
-  /** NormalizeBase50 value — R[50] hardpoint: -100/-50/0/+50/+100. */
-  hardpoint: -100 | -50 | 0 | 50 | 100;
-  /**
-   * Health trite — 5 balanced trits packed into 1 byte (0-242).
-   *
-   * ALG-010 encoding: 5 trits in 1 byte, 243 states.
-   * Each trit = direction of a block or the file as a whole.
-   * Position 0: metadata, 1: setup/content, 2: body/(unused),
-   * 3: closing, 4: file-level direction.
-   *
-   * Trite of 121 = [0,0,0,0,0] = all even (yashar baseline).
-   * Trite of 242 = [+1,+1,+1,+1,+1] = all perfect.
-   * Trite of 0   = [-1,-1,-1,-1,-1] = all broken.
-   */
-  trite: number;
-  /** Per-block breakdown. */
-  blocks: BlockScore[];
-  /** Quick summary counts. */
-  totalActions: number;
-  alignedCount: number;
-  neutralCount: number;
-  misalignedCount: number;
-}
-
 // ============================================================================
 // BODY
 // ============================================================================
-
-// ---------------------------------------------------------------------------
-// Health Score computation — the ternary algorithm
-// ---------------------------------------------------------------------------
-//
-// Each atomic action contributes asymmetrically:
-//
-//   Aligned (+1):    contribution = +impact_weight        (narrow gate)
-//   Misaligned (-1): contribution = -impact_weight × N    (wide gate, Nth failure)
-//   Neutral (0):     no contribution (can't assess)
-//
-// Score = (sum of contributions / sum of max possible weights) × 100
-//
-// The narrow gate: earning +100 requires every check to pass. Linear.
-// The wide gate: failures cascade. 1st = -1×, 2nd = -2×, 3rd = -3×.
-// A single failure is forgivable. Many failures compound exponentially.
-//
-// Detection weights modulate block-level confidence per container.
-// Neutral actions prevent cascade inflation (root cause → children neutral).
-//
-// "Enter ye in at the strait gate: for wide is the gate, and broad is
-//  the way, that leadeth to destruction." — Matthew 7:13
-// "Diverse weights, and diverse measures, both of them are alike
-//  abomination to the LORD." — Proverbs 20:10
 
 // ---------------------------------------------------------------------------
 // State resolution — TrueToLevel + NormalizeBase50 (ALG-001)
@@ -463,6 +348,26 @@ export function decodeHealthTrite(
 // ---------------------------------------------------------------------------
 // Health Score computation — the ternary algorithm
 // ---------------------------------------------------------------------------
+//
+// Each atomic action contributes asymmetrically:
+//
+//   Aligned (+1):    contribution = +impact_weight        (narrow gate)
+//   Misaligned (-1): contribution = -impact_weight × N    (wide gate, Nth failure)
+//   Neutral (0):     no contribution (can't assess)
+//
+// Score = (sum of contributions / sum of max possible weights) × 100
+//
+// The narrow gate: earning +100 requires every check to pass. Linear.
+// The wide gate: failures cascade. 1st = -1×, 2nd = -2×, 3rd = -3×.
+// A single failure is forgivable. Many failures compound exponentially.
+//
+// Detection weights modulate block-level confidence per container.
+// Neutral actions prevent cascade inflation (root cause → children neutral).
+//
+// "Enter ye in at the strait gate: for wide is the gate, and broad is
+//  the way, that leadeth to destruction." — Matthew 7:13
+// "Diverse weights, and diverse measures, both of them are alike
+//  abomination to the LORD." — Proverbs 20:10
 
 /**
  * Compute a container score from its atomic actions.
@@ -738,36 +643,10 @@ export function computeHealthScore(blocks: BlockScore[]): HealthScore {
 // Ternary scoring: -100 (shavar) → 0 (yashar) → +100 (tov).
 // The score is measured, not assigned. Direction × impact, nothing invented.
 //
-// a-03.00: Logarithmic positional weighting in computeHealthScore().
-// a-04.00: Per-block averaging — log weighting moves to computeBlockScore(),
-//   file-level score becomes average of block scores.
-//   Container: linear (drill-down). Block: log-weighted. File: averaged.
-//   Each block speaks with equal voice. Within each block, foundation matters most.
-//
-// a-05.00: State resolution — score becomes meaningful.
-//   Score → HebrewState (7 levels) → emoji → direction.
-//   TrueToLevel: [-100,+100] → broken/wanting/lacking/even/sound/whole/perfect
-//   NormalizeBase50: 5 hardpoints (-100/-50/0/+50/+100) for R[50] detection.
-//   HealthScore now carries level, emoji, direction, hardpoint.
-//   AtomicAction gains optional layer tag (0-3) for lint chain integration.
-//   Implements ALG-001 from bereshit-base-algorithms.adoc.
-//
-// a-06.00: Asymmetric weighting — narrow gate / wide gate.
-//   Container scoring: aligned = +weight (linear), misaligned = -weight × N (cascade).
-//   The Nth misalignment costs N× base weight. Destruction easier than creation.
-//   Block scoring: detection_weight from schema modulates container confidence.
-//   computeBlockScore() accepts optional detectionWeights map.
-//   Container score now clamped to [-100, +100].
-//   Implements asymmetric normalization from ALG-001.
-//
-// a-07.00: Health trite encoding — ALG-010 (ternary-storage-algorithms.adoc).
-//   5 balanced trits packed into 1 byte (0-242). 3^5 = 243 states.
-//   encodeHealthTrite(): pack 5 trits → byte. decodeHealthTrite(): byte → 5 trits.
-//   Horner's method for packing, repeated division for unpacking.
-//   HealthScore gains `trite` field, computed from per-block directions.
-//   Position mapping: [metadata, setup/content, body/unused, closing, file].
-//   121 = all even (yashar). 242 = all perfect. 0 = all broken.
-//   Implements pack_balanced_trits / unpack_to_balanced_trits from ALG-010.
+// a-08.00: Type definitions extracted to lib/types/ (single source of truth).
+//   This file re-exports types for backward compatibility and keeps all
+//   runtime scoring code: impact weights, state resolution, trite encoding,
+//   container/block/file scoring algorithms.
 //
 // "Enter ye in at the strait gate: for wide is the gate, and broad is
 //  the way, that leadeth to destruction." — Matthew 7:13

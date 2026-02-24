@@ -871,10 +871,80 @@ export function printHeader(
   );
 }
 
+// ---------------------------------------------------------------------------
+// JSON output — machine-readable format for CI/CD and tooling
+// ---------------------------------------------------------------------------
+
+/**
+ * Emit lint results as structured JSON to stdout.
+ * Machine-readable output for CI/CD pipelines and tooling integration.
+ *
+ * Takes toolName and version as parameters to keep the engine layer
+ * independent of commands/config.ts — the engine serves all commands.
+ */
+export function emitJson(
+  summaries: LintSummary[],
+  toolName: string,
+  version: string,
+  why?: boolean,
+): void {
+  let totalErrors = 0, totalWarnings = 0, totalInfos = 0;
+  for (const s of summaries) {
+    totalErrors += s.errors;
+    totalWarnings += s.warnings;
+    totalInfos += s.infos;
+  }
+
+  const output = {
+    tool: toolName,
+    version,
+    files: summaries.map((s) => ({
+      file: s.file,
+      errors: s.errors,
+      warnings: s.warnings,
+      infos: s.infos,
+      health: s.health ?? null,
+      results: s.results.map((r) => {
+        const base = {
+          severity: r.severity,
+          rule: r.rule,
+          message: r.message,
+          line: r.line ?? null,
+          errorCode: r.errorCode ?? null,
+          layerName: r.layerName ?? null,
+          fix: r.fix ?? null,
+        };
+        if (!why) return base;
+        // Enrich with reasoning chain
+        const entry = matchRule(r.rule);
+        return {
+          ...base,
+          why: entry ? {
+            layer: entry.layer,
+            layerName: entry.layerName,
+            category: entry.category,
+            suggestion: entry.suggestionTemplate,
+            checkFunction: entry.checkFunction,
+          } : null,
+        };
+      }),
+    })),
+    totals: {
+      files: summaries.length,
+      errors: totalErrors,
+      warnings: totalWarnings,
+      infos: totalInfos,
+    },
+  };
+
+  console.log(JSON.stringify(output, null, 2));
+}
+
 // ============================================================================
 // CLOSING
 // ============================================================================
 //
 // Output is the face of the tool. Consistent, readable, color-coded.
+// Human output AND machine-readable JSON — same engine, two faces.
 // "Make it plain upon tables, that he may run that readeth it."
 // ============================================================================
