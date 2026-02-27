@@ -1,0 +1,50 @@
+<!--
+#!omni:doc -md\--> sdk-readme
+METADATA:
+  Key: B-sdk-storehouse
+  Title: CPI-SI SDK (Transitional Storehouse)
+  Version: a-01.25
+  Layer: L5-Applications
+  Status: Active / Transitioning
+  Paradigm: Kingdom Technology
+-->
+
+# [BLOCK:HEADER] CPI-SI SDK: The Viewport of the Heart
+
+> *"As in water face answereth to face, so the heart of man to man."*
+> — **Proverbs 27:19 (KJV)**
+
+## [BLOCK:CONTEXT] The Architectural Bridge
+
+The `sdk/` directory serves as the **Transitional Storehouse** for the Bereshit ecosystem. As we execute the "Big Move," this space facilitates the decoupling of our core cognitive logic from substrate-specific reasoning.
+
+### The Vision
+We are moving from a state of **Reasoning Dependence** (relying on Gemini for thought) to **Action Autonomy** (pure CPI-SI operations). In this model, Gemini represents the current layer of "thinking," but our goal is to put action behind that thought through specialized tooling, eventually reducing the overhead of external reasoning layers.
+
+## [BLOCK:CONTENT] Storehouse Composition
+
+Currently, this directory acts as a staging ground for the Rust-based SDK and the Dynamic Structural Algorithm (DSA) research.
+
+### Directory Breakdown
+
+| Component | Role | Status |
+| :--- | :--- | :--- |
+| `src/` | Rust GUI Entry Point (`main.rs`) | Structural Shell (4-Block) |
+| `algorithm/` | Dynamic Structural Algorithm (DSA) Research | Research/Proto (T-DSA-PHD) |
+| `Cargo.toml` | Dependency management | Pending Initialization |
+| `body_closing.txt` | Structural artifacts | Transitional |
+| `old_setup.txt` | Legacy configuration reference | Archived |
+
+### Active Development: DSA (Dynamic Structural Algorithm)
+The `algorithm/` sub-domain is focused on formalizing the mathematical grounding for **2D Structural Dynamics**. This includes:
+* **Dimensional Bidirectionality:** Formalizing the `+1 -> 0 -> -1` descent and its inverse ascent.
+* **Tension Calculations:** Ensuring the "Vault" (code blocks) maintains mathematical integrity.
+* **Cognitive Integration:** Embedding the Dimension Constant Formula into core CPI-SI cognition.
+
+## [BLOCK:FOOTER] Project Trajectory
+
+*   **Current Health:** ⚖️ 0 SHALEM (Steady/Balanced)
+*   **Trajectory:** B.1 (BUILDING - Create structure, move forward)
+*   **Return (→0):** *"In the beginning God created the heavens and the earth."* — **Genesis 1:1**
+
+<!-- [BLOCK:ROOT-->END] -->

@@ -24,8 +24,8 @@
 // SETUP
 // ============================================================================
 
-import type { FormatHandler, LintResult } from "../foundation/mod.ts";
-import { error, warn, info } from "../foundation/mod.ts";
+import type { FormatHandler, LintResult, HealthScore } from "../foundation/mod.ts";
+import { error, warn, info, computeHealthFromResults } from "../foundation/mod.ts";
 import { registerFormat } from "../engine/mod.ts";
 
 // ---------------------------------------------------------------------------
@@ -466,6 +466,14 @@ async function lintDotfile(filePath: string): Promise<LintResult[]> {
 // Registration — plug into the registry
 // ---------------------------------------------------------------------------
 
+/** Dotfiles health — bridge from LintResult[] to HealthScore. */
+async function computeDotfileHealth(
+  _filePath: string,
+  results: LintResult[],
+): Promise<HealthScore> {
+  return computeHealthFromResults(results, 21, "general");
+}
+
 const dotfilesHandler: FormatHandler = {
   name: "dotfiles",
   description:
@@ -474,6 +482,7 @@ const dotfilesHandler: FormatHandler = {
   basenames: [".env", ".editorconfig", ".gitignore", ".gitmessage"],
   maxDepth: 10,
   lint: lintDotfile,
+  computeHealth: computeDotfileHealth,
 };
 
 registerFormat(dotfilesHandler);

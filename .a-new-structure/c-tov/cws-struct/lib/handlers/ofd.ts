@@ -26,8 +26,8 @@
 // SETUP
 // ============================================================================
 
-import type { FormatHandler, LintResult } from "../foundation/mod.ts";
-import { error, warn, info } from "../foundation/mod.ts";
+import type { FormatHandler, LintResult, HealthScore } from "../foundation/mod.ts";
+import { error, warn, info, computeHealthFromResults } from "../foundation/mod.ts";
 import { registerFormat } from "../engine/mod.ts";
 
 // ---------------------------------------------------------------------------
@@ -351,6 +351,14 @@ async function lintOfdFile(filePath: string): Promise<LintResult[]> {
 // Registration — plug into the registry
 // ---------------------------------------------------------------------------
 
+/** OFD health — bridge from LintResult[] to HealthScore. */
+async function computeOfdHealth(
+  _filePath: string,
+  results: LintResult[],
+): Promise<HealthScore> {
+  return computeHealthFromResults(results, 43, "general");
+}
+
 const ofdHandler: FormatHandler = {
   name: "ofd",
   description:
@@ -359,6 +367,7 @@ const ofdHandler: FormatHandler = {
   basenames: ["root.ofd"],
   maxDepth: 10,
   lint: lintOfdFile,
+  computeHealth: computeOfdHealth,
 };
 
 registerFormat(ofdHandler);

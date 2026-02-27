@@ -25,8 +25,8 @@
 // ============================================================================
 
 import { parse as parseJsonc } from "@std/jsonc";
-import type { FormatHandler, LintResult } from "../foundation/mod.ts";
-import { error, warn, info } from "../foundation/mod.ts";
+import type { FormatHandler, LintResult, HealthScore } from "../foundation/mod.ts";
+import { error, warn, info, computeHealthFromResults } from "../foundation/mod.ts";
 import { registerFormat } from "../engine/mod.ts";
 
 // ---------------------------------------------------------------------------
@@ -492,12 +492,21 @@ async function lintJsonFile(filePath: string): Promise<LintResult[]> {
 // Registration — plug into the registry
 // ---------------------------------------------------------------------------
 
+/** JSON health — bridge from LintResult[] to HealthScore. */
+async function computeJsonHealth(
+  filePath: string,
+  results: LintResult[],
+): Promise<HealthScore> {
+  return computeHealthFromResults(results, 30, "content");
+}
+
 const jsonHandler: FormatHandler = {
   name: "json",
   description: "JSON/JSONC 3-block alignment (flat _ key convention)",
   extensions: [".json", ".jsonc"],
   maxDepth: 10,
   lint: lintJsonFile,
+  computeHealth: computeJsonHealth,
 };
 
 registerFormat(jsonHandler);

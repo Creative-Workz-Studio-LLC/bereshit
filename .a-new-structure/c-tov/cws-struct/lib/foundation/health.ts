@@ -84,6 +84,7 @@ import type {
   ContainerScore,
   BlockScore,
   HealthScore,
+  LintResult,
 } from "../types/mod.ts";
 
 // ---------------------------------------------------------------------------
@@ -634,6 +635,119 @@ export function computeHealthScore(blocks: BlockScore[]): HealthScore {
     trite, blocks, totalActions,
     alignedCount, neutralCount, misalignedCount,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Generic health bridge — lightweight handlers
+// ---------------------------------------------------------------------------
+//
+// Lightweight handlers (JSON, Makefile, Dotfiles, Omni, OFD) produce
+// LintResult[] but not AtomicAction[]. This bridge converts results into
+// actions and runs the standard scoring pipeline.
+//
+// Principle: each lint check that COULD run is an action. A result with
+// severity error/warn = misaligned. No result for a check = aligned.
+// Info results = neutral (observation, not judgment).
+//
+// The handler provides its total check count so the bridge can infer
+// how many checks passed silently.
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute health from LintResult[] — bridge for lightweight handlers.
+ *
+ * Converts lint results into AtomicActions, infers passing checks from
+ * the difference between totalChecks and failure count, then runs through
+ * the standard container → block → file scoring pipeline.
+ *
+ * @param results - Lint results from the handler
+ * @param totalChecks - Total number of checks the handler performs
+ * @param blockName - Block name for grouping (default: "general")
+ */
+export function computeHealthFromResults(
+  results: LintResult[],
+  totalChecks: number,
+  blockName = "general",
+): HealthScore {
+  const actions: AtomicAction[] = [];
+
+  // Group results by category (first segment of rule)
+  const containerMap = new Map<string, AtomicAction[]>();
+
+  for (const r of results) {
+    const container = r.rule.split("/")[0] ?? "general";
+    const direction: -1 | 0 | 1 =
+      r.severity === "error" ? -1
+      : r.severity === "warn" ? -1
+      : 0; // info = neutral
+
+    const action: AtomicAction = {
+      check: r.rule,
+      container,
+      block: blockName,
+      direction,
+      impact: r.severity === "error" ? "error"
+        : r.severity === "warn" ? "warn"
+        : "info",
+      reason: r.message,
+    };
+    actions.push(action);
+
+    if (!containerMap.has(container)) containerMap.set(container, []);
+    containerMap.get(container)!.push(action);
+  }
+
+  // Infer passing checks — distribute across known containers or "general"
+  const failCount = results.filter(r => r.severity !== "info").length;
+  const passCount = Math.max(0, totalChecks - failCount);
+
+  if (passCount > 0) {
+    const containers = containerMap.size > 0
+      ? [...containerMap.keys()]
+      : ["general"];
+
+    // Distribute passing checks roughly evenly across containers
+    const perContainer = Math.ceil(passCount / containers.length);
+    let remaining = passCount;
+
+    for (const container of containers) {
+      const count = Math.min(perContainer, remaining);
+      for (let i = 0; i < count; i++) {
+        const action: AtomicAction = {
+          check: `${container}/pass-${i}`,
+          container,
+          block: blockName,
+          direction: 1,
+        };
+        actions.push(action);
+        if (!containerMap.has(container)) containerMap.set(container, []);
+        containerMap.get(container)!.push(action);
+      }
+      remaining -= count;
+      if (remaining <= 0) break;
+    }
+  }
+
+  if (actions.length === 0) {
+    return computeHealthScore([]);
+  }
+
+  // Standard pipeline: container → block → file
+  const containerScores: ContainerScore[] = [];
+  for (const [, actionList] of containerMap) {
+    if (actionList.length === 0) continue;
+    const first = actionList[0]!;
+    containerScores.push(
+      computeContainerScore(first.container, first.block, actionList),
+    );
+  }
+
+  const blockScores: BlockScore[] = [];
+  if (containerScores.length > 0) {
+    blockScores.push(computeBlockScore(blockName, containerScores));
+  }
+
+  return computeHealthScore(blockScores);
 }
 
 // ============================================================================

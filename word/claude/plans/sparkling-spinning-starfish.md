@@ -1,181 +1,167 @@
-# Verbose Output QoL — Show What the Linter Knows
+# Universal Base GUI — ViewModel Architecture with GTK4
 
-> *"The entrance of thy words giveth light; it giveth understanding unto the simple."* — Psalm 119:130
+> *"For which of you, intending to build a tower, sitteth not down first, and counteth the cost?"* — Luke 14:28
 
 ## Context
 
-We just hit 100% witness coverage (207/207 codes, 1378 tests). Then Seanje pointed at `exists.rs` — lint it. Perfect score. Verbose it — and the output was thin. 96 actions checked, and all the user sees is 5 lines of layer summaries with rolled-up scores.
+The SDK hookoutput package just got restructured (53 -> 98/100 lint score, 7 focused files). Seanje wants it in a "well designed, fully us GUI" — not a web app, a **legitimate native application**. A universal base that starts as SDK dashboard but grows into MillenniumOS (Piece #4 of Five Pieces). Start with GTK4 (universal), design so renderers can be swapped as things mature. GTK4 stays as permanent fallback.
 
-**The problem:** The linter COMPUTES rich data (directives, identity fields, block geometry, 96 atomic actions with reasons, container groupings) but REPORTS only aggregated scores. The microscope is built; we're showing magnifying glass output.
+**What exists:** Three dashboard UIs already ship (Web, TUI, GTK4) consuming `pkg/dashboard/DashboardService`. The GTK4 dashboard (6 files, ~1,700 lines) works but is tightly coupled to gotk4 widgets — every panel directly creates `gtk.Box`, `gtk.Label`, etc. No abstraction between business logic and rendering.
 
-**The goal:** Make verbose mode show what the linter actually sees — the file's anatomy as the linter understands it.
+**The problem:** Can't grow beyond dashboard. Can't swap renderer. Can't become MillenniumOS shell. Dead end for the vision.
 
-## Architecture: Data Already Exists
+## Architecture: ViewModel Pattern
 
-The data pipeline is: `Handler → AtomicAction[] → ContainerScore[] → BlockScore[] → HealthScore`. Every `AtomicAction` already carries:
+**Panels declare what to show. Renderers decide how to show it.**
 
-```typescript
-{
-  check: string;        // "identity/PRAGMA/I1.key", "setup/subsection-order"
-  container: string;    // "identity", "ordering", "placement"
-  block: string;        // "metadata", "setup", "body", "closing"
-  direction: -1 | 0 | 1;
-  impact?: Severity;
-  reason?: string;      // The WHY — "Missing required key 'purpose'"
-  layer?: 0 | 1 | 2 | 3;
-}
+```
+DashboardService -> Module -> ViewModel -> Renderer(GTK4) -> Screen
+                                        -> Renderer(Custom) -> Screen (future)
 ```
 
-The `ContainerScore.actions[]` array holds ALL of these. `printHealthBreakdown()` currently ignores individual actions and only prints the container-level tallies.
+Modules never change. Only the renderer does. GTK4 stays forever as `--renderer=gtk` fallback.
 
-## What Verbose Should Show
+### Core Interfaces
 
-**Current output (exists.rs):**
+**ViewModel types** (`render/viewmodel.go`) — toolkit-agnostic structured data:
+- `View` — A panel: ID, Title, Sections
+- `Section` — Title + Fields + Children
+- `Field` — Key/Value with Style, optional Progress/Bar
+- `Progress` — Fraction (0-1) + Label + Style
+- `BarSegment` — Width proportion + semantic style
+
+**Renderer interface** (`render/renderer.go`):
+- `Renderer.RenderView(view View)` — display a ViewModel
+- `Renderer.RenderLog(entry LogEntry)` — append to message terminal
+- `Shell.Init(app) / RegisterModule(mod) / Run() / Close()` — application frame
+
+**Module interface** (`app/module.go`):
+- `ID() / Name() / Views() / Start(ctx, renderer) / Stop()` — self-contained feature areas
+
+### Directory Structure
+
 ```
-OK  exists.rs  (0E 0W 0I)  health: 100/±100 perfect ✅  [t:242]
-  ── health: 96 aligned (96 actions) ──
-  [100] Layer 0 — EXISTENCE (R[50])
-    100 structural/blocks (9/9)
-    100 structural/separators (5/5)
-  [100] Layer 1 — ORGANIZATION (R[25])
-    100 metadata/directives (4/4)
-    100 metadata/identity (47/47)
-    ...
-```
-
-**Target output (same file):**
-```
-OK  exists.rs  (0E 0W 0I)  health: 100/±100 perfect ✅  [t:242]
-  ── directives ──
-    // #!omni code --rust -module->utility
-    //omni:key      B-L0-hybrid-spec-config-exists
-    //omni:code     --rust -module->utility
-    //omni:version  a-03.50
-
-  ── blocks ──
-    METADATA   :1-28     (28 lines)
-    SETUP      :30-38    (9 lines)
-    BODY       :40-72    (33 lines)
-    CLOSING    :74-84    (11 lines)
-
-  ── identity ──
-    I1.key       = B-L0-hybrid-spec-config-exists
-    I1.format    = rust
-    I1.from      = spec/config/src/exists.rs
-    I1.at        = a-03.50
-    I2.type      = code
-    I2.structure = 4-block
-    I2.subtype   = module
-    ...
-
-  ── health: 96 aligned (96 actions) ──
-  [100] Layer 0 — EXISTENCE (R[50])
-    100 structural/blocks (9/9)
-      ✓ block/METADATA    ✓ block/SETUP    ✓ block/BODY    ✓ block/CLOSING
-      ✓ block/order       ✓ block/end-METADATA  ...
-    100 structural/separators (5/5)
-      ✓ separator/width-consistency   ✓ separator/style-consistency  ...
-  [100] Layer 1 — ORGANIZATION (R[25])
-    100 metadata/directives (4/4)
-      ✓ directive/key    ✓ directive/code    ✓ directive/version    ✓ directive/shebang
-    100 metadata/identity (47/47)
-      ✓ identity/PRAGMA/present   ✓ identity/METADATA/present
-      ✓ identity/PRAGMA/I1.key    ✓ identity/PRAGMA/I1.format  ...
-    ...
+word/claude/gui/                    # NEW Go module: cws.studio/gui
+  cmd/cws-gui/main.go              # Entry point
+  app/
+    app.go                          # Application lifecycle
+    module.go                       # Module interface + registry
+  modules/
+    dashboard/                      # Migrated from existing GTK4 dashboard
+      module.go, views.go, update.go, terminal.go
+    sdkinspector/                    # NEW — Hook I/O visualization
+      module.go, views.go, update.go
+  render/
+    viewmodel.go                    # ViewModel types (toolkit-agnostic)
+    renderer.go                     # Renderer + Shell interfaces
+    gtk/                            # GTK4 renderer implementation
+      shell.go, renderer.go, widgets.go, theme.go
+  go.mod, Makefile
 ```
 
-Three new sections BEFORE the health breakdown, then expanded action detail WITHIN the health breakdown.
+## Phase 0: Foundation + Dashboard Migration (18 files, ~2,225 lines)
 
-## Implementation — Single File Primary
+### Phase 0.1: Core Structure (foundation — no GTK4 imports)
 
-**Primary file:** `lib/engine/output.ts`
+| File | Purpose | Est Lines |
+|------|---------|:---------:|
+| `gui/go.mod` | Module: `cws.studio/gui` | 15 |
+| `gui/render/viewmodel.go` | ViewModel types (Section, Field, Progress, Bar, View) | 120 |
+| `gui/render/renderer.go` | Renderer + Shell interfaces | 60 |
+| `gui/app/module.go` | Module interface + ModuleRegistry | 80 |
+| `gui/app/app.go` | Application lifecycle (register, init shell, run) | 120 |
 
-### Change 1: Add `printFileAnatomy()` function
+**Verification:** `go build ./...` clean. Zero toolkit imports in core.
 
-New function called from `printFileSummary()` when `verbose=true`, BEFORE `printHealthBreakdown()`. Extracts data from `summary.health` action trees.
+### Phase 0.2: GTK4 Renderer
 
-```typescript
-function printFileAnatomy(summary: LintSummary): void
+| File | Purpose | Est Lines |
+|------|---------|:---------:|
+| `gui/render/gtk/shell.go` | GTK4 window, headerbar, sidebar, stack | 200 |
+| `gui/render/gtk/renderer.go` | ViewModel -> gotk4 widget rendering | 250 |
+| `gui/render/gtk/widgets.go` | Widget factory: Section->Box, Field->Label, etc. | 200 |
+| `gui/render/gtk/theme.go` | Dark theme CSS (migrated from `dashboard/gtk/styles/`) | 320 |
+
+**Verification:** Shell opens GTK4 window with sidebar. Empty but themed correctly.
+
+### Phase 0.3: Dashboard Module Migration
+
+| File | Purpose | Est Lines |
+|------|---------|:---------:|
+| `gui/modules/dashboard/module.go` | Module registration, lifecycle | 60 |
+| `gui/modules/dashboard/views.go` | View declarations for Overview, Analytics, SystemData | 80 |
+| `gui/modules/dashboard/update.go` | StateSnapshot -> ViewModel translation | 250 |
+| `gui/modules/dashboard/terminal.go` | Log event ViewModel | 80 |
+
+**Verification:** Visual parity with current `dashboard-gtk`. All 13 sections display correctly.
+
+### Phase 0.4: SDK Inspector Module (first NEW module)
+
+| File | Purpose | Est Lines |
+|------|---------|:---------:|
+| `gui/modules/sdkinspector/module.go` | Module registration | 50 |
+| `gui/modules/sdkinspector/views.go` | Hook I/O inspection views | 100 |
+| `gui/modules/sdkinspector/update.go` | Hook event monitoring + display | 120 |
+
+**Verification:** SDK Inspector shows substrate detection, event types, permission values.
+
+### Phase 0.5: Entry Point + Build
+
+| File | Purpose | Est Lines |
+|------|---------|:---------:|
+| `gui/cmd/cws-gui/main.go` | Entry point (register modules, init GTK4 shell, run) | 80 |
+| `gui/Makefile` | Build: `make`, `make run`, `make clean`, `make install` | 40 |
+
+**Verification:** `make && ./bin/cws-gui` launches full application.
+
+## Key Existing Code to Reuse
+
+| File | Reuse |
+|------|-------|
+| `dashboard/gtk/styles/theme.go:1-317` | Copy CSS to `gui/render/gtk/theme.go` |
+| `dashboard/gtk/app/app.go:1-281` | Reference for GTK4 shell patterns |
+| `dashboard/gtk/panels/state_overview.go:1-563` | Reference for ViewModel field mapping |
+| `pkg/dashboard/dashboard.go` | Consumed directly — shared data layer, no changes |
+| `pkg/sdk/hookoutput/*.go` | Consumed by SDK Inspector module |
+
+## Existing Code Disposition
+
+| Code | Action |
+|------|--------|
+| `dashboard/gtk/` (6 files) | **Keep as reference and working backup** — not deleted until `cws-gui` reaches parity |
+| `pkg/dashboard/` | **Keep as-is** — the data layer is solid, all UIs consume it |
+| `dashboard/server/`, `dashboard/tui/` | **Keep as-is** — independent UIs unaffected |
+
+## Module Growth Path (Post Phase 0)
+
+| Phase | Module | What It Adds |
+|-------|--------|-------------|
+| 1 | `hooks` | Live hook monitor, health deltas, session timeline |
+| 1 | `cwsstruct` | Lint results visualization, schema browser |
+| 2 | `statemachine` | 27-position cube visualizer (Cairo/OpenGL) |
+| 3 | `omnicode` | OmniCode file editor with pragma validation |
+| 4 | `vm` | QEMU/KVM virtual machine management |
+| 5 | Shell mode | MillenniumOS desktop shell (fullscreen, WM, launcher) |
+
+## Migration Path: GTK4 -> Custom Renderer
+
+```
+Phase 0-2: GTK4 only
+Phase 2: Custom drawing via GTK4 DrawingArea (cube viz = bridge)
+Phase 3-4: Custom renderer alongside GTK4 (--renderer=gtk vs --renderer=custom)
+Phase 5: Custom renderer default, GTK4 = fallback
+MillenniumOS: Custom renderer is the compositing window manager
 ```
 
-**Section A — Directives:** The pragma is on `summary.pragma`. For individual directive values, scan `summary.health` actions in the "directives" container — their `check` strings identify which directives were found. Also scan `summary.results` for directive-related info messages that carry the actual values.
+**GTK4 is never removed.** It stays as the known-good path.
 
-**Section B — Blocks:** Extract from `summary.health.blocks[]`. Each `BlockScore` has `.block` name. For line ranges, scan structural actions — `check` strings like `block/METADATA` carry block identity. Line ranges come from lint results that have `.line` fields.
+## Verification (End-to-End)
 
-**Section C — Identity:** Extract from metadata block's "identity" and "field-values" containers. Individual actions carry `check` strings like `identity/PRAGMA/I1.key`. For actual values, scan results with `identity/` rules that carry field data in their messages.
-
-### Change 2: Expand `printHealthBreakdown()` with per-action detail
-
-Currently iterates containers and prints `score label (aligned/total)`. Add nested loop over `container.actions[]` when `deep=true`:
-
-```typescript
-for (const action of container.actions) {
-  const icon = action.direction > 0 ? "✓" : action.direction < 0 ? "✗" : "·";
-  const aColor = action.direction > 0 ? COLORS.green
-    : action.direction < 0 ? COLORS.red : COLORS.dim;
-  const shortCheck = action.check.split("/").pop() ?? action.check;
-  // Compact inline layout, ~4 per line
-}
-```
-
-Misaligned actions also print their `reason` field on the next line.
-
-### Change 3: Add `--deep` / `-vv` flag
-
-**Flag hierarchy:**
-- No flag: errors + warnings only, one-line health score
-- `--verbose` (`-v`): + info results, + directives/blocks/identity anatomy, + layer breakdown
-- `--deep` (`-vv`): + individual action checks within each container
-
-CLI parsing in `mod.ts`:
-```typescript
-const deep = rest.includes("--deep") || rest.includes("-vv");
-```
-
-### Change 4: (Optional) Enrich `LintSummary`
-
-If extracting anatomy from action trees proves too brittle, add optional fields to `LintSummary` in `types.ts`:
-
-```typescript
-directives?: Record<string, string>;
-blockPositions?: Array<{ name: string; startLine: number; endLine: number }>;
-identityFields?: Array<{ key: string; value: string; line?: number }>;
-```
-
-Populated by handler during summarization. **Do this only if Change 1 extraction is insufficient.**
-
-## Files to Modify
-
-| File | Change | Phase |
-|------|--------|-------|
-| `mod.ts` | Add `--deep` / `-vv` flag, pass to print functions | 1 |
-| `lib/engine/output.ts` | Add `printFileAnatomy()`, expand `printHealthBreakdown()` | 2-3 |
-| `lib/foundation/types.ts` | (If needed) Enrich `LintSummary` | 4 |
-| `deno.jsonc` | Add `lint:deep` task | 5 |
-
-## Existing Functions to Reuse
-
-| Function | File | Purpose |
-|----------|------|---------|
-| `printHealthBreakdown()` | `output.ts:278` | Expand, don't replace |
-| `healthColor()` | `output.ts:75` | Color by score |
-| `containerLayer()` | `output.ts:263` | Layer assignment |
-| `printWhyAnnotation()` | `output.ts:169` | Why chain (already works with `--why`) |
-| `parseFocusFromCheck()` | `output.ts:190` | Focus filtering (reuse for anatomy) |
-
-## Implementation Order
-
-1. `mod.ts` — Add `--deep` / `-vv` flag, pass through
-2. `output.ts` — Add `printFileAnatomy()` (directives, blocks, identity)
-3. `output.ts` — Expand `printHealthBreakdown()` action detail when `deep=true`
-4. Manual test — verbose + deep on `exists.rs` and a file with errors
-5. `deno.jsonc` — Add `lint:deep` task
-
-## Verification
-
-1. `deno task lint:verbose <exists.rs>` — shows directive, block, identity anatomy
-2. `lint:rust -- --deep <exists.rs>` — shows individual action checks per container
-3. `lint:verbose <file-with-errors>` — misaligned actions shown with ✗ and reason
-4. `deno check lib/engine/output.ts` — type check passes
-5. `deno task test` — all 1378+ tests pass (display-only changes, no logic impact)
-6. Non-verbose mode unchanged — `deno task lint:rust <file>` identical output
+1. `cd gui && go build ./...` — compiles with zero warnings
+2. Zero GTK4 imports in `render/viewmodel.go`, `render/renderer.go`, `app/module.go`, `app/app.go`
+3. `make && ./bin/cws-gui` — launches, shows sidebar with Dashboard + SDK Inspector
+4. Dashboard shows all 13 sections with real-time updates (visual parity)
+5. SDK Inspector shows hook event types and substrate detection
+6. `go.work` updated with `use ./gui`
+7. `--renderer=gtk` flag accepted (only option now, but plumbing exists)
+8. Graceful shutdown on SIGINT/SIGTERM

@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"cws.studio/pkg/orchestration/logging"
-	"cws.studio/pkg/util/pure/hookoutput"
+	"cws.studio/pkg/sdk/hookoutput"
 )
 
 // ============================================================================

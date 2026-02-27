@@ -1,0 +1,553 @@
+// #!omni document --adoc
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// :key: B-tov-cws-struct-docs-playtest-001-report
+// :title: Playtest 001 — Full Report & Playtest 002 Expectations
+// :type: Documentation (Experiment Report)
+// :version: a-01.00
+// :created: 2026-02-24
+// :authors: Nova Dawn (CPI-SI), Seanje Lenox-Wise
+// :purpose: Comprehensive report of Playtest 001 (what was tested, what we
+//           learned, what broke, what held), plus projection for Playtest 002
+//           (what to test next, what infrastructure upgrades unlock, and
+//           where the scoring system needs to prove itself again).
+//
+// ============================================================================
+
+= Playtest 001 — Full Report & Playtest 002 Expectations
+Nova Dawn (CPI-SI); Seanje Lenox-Wise
+v0.1.0, 2026-02-24
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+:sectanchors:
+
+[quote, Proverbs 27:17]
+____
+Iron sharpeneth iron; so a man sharpeneth the countenance of his friend.
+____
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
+== What This Is
+
+*The complete record of Playtest 001 and the design brief for Playtest 002.*
+
+Playtest 001 ran across three phases over a single session (2026-02-23), then
+the engine was upgraded across six refactoring phases (2026-02-24). This
+document captures the full arc: what was tested, what was proven, what remains
+open, and what the next playtest should focus on.
+
+=== Document Structure
+
+[cols="1,2", options="header"]
+|===
+| Section | Contents
+
+| Part I: What Was Tested
+| Playtest 001 coverage — subjects, phases, findings
+
+| Part II: What Was Proven
+| Confirmed behaviors and scoring accuracy
+
+| Part III: What Changed After
+| The 6-phase engine upgrade between playtests
+
+| Part IV: What Playtest 002 Should Test
+| Design brief for the next live playtest
+|===
+
+
+// ============================================================================
+// CONTEXT
+// ============================================================================
+
+== Prerequisites
+
+* Familiarity with cws-struct architecture (see link:architecture.adoc[Architecture])
+* Understanding of the 4-layer health scoring model (R50/R25/R10/R05)
+* The game dev parallel: cws-struct is the engine, source files are the players, health score is the feedback loop
+
+
+// ============================================================================
+// CONTENT
+// ============================================================================
+
+== Part I: What Was Tested
+
+=== Playtest 001 — Scope
+
+[cols="1,2,1", options="header"]
+|===
+| Dimension | Coverage | Status
+
+| Formats tested
+| Rust only (3 files)
+| Complete
+
+| Files tested
+| exists.rs (reference), graph.rs (control), cache.rs (subject)
+| 3/3
+
+| Scoring layers
+| R50 (Existence), R25 (Organization), R10 (Placement), R05 (Substance)
+| All 4
+
+| Commands tested
+| lint, lint:verbose, lint:deep, transform, transpile
+| 5/7
+
+| Commands not tested
+| create, health (standalone query)
+| 2/7
+
+| Handler coverage
+| Rust handler only
+| 1/8
+|===
+
+=== Playtest 001 — Phase Summary
+
+==== Phase 1: Pragma + Transform
+
+*Subject:* graph.rs (169 lines, directives but no block markers)
+
+*Actions:*
+
+. Added shebang pragma: `// #!omni code --rust -library`
+. Ran `deno task transform:rust graph.rs`
+. Observed structural scaffold generation
+
+*Results:*
+
+[cols="1,1,1", options="header"]
+|===
+| Metric | Before | After
+
+| Lines | 171 | 377
+| Health | -9/±100 | 98/±100
+| Errors | 4 | 0
+| Identity fields | 0 | 43
+| Blocks | 0 | 4
+|===
+
+*Key finding:* The transform engine builds complete 4-block structure from a
+single pragma line. Zero manual edits required. The 2-point gap came from a
+subtype mismatch (schema expected library patterns on a module file).
+
+*Status:* link:playtest-001-phase-1.adoc[Complete]
+
+==== Phase 2: Schema Upgrade
+
+*Subject:* Schema definitions (not graph.rs itself)
+
+*Actions:*
+
+. Created 5 new concept schemas (16 total)
+. Added bidirectional detect+emit+mappings to all concepts (22 schema files)
+. Changed graph.rs subtype from `library` to `module->utility`
+
+*Results:*
+
+[cols="1,1,1", options="header"]
+|===
+| Metric | Before | After
+
+| Health | 98/±100 | 100/±100
+| Concepts in schema | 11 | 16
+| Schema files upgraded | 0 | 22
+| File modifications | — | 0 (schema only)
+|===
+
+*Key finding:* The 2-point gap closed by correcting the schema, not the file.
+The file was correct — the standard was wrong. This is the "just weight"
+principle: the measuring instrument must be accurate before judging the
+measured.
+
+*Status:* link:playtest-001-phase-2.adoc[Complete]
+
+==== Phase 3: Re-Transform
+
+*Subject:* graph.rs (re-transform with upgraded schema)
+
+*Actions:*
+
+. Backed up Phase 1 result
+. Re-ran `deno task transform:rust graph.rs` with the 16-concept schema
+. Diffed against Phase 1 output
+
+*Results:*
+
+[cols="1,2", options="header"]
+|===
+| Metric | Value
+
+| Diff
+| Zero — idempotent transform
+
+| Health
+| 100/±100 (unchanged)
+
+| New detections
+| 0 (concept detection requires code pattern matching not yet implemented)
+|===
+
+*Key finding:* Transform idempotency proven. Running the same transform twice
+produces identical output. The schema upgrade affected scoring, not
+transformation.
+
+*Status:* link:playtest-001-phase-3.adoc[Complete]
+
+==== Phase 4: Transpile (Not Executed)
+
+*Designed:* Transpile graph.rs Rust → Go, verify structural fidelity.
+
+*Status:* Deferred. The transpiler was verified independently against exists.rs
+(543 lines Go output, 43/43 identity fields, 8/8 function bodies). graph.rs
+transpilation was deprioritized in favor of the engine upgrade.
+
+==== Phase 5: Apply to cache.rs (Not Executed)
+
+*Designed:* Full pipeline (pragma → transform → lint) on cache.rs.
+
+*Status:* Deferred. cache.rs remains the untouched subject for Playtest 002.
+
+
+== Part II: What Was Proven
+
+=== Confirmed Behaviors
+
+[cols="1,2,1", options="header"]
+|===
+| Behavior | Evidence | Confidence
+
+| Pragma as covenant
+| graph.rs scored -9 after declaring itself, 100 after full alignment
+| *High*
+
+| Transform from pragma alone
+| 171 → 377 lines, 43 identity fields, 4 blocks, zero manual edits
+| *High*
+
+| Transform idempotency
+| Re-transform produced zero diff
+| *High*
+
+| Schema-driven scoring
+| 2-point gap closed by schema change, not file change
+| *High*
+
+| Layer progression
+| R50 (blocks) → R25 (identity) → R10 (placement) → R05 (concepts)
+| *High*
+
+| Transpiler structural fidelity
+| 43/43 identity fields, 8/8 functions, 6/6 CLOSING zones on exists.rs
+| *High*
+
+| Verbose output accuracy
+| Directives, blocks, identity fields all displayed correctly
+| *Medium* (tested on 2 files)
+
+| Deep output utility
+| Per-action checks visible with pass/fail markers
+| *Medium* (tested on 2 files)
+|===
+
+=== Scoring Accuracy
+
+[cols="2,1,1,2", options="header"]
+|===
+| File State | Expected Score | Actual Score | Assessment
+
+| Fully aligned, correct subtype (exists.rs)
+| 100
+| 100
+| Correct
+
+| Pragma declared, no structure (graph.rs pre-transform)
+| Low negative
+| -9
+| Correct (could be more negative)
+
+| Pragma declared, fully transformed (graph.rs post-Phase 1)
+| High 90s
+| 98
+| Correct (2-point gap = real schema mismatch)
+
+| Schema corrected (graph.rs post-Phase 2)
+| 100
+| 100
+| Correct
+
+| No pragma at all (cache.rs)
+| 100 (lenient module fallback)
+| 100
+| Correct — but deceptive without context
+|===
+
+=== Open Questions
+
+[cols="1,2", options="header"]
+|===
+| Question | Why It Matters
+
+| Is -9 the right score for "pragma but no structure"?
+| Could argue it should be more severe. The file made a claim it doesn't fulfill.
+
+| Should cache.rs score 100 with no pragma?
+| Semantically questionable. It "passes" only because it claims nothing.
+
+| How does scoring behave on partially structured files?
+| Untested. What about a file with blocks but wrong order?
+
+| How do non-Rust formats score?
+| Only Rust tested. Go, TOML, JSON, Makefile, Dotfiles, Omni, OFD untested.
+
+| How does the scoring pipeline handle the bridge function?
+| `computeHealthFromResults()` is new (Phase 5 upgrade). Untested in playtest.
+|===
+
+
+== Part III: What Changed After Playtest 001
+
+The engine underwent a 6-phase upgrade between Playtest 001 and the next
+playtest opportunity:
+
+=== The Six Phases
+
+[cols="1,2,1,1", options="header"]
+|===
+| Phase | What Changed | Tests Before | Tests After
+
+| 0 — Extract types/
+| Broke circular dependency between foundation/ and data/
+| 1448
+| 1554
+
+| 1 — Extract commands/
+| Dismantled mod.ts God Object into separate command modules
+| 1554
+| 1564
+
+| 2 — Slim engine/
+| Separated lint, transform, create, transpile domains
+| 1564
+| 1610
+
+| 3 — Test infrastructure
+| Added runners, scorecard, witness extension
+| 1610
+| 1659
+
+| 4 — Command completion
+| Transform, create, transpile brought to production parity
+| 1659
+| 1706
+
+| 5 — Handler upgrade
+| All 8 handlers now have computeHealth via bridge function
+| 1706
+| 1709
+|===
+
+=== What These Changes Unlock for Playtest 002
+
+[cols="1,2", options="header"]
+|===
+| Upgrade | What It Enables
+
+| God Object dismantled
+| Each command (lint, transform, create, transpile) is independently testable
+
+| All 8 handlers have computeHealth
+| Health scoring works for every format — not just Go/Rust/TOML
+
+| Bridge function (computeHealthFromResults)
+| Lightweight handlers (JSON, Makefile, Dotfiles, Omni, OFD) produce real scores
+
+| Registry integration tests (38)
+| Data layer integrity is proven before playtest begins
+
+| 1709 tests / 0 failures
+| Regression baseline is solid
+|===
+
+
+== Part IV: Playtest 002 — Design Brief
+
+=== The Core Question
+
+*Does the scoring system tell the truth across ALL formats?*
+
+Playtest 001 tested Rust only. Playtest 002 should exercise the full format
+range: Go, TOML, JSON, Makefile, Dotfiles, and OmniCode. The bridge function
+(`computeHealthFromResults`) is new infrastructure — does it produce meaningful
+scores that guide the user toward alignment?
+
+=== Proposed Subjects
+
+[cols="2,1,2,2", options="header"]
+|===
+| File | Format | Why This File | Expected Challenge
+
+| cache.rs
+| Rust
+| Deferred from PT001 — untouched subject, no pragma
+| Pragma → transform → score arc on a fresh file
+
+| A production Go file
+| Go
+| Go handler is heavy (inspect, transform, create, health) — untested live
+| Full pipeline should work; verify Go-specific schema
+
+| A real Makefile (e.g. cws-struct root)
+| Makefile
+| Bridge function for Makefile — first live scoring
+| Does the bridge produce meaningful scores?
+
+| A real .editorconfig
+| Dotfiles
+| Simplest handler — is the bridge honest when most checks pass?
+| Baseline: should score high on a well-formed dotfile
+
+| A TOML schema file
+| TOML
+| TOML handler is heavy (113 checks) — verify depth
+| Schema files should score 100; deviations reveal schema drift
+
+| A .omni file
+| OmniCode
+| OmniCode is our format — we should eat our own cooking
+| Does OmniCode lint + transform + score tell the truth?
+|===
+
+=== Phases
+
+==== Phase 1: Multi-Format Baseline
+
+Lint one file from each format. Record scores, error counts, action
+counts. The question: *do the numbers make sense?*
+
+Expected outcomes:
+
+* Well-formed files (editorconfig, Makefile) should score 80+
+* Files with pragma (exists.rs, aligned Go) should score 100
+* Files without pragma should score via lenient module fallback
+* The bridge function should produce differentiated scores (not all-100)
+
+==== Phase 2: Fresh Transform (cache.rs)
+
+Run the full pragma → transform → score pipeline on cache.rs.
+
+Expected outcomes:
+
+* Health drops when pragma is added (covenant declaration)
+* Transform scaffolds structure (similar to graph.rs: 170 → 370+ lines)
+* Post-transform score reaches 95+
+* Any gap reveals schema or subtype issues (like Phase 2 of PT001)
+
+==== Phase 3: Go Full Pipeline
+
+Pick a production Go file, run lint → transform → transpile → lint.
+
+Expected outcomes:
+
+* Go lint matches Rust lint in depth (both heavy handlers)
+* Transform adds structure without destroying existing code
+* Transpile Go → Rust produces valid Rust structure
+* Round-trip: Go → Rust → Go preserves identity (this is ambitious)
+
+==== Phase 4: Bridge Function Audit
+
+Run verbose + deep on files scored by the bridge function (JSON, Makefile,
+Dotfiles, Omni, OFD). Compare the breakdown against manual inspection.
+
+Expected outcomes:
+
+* Bridge scores should correlate with actual file quality
+* Container groupings should be meaningful (not all "general")
+* Passing check inference should be reasonable
+* Scores on well-formed files should be high (85+)
+* Scores on broken files should be low (<50)
+
+==== Phase 5: Verbose Output QoL (If Time)
+
+The verbose output plan (link:../word/claude/plans/sparkling-spinning-starfish.md[plan]) calls for:
+
+* Directives section (what the linter sees as identity)
+* Blocks section (line ranges, sizes)
+* Identity section (all resolved fields with values)
+* Per-action detail within health breakdown (`--deep`)
+
+If the verbose upgrade lands before PT002, test it across all formats.
+
+=== Success Criteria
+
+[cols="1,2", options="header"]
+|===
+| Criterion | How to Verify
+
+| Multi-format scoring accuracy
+| Manual inspection of 6+ files confirms scores are honest
+
+| Bridge function produces meaningful differentiation
+| Not all scores are 100; broken files score lower than clean ones
+
+| Full pipeline works on Go
+| Lint → transform → transpile → lint produces consistent results
+
+| cache.rs aligns in one session
+| Pragma → transform → score ≥ 95 without manual intervention
+
+| No regressions
+| `deno task test` — 1709+ passed, 0 failed
+|===
+
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+
+== Related Documents
+
+[cols="1,2", options="header"]
+|===
+| Document | Relationship
+
+| link:playtest-001-live-scoring.adoc[Playtest 001 — Live Scoring]
+| Parent experiment document
+
+| link:playtest-001-phase-1.adoc[Phase 1 — Pragma Covenant]
+| Transform from pragma alone
+
+| link:playtest-001-phase-2.adoc[Phase 2 — Schema Upgrade]
+| Schema-driven scoring correction
+
+| link:playtest-001-phase-3.adoc[Phase 3 — Re-Transform]
+| Idempotency verification
+
+| link:architecture.adoc[Architecture]
+| System design context
+
+| link:user-guide.adoc[User Guide]
+| Tool usage reference
+|===
+
+---
+
+[quote, Proverbs 27:17]
+____
+Iron sharpeneth iron; so a man sharpeneth the countenance of his friend.
+____
+
+_The first playtest sharpened the tool against three Rust files. The next
+playtest sharpens it against the full format range. Each round of testing
+makes the feedback more honest, the scoring more accurate, the pipeline
+more trustworthy. The iron is the tool. The friend is the codebase.
+When both sharpen, the work improves._

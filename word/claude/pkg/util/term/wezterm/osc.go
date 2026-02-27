@@ -47,6 +47,35 @@ import (
 var ttyWriter io.Writer
 
 func init() {
+	// Substrate-agnostic output selection
+	// 1. Check for explicit override via CPISI_OSC_DEST
+	dest := os.Getenv("CPISI_OSC_DEST")
+	switch strings.ToLower(dest) {
+	case "tty":
+		if tty, err := os.OpenFile("/dev/tty", os.O_WRONLY, 0); err == nil {
+			ttyWriter = tty
+			return
+		}
+	case "stdout":
+		ttyWriter = os.Stdout
+		return
+	case "stderr":
+		ttyWriter = os.Stderr
+		return
+	case "none":
+		ttyWriter = io.Discard
+		return
+	}
+
+	// 2. Detection logic
+	// If running in Gemini CLI, we should use Stderr to let the substrate handle rendering.
+	// Writing to /dev/tty directly causes flickering in TUIs.
+	if os.Getenv("GEMINI_CLI") == "1" {
+		ttyWriter = os.Stderr
+		return
+	}
+
+	// 3. Legacy / Bypass mode (Claude Code)
 	// Try to open /dev/tty for direct terminal access
 	// This bypasses Claude Code's output capture
 	tty, err := os.OpenFile("/dev/tty", os.O_WRONLY, 0)

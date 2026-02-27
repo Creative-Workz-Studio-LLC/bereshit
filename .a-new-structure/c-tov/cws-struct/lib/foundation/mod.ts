@@ -73,6 +73,7 @@ export {
   computeContainerScore,
   computeBlockScore,
   computeHealthScore,
+  computeHealthFromResults,
 } from "./health.ts";
 
 // Schema pipeline (layered discovery)

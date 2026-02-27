@@ -32,7 +32,7 @@ import (
 	"cws.studio/pkg/foundation/types"
 	"cws.studio/pkg/orchestration/cognition"
 	"cws.studio/pkg/orchestration/logging"
-	"cws.studio/pkg/util/pure/hookoutput"
+	"cws.studio/pkg/sdk/hookoutput"
 )
 
 // ============================================================================

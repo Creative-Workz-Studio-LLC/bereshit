@@ -69,11 +69,11 @@ DEPLOY_DIR  := $(HOME)/.claude
 INSTALL_DIR := $(HOME)/.local/share/claude
 
 # Module paths — DRY list used by fmt, vet, tidy, clean
-STD_MODULES := pkg hooks statusline dashboard dashboard/tui dashboard/gtk cmd/cpisi
+STD_MODULES := pkg hooks statusline dashboard dashboard/tui dashboard/gtk cmd/cpisi cmd/cpisi-agent
 SYS_MODULES := system/runtime/cmd system/runtime/lib
 
 # Main binaries (name:module_dir:cmd_path)
-MAIN_BINS := statusline cpisi dashboard dashboard-tui dashboard-gtk
+MAIN_BINS := statusline cpisi cpisi-agent dashboard dashboard-tui dashboard-gtk
 
 # Skills
 SKILLS_DIR  := skills
@@ -131,7 +131,7 @@ all: build
 # ============================================================================
 
 # Build everything: compile all modules + build binaries
-build: pkg hooks statusline system skills cpisi-cli dashboard dashboard-tui dashboard-gtk bin
+build: pkg hooks statusline system skills cpisi-cli cpisi-agent-check dashboard dashboard-tui dashboard-gtk bin
 	@echo ""
 	@echo "  ================================================================"
 	@echo "    Build complete."
@@ -171,6 +171,12 @@ cpisi-cli:
 		echo "  Building cpisi CLI..."; \
 		cd cmd/cpisi && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/cpisi-cli.stamp; \
 	else echo "  cpisi-cli (cached)"; fi
+
+cpisi-agent-check:
+	@if [ -n "$(call stale,cpisi-agent,cmd/cpisi-agent pkg)" ]; then \
+		echo "  Building cpisi-agent..."; \
+		cd cmd/cpisi-agent && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/cpisi-agent.stamp; \
+	else echo "  cpisi-agent (cached)"; fi
 
 skills: $(addprefix skill-,$(SKILL_NAMES))
 	@echo "  All skills checked"
@@ -227,7 +233,7 @@ dashboard-gtk:
 
 # --- Binary builds (cached — skips unchanged modules) ---
 
-bin: bin-statusline bin-cpisi bin-hooks bin-system-cmds \
+bin: bin-statusline bin-cpisi bin-cpisi-agent bin-hooks bin-system-cmds \
      bin-dashboard bin-dashboard-tui bin-dashboard-gtk
 	@echo "=== Binaries built to bin/ ==="
 
@@ -245,6 +251,13 @@ bin-cpisi:
 		cd cmd/cpisi && $(GO) build $(BINFLAGS) -o ../../bin/cpisi .; \
 		echo "    bin/cpisi"; \
 	else echo "    bin/cpisi (cached)"; fi
+
+bin-cpisi-agent:
+	@mkdir -p bin
+	@if [ -n "$(call bin_stale,bin/cpisi-agent,cmd/cpisi-agent pkg)" ]; then \
+		cd cmd/cpisi-agent && $(GO) build $(BINFLAGS) -o ../../bin/cpisi-agent .; \
+		echo "    bin/cpisi-agent"; \
+	else echo "    bin/cpisi-agent (cached)"; fi
 
 bin-dashboard: dashboard-frontend
 	@mkdir -p bin

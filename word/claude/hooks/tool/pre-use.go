@@ -28,7 +28,7 @@ import (
 	"os"
 	"strings"
 
-	"cws.studio/pkg/util/pure/hookoutput"
+	"cws.studio/pkg/sdk/hookoutput"
 	"cws.studio/pkg/orchestration/logging"
 	"cws.studio/pkg/core/statemachine"
 )

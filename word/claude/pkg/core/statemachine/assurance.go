@@ -1,56 +1,22 @@
-// #!omni code --go -library
-// #!omni meta.key = claude-global-pkg-statemachine-assurance
-// #!omni meta.at = a-01.00
+//omni:key B-claude-global-pkg-statemachine-assurance
+//omni:code --go -library
+//omni:version a-01.10
+
 // ============================================================================
 // METADATA
 // ============================================================================
 //
 // State Machine Assurance Functions — Universal Harness Diagnostics
 //
-// # M.1 Core Identity [IDENTITY]
+// Key: B-claude-global-pkg-statemachine-assurance
+// Version: a-01.10
+// Purpose: Verify statemachine constants, positions, and commands alignment
 //
-//	Key:       claude-global-pkg-statemachine-assurance
+// Biblical: 2 Corinthians 13:5 — Examine yourselves, whether ye be in the faith
 //
-//	Scripture: "Examine yourselves, whether ye be in the faith; prove your own selves."
-//	           — 2 Corinthians 13:5
-//	Principle: The system monitors itself. Assurance functions are the mechanism.
-//	Anchor:    HALT_01 (Genesis 1:1) — All traces terminate here
-//
-//	Layer:     Self-Monitoring (cross-cutting)
-//	Type:      Assurance (SDK-compatible diagnostics)
-//
-//	Architect:       Seanje Lenox-Wise
-//	Implementation:  Nova Dawn
-//	Created:         2025-12-20
-//	Version:         a-01.00
-//
-// # M.4 HALT Trace [HALTS]
-//
-//	HALT_01 (GENESIS)            → Genesis 1:1 = origin
-//	HALT_07 (MECHANISM_POSITION) → Position IS computation verification
-//	HALT_10 (STATE_HEBREW)       → 7 Days of Creation = 7 States
-//
-// # M.2 Public API [API]
-//
-//	AssureConstants() AssuranceResult            Verify PSI constants from schema
-//	AssureCubePositions() AssuranceResult        Verify 27 positions (3³)
-//	AssureCommands() AssuranceResult             Verify 3 commands (HALT/AWAIT/PROCEED)
-//	RunAllAssurances() Suite                     Run complete diagnostics
-//
-// # M.3 Paradigm [PARADIGM]
-//
-//	Uses schema.AssuranceResult for ternary scoring.
-//	DETECT → ASSESS → RESTORE workflow inherited.
-//
-// ============================================================================
-// END METADATA
-// ============================================================================
+// derivations: b-word/seed/code/L0/go/library.go
 
 package statemachine
-
-// ============================================================================
-// SETUP
-// ============================================================================
 
 import (
 	"fmt"
@@ -58,6 +24,90 @@ import (
 
 	"cws.studio/pkg/foundation/schema"
 )
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// Identity (I1-I4)
+// ────────────────────────────────────────────────────────────────────────────────────
+
+// PragmaAssurance carries the OmniCode identity sections (I1-I4) for this package.
+var PragmaAssurance = [][2]string{
+	{"I1.key", "B-claude-global-pkg-statemachine-assurance"},
+	{"I1.format", "go"},
+	{"I1.from", "word/claude/pkg/core/statemachine/assurance.go"},
+	{"I1.at", "a-01.10"},
+	{"I2.type", "code"},
+	{"I2.structure", "4-block"},
+	{"I2.subtype", "library"},
+	{"I2.role", "assurance"},
+	{"I3.file", "assurance.go"},
+	{"I3.title", "State Machine Assurance"},
+	{"I3.component", "CPI-SI Cognitive Engine"},
+	{"I3.path", "pkg/core/statemachine/assurance.go"},
+	{"I3.provides", "STATEMACHINE_ASSURANCE"},
+	{"I3.brief", "Self-monitoring diagnostics for the state machine harness."},
+	{"I4.layer", "L1-core"},
+	{"I4.position", "monitoring"},
+	{"I4.pattern", "assurance"},
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// Context (C1-C7)
+// ────────────────────────────────────────────────────────────────────────────────────
+
+// MetadataAssurance carries the OmniCode context sections (C1-C7) for this package.
+var MetadataAssurance = [][2]string{
+	{"C1.version", "a-01.10"},
+	{"C1.status", "Active"},
+	{"C1.created", "2025-12-20"},
+	{"C1.updated", "2026-02-25"},
+	{"C2.organization", "CreativeWorkzStudio LLC"},
+	{"C2.architect", "Seanje Lenox-Wise"},
+	{"C2.implementation", "Nova Dawn"},
+	{"C2.copyright", "CreativeWorkzStudio LLC"},
+	{"C3.scripture", "2 Corinthians 13:5 — Examine yourselves, whether ye be in the faith; prove your own selves"},
+	{"C3.principle", "The system monitors itself. Assurance functions are the mechanism"},
+	{"C3.anchor", "HALT_01 (Genesis 1:1) — All traces terminate here"},
+	{"C4.requires.stdlib", "fmt, time"},
+	{"C4.requires.internal", "schema, statemachine"},
+	{"C4.consumers", "SDK diagnostics, system monitoring"},
+	{"C4.integration", "Run diagnostics via RunAllAssurances()"},
+	{"C4.if_missing", "No self-verification of the state machine's internal state"},
+	{"C5.purpose", "Verify statemachine constants, positions, and commands alignment"},
+	{"C5.philosophy", "Self-assessment is foundational to reliable cognition"},
+	{"C6.current", "a-01.10 — Substrate adaptation complete"},
+	{"C6.planned", "Full integration with health scoring pipeline"},
+	{"C6.limitations", "none"},
+	{"C7.tags", "assurance, diagnostics, statemachine, ternary"},
+	{"C7.category", "Assurance"},
+	{"C7.domain", "bereshit"},
+	{"C7.paradigm", "CPI-SI"},
+}
+
+// ============================================================================
+// END METADATA
+// ============================================================================
+
+// ============================================================================
+// SETUP
+// ============================================================================
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// 2. Constants
+// ────────────────────────────────────────────────────────────────────────────────────
+
+// [Reserved: Constants aliased from statemachine.go]
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// 5. Error Types
+// ────────────────────────────────────────────────────────────────────────────────────
+
+// [Reserved: Errors handled via schema.AssuranceResult]
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// 6. Core Types
+// ────────────────────────────────────────────────────────────────────────────────────
+
+// [Reserved: Uses types from statemachine.go and pkg/foundation/schema]
 
 // ============================================================================
 // END SETUP
@@ -67,9 +117,31 @@ import (
 // BODY
 // ============================================================================
 
-// ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
+// 1. Org Chart
+// ────────────────────────────────────────────────────────────────────────────────────
+
+// Public APIs
+// └── RunAllAssurances() -> calls AssureConstants, AssureCubePositions, AssureCommands
+//
+// Core Operations
+// ├── AssureConstants() -> uses pass, fail, addLookAt, addDebug
+// ├── AssureCubePositions() -> uses pass, fail, addLookAt, addDebug
+// └── AssureCommands() -> uses pass, fail, addLookAt, addDebug
+//
 // Helpers
-// ────────────────────────────────────────────────────────────────
+// ├── newResult() -> initializes AssuranceResult
+// ├── pass() -> marks success (+1)
+// ├── fail() -> marks failure (-1)
+// ├── addLookAt() -> adds diagnostic location
+// ├── addDebug() -> adds diagnostic command
+// └── normalize() -> projects score to ternary
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// 2. Helpers
+// ────────────────────────────────────────────────────────────────────────────────────
+
+//--- H.1 Pure Functions [TRANSFORM] ---
 
 // newResult creates a new AssuranceResult with timing started.
 func newResult(name, halt, detect string) schema.AssuranceResult {
@@ -110,11 +182,11 @@ func addDebug(r *schema.AssuranceResult, cmd string) {
 	r.Debug = append(r.Debug, cmd)
 }
 
-// ────────────────────────────────────────────────────────────────
-// Constants Assurance (HALT_07)
-// ────────────────────────────────────────────────────────────────
-// Statemachine constants must alias from schema (vocabulary layer).
-// HALT_07 = MECHANISM_POSITION (Position IS computation)
+// ────────────────────────────────────────────────────────────────────────────────────
+// 3. Core Operations
+// ────────────────────────────────────────────────────────────────────────────────────
+
+//--- C.1 Diagnostics [CHECK] ---
 
 // AssureConstants verifies statemachine constants alias from schema.
 // Traces to: HALT_07 (MECHANISM_POSITION)
@@ -167,12 +239,6 @@ func AssureConstants() schema.AssuranceResult {
 	return r
 }
 
-// ────────────────────────────────────────────────────────────────
-// Cube Positions Assurance (HALT_07)
-// ────────────────────────────────────────────────────────────────
-// 27 = 3³ positions in balanced ternary cube
-// HALT_07 = MECHANISM_POSITION
-
 // AssureCubePositions verifies 27 cube positions exist.
 // Traces to: HALT_07 (MECHANISM_POSITION)
 //
@@ -216,12 +282,6 @@ func AssureCubePositions() schema.AssuranceResult {
 	pass(&r, "27 cube positions verified (3³)")
 	return r
 }
-
-// ────────────────────────────────────────────────────────────────
-// Commands Assurance (HALT_10)
-// ────────────────────────────────────────────────────────────────
-// 3 commands: HALT(-1), AWAIT(0), PROCEED(+1)
-// HALT_10 = STATE_HEBREW (7 Days of Creation = 7 States)
 
 // AssureCommands verifies 3 state machine commands.
 // Traces to: HALT_10 (STATE_HEBREW)
@@ -274,9 +334,11 @@ func AssureCommands() schema.AssuranceResult {
 	return r
 }
 
-// ────────────────────────────────────────────────────────────────
-// Full Suite
-// ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────────────
+// 5. Public APIs
+// ────────────────────────────────────────────────────────────────────────────────────
+
+//--- A.1 Suite Orchestration [RUN] ---
 
 // RunAllAssurances runs the complete statemachine diagnostic suite.
 func RunAllAssurances() schema.AssuranceSuite {
@@ -329,29 +391,38 @@ func normalize(trueScore int) int {
 // ============================================================================
 // CLOSING
 // ============================================================================
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// X1: Policy
+// ────────────────────────────────────────────────────────────────────────────────────
+// "Remove not the ancient landmark, which thy fathers have set." — Proverbs 22:28
 //
-// State Machine Assurance Architecture:
+// Safe to Modify:
+//   - Add new diagnostic checks in Core Operations §3
+//   - Update diagnostic metadata/hints in constructors
 //
-//   ┌─────────────────────────────────────────────────────────────────────────┐
-//   │ ASSURANCE FUNCTIONS                                                     │
-//   ├─────────────────────────────────────────────────────────────────────────┤
-//   │  AssureConstants         Verify PSI constants from schema (HALT_07)    │
-//   │  AssureCubePositions     Verify 27 positions (HALT_07)                 │
-//   │  AssureCommands          Verify 3 commands (HALT_10)                   │
-//   └─────────────────────────────────────────────────────────────────────────┘
+// Modify with Care:
+//   - suite tallying logic in RunAllAssurances
 //
-//   ┌─────────────────────────────────────────────────────────────────────────┐
-//   │ HALT TRACE                                                              │
-//   ├─────────────────────────────────────────────────────────────────────────┤
-//   │                                                                         │
-//   │  statemachine/assurance.go → HALT_10 (7 States) → HALT_07 (Position)   │
-//   │                            → HALT_01 (Genesis 1:1)                     │
-//   │                                                                         │
-//   └─────────────────────────────────────────────────────────────────────────┘
+// Never Modify:
+//   - 4-block structure
+//   - ternary scoring logic (-1/0/+1)
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// X4: Reference
+// ────────────────────────────────────────────────────────────────────────────────────
+// Dependencies:   statemachine.go, pkg/foundation/schema
+// Dependents:     SDK diagnostics, system dashboards
+// Template:       b-word/seed/code/L0/go/library.go
+
+// ────────────────────────────────────────────────────────────────────────────────────
+// X5: Note
+// ────────────────────────────────────────────────────────────────────────────────────
+// This library provides the diagnostic "immune system" for the state machine.
 //
 // "Examine yourselves, whether ye be in the faith; prove your own selves."
 // — 2 Corinthians 13:5
-//
+
 // ============================================================================
 // END CLOSING
 // ============================================================================

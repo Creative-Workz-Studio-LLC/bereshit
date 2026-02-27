@@ -28,7 +28,7 @@ import (
 	"cws.studio/claude/hooks/internal"
 	"cws.studio/pkg/core/statemachine"
 	"cws.studio/pkg/orchestration/logging"
-	"cws.studio/pkg/util/pure/hookoutput"
+	"cws.studio/pkg/sdk/hookoutput"
 	"cws.studio/pkg/util/transcript"
 )
 

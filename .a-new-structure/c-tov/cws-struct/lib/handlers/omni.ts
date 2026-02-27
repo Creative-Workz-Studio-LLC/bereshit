@@ -26,8 +26,8 @@
 // ============================================================================
 
 import { dirname, join } from "@std/path";
-import type { FormatHandler, LintResult, TransformOptions } from "../foundation/mod.ts";
-import { error, warn, info } from "../foundation/mod.ts";
+import type { FormatHandler, LintResult, TransformOptions, HealthScore } from "../foundation/mod.ts";
+import { error, warn, info, computeHealthFromResults } from "../foundation/mod.ts";
 import { registerFormat } from "../engine/mod.ts";
 
 // ---------------------------------------------------------------------------
@@ -799,6 +799,14 @@ async function transformOmniFile(filePath: string, opts: TransformOptions): Prom
 // Registration
 // ---------------------------------------------------------------------------
 
+/** OmniCode health — bridge from LintResult[] to HealthScore. */
+async function computeOmniHealth(
+  _filePath: string,
+  results: LintResult[],
+): Promise<HealthScore> {
+  return computeHealthFromResults(results, 28, "general");
+}
+
 const omniHandler: FormatHandler = {
   name: "omni",
   description: "OmniCode folder descriptions — @directives, >> containment, :: bindings, [TAG] blocks",
@@ -806,6 +814,7 @@ const omniHandler: FormatHandler = {
   maxDepth: 10,
   lint: lintOmniFile,
   transform: transformOmniFile,
+  computeHealth: computeOmniHealth,
 };
 
 registerFormat(omniHandler);
