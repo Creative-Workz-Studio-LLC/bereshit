@@ -267,6 +267,12 @@ func EmitWezTerm(ctx types.SessionContext, sm *statemachine.StateMachine, runtim
 	// Emit full state
 	wezterm.EmitFullState(sv, "Nova Dawn", ctx.GetWorkDir())
 
+	// Substrate awareness
+	if runtime != nil {
+		wezterm.SetUserVar("SUBSTRATE", runtime.Session.Substrate)
+		wezterm.SetUserVar("ENGINE", runtime.Session.Engine)
+	}
+
 	// Emit trajectory variables
 	emitTrajectoryVars(sm, runtime)
 

@@ -69,9 +69,9 @@ type DatabaseBridge interface {
 // InitializeWithDatabase creates runtime state with temporal continuity awareness
 // If database is available, it checks the gap since last session and potentially
 // continues K:ALIGN and Hebrew state from the previous session.
-func InitializeWithDatabase(ctx context.Context, sessionID string, bridge DatabaseBridge) (*RuntimeState, *InitializationContext, error) {
+func InitializeWithDatabase(ctx context.Context, sessionID, substrate, engine string, bridge DatabaseBridge) (*RuntimeState, *InitializationContext, error) {
 	// Start with basic initialization
-	state := InitializeRuntimeState(sessionID)
+	state := InitializeRuntimeState(sessionID, substrate, engine)
 	initCtx := &InitializationContext{}
 
 	// If no bridge, return basic state

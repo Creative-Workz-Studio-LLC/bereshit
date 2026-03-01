@@ -31,6 +31,7 @@ import (
 	"cws.studio/pkg/sdk/hookoutput"
 	"cws.studio/pkg/orchestration/logging"
 	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/sdk/substrate"
 )
 
 // ============================================================================
@@ -84,9 +85,26 @@ func PreUse() {
 	log.SetMode(logging.ModeCompact)
 
 	var input PreUseInput
-	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+	rawInput, _ := os.ReadFile("/dev/stdin")
+	if err := json.Unmarshal(rawInput, &input); err != nil {
 		log.Error("Failed to decode input", map[string]string{"error": err.Error()})
 		os.Exit(1)
+	}
+
+	// --- Load Substrate Maps (Every process is fresh) ---
+	schemaBase := "/media/seanje-lenox-wise/Project/Bereshit/word/core/schemas/substrate"
+	for _, sub := range []string{"gemini", "claude", "cpisi"} {
+		substrate.LoadMap(fmt.Sprintf("%s/%s.toml", schemaBase, sub))
+	}
+
+	// --- Process Universal Event via Rust Engine ---
+	subName := "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+	universalJSON, err := substrate.ProcessEvent(subName, "pre_tool", string(rawInput))
+	if err == nil {
+		log.Debug("Universal Event mapped", map[string]string{"universal": universalJSON})
 	}
 
 	// Create CategoryLogger for file output (append to data/logs/tools/)
@@ -146,11 +164,18 @@ func PreUse() {
 	// Evaluate tool safety
 	decision, reason := evaluateToolSafety(log, input)
 
-	// Use correct Claude Code schema with hookSpecificOutput
-	var output *hookoutput.PreToolResponse
+	// --- Render Response via Substrate SDK ---
+	subName = "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+
+	var variant string
+	var renderCtx = make(map[string]string)
 	switch decision {
 	case hookoutput.PermissionDeny:
-		output = hookoutput.NewPreToolDeny(reason)
+		variant = "deny"
+		renderCtx["reason"] = reason
 		log.LogFailure("Tool denied", map[string]string{
 			"tool":   input.ToolName,
 			"reason": reason,
@@ -161,7 +186,8 @@ func PreUse() {
 			})
 		}
 	case hookoutput.PermissionAsk:
-		output = hookoutput.NewPreToolAsk(reason)
+		variant = "ask"
+		renderCtx["reason"] = reason
 		log.Debug("Tool requires confirmation", map[string]string{
 			"tool":   input.ToolName,
 			"reason": reason,
@@ -173,10 +199,25 @@ func PreUse() {
 			})
 		}
 	default:
-		output = hookoutput.NewPreToolAllow()
+		variant = "allow"
 	}
 
-	json.NewEncoder(os.Stdout).Encode(output)
+	rendered, err := substrate.RenderOutput(subName, "pre_tool", variant, renderCtx)
+	if err == nil {
+		fmt.Print(rendered)
+	} else {
+		// Fallback to legacy hookoutput
+		var output *hookoutput.PreToolResponse
+		switch decision {
+		case hookoutput.PermissionDeny:
+			output = hookoutput.NewPreToolDeny(reason)
+		case hookoutput.PermissionAsk:
+			output = hookoutput.NewPreToolAsk(reason)
+		default:
+			output = hookoutput.NewPreToolAllow()
+		}
+		json.NewEncoder(os.Stdout).Encode(output)
+	}
 }
 
 // inferIntendedKey determines which key is being picked up based on tool choice

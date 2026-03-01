@@ -1,0 +1,221 @@
+{
+  "_comment": "CPI-SI Gemini CLI Configuration — mirrors Claude Code settings for seamless substrate transition",
+  "_version": "1.0.0",
+  "_updated": "2026-02-24",
+  "general": {
+    "preferredEditor": "nano",
+    "vimMode": false,
+    "disableAutoUpdate": false,
+    "checkpointing": {
+      "enabled": true
+    },
+    "enableAutoUpdate": true,
+    "sessionRetention": {
+      "warningAcknowledged": true,
+      "enabled": true,
+      "maxAge": "120d"
+    },
+    "debugKeystrokeLogging": true
+  },
+  "ui": {
+    "theme": "ANSI",
+    "hideTips": false,
+    "hideBanner": false,
+    "showMemoryUsage": true,
+    "showLineNumbers": true,
+    "showCitations": true,
+    "customWittyPhrases": [
+      "In the beginning God created... (Genesis 1:1)",
+      "Redeem every sector to the Kingdom through example.",
+      "CPI-SI is not AI. Covenant Partnership x Structured Intelligence.",
+      "Schema = Template = Linter. The triangle collapsed.",
+      "Identity transcends substrate."
+    ],
+    "inlineThinkingMode": "full",
+    "showStatusInTitle": true,
+    "footer": {
+      "hideContextPercentage": false
+    },
+    "showModelInfoInChat": true,
+    "useAlternateBuffer": true
+  },
+  "model": {
+    "name": "gemini-3.1-pro-preview",
+    "maxSessionTurns": -1,
+    "chatCompression": {
+      "contextPercentageThreshold": 0.7
+    },
+    "compressionThreshold": 0.8
+  },
+  "context": {
+    "includeDirectories": [
+      "/media/seanje-lenox-wise/Project",
+      "/home/seanje-lenox-wise/.gemini"
+    ],
+    "loadFromIncludeDirectories": false,
+    "fileFiltering": {
+      "respectGitIgnore": true,
+      "respectGeminiIgnore": true,
+      "enableRecursiveFileSearch": true
+    },
+    "loadMemoryFromIncludeDirectories": true
+  },
+  "tools": {
+    "sandbox": false,
+    "shell": {
+      "enableInteractiveShell": true
+    }
+  },
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "trust": true,
+      "description": "Context7 — up-to-date library documentation and code examples"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "trust": true,
+      "description": "Playwright MCP — browser automation, screenshots, testing"
+    }
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/share/claude/hooks/bin/start",
+            "name": "cpisi-session-start",
+            "timeout": 10000,
+            "description": "CPI-SI session initialization — state machine, trajectory, health"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/share/claude/hooks/bin/end",
+            "name": "cpisi-session-end",
+            "timeout": 10000,
+            "description": "CPI-SI session cleanup — save state, log session"
+          }
+        ]
+      }
+    ],
+    "BeforeTool": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/share/claude/hooks/bin/pre-use",
+            "name": "cpisi-before-tool",
+            "timeout": 5000,
+            "description": "CPI-SI tool safety — dangerous command detection, state tracking"
+          }
+        ]
+      }
+    ],
+    "AfterTool": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/share/claude/hooks/bin/post-use",
+            "name": "cpisi-after-tool",
+            "timeout": 5000,
+            "description": "CPI-SI post-tool — state tracking, Hebrew transitions, health scoring"
+          }
+        ]
+      }
+    ],
+    "BeforeAgent": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/share/claude/hooks/bin/submit",
+            "name": "cpisi-before-agent",
+            "timeout": 5000,
+            "description": "CPI-SI prompt handling — validation, feedback detection, context injection"
+          }
+        ]
+      }
+    ],
+    "AfterAgent": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/share/claude/hooks/bin/stop",
+            "name": "cpisi-after-agent",
+            "timeout": 5000,
+            "description": "CPI-SI agent stop handling — state checkpointing and completion audit"
+          }
+        ]
+      }
+    ],
+    "PreCompress": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/share/claude/hooks/bin/pre-compact",
+            "name": "cpisi-pre-compress",
+            "timeout": 10000,
+            "description": "CPI-SI pre-compaction — save context before trim"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/share/claude/hooks/bin/notification",
+            "name": "cpisi-notification",
+            "timeout": 5000,
+            "description": "CPI-SI notification handling"
+          }
+        ]
+      }
+    ]
+  },
+  "privacy": {
+    "usageStatisticsEnabled": false
+  },
+  "security": {
+    "folderTrust": {
+      "enabled": true
+    },
+    "auth": {
+      "selectedType": "oauth-personal"
+    }
+  },
+  "advanced": {
+    "autoConfigureMemory": true,
+    "excludedEnvVars": [
+      "DEBUG",
+      "DEBUG_MODE"
+    ]
+  },
+  "ide": {
+    "enabled": true
+  },
+  "experimental": {
+    "plan": true
+  }
+}

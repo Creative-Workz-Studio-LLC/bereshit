@@ -22,6 +22,7 @@ import (
 
 	"cws.studio/pkg/orchestration/logging"
 	"cws.studio/pkg/sdk/hookoutput"
+	"cws.studio/pkg/sdk/substrate"
 )
 
 // ============================================================================
@@ -48,9 +49,26 @@ func Setup() {
 	log.SetMode(logging.ModeCompact)
 
 	var input SetupInput
-	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+	rawInput, _ := os.ReadFile("/dev/stdin")
+	if err := json.Unmarshal(rawInput, &input); err != nil {
 		log.Error("Failed to decode input", map[string]string{"error": err.Error()})
 		os.Exit(1)
+	}
+
+	// --- Load Substrate Maps ---
+	schemaBase := "/media/seanje-lenox-wise/Project/Bereshit/word/core/schemas/substrate"
+	for _, sub := range []string{"gemini", "claude", "cpisi"} {
+		substrate.LoadMap(fmt.Sprintf("%s/%s.toml", schemaBase, sub))
+	}
+
+	// --- Process Universal Event via Rust Engine ---
+	subName := "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+	universalJSON, err := substrate.ProcessEvent(subName, "setup", string(rawInput))
+	if err == nil {
+		log.Debug("Universal Event mapped", map[string]string{"universal": universalJSON})
 	}
 
 	// Create CategoryLogger for file output
@@ -127,9 +145,19 @@ func Setup() {
 		})
 	}
 
-	// Output context for Claude
-	output := hookoutput.NewSetupResponse(context)
-	json.NewEncoder(os.Stdout).Encode(output)
+	// --- Render Response via Substrate SDK ---
+	renderCtx := map[string]string{
+		"context": context,
+	}
+
+	rendered, err := substrate.RenderOutput(subName, "setup", "success", renderCtx)
+	if err == nil {
+		fmt.Print(rendered)
+	} else {
+		// Fallback to legacy hookoutput
+		output := hookoutput.NewSetupResponse(context)
+		json.NewEncoder(os.Stdout).Encode(output)
+	}
 }
 
 // ============================================================================

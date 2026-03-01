@@ -22,6 +22,9 @@ import (
 	"strings"
 
 	"cws.studio/pkg/orchestration/logging"
+	"cws.studio/pkg/sdk/hookoutput"
+	"cws.studio/pkg/sdk/substrate"
+	"cws.studio/claude/hooks/internal/status"
 )
 
 // ============================================================================
@@ -54,44 +57,68 @@ type RequestOutput struct {
 // Request handles the PermissionRequest hook
 func Request() {
 	var input RequestInput
-	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+	rawInput, _ := os.ReadFile("/dev/stdin")
+	if err := json.Unmarshal(rawInput, &input); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to decode input: %v\n", err)
 		os.Exit(1)
+	}
+
+	// --- Load Substrate Maps ---
+	schemaBase := "/media/seanje-lenox-wise/Project/Bereshit/word/core/schemas/substrate"
+	for _, sub := range []string{"gemini", "claude", "cpisi"} {
+		substrate.LoadMap(fmt.Sprintf("%s/%s.toml", schemaBase, sub))
 	}
 
 	// Initialize logging
 	log := logging.New("permission")
 	catLog, _ := logging.NewCategoryLogger(logging.CategorySession, input.SessionID)
 
+	// Determine substrate
+	subName := "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+
 	// Check for auto-deny patterns first (safety)
 	if reason := checkAutoDeny(input); reason != "" {
-		output := RequestOutput{
-			Decision: "deny",
-			Reason:   reason,
-		}
 		if catLog != nil {
 			catLog.Warn("auto_deny", "Permission auto-denied", map[string]string{
 				"tool":   input.ToolName,
 				"reason": reason,
 			})
 		}
-		json.NewEncoder(os.Stdout).Encode(output)
+
+		renderCtx := map[string]string{"reason": reason}
+		rendered, err := substrate.RenderOutput(subName, "permission_request", "deny", renderCtx)
+		if err == nil {
+			fmt.Print(rendered)
+		} else {
+			output := RequestOutput{Decision: "deny", Reason: reason}
+			json.NewEncoder(os.Stdout).Encode(output)
+		}
+		status.Emit(input.SessionID)
 		return
 	}
 
 	// Check for auto-allow patterns (convenience)
 	if checkAutoAllow(input) {
-		output := RequestOutput{
-			Decision: "allow",
-		}
 		log.Debug("Auto-allowing", map[string]string{"tool": input.ToolName})
-		json.NewEncoder(os.Stdout).Encode(output)
+		
+		rendered, err := substrate.RenderOutput(subName, "permission_request", "allow", nil)
+		if err == nil {
+			fmt.Print(rendered)
+		} else {
+			output := RequestOutput{Decision: "allow"}
+			json.NewEncoder(os.Stdout).Encode(output)
+		}
+		status.Emit(input.SessionID)
 		return
 	}
 
 	// Default: pass through to user (return empty)
 	// This lets the user see and decide on the permission prompt
 	log.Debug("Passing to user", map[string]string{"tool": input.ToolName})
+	status.Emit(input.SessionID)
 }
 
 // checkAutoDeny returns a reason string if the operation should be auto-denied

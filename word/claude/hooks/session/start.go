@@ -40,6 +40,7 @@ import (
 	"cws.studio/pkg/orchestration/cognition"
 	"cws.studio/pkg/orchestration/logging"
 	"cws.studio/pkg/sdk/hookoutput"
+	"cws.studio/pkg/sdk/substrate"
 )
 
 // ============================================================================
@@ -53,6 +54,10 @@ type StartInput struct {
 	PermissionMode string `json:"permission_mode,omitempty"`
 	HookEventName  string `json:"hook_event_name,omitempty"`
 	Source         string `json:"source"` // startup, resume, clear, compact
+	Model struct {
+		ID          string `json:"id"`
+		DisplayName string `json:"display_name"`
+	} `json:"model"`
 }
 
 // StartOutput uses hookoutput.ContextResponse for correct schema
@@ -91,6 +96,22 @@ func Start() {
 		"session_id": input.SessionID,
 		"source":     input.Source,
 	})
+
+	// --- Initialize Substrate SDK Mapping Engine ---
+	// Load all mapping schemas from the core repository
+	// Path resolution: logic should ideally come from a central config loader
+	schemaBase := "/media/seanje-lenox-wise/Project/Bereshit/word/core/schemas/substrate"
+	for _, sub := range []string{"gemini", "claude", "cpisi"} {
+		mapPath := fmt.Sprintf("%s/%s.toml", schemaBase, sub)
+		if err := substrate.LoadMap(mapPath); err != nil {
+			log.Warn("Failed to load substrate map", map[string]string{
+				"substrate": sub,
+				"path":      mapPath,
+				"error":     err.Error(),
+			})
+		}
+	}
+
 	if catLog != nil {
 		catLog.Info("session_start", "Session starting", map[string]string{
 			"session_id": input.SessionID,
@@ -117,6 +138,15 @@ func Start() {
 	workdir, _ := os.Getwd()
 	context := cognition.SessionContext(state, workdir)
 
+	// --- WAKING MEMORY: Restore context from last Sabbath ---
+	if input.Source == "startup" {
+		if testimony, err := substrate.GetLastTestimony(); err == nil && testimony != nil {
+			context += fmt.Sprintf("\n\n**Waking Memory (Last Session: %s):**\n%s\nFinal Trajectory: %s | Alignment: %.2f",
+				testimony.SessionID, testimony.Summary, testimony.State.Trajectory, testimony.State.Alignment)
+			log.Info("Last testimony re-ingested", map[string]string{"last_session": testimony.SessionID})
+		}
+	}
+
 	// Add WezTerm state awareness (two-way sync: WezTerm → Claude)
 	if wtState := readWezTermState(); wtState != nil {
 		wtContext := formatWezTermContext(wtState)
@@ -137,8 +167,14 @@ func Start() {
 
 // handleStartup initializes a fresh session
 func handleStartup(log *logging.Logger, catLog *logging.CategoryLogger, input StartInput) *statemachine.RuntimeState {
+	// Determine substrate name
+	subName := "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+
 	// Initialize state machine runtime
-	state := statemachine.InitializeRuntimeState(input.SessionID)
+	state := statemachine.InitializeRuntimeState(input.SessionID, subName, input.Model.DisplayName)
 	path := statemachine.InitializeRuntimePath(input.SessionID)
 
 	// --- Initialize Context Window Tracking ---
@@ -286,9 +322,23 @@ func handleResume(log *logging.Logger, catLog *logging.CategoryLogger, input Sta
 		state.TrajectoryMetrics.MomentumScore = 0
 		// Keep pivot_count and reset_count as cross-session learning
 
+		// Update substrate/engine info
+		state.Session.Substrate = "claude"
+		if hookoutput.IsGemini() {
+			state.Session.Substrate = "gemini"
+		}
+		state.Session.Engine = input.Model.DisplayName
+
 		// Record new session in database (temporal consciousness)
 		ensureSessionInDB(input.SessionID, state, log, catLog)
 	}
+
+	// Always ensure substrate info is fresh even on simple resume
+	state.Session.Substrate = "claude"
+	if hookoutput.IsGemini() {
+		state.Session.Substrate = "gemini"
+	}
+	state.Session.Engine = input.Model.DisplayName
 
 	// Mark as active
 	state.Session.Active = true
@@ -332,8 +382,14 @@ func handleResume(log *logging.Logger, catLog *logging.CategoryLogger, input Sta
 
 // handleClear handles session clear event
 func handleClear(log *logging.Logger, catLog *logging.CategoryLogger, input StartInput) *statemachine.RuntimeState {
+	// Determine substrate name
+	subName := "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+
 	// Reset to initial state (preserves session ID)
-	state := statemachine.InitializeRuntimeState(input.SessionID)
+	state := statemachine.InitializeRuntimeState(input.SessionID, subName, input.Model.DisplayName)
 
 	if err := statemachine.SaveRuntimeState(state); err != nil {
 		log.LogFailure("Failed to reset runtime state", map[string]string{
@@ -470,6 +526,13 @@ func handleCompact(log *logging.Logger, catLog *logging.CategoryLogger, input St
 	state.Session.SessionArc = ""
 	state.Session.LastExchangeType = ""
 	state.Session.LastInsightType = ""
+
+	// Update substrate info
+	state.Session.Substrate = "claude"
+	if hookoutput.IsGemini() {
+		state.Session.Substrate = "gemini"
+	}
+	state.Session.Engine = input.Model.DisplayName
 
 	// --- CONTEXT TRACKING: Record compaction event ---
 	// "A time to keep, and a time to cast away" — Ecclesiastes 3:6

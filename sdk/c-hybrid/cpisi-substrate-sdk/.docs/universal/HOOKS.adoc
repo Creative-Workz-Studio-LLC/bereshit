@@ -1,0 +1,91 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-sdk-universal-hooks
+:title: Universal Hook Interface Specification
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: c-02.10
+:updated: 2026-02-28
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+This document defines the **Universal Hook Baseline**. These are the normalized events that all substrates (Gemini, Claude, CPI-SI) must map to.
+
+== Supported Universal Events
+
+[cols="1,2,2", options="header"]
+|===
+| Event | Trigger Point | Description
+
+| **SessionStart**
+| Awakening
+| Initializes the session state, temporal context, and identity.
+
+| **SessionEnd**
+| Sabbath
+| Persists final state and generates session testimony (.adoc/.json).
+
+| **BeforeAgent**
+| The Turn
+| Aligns intent and injects cognitive context before planning.
+
+| **AfterAgent**
+| Calibration
+| Audits performance and updates the Moral Compass (K-Align).
+
+| **BeforeTool**
+| The Gate
+| Exercises authority/safety checks before system interaction.
+
+| **AfterTool**
+| The Witness
+| Records the outcome and triggers state machine transitions.
+
+| **PreCompress**
+| Remember
+| Snapshots the mental state before context window pruning.
+|===
+
+== Universal Data Format
+
+The SDK requires all substrates to provide a **Universal Event Payload** over standard streams.
+
+[source,json]
+----
+{
+  "universal_event": "PreToolUse",
+  "session_id": "uuid-123",
+  "timestamp": 123456789,
+  "payload": {
+    "tool_name": "bash",
+    "arguments": { "command": "make" }
+  }
+}
+----
+
+== Implementation Protocol
+
+1. **Intake:** The Go interceptor receives the native CLI JSON.
+2. **Translation:** The SDK applies the substrate-specific TOML map.
+3. **Execution:** The SDK processes the resulting Universal Event.
+4. **Output:** The SDK renders the substrate-specific response.
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

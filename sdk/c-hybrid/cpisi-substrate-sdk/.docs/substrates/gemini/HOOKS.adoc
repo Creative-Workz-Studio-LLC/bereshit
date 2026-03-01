@@ -1,0 +1,120 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-sdk-substrates-gemini-hooks
+:title: Gemini CLI Hook Reference
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: c-02.10
+:updated: 2026-02-28
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+Gemini CLI (v0.26.0+) utilizes a middleware architecture for its hooks, allowing for interception and modification of the agentic loop.
+
+== Supported Native Events
+
+[cols="1,2,2", options="header"]
+|===
+| Event | Trigger Point | Use Case
+
+| **SessionStart**
+| CLI startup
+| Initialize state machine, load history, set trajectory.
+
+| **SessionEnd**
+| CLI exit
+| Persist final state, generate session artifacts (.adoc/.json).
+
+| **BeforeAgent**
+| After prompt, before planning
+| Context injection, prompt validation, debt quarantine.
+
+| **AfterAgent**
+| After agent finishes turn
+| Performance metrics, outcome recording.
+
+| **BeforeTool**
+| Before a tool executes
+| Safety validation, argument modification, blocking.
+
+| **AfterTool**
+| After a tool completes
+| Result analysis, state transition trigger.
+
+| **BeforeModel**
+| Before LLM request
+| Final prompt grooming.
+
+| **AfterModel**
+| After LLM response
+| Response validation before tool parsing.
+
+| **PreCompress**
+| Before history compaction
+| Snapshotting context before data loss.
+
+| **Notification**
+| System alerts (idle, etc.)
+| Activity tracking, presence awareness.
+|===
+
+== Communication Protocol (The Golden Rule)
+
+Hooks communicate exclusively via **JSON over standard streams**.
+
+* **Input (stdin):** Receives a JSON payload containing the event context.
+* **Output (stdout):** MUST print exactly one valid JSON object.
+* **Logging (stderr):** Use for all human-readable status or debug info.
+* **Exit Codes:**
+** `0`: Success (proceed).
+** `2`: Block (abort action with reason from JSON).
+
+== Configuration (`settings.json`)
+
+Hooks are configured in the `hooks` block of the Gemini settings:
+
+[source,json]
+----
+{
+  "hooks": {
+    "BeforeTool": [
+      {
+        "matcher": "write_file",
+        "hooks": [
+          {
+            "name": "security-check",
+            "type": "command",
+            "command": "cpisi-before-tool"
+          }
+        ]
+      }
+    ]
+  }
+}
+----
+
+== Substrate Specifics
+
+* **Parallel Execution:** Gemini CLI supports parallel tool calls; `BeforeTool` and `AfterTool` may fire concurrently.
+* **Fingerprinting:** Project-level hooks require explicit user trust if the command or name changes.
+* **Environment Variables:** Injects `GEMINI_SESSION_ID`, `GEMINI_PROJECT_DIR`, and `GEMINI_CLI=1`.
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

@@ -57,7 +57,10 @@ type RuntimeState struct {
 // RuntimeSession holds session-specific dynamic values
 type RuntimeSession struct {
 	ID            string  `json:"id"`
+	Substrate     string  `json:"substrate"`      // gemini, claude, cpisi, etc.
+	Engine        string  `json:"engine"`         // specific model version
 	InitializedAt string  `json:"initialized_at"`
+	EndedAt       string  `json:"ended_at"`
 	LastUpdate    string  `json:"last_update"`
 	PathLength    int     `json:"path_length"`
 	HooksFired    int     `json:"hooks_fired"`

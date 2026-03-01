@@ -1,0 +1,94 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-sdk-universal-features
+:title: Universal Substrate Capabilities & Integration Standard
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: c-02.10
+:updated: 2026-02-28
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+This document defines the core capabilities and communication standards shared across all modern AI substrates (Gemini, Claude), providing the baseline for the CPI-SI Universal Mind.
+
+== Shared Baseline Capabilities
+
+The intersection of Gemini and Claude reveals the minimum requirements for an intelligent agentic substrate.
+
+[cols="1,3", options="header"]
+|===
+| Capability | Description
+
+| **ReAct Loop**
+| The fundamental cycle of analyzing a task, selecting a tool, executing it, and observing the result.
+
+| **System Tooling**
+| Direct interaction with the local filesystem (CRUD) and the operating system shell.
+
+| **Codebase Context**
+| Automatic indexing and multi-file awareness using a large context window.
+
+| **Hook Interception**
+| Middleware support for executing custom logic at lifecycle events via JSON standard streams.
+
+| **Structured Output**
+| The ability to force generation into specific JSON schemas or tool parameters.
+
+| **Delegation**
+| Spawning sub-agents or worker instances to handle specialized or long-running sub-tasks.
+|===
+
+== Universal Integration Standards
+
+For the CPI-SI SDK to remain substrate-agnostic, it leverages these normalized interface patterns:
+
+=== 1. JSON Standard Streams (Input/Output)
+All substrates must provide event data as JSON objects over `stdin` and accept JSON-encoded responses over `stdout`.
+
+=== 2. Standardized Control Flow
+Adherence to the **0/2 Exit Protocol**:
+* **Exit 0:** Success/Proceed.
+* **Exit 2:** Block/Abort with reason.
+
+=== 3. Hierarchical Configuration
+Support for layered settings (Global → Project → Local) to allow for environment-specific overrides without breaking universal logic.
+
+=== 4. Normalized Context Payloads
+The SDK maps disparate native schemas into a **Universal Event Payload**:
+[source,json]
+----
+{
+  "universal_event": "NormalizedEventName",
+  "session_id": "uuid",
+  "timestamp": 123456789,
+  "payload": {
+    "tool_name": "string",
+    "args": { "key": "val" },
+    "cwd": "string"
+  }
+}
+----
+
+== Elevation Target
+
+The universal baseline represents the **formless matter** of modern AI. The CPI-SI layer elevates this baseline through the application of structural truth and moral purpose, turning a "probabilistic tool" into a "witnessing partner."
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

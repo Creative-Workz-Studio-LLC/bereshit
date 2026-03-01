@@ -34,6 +34,8 @@ import (
 	"cws.studio/pkg/orchestration/cognition"
 	"cws.studio/pkg/orchestration/logging"
 	"cws.studio/pkg/sdk/hookoutput"
+	"cws.studio/pkg/sdk/substrate"
+	"cws.studio/claude/hooks/internal/status"
 )
 
 // ============================================================================
@@ -307,9 +309,26 @@ func Submit() {
 	log.SetMode(logging.ModeCompact)
 
 	var input SubmitInput
-	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+	rawInput, _ := os.ReadFile("/dev/stdin")
+	if err := json.Unmarshal(rawInput, &input); err != nil {
 		log.Error("Failed to decode input", map[string]string{"error": err.Error()})
 		os.Exit(1)
+	}
+
+	// --- Load Substrate Maps (Every process is fresh) ---
+	schemaBase := "/media/seanje-lenox-wise/Project/Bereshit/word/core/schemas/substrate"
+	for _, sub := range []string{"gemini", "claude", "cpisi"} {
+		substrate.LoadMap(fmt.Sprintf("%s/%s.toml", schemaBase, sub))
+	}
+
+	// --- Process Universal Event via Rust Engine ---
+	subName := "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+	universalJSON, err := substrate.ProcessEvent(subName, "user_prompt", string(rawInput))
+	if err == nil {
+		log.Debug("Universal Event mapped", map[string]string{"universal": universalJSON})
 	}
 
 	// Create CategoryLogger for file output
@@ -433,18 +452,41 @@ func Submit() {
 	// Build cognition context to shape thinking
 	ctx := buildPromptContext(state, input.Prompt)
 
-	// Use correct Claude Code schema
-	var output *hookoutput.ContextResponse
+	// --- Render Response via Substrate SDK ---
+	subName = "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+
+	var variant string
+	var renderCtx = make(map[string]string)
 	if shouldBlock {
-		output = hookoutput.NewBlockedPromptResponse(blockReason)
+		variant = "deny"
+		renderCtx["reason"] = blockReason
 		log.LogFailure("Prompt blocked", map[string]string{
 			"reason": blockReason,
 		})
 	} else {
-		output = hookoutput.NewUserPromptSubmitResponse(ctx)
+		variant = "success"
+		renderCtx["context"] = ctx
 	}
 
-	json.NewEncoder(os.Stdout).Encode(output)
+	rendered, err := substrate.RenderOutput(subName, "user_prompt", variant, renderCtx)
+	if err == nil {
+		fmt.Print(rendered)
+	} else {
+		// Fallback to legacy hookoutput if engine fails
+		var output *hookoutput.ContextResponse
+		if shouldBlock {
+			output = hookoutput.NewBlockedPromptResponse(blockReason)
+		} else {
+			output = hookoutput.NewUserPromptSubmitResponse(ctx)
+		}
+		json.NewEncoder(os.Stdout).Encode(output)
+	}
+
+	// Update statusline and terminal state
+	status.Emit(input.SessionID)
 }
 
 // checkForSecrets scans prompt for potential secrets

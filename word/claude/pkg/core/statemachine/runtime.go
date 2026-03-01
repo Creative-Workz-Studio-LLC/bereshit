@@ -170,7 +170,7 @@ type RuntimeHistoryMeta struct {
 // --- State Initialization ---
 
 // InitializeRuntimeState creates initial runtime state for a new session
-func InitializeRuntimeState(sessionID string) *RuntimeState {
+func InitializeRuntimeState(sessionID, substrate, engine string) *RuntimeState {
 	now := time.Now().Format(time.RFC3339)
 	return &RuntimeState{
 		Version:           "1.1.0",
@@ -179,6 +179,8 @@ func InitializeRuntimeState(sessionID string) *RuntimeState {
 		CommandKey:        "await",
 		Session: RuntimeSession{
 			ID:            sessionID,
+			Substrate:     substrate,
+			Engine:        engine,
 			InitializedAt: now,
 			LastUpdate:    now,
 			PathLength:    0,

@@ -1,0 +1,160 @@
+# ============================================================================
+# METADATA - Gemini Substrate Map
+# ============================================================================
+# Key: core-schema-substrate-gemini
+# Purpose: Defines the bidirectional mapping between Gemini CLI JSON
+#          and the Universal CPI-SI Event model.
+# ============================================================================
+
+[substrate]
+name = "gemini"
+engine_version = "v1"
+description = "Mapping rules for the Gemini CLI substrate"
+
+# ----------------------------------------------------------------------------
+# SESSION START (SessionStart)
+# ----------------------------------------------------------------------------
+[events.session_start]
+universal_event = "SessionStart"
+
+[events.session_start.map_in]
+session_id = "$.session_id"
+source = "$.source"
+transcript_path = "$.transcript_path"
+# Gemini-specific context captured
+context.permission_mode = "$.permission_mode"
+context.hook_event_name = "$.hook_event_name"
+
+[events.session_start.map_out]
+# Both Claude and Gemini CLI support this nested format for context injection
+success = '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "{{.context}}"}}'
+error = '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "Error: {{.error}}"}}'
+
+# ----------------------------------------------------------------------------
+# PRE TOOL USE (BeforeTool)
+# ----------------------------------------------------------------------------
+[events.pre_tool]
+universal_event = "PreToolUse"
+
+[events.pre_tool.map_in]
+session_id = "$.session_id"
+tool_name = "$.tool_name"
+arguments = "$.tool_input"
+# Gemini-specific fields
+context.cwd = "$.cwd"
+context.timestamp = "$.timestamp"
+
+[events.pre_tool.map_out]
+# Gemini natively expects top-level 'decision' and 'reason' for tool blocking
+allow = '{"decision": "allow"}'
+deny = '{"decision": "deny", "reason": "{{.reason}}"}'
+modified = '{"decision": "allow", "tool_input": {{.modified_input}}}'
+
+# ----------------------------------------------------------------------------
+# USER PROMPT SUBMIT (BeforeAgent)
+# ----------------------------------------------------------------------------
+[events.user_prompt]
+universal_event = "UserPromptSubmit"
+
+[events.user_prompt.map_in]
+session_id = "$.session_id"
+prompt = "$.prompt"
+
+[events.user_prompt.map_out]
+success = '{"hookSpecificOutput": {"hookEventName": "BeforeAgent", "additionalContext": "{{.context}}"}, "continue": true}'
+deny = '{"systemMessage": "{{.reason}}", "continue": false}'
+error = '{}'
+
+# ----------------------------------------------------------------------------
+# POST TOOL USE (AfterTool)
+# ----------------------------------------------------------------------------
+[events.post_tool]
+universal_event = "PostToolUse"
+
+[events.post_tool.map_in]
+session_id = "$.session_id"
+tool_name = "$.tool_name"
+response = "$.tool_response"
+
+[events.post_tool.map_out]
+success = '{"hookSpecificOutput": {"hookEventName": "AfterTool", "additionalContext": "{{.context}}"}}'
+error = '{}'
+
+# ----------------------------------------------------------------------------
+# AGENT STOP (AfterAgent)
+# ----------------------------------------------------------------------------
+[events.stop]
+universal_event = "Stop"
+
+[events.stop.map_in]
+session_id = "$.session_id"
+
+[events.stop.map_out]
+allow = '{}'
+deny = '{"hookSpecificOutput": {"hookEventName": "AfterAgent"}, "decision": "block", "reason": "{{.reason}}"}'
+
+
+# ----------------------------------------------------------------------------
+# AGENT TEAM & SUBAGENTS
+# ----------------------------------------------------------------------------
+
+[events.subagent_start]
+universal_event = "SubagentStart"
+[events.subagent_start.map_in]
+session_id = "$.session_id"
+[events.subagent_start.map_out]
+success = '{"hookSpecificOutput": {"hookEventName": "SubagentStart", "additionalContext": "{{.context}}"}}'
+
+[events.subagent_stop]
+universal_event = "SubagentStop"
+[events.subagent_stop.map_in]
+session_id = "$.session_id"
+[events.subagent_stop.map_out]
+allow = '{}'
+deny = '{"decision": "block", "reason": "{{.reason}}"}'
+
+[events.teammate_idle]
+universal_event = "TeammateIdle"
+[events.teammate_idle.map_in]
+session_id = "$.session_id"
+[events.teammate_idle.map_out]
+allow = '{"decision": "allow"}'
+deny = '{"decision": "block", "reason": "{{.reason}}"}'
+
+[events.task_completed]
+universal_event = "TaskCompleted"
+[events.task_completed.map_in]
+session_id = "$.session_id"
+[events.task_completed.map_out]
+allow = '{"decision": "allow"}'
+deny = '{"decision": "block", "reason": "{{.reason}}"}'
+
+# ----------------------------------------------------------------------------
+# SYSTEM EVENTS
+# ----------------------------------------------------------------------------
+
+[events.notification]
+universal_event = "Notification"
+[events.notification.map_in]
+session_id = "$.session_id"
+[events.notification.map_out]
+success = '{}'
+
+[events.pre_compact]
+universal_event = "PreCompact"
+[events.pre_compact.map_in]
+session_id = "$.session_id"
+[events.pre_compact.map_out]
+success = '{}'
+
+[events.permission_request]
+universal_event = "PermissionRequest"
+[events.permission_request.map_in]
+session_id = "$.session_id"
+tool_name = "$.tool_name"
+[events.permission_request.map_out]
+allow = '{"decision": "allow"}'
+deny = '{"decision": "deny", "reason": "{{.reason}}"}'
+
+
+

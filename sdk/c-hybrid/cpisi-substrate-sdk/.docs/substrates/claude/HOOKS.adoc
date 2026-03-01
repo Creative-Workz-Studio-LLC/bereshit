@@ -1,0 +1,122 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-sdk-substrates-claude-hooks
+:title: Claude Code Hook Reference
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: c-02.10
+:updated: 2026-02-28
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+Claude Code supports a rich event-driven architecture for workflow automation and structural enforcement.
+
+== Supported Native Events
+
+[cols="1,2,2", options="header"]
+|===
+| Event | Description | Use Case
+
+| **SessionStart**
+| Session initialization
+| State machine wake-up, temporal awareness.
+
+| **UserPromptSubmit**
+| Before prompt processing
+| Context injection, pattern detection.
+
+| **PreToolUse**
+| Before tool execution
+| Safety gates, state transition prep.
+
+| **PostToolUse**
+| After tool completion
+| Outcome recording, Hebrew state movement.
+
+| **Stop**
+| Agent turn complete
+| Work audit, halting evaluation.
+
+| **PreCompact**
+| Before context trim
+| Checkpoint state preservation.
+
+| **Notification**
+| System alerts
+| Presence detection (idle, permission).
+
+| **SubagentStart**
+| Worker agent spawn
+| Delegation tracking (+1 expansion).
+
+| **SubagentStop**
+| Worker agent exit
+| Delegation completion.
+
+| **TeammateIdle**
+| Team member idle
+| Coordination checkpoint.
+
+| **TaskCompleted**
+| Task list update
+| Milestone verification.
+|===
+
+== Handler Types
+
+Claude Code uniquely supports three execution models for hooks:
+
+1. **Command (`type: "command"`)**: Runs a shell binary. Best for fast, deterministic logic (Go/Rust).
+2. **Prompt (`type: "prompt"`)**: Semantic decision-making via a fast LLM (e.g. Haiku).
+3. **Agent (`type: "agent"`)**: Spawns a full sub-agent with tool access for deep verification.
+
+== Communication Protocol
+
+Hooks use **JSON over stdin/stdout** and **Exit Codes** for control flow.
+
+* **Success (Exit 0):** The event proceeds normally.
+* **Block (Exit 2):** The action is aborted. The `stderr` or `reason` field is returned to the agent.
+* **Payload:** The input JSON contains the full context (session, tool arguments, etc.).
+
+== Configuration (`CLAUDE.json`)
+
+Managed via `hooks` blocks in the hierarchical settings system (Global, Project, Local).
+
+[source,json]
+----
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cpisi-pre-use"
+          }
+        ]
+      }
+    ]
+  }
+}
+----
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

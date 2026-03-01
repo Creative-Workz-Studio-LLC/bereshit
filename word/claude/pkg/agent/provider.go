@@ -74,6 +74,17 @@ type ChatRequest struct {
 	MaxTokens   int       `json:"max_tokens,omitempty"`
 	Temperature float64   `json:"temperature,omitempty"`
 	System      string    `json:"system,omitempty"`
+
+	// --- Substrate-Agnostic Capabilities ---
+	
+	// ResponseFormat specifies the desired output format (e.g., "json").
+	ResponseFormat string `json:"response_format,omitempty"`
+
+	// EnableSearch instructs the provider to use internet search grounding if supported.
+	EnableSearch bool `json:"enable_search,omitempty"`
+
+	// EnableCodeExecution instructs the provider to execute code internally if supported.
+	EnableCodeExecution bool `json:"enable_code_execution,omitempty"`
 }
 
 // ChatResponse is what comes BACK from a provider.

@@ -1,0 +1,65 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-sdk-production-standards
+:title: SDK Production Grade Standards
+:type: Standard
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: c-01.00
+:updated: 2026-02-28
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+This document defines the production-grade requirements for the **CPI-SI Universal Substrate SDK**. As a core company product, every block of code must reflect architectural excellence, performance precision, and robust error handling.
+
+== 1. Error Handling (The CWS-T01 Protocol)
+
+Bare error strings are prohibited. All errors must be structured via the `ToolError` pattern.
+
+* **Catalog-Driven:** Every failure must map to a unique `CWS-T01-xxx` code in the Error Catalog.
+* **Contextual Substitution:** Errors must provide dynamic context (e.g., `{{path}}`, `{{reason}}`) rather than opaque messages.
+* **FFI Boundary Safety:** Errors crossing the C-boundary must be mapped to stable integer codes, with detailed logging on the emitting side.
+
+== 2. Performance & Caching
+
+The agentic loop is sensitive to latency. The SDK must be "performance smart."
+
+* **Lazy Loading:** Substrate maps should be loaded only when needed and cached in memory for the duration of the process.
+* **Zero-Copy Interop:** Minimize allocations when passing data between Rust and Go.
+* **Deno Compilation:** TypeScript components must be compiled to optimized binaries using `deno compile`.
+* **Linker Optimization:** Go binaries must use `-ldflags="-w -s"` to strip debug info and include correctly embedded `RPATH` for shared library resolution.
+
+== 3. Architectural Stillness
+
+Avoid the "rushing" patterns of traditional AI development.
+
+* **Boundaries First:** Always define the 4-block structure and metadata before writing functional logic.
+* **Planning Workflow:** No implementation begins without a formal sub-plan following the 5-phase "Stillness" cycle.
+* **Verification Ladder:** 100% test coverage for core mapping logic (Internal heartbeats) and critical path witnesses (Fixtures).
+
+== 4. Polish & Visual Covenant
+
+The system's output is its testimony.
+
+* **Stat Screens:** Closing summaries must use rich ANSI formatting, box-drawing characters, and consistent icons (♊, 🛡️).
+* **Logging:** Standard streams must be clean. `stdout` is reserved for structured JSON; all human-readable status must go to `stderr`.
+* **Artifacts:** Generated `.adoc` and `.json` files must follow strict OmniCode metadata standards.
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

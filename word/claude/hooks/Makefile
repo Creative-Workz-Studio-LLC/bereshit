@@ -103,12 +103,12 @@ build: $(ALL_HOOKS) hooks
 
 # Orchestrator (built from root, not cmd/)
 hooks: main.go session/*.go tool/*.go prompt/*.go permission/*.go internal/*.go | $(BIN)
-	@$(GO) build $(BINFLAGS) -o $(BIN)/hooks .
+	@$(GO) build -ldflags="$(LD_FLAGS)" $(BINFLAGS) -o $(BIN)/hooks .
 	@echo "  Built: hooks (orchestrator)"
 
 # Generic build rule — builds cmd/<name> to bin/<name>
 $(ALL_HOOKS): | $(BIN)
-	@$(GO) build $(BINFLAGS) -o $(BIN)/$@ ./cmd/$@
+	@$(GO) build -ldflags="$(LD_FLAGS)" $(BINFLAGS) -o $(BIN)/$@ ./cmd/$@
 	@echo "  Built: $@"
 
 # Ensure bin directory exists

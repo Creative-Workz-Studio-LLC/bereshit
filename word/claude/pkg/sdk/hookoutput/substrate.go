@@ -90,13 +90,30 @@ var Metadata = [2]string{"version", "2.1.0"}
 //   - Otherwise → Claude Code
 func DetectSubstrate() Substrate {
 	substrateDetectedOnce.Do(func() {
-		if os.Getenv("GEMINI_PROJECT_DIR") != "" || os.Getenv("GEMINI_SESSION_ID") != "" {
+		if os.Getenv("CPI_SUBSTRATE") == "gemini" || os.Getenv("GEMINI_PROJECT_DIR") != "" || os.Getenv("GEMINI_SESSION_ID") != "" {
 			detectedSubstrate = SubstrateGemini
 		} else {
 			detectedSubstrate = SubstrateClaude
 		}
 	})
 	return detectedSubstrate
+}
+
+// String returns the canonical name of the substrate
+func (s Substrate) String() string {
+	switch s {
+	case SubstrateClaude:
+		return "claude"
+	case SubstrateGemini:
+		return "gemini"
+	default:
+		return "unknown"
+	}
+}
+
+// GetName returns the detected substrate name
+func GetName() string {
+	return DetectSubstrate().String()
 }
 
 // IsGemini returns true if running under Gemini CLI

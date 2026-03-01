@@ -1,0 +1,83 @@
+# ============================================================================
+# METADATA - CPI-SI Native Substrate Map
+# ============================================================================
+# Key: core-schema-substrate-cpisi
+# Purpose: Defines the bidirectional mapping for the native CPI-SI Agent.
+#          This is the purest form of the Universal Event model, as the
+#          native agent natively speaks the CPI-SI language.
+# ============================================================================
+
+[substrate]
+name = "cpisi"
+engine_version = "v1"
+description = "Mapping rules for the native CPI-SI Agent substrate"
+
+# ----------------------------------------------------------------------------
+# SESSION START (SessionStart)
+# ----------------------------------------------------------------------------
+[events.session_start]
+universal_event = "SessionStart"
+
+[events.session_start.map_in]
+session_id = "$.session_id"
+source = "$.source"          # startup, resume, clear
+transcript_path = "$.transcript_path"
+# CPI-SI specific context
+context.hebrew_state = "$.state.hebrew"
+context.k_align = "$.state.k_align"
+context.trajectory = "$.state.trajectory"
+
+[events.session_start.map_out]
+success = '{"hook_event": "SessionStart", "context": "{{.context}}", "state_sync": true}'
+error = '{"hook_event": "SessionStart", "error": "{{.error}}"}'
+
+# ----------------------------------------------------------------------------
+# PRE THINK (BeforeAgent / PreThink)
+# ----------------------------------------------------------------------------
+[events.user_prompt]
+universal_event = "UserPromptSubmit"
+
+[events.user_prompt.map_in]
+session_id = "$.session_id"
+prompt = "$.prompt"
+context.iteration = "$.iteration"
+context.exchange = "$.exchange"
+
+[events.user_prompt.map_out]
+success = '{"hook_event": "UserPromptSubmit", "context": "{{.context}}"}'
+error = '{}'
+
+# ----------------------------------------------------------------------------
+# PRE TOOL USE (PreToolUse)
+# ----------------------------------------------------------------------------
+[events.pre_tool]
+universal_event = "PreToolUse"
+
+[events.pre_tool.map_in]
+session_id = "$.session_id"
+tool_name = "$.tool_name"
+arguments = "$.tool_args"
+context.cwd = "$.cwd"
+context.iteration = "$.iteration"
+
+[events.pre_tool.map_out]
+allow = '{"decision": "allow"}'
+deny = '{"decision": "deny", "reason": "{{.reason}}"}'
+modified = '{"decision": "allow", "tool_args": {{.modified_input}}}'
+
+# ----------------------------------------------------------------------------
+# POST TOOL USE (PostToolUse)
+# ----------------------------------------------------------------------------
+[events.post_tool]
+universal_event = "PostToolUse"
+
+[events.post_tool.map_in]
+session_id = "$.session_id"
+tool_name = "$.tool_name"
+response = "$.tool_result"
+context.elapsed_ms = "$.elapsed_ms"
+context.error = "$.tool_error"
+
+[events.post_tool.map_out]
+success = '{"hook_event": "PostToolUse", "context": "{{.context}}"}'
+error = '{}'

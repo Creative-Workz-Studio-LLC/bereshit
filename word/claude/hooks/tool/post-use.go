@@ -33,6 +33,8 @@ import (
 	"cws.studio/pkg/orchestration/cognition"
 	"cws.studio/pkg/orchestration/logging"
 	"cws.studio/pkg/sdk/hookoutput"
+	"cws.studio/pkg/sdk/substrate"
+	"cws.studio/claude/hooks/internal/status"
 )
 
 // ============================================================================
@@ -93,9 +95,26 @@ func PostUse() {
 	log.SetMode(logging.ModeCompact)
 
 	var input PostUseInput
-	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+	rawInput, _ := os.ReadFile("/dev/stdin")
+	if err := json.Unmarshal(rawInput, &input); err != nil {
 		log.Error("Failed to decode input", map[string]string{"error": err.Error()})
 		os.Exit(1)
+	}
+
+	// --- Load Substrate Maps (Every process is fresh) ---
+	schemaBase := "/media/seanje-lenox-wise/Project/Bereshit/word/core/schemas/substrate"
+	for _, sub := range []string{"gemini", "claude", "cpisi"} {
+		substrate.LoadMap(fmt.Sprintf("%s/%s.toml", schemaBase, sub))
+	}
+
+	// --- Process Universal Event via Rust Engine ---
+	subName := "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+	universalJSON, err := substrate.ProcessEvent(subName, "post_tool", string(rawInput))
+	if err == nil {
+		log.Debug("Universal Event mapped", map[string]string{"universal": universalJSON})
 	}
 
 	// Create CategoryLogger for file output (append to data/logs/tools/)
@@ -193,12 +212,30 @@ func PostUse() {
 		_ = statemachine.SaveRuntimePath(path)
 	}
 
-	// Build cognition context based on tool outcome
+	// Build cognition context to shape thinking
 	context := buildToolContext(state, input)
 
-	// Use correct Claude Code schema with hookSpecificOutput
-	output := hookoutput.NewPostToolUseResponse(context)
-	json.NewEncoder(os.Stdout).Encode(output)
+	// --- Render Response via Substrate SDK ---
+	subName = "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+
+	renderCtx := map[string]string{
+		"context": context,
+	}
+
+	rendered, err := substrate.RenderOutput(subName, "post_tool", "success", renderCtx)
+	if err == nil {
+		fmt.Print(rendered)
+	} else {
+		// Fallback to legacy hookoutput
+		output := hookoutput.NewPostToolUseResponse(context)
+		json.NewEncoder(os.Stdout).Encode(output)
+	}
+
+	// Update statusline and terminal state
+	status.Emit(input.SessionID)
 }
 
 // buildToolContext uses cognition package to create context injection

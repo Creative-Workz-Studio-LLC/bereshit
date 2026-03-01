@@ -44,6 +44,8 @@ import (
 // Session represents a work session in the database
 type Session struct {
 	ID        string
+	Substrate string
+	Engine    string
 	StartedAt time.Time
 	EndedAt   *time.Time // nil if still active
 

@@ -1,0 +1,102 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-sdk-substrates-claude-features
+:title: Claude Code Technical Features & Interface Specification
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: c-02.10
+:updated: 2026-02-28
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+Claude Code is an agentic command-line interface tool designed for deep integration with developer environments and local filesystems.
+
+== Core Capabilities
+
+* **Thinking Assistant:** Focuses on multi-file planning, execution, and verification.
+* **Autonomous File Access:** Direct CRUD operations on local files.
+* **Shell Integration:** Executes bash commands directly (using `!` prefix).
+* **Git Native:** Automated staging, committing, and PR creation.
+* **Background Agents:** Supports parallel execution of long-running tasks via `&` prefix.
+* **Context Anchoring:** Uses `CLAUDE.md` for project-specific standards and architecture.
+
+== Interface & Expected Forms
+
+Claude Code utilizes structured JSON objects for hook communication.
+
+=== Hook Input Form (stdin)
+[source,json]
+----
+{
+  "session_id": "uuid",
+  "transcript_path": "/path/to/log",
+  "cwd": "/path/to/project",
+  "permission_mode": "auto|manual",
+  "hook_event_name": "EventName",
+  "tool_name": "bash",
+  "tool_input": { "command": "make build" },
+  "tool_use_id": "id-123"
+}
+----
+
+=== Hook Output Form (stdout)
+[source,json]
+----
+{
+  "hookSpecificOutput": {
+    "hookEventName": "EventName",
+    "additionalContext": "context string",
+    "permissionDecision": "allow|deny|ask",
+    "permissionDecisionReason": "reason string",
+    "updatedInput": { "command": "make test" }
+  }
+}
+----
+
+== Interaction Models
+
+[cols="1,3", options="header"]
+|===
+| Mode | Description
+
+| **Planning Mode**
+| Detailed analysis and strategy formulation before any tool execution (Shift+Tab).
+
+| **Auto-accept Mode**
+| Rapid execution by bypassing granular tool confirmations.
+
+| **Multi-modal**
+| Supports image/screenshot input for UI debugging.
+|===
+
+== Specialized Logic
+
+* **Model Context Protocol (MCP):** Connects to remote data sources (Slack, Jira, custom DBs).
+* **Sub-Agents:** Intelligent delegation based on model capability (e.g., Haiku for exploration).
+* **Skills System:** Reusable markdown/JSON modules teaching specific workflows.
+
+== Technical Schema
+
+* **Configuration:** Hierarchical `.claude/settings.json` system (Global, Project, Local, Enterprise).
+* **Hook Ecosystem:** Robust event set (15+) supporting Command, Prompt, and Agent handlers.
+* **Exit Protocol:** Standardized exit codes (0 for success, 2 for block).
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

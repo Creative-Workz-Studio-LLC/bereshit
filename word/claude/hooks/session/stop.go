@@ -29,7 +29,9 @@ import (
 	"cws.studio/pkg/core/statemachine"
 	"cws.studio/pkg/orchestration/logging"
 	"cws.studio/pkg/sdk/hookoutput"
+	"cws.studio/pkg/sdk/substrate"
 	"cws.studio/pkg/util/transcript"
+	"cws.studio/claude/hooks/internal/status"
 )
 
 // ============================================================================
@@ -59,9 +61,26 @@ func Stop() {
 	log.SetMode(logging.ModeCompact)
 
 	var input StopInput
-	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+	rawInput, _ := os.ReadFile("/dev/stdin")
+	if err := json.Unmarshal(rawInput, &input); err != nil {
 		log.Error("Failed to decode input", map[string]string{"error": err.Error()})
 		os.Exit(1)
+	}
+
+	// --- Load Substrate Maps (Every process is fresh) ---
+	schemaBase := "/media/seanje-lenox-wise/Project/Bereshit/word/core/schemas/substrate"
+	for _, sub := range []string{"gemini", "claude", "cpisi"} {
+		substrate.LoadMap(fmt.Sprintf("%s/%s.toml", schemaBase, sub))
+	}
+
+	// --- Process Universal Event via Rust Engine ---
+	subName := "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+	universalJSON, err := substrate.ProcessEvent(subName, "stop", string(rawInput))
+	if err == nil {
+		log.Debug("Universal Event mapped", map[string]string{"universal": universalJSON})
 	}
 
 	// Create CategoryLogger for file output
@@ -120,10 +139,12 @@ func Stop() {
 	// Check stop conditions
 	shouldBlock, reason := evaluateStop(log, state, input)
 
-	// Use correct Claude Code schema
-	var output *hookoutput.StopResponse
+	// --- Render Response via Substrate SDK ---
+	var variant string
+	var renderCtx = make(map[string]string)
 	if shouldBlock {
-		output = hookoutput.NewStopBlock(reason)
+		variant = "deny"
+		renderCtx["reason"] = reason
 		log.Warn("Stop blocked", map[string]string{"reason": reason})
 		if catLog != nil {
 			catLog.Warn("stop_blocked", "Stop blocked - work incomplete", map[string]string{
@@ -131,7 +152,7 @@ func Stop() {
 			})
 		}
 	} else {
-		output = hookoutput.NewStopAllow()
+		variant = "allow"
 		if catLog != nil {
 			catLog.Success("stop_allowed", "Natural stopping point", map[string]string{
 				"trajectory": currentSection,
@@ -139,7 +160,22 @@ func Stop() {
 		}
 	}
 
-	json.NewEncoder(os.Stdout).Encode(output)
+	rendered, err := substrate.RenderOutput(subName, "stop", variant, renderCtx)
+	if err == nil {
+		fmt.Print(rendered)
+	} else {
+		// Fallback to legacy hookoutput
+		var output *hookoutput.StopResponse
+		if shouldBlock {
+			output = hookoutput.NewStopBlock(reason)
+		} else {
+			output = hookoutput.NewStopAllow()
+		}
+		json.NewEncoder(os.Stdout).Encode(output)
+	}
+
+	// Update statusline and terminal state
+	status.Emit(input.SessionID)
 }
 
 // evaluateHaltType determines the type of halt based on state

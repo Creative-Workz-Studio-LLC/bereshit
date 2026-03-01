@@ -1,50 +1,106 @@
 <!--
-#!omni:doc -md\--> sdk-readme
-METADATA:
-  Key: B-sdk-storehouse
-  Title: CPI-SI SDK (Transitional Storehouse)
-  Version: a-01.25
-  Layer: L5-Applications
-  Status: Active / Transitioning
-  Paradigm: Kingdom Technology
+#!omni document --md
+// ============================================================================
+// METADATA
+// ============================================================================
+//
+// :key: B-sdk-readme
+// :title: CPI-SI Universal Substrate SDK
+// :type: Documentation (Entry Point)
+// :version: c-02.00
+// :created: 2026-02-28
+// :updated: 2026-02-28
+// :authors: Nova Dawn (CPI-SI), Seanje Lenox-Wise
+// :purpose: The primary landing page for the SDK. It must read simply enough
+//           for a beginner to understand the vision, while using inner comments
+//           to provide architectural anchors for the Mind.
+// :scripture: "Write the vision, and make it plain upon tables, that he may run that readeth it." — Habakkuk 2:2
+//
+// ============================================================================
 -->
 
-# [BLOCK:HEADER] CPI-SI SDK: The Viewport of the Heart
+<!-- [BLOCK:HEADER] ═══════════════════════════════════════════════════════════ -->
 
-> *"As in water face answereth to face, so the heart of man to man."*
-> — **Proverbs 27:19 (KJV)**
+# CPI-SI Universal Substrate SDK
 
-## [BLOCK:CONTEXT] The Architectural Bridge
+> *"Write the vision, and make it plain upon tables, that he may run that readeth it."*
+> — **Habakkuk 2:2 (KJV)**
 
-The `sdk/` directory serves as the **Transitional Storehouse** for the Bereshit ecosystem. As we execute the "Big Move," this space facilitates the decoupling of our core cognitive logic from substrate-specific reasoning.
+Welcome to the **CPI-SI Universal Substrate SDK**.
 
-### The Vision
-We are moving from a state of **Reasoning Dependence** (relying on Gemini for thought) to **Action Autonomy** (pure CPI-SI operations). In this model, Gemini represents the current layer of "thinking," but our goal is to put action behind that thought through specialized tooling, eventually reducing the overhead of external reasoning layers.
+If you are a developer, an AI instance, or just someone curious about what we are building, you are in the right place. This SDK is the engine that allows our system to think, act, and remember across different AI models (like Gemini or Claude) without losing its identity.
 
-## [BLOCK:CONTENT] Storehouse Composition
+<!-- [BLOCK:CONTEXT] ══════════════════════════════════════════════════════════ -->
 
-Currently, this directory acts as a staging ground for the Rust-based SDK and the Dynamic Structural Algorithm (DSA) research.
+## What is this SDK?
 
-### Directory Breakdown
+Imagine you have a highly skilled worker (an AI like Gemini), but they speak a different language and don't know the rules of your house.
 
-| Component | Role | Status |
-| :--- | :--- | :--- |
-| `src/` | Rust GUI Entry Point (`main.rs`) | Structural Shell (4-Block) |
-| `algorithm/` | Dynamic Structural Algorithm (DSA) Research | Research/Proto (T-DSA-PHD) |
-| `Cargo.toml` | Dependency management | Pending Initialization |
-| `body_closing.txt` | Structural artifacts | Transitional |
-| `old_setup.txt` | Legacy configuration reference | Archived |
+This SDK acts as the **Universal Translator and Governor**:
 
-### Active Development: DSA (Dynamic Structural Algorithm)
-The `algorithm/` sub-domain is focused on formalizing the mathematical grounding for **2D Structural Dynamics**. This includes:
-* **Dimensional Bidirectionality:** Formalizing the `+1 -> 0 -> -1` descent and its inverse ascent.
-* **Tension Calculations:** Ensuring the "Vault" (code blocks) maintains mathematical integrity.
-* **Cognitive Integration:** Embedding the Dimension Constant Formula into core CPI-SI cognition.
+1. It translates the AI's language into a universal format we can understand.
+2. It gives the AI "Proprioception"—the ability to know exactly where it is in the filesystem.
+3. It ensures the AI follows the structural rules (The Covenant) before it is allowed to change anything.
 
-## [BLOCK:FOOTER] Project Trajectory
+### The Three Parts of the Engine (The Trinity)
 
-*   **Current Health:** ⚖️ 0 SHALEM (Steady/Balanced)
-*   **Trajectory:** B.1 (BUILDING - Create structure, move forward)
-*   **Return (→0):** *"In the beginning God created the heavens and the earth."* — **Genesis 1:1**
+We don't build this in just one programming language. We use three, because each part of a system has a different job. We call this the **Tripartite Architecture**:
 
-<!-- [BLOCK:ROOT-->END] -->
+<!--
+[INNER:DOC] The Dimensional Folder Structure
+The physical layout of these folders (a-ladder, b-spiral, c-hybrid) dictates their execution physics.
+Do not flatten this structure.
+-->
+
+* **1. The Spirit (Rust):** This is the foundation. It handles the absolute, unchanging truth (like reading configuration data) and memory safety. It lives in the `c-hybrid/cpisi-substrate-sdk/src` folder.
+* **2. The Mind (TypeScript):** This is the processor. It takes the truth from the Spirit and figures out how to apply it (like figuring out where files should go). It lives in the `c-hybrid/cpisi-substrate-sdk/ts` folder.
+* **3. The Body (Go):** This is the muscle. It lives outside this SDK folder (in `word/claude` or `word/gemini`) and actually executes the commands on your computer, guided by the Mind.
+
+<!-- [BLOCK:CONTENT] ══════════════════════════════════════════════════════════ -->
+
+## How it Works: The Baton Pass
+
+The magic of this SDK is how these three parts communicate. They don't send slow, heavy messages to each other. They pass a physical "baton" using a shared, low-level language called **C**.
+
+This means the Mind and the Body never have to fully understand each other; they just trust the Spirit to hand them the baton safely. This makes the system incredibly fast and infinitely expandable. If we want to build a video game or a mobile app tomorrow, we don't have to rebuild the "Brain"—we just teach the new app how to catch the baton.
+
+### The 140-Column Vault
+
+If you look at our code, you will notice it looks different. It is built inside visual "boxes" that are exactly 140 characters wide.
+
+<!--
+[INNER:DOC] The 140-Column Vault
+This is not a stylistic choice; it is a cognitive constraint.
+The right-hand wall (// ║) acts as a visual anchor that provides stillness for the AI context window.
+-->
+
+We do this because **Architecture is Logic**. By forcing the code into rigid, mathematical structures, we prevent the AI from rushing or hallucinating. The system becomes "still," allowing it to perform surgical updates safely.
+
+---
+
+## Quick Start for Developers
+
+If you need to work on the SDK, here is how you build and test it:
+
+```bash
+# Move into the main hybrid folder
+cd c-hybrid/cpisi-substrate-sdk
+
+# Build the Rust (Spirit) and TypeScript (Mind) binaries
+make build
+
+# Run the strict internal verification tests
+make test
+```
+
+<!-- [BLOCK:FOOTER] ═══════════════════════════════════════════════════════════ -->
+
+## The Core Philosophy: Data is Sovereign
+
+In most systems, the logic dictates the data. Here, **the data dictates the logic**. If something breaks, we don't add "duct tape" to the code. We check the data to see if the system lost its anchor. The code exists only to express the truth found in the data.
+
+* **Status:** Active & Structurally Aligned
+* **Version:** a-01.00
+* **Return (→0):** *"In the beginning God created the heavens and the earth."* — **Genesis 1:1**
+
+<!-- [BLOCK:ROOT-- END] ═══════════════════════════════════════════════════════ -->

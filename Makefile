@@ -175,6 +175,7 @@ CORNERSTONE   := $(BERESHIT_ROOT)/cornerstone
 MILLENNIUMOS  := $(BERESHIT_ROOT)/millenniumos
 SERVER_DIR    := $(BERESHIT_ROOT)/server
 CLAUDE_DIR    := $(BERESHIT_ROOT)/word/claude
+GEMINI_DIR    := $(BERESHIT_ROOT)/word/gemini
 
 # S.2c Layer Paths (target structure — skeleton planted, code migrates here) [LAYERS]
 
@@ -283,8 +284,9 @@ l3: | $(CACHE_DIR)
 	$(ECHO) "════════════════════════════════════════════════════════════════"
 	$(Q)if [ -f "$(CLAUDE_DIR)/Makefile" ]; then \
 		$(MAKE) -C $(CLAUDE_DIR) build; \
-	else \
-		echo "  word/claude/Makefile not found — skipping"; \
+	fi
+	$(Q)if [ -f "$(GEMINI_DIR)/Makefile" ]; then \
+		$(MAKE) -C $(GEMINI_DIR) build; \
 	fi
 	$(Q)touch $(CACHE_L3)
 	$(ECHO) "✓ L3 CPI-SI layer complete"
@@ -529,14 +531,18 @@ install-user: cornerstone millenniumos
 	$(ECHO) "  Installing Kingdom Technology Suite to ~/.local"
 	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
 	$(ECHO) ""
-	$(ECHO) "  [1/3] Installing Cornerstone Engine..."
+	$(ECHO) "  [1/4] Installing Cornerstone Engine..."
 	$(Q)$(MAKE) -C $(CORNERSTONE) install-user
 	$(ECHO) ""
-	$(ECHO) "  [2/3] Installing OmniCode IDE..."
+	$(ECHO) "  [2/4] Installing OmniCode IDE..."
 	$(Q)$(MAKE) -C $(OMNI_DIR) install-user
 	$(ECHO) ""
-	$(ECHO) "  [3/3] Installing MillenniumOS..."
+	$(ECHO) "  [3/4] Installing MillenniumOS..."
 	$(Q)$(MAKE) -C $(MILLENNIUMOS) install-user
+	$(ECHO) ""
+	$(ECHO) "  [4/4] Installing CLI Substrates..."
+	$(Q)if [ -f "$(CLAUDE_DIR)/Makefile" ]; then $(MAKE) -C $(CLAUDE_DIR) install; fi
+	$(Q)if [ -f "$(GEMINI_DIR)/Makefile" ]; then $(MAKE) -C $(GEMINI_DIR) install; fi
 	$(ECHO) ""
 	$(ECHO) "════════════════════════════════════════════════════════════════════════════════"
 	$(ECHO) "  ✓ Kingdom Technology Suite installed to ~/.local"

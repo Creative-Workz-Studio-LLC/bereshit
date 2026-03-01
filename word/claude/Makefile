@@ -31,7 +31,7 @@
 # ============================================================================
 
 .PHONY: all build bin test clean help \
-        pkg hooks statusline system skills cpisi-cli \
+        sdk pkg hooks statusline system skills cpisi-cli \
         dashboard dashboard-frontend dashboard-tui dashboard-gtk \
         install install-bin install-bin-only install-symlinks install-desktop \
         uninstall uninstall-bin uninstall-symlinks \
@@ -67,6 +67,10 @@ SRC_DIR := $(shell pwd)
 # Deployment targets
 DEPLOY_DIR  := $(HOME)/.claude
 INSTALL_DIR := $(HOME)/.local/share/claude
+
+# SDK path
+SDK_DIR := $(SRC_DIR)/../../sdk/c-hybrid/cpisi-substrate-sdk
+SDK_LIB_DIR := $(SDK_DIR)/lib
 
 # Module paths — DRY list used by fmt, vet, tidy, clean
 STD_MODULES := pkg hooks statusline dashboard dashboard/tui dashboard/gtk cmd/cpisi cmd/cpisi-agent
@@ -123,6 +127,12 @@ $(shell if [ ! -f "$(SRC_DIR)/$(1)" ]; then echo "y"; \
       echo "y"; break; fi; done; fi)
 endef
 
+# Linker flags for CGO and Go
+# Not exported globally to avoid polluting unrelated module environments
+SDK_CGO_LDFLAGS := -L$(SDK_LIB_DIR) -lcpisi_substrate_sdk
+# Use external linking to ensure RPATH is embedded correctly
+LD_FLAGS := -w -s -linkmode external -extldflags "-Wl,-rpath,$(INSTALL_DIR)/lib -Wl,-z,notext -Wl,--no-warn-search-mismatch"
+
 # Default
 all: build
 
@@ -131,25 +141,31 @@ all: build
 # ============================================================================
 
 # Build everything: compile all modules + build binaries
-build: pkg hooks statusline system skills cpisi-cli cpisi-agent-check dashboard dashboard-tui dashboard-gtk bin
+build: sdk pkg hooks statusline system skills cpisi-cli cpisi-agent-check dashboard dashboard-tui dashboard-gtk bin
 	@echo ""
 	@echo "  ================================================================"
 	@echo "    Build complete."
 	@echo "    Run 'make install-bin' to deploy to ext4"
 	@echo "  ================================================================"
 
+# --- SDK build ---
+
+sdk:
+	@echo "  Building Substrate SDK..."
+	@cd $(SDK_DIR) && $(MAKE) build --no-print-directory
+
 # --- Module compile checks (cached) ---
 
 pkg:
 	@if [ -n "$(call stale,pkg,pkg)" ]; then \
 		echo "  Building pkg..."; \
-		cd pkg && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/pkg.stamp; \
+		cd pkg && CGO_LDFLAGS="$(SDK_CGO_LDFLAGS)" $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/pkg.stamp; \
 	else echo "  pkg (cached)"; fi
 
 hooks:
 	@if [ -n "$(call stale,hooks,hooks pkg)" ]; then \
 		echo "  Building hooks..."; \
-		cd hooks && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/hooks.stamp; \
+		cd hooks && CGO_LDFLAGS="$(SDK_CGO_LDFLAGS)" $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/hooks.stamp; \
 	else echo "  hooks (cached)"; fi
 
 statusline:
@@ -175,7 +191,7 @@ cpisi-cli:
 cpisi-agent-check:
 	@if [ -n "$(call stale,cpisi-agent,cmd/cpisi-agent pkg)" ]; then \
 		echo "  Building cpisi-agent..."; \
-		cd cmd/cpisi-agent && $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/cpisi-agent.stamp; \
+		cd cmd/cpisi-agent && CGO_LDFLAGS="$(SDK_CGO_LDFLAGS)" $(GO) build $(NOVCS) ./... && touch $(BUILD_CACHE)/cpisi-agent.stamp; \
 	else echo "  cpisi-agent (cached)"; fi
 
 skills: $(addprefix skill-,$(SKILL_NAMES))
@@ -255,7 +271,7 @@ bin-cpisi:
 bin-cpisi-agent:
 	@mkdir -p bin
 	@if [ -n "$(call bin_stale,bin/cpisi-agent,cmd/cpisi-agent pkg)" ]; then \
-		cd cmd/cpisi-agent && $(GO) build $(BINFLAGS) -o ../../bin/cpisi-agent .; \
+		cd cmd/cpisi-agent && CGO_LDFLAGS="$(SDK_CGO_LDFLAGS)" $(GO) build $(BINFLAGS) -o ../../bin/cpisi-agent .; \
 		echo "    bin/cpisi-agent"; \
 	else echo "    bin/cpisi-agent (cached)"; fi
 
@@ -282,7 +298,7 @@ bin-dashboard-gtk:
 
 bin-hooks:
 	@if [ -n "$(call stale,hooks-bin,hooks pkg)" ]; then \
-		cd hooks && $(MAKE) BINFLAGS="$(BINFLAGS)" build --no-print-directory; \
+		cd hooks && $(MAKE) BINFLAGS="$(BINFLAGS)" CGO_LDFLAGS="$(SDK_CGO_LDFLAGS)" LD_FLAGS="$(LD_FLAGS)" build --no-print-directory; \
 		touch $(BUILD_CACHE)/hooks-bin.stamp; \
 		echo "    hooks/bin/*"; \
 	else echo "    hooks/bin/* (cached)"; fi
@@ -414,14 +430,16 @@ install:
 	@echo "  Symlinks: $(DEPLOY_DIR)"
 	@echo "  Binaries: $(INSTALL_DIR)"
 	@echo ""
-	@echo "  [1/5] Building packages..."
+	@echo "  [1/5] Building SDK and packages..."
+	@$(MAKE) sdk --no-print-directory
 	@$(MAKE) pkg --no-print-directory
 	@echo ""
 	@echo "  [2/5] Building binaries..."
 	@$(MAKE) bin --no-print-directory
 	@echo ""
-	@echo "  [3/5] Creating symlinks..."
+	@echo "  [3/5] Creating symlinks and mirrors..."
 	@$(MAKE) install-symlinks --no-print-directory
+	@cd $(SDK_DIR) && $(MAKE) install --no-print-directory
 	@echo ""
 	@echo "  [4/5] Deploying binaries to ext4..."
 	@$(MAKE) install-bin-only --no-print-directory
@@ -446,7 +464,12 @@ install-bin: bin install-bin-only
 
 # Copy binaries to ext4 with +x permissions
 install-bin-only:
-	@mkdir -p $(INSTALL_DIR)/bin $(INSTALL_DIR)/hooks/bin $(INSTALL_DIR)/system/bin
+	@mkdir -p $(INSTALL_DIR)/bin $(INSTALL_DIR)/hooks/bin $(INSTALL_DIR)/system/bin $(INSTALL_DIR)/lib
+	@echo "  SDK library:"
+	@if [ -f "$(SDK_LIB_DIR)/libcpisi_substrate_sdk.so" ]; then \
+		cp "$(SDK_LIB_DIR)/libcpisi_substrate_sdk.so" "$(INSTALL_DIR)/lib/"; \
+		echo "    + libcpisi_substrate_sdk.so"; \
+	fi
 	@main=0; hook=0; sys=0; \
 	echo "  Main binaries:"; \
 	for name in $(MAIN_BINS); do \

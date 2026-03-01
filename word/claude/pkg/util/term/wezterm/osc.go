@@ -70,7 +70,7 @@ func init() {
 	// 2. Detection logic
 	// If running in Gemini CLI, we should use Stderr to let the substrate handle rendering.
 	// Writing to /dev/tty directly causes flickering in TUIs.
-	if os.Getenv("GEMINI_CLI") == "1" {
+	if os.Getenv("GEMINI_CLI") == "1" || os.Getenv("GEMINI_SESSION_ID") != "" {
 		ttyWriter = os.Stderr
 		return
 	}

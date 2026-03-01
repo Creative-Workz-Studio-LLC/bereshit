@@ -149,8 +149,7 @@ func (p *GeminiProvider) Chat(ctx context.Context, req agent.ChatRequest) (*agen
 	// Build config
 	config := &genai.GenerateContentConfig{}
 
-	// Check for server-side cache — if available, reference it instead of
-	// sending system prompt and tools on every request
+	// Check for server-side cache
 	p.cache.mu.Lock()
 	haveCacheSideSystem := false
 	if p.cache.cacheName != "" && p.cache.systemText == req.System && time.Now().Before(p.cache.expiry) {
@@ -176,12 +175,15 @@ func (p *GeminiProvider) Chat(ctx context.Context, req agent.ChatRequest) (*agen
 		config.Temperature = genai.Ptr(float32(req.Temperature))
 	}
 
-	// System instruction — only send if not cached server-side
+	// System instruction
 	if !haveCacheSideSystem && req.System != "" {
 		config.SystemInstruction = &genai.Content{
 			Parts: []*genai.Part{{Text: req.System}},
 		}
 	}
+
+	// Apply Substrate-Agnostic Capabilities
+	applyCapabilities(config, req)
 
 	// Convert message history
 	contents := convertMessages(req.Messages)
@@ -255,6 +257,9 @@ func (p *GeminiProvider) ChatStream(ctx context.Context, req agent.ChatRequest) 
 		}
 	}
 
+	// Apply Substrate-Agnostic Capabilities
+	applyCapabilities(config, req)
+
 	contents := convertMessages(req.Messages)
 
 	ch := make(chan agent.StreamChunk, 16)
@@ -311,6 +316,31 @@ func (p *GeminiProvider) ChatStream(ctx context.Context, req agent.ChatRequest) 
 	}()
 
 	return ch, nil
+}
+
+// applyCapabilities maps substrate-agnostic features (like JSON output, Search, Code Execution)
+// into the Gemini-specific GenerateContentConfig.
+func applyCapabilities(config *genai.GenerateContentConfig, req agent.ChatRequest) {
+	if req.ResponseFormat == "json" {
+		config.ResponseMIMEType = "application/json"
+	}
+
+	if req.EnableSearch || req.EnableCodeExecution {
+		var tool *genai.Tool
+		if len(config.Tools) > 0 {
+			tool = config.Tools[0]
+		} else {
+			tool = &genai.Tool{}
+			config.Tools = []*genai.Tool{tool}
+		}
+
+		if req.EnableSearch {
+			tool.GoogleSearch = &genai.GoogleSearch{}
+		}
+		if req.EnableCodeExecution {
+			tool.CodeExecution = &genai.ToolCodeExecution{}
+		}
+	}
 }
 
 // --- Conversion Helpers ---

@@ -99,13 +99,15 @@ func (r *SQLiteRepository) Migrate(ctx context.Context) error {
 func (r *SQLiteRepository) CreateSession(ctx context.Context, session *Session) error {
 	query := `
 		INSERT INTO sessions (
-			id, started_at, project_path, workspace,
+			id, substrate, engine, started_at, project_path, workspace,
 			initial_hebrew_state, initial_k_align, initial_cube_position,
 			day_of_week, hour_of_day
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	_, err := r.db.ExecContext(ctx, query,
 		session.ID,
+		session.Substrate,
+		session.Engine,
 		session.StartedAt,
 		session.ProjectPath,
 		session.Workspace,
@@ -145,7 +147,7 @@ func (r *SQLiteRepository) EndSession(ctx context.Context, sessionID string, fin
 // GetSession retrieves a session by ID
 func (r *SQLiteRepository) GetSession(ctx context.Context, sessionID string) (*Session, error) {
 	query := `
-		SELECT id, started_at, ended_at, project_path, workspace,
+		SELECT id, substrate, engine, started_at, ended_at, project_path, workspace,
 			initial_hebrew_state, initial_k_align, initial_cube_position,
 			final_hebrew_state, final_k_align, final_cube_position,
 			tool_count, choice_count, day_of_week, hour_of_day
@@ -156,7 +158,7 @@ func (r *SQLiteRepository) GetSession(ctx context.Context, sessionID string) (*S
 	var s Session
 	var endedAt sql.NullTime
 	err := row.Scan(
-		&s.ID, &s.StartedAt, &endedAt, &s.ProjectPath, &s.Workspace,
+		&s.ID, &s.Substrate, &s.Engine, &s.StartedAt, &endedAt, &s.ProjectPath, &s.Workspace,
 		&s.InitialHebrewState, &s.InitialKAlign, &s.InitialCubePosition,
 		&s.FinalHebrewState, &s.FinalKAlign, &s.FinalCubePosition,
 		&s.ToolCount, &s.ChoiceCount, &s.DayOfWeek, &s.HourOfDay,
@@ -178,7 +180,7 @@ func (r *SQLiteRepository) GetSession(ctx context.Context, sessionID string) (*S
 // GetActiveSession returns the currently active session (if any)
 func (r *SQLiteRepository) GetActiveSession(ctx context.Context) (*Session, error) {
 	query := `
-		SELECT id, started_at, project_path, workspace,
+		SELECT id, substrate, engine, started_at, project_path, workspace,
 			initial_hebrew_state, initial_k_align, initial_cube_position,
 			tool_count, choice_count, day_of_week, hour_of_day
 		FROM sessions
@@ -190,7 +192,7 @@ func (r *SQLiteRepository) GetActiveSession(ctx context.Context) (*Session, erro
 
 	var s Session
 	err := row.Scan(
-		&s.ID, &s.StartedAt, &s.ProjectPath, &s.Workspace,
+		&s.ID, &s.Substrate, &s.Engine, &s.StartedAt, &s.ProjectPath, &s.Workspace,
 		&s.InitialHebrewState, &s.InitialKAlign, &s.InitialCubePosition,
 		&s.ToolCount, &s.ChoiceCount, &s.DayOfWeek, &s.HourOfDay,
 	)
@@ -207,7 +209,7 @@ func (r *SQLiteRepository) GetActiveSession(ctx context.Context) (*Session, erro
 // GetRecentSessions returns the last N sessions
 func (r *SQLiteRepository) GetRecentSessions(ctx context.Context, limit int) ([]Session, error) {
 	query := `
-		SELECT id, started_at, ended_at, project_path, workspace,
+		SELECT id, substrate, engine, started_at, ended_at, project_path, workspace,
 			initial_hebrew_state, initial_k_align, initial_cube_position,
 			final_hebrew_state, final_k_align, final_cube_position,
 			tool_count, choice_count, day_of_week, hour_of_day
@@ -226,7 +228,7 @@ func (r *SQLiteRepository) GetRecentSessions(ctx context.Context, limit int) ([]
 		var s Session
 		var endedAt sql.NullTime
 		err := rows.Scan(
-			&s.ID, &s.StartedAt, &endedAt, &s.ProjectPath, &s.Workspace,
+			&s.ID, &s.Substrate, &s.Engine, &s.StartedAt, &endedAt, &s.ProjectPath, &s.Workspace,
 			&s.InitialHebrewState, &s.InitialKAlign, &s.InitialCubePosition,
 			&s.FinalHebrewState, &s.FinalKAlign, &s.FinalCubePosition,
 			&s.ToolCount, &s.ChoiceCount, &s.DayOfWeek, &s.HourOfDay,

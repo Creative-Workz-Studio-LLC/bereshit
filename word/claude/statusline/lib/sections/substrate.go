@@ -17,6 +17,7 @@ import (
 	"cws.studio/pkg/util/term/display"
 	"cws.studio/pkg/util/pure/format"
 	"cws.studio/pkg/foundation/types"
+	"cws.studio/pkg/sdk/hookoutput"
 )
 
 // ============================================================================
@@ -25,15 +26,24 @@ import (
 
 // BuildSubstrate returns the SUBSTRATE section (model info)
 //
-// Format: 🧠 Opus 4.5
+// Format: ♊ Gemini 2.0 Pro
 func BuildSubstrate(ctx types.SessionContext) SectionResult {
 	if ctx.Model.DisplayName == "" {
 		return Empty()
 	}
 
 	modelName := format.GetShortModelName(ctx.Model.DisplayName)
-	content := fmt.Sprintf("%s🧠 %s%s",
-		display.Cyan, modelName, display.Reset)
+	
+	// Substrate awareness
+	icon := "🧠"
+	if hookoutput.IsGemini() {
+		icon = "♊"
+	} else {
+		icon = "🛡️" // Claude
+	}
+
+	content := fmt.Sprintf("%s%s %s%s",
+		display.Cyan, icon, modelName, display.Reset)
 
 	return New(content, 4)
 }

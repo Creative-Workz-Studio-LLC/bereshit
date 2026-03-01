@@ -63,6 +63,8 @@ func (b *Bridge) StartSession(ctx context.Context, sessionID string, state *type
 	// Create session in database
 	session := &Session{
 		ID:                 sessionID,
+		Substrate:          state.Session.Substrate,
+		Engine:             state.Session.Engine,
 		StartedAt:          now,
 		ProjectPath:        "", // Will be set from workspace
 		Workspace:          "",

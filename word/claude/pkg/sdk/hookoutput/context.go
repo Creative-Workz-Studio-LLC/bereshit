@@ -58,14 +58,19 @@ type ContextResponse struct {
 
 // NewContextResponse creates a substrate-aware response with context injection
 func NewContextResponse(hookEvent, context string) *ContextResponse {
-	if context == "" {
-		return &ContextResponse{}
+	resp := &ContextResponse{}
+
+	if IsGemini() {
+		cont := true
+		resp.Continue = &cont
 	}
 
-	resp := &ContextResponse{
-		HookSpecificOutput: &ContextHookOutput{
-			AdditionalContext: context,
-		},
+	if context == "" {
+		return resp
+	}
+
+	resp.HookSpecificOutput = &ContextHookOutput{
+		AdditionalContext: context,
 	}
 
 	// Claude Code requires hookEventName; Gemini ignores it but it doesn't hurt

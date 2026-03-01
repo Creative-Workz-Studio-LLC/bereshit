@@ -30,6 +30,8 @@ PRAGMA journal_mode = WAL;
 -- Each session has boundaries (started_at, ended_at) enabling gap detection
 CREATE TABLE IF NOT EXISTS sessions (
     id TEXT PRIMARY KEY,
+    substrate TEXT,
+    engine TEXT,
     started_at DATETIME NOT NULL,
     ended_at DATETIME,
 

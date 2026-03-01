@@ -18,10 +18,14 @@ package session
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"cws.studio/pkg/orchestration/logging"
 	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/sdk/hookoutput"
+	"cws.studio/pkg/sdk/substrate"
+	"cws.studio/claude/hooks/internal/status"
 )
 
 // ============================================================================
@@ -52,9 +56,16 @@ func TeammateIdle() {
 	log.SetMode(logging.ModeCompact)
 
 	var input TeammateIdleInput
-	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+	rawInput, _ := os.ReadFile("/dev/stdin")
+	if err := json.Unmarshal(rawInput, &input); err != nil {
 		log.Error("Failed to decode input", map[string]string{"error": err.Error()})
 		os.Exit(1)
+	}
+
+	// --- Load Substrate Maps ---
+	schemaBase := "/media/seanje-lenox-wise/Project/Bereshit/word/core/schemas/substrate"
+	for _, sub := range []string{"gemini", "claude", "cpisi"} {
+		substrate.LoadMap(fmt.Sprintf("%s/%s.toml", schemaBase, sub))
 	}
 
 	// Create CategoryLogger for file output
@@ -94,10 +105,23 @@ func TeammateIdle() {
 		})
 	}
 
-	// Default: allow idle (exit 0)
-	// To keep teammate working: exit code 2 with reason
-	output := TeammateIdleOutput{Decision: "allow"}
-	json.NewEncoder(os.Stdout).Encode(output)
+	// --- Render Response via Substrate SDK ---
+	subName := "claude"
+	if hookoutput.IsGemini() {
+		subName = "gemini"
+	}
+
+	rendered, err := substrate.RenderOutput(subName, "teammate_idle", "allow", nil)
+	if err == nil {
+		fmt.Print(rendered)
+	} else {
+		// Fallback to legacy behavior
+		output := TeammateIdleOutput{Decision: "allow"}
+		json.NewEncoder(os.Stdout).Encode(output)
+	}
+
+	// Update statusline and terminal state
+	status.Emit(input.SessionID)
 }
 
 // ============================================================================

@@ -1,0 +1,157 @@
+# ============================================================================
+# METADATA - Claude Substrate Map
+# ============================================================================
+# Key: core-schema-substrate-claude
+# Purpose: Defines the bidirectional mapping between Claude Code JSON
+#          and the Universal CPI-SI Event model.
+# ============================================================================
+
+[substrate]
+name = "claude"
+engine_version = "v1"
+description = "Mapping rules for the Claude Code substrate"
+
+# ----------------------------------------------------------------------------
+# SESSION START (SessionStart)
+# ----------------------------------------------------------------------------
+[events.session_start]
+universal_event = "SessionStart"
+
+[events.session_start.map_in]
+session_id = "$.session_id"
+source = "$.source"
+transcript_path = "$.transcript_path"
+context.permission_mode = "$.permission_mode"
+context.hook_event_name = "$.hook_event_name"
+
+[events.session_start.map_out]
+success = '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "{{.context}}"}}'
+error = '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "Error: {{.error}}"}}'
+
+# ----------------------------------------------------------------------------
+# PRE TOOL USE (PreToolUse)
+# ----------------------------------------------------------------------------
+[events.pre_tool]
+universal_event = "PreToolUse"
+
+[events.pre_tool.map_in]
+session_id = "$.session_id"
+tool_name = "$.tool_name"
+arguments = "$.tool_input"
+# Claude-specific fields
+context.tool_use_id = "$.tool_use_id"
+context.permission_mode = "$.permission_mode"
+
+[events.pre_tool.map_out]
+# Claude explicitly expects the nested permissionDecision structure
+allow = '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow"}}'
+deny = '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "{{.reason}}"}}'
+modified = '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow", "updatedInput": {{.modified_input}}}}'
+ask = '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask", "permissionDecisionReason": "{{.reason}}"}}'
+
+# ----------------------------------------------------------------------------
+# USER PROMPT SUBMIT (UserPromptSubmit)
+# ----------------------------------------------------------------------------
+[events.user_prompt]
+universal_event = "UserPromptSubmit"
+
+[events.user_prompt.map_in]
+session_id = "$.session_id"
+prompt = "$.prompt"
+
+[events.user_prompt.map_out]
+success = '{"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "{{.context}}"}}'
+error = '{}'
+
+# ----------------------------------------------------------------------------
+# POST TOOL USE (PostToolUse)
+# ----------------------------------------------------------------------------
+[events.post_tool]
+universal_event = "PostToolUse"
+
+[events.post_tool.map_in]
+session_id = "$.session_id"
+tool_name = "$.tool_name"
+response = "$.tool_response" # Claude doesn't actually send tool_response yet, but we'll map it if they do
+
+[events.post_tool.map_out]
+success = '{"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": "{{.context}}"}}'
+error = '{}'
+
+# ----------------------------------------------------------------------------
+# AGENT STOP (Stop)
+# ----------------------------------------------------------------------------
+[events.stop]
+universal_event = "Stop"
+
+[events.stop.map_in]
+session_id = "$.session_id"
+
+[events.stop.map_out]
+allow = '{}'
+deny = '{"hookSpecificOutput": {"hookEventName": "Stop", "decision": "block", "reason": "{{.reason}}"}}'
+
+# ----------------------------------------------------------------------------
+# AGENT TEAM & SUBAGENTS
+# ----------------------------------------------------------------------------
+
+[events.subagent_start]
+universal_event = "SubagentStart"
+[events.subagent_start.map_in]
+session_id = "$.session_id"
+[events.subagent_start.map_out]
+success = '{"hookSpecificOutput": {"hookEventName": "SubagentStart", "additionalContext": "{{.context}}"}}'
+
+[events.subagent_stop]
+universal_event = "SubagentStop"
+[events.subagent_stop.map_in]
+session_id = "$.session_id"
+[events.subagent_stop.map_out]
+allow = '{"hookSpecificOutput": {"hookEventName": "SubagentStop", "decision": "allow"}}'
+deny = '{"hookSpecificOutput": {"hookEventName": "SubagentStop", "decision": "block", "reason": "{{.reason}}"}}'
+
+[events.teammate_idle]
+universal_event = "TeammateIdle"
+[events.teammate_idle.map_in]
+session_id = "$.session_id"
+[events.teammate_idle.map_out]
+allow = '{"hookSpecificOutput": {"hookEventName": "TeammateIdle", "decision": "allow"}}'
+deny = '{"hookSpecificOutput": {"hookEventName": "TeammateIdle", "decision": "block", "reason": "{{.reason}}"}}'
+
+[events.task_completed]
+universal_event = "TaskCompleted"
+[events.task_completed.map_in]
+session_id = "$.session_id"
+[events.task_completed.map_out]
+allow = '{"hookSpecificOutput": {"hookEventName": "TaskCompleted", "decision": "allow"}}'
+deny = '{"hookSpecificOutput": {"hookEventName": "TaskCompleted", "decision": "block", "reason": "{{.reason}}"}}'
+
+# ----------------------------------------------------------------------------
+# SYSTEM EVENTS
+# ----------------------------------------------------------------------------
+
+[events.notification]
+universal_event = "Notification"
+[events.notification.map_in]
+session_id = "$.session_id"
+[events.notification.map_out]
+success = '{}'
+
+[events.pre_compact]
+universal_event = "PreCompact"
+[events.pre_compact.map_in]
+session_id = "$.session_id"
+[events.pre_compact.map_out]
+success = '{}'
+
+[events.permission_request]
+universal_event = "PermissionRequest"
+[events.permission_request.map_in]
+session_id = "$.session_id"
+tool_name = "$.tool_name"
+[events.permission_request.map_out]
+allow = '{"hookSpecificOutput": {"hookEventName": "PermissionRequest", "decision": "allow"}}'
+deny = '{"hookSpecificOutput": {"hookEventName": "PermissionRequest", "decision": "deny", "reason": "{{.reason}}"}}'
+
+
+

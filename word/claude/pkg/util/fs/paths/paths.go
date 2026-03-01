@@ -182,19 +182,37 @@ func ClaudeGlobalConfig() string {
 	return filepath.Join(ClaudeGlobalRoot(), "config")
 }
 
+// --- CPI-SI SDK Paths ---
+
+// SDKRoot returns the root of the dimensional SDK architecture
+func SDKRoot() string {
+	return filepath.Join(BereshitRoot(), "sdk", "c-hybrid", "cpisi-substrate-sdk")
+}
+
+// SDKPathsConfig returns the path to the active TS/Rust Path Resolver configuration
+func SDKPathsConfig() string {
+	return filepath.Join(SDKRoot(), "data", "paths", "user", "current.toml")
+}
+
 // --- CPI-SI Schema Paths ---
 
 // CPISISchemaConfig returns the base schema config directory
 // This is the ANCHOR for all CPI-SI configuration schemas
 // Config-driven pattern: Falls back to Bereshit/word/core/ (canonical TOML specs)
 func CPISISchemaConfig() string {
-	// Priority 1: Local schema (if exists)
+	// Priority 1: The new dimensional SDK data layer
+	sdkSchema := filepath.Join(SDKRoot(), "data")
+	if _, err := os.Stat(sdkSchema); err == nil {
+		return sdkSchema
+	}
+
+	// Priority 2: Local schema (if exists)
 	localSchema := filepath.Join(ClaudeGlobalRoot(), "pkg", "cpisi", "schema", "config")
 	if _, err := os.Stat(localSchema); err == nil {
 		return localSchema
 	}
 
-	// Priority 2: Bereshit word/core (canonical TOML specs - Cornerstone pattern)
+	// Priority 3: Bereshit word/core (canonical TOML specs - Cornerstone pattern)
 	bereshitCore := BereshitCore()
 	if _, err := os.Stat(bereshitCore); err == nil {
 		return bereshitCore

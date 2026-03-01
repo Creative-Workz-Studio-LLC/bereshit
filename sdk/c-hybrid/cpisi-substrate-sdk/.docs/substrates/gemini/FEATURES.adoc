@@ -1,0 +1,107 @@
+////
+#!omni document --adoc
+═══════════════════════════════════════════════════════════════════════════════
+METADATA BLOCK
+═══════════════════════════════════════════════════════════════════════════════
+////
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY
+// ─────────────────────────────────────────────────────────────────────────────
+:key: B-sdk-substrates-gemini-features
+:title: Gemini CLI Technical Features & Interface Specification
+:type: Reference
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+:status: Active
+:version: c-02.10
+:updated: 2026-02-28
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+Gemini CLI is an open-source AI agent designed for terminal-first development workflows, leveraging the ReAct (Reason and Act) loop.
+
+== Core Capabilities
+
+* **Large Context Window:** Leverages 1M+ token capacity for deep codebase awareness.
+* **Autonomous Reasoning:** Proposed bug fixes, refactoring, and test execution without granular guidance.
+* **Grounding:** Integrated Google Search and local file access for verified accuracy.
+* **Model Context Protocol (MCP):** Native support for remote tool and service integration.
+* **Skills System:** Activatable, multi-step procedural workflows defined via `SKILL.md`.
+
+== Built-in Toolset (Input/Output Schemas)
+
+[cols="1,2,2", options="header"]
+|===
+| Category | Tools | Description
+
+| **File System**
+| `read_file`, `write_file`, `grep_search`, `list_dir`
+| Full CRUD and deep recursive searching. Inputs expect `path` strings and `content` for writes.
+
+| **Execution**
+| `run_shell_command`
+| Arbitrary terminal command execution. Input: `command` (string). Output: `stdout`, `stderr`, `exit_code`.
+
+| **Web**
+| `google_web_search`, `web_fetch`
+| Live web grounding and URL content retrieval.
+
+| **Context**
+| `read_many_files`, `save_memory`
+| Batch processing and persistent cross-session facts.
+|===
+
+== Interface & Expected Forms
+
+The CLI interacts with external logic primarily through JSON payloads.
+
+=== Hook Input Form (stdin)
+[source,json]
+----
+{
+  "session_id": "uuid",
+  "hook_event_name": "EventName",
+  "tool_name": "tool_to_run",
+  "tool_input": { "arg": "val" },
+  "cwd": "/path/to/project"
+}
+----
+
+=== Hook Output Form (stdout)
+[source,json]
+----
+{
+  "decision": "allow|deny",
+  "reason": "Required if denied",
+  "tool_input": { "modified": "args" },
+  "hookSpecificOutput": {
+    "hookEventName": "EventName",
+    "additionalContext": "string"
+  },
+  "continue": true|false
+}
+----
+
+== Specialized Interaction
+
+* **Sub-Agents:** Delegation to independent agents (e.g., `codebase_investigator`) to preserve main session context.
+* **Experimental Modes:** Supports "YOLO mode" for higher autonomy and rapid execution.
+* **Context Instructions:** Hierarchical `GEMINI.md` files for directive precedence (Global → Project → Directory).
+
+== Technical Schema
+
+* **Configuration:** `settings.json` (Global `~/.gemini/settings.json` → Project `./.gemini/settings.json`).
+* **Exit Protocol:** Standardized exit codes:
+** `0`: Success (proceed).
+** `2`: Block (abort action with reason from JSON).
+
+////
+═══════════════════════════════════════════════════════════════════════════════
+END FOOTER
+═══════════════════════════════════════════════════════════════════════════════
+////

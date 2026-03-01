@@ -20,10 +20,13 @@ package session
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"cws.studio/pkg/orchestration/logging"
 	"cws.studio/pkg/core/statemachine"
+	"cws.studio/pkg/sdk/substrate"
+	"cws.studio/claude/hooks/internal/status"
 )
 
 // ============================================================================
@@ -51,9 +54,16 @@ func Notification() {
 	log.SetMode(logging.ModeCompact)
 
 	var input NotificationInput
-	if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+	rawInput, _ := os.ReadFile("/dev/stdin")
+	if err := json.Unmarshal(rawInput, &input); err != nil {
 		log.Error("Failed to decode input", map[string]string{"error": err.Error()})
 		os.Exit(1)
+	}
+
+	// --- Load Substrate Maps ---
+	schemaBase := "/media/seanje-lenox-wise/Project/Bereshit/word/core/schemas/substrate"
+	for _, sub := range []string{"gemini", "claude", "cpisi"} {
+		substrate.LoadMap(fmt.Sprintf("%s/%s.toml", schemaBase, sub))
 	}
 
 	// Create CategoryLogger for file output
@@ -96,6 +106,9 @@ func Notification() {
 			"trajectory": currentSection,
 		})
 	}
+
+	// Update statusline and terminal state
+	status.Emit(input.SessionID)
 
 	// Output nothing to proceed normally
 }
