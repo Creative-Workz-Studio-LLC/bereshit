@@ -324,11 +324,9 @@ func main() {
 		router.Handle("creativeworkzstudio.com", websiteSPA)
 		router.Handle("www.creativeworkzstudio.com", websiteSPA)
 
-		// CPI-SI Console on its own subdomain
-		if cpisiConsoleMux != nil {
-			router.Handle("cpisi.creativeworkzstudio.com", cpisiConsoleMux)
-			slog.Info("cpisi console available at cpisi.creativeworkzstudio.com")
-		}
+		// CPI-SI Sanctuary (Redirect to GitHub Pages)
+		router.Handle("cpisi.creativeworkzstudio.com", http.RedirectHandler("https://creative-workz-studio-llc.github.io/cpisiModel/", http.StatusMovedPermanently))
+		slog.Info("cpisi redirect active: cpisi.creativeworkzstudio.com -> GitHub Pages")
 
 		// CWS Studio on its own subdomain
 		if studioSvc != nil {
